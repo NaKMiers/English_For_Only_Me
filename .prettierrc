@@ -1,0 +1,27 @@
+{
+  "embeddedLanguageFormatting": "auto",
+  "endOfLine": "lf",
+  "htmlWhitespaceSensitivity": "css",
+  "insertPragma": false,
+  "arrowParens": "avoid",
+  "bracketSameLine": false,
+  "printWidth": 80,
+  "proseWrap": "preserve",
+  "quoteProps": "as-needed",
+  "semi": false,
+  "singleAttributePerLine": true,
+  "singleQuote": true,
+  "tabWidth": 2,
+  "trailingComma": "es5",
+  "useTabs": false,
+  "vueIndentScriptAndStyle": false,
+  "plugins": ["prettier-plugin-tailwindcss"],
+  "tailwindAttributes": [
+    "className",
+    "classChild",
+    "containerClassName",
+    "contentClassName",
+    "optionClassName",
+    "triggerClassName"
+  ]
+}
