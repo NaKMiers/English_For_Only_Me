@@ -1,0 +1,54 @@
+import type { CreateDictationVideoPayload } from '@/modules/dictation/schemas/videoPayloadSchema'
+import type { DictationVideoApiRecord } from '@/modules/dictation/types'
+
+export const DICTATION_VIDEOS_API_PATH = '/api/dictation/videos'
+
+interface DictationVideosResponse {
+  videos: DictationVideoApiRecord[]
+}
+
+interface DictationVideoResponse {
+  video: DictationVideoApiRecord
+}
+
+async function readApiError(response: Response) {
+  try {
+    const body = (await response.json()) as { message?: unknown }
+
+    if (typeof body.message === 'string') return body.message
+  } catch {
+    return 'The dictation video request failed.'
+  }
+
+  return 'The dictation video request failed.'
+}
+
+export async function listDictationVideosApi(
+  input: string = DICTATION_VIDEOS_API_PATH
+) {
+  const response = await fetch(input, {
+    cache: 'no-store',
+  })
+
+  if (!response.ok) throw new Error(await readApiError(response))
+
+  return (await response.json()) as DictationVideosResponse
+}
+
+export async function createDictationVideoApi(
+  payload: CreateDictationVideoPayload,
+  input: string = DICTATION_VIDEOS_API_PATH
+) {
+  const response = await fetch(input, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+    cache: 'no-store',
+  })
+
+  if (!response.ok) throw new Error(await readApiError(response))
+
+  return (await response.json()) as DictationVideoResponse
+}

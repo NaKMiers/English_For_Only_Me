@@ -1,35 +1,172 @@
 @import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
 
 :root {
-  --background: #eae8e0;
-  --foreground: #2c2b1e;
-  --primary: #fbff7a;
-  --dark-primary: #facc15;
-  --secondary: #2c2b1e;
+  --manga-white: #ffffff;
+  --manga-black: #050505;
+  --manga-logo-red: #e03020;
+  --manga-bright-red: #f03020;
+  --manga-pale-red: #fff0ef;
+  --manga-paper: #fff8f6;
+  --manga-paper-soft: #ffe7e4;
+  --manga-ink-soft: #343434;
+  --manga-shadow: rgba(5, 5, 5, 0.18);
+  --background: var(--manga-paper);
+  --foreground: var(--manga-black);
+  --card: var(--manga-white);
+  --card-foreground: var(--manga-black);
+  --popover: var(--manga-white);
+  --popover-foreground: var(--manga-black);
+  --primary: var(--manga-logo-red);
+  --primary-foreground: var(--manga-white);
+  --dark-primary: var(--manga-bright-red);
+  --secondary: var(--manga-black);
+  --secondary-foreground: var(--manga-white);
+  --muted: var(--manga-pale-red);
+  --muted-foreground: #6a6462;
+  --accent: var(--manga-paper-soft);
+  --accent-foreground: var(--manga-black);
+  --destructive: var(--manga-logo-red);
+  --destructive-foreground: var(--manga-white);
+  --border: rgba(5, 5, 5, 0.9);
+  --input: rgba(5, 5, 5, 0.72);
+  --ring: var(--manga-bright-red);
+  --chart-1: var(--manga-logo-red);
+  --chart-2: var(--manga-black);
+  --chart-3: var(--manga-paper-soft);
+  --chart-4: var(--manga-bright-red);
+  --chart-5: var(--manga-ink-soft);
+  --radius: 0.5rem;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
   --light: #ffffff;
-  --dark: #525252;
-  --light-gray: #dcded6;
-  --dark-gray: #aaaaa0;
+  --dark: #343434;
+  --light-gray: #fff0ef;
+  --dark-gray: #6a6462;
 }
 
 @theme inline {
+  --color-manga-white: var(--manga-white);
+  --color-manga-black: var(--manga-black);
+  --color-manga-red: var(--manga-logo-red);
+  --color-manga-bright-red: var(--manga-bright-red);
+  --color-manga-pale-red: var(--manga-pale-red);
+  --color-manga-paper: var(--manga-paper);
+  --color-manga-paper-soft: var(--manga-paper-soft);
+  --color-manga-ink-soft: var(--manga-ink-soft);
+  --color-manga-shadow: var(--manga-shadow);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
   --color-dark-primary: var(--dark-primary);
   --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
   --color-light: var(--light);
   --color-dark: var(--dark);
   --color-light-gray: var(--light-gray);
   --color-dark-gray: var(--dark-gray);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
   --font-sans: var(--font-montserrat);
   --font-body: var(--font-source-sans);
   --spacing-21: 21px;
   --spacing-21\/2: 10.5px;
 }
 
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+  background:
+    radial-gradient(
+      circle at 18px 18px,
+      rgba(5, 5, 5, 0.08) 1px,
+      transparent 1px
+    ),
+    linear-gradient(135deg, var(--manga-paper), #ffffff 52%, #fff0ef);
+  background-attachment: fixed;
+  background-size:
+    26px 26px,
+    auto;
+}
+
 body {
-  background: var(--background);
+  min-height: 100%;
+  overflow-x: hidden;
+  background:
+    linear-gradient(
+      112deg,
+      transparent 0 20%,
+      rgba(5, 5, 5, 0.035) 20% 20.35%,
+      transparent 20.35% 55%,
+      rgba(224, 48, 32, 0.055) 55% 55.35%,
+      transparent 55.35%
+    ),
+    radial-gradient(
+      ellipse at 82% 12%,
+      rgba(224, 48, 32, 0.1),
+      transparent 30%
+    ),
+    radial-gradient(ellipse at 8% 88%, rgba(5, 5, 5, 0.06), transparent 32%);
   color: var(--foreground);
   font-family: var(--font-source-sans), Arial, Helvetica, sans-serif;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 3px solid var(--manga-bright-red);
+  outline-offset: 3px;
+}
+
+::selection {
+  background: var(--manga-paper-soft);
+  color: var(--manga-black);
 }

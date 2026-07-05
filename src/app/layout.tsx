@@ -1,26 +1,19 @@
 import type { Metadata } from 'next'
-import { Montserrat, Source_Sans_3 } from 'next/font/google'
+import type { CSSProperties } from 'react'
 import './globals.css'
 
-const montserrat = Montserrat({
-  variable: '--font-montserrat',
-  subsets: ['latin'],
-  weight: 'variable',
-  style: ['normal', 'italic'],
-  display: 'swap',
-})
-
-const sourceSans = Source_Sans_3({
-  variable: '--font-source-sans',
-  subsets: ['latin'],
-  weight: 'variable',
-  style: ['normal', 'italic'],
-  display: 'swap',
-})
+const fontVariables = {
+  '--font-montserrat': 'Montserrat, Arial, Helvetica, sans-serif',
+  '--font-source-sans': '"Source Sans 3", Arial, Helvetica, sans-serif',
+} as CSSProperties
 
 export const metadata: Metadata = {
-  title: 'English For Only Me',
-  description: 'A personal English learning workspace.',
+  title: {
+    default: 'English For Only Me',
+    template: '%s | English For Only Me',
+  },
+  description:
+    'A private IELTS study desk for dictation, vocabulary, review, writing notes, and future English practice modules.',
 }
 
 export default function RootLayout({
@@ -31,7 +24,8 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${montserrat.variable} ${sourceSans.variable} h-full antialiased`}
+      style={fontVariables}
+      className="h-full antialiased"
     >
       <body className="flex min-h-full flex-col">{children}</body>
     </html>
