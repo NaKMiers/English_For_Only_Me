@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "clean": "rm -rf .next node_modules bun.lock",
     "start": "next start",
     "lint": "eslint",
     "lint:fix": "eslint . --fix",

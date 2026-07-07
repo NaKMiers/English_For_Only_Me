@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { MangaPageShell } from '@/components/common/MangaPageShell'
 import { MangaPanel } from '@/components/common/MangaPanel'
+import { DictationBuildSegmentsButton } from '@/components/dictation/DictationBuildSegmentsButton'
 import { DictationPracticeShell } from '@/components/dictation/DictationPracticeShell'
 import { MangaButton } from '@/components/ui/MangaButton'
 import { hasMongoDbUri } from '@/constants/environments'
@@ -15,6 +16,7 @@ import { toDictationSegmentRecord } from '@/modules/dictation/services/dictation
 import { toDictationSessionRecord } from '@/modules/dictation/services/dictationSessionRecords'
 import { toDictationVideoRecord } from '@/modules/dictation/services/dictationVideoRecords'
 import { getCurrentOwnerId } from '@/modules/dictation/services/getCurrentOwnerId'
+import { hasDictationTranscript } from '@/modules/dictation/videoReadiness'
 
 export const metadata: Metadata = {
   title: 'Dictation Practice',
@@ -32,9 +34,13 @@ interface Props {
 function PracticeSetupState({
   message,
   title,
+  transcriptId,
+  videoId,
 }: {
   message: string
   title: string
+  transcriptId?: string | null
+  videoId?: string | null
 }) {
   return (
     <MangaPageShell
@@ -55,12 +61,20 @@ function PracticeSetupState({
           </p>
           <div className="flex flex-wrap gap-3">
             <MangaButton href="/dictation">Back To Dictation Lab</MangaButton>
+            {videoId ? (
+              <MangaButton href={`/dictation/videos/${videoId}/edit`}>
+                Add Transcript
+              </MangaButton>
+            ) : null}
             <MangaButton
               href="/dictation/import"
               tone="paper"
             >
               Import Video
             </MangaButton>
+            {transcriptId ? (
+              <DictationBuildSegmentsButton transcriptId={transcriptId} />
+            ) : null}
           </div>
         </MangaPanel>
       </section>
@@ -88,9 +102,23 @@ export default async function Page({ params }: Props) {
   const video = await DictationVideoModel.findOne({
     _id: videoId,
     ownerId,
+    status: {
+      $ne: 'archived',
+    },
   }).lean()
 
   if (!video) notFound()
+
+  const videoRecord = toDictationVideoRecord(video)
+
+  if (!hasDictationTranscript(videoRecord))
+    return (
+      <PracticeSetupState
+        title="Transcript is needed"
+        message="Attach an English transcript before opening the practice player for this video."
+        videoId={videoId}
+      />
+    )
 
   const segments = await DictationSegmentModel.find({
     ownerId,
@@ -105,6 +133,9 @@ export default async function Page({ params }: Props) {
       <PracticeSetupState
         title="Segments are not ready"
         message="Build sentence segments from the active transcript before opening the practice player."
+        transcriptId={
+          video.activeTranscriptId ? String(video.activeTranscriptId) : null
+        }
       />
     )
 
@@ -129,7 +160,7 @@ export default async function Page({ params }: Props) {
         <DictationPracticeShell
           initialSession={session ? toDictationSessionRecord(session) : null}
           segments={segments.map(toDictationSegmentRecord)}
-          video={toDictationVideoRecord(video)}
+          video={videoRecord}
         />
       </section>
     </MangaPageShell>

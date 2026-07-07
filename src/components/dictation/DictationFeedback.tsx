@@ -89,7 +89,7 @@ export function DictationFeedback({ attempt, className }: Props) {
           <span
             key={`${token.status}-${index}-${token.expected}-${token.actual}`}
             className={cn(
-              'rounded-none border-2 px-2 py-1 text-sm font-black break-words',
+              'rounded-none border-2 px-2 py-1 text-sm font-black wrap-break-word',
               statusClassNames[token.status]
             )}
             title={token.status}

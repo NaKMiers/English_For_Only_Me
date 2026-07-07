@@ -3,14 +3,19 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { MangaPanel } from '@/components/common/MangaPanel'
-import { QueueRow } from '@/components/common/QueueRow'
 import { DictationAnswerBox } from '@/components/dictation/DictationAnswerBox'
 import { DictationControls } from '@/components/dictation/DictationControls'
 import { DictationFeedback } from '@/components/dictation/DictationFeedback'
+import { DictationFullTranscript } from '@/components/dictation/DictationFullTranscript'
 import { DictationTranslation } from '@/components/dictation/DictationTranslation'
-import { DictationTranscriptDrawer } from '@/components/dictation/DictationTranscriptDrawer'
 import { DictationYoutubePlayer } from '@/components/dictation/DictationYoutubePlayer'
 import { MangaButton } from '@/components/ui/MangaButton'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import {
+  buildDictationCorrection,
+  createLocalDictationAttempt,
+} from '@/modules/dictation/correction'
+import type { YoutubePlayerStatus } from '@/modules/dictation/player/useYoutubeDictationPlayer'
 import {
   readDictationAnswerDrafts,
   useDictationPreferences,
@@ -18,7 +23,6 @@ import {
   type DictationPracticePreferences,
 } from '@/modules/dictation/preferences/dictationPreferences'
 import { useDictationShortcuts } from '@/modules/dictation/preferences/shortcuts'
-import type { YoutubePlayerStatus } from '@/modules/dictation/player/useYoutubeDictationPlayer'
 import type {
   DictationAttemptAction,
   DictationAttemptApiRecord,
@@ -34,7 +38,9 @@ import {
 
 interface PlayerController {
   canReplay: boolean
+  getCurrentTimeMs: () => number | null
   message: string
+  playFromMs: (startMs: number) => void
   replay: () => void
   status: YoutubePlayerStatus
 }
@@ -70,6 +76,9 @@ function createIdempotencyKey() {
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`
 }
 
+const PRACTICE_TAB_TRIGGER_CLASS_NAME =
+  'border-manga-black text-manga-ink-soft bg-manga-white shadow-[2px_2px_0_var(--manga-black)] hover:bg-manga-paper-soft focus-visible:ring-manga-red/35 data-active:bg-manga-red data-active:text-manga-white data-active:shadow-[5px_5px_0_var(--manga-black)] data-active:-translate-x-[2px] data-active:-translate-y-[2px] !h-auto min-h-11 flex-1 rounded-none border-3 px-3 py-2 font-sans text-sm font-black transition-all after:hidden sm:flex-none'
+
 export function DictationPracticeShell({
   initialSession,
   segments,
@@ -83,12 +92,19 @@ export function DictationPracticeShell({
   const [draftNotice, setDraftNotice] = useState<string | null>(null)
   const [currentAttempt, setCurrentAttempt] =
     useState<DictationAttemptApiRecord | null>(null)
-  const [isSubmittingAttempt, setIsSubmittingAttempt] = useState(false)
   const [answerDrafts, setAnswerDrafts] = useState<Record<string, string>>(() =>
     readDictationAnswerDrafts(video.id)
   )
+  const [activeView, setActiveView] = useState<'practice' | 'transcript'>(
+    'practice'
+  )
+  const [activePlaybackIndex, setActivePlaybackIndex] = useState<number | null>(
+    null
+  )
   const replayCountRef = useRef<Record<string, number>>({})
   const segmentStartedAtRef = useRef(0)
+  const autoPlayedSegmentIdRef = useRef<string | null>(null)
+  const persistQueueRef = useRef<Promise<unknown>>(Promise.resolve())
   const [revealedSegmentIds, setRevealedSegmentIds] = useState<
     Record<string, boolean>
   >({})
@@ -97,7 +113,9 @@ export function DictationPracticeShell({
   )
   const [playerController, setPlayerController] = useState<PlayerController>({
     canReplay: false,
+    getCurrentTimeMs: () => null,
     message: 'YouTube player is loading.',
+    playFromMs: () => undefined,
     replay: () => undefined,
     status: 'idle',
   })
@@ -128,10 +146,70 @@ export function DictationPracticeShell({
   )
   const canGoPrevious = currentIndex > 0
   const canGoNext = currentIndex < segments.length - 1
+  // While the video is playing, the segment counter and transcript highlight
+  // track the caption under the playhead; otherwise they follow the practice
+  // cursor. Changing the practice cursor mid-playback would pause the video.
+  const isPlaying = playerController.status === 'playing'
+  const activePlaybackSegment =
+    isPlaying && activePlaybackIndex !== null
+      ? (segments[activePlaybackIndex] ?? null)
+      : null
+  const displayIndex = activePlaybackSegment
+    ? activePlaybackIndex!
+    : currentIndex
+
+  const replayCurrentSegment = useCallback(() => {
+    if (!currentSegment) return
+
+    replayCountRef.current[currentSegment.id] =
+      (replayCountRef.current[currentSegment.id] ?? 0) + 1
+    playerController.replay()
+  }, [currentSegment, playerController])
 
   useEffect(() => {
     segmentStartedAtRef.current = Date.now()
   }, [currentSegment?.id])
+
+  useEffect(() => {
+    // Auto-replay is a practice-mode behavior: it seeks to the current segment
+    // and stops at its end. On the transcript tab we watch continuously, so
+    // skip it there to avoid pausing at each caption boundary.
+    if (activeView !== 'practice') return
+    if (!currentSegment || !playerController.canReplay) return
+    if (autoPlayedSegmentIdRef.current === currentSegment.id) return
+
+    autoPlayedSegmentIdRef.current = currentSegment.id
+    const timeoutId = window.setTimeout(() => {
+      playerController.replay()
+    }, 160)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [activeView, currentSegment, playerController])
+
+  useEffect(() => {
+    if (playerController.status !== 'playing') return
+
+    const intervalId = window.setInterval(() => {
+      const timeMs = playerController.getCurrentTimeMs()
+
+      if (timeMs === null) return
+
+      const index = segments.findIndex(
+        segment =>
+          segment.startMs !== null &&
+          segment.endMs !== null &&
+          timeMs >= segment.startMs &&
+          timeMs < segment.endMs
+      )
+
+      if (index >= 0)
+        setActivePlaybackIndex(previous =>
+          previous === index ? previous : index
+        )
+    }, 250)
+
+    return () => window.clearInterval(intervalId)
+  }, [playerController, segments])
 
   useEffect(() => {
     writeDictationAnswerDrafts(video.id, answerDrafts)
@@ -231,8 +309,8 @@ export function DictationPracticeShell({
     [patchSession, setPreferences]
   )
 
-  const submitAttempt = useCallback(
-    async (action: DictationAttemptAction) => {
+  const runAttempt = useCallback(
+    (action: DictationAttemptAction) => {
       if (!currentSegment) return
 
       if (!session) {
@@ -240,87 +318,117 @@ export function DictationPracticeShell({
         return
       }
 
-      setIsSubmittingAttempt(true)
+      const idempotencyKey = createIdempotencyKey()
+      const replayCountDelta = replayCountRef.current[currentSegment.id] ?? 0
+      const timeSpentMs = Math.max(0, Date.now() - segmentStartedAtRef.current)
+      const typedAnswer = currentAnswer
+      const correction = buildDictationCorrection({
+        action,
+        expectedText: currentSegment.text,
+        typedAnswer,
+      })
+      const localAttempt = createLocalDictationAttempt({
+        correction,
+        expectedText: currentSegment.text,
+        idempotencyKey,
+        ownerId: currentSegment.ownerId,
+        replayCountDelta,
+        segmentId: currentSegment.id,
+        sessionId: session.id,
+        timeSpentMs,
+        transcriptId: currentSegment.transcriptId,
+        typedAnswer,
+        videoId: currentSegment.videoId,
+      })
+      const shouldAdvance = correction.isPassed || action === 'skip'
+
+      // Score on the client for instant feedback; the server recomputes the
+      // identical correction when it persists the attempt in the background.
       setDraftNotice(null)
       setSessionError(null)
 
-      try {
-        const response = await submitDictationAttemptApi(session.id, {
-          action,
-          idempotencyKey: createIdempotencyKey(),
-          replayCountDelta: replayCountRef.current[currentSegment.id] ?? 0,
-          segmentId: currentSegment.id,
-          timeSpentMs: Math.max(0, Date.now() - segmentStartedAtRef.current),
-          typedAnswer: currentAnswer,
+      if (shouldAdvance)
+        setAnswerDrafts(currentDrafts => {
+          const nextDrafts = { ...currentDrafts }
+
+          delete nextDrafts[currentSegment.id]
+
+          return nextDrafts
         })
-        const nextIndex = response.nextSegmentId
-          ? segments.findIndex(segment => segment.id === response.nextSegmentId)
-          : -1
-        const shouldMoveToNext =
-          nextIndex >= 0 && (response.attempt.isPassed || action === 'skip')
 
-        setSession(response.session)
-        setCurrentAttempt(response.attempt)
-        if (response.attempt.isPassed || action === 'skip')
-          setAnswerDrafts(currentDrafts => {
-            const nextDrafts = { ...currentDrafts }
+      if (action === 'reveal')
+        setRevealedSegmentIds(currentValues => ({
+          ...currentValues,
+          [currentSegment.id]: true,
+        }))
 
-            delete nextDrafts[currentSegment.id]
+      replayCountRef.current[currentSegment.id] = 0
+      segmentStartedAtRef.current = Date.now()
 
-            return nextDrafts
-          })
-        replayCountRef.current[currentSegment.id] = 0
-        segmentStartedAtRef.current = Date.now()
-
-        if (action === 'reveal')
-          setRevealedSegmentIds(currentValues => ({
-            ...currentValues,
-            [currentSegment.id]: true,
-          }))
-
-        if (shouldMoveToNext) {
-          setCurrentIndex(nextIndex)
-          setDraftNotice(
-            response.attempt.isPassed
-              ? 'Accepted. Moving to the next sentence.'
-              : 'Skipped. Moving to the next sentence.'
-          )
-        } else if (response.session.status === 'completed')
-          setDraftNotice('Practice session completed.')
-      } catch (error) {
-        setSessionError(
-          error instanceof Error
-            ? error.message
-            : 'Could not save this dictation attempt.'
+      if (shouldAdvance && canGoNext) {
+        setCurrentAttempt(null)
+        setCurrentIndex(currentIndex + 1)
+        setDraftNotice(
+          correction.isPassed
+            ? 'Accepted. Moving to the next sentence.'
+            : 'Skipped. Moving to the next sentence.'
         )
-      } finally {
-        setIsSubmittingAttempt(false)
+      } else {
+        setCurrentAttempt(localAttempt)
+        if (shouldAdvance) setDraftNotice('Practice session completed.')
       }
+
+      const segmentId = currentSegment.id
+
+      // Serialize persistence so the server's segment-cursor guard sees attempts
+      // in the same order the learner made them.
+      persistQueueRef.current = persistQueueRef.current
+        .catch(() => undefined)
+        .then(() =>
+          submitDictationAttemptApi(session.id, {
+            action,
+            idempotencyKey,
+            replayCountDelta,
+            segmentId,
+            timeSpentMs,
+            typedAnswer,
+          })
+        )
+        .then(response => {
+          setSession(response.session)
+        })
+        .catch(error => {
+          setSessionError(
+            error instanceof Error
+              ? error.message
+              : 'Could not save this dictation attempt.'
+          )
+        })
     },
-    [currentAnswer, currentSegment, segments, session]
+    [canGoNext, currentAnswer, currentIndex, currentSegment, session]
   )
 
   const checkDraft = useCallback(() => {
-    void submitAttempt('check')
-  }, [submitAttempt])
+    runAttempt('check')
+  }, [runAttempt])
 
   const revealSegment = useCallback(() => {
-    void submitAttempt('reveal')
-  }, [submitAttempt])
+    runAttempt('reveal')
+  }, [runAttempt])
 
   const skipSegment = useCallback(() => {
-    void submitAttempt('skip')
-  }, [submitAttempt])
+    runAttempt('skip')
+  }, [runAttempt])
 
   const shortcutHandlers = useMemo(
     () => ({
       check: checkDraft,
       next: goNext,
       previous: goPrevious,
-      replay: playerController.replay,
+      replay: replayCurrentSegment,
       toggleVideo,
     }),
-    [checkDraft, goNext, goPrevious, playerController.replay, toggleVideo]
+    [checkDraft, goNext, goPrevious, replayCurrentSegment, toggleVideo]
   )
 
   useDictationShortcuts({
@@ -342,21 +450,26 @@ export function DictationPracticeShell({
     )
 
   return (
-    <div className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
-      <section className="grid min-w-0 content-start gap-5">
-        <MangaPanel
-          eyebrow={sessionMode === 'resume' ? 'Resume' : 'Start'}
-          title={video.title}
-        >
+    <div className="mx-auto grid w-full max-w-6xl min-w-0 gap-4">
+      <section className="border-manga-black bg-manga-white grid min-w-0 gap-3 border-3 p-3 shadow-[5px_5px_0_var(--manga-black)] sm:p-4">
+        <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
+          <div className="grid min-w-0 gap-1">
+            <span className="text-manga-red text-xs font-black tracking-normal uppercase">
+              {sessionMode === 'resume' ? 'Resume dictation' : 'Dictation'}
+            </span>
+            <h1 className="font-sans text-2xl leading-tight font-black tracking-normal wrap-break-word sm:text-3xl">
+              {video.title}
+            </h1>
+          </div>
           <DictationControls
             canGoNext={canGoNext}
             canGoPrevious={canGoPrevious}
             canReplay={playerController.canReplay}
-            currentIndex={currentIndex}
+            currentIndex={displayIndex}
             isVideoHidden={preferences.isVideoHidden}
             onGoNext={goNext}
             onGoPrevious={goPrevious}
-            onReplay={playerController.replay}
+            onReplay={replayCurrentSegment}
             onSpeedChange={changeSpeed}
             onToggleVideo={toggleVideo}
             playbackSpeed={preferences.playbackSpeed}
@@ -364,54 +477,100 @@ export function DictationPracticeShell({
             showShortcuts={preferences.showShortcuts}
             totalSegments={segments.length}
           />
-        </MangaPanel>
+        </div>
 
-        <DictationYoutubePlayer
-          hidden={preferences.isVideoHidden}
-          onControllerChange={setPlayerController}
-          onHiddenChange={hidden => {
-            setPreferences(currentPreferences => ({
-              ...currentPreferences,
-              isVideoHidden: hidden,
-            }))
-            patchSession({ isVideoHidden: hidden })
-          }}
-          onReplay={() => {
-            replayCountRef.current[currentSegment.id] =
-              (replayCountRef.current[currentSegment.id] ?? 0) + 1
-          }}
-          playbackSpeed={preferences.playbackSpeed}
-          timing={{
-            endMs: currentSegment.endMs,
-            startMs: currentSegment.startMs,
-          }}
-          title={video.title}
-          youtubeVideoId={video.youtubeVideoId}
-        />
+        <div className="grid min-w-0 items-start gap-3 lg:grid-cols-[minmax(0,1.08fr)_minmax(320px,0.92fr)]">
+          <DictationYoutubePlayer
+            className="self-start lg:sticky lg:top-4"
+            hidden={preferences.isVideoHidden}
+            onControllerChange={setPlayerController}
+            onHiddenChange={hidden => {
+              setPreferences(currentPreferences => ({
+                ...currentPreferences,
+                isVideoHidden: hidden,
+              }))
+              patchSession({ isVideoHidden: hidden })
+            }}
+            playbackSpeed={preferences.playbackSpeed}
+            timing={{
+              endMs: currentSegment.endMs,
+              startMs: currentSegment.startMs,
+            }}
+            title={video.title}
+            youtubeVideoId={video.youtubeVideoId}
+          />
 
-        <DictationAnswerBox
-          answer={currentAnswer}
-          isSubmitting={isSubmittingAttempt}
-          onAnswerChange={answer =>
-            setAnswerDrafts(currentDrafts => ({
-              ...currentDrafts,
-              [currentSegment.id]: answer,
-            }))
-          }
-          onCheck={checkDraft}
-          onReveal={revealSegment}
-          onSkip={skipSegment}
-          revealed={Boolean(revealedSegmentIds[currentSegment.id])}
-          segmentText={currentSegment.text}
-        />
+          <Tabs
+            value={activeView}
+            onValueChange={value =>
+              setActiveView(value as 'practice' | 'transcript')
+            }
+            className="min-w-0 gap-3"
+          >
+            <TabsList
+              variant="line"
+              aria-label="Practice views"
+              className="flex h-auto! w-full min-w-0 flex-wrap justify-start gap-2 rounded-none p-0"
+            >
+              <TabsTrigger
+                value="practice"
+                className={PRACTICE_TAB_TRIGGER_CLASS_NAME}
+              >
+                Listen &amp; Type
+              </TabsTrigger>
+              <TabsTrigger
+                value="transcript"
+                className={PRACTICE_TAB_TRIGGER_CLASS_NAME}
+              >
+                Full Transcript
+              </TabsTrigger>
+            </TabsList>
 
-        <DictationFeedback attempt={currentAttempt} />
+            <TabsContent
+              value="practice"
+              className="grid min-w-0 content-start gap-3"
+            >
+              <DictationAnswerBox
+                answer={currentAnswer}
+                onAnswerChange={answer =>
+                  setAnswerDrafts(currentDrafts => ({
+                    ...currentDrafts,
+                    [currentSegment.id]: answer,
+                  }))
+                }
+                onCheck={checkDraft}
+                onReveal={revealSegment}
+                onSkip={skipSegment}
+                revealed={Boolean(revealedSegmentIds[currentSegment.id])}
+                segmentText={currentSegment.text}
+              />
 
-        <DictationTranslation
-          key={translationSegmentId ?? 'locked-translation'}
-          isUnlocked={isTranslationUnlocked}
-          segmentId={translationSegmentId ?? null}
-        />
+              <DictationFeedback attempt={currentAttempt} />
+
+              <DictationTranslation
+                key={translationSegmentId ?? 'locked-translation'}
+                isUnlocked={isTranslationUnlocked}
+                segmentId={translationSegmentId ?? null}
+              />
+            </TabsContent>
+
+            <TabsContent
+              value="transcript"
+              className="min-w-0"
+            >
+              <DictationFullTranscript
+                currentSegmentId={currentSegment.id}
+                isActive={activeView === 'transcript'}
+                onSelectSegment={segment => {
+                  if (segment.startMs !== null)
+                    playerController.playFromMs(segment.startMs)
+                }}
+                playingSegmentId={activePlaybackSegment?.id ?? null}
+                segments={segments}
+              />
+            </TabsContent>
+          </Tabs>
+        </div>
 
         {draftNotice ? (
           <div
@@ -421,52 +580,15 @@ export function DictationPracticeShell({
             {draftNotice}
           </div>
         ) : null}
-      </section>
 
-      <aside className="grid min-w-0 content-start gap-5">
-        <MangaPanel
-          eyebrow="Session"
-          title="Practice queue"
-          action={
-            <DictationTranscriptDrawer
-              currentSegmentId={currentSegment.id}
-              segments={segments}
-            />
-          }
-        >
-          <div className="grid gap-3">
-            {segments.slice(0, 8).map(segment => (
-              <QueueRow
-                key={segment.id}
-                title={segment.text}
-                meta={
-                  segment.startMs === null || segment.endMs === null
-                    ? 'Untimed manual mode'
-                    : `${(segment.startMs / 1000).toFixed(1)}s`
-                }
-                status={
-                  segment.id === currentSegment.id
-                    ? 'active'
-                    : segment.order < currentSegment.order
-                      ? 'done'
-                      : 'queued'
-                }
-              />
-            ))}
-          </div>
-        </MangaPanel>
-
-        <MangaPanel
-          eyebrow="Player state"
-          title={playerController.status}
-        >
-          <p className="text-manga-ink-soft text-base leading-7 font-semibold">
+        <footer className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-manga-ink-soft min-w-0 text-sm leading-6 font-semibold">
             {sessionError ??
               (currentSegment.startMs === null || currentSegment.endMs === null
-                ? 'Manual untimed mode: use the normal player and keep typing.'
-                : 'Timed replay is ready when the YouTube player finishes loading.')}
+                ? 'Untimed segment. Use the normal player controls, then type.'
+                : `Sentence ${currentIndex + 1} of ${segments.length}. Press Ctrl to replay this sentence.`)}
           </p>
-          <label className="flex items-center gap-3 text-sm font-black">
+          <label className="flex items-center gap-2 text-sm font-black">
             <input
               type="checkbox"
               checked={preferences.showShortcuts}
@@ -483,8 +605,8 @@ export function DictationPracticeShell({
             />
             Show shortcut hints
           </label>
-        </MangaPanel>
-      </aside>
+        </footer>
+      </section>
     </div>
   )
 }

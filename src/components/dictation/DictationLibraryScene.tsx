@@ -13,24 +13,13 @@ import { Textarea } from '@/components/ui/textarea'
 import {
   DICTATION_DEFAULT_IMPORT,
   DICTATION_QUALITY_GATE,
-  DICTATION_RECENT_VIDEOS,
 } from '@/constants/dictation'
-import { cn } from '@/lib/utils'
 import type { DictationVideoApiRecord } from '@/modules/dictation/types'
+
+import { DictationRecentVideosGrid } from './DictationRecentVideosGrid'
 
 interface Props {
   videos?: DictationVideoApiRecord[]
-}
-
-function getVideoMeta(video: DictationVideoApiRecord) {
-  const transcript =
-    video.transcriptStatus === 'manualAdded'
-      ? 'transcript added'
-      : 'needs transcript'
-  const sentences =
-    video.sentenceCount > 0 ? `${video.sentenceCount} sentences` : transcript
-
-  return `${sentences} - ${video.status}`
 }
 
 function VideoSketch() {
@@ -102,6 +91,14 @@ export function DictationLibraryScene({ videos = [] }: Props) {
       <MangaPanel
         eyebrow="Page 01"
         title="Choose a video. Turn it into practice."
+        action={
+          <MangaButton
+            href="/dictation/videos"
+            tone="paper"
+          >
+            Saved Videos
+          </MangaButton>
+        }
       >
         <p className="text-manga-ink-soft text-base leading-7 font-semibold">
           Paste a YouTube URL, add a trusted English transcript, then split it
@@ -156,53 +153,7 @@ export function DictationLibraryScene({ videos = [] }: Props) {
           </form>
         </div>
 
-        <section
-          aria-label="Recent dictation videos"
-          className="grid gap-3 md:grid-cols-3"
-        >
-          {(videos.length > 0
-            ? videos.slice(0, 3).map(video => ({
-                href: `/dictation/videos/${video.id}/results`,
-                id: video.id,
-                meta: getVideoMeta(video),
-                status: video.status,
-                title: video.title,
-              }))
-            : DICTATION_RECENT_VIDEOS.map(video => ({
-                ...video,
-                href: undefined,
-              }))
-          ).map(video => (
-            <article
-              key={video.id}
-              className="border-manga-black bg-manga-white grid min-w-0 gap-2 border-2 p-3 shadow-[3px_3px_0_var(--manga-black)]"
-            >
-              <strong className="font-sans text-base leading-tight font-black break-words">
-                {video.title}
-              </strong>
-              <span className="text-manga-ink-soft text-sm leading-5 font-semibold">
-                {video.meta}
-              </span>
-              <Badge
-                variant="outline"
-                className={cn(
-                  'border-manga-black bg-manga-paper-soft text-manga-black w-fit rounded-none border-2 font-black'
-                )}
-              >
-                {video.status}
-              </Badge>
-              {video.href ? (
-                <MangaButton
-                  href={video.href}
-                  tone="paper"
-                  className="min-h-10 px-3 py-1 text-xs"
-                >
-                  Open Results
-                </MangaButton>
-              ) : null}
-            </article>
-          ))}
-        </section>
+        <DictationRecentVideosGrid videos={videos} />
       </MangaPanel>
 
       <aside className="grid content-start gap-5">

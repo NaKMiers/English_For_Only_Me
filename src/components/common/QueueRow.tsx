@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 
+import type { PAGE_TAG_TONES } from '@/constants/theme'
 import { cn } from '@/lib/utils'
 
 import { PageTag } from '../ui/PageTag'
@@ -11,6 +12,7 @@ interface Props {
   href?: string
   meta?: string
   status?: string
+  statusTone?: keyof typeof PAGE_TAG_TONES
   title: string
 }
 
@@ -20,22 +22,23 @@ export function QueueRow({
   href,
   meta,
   status,
+  statusTone = 'pale',
   title,
 }: Props) {
   const content = (
     <>
       <div className="grid min-w-0 gap-1">
-        <strong className="font-sans text-base leading-tight font-black break-words">
+        <strong className="font-sans text-base leading-tight font-black wrap-break-word">
           {title}
         </strong>
         {meta ? (
-          <span className="text-manga-ink-soft text-sm leading-5 font-semibold break-words">
+          <span className="text-manga-ink-soft text-sm leading-5 font-semibold wrap-break-word">
             {meta}
           </span>
         ) : null}
       </div>
       <div className="flex shrink-0 items-center gap-2">
-        {status ? <PageTag tone="pale">{status}</PageTag> : null}
+        {status ? <PageTag tone={statusTone}>{status}</PageTag> : null}
         {action}
       </div>
     </>

@@ -79,7 +79,12 @@ export async function GET() {
 
     await connectDatabase()
 
-    const videos = await DictationVideoModel.find({ ownerId })
+    const videos = await DictationVideoModel.find({
+      ownerId,
+      status: {
+        $ne: 'archived',
+      },
+    })
       .sort({ createdAt: -1 })
       .limit(50)
       .lean()

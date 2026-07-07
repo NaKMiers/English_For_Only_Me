@@ -69,6 +69,9 @@ export async function POST(request: Request) {
     const video = await DictationVideoModel.findOne({
       _id: parsed.data.videoId,
       ownerId,
+      status: {
+        $ne: 'archived',
+      },
     })
 
     if (!video)

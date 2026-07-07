@@ -49,12 +49,12 @@ export function ModuleCard({
             {icon}
           </span>
         ) : null}
-        <h3 className="col-span-2 font-sans text-xl leading-none font-black tracking-normal break-words uppercase">
+        <h3 className="col-span-2 font-sans text-xl leading-none font-black tracking-normal wrap-break-word uppercase">
           {title}
         </h3>
       </CardHeader>
       <CardContent className="p-0">
-        <p className="text-manga-ink-soft text-sm leading-6 font-semibold break-words">
+        <p className="text-manga-ink-soft text-sm leading-6 font-semibold wrap-break-word">
           {description}
         </p>
       </CardContent>

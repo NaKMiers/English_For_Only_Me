@@ -21,7 +21,7 @@ describe('DictationResultsSummary', () => {
     expect(view.getByText('Results')).not.toBeNull()
     expect(view.getByText(/Practice the video first/)).not.toBeNull()
     expect(
-      view.getByRole('link', { name: 'Practice Again' }).getAttribute('href')
+      view.getByRole('link', { name: 'Continue Practice' }).getAttribute('href')
     ).toBe('/dictation/videos/0123456789abcdef01234567/practice')
   })
 
@@ -29,13 +29,17 @@ describe('DictationResultsSummary', () => {
     const view = render(
       <DictationResultsSummary
         isEmpty={false}
+        thumbnailUrl="https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg"
         title="IELTS video"
         videoId="0123456789abcdef01234567"
         videoStatus="completed"
+        youtubeVideoId="dQw4w9WgXcQ"
       />
     )
 
     expect(view.getByText('Completed')).not.toBeNull()
+    expect(view.getByAltText('Thumbnail for IELTS video')).not.toBeNull()
     expect(view.getByText(/saved attempts only/)).not.toBeNull()
+    expect(view.getByRole('link', { name: 'Practice Again' })).not.toBeNull()
   })
 })

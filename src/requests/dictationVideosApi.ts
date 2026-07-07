@@ -52,3 +52,17 @@ export async function createDictationVideoApi(
 
   return (await response.json()) as DictationVideoResponse
 }
+
+export async function archiveDictationVideoApi(
+  videoId: string,
+  input: string = `${DICTATION_VIDEOS_API_PATH}/${videoId}`
+) {
+  const response = await fetch(input, {
+    method: 'DELETE',
+    cache: 'no-store',
+  })
+
+  if (!response.ok) throw new Error(await readApiError(response))
+
+  return (await response.json()) as DictationVideoResponse
+}

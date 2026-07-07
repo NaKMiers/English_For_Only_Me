@@ -53,7 +53,7 @@ export function DictationHome({
               </p>
               <h1
                 id="dictation-title"
-                className="font-sans text-[clamp(2rem,7vw,5rem)] leading-none font-black tracking-normal break-words uppercase"
+                className="font-sans text-[clamp(2rem,7vw,5rem)] leading-none font-black tracking-normal wrap-break-word uppercase"
               >
                 Dictation Lab
               </h1>

@@ -1,11 +1,7 @@
 'use client'
 
-import { Eye, EyeOff, Play, RotateCcw } from 'lucide-react'
 import { useCallback, useEffect, useId, useRef } from 'react'
 
-import { MangaPanel } from '@/components/common/MangaPanel'
-import { IconButton } from '@/components/ui/IconButton'
-import { MangaButton } from '@/components/ui/MangaButton'
 import { cn } from '@/lib/utils'
 import {
   useYoutubeDictationPlayer,
@@ -54,7 +50,9 @@ declare global {
 
 interface PlayerController {
   canReplay: boolean
+  getCurrentTimeMs: () => number | null
   message: string
+  playFromMs: (startMs: number) => void
   replay: () => void
   status: YoutubeDictationPlayerState['status']
 }
@@ -65,7 +63,6 @@ interface Props {
   mockPlayer?: YoutubeDictationPlayerAdapter
   onControllerChange?: (controller: PlayerController) => void
   onHiddenChange: (hidden: boolean) => void
-  onReplay?: () => void
   playbackSpeed: number
   timing: SegmentTiming
   title: string
@@ -102,7 +99,6 @@ export function DictationYoutubePlayer({
   mockPlayer,
   onControllerChange,
   onHiddenChange,
-  onReplay,
   playbackSpeed,
   timing,
   title,
@@ -113,26 +109,37 @@ export function DictationYoutubePlayer({
   const {
     attachPlayer,
     canReplay,
+    getCurrentTimeMs,
     markBuffering,
     markError,
     markReady,
     message,
+    playFromMs,
     replay,
     status,
   } = useYoutubeDictationPlayer({ playbackSpeed, timing })
-  const replayWithTelemetry = useCallback(() => {
-    onReplay?.()
-    replay()
-  }, [onReplay, replay])
+  const toggleHidden = useCallback(() => {
+    onHiddenChange(!hidden)
+  }, [hidden, onHiddenChange])
 
   useEffect(() => {
     onControllerChange?.({
       canReplay,
+      getCurrentTimeMs,
       message,
-      replay: replayWithTelemetry,
+      playFromMs,
+      replay,
       status,
     })
-  }, [canReplay, message, onControllerChange, replayWithTelemetry, status])
+  }, [
+    canReplay,
+    getCurrentTimeMs,
+    message,
+    onControllerChange,
+    playFromMs,
+    replay,
+    status,
+  ])
 
   useEffect(() => {
     if (mockPlayer) {
@@ -190,32 +197,28 @@ export function DictationYoutubePlayer({
   ])
 
   return (
-    <MangaPanel
-      eyebrow="YouTube replay"
-      title="Segment player"
-      className={className}
-      action={
-        <IconButton
-          label={hidden ? 'Show video' : 'Hide video'}
-          onClick={() => onHiddenChange(!hidden)}
-        >
-          {hidden ? (
-            <Eye
-              aria-hidden="true"
-              className="size-5"
-            />
-          ) : (
-            <EyeOff
-              aria-hidden="true"
-              className="size-5"
-            />
-          )}
-        </IconButton>
-      }
+    <section
+      aria-label="Segment video player"
+      className={cn(
+        'border-manga-black bg-manga-white grid min-w-0 gap-3 border-2 p-3 shadow-[3px_3px_0_var(--manga-black)]',
+        className
+      )}
     >
+      <div className="flex min-w-0 items-center justify-between gap-3">
+        <span className="text-manga-ink-soft text-xs font-black uppercase">
+          Video
+        </span>
+        <button
+          type="button"
+          onClick={toggleHidden}
+          className="text-manga-ink-soft text-sm font-black underline underline-offset-4"
+        >
+          {hidden ? 'Show video' : 'Hide video'}
+        </button>
+      </div>
       <div
         className={cn(
-          'border-manga-black bg-manga-white relative grid min-h-64 overflow-hidden border-3 shadow-[4px_4px_0_var(--manga-black)]',
+          'border-manga-black bg-manga-white relative grid aspect-video overflow-hidden border-2',
           hidden && 'hidden'
         )}
       >
@@ -223,10 +226,10 @@ export function DictationYoutubePlayer({
           <div
             id={playerElementId}
             title={title}
-            className="min-h-64 w-full"
+            className="h-full min-h-56 w-full"
           />
         ) : (
-          <div className="grid min-h-64 place-items-center p-6 text-center font-black">
+          <div className="grid min-h-56 place-items-center p-6 text-center font-black">
             YouTube metadata is missing for this video.
           </div>
         )}
@@ -237,42 +240,6 @@ export function DictationYoutubePlayer({
           Video is hidden. Replay controls still work for timed segments.
         </div>
       ) : null}
-
-      <div className="flex min-w-0 flex-wrap items-center gap-3">
-        <MangaButton
-          type="button"
-          disabled={!canReplay}
-          onClick={replayWithTelemetry}
-          icon={
-            <RotateCcw
-              aria-hidden="true"
-              className="size-5"
-            />
-          }
-        >
-          Replay Sentence
-        </MangaButton>
-        <MangaButton
-          type="button"
-          tone="paper"
-          disabled={!canReplay}
-          onClick={replayWithTelemetry}
-          icon={
-            <Play
-              aria-hidden="true"
-              className="size-5"
-            />
-          }
-        >
-          Play Window
-        </MangaButton>
-        <span
-          role="status"
-          className="border-manga-black bg-manga-white min-h-10 min-w-0 border-2 px-3 py-2 text-sm font-black break-words shadow-[2px_2px_0_var(--manga-black)]"
-        >
-          {message}
-        </span>
-      </div>
-    </MangaPanel>
+    </section>
   )
 }

@@ -25,4 +25,6 @@ export const PAGE_TAG_TONES = {
   red: 'bg-manga-paper-soft text-manga-black',
   ink: 'bg-manga-black text-manga-white',
   pale: 'bg-manga-pale-red text-manga-black',
+  sky: 'bg-sky-100 text-sky-950',
+  yellow: 'bg-yellow-100 text-yellow-950',
 } as const

@@ -2,7 +2,10 @@ import { describe, expect, test } from 'vitest'
 
 import { setupDom } from '@/test/setupDom'
 
-import { shouldIgnoreDictationShortcut } from './shortcuts'
+import {
+  getDictationShortcutAction,
+  shouldIgnoreDictationShortcut,
+} from './shortcuts'
 
 setupDom()
 
@@ -23,5 +26,14 @@ describe('dictation shortcuts', () => {
     textarea.dataset.dictationShortcuts = 'allow'
 
     expect(shouldIgnoreDictationShortcut(textarea)).toBe(false)
+  })
+
+  test('maps Control key replay like DailyDictation', () => {
+    const event = new window.KeyboardEvent('keydown', {
+      ctrlKey: true,
+      key: 'Control',
+    })
+
+    expect(getDictationShortcutAction(event)).toBe('replay')
   })
 })

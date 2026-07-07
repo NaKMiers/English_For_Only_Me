@@ -33,6 +33,9 @@ export default async function DictationPage() {
     }),
     DictationVideoModel.find({
       ownerId,
+      status: {
+        $ne: 'archived',
+      },
     })
       .sort({ createdAt: -1 })
       .limit(12)

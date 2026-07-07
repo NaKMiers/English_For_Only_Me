@@ -31,11 +31,12 @@ export function shouldIgnoreDictationShortcut(target: EventTarget | null) {
   return role ? EDITABLE_ROLES.has(role) : false
 }
 
-function getShortcutAction(
+export function getDictationShortcutAction(
   event: KeyboardEvent
 ): DictationShortcutAction | null {
   const key = event.key.toLowerCase()
 
+  if (key === 'control' && event.ctrlKey && !event.repeat) return 'replay'
   if (event.ctrlKey && key === ' ') return 'replay'
   if (!event.ctrlKey && !event.metaKey && !event.altKey && key === 'enter')
     return 'check'
@@ -59,7 +60,7 @@ export function useDictationShortcuts({
     function handleKeyDown(event: KeyboardEvent) {
       if (shouldIgnoreDictationShortcut(event.target)) return
 
-      const action = getShortcutAction(event)
+      const action = getDictationShortcutAction(event)
 
       if (!action) return
 

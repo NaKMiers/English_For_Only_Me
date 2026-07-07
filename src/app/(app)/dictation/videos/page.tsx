@@ -1,9 +1,12 @@
 import type { Metadata } from 'next'
+import { Pencil } from 'lucide-react'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { MangaPageShell } from '@/components/common/MangaPageShell'
 import { MangaPanel } from '@/components/common/MangaPanel'
 import { QueueRow } from '@/components/common/QueueRow'
+import { DictationDeleteVideoButton } from '@/components/dictation/DictationDeleteVideoButton'
+import { DictationVideoThumbnail } from '@/components/dictation/DictationVideoThumbnail'
 import { MangaButton } from '@/components/ui/MangaButton'
 import { PageTag } from '@/components/ui/PageTag'
 import { hasMongoDbUri } from '@/constants/environments'
@@ -11,7 +14,12 @@ import { connectDatabase } from '@/lib/db/connectDatabase'
 import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
 import { toDictationVideoRecord } from '@/modules/dictation/services/dictationVideoRecords'
 import { getCurrentOwnerId } from '@/modules/dictation/services/getCurrentOwnerId'
+import {
+  getDictationStatusLabel,
+  getDictationStatusTone,
+} from '@/modules/dictation/statusDisplay'
 import type { DictationVideoApiRecord } from '@/modules/dictation/types'
+import { hasDictationTranscript } from '@/modules/dictation/videoReadiness'
 
 export const metadata: Metadata = {
   title: 'Saved Dictation Videos',
@@ -29,7 +37,7 @@ function formatVideoMeta(video: DictationVideoApiRecord) {
       ? 'transcript added'
       : 'needs transcript'
 
-  return `${segmentText} - ${transcriptText} - ${video.status}`
+  return `${segmentText} - ${transcriptText} - ${getDictationStatusLabel(video.status)}`
 }
 
 function VideoLibrary({
@@ -69,36 +77,73 @@ function VideoLibrary({
 
         {videos.length > 0 ? (
           <div className="grid gap-4 lg:grid-cols-2">
-            {videos.map(video => (
-              <MangaPanel
-                key={video.id}
-                eyebrow={video.status}
-                title={video.title}
-                action={<PageTag tone="red">Video</PageTag>}
-              >
-                <QueueRow
-                  title="Current state"
-                  meta={formatVideoMeta(video)}
-                  status={video.importStatus}
-                />
-                {video.importWarning ? (
-                  <p className="border-manga-black bg-manga-paper-soft border-2 p-3 text-sm leading-6 font-black shadow-[3px_3px_0_var(--manga-black)]">
-                    {video.importWarning}
-                  </p>
-                ) : null}
-                <div className="flex flex-wrap gap-3">
-                  <MangaButton href={`/dictation/videos/${video.id}/practice`}>
-                    Practice
-                  </MangaButton>
-                  <MangaButton
-                    href={`/dictation/videos/${video.id}/results`}
-                    tone="paper"
-                  >
-                    Results
-                  </MangaButton>
-                </div>
-              </MangaPanel>
-            ))}
+            {videos.map(video => {
+              const hasTranscript = hasDictationTranscript(video)
+
+              return (
+                <MangaPanel
+                  key={video.id}
+                  eyebrow={getDictationStatusLabel(video.status)}
+                  title={video.title}
+                  action={<PageTag tone="red">Video</PageTag>}
+                >
+                  <DictationVideoThumbnail
+                    title={video.title}
+                    thumbnailUrl={video.thumbnailUrl}
+                    youtubeVideoId={video.youtubeVideoId}
+                    sizes="(min-width: 1024px) 44vw, 100vw"
+                  />
+                  <QueueRow
+                    title="Current state"
+                    meta={formatVideoMeta(video)}
+                    status={getDictationStatusLabel(video.importStatus)}
+                    statusTone={getDictationStatusTone(video.importStatus)}
+                  />
+                  {video.importWarning ? (
+                    <p className="border-manga-black bg-manga-paper-soft border-2 p-3 text-sm leading-6 font-black shadow-[3px_3px_0_var(--manga-black)]">
+                      {video.importWarning}
+                    </p>
+                  ) : null}
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex flex-wrap gap-3">
+                      {hasTranscript ? (
+                        <>
+                          <MangaButton
+                            href={`/dictation/videos/${video.id}/practice`}
+                          >
+                            Practice
+                          </MangaButton>
+                          <MangaButton
+                            href={`/dictation/videos/${video.id}/results`}
+                            tone="paper"
+                          >
+                            Results
+                          </MangaButton>
+                        </>
+                      ) : null}
+                    </div>
+                    <div className="flex flex-wrap gap-3">
+                      <MangaButton
+                        href={`/dictation/videos/${video.id}/edit`}
+                        tone="paper"
+                        icon={
+                          <Pencil
+                            aria-hidden="true"
+                            className="size-5"
+                          />
+                        }
+                      >
+                        Edit
+                      </MangaButton>
+                      <DictationDeleteVideoButton
+                        title={video.title}
+                        videoId={video.id}
+                      />
+                    </div>
+                  </div>
+                </MangaPanel>
+              )
+            })}
           </div>
         ) : (
           <MangaPanel
@@ -139,6 +184,9 @@ export default async function Page() {
 
   const videos = await DictationVideoModel.find({
     ownerId,
+    status: {
+      $ne: 'archived',
+    },
   })
     .sort({ createdAt: -1 })
     .limit(60)

@@ -28,11 +28,11 @@ export function MangaPanel({
       )}
     >
       {eyebrow || title || action ? (
-        <CardHeader className="!flex min-w-0 flex-wrap items-start justify-between gap-3 rounded-none p-0">
+        <CardHeader className="flex! min-w-0 flex-wrap items-start justify-between gap-3 rounded-none p-0">
           <div className="grid min-w-0 gap-2">
             {eyebrow ? <PageTag tone="pale">{eyebrow}</PageTag> : null}
             {title ? (
-              <h2 className="font-sans text-2xl leading-none font-black tracking-normal break-words uppercase">
+              <h2 className="font-sans text-2xl leading-none font-black tracking-normal wrap-break-word uppercase">
                 {title}
               </h2>
             ) : null}

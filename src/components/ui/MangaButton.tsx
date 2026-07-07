@@ -49,7 +49,7 @@ export function MangaButton(props: Props) {
       {icon ? (
         <span className="grid size-5 shrink-0 place-items-center">{icon}</span>
       ) : null}
-      <span className="min-w-0 break-words">{children}</span>
+      <span className="min-w-0 wrap-break-word">{children}</span>
     </>
   )
 

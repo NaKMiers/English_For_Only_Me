@@ -45,10 +45,10 @@ export function MetricTile({
           </span>
         ) : null}
       </div>
-      <strong className="font-sans text-3xl leading-none font-black tracking-normal break-words">
+      <strong className="font-sans text-3xl leading-none font-black tracking-normal wrap-break-word">
         {value}
       </strong>
-      <div className="text-sm leading-5 font-semibold break-words">
+      <div className="text-sm leading-5 font-semibold wrap-break-word">
         {detail ? <p>{detail}</p> : null}
         {trend ? <p className="text-manga-red font-black">{trend}</p> : null}
       </div>

@@ -47,10 +47,10 @@ export function AppTopbar({
           className="border-manga-black bg-manga-white size-14 border-3 object-contain shadow-[4px_4px_0_var(--manga-black)]"
         />
         <span className="grid min-w-0 gap-1">
-          <strong className="font-sans text-[clamp(1.25rem,5vw,2rem)] leading-none font-black tracking-normal break-words uppercase sm:text-[clamp(1.3rem,2.4vw,2.1rem)]">
+          <strong className="font-sans text-[clamp(1.25rem,5vw,2rem)] leading-none font-black tracking-normal wrap-break-word uppercase sm:text-[clamp(1.3rem,2.4vw,2.1rem)]">
             {title}
           </strong>
-          <span className="text-manga-ink-soft text-sm leading-tight font-black break-words">
+          <span className="text-manga-ink-soft text-sm leading-tight font-black wrap-break-word">
             {subtitle}
           </span>
         </span>

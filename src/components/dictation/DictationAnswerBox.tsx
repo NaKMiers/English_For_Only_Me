@@ -2,7 +2,6 @@
 
 import { Check, Eye, SkipForward } from 'lucide-react'
 
-import { MangaPanel } from '@/components/common/MangaPanel'
 import { MangaButton } from '@/components/ui/MangaButton'
 import { Textarea } from '@/components/ui/textarea'
 
@@ -28,13 +27,17 @@ export function DictationAnswerBox({
   segmentText,
 }: Props) {
   return (
-    <MangaPanel
-      eyebrow="Answer"
-      title="Type what you hear"
-      className="shadow-[3px_3px_0_var(--manga-black)]"
+    <section
+      aria-label="Dictation answer"
+      className="border-manga-black bg-manga-white grid min-w-0 gap-3 border-2 p-3 shadow-[3px_3px_0_var(--manga-black)]"
     >
-      <div className="border-manga-black bg-manga-pale-red border-2 p-3 text-sm leading-6 font-black">
-        {revealed ? segmentText : 'Listen first. Reveal only when stuck.'}
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="font-sans text-lg leading-tight font-black tracking-normal">
+          Type what you hear
+        </h2>
+        <span className="text-manga-ink-soft text-xs font-black uppercase">
+          no transcript
+        </span>
       </div>
       <Textarea
         aria-label="Dictation answer"
@@ -42,9 +45,9 @@ export function DictationAnswerBox({
         value={answer}
         onChange={event => onAnswerChange(event.target.value)}
         placeholder="Type what you hear..."
-        className="border-manga-black bg-manga-white min-h-32 rounded-none border-3 text-base leading-7 font-semibold shadow-[3px_3px_0_var(--manga-black)]"
+        className="border-manga-black bg-manga-white min-h-36 rounded-none border-2 text-xl leading-8 font-semibold shadow-[2px_2px_0_var(--manga-black)]"
       />
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap gap-2">
         <MangaButton
           type="button"
           onClick={onCheck}
@@ -87,6 +90,11 @@ export function DictationAnswerBox({
           Skip
         </MangaButton>
       </div>
-    </MangaPanel>
+      {revealed ? (
+        <div className="border-manga-black bg-manga-paper-soft border-2 p-3 text-base leading-7 font-semibold shadow-[2px_2px_0_var(--manga-black)]">
+          {segmentText}
+        </div>
+      ) : null}
+    </section>
   )
 }

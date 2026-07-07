@@ -5,8 +5,8 @@ import { AppTopbar } from '@/components/common/AppTopbar'
 import { MangaPageShell } from '@/components/common/MangaPageShell'
 import { MangaPanel } from '@/components/common/MangaPanel'
 import { DictationDebriefPanel } from '@/components/dictation/DictationDebriefPanel'
-import { DictationReviewQueue } from '@/components/dictation/DictationReviewQueue'
 import { DictationResultsSummary } from '@/components/dictation/DictationResultsSummary'
+import { DictationReviewQueue } from '@/components/dictation/DictationReviewQueue'
 import { DictationStatsPanel } from '@/components/dictation/DictationStatsPanel'
 import { MangaButton } from '@/components/ui/MangaButton'
 import { hasMongoDbUri } from '@/constants/environments'
@@ -15,8 +15,10 @@ import { DictationDebriefModel } from '@/models/dictation/DictationDebriefModel'
 import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
 import { listDueReviewItemsForOwner } from '@/modules/dictation/review/reviewItemService'
 import { toDictationDebriefRecord } from '@/modules/dictation/services/dictationDebriefRecords'
+import { toDictationVideoRecord } from '@/modules/dictation/services/dictationVideoRecords'
 import { getCurrentOwnerId } from '@/modules/dictation/services/getCurrentOwnerId'
 import { getVideoStatsForOwner } from '@/modules/dictation/stats/videoStatsService'
+import { hasDictationTranscript } from '@/modules/dictation/videoReadiness'
 
 export const metadata: Metadata = {
   title: 'Dictation Results',
@@ -34,9 +36,11 @@ interface Props {
 function ResultsSetupState({
   message,
   title,
+  videoId,
 }: {
   message: string
   title: string
+  videoId?: string | null
 }) {
   return (
     <MangaPageShell
@@ -57,6 +61,11 @@ function ResultsSetupState({
           </p>
           <div className="flex flex-wrap gap-3">
             <MangaButton href="/dictation">Back To Dictation Lab</MangaButton>
+            {videoId ? (
+              <MangaButton href={`/dictation/videos/${videoId}/edit`}>
+                Add Transcript
+              </MangaButton>
+            ) : null}
             <MangaButton
               href="/dictation/import"
               tone="paper"
@@ -90,9 +99,23 @@ export default async function Page({ params }: Props) {
   const video = await DictationVideoModel.findOne({
     _id: videoId,
     ownerId,
+    status: {
+      $ne: 'archived',
+    },
   }).lean()
 
   if (!video) notFound()
+
+  const videoRecord = toDictationVideoRecord(video)
+
+  if (!hasDictationTranscript(videoRecord))
+    return (
+      <ResultsSetupState
+        title="Transcript is needed"
+        message="Attach an English transcript before opening results for this video."
+        videoId={videoId}
+      />
+    )
 
   const [stats, reviewItems, latestDebrief] = await Promise.all([
     getVideoStatsForOwner({
@@ -125,9 +148,11 @@ export default async function Page({ params }: Props) {
       <section className="grid gap-5 p-4 sm:p-6 lg:p-8">
         <DictationResultsSummary
           isEmpty={isEmpty}
+          thumbnailUrl={video.thumbnailUrl}
           title={video.title}
           videoId={videoId}
-          videoStatus={video.status}
+          videoStatus={videoRecord.status}
+          youtubeVideoId={video.youtubeVideoId}
         />
 
         {isEmpty ? (

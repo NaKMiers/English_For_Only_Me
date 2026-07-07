@@ -54,7 +54,7 @@ export function HomeTodayPanel({ dictationStats = null }: Props) {
               <span className="border-manga-black bg-manga-white grid size-8 place-items-center border-2 font-black">
                 {task.order}
               </span>
-              <strong className="font-sans text-base leading-tight font-black break-words uppercase">
+              <strong className="font-sans text-base leading-tight font-black wrap-break-word uppercase">
                 {task.title}
               </strong>
               <small className="text-manga-ink-soft text-sm leading-tight font-black">

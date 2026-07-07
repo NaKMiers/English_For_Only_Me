@@ -47,4 +47,30 @@ describe('parseTranscriptRequest', () => {
       },
     })
   })
+
+  test('accepts uploaded caption file text with timed cues', () => {
+    const result = parseTranscriptRequest({
+      videoId,
+      sourceType: 'captionFile',
+      rawText: `WEBVTT
+
+00:00:01.000 --> 00:00:02.500
+People often miss final sounds.
+
+00:00:03.000 --> 00:00:05.250
+That matters in IELTS listening.`,
+    })
+
+    expect(result).toMatchObject({
+      ok: true,
+      data: {
+        videoId,
+        normalized: {
+          sourceType: 'captionFile',
+          qualityStatus: 'ready',
+          cueCount: 2,
+        },
+      },
+    })
+  })
 })

@@ -27,7 +27,7 @@ function DebriefList({ items, title }: { items: string[]; title: string }) {
         {items.map(item => (
           <li
             key={item}
-            className="border-manga-black bg-manga-paper-soft border-2 p-2 text-sm leading-6 font-semibold break-words"
+            className="border-manga-black bg-manga-paper-soft border-2 p-2 text-sm leading-6 font-semibold wrap-break-word"
           >
             {item}
           </li>

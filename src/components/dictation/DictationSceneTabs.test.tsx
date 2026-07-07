@@ -1,6 +1,7 @@
 import { cleanup, fireEvent, render } from '@testing-library/react'
 import { afterEach, describe, expect, test } from 'vitest'
 
+import type { DictationVideoApiRecord } from '@/modules/dictation/types'
 import { setupDom } from '@/test/setupDom'
 
 import { DictationSceneTabs } from './DictationSceneTabs'
@@ -13,6 +14,42 @@ afterEach(() => {
 })
 
 describe('DictationSceneTabs', () => {
+  const importedVideo: DictationVideoApiRecord = {
+    activeTranscriptId: 'transcript-one',
+    channelTitle: 'TED-Ed',
+    collections: [],
+    completedSessionCount: 0,
+    createdAt: new Date('2026-01-01T00:00:00.000Z'),
+    defaultLanguage: 'en',
+    durationSeconds: 300,
+    id: 'video-one',
+    importStatus: 'metadataReady',
+    importWarning: null,
+    lastPracticedAt: null,
+    ownerId: 'owner-one',
+    purpose: 'ielts-listening',
+    sentenceCount: 40,
+    sourceType: 'youtube',
+    sourceUrl: 'https://www.youtube.com/watch?v=abc123abc12',
+    status: 'inProgress',
+    tags: [],
+    thumbnailUrl: 'https://i.ytimg.com/vi/abc123abc12/hqdefault.jpg',
+    title: 'How to study effectively',
+    transcriptStatus: 'manualAdded',
+    updatedAt: new Date('2026-01-01T00:00:00.000Z'),
+    youtubeUrl: 'https://www.youtube.com/watch?v=abc123abc12',
+    youtubeVideoId: 'abc123abc12',
+  }
+  const missingTranscriptVideo: DictationVideoApiRecord = {
+    ...importedVideo,
+    activeTranscriptId: null,
+    id: 'video-two',
+    sentenceCount: 0,
+    status: 'needsTranscript',
+    title: 'Needs transcript video',
+    transcriptStatus: 'manualNeeded',
+  }
+
   test('switches between Dictation scenes', () => {
     const view = render(<DictationSceneTabs />)
 
@@ -21,6 +58,7 @@ describe('DictationSceneTabs', () => {
         name: 'Choose a video. Turn it into practice.',
       })
     ).not.toBeNull()
+    expect(view.getByRole('link', { name: 'Saved Videos' })).not.toBeNull()
 
     fireEvent.click(view.getByRole('tab', { name: 'Practice' }))
 
@@ -62,6 +100,23 @@ describe('DictationSceneTabs', () => {
     expect((transcriptSource as HTMLTextAreaElement).value).toBe(
       'Manual transcript for a private IELTS video.'
     )
+  })
+
+  test('renders imported video statuses as user-facing labels', () => {
+    const view = render(<DictationSceneTabs videos={[importedVideo]} />)
+
+    expect(view.getByText('40 sentences - In Progress')).not.toBeNull()
+    expect(view.getByText('In Progress')).not.toBeNull()
+    expect(view.container.textContent).not.toContain('inProgress')
+  })
+
+  test('routes missing-transcript cards to transcript editing', () => {
+    const view = render(
+      <DictationSceneTabs videos={[missingTranscriptVideo]} />
+    )
+
+    expect(view.getByRole('link', { name: 'Add Transcript' })).not.toBeNull()
+    expect(view.queryByRole('link', { name: 'Open Results' })).toBeNull()
   })
 
   test('renders reachable Practice textarea and controls', () => {

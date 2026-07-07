@@ -135,7 +135,7 @@ export function DictationTranslation({
           aria-hidden="true"
           className="text-manga-red mt-1 size-5 shrink-0"
         />
-        <span className="min-w-0 break-words">
+        <span className="min-w-0 wrap-break-word">
           {isLoading
             ? 'Loading translation...'
             : currentError

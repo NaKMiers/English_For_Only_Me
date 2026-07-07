@@ -45,7 +45,7 @@ export default function DictationImportPage() {
               </p>
               <h1
                 id="dictation-import-title"
-                className="font-sans text-[clamp(2rem,7vw,4.75rem)] leading-none font-black tracking-normal break-words uppercase"
+                className="font-sans text-[clamp(2rem,7vw,4.75rem)] leading-none font-black tracking-normal wrap-break-word uppercase"
               >
                 Add Dictation Source
               </h1>

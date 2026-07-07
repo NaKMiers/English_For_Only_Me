@@ -63,22 +63,33 @@ export function useYoutubeDictationPlayer({
   timing: SegmentTiming
 }): YoutubeDictationPlayerState & {
   attachPlayer: (player: YoutubeDictationPlayerAdapter | null) => void
+  getCurrentTimeMs: () => number | null
   markBuffering: () => void
   markError: () => void
   markReady: () => void
+  playFromMs: (startMs: number) => void
 } {
   const playerRef = useRef<YoutubeDictationPlayerAdapter | null>(null)
-  const stopTimerRef = useRef<number | null>(null)
+  const stopIntervalRef = useRef<number | null>(null)
+  const stopTimeoutRef = useRef<number | null>(null)
   const [hasPlayer, setHasPlayer] = useState(false)
   const [status, setStatus] = useState<YoutubePlayerStatus>('idle')
-  const replayWindow = useMemo(() => getReplayWindow(timing), [timing])
+  const replayWindow = useMemo(
+    () => getReplayWindow(timing),
+    [timing.endMs, timing.startMs]
+  )
   const canReplay = Boolean(replayWindow && hasPlayer)
 
   const clearStopTimer = useCallback(() => {
-    if (!stopTimerRef.current) return
+    if (stopIntervalRef.current) {
+      window.clearInterval(stopIntervalRef.current)
+      stopIntervalRef.current = null
+    }
 
-    window.clearInterval(stopTimerRef.current)
-    stopTimerRef.current = null
+    if (stopTimeoutRef.current) {
+      window.clearTimeout(stopTimeoutRef.current)
+      stopTimeoutRef.current = null
+    }
   }, [])
 
   const attachPlayer = useCallback(
@@ -107,14 +118,50 @@ export function useYoutubeDictationPlayer({
     player.playVideo()
     setStatus('playing')
 
-    stopTimerRef.current = window.setInterval(() => {
-      if (player.getCurrentTime() < replayWindow.endSeconds) return
-
+    const stopPlayback = () => {
       player.pauseVideo()
       clearStopTimer()
       setStatus('ready')
+    }
+    const windowDurationMs =
+      ((replayWindow.endSeconds - replayWindow.startSeconds) * 1000) /
+      Math.max(playbackSpeed, 0.25)
+
+    stopIntervalRef.current = window.setInterval(() => {
+      if (player.getCurrentTime() < replayWindow.endSeconds) return
+
+      stopPlayback()
     }, 120)
+    stopTimeoutRef.current = window.setTimeout(
+      stopPlayback,
+      windowDurationMs + 350
+    )
   }, [clearStopTimer, playbackSpeed, replayWindow])
+
+  const playFromMs = useCallback(
+    (startMs: number) => {
+      const player = playerRef.current
+
+      if (!player) return
+
+      // Continuous playback (no stop timer) so the transcript can follow along
+      // like captions when the learner seeks from the full-transcript tab.
+      clearStopTimer()
+      player.seekTo(startMs / 1000, true)
+      player.setPlaybackRate?.(playbackSpeed)
+      player.playVideo()
+      setStatus('playing')
+    },
+    [clearStopTimer, playbackSpeed]
+  )
+
+  const getCurrentTimeMs = useCallback(() => {
+    const player = playerRef.current
+
+    if (!player) return null
+
+    return player.getCurrentTime() * 1000
+  }, [])
 
   const markBuffering = useCallback(() => setStatus('buffering'), [])
   const markError = useCallback(() => setStatus('error'), [])
@@ -129,6 +176,11 @@ export function useYoutubeDictationPlayer({
     player?.setPlaybackRate?.(playbackSpeed)
   }, [playbackSpeed])
 
+  useEffect(() => {
+    clearStopTimer()
+    playerRef.current?.pauseVideo()
+  }, [clearStopTimer, replayWindow])
+
   useEffect(
     () => () => {
       clearStopTimer()
@@ -139,6 +191,7 @@ export function useYoutubeDictationPlayer({
   return {
     attachPlayer,
     canReplay,
+    getCurrentTimeMs,
     markBuffering,
     markError,
     markReady,
@@ -147,6 +200,7 @@ export function useYoutubeDictationPlayer({
       replayWindow,
       status,
     }),
+    playFromMs,
     replay,
     status,
   }

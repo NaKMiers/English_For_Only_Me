@@ -140,7 +140,7 @@ export function HomeStudyDesk({ dictationStats = null }: Props) {
             <div className="grid min-w-0 gap-3">
               <h1
                 id="home-title"
-                className="font-sans text-[clamp(2.125rem,7vw,5.125rem)] leading-none font-black tracking-normal break-words uppercase"
+                className="font-sans text-[clamp(2.125rem,7vw,5.125rem)] leading-none font-black tracking-normal wrap-break-word uppercase"
               >
                 Your English training desk.
               </h1>
@@ -168,7 +168,7 @@ export function HomeStudyDesk({ dictationStats = null }: Props) {
             <div className="grid min-w-0 gap-2">
               <h2
                 id="side-title"
-                className="font-sans text-[clamp(1.75rem,4vw,2.75rem)] leading-none font-black tracking-normal break-words uppercase"
+                className="font-sans text-[clamp(1.75rem,4vw,2.75rem)] leading-none font-black tracking-normal wrap-break-word uppercase"
               >
                 IELTS path
               </h2>
