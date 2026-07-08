@@ -1,7 +1,14 @@
-import type { TranscriptPayload } from '@/modules/dictation/schemas/transcriptPayloadSchema'
 import type { DictationTranscriptApiRecord } from '@/modules/dictation/types'
 
 export const DICTATION_TRANSCRIPTS_API_PATH = '/api/dictation/transcripts'
+
+export interface DictationTranscriptPayload {
+  videoId: string
+  language?: string
+  role?: 'primary' | 'translation'
+  sourceType?: 'manualText' | 'manualTimedText' | 'captionFile'
+  rawText: string
+}
 
 interface DictationTranscriptResponse {
   transcript: DictationTranscriptApiRecord
@@ -21,7 +28,7 @@ async function readApiError(response: Response) {
 }
 
 export async function attachDictationTranscriptApi(
-  payload: TranscriptPayload,
+  payload: DictationTranscriptPayload,
   input: string = DICTATION_TRANSCRIPTS_API_PATH
 ) {
   const response = await fetch(input, {
@@ -36,4 +43,29 @@ export async function attachDictationTranscriptApi(
   if (!response.ok) throw new Error(await readApiError(response))
 
   return (await response.json()) as DictationTranscriptResponse
+}
+
+// Attach an alternate-language caption track (does not touch the English primary).
+export async function attachDictationTranslationTrackApi(
+  payload: Omit<DictationTranscriptPayload, 'role'>,
+  input: string = DICTATION_TRANSCRIPTS_API_PATH
+) {
+  return attachDictationTranscriptApi({ ...payload, role: 'translation' }, input)
+}
+
+export async function deleteDictationTranscriptApi(
+  transcriptId: string,
+  input: string = `${DICTATION_TRANSCRIPTS_API_PATH}/${transcriptId}`
+) {
+  const response = await fetch(input, {
+    method: 'DELETE',
+    cache: 'no-store',
+  })
+
+  if (!response.ok) throw new Error(await readApiError(response))
+
+  return (await response.json()) as {
+    deleted: boolean
+    transcriptId: string
+  }
 }

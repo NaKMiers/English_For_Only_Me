@@ -2,7 +2,6 @@ export const ENV_KEYS = {
   appOwnerId: 'APP_OWNER_ID',
   ieltsGoal: 'IELTS_GOAL',
   openAiDebriefModel: 'OPENAI_DEBRIEF_MODEL',
-  openAiTranslationModel: 'OPENAI_TRANSLATION_MODEL',
   mongoDbUri: 'MONGODB_URI',
   openAiApiKey: 'OPENAI_API_KEY',
   youtubeApiKey: 'YOUTUBE_API_KEY',
@@ -49,10 +48,6 @@ export function getOpenAiApiKey() {
 
 export function getOpenAiDebriefModel() {
   return getOptionalServerEnv(ENV_KEYS.openAiDebriefModel) ?? 'gpt-5.4-nano'
-}
-
-export function getOpenAiTranslationModel() {
-  return getOptionalServerEnv(ENV_KEYS.openAiTranslationModel) ?? 'gpt-5.4-nano'
 }
 
 export function getIeltsGoal() {

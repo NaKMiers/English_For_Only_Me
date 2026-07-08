@@ -79,4 +79,36 @@ describe('YouTube dictation player hook', () => {
     expect(result.current.status).toBe('error')
     expect(result.current.message).toContain('trouble loading')
   })
+
+  test('seekToMs preserves the play/pause state passed by the caller', () => {
+    const player: YoutubeDictationPlayerAdapter = {
+      getCurrentTime: vi.fn(() => 0),
+      pauseVideo: vi.fn(),
+      playVideo: vi.fn(),
+      seekTo: vi.fn(),
+      setPlaybackRate: vi.fn(),
+    }
+    const { result } = renderHook(() =>
+      useYoutubeDictationPlayer({
+        playbackSpeed: 1,
+        timing: { endMs: 5000, startMs: 1000 },
+      })
+    )
+
+    act(() => result.current.attachPlayer(player))
+
+    // Seeking while playing keeps the video playing from the new position.
+    act(() => result.current.seekToMs(39000, { play: true }))
+
+    expect(player.seekTo).toHaveBeenLastCalledWith(39, true)
+    expect(player.playVideo).toHaveBeenCalledTimes(1)
+    expect(result.current.status).toBe('playing')
+
+    // Seeking while paused moves the playhead but stays paused.
+    act(() => result.current.seekToMs(28000, { play: false }))
+
+    expect(player.seekTo).toHaveBeenLastCalledWith(28, true)
+    expect(player.pauseVideo).toHaveBeenCalledTimes(1)
+    expect(result.current.status).toBe('ready')
+  })
 })

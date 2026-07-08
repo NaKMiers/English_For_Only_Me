@@ -11,6 +11,7 @@ import { hasMongoDbUri } from '@/constants/environments'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { DictationSegmentModel } from '@/models/dictation/DictationSegmentModel'
 import { DictationSessionModel } from '@/models/dictation/DictationSessionModel'
+import { DictationTranscriptModel } from '@/models/dictation/DictationTranscriptModel'
 import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
 import { toDictationSegmentRecord } from '@/modules/dictation/services/dictationSegmentRecords'
 import { toDictationSessionRecord } from '@/modules/dictation/services/dictationSessionRecords'
@@ -147,6 +148,23 @@ export default async function Page({ params }: Props) {
     .sort({ lastActiveAt: -1 })
     .lean()
 
+  const trackDocuments = await DictationTranscriptModel.find({
+    ownerId,
+    videoId: video._id,
+    language: { $ne: video.defaultLanguage },
+    cueCount: { $gt: 0 },
+  })
+    .sort({ language: 1 })
+    .lean()
+  const translationTracks = trackDocuments.map(doc => ({
+    language: doc.language,
+    cues: (doc.rawCues ?? []).map(cue => ({
+      text: cue.text,
+      startMs: cue.startMs ?? null,
+      endMs: cue.endMs ?? null,
+    })),
+  }))
+
   return (
     <MangaPageShell
       topbar={
@@ -160,6 +178,7 @@ export default async function Page({ params }: Props) {
         <DictationPracticeShell
           initialSession={session ? toDictationSessionRecord(session) : null}
           segments={segments.map(toDictationSegmentRecord)}
+          translationTracks={translationTracks}
           video={videoRecord}
         />
       </section>

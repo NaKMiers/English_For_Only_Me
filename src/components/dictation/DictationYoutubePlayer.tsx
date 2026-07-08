@@ -42,6 +42,9 @@ declare global {
       Player: YoutubePlayerConstructor
       PlayerState?: {
         BUFFERING: number
+        ENDED: number
+        PAUSED: number
+        PLAYING: number
       }
     }
     onYouTubeIframeAPIReady?: () => void
@@ -54,6 +57,7 @@ interface PlayerController {
   message: string
   playFromMs: (startMs: number) => void
   replay: () => void
+  seekToMs: (startMs: number, options: { play: boolean }) => void
   status: YoutubeDictationPlayerState['status']
 }
 
@@ -112,15 +116,45 @@ export function DictationYoutubePlayer({
     getCurrentTimeMs,
     markBuffering,
     markError,
+    markPaused,
+    markPlaying,
     markReady,
     message,
     playFromMs,
     replay,
+    seekToMs,
     status,
   } = useYoutubeDictationPlayer({ playbackSpeed, timing })
   const toggleHidden = useCallback(() => {
     onHiddenChange(!hidden)
   }, [hidden, onHiddenChange])
+
+  const playerHandlersRef = useRef({
+    attachPlayer,
+    markBuffering,
+    markError,
+    markPaused,
+    markPlaying,
+    markReady,
+  })
+
+  useEffect(() => {
+    playerHandlersRef.current = {
+      attachPlayer,
+      markBuffering,
+      markError,
+      markPaused,
+      markPlaying,
+      markReady,
+    }
+  }, [
+    attachPlayer,
+    markBuffering,
+    markError,
+    markPaused,
+    markPlaying,
+    markReady,
+  ])
 
   useEffect(() => {
     onControllerChange?.({
@@ -129,6 +163,7 @@ export function DictationYoutubePlayer({
       message,
       playFromMs,
       replay,
+      seekToMs,
       status,
     })
   }, [
@@ -138,18 +173,19 @@ export function DictationYoutubePlayer({
     onControllerChange,
     playFromMs,
     replay,
+    seekToMs,
     status,
   ])
 
   useEffect(() => {
     if (mockPlayer) {
       playerRef.current = mockPlayer
-      attachPlayer(mockPlayer)
+      playerHandlersRef.current.attachPlayer(mockPlayer)
       return
     }
 
     if (!youtubeVideoId) {
-      attachPlayer(null)
+      playerHandlersRef.current.attachPlayer(null)
       return
     }
 
@@ -170,31 +206,35 @@ export function DictationYoutubePlayer({
           },
           events: {
             onReady: event => {
-              attachPlayer(event.target)
-              markReady()
+              playerHandlersRef.current.attachPlayer(event.target)
+              playerHandlersRef.current.markReady()
             },
             onStateChange: event => {
-              if (event.data === window.YT?.PlayerState?.BUFFERING)
-                markBuffering()
+              const playerState = window.YT?.PlayerState
+
+              // Mirror the real YouTube player state so the transcript and
+              // segment counter follow the playhead no matter how playback
+              // started — including the native play/pause button.
+              if (event.data === playerState?.BUFFERING)
+                playerHandlersRef.current.markBuffering()
+              else if (event.data === playerState?.PLAYING)
+                playerHandlersRef.current.markPlaying()
+              else if (
+                event.data === playerState?.PAUSED ||
+                event.data === playerState?.ENDED
+              )
+                playerHandlersRef.current.markPaused()
             },
-            onError: () => markError(),
+            onError: () => playerHandlersRef.current.markError(),
           },
         })
       })
-      .catch(() => markError())
+      .catch(() => playerHandlersRef.current.markError())
 
     return () => {
       isMounted = false
     }
-  }, [
-    attachPlayer,
-    markBuffering,
-    markError,
-    markReady,
-    mockPlayer,
-    playerElementId,
-    youtubeVideoId,
-  ])
+  }, [mockPlayer, playerElementId, youtubeVideoId])
 
   return (
     <section

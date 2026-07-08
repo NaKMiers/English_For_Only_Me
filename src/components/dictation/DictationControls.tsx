@@ -1,8 +1,9 @@
 'use client'
 
-import { ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Eye, EyeOff, RotateCcw } from 'lucide-react'
 
 import { IconButton } from '@/components/ui/IconButton'
+import { MangaButton } from '@/components/ui/MangaButton'
 import { cn } from '@/lib/utils'
 import { PLAYBACK_SPEED_OPTIONS } from '@/modules/dictation/preferences/dictationPreferences'
 
@@ -18,8 +19,6 @@ interface Props {
   onSpeedChange: (speed: number) => void
   onToggleVideo: () => void
   playbackSpeed: number
-  replayMessage: string
-  showShortcuts: boolean
   totalSegments: number
 }
 
@@ -28,15 +27,13 @@ export function DictationControls({
   canGoPrevious,
   canReplay,
   currentIndex,
-  isVideoHidden: _isVideoHidden,
+  isVideoHidden,
   onGoNext,
   onGoPrevious,
   onReplay,
   onSpeedChange,
-  onToggleVideo: _onToggleVideo,
+  onToggleVideo,
   playbackSpeed,
-  replayMessage,
-  showShortcuts,
   totalSegments,
 }: Props) {
   return (
@@ -105,20 +102,27 @@ export function DictationControls({
         ))}
       </div>
 
-      <span
-        role="status"
-        className="text-manga-ink-soft min-w-48 flex-1 text-sm leading-5 font-semibold wrap-break-word"
+      <MangaButton
+        type="button"
+        tone="paper"
+        className="ml-auto"
+        onClick={onToggleVideo}
+        icon={
+          isVideoHidden ? (
+            <Eye
+              aria-hidden="true"
+              className="size-5"
+            />
+          ) : (
+            <EyeOff
+              aria-hidden="true"
+              className="size-5"
+            />
+          )
+        }
       >
-        {replayMessage}
-      </span>
-
-      {showShortcuts ? (
-        <div className="text-manga-ink-soft flex flex-wrap gap-2 text-xs font-black">
-          <span>Ctrl replay</span>
-          <span>Enter check</span>
-          <span>Alt arrows move</span>
-        </div>
-      ) : null}
+        {isVideoHidden ? 'Show Video' : 'Hide Video'}
+      </MangaButton>
     </div>
   )
 }

@@ -16,6 +16,8 @@ interface Props {
   onSelectSegment: (segment: DictationSegmentApiRecord) => void
   playingSegmentId: string | null
   segments: DictationSegmentApiRecord[]
+  // segmentId -> translated caption in the selected language (bilingual view).
+  translations?: Record<string, string>
 }
 
 const STATUS_META: Record<
@@ -57,6 +59,7 @@ export function DictationFullTranscript({
   onSelectSegment,
   playingSegmentId,
   segments,
+  translations,
 }: Props) {
   const activeItemRef = useRef<HTMLButtonElement | null>(null)
   const highlightedId = playingSegmentId ?? currentSegmentId
@@ -86,6 +89,7 @@ export function DictationFullTranscript({
           const isHighlighted = segment.id === highlightedId
           const statusMeta = STATUS_META[segment.attemptStatus]
           const timestamp = formatTimestamp(segment.startMs)
+          const translation = translations?.[segment.id]?.trim()
 
           return (
             <li key={segment.id}>
@@ -132,6 +136,11 @@ export function DictationFullTranscript({
                   <span className="text-manga-black min-w-0 text-base leading-6 font-semibold wrap-break-word">
                     {segment.text}
                   </span>
+                  {translation ? (
+                    <span className="text-manga-red border-manga-black/30 min-w-0 border-l-2 pl-2 text-sm leading-6 font-semibold wrap-break-word italic">
+                      {translation}
+                    </span>
+                  ) : null}
                 </span>
               </button>
             </li>

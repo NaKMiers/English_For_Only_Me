@@ -66,8 +66,11 @@ export function useYoutubeDictationPlayer({
   getCurrentTimeMs: () => number | null
   markBuffering: () => void
   markError: () => void
+  markPaused: () => void
+  markPlaying: () => void
   markReady: () => void
   playFromMs: (startMs: number) => void
+  seekToMs: (startMs: number, options: { play: boolean }) => void
 } {
   const playerRef = useRef<YoutubeDictationPlayerAdapter | null>(null)
   const stopIntervalRef = useRef<number | null>(null)
@@ -155,6 +158,31 @@ export function useYoutubeDictationPlayer({
     [clearStopTimer, playbackSpeed]
   )
 
+  const seekToMs = useCallback(
+    (startMs: number, options: { play: boolean }) => {
+      const player = playerRef.current
+
+      if (!player) return
+
+      // Seek without the windowed stop timer so playback continues freely from
+      // the new position. The caller passes the desired play state so the video
+      // keeps playing or stays paused exactly as it was before the seek — even
+      // from the cued/unstarted state, where a bare seekTo would auto-play.
+      clearStopTimer()
+      player.seekTo(startMs / 1000, true)
+      player.setPlaybackRate?.(playbackSpeed)
+
+      if (options.play) {
+        player.playVideo()
+        setStatus('playing')
+      } else {
+        player.pauseVideo()
+        setStatus(replayWindow ? 'ready' : 'missingTiming')
+      }
+    },
+    [clearStopTimer, playbackSpeed, replayWindow]
+  )
+
   const getCurrentTimeMs = useCallback(() => {
     const player = playerRef.current
 
@@ -165,6 +193,11 @@ export function useYoutubeDictationPlayer({
 
   const markBuffering = useCallback(() => setStatus('buffering'), [])
   const markError = useCallback(() => setStatus('error'), [])
+  const markPlaying = useCallback(() => setStatus('playing'), [])
+  const markPaused = useCallback(
+    () => setStatus(replayWindow ? 'ready' : 'missingTiming'),
+    [replayWindow]
+  )
   const markReady = useCallback(
     () => setStatus(replayWindow ? 'ready' : 'missingTiming'),
     [replayWindow]
@@ -194,6 +227,8 @@ export function useYoutubeDictationPlayer({
     getCurrentTimeMs,
     markBuffering,
     markError,
+    markPaused,
+    markPlaying,
     markReady,
     message: getYoutubeReplayMessage({
       hasPlayer,
@@ -202,6 +237,7 @@ export function useYoutubeDictationPlayer({
     }),
     playFromMs,
     replay,
+    seekToMs,
     status,
   }
 }

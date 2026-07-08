@@ -62,10 +62,6 @@ export type DictationReviewItemReason =
 export type DictationReviewItemStatus =
   'completed' | 'dismissed' | 'due' | 'scheduled'
 
-export type DictationTranslationProvider = 'none' | 'openai'
-
-export type DictationTranslationStatus = 'edited' | 'failed' | 'ready'
-
 export type DictationDebriefStatus = 'failed' | 'pending' | 'ready'
 
 export interface DictationDebriefVocabularyRecord {
@@ -283,20 +279,6 @@ export interface DictationReviewItemApiRecord {
   dueAt: Date
   lastReviewedAt: Date | null
   statsSnapshot: DictationReviewStatsSnapshotRecord
-  createdAt: Date
-  updatedAt: Date
-}
-
-export interface DictationTranslationApiRecord {
-  id: string
-  ownerId: string
-  segmentId: string
-  targetLanguage: string
-  sourceHash: string
-  text: string
-  provider: DictationTranslationProvider
-  status: DictationTranslationStatus
-  unavailableReason: string | null
   createdAt: Date
   updatedAt: Date
 }

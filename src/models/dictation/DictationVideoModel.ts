@@ -1,8 +1,8 @@
 import 'server-only'
 
 import {
-  models,
   model,
+  models,
   Schema,
   type InferSchemaType,
   type Model,

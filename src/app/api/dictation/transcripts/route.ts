@@ -1,7 +1,9 @@
+import { Types } from 'mongoose'
 import { NextResponse } from 'next/server'
 
 import { MissingEnvironmentError } from '@/constants/environments'
 import { connectDatabase } from '@/lib/db/connectDatabase'
+import { DictationSegmentModel } from '@/models/dictation/DictationSegmentModel'
 import { DictationTranscriptModel } from '@/models/dictation/DictationTranscriptModel'
 import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
 import { toDictationTranscriptRecord } from '@/modules/dictation/services/dictationTranscriptRecords'
@@ -17,6 +19,35 @@ export const runtime = 'nodejs'
 
 function jsonError(decision: ApiErrorDecision) {
   return NextResponse.json(decision.body, { status: decision.status })
+}
+
+// Enforce one transcript per (video, language): when a new source transcript
+// wins, delete any older same-language transcripts and their orphaned segments
+// so re-uploading English overwrites instead of accumulating dead rows.
+async function pruneSupersededTranscripts(
+  ownerId: string,
+  videoId: Types.ObjectId,
+  keepId: Types.ObjectId,
+  language: string
+) {
+  const superseded = await DictationTranscriptModel.find({
+    ownerId,
+    videoId,
+    language,
+    _id: { $ne: keepId },
+  })
+    .select('_id')
+    .lean()
+
+  if (superseded.length === 0) return
+
+  const ids = superseded.map(item => item._id)
+
+  await DictationSegmentModel.deleteMany({
+    ownerId,
+    transcriptId: { $in: ids },
+  })
+  await DictationTranscriptModel.deleteMany({ _id: { $in: ids } })
 }
 
 function toTranscriptError(error: unknown): ApiErrorDecision {
@@ -82,6 +113,55 @@ export async function POST(request: Request) {
         },
       })
 
+    // Translation caption track: attach an alternate-language transcript without
+    // touching the English primary (no activeTranscriptId change, no segments).
+    if (parsed.data.role === 'translation') {
+      const existingTrack = await DictationTranscriptModel.findOne({
+        ownerId,
+        videoId: video._id,
+        sourceHash: parsed.data.normalized.sourceHash,
+      })
+
+      if (existingTrack)
+        return NextResponse.json({
+          transcript: toDictationTranscriptRecord(existingTrack.toObject()),
+          videoId: String(video._id),
+        })
+
+      // One track per language: replacing a language's captions removes the old
+      // file so practice never sees two tracks for the same language.
+      await DictationTranscriptModel.deleteMany({
+        ownerId,
+        videoId: video._id,
+        language: parsed.data.normalized.language,
+        isActive: false,
+      })
+
+      const track = await DictationTranscriptModel.create({
+        ownerId,
+        videoId: video._id,
+        sourceType: parsed.data.normalized.sourceType,
+        language: parsed.data.normalized.language,
+        isActive: false,
+        rawText: parsed.data.normalized.normalizedText,
+        rawCues: parsed.data.normalized.rawCues,
+        sourceHash: parsed.data.normalized.sourceHash,
+        qualityStatus: parsed.data.normalized.qualityStatus,
+        qualityFlags: parsed.data.normalized.qualityFlags,
+        cueCount: parsed.data.normalized.cueCount,
+        segmentCount: 0,
+        createdBy: 'manual',
+      })
+
+      return NextResponse.json(
+        {
+          transcript: toDictationTranscriptRecord(track.toObject()),
+          videoId: String(video._id),
+        },
+        { status: 201 }
+      )
+    }
+
     const existingTranscript = await DictationTranscriptModel.findOne({
       ownerId,
       videoId: video._id,
@@ -101,6 +181,13 @@ export async function POST(request: Request) {
       video.transcriptStatus = 'manualAdded'
       video.status = 'transcriptReady'
       await video.save()
+
+      await pruneSupersededTranscripts(
+        ownerId,
+        video._id,
+        existingTranscript._id,
+        parsed.data.normalized.language
+      )
 
       return NextResponse.json({
         transcript: toDictationTranscriptRecord(existingTranscript.toObject()),
@@ -133,6 +220,13 @@ export async function POST(request: Request) {
     video.transcriptStatus = 'manualAdded'
     video.status = 'transcriptReady'
     await video.save()
+
+    await pruneSupersededTranscripts(
+      ownerId,
+      video._id,
+      transcript._id,
+      parsed.data.normalized.language
+    )
 
     return NextResponse.json(
       {

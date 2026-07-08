@@ -12,6 +12,9 @@ export const transcriptPayloadSchema = z
         'Select a saved video before adding transcript.'
       ),
     language: z.string().trim().min(2).max(12).optional().default('en'),
+    // 'primary' is the English source that drives segments; 'translation' is an
+    // alternate-language caption track shown during practice.
+    role: z.enum(['primary', 'translation']).optional().default('primary'),
     sourceType: z
       .enum(['manualText', 'manualTimedText', 'captionFile'])
       .optional(),

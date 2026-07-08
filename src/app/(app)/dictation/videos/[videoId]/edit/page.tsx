@@ -7,7 +7,9 @@ import { DictationImportForm } from '@/components/dictation/DictationImportForm'
 import { PageTag } from '@/components/ui/PageTag'
 import { hasMongoDbUri } from '@/constants/environments'
 import { connectDatabase } from '@/lib/db/connectDatabase'
+import { DictationTranscriptModel } from '@/models/dictation/DictationTranscriptModel'
 import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
+import { toDictationTranscriptRecord } from '@/modules/dictation/services/dictationTranscriptRecords'
 import { toDictationVideoRecord } from '@/modules/dictation/services/dictationVideoRecords'
 import { getCurrentOwnerId } from '@/modules/dictation/services/getCurrentOwnerId'
 
@@ -82,6 +84,14 @@ export default async function Page({ params }: Props) {
 
   if (!video) notFound()
 
+  const trackDocuments = await DictationTranscriptModel.find({
+    ownerId,
+    videoId: video._id,
+  })
+    .sort({ language: 1 })
+    .lean()
+  const tracks = trackDocuments.map(toDictationTranscriptRecord)
+
   return (
     <MangaPageShell
       topbar={
@@ -117,6 +127,12 @@ export default async function Page({ params }: Props) {
 
           <div className="p-4 sm:p-5">
             <DictationImportForm
+              initialActiveTranscriptId={
+                video.activeTranscriptId
+                  ? String(video.activeTranscriptId)
+                  : null
+              }
+              initialTracks={tracks}
               initialVideo={toDictationVideoRecord(video)}
               mode="edit"
             />

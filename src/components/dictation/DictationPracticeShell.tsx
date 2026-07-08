@@ -7,6 +7,7 @@ import { DictationAnswerBox } from '@/components/dictation/DictationAnswerBox'
 import { DictationControls } from '@/components/dictation/DictationControls'
 import { DictationFeedback } from '@/components/dictation/DictationFeedback'
 import { DictationFullTranscript } from '@/components/dictation/DictationFullTranscript'
+import { DictationPracticeHeader } from '@/components/dictation/DictationPracticeHeader'
 import { DictationTranslation } from '@/components/dictation/DictationTranslation'
 import { DictationYoutubePlayer } from '@/components/dictation/DictationYoutubePlayer'
 import { MangaButton } from '@/components/ui/MangaButton'
@@ -16,6 +17,10 @@ import {
   createLocalDictationAttempt,
 } from '@/modules/dictation/correction'
 import type { YoutubePlayerStatus } from '@/modules/dictation/player/useYoutubeDictationPlayer'
+import {
+  resolveCaptionForWindow,
+  type CaptionCue,
+} from '@/modules/dictation/translations/captionOverlap'
 import {
   readDictationAnswerDrafts,
   useDictationPreferences,
@@ -42,12 +47,19 @@ interface PlayerController {
   message: string
   playFromMs: (startMs: number) => void
   replay: () => void
+  seekToMs: (startMs: number, options: { play: boolean }) => void
   status: YoutubePlayerStatus
+}
+
+interface TranslationTrack {
+  cues: CaptionCue[]
+  language: string
 }
 
 interface Props {
   initialSession: DictationSessionApiRecord | null
   segments: DictationSegmentApiRecord[]
+  translationTracks: TranslationTrack[]
   video: DictationVideoApiRecord
 }
 
@@ -77,14 +89,18 @@ function createIdempotencyKey() {
 }
 
 const PRACTICE_TAB_TRIGGER_CLASS_NAME =
-  'border-manga-black text-manga-ink-soft bg-manga-white shadow-[2px_2px_0_var(--manga-black)] hover:bg-manga-paper-soft focus-visible:ring-manga-red/35 data-active:bg-manga-red data-active:text-manga-white data-active:shadow-[5px_5px_0_var(--manga-black)] data-active:-translate-x-[2px] data-active:-translate-y-[2px] !h-auto min-h-11 flex-1 rounded-none border-3 px-3 py-2 font-sans text-sm font-black transition-all after:hidden sm:flex-none'
+  'border-manga-black text-manga-ink-soft bg-manga-white shadow-[2px_2px_0_var(--manga-black)] hover:bg-manga-paper-soft focus-visible:ring-manga-red/35 data-active:bg-manga-red! data-active:text-manga-white! data-active:shadow-[5px_5px_0_var(--manga-black)]! data-active:-translate-x-[2px] data-active:-translate-y-[2px] !h-auto min-h-11 flex-1 rounded-none border-3 px-3 py-2 font-sans text-sm font-black transition-all after:hidden sm:flex-none'
 
 export function DictationPracticeShell({
   initialSession,
   segments,
+  translationTracks,
   video,
 }: Props) {
   const [session, setSession] = useState(initialSession)
+  const [selectedLanguage, setSelectedLanguage] = useState(
+    () => translationTracks[0]?.language ?? ''
+  )
   const [sessionMode, setSessionMode] = useState<'resume' | 'start' | null>(
     initialSession ? 'resume' : null
   )
@@ -117,6 +133,7 @@ export function DictationPracticeShell({
     message: 'YouTube player is loading.',
     playFromMs: () => undefined,
     replay: () => undefined,
+    seekToMs: () => undefined,
     status: 'idle',
   })
   const { preferences, setPreferences } = useDictationPreferences(
@@ -144,19 +161,52 @@ export function DictationPracticeShell({
     (completedAttempt && currentAttempt?.segmentId) ||
     (completedCurrentSegment && currentSegment?.id)
   )
+  const selectedTrack =
+    translationTracks.find(track => track.language === selectedLanguage) ?? null
+  const translationSegment = translationSegmentId
+    ? (segments.find(segment => segment.id === translationSegmentId) ?? null)
+    : null
+  const translationText =
+    isTranslationUnlocked && selectedTrack && translationSegment
+      ? resolveCaptionForWindow(
+          selectedTrack.cues,
+          translationSegment.startMs,
+          translationSegment.endMs
+        )
+      : ''
+  // Bilingual full-transcript view: every sentence's caption in the selected
+  // language, matched by time overlap. Shown regardless of the effort gate since
+  // the full transcript already reveals everything.
+  const transcriptTranslations = useMemo(() => {
+    const map: Record<string, string> = {}
+
+    if (!selectedTrack) return map
+
+    for (const segment of segments)
+      map[segment.id] = resolveCaptionForWindow(
+        selectedTrack.cues,
+        segment.startMs,
+        segment.endMs
+      )
+
+    return map
+  }, [selectedTrack, segments])
   const canGoPrevious = currentIndex > 0
   const canGoNext = currentIndex < segments.length - 1
-  // While the video is playing, the segment counter and transcript highlight
-  // track the caption under the playhead; otherwise they follow the practice
-  // cursor. Changing the practice cursor mid-playback would pause the video.
   const isPlaying = playerController.status === 'playing'
-  const activePlaybackSegment =
-    isPlaying && activePlaybackIndex !== null
-      ? (segments[activePlaybackIndex] ?? null)
-      : null
-  const displayIndex = activePlaybackSegment
-    ? activePlaybackIndex!
-    : currentIndex
+  // The segment counter and transcript highlight track a single "active caption"
+  // so they stay in sync with the video. On the transcript tab the learner
+  // scrubs playback freely, so the active caption follows the playhead (updated
+  // while playing) and any manual seek. On the practice tab it follows the
+  // dictation cursor, since navigating there swaps the segment being typed.
+  const activeCaptionIndex =
+    activeView === 'transcript'
+      ? (activePlaybackIndex ?? currentIndex)
+      : currentIndex
+  const activeCaptionSegment = segments[activeCaptionIndex] ?? null
+  const displayIndex = activeCaptionIndex
+  const canGoToPreviousCaption = activeCaptionIndex > 0
+  const canGoToNextCaption = activeCaptionIndex < segments.length - 1
 
   const replayCurrentSegment = useCallback(() => {
     if (!currentSegment) return
@@ -287,6 +337,34 @@ export function DictationPracticeShell({
   const goPrevious = useCallback(() => {
     if (canGoPrevious) goToIndex(currentIndex - 1)
   }, [canGoPrevious, currentIndex, goToIndex])
+
+  // Transcript-tab navigation: seek the video to a caption and mark it active,
+  // without touching the dictation cursor (which would swap the replay window
+  // and pause the video). Playback continues or stays paused exactly as it was.
+  const goToCaption = useCallback(
+    (nextIndex: number) => {
+      const safeIndex = clampIndex(nextIndex, segments.length)
+      const segment = segments[safeIndex]
+
+      if (!segment) return
+
+      setActivePlaybackIndex(safeIndex)
+
+      if (segment.startMs !== null)
+        playerController.seekToMs(segment.startMs, { play: isPlaying })
+    },
+    [isPlaying, playerController, segments]
+  )
+
+  const handleControlsGoPrevious = useCallback(() => {
+    if (activeView === 'transcript') goToCaption(activeCaptionIndex - 1)
+    else goPrevious()
+  }, [activeCaptionIndex, activeView, goToCaption, goPrevious])
+
+  const handleControlsGoNext = useCallback(() => {
+    if (activeView === 'transcript') goToCaption(activeCaptionIndex + 1)
+    else goNext()
+  }, [activeCaptionIndex, activeView, goNext, goToCaption])
 
   const toggleVideo = useCallback(() => {
     const nextValue = !preferences.isVideoHidden
@@ -452,32 +530,28 @@ export function DictationPracticeShell({
   return (
     <div className="mx-auto grid w-full max-w-6xl min-w-0 gap-4">
       <section className="border-manga-black bg-manga-white grid min-w-0 gap-3 border-3 p-3 shadow-[5px_5px_0_var(--manga-black)] sm:p-4">
-        <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
-          <div className="grid min-w-0 gap-1">
-            <span className="text-manga-red text-xs font-black tracking-normal uppercase">
-              {sessionMode === 'resume' ? 'Resume dictation' : 'Dictation'}
-            </span>
-            <h1 className="font-sans text-2xl leading-tight font-black tracking-normal wrap-break-word sm:text-3xl">
-              {video.title}
-            </h1>
-          </div>
-          <DictationControls
-            canGoNext={canGoNext}
-            canGoPrevious={canGoPrevious}
-            canReplay={playerController.canReplay}
-            currentIndex={displayIndex}
-            isVideoHidden={preferences.isVideoHidden}
-            onGoNext={goNext}
-            onGoPrevious={goPrevious}
-            onReplay={replayCurrentSegment}
-            onSpeedChange={changeSpeed}
-            onToggleVideo={toggleVideo}
-            playbackSpeed={preferences.playbackSpeed}
-            replayMessage={playerController.message}
-            showShortcuts={preferences.showShortcuts}
-            totalSegments={segments.length}
-          />
-        </div>
+        <DictationPracticeHeader
+          eyebrow={sessionMode === 'resume' ? 'Resume dictation' : 'Dictation'}
+          title={video.title}
+          translationLanguages={translationTracks.map(track => track.language)}
+          translationLanguage={selectedLanguage}
+          onTranslationLanguageChange={setSelectedLanguage}
+        />
+
+        <DictationControls
+          canGoNext={canGoToNextCaption}
+          canGoPrevious={canGoToPreviousCaption}
+          canReplay={playerController.canReplay}
+          currentIndex={displayIndex}
+          isVideoHidden={preferences.isVideoHidden}
+          onGoNext={handleControlsGoNext}
+          onGoPrevious={handleControlsGoPrevious}
+          onReplay={replayCurrentSegment}
+          onSpeedChange={changeSpeed}
+          onToggleVideo={toggleVideo}
+          playbackSpeed={preferences.playbackSpeed}
+          totalSegments={segments.length}
+        />
 
         <div className="grid min-w-0 items-start gap-3 lg:grid-cols-[minmax(0,1.08fr)_minmax(320px,0.92fr)]">
           <DictationYoutubePlayer
@@ -547,11 +621,13 @@ export function DictationPracticeShell({
 
               <DictationFeedback attempt={currentAttempt} />
 
-              <DictationTranslation
-                key={translationSegmentId ?? 'locked-translation'}
-                isUnlocked={isTranslationUnlocked}
-                segmentId={translationSegmentId ?? null}
-              />
+              {translationTracks.length > 0 && selectedLanguage ? (
+                <DictationTranslation
+                  isUnlocked={isTranslationUnlocked}
+                  language={selectedLanguage}
+                  text={translationText}
+                />
+              ) : null}
             </TabsContent>
 
             <TabsContent
@@ -562,11 +638,15 @@ export function DictationPracticeShell({
                 currentSegmentId={currentSegment.id}
                 isActive={activeView === 'transcript'}
                 onSelectSegment={segment => {
-                  if (segment.startMs !== null)
-                    playerController.playFromMs(segment.startMs)
+                  const index = segments.findIndex(
+                    item => item.id === segment.id
+                  )
+
+                  if (index >= 0) goToCaption(index)
                 }}
-                playingSegmentId={activePlaybackSegment?.id ?? null}
+                playingSegmentId={activeCaptionSegment?.id ?? null}
                 segments={segments}
+                translations={transcriptTranslations}
               />
             </TabsContent>
           </Tabs>
@@ -581,30 +661,41 @@ export function DictationPracticeShell({
           </div>
         ) : null}
 
-        <footer className="flex flex-wrap items-center justify-between gap-3">
+        <footer className="grid gap-2">
           <p className="text-manga-ink-soft min-w-0 text-sm leading-6 font-semibold">
             {sessionError ??
               (currentSegment.startMs === null || currentSegment.endMs === null
                 ? 'Untimed segment. Use the normal player controls, then type.'
-                : `Sentence ${currentIndex + 1} of ${segments.length}. Press Ctrl to replay this sentence.`)}
+                : `Sentence ${currentIndex + 1} of ${segments.length}. Replay uses this segment's timestamp window.`)}
           </p>
-          <label className="flex items-center gap-2 text-sm font-black">
-            <input
-              type="checkbox"
-              checked={preferences.showShortcuts}
-              onChange={event => {
-                const showShortcuts = event.target.checked
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            {preferences.showShortcuts ? (
+              <div className="text-manga-ink-soft flex flex-wrap gap-x-3 gap-y-1 text-xs font-black">
+                <span>Ctrl · replay</span>
+                <span>Enter · check</span>
+                <span>Alt + arrows · move</span>
+              </div>
+            ) : (
+              <span />
+            )}
+            <label className="flex items-center gap-2 text-sm font-black">
+              <input
+                type="checkbox"
+                checked={preferences.showShortcuts}
+                onChange={event => {
+                  const showShortcuts = event.target.checked
 
-                setPreferences(currentPreferences => ({
-                  ...currentPreferences,
-                  showShortcuts,
-                }))
-                patchSession({ showShortcuts })
-              }}
-              className="border-manga-black size-5 border-2"
-            />
-            Show shortcut hints
-          </label>
+                  setPreferences(currentPreferences => ({
+                    ...currentPreferences,
+                    showShortcuts,
+                  }))
+                  patchSession({ showShortcuts })
+                }}
+                className="border-manga-black size-5 border-2"
+              />
+              Show shortcut hints
+            </label>
+          </div>
         </footer>
       </section>
     </div>

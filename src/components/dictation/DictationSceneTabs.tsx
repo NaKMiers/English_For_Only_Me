@@ -46,8 +46,9 @@ export function DictationSceneTabs({
               key={item.key}
               value={item.key}
               className={cn(
-                'border-manga-black bg-manga-white data-active:bg-manga-paper-soft text-manga-black !h-auto min-h-11 flex-1 rounded-none border-3 px-2 py-2 font-sans text-xs font-black shadow-[2px_2px_0_var(--manga-black)] sm:flex-none sm:px-3 sm:text-sm sm:shadow-[3px_3px_0_var(--manga-black)]',
-                'hover:bg-manga-paper-soft focus-visible:ring-manga-red/35 after:hidden'
+                'border-manga-black bg-manga-white text-manga-black !h-auto min-h-11 flex-1 rounded-none border-3 px-2 py-2 font-sans text-xs font-black shadow-[2px_2px_0_var(--manga-black)] transition-all sm:flex-none sm:px-3 sm:text-sm sm:shadow-[3px_3px_0_var(--manga-black)]',
+                'hover:bg-manga-paper-soft focus-visible:ring-manga-red/35 after:hidden',
+                'data-active:bg-manga-red! data-active:text-manga-white! data-active:shadow-[5px_5px_0_var(--manga-black)]! data-active:-translate-x-[1px] data-active:-translate-y-[1px]'
               )}
             >
               {item.label}
