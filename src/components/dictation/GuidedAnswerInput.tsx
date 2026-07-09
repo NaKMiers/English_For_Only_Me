@@ -51,6 +51,12 @@ export function insertNextHint(value: string, hint: string): string {
   return `${trimmed} ${hint}`
 }
 
+// Applied inline to the textarea AND its mirror so the large type wins over the
+// global `textarea { font: inherit }` reset with certainty (inline beats any
+// stylesheet rule), and both layers keep identical metrics so the boundary
+// underline stays aligned. ~text-3xl / leading-10.
+const INPUT_TEXT_STYLE = { fontSize: '1.875rem', lineHeight: '2.5rem' } as const
+
 interface DisplayCell {
   char: string
   className: string
@@ -227,7 +233,8 @@ export function GuidedAnswerInput({
       <div className="border-manga-black bg-manga-white relative border-2 shadow-[2px_2px_0_var(--manga-black)]">
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 px-2.5 py-2 text-3xl leading-10 font-semibold wrap-break-word whitespace-pre-wrap text-transparent"
+          style={INPUT_TEXT_STYLE}
+          className="pointer-events-none absolute inset-0 px-2.5 py-2 font-semibold wrap-break-word whitespace-pre-wrap text-transparent"
         >
           {boundaryUnderline ? (
             <>
@@ -240,8 +247,6 @@ export function GuidedAnswerInput({
             value
           )}
         </div>
-        {/* Raw textarea (not the shared Textarea component) so its base
-            text-base/md:text-sm classes cannot override the large type here. */}
         <textarea
           ref={textareaRef}
           aria-label="Type what you hear"
@@ -251,11 +256,11 @@ export function GuidedAnswerInput({
           onChange={event => onChange(event.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Type what you hear..."
-          className="text-manga-black placeholder:text-manga-ink-soft relative z-10 block field-sizing-content min-h-40 w-full resize-y border-0 bg-transparent px-2.5 py-2 text-3xl leading-10 font-semibold outline-none"
+          style={INPUT_TEXT_STYLE}
+          className="text-manga-black placeholder:text-manga-ink-soft relative z-10 block field-sizing-content min-h-40 w-full resize-y border-0 bg-transparent px-2.5 py-2 font-semibold outline-none"
         />
       </div>
 
-      {/* Screen readers hear status changes without relying on colour. */}
       <p
         aria-live="polite"
         className={cn(
