@@ -13,6 +13,7 @@ import {
   type GuidedStatus,
 } from '@/components/dictation/GuidedAnswerInput'
 import { MangaButton } from '@/components/ui/MangaButton'
+import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   buildCharCorrection,
@@ -453,6 +454,14 @@ export function DictationPracticeShell({
           ...currentDrafts,
           [currentSegment.id]: charResult.caretValue,
         }))
+      // Resolved (correct / reveal / skip): fill the full canonical answer into
+      // the textarea like DailyDictation, and keep it so revisiting the segment
+      // shows the answer again.
+      else if (correction.isPassed || action === 'reveal' || action === 'skip')
+        setAnswerDrafts(currentDrafts => ({
+          ...currentDrafts,
+          [currentSegment.id]: currentSegment.text,
+        }))
 
       replayCountRef.current[currentSegment.id] = 0
       segmentStartedAtRef.current = Date.now()
@@ -507,22 +516,14 @@ export function DictationPracticeShell({
         : 'incorrect'
 
   const advanceAfterAttempt = useCallback(() => {
-    if (currentSegment)
-      setAnswerDrafts(currentDrafts => {
-        const nextDrafts = { ...currentDrafts }
-
-        delete nextDrafts[currentSegment.id]
-
-        return nextDrafts
-      })
-
+    // Keep the resolved answer in the draft so revisiting the segment shows it.
     if (canGoNext) goToIndex(currentIndex + 1)
     else {
       setCurrentAttempt(null)
       setCharCorrection(null)
       setIsCompleted(true)
     }
-  }, [canGoNext, currentIndex, currentSegment, goToIndex])
+  }, [canGoNext, currentIndex, goToIndex])
 
   const retryCurrent = useCallback(() => {
     if (currentSegment)
@@ -732,6 +733,7 @@ export function DictationPracticeShell({
                       <>
                         <MangaButton
                           type="button"
+                          className="text-base"
                           onClick={advanceAfterAttempt}
                         >
                           {canGoNext ? 'Next' : 'Finish'}
@@ -740,6 +742,7 @@ export function DictationPracticeShell({
                           <MangaButton
                             type="button"
                             tone="paper"
+                            className="text-base"
                             onClick={retryCurrent}
                           >
                             Retry
@@ -750,6 +753,7 @@ export function DictationPracticeShell({
                       <>
                         <MangaButton
                           type="button"
+                          className="text-base"
                           onClick={checkDraft}
                         >
                           Check
@@ -757,6 +761,7 @@ export function DictationPracticeShell({
                         <MangaButton
                           type="button"
                           tone="paper"
+                          className="text-base"
                           onClick={skipSegment}
                         >
                           Skip
@@ -765,32 +770,28 @@ export function DictationPracticeShell({
                     )}
                   </div>
 
-                  <div className="flex flex-wrap gap-x-4 gap-y-1">
+                  <div className="flex flex-col gap-2">
                     <label className="flex items-center gap-2 text-sm font-black">
-                      <input
-                        type="checkbox"
+                      <Switch
                         checked={preferences.showAnswerImmediately}
-                        onChange={event =>
+                        onCheckedChange={checked =>
                           setPreferences(currentPreferences => ({
                             ...currentPreferences,
-                            showAnswerImmediately: event.target.checked,
+                            showAnswerImmediately: checked,
                           }))
                         }
-                        className="border-manga-black size-5 border-2"
                       />
                       Show answer immediately
                     </label>
                     <label className="flex items-center gap-2 text-sm font-black">
-                      <input
-                        type="checkbox"
+                      <Switch
                         checked={preferences.showFullAnswer}
-                        onChange={event =>
+                        onCheckedChange={checked =>
                           setPreferences(currentPreferences => ({
                             ...currentPreferences,
-                            showFullAnswer: event.target.checked,
+                            showFullAnswer: checked,
                           }))
                         }
-                        className="border-manga-black size-5 border-2"
                       />
                       Show full answer
                     </label>

@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { CircleCheck, Eye, Lightbulb, TriangleAlert } from 'lucide-react'
+import { useEffect, useMemo, useRef } from 'react'
 
 import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
@@ -140,6 +141,36 @@ export function GuidedAnswerInput({
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const hints = correction?.hints ?? []
 
+  // While the checked answer still equals the corrected prefix, underline the
+  // boundary word INSIDE the textarea (red for a wrong char, amber for a still
+  // missing one), mirroring DailyDictation. A transparent mirror layer draws the
+  // underline so the real text and caret stay native.
+  const boundaryUnderline = useMemo(() => {
+    if (!correction || status !== 'incorrect') return null
+    if (value !== correction.caretValue) return null
+
+    const boundary = correction.segments[correction.boundaryIndex]
+
+    if (!boundary) return null
+
+    const matchedText = correction.segments
+      .slice(0, correction.boundaryIndex)
+      .map(segment => segment.expected)
+      .join(' ')
+    const offset = correction.boundaryIndex > 0 ? matchedText.length + 1 : 0
+
+    if (offset >= value.length) return null
+
+    const hasWrong = boundary.chars.some(cell => cell.status === 'wrong')
+
+    return {
+      className: hasWrong
+        ? 'underline decoration-solid decoration-2 decoration-red-700'
+        : 'underline decoration-dotted decoration-2 decoration-amber-600',
+      offset,
+    }
+  }, [correction, status, value])
+
   // After an incorrect check the parent rewrites the draft to the corrected
   // prefix (caretValue). Move the caret to the end so the learner continues from
   // the exact fix point, matching DailyDictation's cursor jump.
@@ -192,33 +223,72 @@ export function GuidedAnswerInput({
       aria-label="Dictation answer"
       className="border-manga-black bg-manga-white grid min-w-0 gap-3 border-2 p-3 shadow-[3px_3px_0_var(--manga-black)]"
     >
-      <Textarea
-        ref={textareaRef}
-        aria-label="Type what you hear"
-        data-dictation-shortcuts="allow"
-        disabled={disabled}
-        value={value}
-        onChange={event => onChange(event.target.value)}
-        onKeyDown={handleKeyDown}
-        placeholder="Type what you hear..."
-        className="border-manga-black bg-manga-white min-h-28 rounded-none border-2 text-xl leading-8 font-semibold shadow-[2px_2px_0_var(--manga-black)]"
-      />
+      {/* The mirror layer draws the boundary underline under transparent text so
+          the textarea keeps its native text, caret, selection, and IME. */}
+      <div className="border-manga-black bg-manga-white relative border-2 shadow-[2px_2px_0_var(--manga-black)]">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 px-2.5 py-2 text-2xl leading-9 font-semibold break-words whitespace-pre-wrap text-transparent"
+        >
+          {boundaryUnderline ? (
+            <>
+              {value.slice(0, boundaryUnderline.offset)}
+              <span className={boundaryUnderline.className}>
+                {value.slice(boundaryUnderline.offset)}
+              </span>
+            </>
+          ) : (
+            value
+          )}
+        </div>
+        <Textarea
+          ref={textareaRef}
+          aria-label="Type what you hear"
+          data-dictation-shortcuts="allow"
+          disabled={disabled}
+          value={value}
+          onChange={event => onChange(event.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder="Type what you hear..."
+          className="text-manga-black relative z-10 min-h-28 rounded-none border-0 bg-transparent px-2.5 py-2 text-2xl leading-9 font-semibold shadow-none focus-visible:ring-0 md:text-2xl"
+        />
+      </div>
 
       {/* Screen readers hear status changes without relying on colour. */}
       <p
         aria-live="polite"
         className={cn(
-          'text-sm font-black',
+          'flex items-center gap-2 text-base font-black',
           status === 'correct' && 'text-emerald-700',
-          status === 'incorrect' && 'text-manga-red'
+          status === 'incorrect' && 'text-amber-600'
         )}
         role="status"
       >
+        {status === 'correct' ? (
+          <CircleCheck
+            aria-hidden="true"
+            className="size-5 shrink-0"
+          />
+        ) : status === 'incorrect' ? (
+          <TriangleAlert
+            aria-hidden="true"
+            className="size-5 shrink-0"
+          />
+        ) : status === 'revealed' ? (
+          <Eye
+            aria-hidden="true"
+            className="size-5 shrink-0"
+          />
+        ) : null}
         {statusMessage(status)}
       </p>
 
       {hints.length > 0 && status !== 'correct' ? (
-        <p className="flex flex-wrap items-center gap-2 text-sm font-black">
+        <p className="flex flex-wrap items-center gap-2 text-base font-black">
+          <Lightbulb
+            aria-hidden="true"
+            className="size-5 shrink-0 text-amber-600"
+          />
           <span className="text-manga-ink-soft uppercase">Hint</span>
           {hints.map(hint => (
             <span
@@ -235,7 +305,7 @@ export function GuidedAnswerInput({
       {showCorrection ? (
         <p
           aria-hidden="true"
-          className="border-manga-black bg-manga-paper-soft border-2 p-3 text-lg leading-8 font-semibold break-words shadow-[2px_2px_0_var(--manga-black)]"
+          className="border-manga-black bg-manga-paper-soft border-2 p-3 text-2xl leading-9 font-semibold break-words shadow-[2px_2px_0_var(--manga-black)]"
           data-testid="answer-line"
         >
           {answerLineCells(correction, showFullAnswer).map(cell => (

@@ -256,12 +256,9 @@ export function DictationYoutubePlayer({
           {hidden ? 'Show video' : 'Hide video'}
         </button>
       </div>
-      <div
-        className={cn(
-          'border-manga-black bg-manga-white relative grid aspect-video overflow-hidden border-2',
-          hidden && 'hidden'
-        )}
-      >
+      {/* The player element stays mounted while hidden so replay keeps working;
+          a same-size placeholder covers it instead of collapsing the layout. */}
+      <div className="border-manga-black bg-manga-white relative grid aspect-video overflow-hidden border-2">
         {youtubeVideoId ? (
           <div
             id={playerElementId}
@@ -273,13 +270,16 @@ export function DictationYoutubePlayer({
             YouTube metadata is missing for this video.
           </div>
         )}
+        {hidden ? (
+          <div
+            aria-hidden="true"
+            className="bg-manga-paper-soft text-manga-ink-soft absolute inset-0 grid place-items-center p-6 text-center text-sm leading-6 font-black"
+          >
+            Video hidden — listen and type. Replay still works for timed
+            segments.
+          </div>
+        ) : null}
       </div>
-
-      {hidden ? (
-        <div className="border-manga-black bg-manga-paper-soft border-2 p-4 text-sm leading-6 font-black">
-          Video is hidden. Replay controls still work for timed segments.
-        </div>
-      ) : null}
     </section>
   )
 }
