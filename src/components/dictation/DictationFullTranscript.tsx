@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 
-import { Play } from 'lucide-react'
+import { MoveVertical, Play, Repeat } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 import type {
@@ -11,9 +11,14 @@ import type {
 } from '@/modules/dictation/types'
 
 interface Props {
+  autoScroll: boolean
+  canRepeat: boolean
   currentSegmentId: string | null
   isActive: boolean
+  isRepeating: boolean
   onSelectSegment: (segment: DictationSegmentApiRecord) => void
+  onToggleAutoScroll: () => void
+  onToggleRepeat: () => void
   playingSegmentId: string | null
   segments: DictationSegmentApiRecord[]
   // segmentId -> translated caption in the selected language (bilingual view).
@@ -54,9 +59,14 @@ function formatTimestamp(ms: number | null) {
 }
 
 export function DictationFullTranscript({
+  autoScroll,
+  canRepeat,
   currentSegmentId,
   isActive,
+  isRepeating,
   onSelectSegment,
+  onToggleAutoScroll,
+  onToggleRepeat,
   playingSegmentId,
   segments,
   translations,
@@ -64,24 +74,63 @@ export function DictationFullTranscript({
   const activeItemRef = useRef<HTMLButtonElement | null>(null)
   const highlightedId = playingSegmentId ?? currentSegmentId
 
+  // Auto-scroll follows the active caption only when enabled; manual scrolling
+  // is always available since the list is its own overflow container.
   useEffect(() => {
-    if (!isActive) return
+    if (!isActive || !autoScroll) return
 
     activeItemRef.current?.scrollIntoView({ block: 'nearest' })
-  }, [highlightedId, isActive])
+  }, [autoScroll, highlightedId, isActive])
 
   return (
     <section
       aria-label="Full transcript"
       className="border-manga-black bg-manga-white grid min-w-0 gap-3 border-2 p-3 shadow-[3px_3px_0_var(--manga-black)]"
     >
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="font-sans text-lg leading-tight font-black tracking-normal">
           Full transcript
         </h2>
-        <span className="text-manga-ink-soft text-xs font-black uppercase">
-          {segments.length} sentences
-        </span>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            aria-pressed={isRepeating}
+            disabled={!canRepeat}
+            onClick={onToggleRepeat}
+            className={cn(
+              'border-manga-black inline-flex min-h-8 items-center gap-1.5 border-2 px-2 font-sans text-xs font-black shadow-[2px_2px_0_var(--manga-black)] disabled:cursor-not-allowed disabled:opacity-50',
+              isRepeating
+                ? 'bg-manga-black text-manga-white'
+                : 'bg-manga-white text-manga-black hover:bg-manga-paper-soft'
+            )}
+          >
+            <Repeat
+              aria-hidden="true"
+              className="size-4"
+            />
+            Repeat
+          </button>
+          <button
+            type="button"
+            aria-pressed={autoScroll}
+            onClick={onToggleAutoScroll}
+            className={cn(
+              'border-manga-black inline-flex min-h-8 items-center gap-1.5 border-2 px-2 font-sans text-xs font-black shadow-[2px_2px_0_var(--manga-black)]',
+              autoScroll
+                ? 'bg-manga-black text-manga-white'
+                : 'bg-manga-white text-manga-black hover:bg-manga-paper-soft'
+            )}
+          >
+            <MoveVertical
+              aria-hidden="true"
+              className="size-4"
+            />
+            Auto scroll
+          </button>
+          <span className="text-manga-ink-soft text-xs font-black uppercase">
+            {segments.length} sentences
+          </span>
+        </div>
       </div>
 
       <ol className="grid max-h-128 min-w-0 gap-2 overflow-y-auto pr-1">

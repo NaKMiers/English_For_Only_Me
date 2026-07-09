@@ -1,6 +1,10 @@
 import { describe, expect, test } from 'vitest'
 
-import { buildCharCorrection, renderAnswerLine } from './buildCharCorrection'
+import {
+  autoCorrectAnswer,
+  buildCharCorrection,
+  renderAnswerLine,
+} from './buildCharCorrection'
 
 const WALL = 'As years passed and the wall grew, few returned home.'
 
@@ -79,6 +83,37 @@ describe('buildCharCorrection - reveal + mask model', () => {
     expect(fixed.boundaryIndex).toBe(5)
   })
 
+  test('keeps the full draft and points the caret just past the wrong word', () => {
+    const expected =
+      'There are Kaijus with biological armour, who spit acid'
+    const typed = 'There are Kaijus wh biological armour, who spit acid'
+    const result = check(typed, expected)
+
+    // The draft is NOT truncated — everything the learner typed is preserved.
+    expect(result.typedValue).toBe(typed)
+    // Boundary word "wh" sits at offset 17..19; caret lands right after it.
+    expect(typed.slice(result.boundary!.start, result.boundary!.end)).toBe('wh')
+    expect(result.caretOffset).toBe(result.boundary!.end)
+    expect(typed.slice(0, result.caretOffset)).toBe('There are Kaijus wh')
+  })
+
+  test('flags only the substituted characters of the wrong word (red)', () => {
+    const typed = 'the prxbably'
+    const result = check(typed, 'the probably')
+    const { start, wrongOffsets } = result.boundary!
+
+    // "prxbably" vs "probably": only the 'x' (typed offset 2) is wrong.
+    expect(wrongOffsets.map(offset => typed[offset])).toEqual(['x'])
+    expect(wrongOffsets).toEqual([start + 2])
+  })
+
+  test('caret sits at the end when nothing was typed at the boundary', () => {
+    const result = check('As years', WALL)
+
+    expect(result.boundary).toBeNull()
+    expect(result.caretOffset).toBe('As years'.length)
+  })
+
   test('auto-inserts punctuation on the revealed boundary word', () => {
     // muc 4 case 5: after "grew", the comma comes back and "few" is revealed.
     expect(masked('As years passed and the wall grew', WALL)).toBe(
@@ -134,6 +169,80 @@ describe('buildCharCorrection - reveal + mask model', () => {
     expect(
       renderAnswerLine(check('As years', WALL), { showFullAnswer: true })
     ).toBe(WALL.replace(/\s+/g, ' '))
+  })
+})
+
+describe('autoCorrectAnswer', () => {
+  const KAIJU =
+    'There are Kaijus with biological armour, who spit acid, shoot living harpoons, and eat their victims alive – and yet you have probably never heard of any of them: The Unhinged Super Predators of the Microworld'
+
+  test('fixes case, punctuation and whitespace up to where the learner typed', () => {
+    const typed =
+      'there are kaijus    with    biological armour  who spit acid  shoot living harpoons  and eat their    viCTims alivE And yet you have probably never heard of any OF    them'
+
+    // Ends "them: " with a trailing space since a word ("The") still follows.
+    expect(autoCorrectAnswer(KAIJU, typed)).toBe(
+      'There are Kaijus with biological armour, who spit acid, shoot living harpoons, and eat their victims alive – and yet you have probably never heard of any of them: '
+    )
+  })
+
+  test('auto-inserts a standalone punctuation token then a trailing space', () => {
+    const typed =
+      'There are Kaijus with biological armour, who spit acid, shoot living harpoons, and eat their victims alive'
+
+    // After "alive" the expected has a lone "–" then "and": fill the "–" and
+    // park a trailing space for the next word.
+    expect(autoCorrectAnswer(KAIJU, typed)).toBe(
+      'There are Kaijus with biological armour, who spit acid, shoot living harpoons, and eat their victims alive – '
+    )
+  })
+
+  test('does not duplicate a punctuation token the learner typed themselves', () => {
+    const typed =
+      'There are Kaijus with biological armour, who spit acid, shoot living harpoons, and eat their victims alive – and yet'
+    const corrected =
+      'There are Kaijus with biological armour, who spit acid, shoot living harpoons, and eat their victims alive – and yet '
+
+    // The learner typed the "–"; it is kept once, not re-inserted.
+    expect(autoCorrectAnswer(KAIJU, typed)).toBe(corrected)
+    // And re-checking the corrected draft is a no-op (idempotent), not "– –".
+    expect(autoCorrectAnswer(KAIJU, corrected)).toBe(corrected)
+  })
+
+  test('no trailing space once the final word is typed', () => {
+    expect(
+      autoCorrectAnswer('The quick brown fox', 'the quick brown fox')
+    ).toBe('The quick brown fox')
+  })
+
+  // The de-dup is generic: any standalone punctuation token the learner types is
+  // consumed once, never re-inserted, and re-checking is idempotent.
+  test.each(['–', '—', '-', ':', ';', '…', '...', '•'])(
+    'keeps a typed "%s" once and stays idempotent',
+    mark => {
+      const expected = `alpha ${mark} beta gamma`
+      const corrected = autoCorrectAnswer(expected, `alpha ${mark} beta`)
+
+      expect(corrected).toBe(`alpha ${mark} beta `)
+      expect(autoCorrectAnswer(expected, corrected)).toBe(corrected)
+    }
+  )
+
+  test('canonicalises the matched prefix but keeps a genuinely wrong word', () => {
+    // "wh" is wrong for "with"; the matched prefix is canonicalised, and the
+    // learner's remaining words are kept (whitespace-collapsed) to fix.
+    expect(
+      autoCorrectAnswer(
+        'There are Kaijus with biological armour',
+        'there are kaijus wh biological armour'
+      )
+    ).toBe('There are Kaijus wh biological armour')
+  })
+
+  test('leaves an already-canonical answer unchanged', () => {
+    expect(autoCorrectAnswer('As years passed', 'As years passed')).toBe(
+      'As years passed'
+    )
   })
 })
 

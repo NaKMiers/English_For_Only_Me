@@ -3,14 +3,13 @@
 import { useEffect } from 'react'
 
 export type DictationShortcutAction =
-  'check' | 'next' | 'previous' | 'replay' | 'toggleVideo'
+  'check' | 'next' | 'previous' | 'replay'
 
 export interface DictationShortcutHandlers {
   check?: () => void
   next?: () => void
   previous?: () => void
   replay?: () => void
-  toggleVideo?: () => void
 }
 
 const EDITABLE_ROLES = new Set(['combobox', 'searchbox', 'spinbutton'])
@@ -36,13 +35,12 @@ export function getDictationShortcutAction(
 ): DictationShortcutAction | null {
   const key = event.key.toLowerCase()
 
-  if (key === 'control' && event.ctrlKey && !event.repeat) return 'replay'
-  if (event.ctrlKey && key === ' ') return 'replay'
+  if (key === 'alt' && event.altKey && !event.repeat) return 'replay'
+  if (event.altKey && key === ' ') return 'replay'
   if (!event.ctrlKey && !event.metaKey && !event.altKey && key === 'enter')
     return 'check'
-  if (event.altKey && key === 'arrowright') return 'next'
-  if (event.altKey && key === 'arrowleft') return 'previous'
-  if (event.altKey && key === 'v') return 'toggleVideo'
+  if (event.ctrlKey && key === ']') return 'next'
+  if (event.ctrlKey && key === '[') return 'previous'
 
   return null
 }

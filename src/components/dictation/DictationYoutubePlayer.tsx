@@ -1,6 +1,7 @@
 'use client'
 
-import { useCallback, useEffect, useId, useRef } from 'react'
+import { ChevronRight, Ratio } from 'lucide-react'
+import { useCallback, useEffect, useId, useRef, useState } from 'react'
 
 import { cn } from '@/lib/utils'
 import {
@@ -9,6 +10,17 @@ import {
   type YoutubeDictationPlayerAdapter,
   type YoutubeDictationPlayerState,
 } from '@/modules/dictation/player/useYoutubeDictationPlayer'
+import {
+  VIDEO_SIZE_OPTIONS,
+  type VideoSize,
+} from '@/modules/dictation/preferences/dictationPreferences'
+
+const VIDEO_SIZE_LABEL: Record<VideoSize, string> = {
+  small: 'Small',
+  normal: 'Normal',
+  large: 'Large',
+  max: 'Max',
+}
 
 interface YoutubeEvent {
   data?: number
@@ -55,7 +67,13 @@ interface PlayerController {
   canReplay: boolean
   getCurrentTimeMs: () => number | null
   message: string
+  pause: () => void
   playFromMs: (startMs: number) => void
+  playSegment: (
+    startMs: number,
+    endMs: number,
+    options?: { loop?: boolean }
+  ) => void
   replay: () => void
   seekToMs: (startMs: number, options: { play: boolean }) => void
   status: YoutubeDictationPlayerState['status']
@@ -67,9 +85,11 @@ interface Props {
   mockPlayer?: YoutubeDictationPlayerAdapter
   onControllerChange?: (controller: PlayerController) => void
   onHiddenChange: (hidden: boolean) => void
+  onVideoSizeChange: (size: VideoSize) => void
   playbackSpeed: number
   timing: SegmentTiming
   title: string
+  videoSize: VideoSize
   youtubeVideoId: string | null
 }
 
@@ -103,12 +123,15 @@ export function DictationYoutubePlayer({
   mockPlayer,
   onControllerChange,
   onHiddenChange,
+  onVideoSizeChange,
   playbackSpeed,
   timing,
   title,
+  videoSize,
   youtubeVideoId,
 }: Props) {
   const playerElementId = useId().replace(/:/g, '')
+  const [isSizeMenuOpen, setIsSizeMenuOpen] = useState(false)
   const playerRef = useRef<YoutubeDictationPlayerAdapter | null>(null)
   const {
     attachPlayer,
@@ -120,7 +143,9 @@ export function DictationYoutubePlayer({
     markPlaying,
     markReady,
     message,
+    pause,
     playFromMs,
+    playSegment,
     replay,
     seekToMs,
     status,
@@ -161,7 +186,9 @@ export function DictationYoutubePlayer({
       canReplay,
       getCurrentTimeMs,
       message,
+      pause,
       playFromMs,
+      playSegment,
       replay,
       seekToMs,
       status,
@@ -171,7 +198,9 @@ export function DictationYoutubePlayer({
     getCurrentTimeMs,
     message,
     onControllerChange,
+    pause,
     playFromMs,
+    playSegment,
     replay,
     seekToMs,
     status,
@@ -279,6 +308,51 @@ export function DictationYoutubePlayer({
             segments.
           </div>
         ) : null}
+      </div>
+
+      {/* Horizontal collapsible so the four presets stay out of the way until
+          the learner opens the size picker. */}
+      <div className="flex min-w-0 flex-wrap items-center gap-1">
+        <button
+          type="button"
+          aria-expanded={isSizeMenuOpen}
+          onClick={() => setIsSizeMenuOpen(open => !open)}
+          className="border-manga-black bg-manga-white text-manga-black hover:bg-manga-paper-soft inline-flex min-h-8 items-center gap-1 border-2 px-2 font-sans text-xs font-black shadow-[2px_2px_0_var(--manga-black)]"
+        >
+          <Ratio
+            aria-hidden="true"
+            className="size-4"
+          />
+          Size: {VIDEO_SIZE_LABEL[videoSize]}
+          <ChevronRight
+            aria-hidden="true"
+            className={cn(
+              'size-4 transition-transform',
+              isSizeMenuOpen && 'rotate-90'
+            )}
+          />
+        </button>
+        {isSizeMenuOpen
+          ? VIDEO_SIZE_OPTIONS.map(size => (
+              <button
+                key={size}
+                type="button"
+                aria-pressed={videoSize === size}
+                onClick={() => {
+                  onVideoSizeChange(size)
+                  setIsSizeMenuOpen(false)
+                }}
+                className={cn(
+                  'border-manga-black inline-flex min-h-8 items-center border-2 px-2 font-sans text-xs font-black shadow-[2px_2px_0_var(--manga-black)]',
+                  videoSize === size
+                    ? 'bg-manga-black text-manga-white'
+                    : 'bg-manga-white text-manga-black hover:bg-manga-paper-soft'
+                )}
+              >
+                {VIDEO_SIZE_LABEL[size]}
+              </button>
+            ))
+          : null}
       </div>
     </section>
   )

@@ -28,12 +28,26 @@ describe('dictation shortcuts', () => {
     expect(shouldIgnoreDictationShortcut(textarea)).toBe(false)
   })
 
-  test('maps Control key replay like DailyDictation', () => {
+  test('maps Alt key tap to replay', () => {
     const event = new window.KeyboardEvent('keydown', {
-      ctrlKey: true,
-      key: 'Control',
+      altKey: true,
+      key: 'Alt',
     })
 
     expect(getDictationShortcutAction(event)).toBe('replay')
+  })
+
+  test('maps Ctrl + brackets to navigation', () => {
+    const next = new window.KeyboardEvent('keydown', {
+      ctrlKey: true,
+      key: ']',
+    })
+    const previous = new window.KeyboardEvent('keydown', {
+      ctrlKey: true,
+      key: '[',
+    })
+
+    expect(getDictationShortcutAction(next)).toBe('next')
+    expect(getDictationShortcutAction(previous)).toBe('previous')
   })
 })

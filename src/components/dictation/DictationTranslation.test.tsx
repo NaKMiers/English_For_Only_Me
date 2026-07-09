@@ -14,6 +14,7 @@ describe('DictationTranslation', () => {
         isUnlocked={false}
         language="vi"
         text="Xin chao"
+        textSize="large"
       />
     )
 
@@ -26,6 +27,7 @@ describe('DictationTranslation', () => {
         isUnlocked
         language="vi"
         text="Xin chao the gioi."
+        textSize="large"
       />
     )
 
@@ -39,6 +41,7 @@ describe('DictationTranslation', () => {
         isUnlocked
         language="ja"
         text=""
+        textSize="large"
       />
     )
 

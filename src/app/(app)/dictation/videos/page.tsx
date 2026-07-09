@@ -1,5 +1,5 @@
-import type { Metadata } from 'next'
 import { Pencil } from 'lucide-react'
+import type { Metadata } from 'next'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { MangaPageShell } from '@/components/common/MangaPageShell'
@@ -104,8 +104,8 @@ function VideoLibrary({
                       {video.importWarning}
                     </p>
                   ) : null}
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div className="flex flex-wrap gap-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex flex-wrap gap-2">
                       {hasTranscript ? (
                         <>
                           <MangaButton
@@ -122,7 +122,7 @@ function VideoLibrary({
                         </>
                       ) : null}
                     </div>
-                    <div className="flex flex-wrap gap-3">
+                    <div className="flex flex-wrap gap-2">
                       <MangaButton
                         href={`/dictation/videos/${video.id}/edit`}
                         tone="paper"

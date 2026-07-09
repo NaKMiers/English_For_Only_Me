@@ -4,11 +4,16 @@ import { CircleCheck, Eye, Lightbulb, TriangleAlert } from 'lucide-react'
 import { useEffect, useMemo, useRef } from 'react'
 
 import { cn } from '@/lib/utils'
-import type {
-  CharCell,
-  CharCorrectionResult,
-  WordSegment,
+import {
+  computeHints,
+  type CharCell,
+  type CharCorrectionResult,
+  type WordSegment,
 } from '@/modules/dictation/correction'
+import {
+  ANSWER_TEXT_STYLE,
+  type AnswerTextSize,
+} from '@/modules/dictation/preferences/dictationPreferences'
 
 /**
  * Guided answer input (DailyDictation parity, eng review F2).
@@ -30,8 +35,10 @@ import type {
 export type GuidedStatus = 'idle' | 'correct' | 'incorrect' | 'revealed'
 
 interface Props {
+  answerTextSize: AnswerTextSize
   correction: CharCorrectionResult | null
   disabled?: boolean
+  expectedText: string
   onChange: (value: string) => void
   onCheck: () => void
   onReveal: () => void
@@ -51,11 +58,18 @@ export function insertNextHint(value: string, hint: string): string {
   return `${trimmed} ${hint}`
 }
 
-// Applied inline to the textarea AND its mirror so the large type wins over the
-// global `textarea { font: inherit }` reset with certainty (inline beats any
-// stylesheet rule), and both layers keep identical metrics so the boundary
-// underline stays aligned. ~text-3xl / leading-10.
-const INPUT_TEXT_STYLE = { fontSize: '1.875rem', lineHeight: '2.5rem' } as const
+function escapeRegExp(text: string): string {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+/** True once the hint's word sits in the draft as its own whitespace-delimited
+ * token. Clicking (or Tab-filling) any hint chip appends it to the end of the
+ * draft, which may be out of its grammatical slot — this presence check hides
+ * it immediately regardless, while `computeHints` still decides when it
+ * should reappear (deleting the word un-hides it). */
+function isHintTyped(value: string, hint: string): boolean {
+  return new RegExp(`(?:^|\\s)${escapeRegExp(hint)}(?:$|\\s)`, 'i').test(value)
+}
 
 interface DisplayCell {
   char: string
@@ -133,8 +147,10 @@ function statusMessage(status: GuidedStatus): string {
 }
 
 export function GuidedAnswerInput({
+  answerTextSize,
   correction,
   disabled = false,
+  expectedText,
   onChange,
   onCheck,
   onReveal,
@@ -144,57 +160,63 @@ export function GuidedAnswerInput({
   value,
 }: Props) {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const hints = correction?.hints ?? []
+  const inputTextStyle = ANSWER_TEXT_STYLE[answerTextSize]
 
-  // While the checked answer still equals the corrected prefix, underline the
-  // boundary word INSIDE the textarea (red for a wrong char, amber for a still
-  // missing one), mirroring DailyDictation. A transparent mirror layer draws the
-  // underline so the real text and caret stay native.
-  const boundaryUnderline = useMemo(() => {
-    if (!correction || status !== 'incorrect') return null
-    if (value !== correction.caretValue) return null
+  // Live from the current draft, no Check required — recomputes the matched
+  // prefix on every keystroke, so a hint reappears the moment the learner
+  // deletes its word. The extra presence filter hides a hint the instant it's
+  // typed/clicked even if it landed out of its grammatical slot.
+  const structuralHints = useMemo(
+    () => computeHints(expectedText, value),
+    [expectedText, value]
+  )
+  const visibleHints = useMemo(
+    () => structuralHints.filter(hint => !isHintTyped(value, hint)),
+    [structuralHints, value]
+  )
 
-    const boundary = correction.segments[correction.boundaryIndex]
+  // The boundary word (the first mistake) underlined IN PLACE inside the draft:
+  // amber under the whole wrong word, red under the exact wrong characters. Only
+  // while the draft still equals what was checked — editing it hides the marks
+  // until the next Check. A transparent mirror layer draws the underline so the
+  // real text, caret, and IME stay native.
+  const boundary =
+    correction && status === 'incorrect' && value === correction.typedValue
+      ? correction.boundary
+      : null
 
-    if (!boundary) return null
-
-    const matchedText = correction.segments
-      .slice(0, correction.boundaryIndex)
-      .map(segment => segment.expected)
-      .join(' ')
-    const offset = correction.boundaryIndex > 0 ? matchedText.length + 1 : 0
-
-    if (offset >= value.length) return null
-
-    const hasWrong = boundary.chars.some(cell => cell.status === 'wrong')
-
-    return {
-      className: hasWrong
-        ? 'underline decoration-solid decoration-2 decoration-red-700'
-        : 'underline decoration-dotted decoration-2 decoration-amber-600',
-      offset,
-    }
-  }, [correction, status, value])
-
-  // After an incorrect check the parent rewrites the draft to the corrected
-  // prefix (caretValue). Move the caret to the end so the learner continues from
-  // the exact fix point, matching DailyDictation's cursor jump.
+  // After a wrong Check, drop the caret just past the boundary word ONCE so the
+  // learner fixes the mistake without losing the text they typed after it. Keyed
+  // on `correction` (a fresh object per Check) so it fires once, not on every
+  // keystroke — the caret is then free to move as they edit.
   useEffect(() => {
-    if (status !== 'incorrect') return
+    if (status !== 'incorrect' || !correction) return
 
     const textarea = textareaRef.current
 
     if (!textarea) return
 
     textarea.focus()
-    const end = textarea.value.length
-    textarea.setSelectionRange(end, end)
-  }, [status, value])
+    const caret = Math.min(correction.caretOffset, textarea.value.length)
+    textarea.setSelectionRange(caret, caret)
+  }, [correction, status])
+
+  // Shared by Tab and clicking a hint chip: insert the word, then keep focus
+  // and the caret in the textarea so typing continues right after it.
+  function fillHint(hint: string) {
+    onChange(insertNextHint(value, hint))
+
+    const textarea = textareaRef.current
+
+    if (!textarea) return
+
+    textarea.focus()
+  }
 
   function handleKeyDown(event: React.KeyboardEvent<HTMLTextAreaElement>) {
     // stopPropagation keeps the window-level dictation shortcuts (which also map
     // Enter -> check) from firing a second time for the keys this input owns.
-    // Ctrl-replay / Alt-navigation are left alone so they still work while typing.
+    // Alt-replay / Ctrl-navigation are left alone so they still work while typing.
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault()
       event.stopPropagation()
@@ -211,10 +233,10 @@ export function GuidedAnswerInput({
 
     // Tab fills the next hint ONLY while hints remain and Shift isn't held, so
     // keyboard/screen-reader users can always Tab (or Shift+Tab) out of the field.
-    if (event.key === 'Tab' && !event.shiftKey && hints.length > 0) {
+    if (event.key === 'Tab' && !event.shiftKey && visibleHints.length > 0) {
       event.preventDefault()
       event.stopPropagation()
-      onChange(insertNextHint(value, hints[0]))
+      fillHint(visibleHints[0])
     }
   }
 
@@ -228,20 +250,55 @@ export function GuidedAnswerInput({
       aria-label="Dictation answer"
       className="border-manga-black bg-manga-white grid min-w-0 gap-3 border-2 p-3 shadow-[3px_3px_0_var(--manga-black)]"
     >
-      {/* The mirror layer draws the boundary underline under transparent text so
-          the textarea keeps its native text, caret, selection, and IME. */}
+      {visibleHints.length > 0 && status !== 'correct' ? (
+        <p className="flex flex-wrap items-center gap-2 text-base font-black">
+          <Lightbulb
+            aria-hidden="true"
+            className="size-5 shrink-0 text-amber-600"
+          />
+          <span className="text-manga-ink-soft uppercase">Hint</span>
+          {visibleHints.map(hint => (
+            <button
+              key={hint}
+              type="button"
+              onClick={() => fillHint(hint)}
+              className="border border-amber-600 bg-amber-100 px-2 py-0.5 text-amber-900 hover:bg-amber-200"
+            >
+              {hint}
+            </button>
+          ))}
+          <span className="text-manga-ink-soft text-xs">(Tab to fill)</span>
+        </p>
+      ) : null}
+
       <div className="border-manga-black bg-manga-white relative border-2 shadow-[2px_2px_0_var(--manga-black)]">
         <div
           aria-hidden="true"
-          style={INPUT_TEXT_STYLE}
+          style={inputTextStyle}
           className="pointer-events-none absolute inset-0 px-2.5 py-2 font-semibold wrap-break-word whitespace-pre-wrap text-transparent"
         >
-          {boundaryUnderline ? (
+          {boundary ? (
             <>
-              {value.slice(0, boundaryUnderline.offset)}
-              <span className={boundaryUnderline.className}>
-                {value.slice(boundaryUnderline.offset)}
+              {value.slice(0, boundary.start)}
+              <span className="underline decoration-amber-600 decoration-solid decoration-[3px] underline-offset-2">
+                {[...value.slice(boundary.start, boundary.end)].map(
+                  (char, index) => {
+                    const offset = boundary.start + index
+
+                    return boundary.wrongOffsets.includes(offset) ? (
+                      <span
+                        key={offset}
+                        className="underline decoration-red-700 decoration-solid decoration-[3px] underline-offset-2"
+                      >
+                        {char}
+                      </span>
+                    ) : (
+                      char
+                    )
+                  }
+                )}
               </span>
+              {value.slice(boundary.end)}
             </>
           ) : (
             value
@@ -256,8 +313,8 @@ export function GuidedAnswerInput({
           onChange={event => onChange(event.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Type what you hear..."
-          style={INPUT_TEXT_STYLE}
-          className="text-manga-black placeholder:text-manga-ink-soft relative z-10 block field-sizing-content min-h-40 w-full resize-y border-0 bg-transparent px-2.5 py-2 font-semibold outline-none"
+          style={inputTextStyle}
+          className="text-manga-black placeholder:text-manga-ink-soft relative z-10 block field-sizing-content min-h-40 w-full resize-y overflow-hidden border-0 bg-transparent px-2.5 py-2 font-semibold wrap-break-word whitespace-pre-wrap outline-none"
         />
       </div>
 
@@ -289,29 +346,11 @@ export function GuidedAnswerInput({
         {statusMessage(status)}
       </p>
 
-      {hints.length > 0 && status !== 'correct' ? (
-        <p className="flex flex-wrap items-center gap-2 text-base font-black">
-          <Lightbulb
-            aria-hidden="true"
-            className="size-5 shrink-0 text-amber-600"
-          />
-          <span className="text-manga-ink-soft uppercase">Hint</span>
-          {hints.map(hint => (
-            <span
-              key={hint}
-              className="border border-amber-600 bg-amber-100 px-2 py-0.5 text-amber-900"
-            >
-              {hint}
-            </span>
-          ))}
-          <span className="text-manga-ink-soft text-xs">(Tab to fill)</span>
-        </p>
-      ) : null}
-
       {showCorrection ? (
         <p
           aria-hidden="true"
-          className="border-manga-black bg-manga-paper-soft border-2 p-3 text-2xl leading-9 font-semibold wrap-break-word shadow-[2px_2px_0_var(--manga-black)]"
+          style={inputTextStyle}
+          className="border-manga-black bg-manga-paper-soft border-2 p-3 font-semibold wrap-break-word shadow-[2px_2px_0_var(--manga-black)]"
           data-testid="answer-line"
         >
           {answerLineCells(correction, showFullAnswer).map(cell => (

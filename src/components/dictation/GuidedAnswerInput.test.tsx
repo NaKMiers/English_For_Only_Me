@@ -26,21 +26,35 @@ function renderInput(props: Partial<Parameters<typeof GuidedAnswerInput>[0]>) {
   const onChange = vi.fn()
   const onCheck = vi.fn()
   const onReveal = vi.fn()
-  const view = render(
-    <GuidedAnswerInput
-      correction={null}
-      onChange={onChange}
-      onCheck={onCheck}
-      onReveal={onReveal}
-      showAnswerImmediately
-      showFullAnswer={false}
-      status="idle"
-      value=""
-      {...props}
-    />
-  )
+  const baseProps = {
+    answerTextSize: 'large' as const,
+    correction: null,
+    expectedText: WALL,
+    onChange,
+    onCheck,
+    onReveal,
+    showAnswerImmediately: true,
+    showFullAnswer: false,
+    status: 'idle' as const,
+    value: '',
+    ...props,
+  }
+  const view = render(<GuidedAnswerInput {...baseProps} />)
 
-  return { onchange: onChange, onChange, onCheck, onReveal, view }
+  return {
+    onchange: onChange,
+    onChange,
+    onCheck,
+    onReveal,
+    rerender: (nextProps: Partial<Parameters<typeof GuidedAnswerInput>[0]>) =>
+      view.rerender(
+        <GuidedAnswerInput
+          {...baseProps}
+          {...nextProps}
+        />
+      ),
+    view,
+  }
 }
 
 describe('insertNextHint', () => {
@@ -119,6 +133,48 @@ describe('GuidedAnswerInput - display gating', () => {
   })
 })
 
+describe('GuidedAnswerInput - boundary underline', () => {
+  test('keeps the full draft and red-underlines the wrong character', () => {
+    const typed = 'the prxbably'
+    const correction = correctionFor(typed, 'the probably')
+    const { view } = renderInput({
+      correction,
+      expectedText: 'the probably',
+      status: 'incorrect',
+      value: typed,
+    })
+
+    // Draft is preserved verbatim (no truncation to the boundary prefix).
+    expect(
+      (view.getByLabelText('Type what you hear') as HTMLTextAreaElement).value
+    ).toBe(typed)
+
+    // The wrong 'x' is drawn in its own red-underlined span in the mirror.
+    const redChar = view.getAllByText('x').find(node =>
+      node.className.includes('decoration-red-700')
+    )
+
+    expect(redChar).toBeDefined()
+  })
+
+  test('drops the underline once the draft is edited away from the checked value', () => {
+    const typed = 'the prxbably'
+    const correction = correctionFor(typed, 'the probably')
+    const { view } = renderInput({
+      correction,
+      expectedText: 'the probably',
+      status: 'incorrect',
+      value: 'the pr', // learner started fixing it
+    })
+
+    const redChar = view
+      .queryAllByText('x')
+      .find(node => node.className.includes('decoration-red-700'))
+
+    expect(redChar).toBeUndefined()
+  })
+})
+
 describe('GuidedAnswerInput - keyboard', () => {
   test('Enter checks, Escape reveals', () => {
     const { view, onCheck, onReveal } = renderInput({ value: 'as years' })
@@ -141,10 +197,44 @@ describe('GuidedAnswerInput - keyboard', () => {
     expect(onCheck).not.toHaveBeenCalled()
   })
 
+  test('hints show up front, before any Check happens', () => {
+    const meng = "the Mengs and their neighbors, the Jiangs, hadn't yet worry"
+    const { view } = renderInput({
+      correction: null,
+      expectedText: meng,
+      status: 'idle',
+      value: '',
+    })
+
+    expect(view.getByText('Mengs')).toBeDefined()
+    expect(view.getByText('Jiangs')).toBeDefined()
+  })
+
+  test('clicking any hint chip fills that word and hides it immediately, even out of order', () => {
+    const meng = "the Mengs and their neighbors, the Jiangs, hadn't yet worry"
+    const correction = correctionFor('the', meng)
+    const { onChange, rerender, view } = renderInput({
+      correction,
+      expectedText: meng,
+      status: 'incorrect',
+      value: 'the',
+    })
+
+    // Click the SECOND hint while the first ("Mengs") is still outstanding.
+    fireEvent.click(view.getByText('Jiangs'))
+    expect(onChange).toHaveBeenCalledWith('the Jiangs')
+
+    rerender({ correction, expectedText: meng, status: 'incorrect', value: 'the Jiangs' })
+
+    expect(view.getByText('Mengs')).toBeDefined()
+    expect(view.queryByText('Jiangs')).toBeNull()
+  })
+
   test('Tab fills the next hint while hints remain', () => {
     const meng = "the Mengs and their neighbors, the Jiangs, hadn't yet worry"
     const { view, onChange } = renderInput({
       correction: correctionFor('the', meng),
+      expectedText: meng,
       status: 'incorrect',
       value: 'the',
     })
@@ -156,6 +246,36 @@ describe('GuidedAnswerInput - keyboard', () => {
     expect(onChange).toHaveBeenCalledWith('the Mengs')
     // preventDefault ran, so the focus did not move out
     expect(event).toBe(false)
+  })
+
+  test('Tab-filled hint disappears immediately, then reappears if deleted', () => {
+    const meng = "the Mengs and their neighbors, the Jiangs, hadn't yet worry"
+    const correction = correctionFor('the', meng)
+    const { rerender, view } = renderInput({
+      correction,
+      expectedText: meng,
+      status: 'incorrect',
+      value: 'the',
+    })
+
+    expect(view.getByText('Mengs')).toBeDefined()
+    expect(view.getByText('Jiangs')).toBeDefined()
+
+    fireEvent.keyDown(view.getByLabelText('Type what you hear'), {
+      key: 'Tab',
+    })
+
+    // Tab fill is reflected by the parent re-rendering with the new value.
+    rerender({ correction, expectedText: meng, status: 'incorrect', value: 'the Mengs' })
+
+    expect(view.queryByText('Mengs')).toBeNull()
+    expect(view.getByText('Jiangs')).toBeDefined()
+
+    // Backspacing the filled word brings its hint chip back.
+    rerender({ correction, expectedText: meng, status: 'incorrect', value: 'the' })
+
+    expect(view.getByText('Mengs')).toBeDefined()
+    expect(view.getByText('Jiangs')).toBeDefined()
   })
 
   test('Tab with no hints does not fill (focus escapes normally)', () => {
@@ -177,6 +297,7 @@ describe('GuidedAnswerInput - keyboard', () => {
     const meng = 'the Mengs and Jiangs worried'
     const { view, onChange } = renderInput({
       correction: correctionFor('the', meng),
+      expectedText: meng,
       status: 'incorrect',
       value: 'the',
     })

@@ -15,7 +15,9 @@ import {
 import { MangaButton } from '@/components/ui/MangaButton'
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { cn } from '@/lib/utils'
 import {
+  autoCorrectAnswer,
   buildCharCorrection,
   buildDictationCorrection,
   createLocalDictationAttempt,
@@ -50,7 +52,13 @@ interface PlayerController {
   canReplay: boolean
   getCurrentTimeMs: () => number | null
   message: string
+  pause: () => void
   playFromMs: (startMs: number) => void
+  playSegment: (
+    startMs: number,
+    endMs: number,
+    options?: { loop?: boolean }
+  ) => void
   replay: () => void
   seekToMs: (startMs: number, options: { play: boolean }) => void
   status: YoutubePlayerStatus
@@ -93,6 +101,16 @@ function createIdempotencyKey() {
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`
 }
 
+// Video size maps to how the video/tabs row splits. small/normal/large change
+// the two-column ratio on lg; max drops to a single column so the video spans
+// the full row and the tabs sit beneath it.
+const VIDEO_GRID_CLASS_NAME: Record<string, string> = {
+  small: 'lg:grid-cols-[minmax(0,0.75fr)_minmax(300px,1.25fr)]',
+  normal: 'lg:grid-cols-[minmax(0,1.08fr)_minmax(320px,0.92fr)]',
+  large: 'lg:grid-cols-[minmax(0,1.5fr)_minmax(260px,0.7fr)]',
+  max: 'grid-cols-1',
+}
+
 const PRACTICE_TAB_TRIGGER_CLASS_NAME =
   'border-manga-black text-manga-ink-soft bg-manga-white shadow-[2px_2px_0_var(--manga-black)] hover:bg-manga-paper-soft focus-visible:ring-manga-red/35 data-active:bg-manga-red! data-active:text-manga-white! data-active:shadow-[5px_5px_0_var(--manga-black)]! data-active:-translate-x-[2px] data-active:-translate-y-[2px] !h-auto min-h-11 flex-1 rounded-none border-3 px-3 py-2 font-sans text-sm font-black transition-all after:hidden sm:flex-none'
 
@@ -129,6 +147,11 @@ export function DictationPracticeShell({
   const [activePlaybackIndex, setActivePlaybackIndex] = useState<number | null>(
     null
   )
+  // Segments the learner retried after an earlier pass: translation stays
+  // hidden for these until they pass the segment again.
+  const [retriedSegmentIds, setRetriedSegmentIds] = useState<Set<string>>(
+    () => new Set()
+  )
   const replayCountRef = useRef<Record<string, number>>({})
   const segmentStartedAtRef = useRef(0)
   const autoPlayedSegmentIdRef = useRef<string | null>(null)
@@ -140,11 +163,23 @@ export function DictationPracticeShell({
     canReplay: false,
     getCurrentTimeMs: () => null,
     message: 'YouTube player is loading.',
+    pause: () => undefined,
     playFromMs: () => undefined,
+    playSegment: () => undefined,
     replay: () => undefined,
     seekToMs: () => undefined,
     status: 'idle',
   })
+  // Latest controller in a ref so effects can call it (pause/playSegment) without
+  // re-firing every time the controller object changes (status flips a lot).
+  const playerControllerRef = useRef(playerController)
+  const handleControllerChange = useCallback((controller: PlayerController) => {
+    playerControllerRef.current = controller
+    setPlayerController(controller)
+  }, [])
+  // Full Transcript: loop the caption being viewed, and auto-scroll to follow it.
+  const [isRepeatingCaption, setIsRepeatingCaption] = useState(false)
+  const [autoScrollTranscript, setAutoScrollTranscript] = useState(true)
   const { preferences, setPreferences } = useDictationPreferences(
     getInitialPreferences(initialSession)
   )
@@ -152,23 +187,21 @@ export function DictationPracticeShell({
   const currentAnswer = currentSegment
     ? (answerDrafts[currentSegment.id] ?? '')
     : ''
-  const completedAttempt = currentAttempt
-    ? currentAttempt.isPassed ||
-      currentAttempt.action === 'reveal' ||
-      currentAttempt.action === 'skip'
-    : false
-  const completedCurrentSegment =
-    currentSegment?.attemptStatus === 'correct' ||
-    currentSegment?.attemptStatus === 'revealed' ||
-    currentSegment?.attemptStatus === 'skipped'
-  const translationSegmentId = completedAttempt
+  // Translation only unlocks once the learner types it correctly — revealing or
+  // skipping shows the answer but keeps the translation gated. A retried segment
+  // re-locks the translation (even if it was passed before) until it's passed again.
+  const passedAttempt = Boolean(currentAttempt?.isPassed)
+  const passedCurrentSegment =
+    currentSegment?.attemptStatus === 'correct' &&
+    !retriedSegmentIds.has(currentSegment.id)
+  const translationSegmentId = passedAttempt
     ? currentAttempt?.segmentId
-    : completedCurrentSegment
+    : passedCurrentSegment
       ? currentSegment?.id
       : null
   const isTranslationUnlocked = Boolean(
-    (completedAttempt && currentAttempt?.segmentId) ||
-    (completedCurrentSegment && currentSegment?.id)
+    (passedAttempt && currentAttempt?.segmentId) ||
+    (passedCurrentSegment && currentSegment?.id)
   )
   const selectedTrack =
     translationTracks.find(track => track.language === selectedLanguage) ?? null
@@ -238,8 +271,13 @@ export function DictationPracticeShell({
     if (!currentSegment || !playerController.canReplay) return
     if (autoPlayedSegmentIdRef.current === currentSegment.id) return
 
-    autoPlayedSegmentIdRef.current = currentSegment.id
+    const segmentId = currentSegment.id
     const timeoutId = window.setTimeout(() => {
+      // Mark AFTER firing: navigating while the video plays pauses it (a side
+      // effect of the timing change), which re-creates the controller and re-runs
+      // this effect. If we marked up front, that re-run would bail on the guard
+      // above and the seek/replay would never happen.
+      autoPlayedSegmentIdRef.current = segmentId
       playerController.replay()
     }, 160)
 
@@ -377,6 +415,34 @@ export function DictationPracticeShell({
     else goNext()
   }, [activeCaptionIndex, activeView, goNext, goToCaption])
 
+  const toggleRepeatCaption = useCallback(
+    () => setIsRepeatingCaption(previous => !previous),
+    []
+  )
+
+  // Loop the caption the learner is viewing while Repeat is on, and follow it if
+  // they select another. The controller is read from a ref so this only re-fires
+  // when the caption or the toggle changes — not on every player status flip.
+  const activeCaptionStartMs = activeCaptionSegment?.startMs ?? null
+  const activeCaptionEndMs = activeCaptionSegment?.endMs ?? null
+  useEffect(() => {
+    if (activeView !== 'transcript' || !isRepeatingCaption) return
+    if (activeCaptionStartMs === null || activeCaptionEndMs === null) return
+
+    playerControllerRef.current.playSegment(
+      activeCaptionStartMs,
+      activeCaptionEndMs,
+      { loop: true }
+    )
+
+    return () => playerControllerRef.current.pause()
+  }, [
+    activeCaptionEndMs,
+    activeCaptionStartMs,
+    activeView,
+    isRepeatingCaption,
+  ])
+
   const toggleVideo = useCallback(() => {
     const nextValue = !preferences.isVideoHidden
 
@@ -411,8 +477,16 @@ export function DictationPracticeShell({
       const replayCountDelta = replayCountRef.current[currentSegment.id] ?? 0
       const timeSpentMs = Math.max(0, Date.now() - segmentStartedAtRef.current)
       const typedAnswer = currentAnswer
-      // Word-level result feeds analytics/persistence; char-level result drives
-      // the guided display. Same normalized inputs, two representations (F1).
+      // Check also auto-corrects: rewrite the words the learner got right to the
+      // canonical case/punctuation/spacing, while genuinely wrong words are kept
+      // for them to fix. The char display then renders THIS corrected draft.
+      const displayAnswer =
+        action === 'check'
+          ? autoCorrectAnswer(currentSegment.text, typedAnswer)
+          : typedAnswer
+      // Word-level result feeds analytics/persistence and scores the ORIGINAL
+      // typing; the char-level result drives the guided display of the corrected
+      // draft. Same expected text, two representations (F1).
       const correction = buildDictationCorrection({
         action,
         expectedText: currentSegment.text,
@@ -421,7 +495,7 @@ export function DictationPracticeShell({
       const charResult = buildCharCorrection({
         action,
         expectedText: currentSegment.text,
-        typedAnswer,
+        typedAnswer: displayAnswer,
       })
       const localAttempt = createLocalDictationAttempt({
         correction,
@@ -442,29 +516,36 @@ export function DictationPracticeShell({
       setDraftNotice(null)
       setSessionError(null)
 
-      // Wrong Check: rewrite the draft to the corrected prefix so the caret jumps
-      // to the exact fix point (GuidedAnswerInput moves it to the end). Correct /
-      // reveal / skip leave the draft alone; advancing clears it.
-      if (
-        action === 'check' &&
-        !correction.isPassed &&
-        charResult.caretValue !== typedAnswer
-      )
-        setAnswerDrafts(currentDrafts => ({
-          ...currentDrafts,
-          [currentSegment.id]: charResult.caretValue,
-        }))
       // Resolved (correct / reveal / skip): fill the full canonical answer into
       // the textarea like DailyDictation, and keep it so revisiting the segment
-      // shows the answer again.
-      else if (correction.isPassed || action === 'reveal' || action === 'skip')
+      // shows the answer again. A wrong Check swaps in the auto-corrected draft:
+      // matched words become canonical, the boundary word is underlined in place,
+      // and the caret drops just after it so nothing typed past it is lost.
+      if (correction.isPassed || action === 'reveal' || action === 'skip')
         setAnswerDrafts(currentDrafts => ({
           ...currentDrafts,
           [currentSegment.id]: currentSegment.text,
         }))
+      else if (action === 'check')
+        setAnswerDrafts(currentDrafts => ({
+          ...currentDrafts,
+          [currentSegment.id]: displayAnswer,
+        }))
 
       replayCountRef.current[currentSegment.id] = 0
       segmentStartedAtRef.current = Date.now()
+
+      // A fresh pass re-unlocks the translation for a previously retried segment.
+      if (correction.isPassed)
+        setRetriedSegmentIds(currentIds => {
+          if (!currentIds.has(currentSegment.id)) return currentIds
+
+          const nextIds = new Set(currentIds)
+
+          nextIds.delete(currentSegment.id)
+
+          return nextIds
+        })
 
       // Feedback is shown in place; the learner advances with Next / Enter.
       setCurrentAttempt(localAttempt)
@@ -514,6 +595,10 @@ export function DictationPracticeShell({
       : currentAttempt.action === 'reveal' || currentAttempt.action === 'skip'
         ? 'revealed'
         : 'incorrect'
+  // Retry stays available for any segment the learner has checked at least once —
+  // whether from this attempt or a persisted one from an earlier visit.
+  const hasCheckedCurrent =
+    Boolean(currentAttempt) || (currentSegment?.attemptCount ?? 0) > 0
 
   const advanceAfterAttempt = useCallback(() => {
     // Keep the resolved answer in the draft so revisiting the segment shows it.
@@ -526,23 +611,40 @@ export function DictationPracticeShell({
   }, [canGoNext, currentIndex, goToIndex])
 
   const retryCurrent = useCallback(() => {
-    if (currentSegment)
+    if (currentSegment) {
       setAnswerDrafts(currentDrafts => ({
         ...currentDrafts,
         [currentSegment.id]: '',
       }))
+      setRetriedSegmentIds(currentIds => {
+        const nextIds = new Set(currentIds)
+
+        nextIds.add(currentSegment.id)
+
+        return nextIds
+      })
+    }
 
     setCurrentAttempt(null)
     setCharCorrection(null)
     replayCurrentSegment()
   }, [currentSegment, replayCurrentSegment])
 
-  const handleRepeat = useCallback(() => {
+  // Rewind: just navigate back to the first segment, keep drafts and stats.
+  const goToFirstSegment = useCallback(() => {
     setIsCompleted(false)
     setCurrentAttempt(null)
     setCharCorrection(null)
     goToIndex(0)
   }, [goToIndex])
+
+  // Restart: clear this session's local progress (typed drafts, retry locks)
+  // and rewind. Saved attempt history / accuracy stats are left alone.
+  const restartProgress = useCallback(() => {
+    setAnswerDrafts({})
+    setRetriedSegmentIds(new Set())
+    goToFirstSegment()
+  }, [goToFirstSegment])
 
   // Check / Enter: grade the draft, or advance once the answer is resolved.
   const checkDraft = useCallback(() => {
@@ -562,15 +664,21 @@ export function DictationPracticeShell({
     else runAttempt('skip')
   }, [advanceAfterAttempt, attemptResolved, runAttempt])
 
+  // Ctrl+[ / Ctrl+] use the tab-aware handlers so they move the dictation cursor
+  // on the practice tab and scrub captions on the Full Transcript tab.
   const shortcutHandlers = useMemo(
     () => ({
       check: checkDraft,
-      next: goNext,
-      previous: goPrevious,
+      next: handleControlsGoNext,
+      previous: handleControlsGoPrevious,
       replay: replayCurrentSegment,
-      toggleVideo,
     }),
-    [checkDraft, goNext, goPrevious, replayCurrentSegment, toggleVideo]
+    [
+      checkDraft,
+      handleControlsGoNext,
+      handleControlsGoPrevious,
+      replayCurrentSegment,
+    ]
   )
 
   useDictationShortcuts({
@@ -603,25 +711,39 @@ export function DictationPracticeShell({
         />
 
         <DictationControls
+          answerTextSize={preferences.answerTextSize}
           canGoNext={canGoToNextCaption}
           canGoPrevious={canGoToPreviousCaption}
           canReplay={playerController.canReplay}
           currentIndex={displayIndex}
           isVideoHidden={preferences.isVideoHidden}
+          onAnswerTextSizeChange={answerTextSize =>
+            setPreferences(currentPreferences => ({
+              ...currentPreferences,
+              answerTextSize,
+            }))
+          }
           onGoNext={handleControlsGoNext}
           onGoPrevious={handleControlsGoPrevious}
+          onGoToFirstSegment={goToFirstSegment}
           onReplay={replayCurrentSegment}
+          onRestart={restartProgress}
           onSpeedChange={changeSpeed}
           onToggleVideo={toggleVideo}
           playbackSpeed={preferences.playbackSpeed}
           totalSegments={segments.length}
         />
 
-        <div className="grid min-w-0 items-start gap-3 lg:grid-cols-[minmax(0,1.08fr)_minmax(320px,0.92fr)]">
+        <div
+          className={cn(
+            'grid min-w-0 items-start gap-3',
+            VIDEO_GRID_CLASS_NAME[preferences.videoSize]
+          )}
+        >
           <DictationYoutubePlayer
             className="self-start lg:sticky lg:top-4"
             hidden={preferences.isVideoHidden}
-            onControllerChange={setPlayerController}
+            onControllerChange={handleControllerChange}
             onHiddenChange={hidden => {
               setPreferences(currentPreferences => ({
                 ...currentPreferences,
@@ -629,12 +751,19 @@ export function DictationPracticeShell({
               }))
               patchSession({ isVideoHidden: hidden })
             }}
+            onVideoSizeChange={videoSize =>
+              setPreferences(currentPreferences => ({
+                ...currentPreferences,
+                videoSize,
+              }))
+            }
             playbackSpeed={preferences.playbackSpeed}
             timing={{
               endMs: currentSegment.endMs,
               startMs: currentSegment.startMs,
             }}
             title={video.title}
+            videoSize={preferences.videoSize}
             youtubeVideoId={video.youtubeVideoId}
           />
 
@@ -683,7 +812,7 @@ export function DictationPracticeShell({
                     <MangaButton
                       type="button"
                       tone="paper"
-                      onClick={handleRepeat}
+                      onClick={restartProgress}
                     >
                       Repeat this exercise
                     </MangaButton>
@@ -713,7 +842,9 @@ export function DictationPracticeShell({
               ) : (
                 <>
                   <GuidedAnswerInput
+                    answerTextSize={preferences.answerTextSize}
                     correction={charCorrection}
+                    expectedText={currentSegment.text}
                     onChange={answer =>
                       setAnswerDrafts(currentDrafts => ({
                         ...currentDrafts,
@@ -730,25 +861,13 @@ export function DictationPracticeShell({
 
                   <div className="flex flex-wrap items-center gap-2">
                     {attemptResolved ? (
-                      <>
-                        <MangaButton
-                          type="button"
-                          className="text-base"
-                          onClick={advanceAfterAttempt}
-                        >
-                          {canGoNext ? 'Next' : 'Finish'}
-                        </MangaButton>
-                        {currentAttempt?.isPassed ? (
-                          <MangaButton
-                            type="button"
-                            tone="paper"
-                            className="text-base"
-                            onClick={retryCurrent}
-                          >
-                            Retry
-                          </MangaButton>
-                        ) : null}
-                      </>
+                      <MangaButton
+                        type="button"
+                        className="text-base"
+                        onClick={advanceAfterAttempt}
+                      >
+                        {canGoNext ? 'Next' : 'Finish'}
+                      </MangaButton>
                     ) : (
                       <>
                         <MangaButton
@@ -768,11 +887,22 @@ export function DictationPracticeShell({
                         </MangaButton>
                       </>
                     )}
+                    {hasCheckedCurrent ? (
+                      <MangaButton
+                        type="button"
+                        tone="paper"
+                        className="text-base"
+                        onClick={retryCurrent}
+                      >
+                        Retry
+                      </MangaButton>
+                    ) : null}
                   </div>
 
                   <div className="flex flex-col gap-2">
-                    <label className="flex items-center gap-2 text-sm font-black">
+                    <label className="flex items-center gap-2 text-base font-black">
                       <Switch
+                        size="lg"
                         checked={preferences.showAnswerImmediately}
                         onCheckedChange={checked =>
                           setPreferences(currentPreferences => ({
@@ -783,8 +913,9 @@ export function DictationPracticeShell({
                       />
                       Show answer immediately
                     </label>
-                    <label className="flex items-center gap-2 text-sm font-black">
+                    <label className="flex items-center gap-2 text-base font-black">
                       <Switch
+                        size="lg"
                         checked={preferences.showFullAnswer}
                         onCheckedChange={checked =>
                           setPreferences(currentPreferences => ({
@@ -802,6 +933,7 @@ export function DictationPracticeShell({
                       isUnlocked={isTranslationUnlocked}
                       language={selectedLanguage}
                       text={translationText}
+                      textSize={preferences.answerTextSize}
                     />
                   ) : null}
                 </>
@@ -813,8 +945,14 @@ export function DictationPracticeShell({
               className="min-w-0"
             >
               <DictationFullTranscript
+                autoScroll={autoScrollTranscript}
+                canRepeat={
+                  activeCaptionSegment?.startMs != null &&
+                  activeCaptionSegment?.endMs != null
+                }
                 currentSegmentId={currentSegment.id}
                 isActive={activeView === 'transcript'}
+                isRepeating={isRepeatingCaption}
                 onSelectSegment={segment => {
                   const index = segments.findIndex(
                     item => item.id === segment.id
@@ -822,6 +960,10 @@ export function DictationPracticeShell({
 
                   if (index >= 0) goToCaption(index)
                 }}
+                onToggleAutoScroll={() =>
+                  setAutoScrollTranscript(previous => !previous)
+                }
+                onToggleRepeat={toggleRepeatCaption}
                 playingSegmentId={activeCaptionSegment?.id ?? null}
                 segments={segments}
                 translations={transcriptTranslations}
@@ -849,19 +991,19 @@ export function DictationPracticeShell({
           <div className="flex flex-wrap items-center justify-between gap-3">
             {preferences.showShortcuts ? (
               <div className="text-manga-ink-soft flex flex-wrap gap-x-3 gap-y-1 text-xs font-black">
-                <span>Ctrl · replay</span>
+                <span>Alt · replay</span>
                 <span>Enter · check</span>
-                <span>Alt + arrows · move</span>
+                <span>Ctrl + [ ] · move</span>
               </div>
             ) : (
               <span />
             )}
             <label className="flex items-center gap-2 text-sm font-black">
-              <input
-                type="checkbox"
+              <Switch
+                size="default"
                 checked={preferences.showShortcuts}
-                onChange={event => {
-                  const showShortcuts = event.target.checked
+                onCheckedChange={checked => {
+                  const showShortcuts = checked
 
                   setPreferences(currentPreferences => ({
                     ...currentPreferences,
@@ -869,7 +1011,6 @@ export function DictationPracticeShell({
                   }))
                   patchSession({ showShortcuts })
                 }}
-                className="border-manga-black size-5 border-2"
               />
               Show shortcut hints
             </label>

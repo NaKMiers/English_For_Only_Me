@@ -1,7 +1,10 @@
 export { buildDictationCorrection } from './compareAnswer'
 export {
+  autoCorrectAnswer,
   buildCharCorrection,
+  computeHints,
   renderAnswerLine,
+  type CharBoundary,
   type CharCell,
   type CharCellStatus,
   type CharCorrectionResult,

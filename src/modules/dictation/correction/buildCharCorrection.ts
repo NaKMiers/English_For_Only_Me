@@ -68,6 +68,17 @@ export interface WordSegment {
   chars: CharCell[]
 }
 
+/** The first not-fully-correct word located inside the RAW typed answer, so the
+ * guided input can underline it in place without rewriting the draft. `start`/
+ * `end` are code-unit offsets into `typedValue`; `wrongOffsets` are the absolute
+ * offsets of the substituted/extra characters the learner typed (red), while the
+ * whole [start, end) span is the wrong word (amber). */
+export interface CharBoundary {
+  start: number
+  end: number
+  wrongOffsets: number[]
+}
+
 export interface CharCorrectionResult {
   action: DictationAttemptAction
   isPassed: boolean
@@ -81,6 +92,16 @@ export interface CharCorrectionResult {
    * T2 (the guided input) turns this into a DOM caret position.
    */
   caretValue: string
+  /** The raw typed answer this correction was computed from. The guided input
+   * compares it against the live draft to know the correction is still fresh. */
+  typedValue: string
+  /** Caret position (code-unit offset into `typedValue`) after a wrong Check:
+   * just past the boundary word, so the learner fixes it WITHOUT losing the text
+   * they typed after it (DailyDictation parity). */
+  caretOffset: number
+  /** The boundary word's location in `typedValue`, or null when the learner has
+   * not typed a word at the boundary yet (or the answer passed). */
+  boundary: CharBoundary | null
   /** Proper-noun hint words not yet typed correctly (mid-sentence capitals). */
   hints: string[]
   /** Per expected word, the set of accepted spellings (for "You can type X or Y"). */
@@ -101,6 +122,50 @@ const SENTENCE_END = /[.!?…]$/
 
 function splitUnits(value: string) {
   return value.replace(/\s+/g, ' ').trim().split(' ').filter(Boolean)
+}
+
+/** Code-unit [start, end) ranges of every whitespace-delimited token in the raw
+ * text, in order. Indices align 1:1 with splitUnits(text), so the Nth range is
+ * where the Nth unit sits in the original string (spacing preserved). */
+function tokenRanges(text: string): Array<[number, number]> {
+  const ranges: Array<[number, number]> = []
+  const matcher = /\S+/g
+  let match: RegExpExecArray | null
+
+  while ((match = matcher.exec(text)) !== null)
+    ranges.push([match.index, match.index + match[0].length])
+
+  return ranges
+}
+
+/** Locate the boundary word inside the raw typed answer and flag the characters
+ * the learner actually got wrong (substituted or typed past the expected word).
+ * Character comparison is case-insensitive, matching buildCharCells. */
+function locateBoundary(
+  typedAnswer: string,
+  expectedWord: string,
+  boundaryIndex: number
+): CharBoundary | null {
+  const range = tokenRanges(typedAnswer)[boundaryIndex]
+
+  if (!range) return null
+
+  const [start, end] = range
+  const typedWord = typedAnswer.slice(start, end)
+  const wrongOffsets: number[] = []
+
+  for (let position = 0; position < typedWord.length; position += 1) {
+    const expectedChar =
+      position < expectedWord.length ? expectedWord[position] : null
+
+    if (
+      expectedChar === null ||
+      typedWord[position].toLowerCase() !== expectedChar.toLowerCase()
+    )
+      wrongOffsets.push(start + position)
+  }
+
+  return { end, start, wrongOffsets }
 }
 
 /** Lowercase + strip surrounding/embedded punctuation for comparison, mirroring
@@ -179,6 +244,93 @@ function countFullyMatched(
   return matched
 }
 
+/** A token that is pure punctuation (normalises to nothing), e.g. a standalone
+ * "–", "—" or ":" that the expected text carries between words. */
+function isPunctuationOnlyUnit(unit: string) {
+  return normalizeUnit(unit) === ''
+}
+
+/** Rewrite the learner's draft toward the canonical answer on Check: the words
+ * they got right (ignoring case, punctuation, and extra whitespace) are replaced
+ * with the expected spelling + punctuation, and standalone punctuation tokens the
+ * expected text carries (e.g. a lone "–") are auto-inserted.
+ *
+ * When the learner has typed a clean prefix (no wrong word), the correction also
+ * looks AHEAD: it fills any punctuation that immediately follows the last matched
+ * word, then leaves a trailing space if more words are still to come — so the
+ * caret is parked right where the next word goes. A genuinely wrong word stops
+ * all of that; everything from there on is kept as typed (whitespace-collapsed)
+ * so the learner can fix the boundary. Pure — exported for tests. */
+export function autoCorrectAnswer(
+  expectedText: string,
+  typedAnswer: string
+): string {
+  const expectedUnits = splitUnits(expectedText)
+  const typedUnits = splitUnits(typedAnswer)
+  const canonical: string[] = []
+  let expectedIndex = 0
+  let typedIndex = 0
+  let matchedCleanly = true
+
+  while (typedIndex < typedUnits.length) {
+    // Carry standalone punctuation tokens ("–", "—", ":") in canonical form. If
+    // the learner also typed a punctuation token here, consume it too — otherwise
+    // their "–" would survive alongside the inserted one and duplicate on each
+    // Check.
+    while (
+      expectedIndex < expectedUnits.length &&
+      isPunctuationOnlyUnit(expectedUnits[expectedIndex])
+    ) {
+      canonical.push(expectedUnits[expectedIndex])
+      expectedIndex += 1
+
+      if (
+        typedIndex < typedUnits.length &&
+        isPunctuationOnlyUnit(typedUnits[typedIndex])
+      )
+        typedIndex += 1
+    }
+
+    if (typedIndex >= typedUnits.length) break
+
+    if (expectedIndex >= expectedUnits.length) {
+      matchedCleanly = false
+      break
+    }
+
+    if (
+      normalizeUnit(typedUnits[typedIndex]) ===
+      normalizeUnit(expectedUnits[expectedIndex])
+    ) {
+      canonical.push(expectedUnits[expectedIndex])
+      expectedIndex += 1
+      typedIndex += 1
+    } else {
+      matchedCleanly = false
+      break
+    }
+  }
+
+  // A wrong/extra word (or an empty draft): keep whatever the learner typed from
+  // the boundary on, without volunteering the upcoming answer.
+  if (!matchedCleanly || typedIndex === 0)
+    return [...canonical, ...typedUnits.slice(typedIndex)].join(' ')
+
+  // Clean prefix: fill the punctuation that follows the last matched word...
+  while (
+    expectedIndex < expectedUnits.length &&
+    isPunctuationOnlyUnit(expectedUnits[expectedIndex])
+  ) {
+    canonical.push(expectedUnits[expectedIndex])
+    expectedIndex += 1
+  }
+
+  const result = canonical.join(' ')
+
+  // ...then park a trailing space when more words are still to come.
+  return expectedIndex < expectedUnits.length ? `${result} ` : result
+}
+
 function isCleanPrefix(expectedNorm: string, typedNorm: string) {
   return (
     typedNorm.length > 0 &&
@@ -199,6 +351,17 @@ function collectHints(expectedUnits: string[], fromIndex: number): string[] {
   })
 
   return hints
+}
+
+/** Proper-noun hints for the sentence, live from the current draft - no Check
+ * required. Cheap subset of buildCharCorrection (skips segments/analytics) so
+ * the UI can recompute it on every keystroke. */
+export function computeHints(expectedText: string, typedAnswer: string): string[] {
+  const expectedUnits = splitUnits(expectedText)
+  const typedUnits = splitUnits(typedAnswer)
+  const fullyMatched = countFullyMatched(expectedUnits, typedUnits)
+
+  return collectHints(expectedUnits, fullyMatched)
 }
 
 function buildSegments({
@@ -328,13 +491,16 @@ export function buildCharCorrection({
     return {
       action,
       alternatives: {},
+      boundary: null,
       boundaryIndex: 0,
+      caretOffset: typedAnswer.length,
       caretValue: '',
       feedbackTokens: analytics.feedbackTokens,
       hints: [],
       isPassed: false,
       segments,
       stats: analytics.stats,
+      typedValue: typedAnswer,
     }
   }
 
@@ -344,16 +510,27 @@ export function buildCharCorrection({
     fullyMatched,
     typedUnits,
   })
+  // Anchor the boundary word inside the raw draft so the guided input can
+  // underline it and drop the caret just past it — keeping everything the
+  // learner typed after the mistake instead of truncating to the prefix.
+  const boundary = locateBoundary(
+    typedAnswer,
+    expectedUnits[boundaryIndex] ?? '',
+    boundaryIndex
+  )
 
   return {
     action,
     alternatives: {},
+    boundary,
     boundaryIndex,
+    caretOffset: boundary ? boundary.end : typedAnswer.length,
     caretValue,
     feedbackTokens: analytics.feedbackTokens,
     hints: collectHints(expectedUnits, fullyMatched),
     isPassed: analytics.isPassed,
     segments,
     stats: analytics.stats,
+    typedValue: typedAnswer,
   }
 }

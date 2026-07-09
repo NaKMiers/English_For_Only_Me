@@ -45,9 +45,14 @@ describe('DictationFullTranscript', () => {
     const onSelectSegment = vi.fn()
     const view = render(
       <DictationFullTranscript
+        autoScroll
+        canRepeat
         currentSegmentId="seg-1"
         isActive
+        isRepeating={false}
         onSelectSegment={onSelectSegment}
+        onToggleAutoScroll={vi.fn()}
+        onToggleRepeat={vi.fn()}
         playingSegmentId={null}
         segments={SEGMENTS}
       />
@@ -64,9 +69,14 @@ describe('DictationFullTranscript', () => {
   test('highlights the playing segment over the practice cursor', () => {
     const view = render(
       <DictationFullTranscript
+        autoScroll
+        canRepeat
         currentSegmentId="seg-1"
         isActive
+        isRepeating={false}
         onSelectSegment={vi.fn()}
+        onToggleAutoScroll={vi.fn()}
+        onToggleRepeat={vi.fn()}
         playingSegmentId="seg-3"
         segments={SEGMENTS}
       />

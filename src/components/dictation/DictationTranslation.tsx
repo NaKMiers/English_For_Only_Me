@@ -5,6 +5,10 @@ import { Languages } from 'lucide-react'
 import { MangaPanel } from '@/components/common/MangaPanel'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
+import {
+  ANSWER_TEXT_STYLE,
+  type AnswerTextSize,
+} from '@/modules/dictation/preferences/dictationPreferences'
 import { getLanguageLabel } from '@/modules/dictation/translations/languages'
 
 interface Props {
@@ -12,6 +16,7 @@ interface Props {
   isUnlocked: boolean
   language: string
   text: string
+  textSize: AnswerTextSize
 }
 
 const NO_CAPTION_MESSAGE =
@@ -22,6 +27,7 @@ export function DictationTranslation({
   isUnlocked,
   language,
   text,
+  textSize,
 }: Props) {
   if (!isUnlocked) return null
 
@@ -43,6 +49,7 @@ export function DictationTranslation({
     >
       <div
         role="status"
+        style={hasText ? ANSWER_TEXT_STYLE[textSize] : undefined}
         className={cn(
           'border-manga-black bg-manga-paper-soft flex items-start gap-3 border-2 p-3 text-base leading-7 font-semibold shadow-[3px_3px_0_var(--manga-black)]',
           hasText && 'bg-white'

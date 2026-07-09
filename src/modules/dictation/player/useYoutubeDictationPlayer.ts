@@ -69,12 +69,19 @@ export function useYoutubeDictationPlayer({
   markPaused: () => void
   markPlaying: () => void
   markReady: () => void
+  pause: () => void
   playFromMs: (startMs: number) => void
+  playSegment: (
+    startMs: number,
+    endMs: number,
+    options?: { loop?: boolean }
+  ) => void
   seekToMs: (startMs: number, options: { play: boolean }) => void
 } {
   const playerRef = useRef<YoutubeDictationPlayerAdapter | null>(null)
   const stopIntervalRef = useRef<number | null>(null)
   const stopTimeoutRef = useRef<number | null>(null)
+  const loopRef = useRef(false)
   const [hasPlayer, setHasPlayer] = useState(false)
   const [status, setStatus] = useState<YoutubePlayerStatus>('idle')
   const replayWindow = useMemo(
@@ -84,6 +91,8 @@ export function useYoutubeDictationPlayer({
   const canReplay = Boolean(replayWindow && hasPlayer)
 
   const clearStopTimer = useCallback(() => {
+    loopRef.current = false
+
     if (stopIntervalRef.current) {
       window.clearInterval(stopIntervalRef.current)
       stopIntervalRef.current = null
@@ -157,6 +166,66 @@ export function useYoutubeDictationPlayer({
     },
     [clearStopTimer, playbackSpeed]
   )
+
+  // Play an arbitrary [startMs, endMs] window and stop at its end, or loop it
+  // when `loop` is set. Used by the transcript "Repeat" button to replay/loop
+  // the caption the learner is viewing (which may differ from the typed segment).
+  const playSegment = useCallback(
+    (startMs: number, endMs: number, options?: { loop?: boolean }) => {
+      const player = playerRef.current
+      const segmentWindow = getReplayWindow({ endMs, startMs })
+
+      if (!player || !segmentWindow) {
+        setStatus('missingTiming')
+        return
+      }
+
+      const loop = Boolean(options?.loop)
+
+      clearStopTimer()
+      loopRef.current = loop
+      player.seekTo(segmentWindow.startSeconds, true)
+      player.setPlaybackRate?.(playbackSpeed)
+      player.playVideo()
+      setStatus('playing')
+
+      const handleEnd = () => {
+        if (loopRef.current) {
+          player.seekTo(segmentWindow.startSeconds, true)
+          player.playVideo()
+          return
+        }
+
+        player.pauseVideo()
+        clearStopTimer()
+        setStatus('ready')
+      }
+
+      stopIntervalRef.current = window.setInterval(() => {
+        if (player.getCurrentTime() < segmentWindow.endSeconds) return
+
+        handleEnd()
+      }, 120)
+
+      if (!loop) {
+        const windowDurationMs =
+          ((segmentWindow.endSeconds - segmentWindow.startSeconds) * 1000) /
+          Math.max(playbackSpeed, 0.25)
+
+        stopTimeoutRef.current = window.setTimeout(
+          handleEnd,
+          windowDurationMs + 350
+        )
+      }
+    },
+    [clearStopTimer, playbackSpeed]
+  )
+
+  const pause = useCallback(() => {
+    clearStopTimer()
+    playerRef.current?.pauseVideo()
+    setStatus(replayWindow ? 'ready' : 'missingTiming')
+  }, [clearStopTimer, replayWindow])
 
   const seekToMs = useCallback(
     (startMs: number, options: { play: boolean }) => {
@@ -235,7 +304,9 @@ export function useYoutubeDictationPlayer({
       replayWindow,
       status,
     }),
+    pause,
     playFromMs,
+    playSegment,
     replay,
     seekToMs,
     status,

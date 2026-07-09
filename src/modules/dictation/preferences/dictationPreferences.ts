@@ -10,15 +10,51 @@ export const DICTATION_ANSWER_DRAFTS_STORAGE_KEY =
 
 export const PLAYBACK_SPEED_OPTIONS = [0.75, 1, 1.25, 1.5] as const
 
+export const ANSWER_TEXT_SIZE_OPTIONS = [
+  'small',
+  'normal',
+  'large',
+  'xlarge',
+] as const
+
+export type AnswerTextSize = (typeof ANSWER_TEXT_SIZE_OPTIONS)[number]
+
+// Shared by the textarea, its underline mirror, the answer-line correction, and
+// the translation so they always render at the SAME size. fontSize/lineHeight
+// are applied inline so the value wins over the global `textarea` font reset.
+export const ANSWER_TEXT_STYLE: Record<
+  AnswerTextSize,
+  { fontSize: string; lineHeight: string }
+> = {
+  small: { fontSize: '1.125rem', lineHeight: '1.75rem' },
+  normal: { fontSize: '1.5rem', lineHeight: '2.125rem' },
+  large: { fontSize: '1.875rem', lineHeight: '2.5rem' },
+  xlarge: { fontSize: '2.5rem', lineHeight: '3.25rem' },
+}
+
+export const ANSWER_TEXT_SIZE_LABEL: Record<AnswerTextSize, string> = {
+  small: 'S',
+  normal: 'M',
+  large: 'L',
+  xlarge: 'XL',
+}
+
+export const VIDEO_SIZE_OPTIONS = ['small', 'normal', 'large', 'max'] as const
+
+export type VideoSize = (typeof VIDEO_SIZE_OPTIONS)[number]
+
 export interface DictationPracticePreferences {
+  answerTextSize: AnswerTextSize
   isVideoHidden: boolean
   playbackSpeed: number
   showAnswerImmediately: boolean
   showFullAnswer: boolean
   showShortcuts: boolean
+  videoSize: VideoSize
 }
 
 export const DEFAULT_DICTATION_PREFERENCES: DictationPracticePreferences = {
+  answerTextSize: 'large',
   isVideoHidden: false,
   playbackSpeed: 1,
   // DailyDictation defaults: reveal the marked answer after Check, but keep the
@@ -26,12 +62,21 @@ export const DEFAULT_DICTATION_PREFERENCES: DictationPracticePreferences = {
   showAnswerImmediately: true,
   showFullAnswer: false,
   showShortcuts: true,
+  videoSize: 'normal',
 }
 
 function normalizePreferences(
   value: Partial<DictationPracticePreferences>
 ): DictationPracticePreferences {
   return {
+    answerTextSize: ANSWER_TEXT_SIZE_OPTIONS.includes(
+      value.answerTextSize as AnswerTextSize
+    )
+      ? (value.answerTextSize as AnswerTextSize)
+      : DEFAULT_DICTATION_PREFERENCES.answerTextSize,
+    videoSize: VIDEO_SIZE_OPTIONS.includes(value.videoSize as VideoSize)
+      ? (value.videoSize as VideoSize)
+      : DEFAULT_DICTATION_PREFERENCES.videoSize,
     isVideoHidden:
       typeof value.isVideoHidden === 'boolean'
         ? value.isVideoHidden
