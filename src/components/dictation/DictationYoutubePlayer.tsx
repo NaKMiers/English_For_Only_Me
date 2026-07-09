@@ -275,7 +275,7 @@ export function DictationYoutubePlayer({
             aria-hidden="true"
             className="bg-manga-paper-soft text-manga-ink-soft absolute inset-0 grid place-items-center p-6 text-center text-sm leading-6 font-black"
           >
-            Video hidden — listen and type. Replay still works for timed
+            Video hidden - listen and type. Replay still works for timed
             segments.
           </div>
         ) : null}

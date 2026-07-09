@@ -15,7 +15,7 @@ function masked(typedAnswer: string, expectedText: string) {
   })
 }
 
-describe('buildCharCorrection — reveal + mask model', () => {
+describe('buildCharCorrection - reveal + mask model', () => {
   test('matched words shown, next word revealed, rest masked (typed nothing at boundary)', () => {
     // muc 4 case 1: "As years" -> caret after "As years ", next word revealed.
     const result = check('As years', WALL)
@@ -137,7 +137,7 @@ describe('buildCharCorrection — reveal + mask model', () => {
   })
 })
 
-describe('buildCharCorrection — hints (proper nouns)', () => {
+describe('buildCharCorrection - hints (proper nouns)', () => {
   const MENG =
     "the Mengs and their neighbors, the Jiangs, hadn't yet had to worry about being drafted by the emperor's soldiers."
 
@@ -159,7 +159,7 @@ describe('buildCharCorrection — hints (proper nouns)', () => {
   })
 })
 
-describe('buildCharCorrection — reveal/skip actions', () => {
+describe('buildCharCorrection - reveal/skip actions', () => {
   test('reveal returns every word for full display and never passes', () => {
     const result = buildCharCorrection({
       action: 'reveal',
@@ -172,7 +172,7 @@ describe('buildCharCorrection — reveal/skip actions', () => {
   })
 })
 
-describe('buildCharCorrection — analytics projection', () => {
+describe('buildCharCorrection - analytics projection', () => {
   test('carries the word-level feedbackTokens + stats from the shared engine', () => {
     const result = check('I want tea', 'I want coffee')
 
@@ -181,7 +181,7 @@ describe('buildCharCorrection — analytics projection', () => {
   })
 })
 
-describe.skip('buildCharCorrection — KNOWN LIMITATION: 1:2 contraction equivalence', () => {
+describe.skip('buildCharCorrection - KNOWN LIMITATION: 1:2 contraction equivalence', () => {
   test("accepts he'd for he would (word-count-changing contraction)", () => {
     // Expected has two words ("he would"); typed one ("he'd"). T1 follow-up.
     const result = check('an emperor declared that he would', 'that he would')

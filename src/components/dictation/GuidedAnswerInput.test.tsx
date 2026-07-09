@@ -54,7 +54,7 @@ describe('insertNextHint', () => {
   })
 })
 
-describe('answerLineCells — dual-channel colour + underline', () => {
+describe('answerLineCells - dual-channel colour + underline', () => {
   test('missing char is dotted amber, wrong char is solid red', () => {
     const cells = answerLineCells(
       correctionFor('One particlar', 'One particular gourd'),
@@ -90,7 +90,7 @@ describe('answerLineCells — dual-channel colour + underline', () => {
   })
 })
 
-describe('GuidedAnswerInput — display gating', () => {
+describe('GuidedAnswerInput - display gating', () => {
   test('shows the answer line only after check when showAnswerImmediately is on', () => {
     const { view } = renderInput({
       correction: correctionFor('As years'),
@@ -119,7 +119,7 @@ describe('GuidedAnswerInput — display gating', () => {
   })
 })
 
-describe('GuidedAnswerInput — keyboard', () => {
+describe('GuidedAnswerInput - keyboard', () => {
   test('Enter checks, Escape reveals', () => {
     const { view, onCheck, onReveal } = renderInput({ value: 'as years' })
     const textarea = view.getByLabelText('Type what you hear')

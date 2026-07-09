@@ -37,7 +37,7 @@ import { DEFAULT_CORRECTION_OPTIONS, type CorrectionOptions } from './types'
  *
  * KNOWN LIMITATION (T1 follow-up): contraction equivalence that changes word
  * count (expected "he would" ⇄ typed "he'd") is not yet aligned at the word
- * level here — see the skipped test. The alternatives list still surfaces the
+ * level here - see the skipped test. The alternatives list still surfaces the
  * accepted forms for the UI's "You can type X or Y" line.
  */
 
@@ -52,10 +52,10 @@ export interface CharCell {
 }
 
 export type WordSegmentKind =
-  | 'matched' // fully-correct typed word — show real text, green
+  | 'matched' // fully-correct typed word - show real text, green
   | 'boundaryReveal' // first diverging word revealed in full (fix target)
   | 'boundaryPartial' // clean incomplete prefix of the last typed word
-  | 'remaining' // words after the boundary — masked when showFullAnswer is off
+  | 'remaining' // words after the boundary - masked when showFullAnswer is off
 
 export interface WordSegment {
   kind: WordSegmentKind
@@ -116,7 +116,7 @@ function normalizeUnit(value: string) {
 
 /** A word is a hint when it carries an uppercase letter that is not merely the
  * sentence-initial capital, and is not the pronoun "I". Deterministic, derived
- * from the transcript text — no dictionary lookup (design decision, muc 13-2). */
+ * from the transcript text - no dictionary lookup (design decision, muc 13-2). */
 function isProperNoun(rawWord: string, isSentenceStart: boolean) {
   const core = rawWord.replace(/[^\p{L}\p{N}']/gu, '')
 

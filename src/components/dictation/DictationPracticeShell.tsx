@@ -23,16 +23,16 @@ import {
 } from '@/modules/dictation/correction'
 import type { YoutubePlayerStatus } from '@/modules/dictation/player/useYoutubeDictationPlayer'
 import {
-  resolveCaptionForWindow,
-  type CaptionCue,
-} from '@/modules/dictation/translations/captionOverlap'
-import {
   readDictationAnswerDrafts,
   useDictationPreferences,
   writeDictationAnswerDrafts,
   type DictationPracticePreferences,
 } from '@/modules/dictation/preferences/dictationPreferences'
 import { useDictationShortcuts } from '@/modules/dictation/preferences/shortcuts'
+import {
+  resolveCaptionForWindow,
+  type CaptionCue,
+} from '@/modules/dictation/translations/captionOverlap'
 import type {
   DictationAttemptAction,
   DictationAttemptApiRecord,
@@ -592,7 +592,7 @@ export function DictationPracticeShell({
     )
 
   return (
-    <div className="mx-auto grid w-full max-w-6xl min-w-0 gap-4">
+    <div className="mx-auto grid w-full min-w-0 gap-4">
       <section className="border-manga-black bg-manga-white grid min-w-0 gap-3 border-3 p-3 shadow-[5px_5px_0_var(--manga-black)] sm:p-4">
         <DictationPracticeHeader
           eyebrow={sessionMode === 'resume' ? 'Resume dictation' : 'Dictation'}

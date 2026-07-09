@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'vitest'
 
+import type { DictationAttemptAction } from '@/modules/dictation/types'
 import { buildCharCorrection } from './buildCharCorrection'
 import { buildDictationCorrection } from './compareAnswer'
-import type { DictationAttemptAction } from '@/modules/dictation/types'
 
 /**
  * Client/server pass-fail parity (eng review IRON RULE, T4).
@@ -10,7 +10,7 @@ import type { DictationAttemptAction } from '@/modules/dictation/types'
  * The guided display runs on the client via buildCharCorrection; the server
  * recomputes buildDictationCorrection when it persists the attempt. If those two
  * ever disagree on isPassed, the learner sees "correct" but the sentence never
- * advances (or vice versa) — the worst failure mode. buildCharCorrection is
+ * advances (or vice versa) - the worst failure mode. buildCharCorrection is
  * designed to DELEGATE pass/fail and the word-level feedbackTokens/stats to
  * buildDictationCorrection; this test locks that invariant so a future change to
  * the char engine cannot silently fork the two.
@@ -36,7 +36,7 @@ const CASES: { expected: string; typed: string }[] = [
 
 const ACTIONS: DictationAttemptAction[] = ['check', 'reveal', 'skip']
 
-describe('correction parity — buildCharCorrection delegates to buildDictationCorrection', () => {
+describe('correction parity - buildCharCorrection delegates to buildDictationCorrection', () => {
   for (const action of ACTIONS)
     for (const { expected, typed } of CASES)
       test(`${action}: "${typed}" vs "${expected}"`, () => {
