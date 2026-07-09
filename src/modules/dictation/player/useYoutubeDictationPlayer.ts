@@ -166,7 +166,7 @@ export function useYoutubeDictationPlayer({
 
       // Seek without the windowed stop timer so playback continues freely from
       // the new position. The caller passes the desired play state so the video
-      // keeps playing or stays paused exactly as it was before the seek — even
+      // keeps playing or stays paused exactly as it was before the seek - even
       // from the cued/unstarted state, where a bare seekTo would auto-play.
       clearStopTimer()
       player.seekTo(startMs / 1000, true)

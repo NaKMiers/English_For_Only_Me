@@ -74,7 +74,7 @@ export function getLanguageLabel(code: string) {
       // label when it actually resolved to something human-readable.
       if (label && label.toLowerCase() !== normalized) return label
     } catch {
-      // Structurally invalid code — fall through to the raw code.
+      // Structurally invalid code - fall through to the raw code.
     }
 
   return normalized

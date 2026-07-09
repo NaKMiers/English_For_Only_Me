@@ -214,7 +214,7 @@ export function DictationYoutubePlayer({
 
               // Mirror the real YouTube player state so the transcript and
               // segment counter follow the playhead no matter how playback
-              // started — including the native play/pause button.
+              // started - including the native play/pause button.
               if (event.data === playerState?.BUFFERING)
                 playerHandlersRef.current.markBuffering()
               else if (event.data === playerState?.PLAYING)

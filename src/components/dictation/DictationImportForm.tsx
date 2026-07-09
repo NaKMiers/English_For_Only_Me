@@ -107,6 +107,7 @@ export function DictationImportForm({
               youtubeVideoId={video.youtubeVideoId}
               priority
               sizes="(min-width: 1280px) 45vw, 100vw"
+              className="max-w-xl"
             />
             <QueueRow
               title={video.title}

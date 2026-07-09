@@ -1,7 +1,7 @@
 'use client'
 
 import { Captions, CheckCircle2, Plus, Trash2, Upload } from 'lucide-react'
-import { useMemo, useRef, useState, type ChangeEvent } from 'react'
+import { useCallback, useMemo, useRef, useState, type ChangeEvent } from 'react'
 
 import { MangaPanel } from '@/components/common/MangaPanel'
 import { QueueRow } from '@/components/common/QueueRow'
@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { MangaButton } from '@/components/ui/MangaButton'
 import { Textarea } from '@/components/ui/textarea'
+import { formatCuesAsCaptionText } from '@/modules/dictation/transcripts/formatCuesAsCaptionText'
 import {
   getCuratedLanguageOptions,
   getLanguageLabel,
@@ -33,13 +34,16 @@ interface Props {
   defaultLanguage: string
   initialActiveTranscriptId: string | null
   initialTracks: DictationTranscriptApiRecord[]
+  onDefaultLanguageChange?: (language: string) => void
   videoId: string
 }
 
 function isSupportedCaptionFile(file: File) {
   const lowerName = file.name.toLowerCase()
 
-  return CAPTION_FILE_EXTENSIONS.some(extension => lowerName.endsWith(extension))
+  return CAPTION_FILE_EXTENSIONS.some(extension =>
+    lowerName.endsWith(extension)
+  )
 }
 
 export function DictationCaptionManager({
@@ -88,6 +92,24 @@ export function DictationCaptionManager({
       option => option.code === primaryLanguage || !used.has(option.code)
     )
   }, [translationTracks, primaryLanguage])
+
+  const findTrackForLanguage = useCallback(
+    (code: string) => {
+      const normalized = normalizeTranslationLanguage(code)
+
+      return normalized === primaryLanguage
+        ? primaryTrack
+        : (tracks.find(
+            track => normalizeTranslationLanguage(track.language) === normalized
+          ) ?? null)
+    },
+    [primaryLanguage, primaryTrack, tracks]
+  )
+
+  const existingTrackForLanguage = useMemo(
+    () => findTrackForLanguage(languageCode),
+    [languageCode, findTrackForLanguage]
+  )
 
   async function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
@@ -140,6 +162,31 @@ export function DictationCaptionManager({
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
+  function selectLanguage(code: string) {
+    setLanguageCode(code)
+    setErrorMessage(null)
+    setMessage(null)
+
+    const normalized = normalizeTranslationLanguage(code)
+    const existingTrack = findTrackForLanguage(code)
+
+    if (fileInputRef.current) fileInputRef.current.value = ''
+    setFileName(null)
+
+    if (existingTrack) {
+      const looksFlattened =
+        existingTrack.cueCount > 0 && !existingTrack.rawText.includes('-->')
+      const captionSource = looksFlattened
+        ? formatCuesAsCaptionText(existingTrack.rawCues)
+        : existingTrack.rawText
+
+      setCaptionText(captionSource)
+      setMessage(
+        `Loaded existing ${getLanguageLabel(normalized)} captions - edit and save to update them.`
+      )
+    } else setCaptionText('')
+  }
+
   async function attachPrimary(code: string) {
     const response = await attachDictationTranscriptApi({
       videoId,
@@ -162,7 +209,7 @@ export function DictationCaptionManager({
     ])
     setActiveId(readyTranscript.id)
     setMessage(
-      `${getLanguageLabel(code)} captions saved — ${segmentResponse.segments.length} sentences ready for practice.`
+      `${getLanguageLabel(code)} captions saved - ${segmentResponse.segments.length} sentences ready for practice.`
     )
   }
 
@@ -184,7 +231,7 @@ export function DictationCaptionManager({
     setMessage(
       response.transcript.cueCount > 0
         ? `${getLanguageLabel(code)} captions saved (${response.transcript.cueCount} timed cues).`
-        : `${getLanguageLabel(code)} saved, but no timings were detected — practice can only align timed (SRT/VTT) captions.`
+        : `${getLanguageLabel(code)} saved, but no timings were detected - practice can only align timed (SRT/VTT) captions.`
     )
   }
 
@@ -213,7 +260,9 @@ export function DictationCaptionManager({
       resetUpload()
     } catch (error) {
       setErrorMessage(
-        error instanceof Error ? error.message : 'Could not save these captions.'
+        error instanceof Error
+          ? error.message
+          : 'Could not save these captions.'
       )
     } finally {
       setIsSaving(false)
@@ -265,7 +314,7 @@ export function DictationCaptionManager({
     >
       <p className="text-manga-ink-soft text-base leading-7 font-semibold">
         Select a language and upload its subtitle file (SRT/VTT). Start with{' '}
-        {getLanguageLabel(primaryLanguage)} — that becomes the dictation source
+        {getLanguageLabel(primaryLanguage)} - that becomes the dictation source
         and makes the video ready. Add more languages and their captions show as
         translations during practice.
       </p>
@@ -277,10 +326,11 @@ export function DictationCaptionManager({
               title={getLanguageLabel(primaryTrack.language)}
               meta={
                 primaryTrack.segmentCount > 0
-                  ? `Dictation source — ${primaryTrack.segmentCount} sentences`
-                  : 'Dictation source — building sentences'
+                  ? `Dictation source - ${primaryTrack.segmentCount} sentences`
+                  : 'Dictation source - building sentences'
               }
               status="source"
+              onClick={() => selectLanguage(primaryTrack.language)}
               action={
                 <CheckCircle2
                   aria-hidden="true"
@@ -299,10 +349,14 @@ export function DictationCaptionManager({
                   : 'No timings detected'
               }
               status={track.language}
+              onClick={() => selectLanguage(track.language)}
               action={
                 <IconButton
                   label={`Remove ${getLanguageLabel(track.language)} captions`}
-                  onClick={() => handleRemove(track)}
+                  onClick={event => {
+                    event.stopPropagation()
+                    handleRemove(track)
+                  }}
                 >
                   <Trash2
                     aria-hidden="true"
@@ -328,7 +382,7 @@ export function DictationCaptionManager({
                   : ''
               }
               onChange={event =>
-                event.target.value && setLanguageCode(event.target.value)
+                event.target.value && selectLanguage(event.target.value)
               }
               className="border-manga-black bg-manga-white min-h-11 rounded-none border-3 px-3 py-2 font-semibold shadow-[3px_3px_0_var(--manga-black)]"
             >
@@ -339,7 +393,7 @@ export function DictationCaptionManager({
                   value={option.code}
                 >
                   {option.label} ({option.code})
-                  {option.code === primaryLanguage ? ' — dictation source' : ''}
+                  {option.code === primaryLanguage ? ' - dictation source' : ''}
                 </option>
               ))}
             </select>
@@ -357,6 +411,10 @@ export function DictationCaptionManager({
               value={languageCode}
               placeholder="e.g. en, ja, pt-br"
               onChange={event => setLanguageCode(event.target.value)}
+              onBlur={event => {
+                if (isValidTranslationLanguage(event.target.value))
+                  selectLanguage(event.target.value)
+              }}
               className="border-manga-black bg-manga-white min-h-11 rounded-none border-3 font-semibold shadow-[3px_3px_0_var(--manga-black)]"
             />
           </div>
@@ -366,7 +424,7 @@ export function DictationCaptionManager({
           <Badge className="border-manga-black bg-manga-white text-manga-black w-fit rounded-none border-2 font-black">
             {getLanguageLabel(languageCode)}
             {normalizeTranslationLanguage(languageCode) === primaryLanguage
-              ? ' — dictation source'
+              ? ' - dictation source'
               : ''}
           </Badge>
         ) : null}
@@ -415,7 +473,7 @@ export function DictationCaptionManager({
               setFileName(null)
               if (fileInputRef.current) fileInputRef.current.value = ''
             }}
-            className="border-manga-black bg-manga-white min-h-40 rounded-none border-3 text-base leading-6 font-semibold shadow-[3px_3px_0_var(--manga-black)]"
+            className="border-manga-black bg-manga-white max-h-96 min-h-40 overflow-y-auto rounded-none border-3 text-base leading-6 font-semibold shadow-[3px_3px_0_var(--manga-black)]"
           />
           <p className="text-manga-ink-soft text-xs leading-5 font-semibold">
             Timed (SRT/VTT) captions align to sentences during practice. Plain
@@ -435,7 +493,11 @@ export function DictationCaptionManager({
             />
           }
         >
-          {isSaving ? 'Saving' : 'Add Captions'}
+          {isSaving
+            ? 'Saving'
+            : existingTrackForLanguage
+              ? 'Save Captions'
+              : 'Add Captions'}
         </MangaButton>
       </div>
 

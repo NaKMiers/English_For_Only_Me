@@ -1,5 +1,9 @@
 import { hasMongoDbUri } from '@/constants/environments'
-import { createDictationVideoPayloadSchema } from '@/modules/dictation/schemas/videoPayloadSchema'
+import {
+  createDictationVideoPayloadSchema,
+  updateDictationVideoPayloadSchema,
+} from '@/modules/dictation/schemas/videoPayloadSchema'
+import { normalizeTranslationLanguage } from '@/modules/dictation/translations/languages'
 
 export const MISSING_MONGODB_MESSAGE =
   'MongoDB is not configured. Set MONGODB_URI on the server to use the dictation video library.'
@@ -51,6 +55,28 @@ export function parseCreateVideoRequest({ body, ownerId }: CreateVideoInput) {
       youtubeUrl: parsed.data.youtubeUrl,
       transcriptStatus: parsed.data.transcriptStatus,
       status: 'needsTranscript' as const,
+    },
+  } as const
+}
+
+export function parseUpdateVideoRequest(body: unknown) {
+  const parsed = updateDictationVideoPayloadSchema.safeParse(body)
+
+  if (!parsed.success)
+    return {
+      ok: false,
+      status: 400,
+      body: {
+        message: parsed.error.issues[0]?.message ?? 'Invalid video payload.',
+      },
+    } as const
+
+  return {
+    ok: true,
+    data: {
+      defaultLanguage: normalizeTranslationLanguage(
+        parsed.data.defaultLanguage
+      ),
     },
   } as const
 }

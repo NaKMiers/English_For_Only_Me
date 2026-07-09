@@ -11,6 +11,7 @@ interface Props {
   className?: string
   href?: string
   meta?: string
+  onClick?: () => void
   status?: string
   statusTone?: keyof typeof PAGE_TAG_TONES
   title: string
@@ -21,6 +22,7 @@ export function QueueRow({
   className,
   href,
   meta,
+  onClick,
   status,
   statusTone = 'pale',
   title,
@@ -46,18 +48,36 @@ export function QueueRow({
 
   const rowClassName = cn(
     'flex min-w-0 items-center justify-between gap-3 border-2 border-manga-black bg-manga-white p-3 shadow-[3px_3px_0_var(--manga-black)]',
-    href && 'transition-colors hover:bg-manga-paper-soft',
+    (href || onClick) && 'transition-colors hover:bg-manga-paper-soft',
     className
   )
 
-  if (!href) return <div className={rowClassName}>{content}</div>
+  if (href)
+    return (
+      <Link
+        href={href}
+        className={rowClassName}
+      >
+        {content}
+      </Link>
+    )
 
-  return (
-    <Link
-      href={href}
-      className={rowClassName}
-    >
-      {content}
-    </Link>
-  )
+  if (onClick)
+    return (
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={onClick}
+        onKeyDown={event => {
+          if (event.key !== 'Enter' && event.key !== ' ') return
+          event.preventDefault()
+          onClick()
+        }}
+        className={cn(rowClassName, 'cursor-pointer')}
+      >
+        {content}
+      </div>
+    )
+
+  return <div className={rowClassName}>{content}</div>
 }

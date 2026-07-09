@@ -33,6 +33,7 @@ export function parseTranscriptRequest(body: unknown) {
     data: {
       videoId: parsed.data.videoId,
       role: parsed.data.role,
+      rawText: parsed.data.rawText,
       normalized,
     },
   } as const

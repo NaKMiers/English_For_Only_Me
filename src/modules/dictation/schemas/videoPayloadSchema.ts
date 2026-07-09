@@ -1,5 +1,7 @@
 import { z } from 'zod'
 
+import { isValidTranslationLanguage } from '@/modules/dictation/translations/languages'
+
 const emptyToUndefined = (value: unknown) => {
   if (typeof value !== 'string') return value
 
@@ -30,4 +32,19 @@ export const createDictationVideoPayloadSchema = z
 
 export type CreateDictationVideoPayload = z.infer<
   typeof createDictationVideoPayloadSchema
+>
+
+export const updateDictationVideoPayloadSchema = z
+  .object({
+    defaultLanguage: z
+      .string()
+      .trim()
+      .min(2)
+      .max(12)
+      .refine(isValidTranslationLanguage, 'Enter a valid language code.'),
+  })
+  .strict()
+
+export type UpdateDictationVideoPayload = z.infer<
+  typeof updateDictationVideoPayloadSchema
 >

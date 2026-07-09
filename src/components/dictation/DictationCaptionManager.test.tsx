@@ -74,7 +74,7 @@ describe('DictationCaptionManager', () => {
     )
 
     expect(view.getByText('Ready')).not.toBeNull()
-    expect(view.getByText(/Dictation source — 12 sentences/)).not.toBeNull()
+    expect(view.getByText(/Dictation source - 12 sentences/)).not.toBeNull()
     expect(view.getByText('Vietnamese')).not.toBeNull()
     expect(view.getByText('28 timed cues')).not.toBeNull()
   })
@@ -112,9 +112,8 @@ describe('DictationCaptionManager', () => {
   })
 
   test('accepts manually pasted caption text as the upload source', async () => {
-    const { attachDictationTranslationTrackApi } = await import(
-      '@/requests/dictationTranscriptsApi'
-    )
+    const { attachDictationTranslationTrackApi } =
+      await import('@/requests/dictationTranscriptsApi')
     const mockedAttach = vi.mocked(attachDictationTranslationTrackApi)
 
     mockedAttach.mockResolvedValue({
@@ -129,8 +128,7 @@ describe('DictationCaptionManager', () => {
     })
     fireEvent.change(view.getByLabelText('Or paste / type captions'), {
       target: {
-        value:
-          '1\n00:00:01,000 --> 00:00:03,000\nKonnichiwa.',
+        value: '1\n00:00:01,000 --> 00:00:03,000\nKonnichiwa.',
       },
     })
     fireEvent.click(view.getByText('Add Captions'))
