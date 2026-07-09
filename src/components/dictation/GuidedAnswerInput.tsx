@@ -228,7 +228,7 @@ export function GuidedAnswerInput({
       <div className="border-manga-black bg-manga-white relative border-2 shadow-[2px_2px_0_var(--manga-black)]">
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 px-2.5 py-2 text-2xl leading-9 font-semibold break-words whitespace-pre-wrap text-transparent"
+          className="pointer-events-none absolute inset-0 px-2.5 py-2 text-3xl leading-10 font-semibold wrap-break-word whitespace-pre-wrap text-transparent"
         >
           {boundaryUnderline ? (
             <>
@@ -250,7 +250,7 @@ export function GuidedAnswerInput({
           onChange={event => onChange(event.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Type what you hear..."
-          className="text-manga-black relative z-10 min-h-28 rounded-none border-0 bg-transparent px-2.5 py-2 text-2xl leading-9 font-semibold shadow-none focus-visible:ring-0 md:text-2xl"
+          className="text-manga-black relative z-10 min-h-28 rounded-none border-0 bg-transparent px-2.5 py-2 text-3xl leading-10 font-semibold shadow-none focus-visible:ring-0 md:text-3xl"
         />
       </div>
 
@@ -305,7 +305,7 @@ export function GuidedAnswerInput({
       {showCorrection ? (
         <p
           aria-hidden="true"
-          className="border-manga-black bg-manga-paper-soft border-2 p-3 text-2xl leading-9 font-semibold break-words shadow-[2px_2px_0_var(--manga-black)]"
+          className="border-manga-black bg-manga-paper-soft border-2 p-3 text-2xl leading-9 font-semibold wrap-break-word shadow-[2px_2px_0_var(--manga-black)]"
           data-testid="answer-line"
         >
           {answerLineCells(correction, showFullAnswer).map(cell => (
