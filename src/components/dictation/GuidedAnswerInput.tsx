@@ -3,7 +3,6 @@
 import { CircleCheck, Eye, Lightbulb, TriangleAlert } from 'lucide-react'
 import { useEffect, useMemo, useRef } from 'react'
 
-import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
 import type {
   CharCell,
@@ -241,7 +240,9 @@ export function GuidedAnswerInput({
             value
           )}
         </div>
-        <Textarea
+        {/* Raw textarea (not the shared Textarea component) so its base
+            text-base/md:text-sm classes cannot override the large type here. */}
+        <textarea
           ref={textareaRef}
           aria-label="Type what you hear"
           data-dictation-shortcuts="allow"
@@ -250,7 +251,7 @@ export function GuidedAnswerInput({
           onChange={event => onChange(event.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Type what you hear..."
-          className="text-manga-black relative z-10 min-h-28 rounded-none border-0 bg-transparent px-2.5 py-2 text-3xl leading-10 font-semibold shadow-none focus-visible:ring-0 md:text-3xl"
+          className="text-manga-black placeholder:text-manga-ink-soft relative z-10 block field-sizing-content min-h-40 w-full resize-y border-0 bg-transparent px-2.5 py-2 text-3xl leading-10 font-semibold outline-none"
         />
       </div>
 
