@@ -13,12 +13,18 @@ export const PLAYBACK_SPEED_OPTIONS = [0.75, 1, 1.25, 1.5] as const
 export interface DictationPracticePreferences {
   isVideoHidden: boolean
   playbackSpeed: number
+  showAnswerImmediately: boolean
+  showFullAnswer: boolean
   showShortcuts: boolean
 }
 
 export const DEFAULT_DICTATION_PREFERENCES: DictationPracticePreferences = {
   isVideoHidden: false,
   playbackSpeed: 1,
+  // DailyDictation defaults: reveal the marked answer after Check, but keep the
+  // not-yet-correct part masked so the learner still has to work for it (muc 7/8).
+  showAnswerImmediately: true,
+  showFullAnswer: false,
   showShortcuts: true,
 }
 
@@ -37,6 +43,14 @@ function normalizePreferences(
       )
         ? value.playbackSpeed
         : DEFAULT_DICTATION_PREFERENCES.playbackSpeed,
+    showAnswerImmediately:
+      typeof value.showAnswerImmediately === 'boolean'
+        ? value.showAnswerImmediately
+        : DEFAULT_DICTATION_PREFERENCES.showAnswerImmediately,
+    showFullAnswer:
+      typeof value.showFullAnswer === 'boolean'
+        ? value.showFullAnswer
+        : DEFAULT_DICTATION_PREFERENCES.showFullAnswer,
     showShortcuts:
       typeof value.showShortcuts === 'boolean'
         ? value.showShortcuts
