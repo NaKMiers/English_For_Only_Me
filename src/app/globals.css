@@ -138,10 +138,15 @@ body {
   font-family: var(--font-source-sans), Arial, Helvetica, sans-serif;
 }
 
-button,
-input,
-textarea {
-  font: inherit;
+/* Keep this in @layer base so Tailwind text utilities (text-3xl, font-semibold,
+   leading-*) applied directly to a button/input/textarea still win. Unlayered,
+   `font: inherit` beats every @layer utility and silently kills those classes. */
+@layer base {
+  button,
+  input,
+  textarea {
+    font: inherit;
+  }
 }
 
 button {
