@@ -1,4 +1,5 @@
 import type { DictationVideoRecord } from '@/models/dictation/DictationVideoModel'
+import type { DictationLevel } from '@/modules/dictation/levels'
 
 export function toDictationVideoRecord(video: {
   _id: unknown
@@ -22,6 +23,9 @@ export function toDictationVideoRecord(video: {
   completedSessionCount?: number
   tags?: string[]
   collections?: string[]
+  topicId?: unknown
+  sectionId?: unknown
+  level?: DictationLevel | null
   lastPracticedAt?: Date | null
   createdAt: Date
   updatedAt: Date
@@ -50,6 +54,9 @@ export function toDictationVideoRecord(video: {
     completedSessionCount: video.completedSessionCount ?? 0,
     tags: video.tags ?? [],
     collections: video.collections ?? [],
+    topicId: video.topicId ? String(video.topicId) : null,
+    sectionId: video.sectionId ? String(video.sectionId) : null,
+    level: video.level ?? null,
     lastPracticedAt: video.lastPracticedAt ?? null,
     createdAt: video.createdAt,
     updatedAt: video.updatedAt,

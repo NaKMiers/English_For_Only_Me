@@ -1,3 +1,5 @@
+import type { DictationLevel } from './levels'
+
 export type DictationVideoStatus =
   | 'draft'
   | 'needsTranscript'
@@ -99,9 +101,47 @@ export interface DictationVideoApiRecord {
   completedSessionCount: number
   tags: string[]
   collections: string[]
+  topicId: string | null
+  sectionId: string | null
+  level: DictationLevel | null
   lastPracticedAt: Date | null
   createdAt: Date
   updatedAt: Date
+}
+
+export interface DictationTopicApiRecord {
+  id: string
+  slug: string
+  title: string
+  description: string | null
+  thumbnailUrl: string | null
+  hasVideoMedia: boolean
+  order: number
+  createdAt: Date
+  updatedAt: Date
+}
+
+/** Topic plus the counts derived by aggregation for the browse grid. */
+export interface DictationTopicSummaryRecord extends DictationTopicApiRecord {
+  levelRange: string | null
+  sectionCount: number
+  lessonCount: number
+}
+
+export interface DictationSectionApiRecord {
+  id: string
+  topicId: string
+  title: string
+  order: number
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface DictationFavoriteApiRecord {
+  id: string
+  userId: string
+  videoId: string
+  createdAt: Date
 }
 
 export interface DictationTranscriptApiRecord {

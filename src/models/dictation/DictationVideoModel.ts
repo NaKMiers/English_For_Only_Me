@@ -151,6 +151,26 @@ const DictationVideoSchema = new Schema(
       type: [String],
       default: [],
     },
+    // Content hierarchy (Chunk 2). All optional: a video may sit in no topic
+    // (no-topic group) and/or no section (ungrouped). Level is per-video CEFR.
+    topicId: {
+      type: Schema.Types.ObjectId,
+      ref: 'DictationTopic',
+      default: null,
+      index: true,
+    },
+    sectionId: {
+      type: Schema.Types.ObjectId,
+      ref: 'DictationSection',
+      default: null,
+      index: true,
+    },
+    level: {
+      type: String,
+      enum: ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'],
+      default: null,
+      index: true,
+    },
   },
   {
     timestamps: true,
@@ -158,6 +178,7 @@ const DictationVideoSchema = new Schema(
 )
 
 DictationVideoSchema.index({ ownerId: 1, createdAt: -1 })
+DictationVideoSchema.index({ topicId: 1, sectionId: 1 })
 DictationVideoSchema.index({ ownerId: 1, youtubeUrl: 1 }, { unique: true })
 DictationVideoSchema.index(
   { ownerId: 1, youtubeVideoId: 1 },

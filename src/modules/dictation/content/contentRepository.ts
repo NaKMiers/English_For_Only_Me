@@ -1,0 +1,133 @@
+import 'server-only'
+
+import { DictationSectionModel } from '@/models/dictation/DictationSectionModel'
+import { DictationTopicModel } from '@/models/dictation/DictationTopicModel'
+import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
+import type { DictationLevel } from '@/modules/dictation/levels'
+import type {
+  DictationSectionApiRecord,
+  DictationTopicApiRecord,
+  DictationTopicSummaryRecord,
+} from '@/modules/dictation/types'
+
+import {
+  buildTopicSummaries,
+  type TopicSectionAggregate,
+  type TopicVideoAggregate,
+} from './topicSummaries'
+
+interface TopicLean {
+  _id: unknown
+  slug: string
+  title: string
+  description?: string | null
+  thumbnailUrl?: string | null
+  hasVideoMedia?: boolean
+  order?: number
+  createdAt: Date
+  updatedAt: Date
+}
+
+interface SectionLean {
+  _id: unknown
+  topicId: unknown
+  title: string
+  order?: number
+  createdAt: Date
+  updatedAt: Date
+}
+
+function toTopicRecord(topic: TopicLean): DictationTopicApiRecord {
+  return {
+    id: String(topic._id),
+    slug: topic.slug,
+    title: topic.title,
+    description: topic.description ?? null,
+    thumbnailUrl: topic.thumbnailUrl ?? null,
+    hasVideoMedia: topic.hasVideoMedia ?? false,
+    order: topic.order ?? 0,
+    createdAt: topic.createdAt,
+    updatedAt: topic.updatedAt,
+  }
+}
+
+function toSectionRecord(section: SectionLean): DictationSectionApiRecord {
+  return {
+    id: String(section._id),
+    topicId: String(section.topicId),
+    title: section.title,
+    order: section.order ?? 0,
+    createdAt: section.createdAt,
+    updatedAt: section.updatedAt,
+  }
+}
+
+export async function listTopics(): Promise<DictationTopicApiRecord[]> {
+  const topics = await DictationTopicModel.find()
+    .sort({ order: 1, title: 1 })
+    .lean<TopicLean[]>()
+
+  return topics.map(toTopicRecord)
+}
+
+export async function getTopicBySlug(
+  slug: string
+): Promise<DictationTopicApiRecord | null> {
+  const topic = await DictationTopicModel.findOne({
+    slug: slug.trim().toLowerCase(),
+  }).lean<TopicLean | null>()
+
+  return topic ? toTopicRecord(topic) : null
+}
+
+export async function listSectionsForTopic(
+  topicId: string
+): Promise<DictationSectionApiRecord[]> {
+  const sections = await DictationSectionModel.find({ topicId })
+    .sort({ order: 1, title: 1 })
+    .lean<SectionLean[]>()
+
+  return sections.map(toSectionRecord)
+}
+
+/**
+ * Topics with derived level range, section count, and lesson count for the
+ * browse grid. Counts are computed live via aggregation (I4) — not stored.
+ */
+export async function listTopicSummaries(): Promise<
+  DictationTopicSummaryRecord[]
+> {
+  const [topics, videoRows, sectionRows] = await Promise.all([
+    listTopics(),
+    DictationVideoModel.aggregate<{
+      _id: unknown
+      lessonCount: number
+      levels: Array<DictationLevel | null>
+    }>([
+      { $match: { topicId: { $ne: null }, status: { $ne: 'archived' } } },
+      {
+        $group: {
+          _id: '$topicId',
+          lessonCount: { $sum: 1 },
+          levels: { $addToSet: '$level' },
+        },
+      },
+    ]),
+    DictationSectionModel.aggregate<{ _id: unknown; sectionCount: number }>([
+      { $group: { _id: '$topicId', sectionCount: { $sum: 1 } } },
+    ]),
+  ])
+
+  const videoAggregates: TopicVideoAggregate[] = videoRows.map(row => ({
+    topicId: String(row._id),
+    lessonCount: row.lessonCount,
+    levels: row.levels,
+  }))
+
+  const sectionAggregates: TopicSectionAggregate[] = sectionRows.map(row => ({
+    topicId: String(row._id),
+    sectionCount: row.sectionCount,
+  }))
+
+  return buildTopicSummaries(topics, videoAggregates, sectionAggregates)
+}
