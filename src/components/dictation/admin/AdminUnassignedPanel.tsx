@@ -11,6 +11,7 @@ import { moveVideoAction } from '@/modules/dictation/content/adminActions'
 import {
   DraggableVideoRow,
   DropZone,
+  MIME_VIDEO,
   type AdminSectionVideo,
 } from './adminVideoDnd'
 
@@ -55,7 +56,8 @@ export function AdminUnassignedPanel({
 
       {open && (
         <DropZone
-          onDropVideo={unassign}
+          accept={MIME_VIDEO}
+          onDrop={unassign}
           onEnter={() => setOpen(true)}
           className="grid gap-2"
         >

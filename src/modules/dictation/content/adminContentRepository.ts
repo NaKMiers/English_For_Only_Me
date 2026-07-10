@@ -38,6 +38,8 @@ async function uniqueTopicSlug(
 
 export async function createTopic(input: TopicInput) {
   const slug = await uniqueTopicSlug(input.title)
+  // Append at the end; order is otherwise managed by drag-to-reorder.
+  const order = input.order ?? (await DictationTopicModel.countDocuments())
 
   const topic = await DictationTopicModel.create({
     slug,
@@ -45,10 +47,32 @@ export async function createTopic(input: TopicInput) {
     description: input.description?.trim() || null,
     thumbnailUrl: input.thumbnailUrl?.trim() || null,
     hasVideoMedia: input.hasVideoMedia ?? false,
-    order: input.order ?? 0,
+    order,
   })
 
   return String(topic._id)
+}
+
+/** Set each topic's order to its index in the given id list (drag reorder). */
+export async function reorderTopics(ids: string[]) {
+  if (ids.length === 0) return
+
+  await DictationTopicModel.bulkWrite(
+    ids.map((id, index) => ({
+      updateOne: { filter: { _id: id }, update: { $set: { order: index } } },
+    }))
+  )
+}
+
+/** Set each section's order to its index in the given id list (drag reorder). */
+export async function reorderSections(ids: string[]) {
+  if (ids.length === 0) return
+
+  await DictationSectionModel.bulkWrite(
+    ids.map((id, index) => ({
+      updateOne: { filter: { _id: id }, update: { $set: { order: index } } },
+    }))
+  )
 }
 
 export async function updateTopic(id: string, patch: Partial<TopicInput>) {
@@ -84,11 +108,18 @@ export async function deleteTopic(id: string) {
   await DictationTopicModel.deleteOne({ _id: id })
 }
 
-export async function createSection(topicId: string, title: string, order = 0) {
+export async function createSection(
+  topicId: string,
+  title: string,
+  order?: number
+) {
+  // Append at the end of the topic's sections when no explicit order given.
+  const finalOrder =
+    order ?? (await DictationSectionModel.countDocuments({ topicId }))
   const section = await DictationSectionModel.create({
     topicId,
     title: title.trim(),
-    order,
+    order: finalOrder,
   })
 
   return String(section._id)

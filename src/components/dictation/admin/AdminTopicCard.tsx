@@ -12,6 +12,7 @@ import {
   deleteSectionAction,
   deleteTopicAction,
   moveVideoAction,
+  reorderSectionsAction,
   updateTopicAction,
 } from '@/modules/dictation/content/adminActions'
 
@@ -19,6 +20,11 @@ import { ConfirmSubmitButton } from './ConfirmSubmitButton'
 import {
   DraggableVideoRow,
   DropZone,
+  MIME_SECTION,
+  MIME_TOPIC,
+  MIME_VIDEO,
+  ReorderHandle,
+  reorderIds,
   type AdminSectionVideo,
 } from './adminVideoDnd'
 
@@ -52,67 +58,85 @@ const danger =
 function SectionBlock({
   section,
   onDropVideo,
+  onReorder,
 }: {
   section: AdminSectionData
   onDropVideo: (videoId: string, sectionId: string) => void
+  onReorder: (draggedId: string, beforeId: string) => void
 }) {
   const [open, setOpen] = useState(false)
 
   return (
     <DropZone
-      onDropVideo={videoId => onDropVideo(videoId, section.id)}
-      onEnter={() => setOpen(true)}
-      className="border-manga-black bg-manga-paper-soft border-2"
+      accept={MIME_SECTION}
+      onDrop={draggedId => onReorder(draggedId, section.id)}
     >
-      <div className="flex items-center justify-between gap-2 px-3 py-2">
-        <button
-          type="button"
-          aria-expanded={open}
-          onClick={() => setOpen(v => !v)}
-          className="flex min-w-0 flex-1 items-center gap-2 text-left"
-        >
-          <ChevronDown
-            aria-hidden="true"
-            className={cn('size-4 transition-transform', open && 'rotate-180')}
-          />
-          <span className="truncate font-sans text-sm font-black">
-            {section.title}
-          </span>
-          <PageTag tone="pale">{section.videos.length}</PageTag>
-        </button>
-        <form action={deleteSectionAction}>
-          <input
-            type="hidden"
-            name="id"
-            value={section.id}
-          />
-          <ConfirmSubmitButton
-            confirmTitle="Remove section?"
-            confirmMessage={`Remove "${section.title}"? Its videos stay but become ungrouped. This does not delete any video.`}
-            confirmLabel="Remove section"
-            className="border-manga-black bg-manga-white hover:bg-manga-pale-red inline-flex min-h-9 items-center border-2 px-3 font-sans text-xs font-black uppercase"
-          >
-            Remove
-          </ConfirmSubmitButton>
-        </form>
-      </div>
-      {open && (
-        <ul className="border-manga-black grid gap-2 border-t-2 p-2">
-          {section.videos.length === 0 ? (
-            <li className="text-manga-ink-soft p-2 text-sm">
-              No videos yet — drag one here.
-            </li>
-          ) : (
-            section.videos.map(video => (
-              <DraggableVideoRow
-                key={video.id}
-                video={video}
-                sectioned
+      <DropZone
+        accept={MIME_VIDEO}
+        onDrop={videoId => onDropVideo(videoId, section.id)}
+        onEnter={() => setOpen(true)}
+        className="border-manga-black bg-manga-paper-soft border-2"
+      >
+        <div className="flex items-center justify-between gap-2 px-3 py-2">
+          <div className="flex min-w-0 flex-1 items-center gap-2">
+            <ReorderHandle
+              mime={MIME_SECTION}
+              id={section.id}
+              label={`Reorder ${section.title}`}
+            />
+            <button
+              type="button"
+              aria-expanded={open}
+              onClick={() => setOpen(v => !v)}
+              className="flex min-w-0 flex-1 items-center gap-2 text-left"
+            >
+              <ChevronDown
+                aria-hidden="true"
+                className={cn(
+                  'size-4 transition-transform',
+                  open && 'rotate-180'
+                )}
               />
-            ))
-          )}
-        </ul>
-      )}
+              <span className="truncate font-sans text-sm font-black">
+                {section.title}
+              </span>
+              <PageTag tone="pale">{section.videos.length}</PageTag>
+            </button>
+          </div>
+          <form action={deleteSectionAction}>
+            <input
+              type="hidden"
+              name="id"
+              value={section.id}
+            />
+            <ConfirmSubmitButton
+              confirmTitle="Remove section?"
+              confirmMessage={`Remove "${section.title}"? Its videos stay but become ungrouped. This does not delete any video.`}
+              confirmLabel="Remove section"
+              className="border-manga-black bg-manga-white hover:bg-manga-pale-red inline-flex min-h-9 items-center border-2 px-3 font-sans text-xs font-black uppercase"
+            >
+              Remove
+            </ConfirmSubmitButton>
+          </form>
+        </div>
+        {open && (
+          <ul className="border-manga-black grid gap-2 border-t-2 p-2">
+            {section.videos.length === 0 ? (
+              <li className="text-manga-ink-soft p-2 text-sm">
+                No videos yet — drag one here.
+              </li>
+            ) : (
+              section.videos.map(video => (
+                <DraggableVideoRow
+                  key={video.id}
+                  video={video}
+                  sectioned
+                />
+              ))
+            )}
+          </ul>
+        )}
+      </DropZone>
     </DropZone>
   )
 }
@@ -130,17 +154,36 @@ export function AdminTopicCard({ topic }: { topic: AdminTopicData }) {
     })
   }
 
+  function reorderSection(draggedId: string, beforeId: string) {
+    if (draggedId === beforeId) return
+    const next = reorderIds(
+      topic.sections.map(s => s.id),
+      draggedId,
+      beforeId
+    )
+    startTransition(async () => {
+      await reorderSectionsAction(next)
+      router.refresh()
+    })
+  }
+
   return (
     <div
-      // Dragging a video over a collapsed topic auto-expands it so its sections
-      // become droppable.
-      onDragOver={() => {
-        if (!expanded) setExpanded(true)
+      // Auto-expand a collapsed topic when a VIDEO is dragged over it (so its
+      // sections become droppable). Ignore topic-reorder drags.
+      onDragOver={event => {
+        if (!expanded && event.dataTransfer.types.includes(MIME_VIDEO))
+          setExpanded(true)
       }}
       className="border-manga-black bg-manga-white grid gap-3 border-3 p-4 shadow-[4px_4px_0_var(--manga-black)]"
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex min-w-0 flex-wrap items-center gap-2">
+          <ReorderHandle
+            mime={MIME_TOPIC}
+            id={topic.id}
+            label={`Reorder ${topic.title}`}
+          />
           <button
             type="button"
             aria-expanded={expanded}
@@ -223,15 +266,6 @@ export function AdminTopicCard({ topic }: { topic: AdminTopicData }) {
             Renaming updates the topic&apos;s URL (/dictation/{topic.slug}).
           </p>
           <div className="flex flex-wrap items-center gap-4">
-            <label className="grid gap-1 font-sans text-sm font-black">
-              Order
-              <input
-                name="order"
-                type="number"
-                defaultValue={topic.order}
-                className={`${input} w-28`}
-              />
-            </label>
             <label className="flex items-center gap-2 font-sans text-sm font-black">
               <input
                 type="checkbox"
@@ -254,8 +288,8 @@ export function AdminTopicCard({ topic }: { topic: AdminTopicData }) {
       {expanded && (
         <>
           <p className="text-manga-ink-soft text-xs">
-            Tip: drag a video by its handle into another section or topic to
-            move it.
+            Drag the ⠿ handles to reorder sections; drag a video into a section
+            or another topic to move it.
           </p>
 
           <div className="grid gap-2">
@@ -264,11 +298,13 @@ export function AdminTopicCard({ topic }: { topic: AdminTopicData }) {
                 key={section.id}
                 section={section}
                 onDropVideo={moveVideo}
+                onReorder={reorderSection}
               />
             ))}
 
             <DropZone
-              onDropVideo={videoId => moveVideo(videoId, null)}
+              accept={MIME_VIDEO}
+              onDrop={videoId => moveVideo(videoId, null)}
               className="border-manga-black bg-manga-paper-soft border-2 p-2"
             >
               <p className="mb-2 font-sans text-sm font-black">

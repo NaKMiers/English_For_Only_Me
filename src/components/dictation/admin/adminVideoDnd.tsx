@@ -9,7 +9,14 @@ import { PageTag } from '@/components/ui/PageTag'
 import { cn } from '@/lib/utils'
 import { removeVideoFromSectionAction } from '@/modules/dictation/content/adminActions'
 
-export const DRAG_MIME = 'text/plain'
+export { reorderIds } from '@/modules/dictation/content/reorder'
+
+// Distinct drag payload types so the three drag interactions on /admin/topics
+// (move a video, reorder topics, reorder sections) never cross-activate each
+// other's drop zones. Browsers lowercase custom types in dataTransfer.types.
+export const MIME_VIDEO = 'application/x-efom-video'
+export const MIME_TOPIC = 'application/x-efom-topic'
+export const MIME_SECTION = 'application/x-efom-section'
 
 export interface AdminSectionVideo {
   id: string
@@ -19,14 +26,19 @@ export interface AdminSectionVideo {
   youtubeVideoId: string | null
 }
 
-/** A div that accepts a dropped video row and highlights while dragged over. */
+/**
+ * A drop zone that only reacts to drags carrying `accept`. Highlights while a
+ * matching item is dragged over; calls onDrop(id) with the dragged id.
+ */
 export function DropZone({
-  onDropVideo,
+  accept,
+  onDrop,
   onEnter,
   className,
   children,
 }: {
-  onDropVideo: (videoId: string) => void
+  accept: string
+  onDrop: (id: string) => void
   onEnter?: () => void
   className?: string
   children: ReactNode
@@ -36,6 +48,7 @@ export function DropZone({
   return (
     <div
       onDragOver={event => {
+        if (!event.dataTransfer.types.includes(accept)) return
         event.preventDefault()
         if (!over) {
           setOver(true)
@@ -44,15 +57,45 @@ export function DropZone({
       }}
       onDragLeave={() => setOver(false)}
       onDrop={event => {
+        if (!event.dataTransfer.types.includes(accept)) return
         event.preventDefault()
         setOver(false)
-        const videoId = event.dataTransfer.getData(DRAG_MIME)
-        if (videoId) onDropVideo(videoId)
+        const id = event.dataTransfer.getData(accept)
+        if (id) onDrop(id)
       }}
       className={cn(className, over && 'ring-manga-red ring-3')}
     >
       {children}
     </div>
+  )
+}
+
+/** A draggable grip handle that carries `id` under the `mime` type. */
+export function ReorderHandle({
+  mime,
+  id,
+  label,
+}: {
+  mime: string
+  id: string
+  label: string
+}) {
+  return (
+    <button
+      type="button"
+      draggable
+      aria-label={label}
+      onDragStart={event => {
+        event.dataTransfer.setData(mime, id)
+        event.dataTransfer.effectAllowed = 'move'
+      }}
+      className="border-manga-black bg-manga-white grid size-8 shrink-0 cursor-grab place-items-center border-2 active:cursor-grabbing"
+    >
+      <GripVertical
+        aria-hidden="true"
+        className="text-manga-ink-soft size-4"
+      />
+    </button>
   )
 }
 
@@ -70,7 +113,10 @@ export function DraggableVideoRow({
   return (
     <li
       draggable
-      onDragStart={event => event.dataTransfer.setData(DRAG_MIME, video.id)}
+      onDragStart={event => {
+        event.dataTransfer.setData(MIME_VIDEO, video.id)
+        event.dataTransfer.effectAllowed = 'move'
+      }}
       className="border-manga-black bg-manga-white flex cursor-grab items-center gap-2 border-2 p-2 active:cursor-grabbing"
     >
       <GripVertical
@@ -119,3 +165,4 @@ export function DraggableVideoRow({
     </li>
   )
 }
+

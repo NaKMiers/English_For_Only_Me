@@ -5,10 +5,10 @@ import { AppTopbar } from '@/components/common/AppTopbar'
 import { AuthControl } from '@/components/common/AuthControl'
 import { MangaPageShell } from '@/components/common/MangaPageShell'
 import {
-  AdminTopicCard,
   type AdminSectionVideo,
   type AdminTopicData,
 } from '@/components/dictation/admin/AdminTopicCard'
+import { AdminTopicList } from '@/components/dictation/admin/AdminTopicList'
 import { AdminUnassignedPanel } from '@/components/dictation/admin/AdminUnassignedPanel'
 import { hasMongoDbUri } from '@/constants/environments'
 import { connectDatabase } from '@/lib/db/connectDatabase'
@@ -163,20 +163,13 @@ export default async function AdminTopicsPage() {
 
         <AdminUnassignedPanel videos={unassigned} />
 
-        <div className="grid gap-4">
-          {topics.length === 0 ? (
-            <p className="text-manga-ink-soft text-sm">
-              No topics yet. Create one above.
-            </p>
-          ) : (
-            topics.map(topic => (
-              <AdminTopicCard
-                key={topic.id}
-                topic={topic}
-              />
-            ))
-          )}
-        </div>
+        {topics.length === 0 ? (
+          <p className="text-manga-ink-soft text-sm">
+            No topics yet. Create one above.
+          </p>
+        ) : (
+          <AdminTopicList topics={topics} />
+        )}
       </section>
     </MangaPageShell>
   )

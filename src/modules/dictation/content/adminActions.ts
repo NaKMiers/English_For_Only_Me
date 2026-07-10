@@ -12,6 +12,8 @@ import {
   createTopic,
   deleteSection,
   deleteTopic,
+  reorderSections,
+  reorderTopics,
   updateTopic,
 } from './adminContentRepository'
 
@@ -44,7 +46,7 @@ export async function createTopicAction(formData: FormData) {
     description: str(formData, 'description') || null,
     thumbnailUrl: str(formData, 'thumbnailUrl') || null,
     hasVideoMedia: formData.get('hasVideoMedia') === 'on',
-    order: Number(str(formData, 'order')) || 0,
+    // order omitted — new topics append; ordering is via drag-to-reorder.
   })
 
   revalidateBrowse()
@@ -61,7 +63,7 @@ export async function updateTopicAction(formData: FormData) {
     description: str(formData, 'description') || null,
     thumbnailUrl: str(formData, 'thumbnailUrl') || null,
     hasVideoMedia: formData.get('hasVideoMedia') === 'on',
-    order: Number(str(formData, 'order')) || 0,
+    // order omitted — managed by drag-to-reorder.
   })
 
   revalidateBrowse()
@@ -84,7 +86,21 @@ export async function createSectionAction(formData: FormData) {
   const title = str(formData, 'title')
   if (!topicId || !title) return
 
-  await createSection(topicId, title, Number(str(formData, 'order')) || 0)
+  await createSection(topicId, title)
+  revalidateBrowse()
+}
+
+/** Reorder topics by their id order (drag-to-reorder). */
+export async function reorderTopicsAction(ids: string[]) {
+  await guardAdmin()
+  await reorderTopics(ids)
+  revalidateBrowse()
+}
+
+/** Reorder a topic's sections by their id order (drag-to-reorder). */
+export async function reorderSectionsAction(ids: string[]) {
+  await guardAdmin()
+  await reorderSections(ids)
   revalidateBrowse()
 }
 
