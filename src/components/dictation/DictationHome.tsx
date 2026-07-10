@@ -1,4 +1,5 @@
 import { AppTopbar } from '@/components/common/AppTopbar'
+import { AuthControl } from '@/components/common/AuthControl'
 import { MangaPageShell } from '@/components/common/MangaPageShell'
 import { PageTag } from '@/components/ui/PageTag'
 import type {
@@ -26,6 +27,7 @@ export function DictationHome({
         <AppTopbar
           activeHref="/dictation"
           subtitle="Dictation Lab is the listening module"
+          authControl={<AuthControl />}
         />
       }
       footer={

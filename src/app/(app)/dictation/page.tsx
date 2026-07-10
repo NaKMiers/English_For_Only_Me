@@ -6,7 +6,7 @@ import { connectDatabase } from '@/lib/db/connectDatabase'
 import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
 import { listDueReviewItemsForOwner } from '@/modules/dictation/review/reviewItemService'
 import { toDictationVideoRecord } from '@/modules/dictation/services/dictationVideoRecords'
-import { getCurrentOwnerId } from '@/modules/dictation/services/getCurrentOwnerId'
+import { getOptionalUser } from '@/modules/dictation/services/getCurrentUser'
 import { getGlobalStatsForOwner } from '@/modules/dictation/stats/globalStatsService'
 
 export const metadata: Metadata = {
@@ -21,18 +21,18 @@ export const runtime = 'nodejs'
 export default async function DictationPage() {
   if (!hasMongoDbUri()) return <DictationHome />
 
-  const ownerId = await getCurrentOwnerId()
+  const user = await getOptionalUser()
 
   await connectDatabase()
 
+  // Videos are a shared global catalog (no owner filter). Stats and review
+  // items stay per-user; anonymous visitors see none until they sign in.
   const [globalStats, reviewItems, videos] = await Promise.all([
-    getGlobalStatsForOwner(ownerId),
-    listDueReviewItemsForOwner({
-      limit: 12,
-      ownerId,
-    }),
+    user ? getGlobalStatsForOwner(user.id) : Promise.resolve(undefined),
+    user
+      ? listDueReviewItemsForOwner({ limit: 12, ownerId: user.id })
+      : Promise.resolve([]),
     DictationVideoModel.find({
-      ownerId,
       status: {
         $ne: 'archived',
       },

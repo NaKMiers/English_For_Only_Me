@@ -13,7 +13,6 @@ import { hasMongoDbUri } from '@/constants/environments'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
 import { toDictationVideoRecord } from '@/modules/dictation/services/dictationVideoRecords'
-import { getCurrentOwnerId } from '@/modules/dictation/services/getCurrentOwnerId'
 import {
   getDictationStatusLabel,
   getDictationStatusTone,
@@ -178,12 +177,10 @@ export default async function Page() {
       />
     )
 
-  const ownerId = await getCurrentOwnerId()
-
   await connectDatabase()
 
+  // Shared global catalog: no owner filter (content globalization, Chunk 1).
   const videos = await DictationVideoModel.find({
-    ownerId,
     status: {
       $ne: 'archived',
     },

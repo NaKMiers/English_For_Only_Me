@@ -1,7 +1,11 @@
 import { renderToStaticMarkup } from 'react-dom/server'
-import { describe, expect, test } from 'vitest'
+import { describe, expect, test, vi } from 'vitest'
 
 import { AppTopbar } from './AppTopbar'
+
+// AuthControl is an async server component (reads the JWT session); stub it so
+// the topbar renders synchronously under renderToStaticMarkup.
+vi.mock('./AuthControl', () => ({ AuthControl: () => null }))
 
 describe('AppTopbar', () => {
   test('renders the brand logo, primary navigation, and labelled icon actions', () => {

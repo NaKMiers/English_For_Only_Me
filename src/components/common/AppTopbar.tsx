@@ -1,6 +1,7 @@
 import { BookOpen, Search, Settings } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
+import type { ReactNode } from 'react'
 
 import { PRIMARY_NAV_ITEMS } from '@/constants/modules'
 import { cn } from '@/lib/utils'
@@ -18,6 +19,13 @@ interface Props {
   navItems?: NavItem[]
   subtitle?: string
   title?: string
+  /**
+   * Optional auth control slot (injected as <AuthControl /> by server pages).
+   * Kept as a slot so AppTopbar stays client-safe: it must NOT statically import
+   * the NextAuth/Mongoose chain, or client boundaries (error.tsx) that render
+   * the topbar would drag server-only code into the browser bundle.
+   */
+  authControl?: ReactNode
 }
 
 export function AppTopbar({
@@ -26,6 +34,7 @@ export function AppTopbar({
   navItems = PRIMARY_NAV_ITEMS,
   subtitle = 'Personal IELTS manga desk',
   title = 'English For Only Me',
+  authControl,
 }: Props) {
   return (
     <header
@@ -94,6 +103,7 @@ export function AppTopbar({
             className="size-5"
           />
         </IconButton>
+        {authControl}
       </div>
     </header>
   )

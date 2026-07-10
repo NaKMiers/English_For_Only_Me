@@ -1,4 +1,5 @@
 import { AppTopbar } from '@/components/common/AppTopbar'
+import { AuthControl } from '@/components/common/AuthControl'
 import { MangaPageShell } from '@/components/common/MangaPageShell'
 import { PageTag } from '@/components/ui/PageTag'
 import type { DictationGlobalStatsRecord } from '@/modules/dictation/types'
@@ -116,6 +117,7 @@ export function HomeStudyDesk({ dictationStats = null }: Props) {
         <AppTopbar
           activeHref="/"
           subtitle="Private IELTS training drawn like a study manga"
+          authControl={<AuthControl />}
         />
       }
       footer={
