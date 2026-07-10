@@ -15,13 +15,22 @@ export interface TopicInput {
   order?: number
 }
 
-/** Generate a slug unique across topics, appending -2, -3, ... on collision. */
-async function uniqueTopicSlug(title: string): Promise<string> {
+/**
+ * Generate a slug unique across topics, appending -2, -3, ... on collision.
+ * `excludeId` skips the topic being renamed so it can keep an equivalent slug.
+ */
+async function uniqueTopicSlug(
+  title: string,
+  excludeId?: string
+): Promise<string> {
   const base = slugify(title)
   let candidate = base
 
   for (let n = 2; ; n += 1) {
-    const clash = await DictationTopicModel.exists({ slug: candidate })
+    const clash = await DictationTopicModel.exists({
+      slug: candidate,
+      ...(excludeId ? { _id: { $ne: excludeId } } : {}),
+    })
     if (!clash) return candidate
     candidate = `${base}-${n}`
   }
@@ -45,7 +54,12 @@ export async function createTopic(input: TopicInput) {
 export async function updateTopic(id: string, patch: Partial<TopicInput>) {
   const update: Record<string, unknown> = {}
 
-  if (patch.title !== undefined) update.title = patch.title.trim()
+  if (patch.title !== undefined) {
+    update.title = patch.title.trim()
+    // Keep the slug in sync with the title (regenerated, uniqued). Changes the
+    // public URL — acceptable pre-launch; revisit if URLs must be stable.
+    update.slug = await uniqueTopicSlug(patch.title, id)
+  }
   if (patch.description !== undefined)
     update.description = patch.description?.trim() || null
   if (patch.thumbnailUrl !== undefined)

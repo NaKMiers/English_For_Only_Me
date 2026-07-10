@@ -9,10 +9,12 @@ import {
   type AdminSectionVideo,
   type AdminTopicData,
 } from '@/components/dictation/admin/AdminTopicCard'
+import { AdminUnassignedPanel } from '@/components/dictation/admin/AdminUnassignedPanel'
 import { hasMongoDbUri } from '@/constants/environments'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { createTopicAction } from '@/modules/dictation/content/adminActions'
 import {
+  listNoTopicVideos,
   listSectionsForTopic,
   listTopics,
   listVideosForTopic,
@@ -76,10 +78,22 @@ async function buildTopicData(): Promise<AdminTopicData[]> {
 
 export default async function AdminTopicsPage() {
   let topics: AdminTopicData[] = []
+  let unassigned: AdminSectionVideo[] = []
 
   if (hasMongoDbUri()) {
     await connectDatabase()
-    topics = await buildTopicData()
+    const [topicData, noTopicVideos] = await Promise.all([
+      buildTopicData(),
+      listNoTopicVideos(),
+    ])
+    topics = topicData
+    unassigned = noTopicVideos.map(video => ({
+      id: video.id,
+      title: video.title,
+      level: video.level,
+      thumbnailUrl: video.thumbnailUrl,
+      youtubeVideoId: video.youtubeVideoId,
+    }))
   }
 
   return (
@@ -146,6 +160,8 @@ export default async function AdminTopicsPage() {
             </button>
           </div>
         </form>
+
+        <AdminUnassignedPanel videos={unassigned} />
 
         <div className="grid gap-4">
           {topics.length === 0 ? (
