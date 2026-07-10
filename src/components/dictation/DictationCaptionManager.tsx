@@ -10,6 +10,13 @@ import { IconButton } from '@/components/ui/IconButton'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { MangaButton } from '@/components/ui/MangaButton'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { formatCuesAsCaptionText } from '@/modules/dictation/transcripts/formatCuesAsCaptionText'
 import {
@@ -371,33 +378,40 @@ export function DictationCaptionManager({
 
       <div className="border-manga-black bg-manga-paper-soft grid gap-3 border-2 p-3 shadow-[3px_3px_0_var(--manga-black)]">
         <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-          <label className="grid gap-2">
+          <div className="grid gap-2">
             <span className="font-sans text-xs font-black tracking-normal uppercase">
               Language
             </span>
-            <select
+            <Select
               value={
                 curatedOptions.some(option => option.code === languageCode)
                   ? languageCode
                   : ''
               }
-              onChange={event =>
-                event.target.value && selectLanguage(event.target.value)
-              }
-              className="border-manga-black bg-manga-white min-h-11 rounded-none border-3 px-3 py-2 font-semibold shadow-[3px_3px_0_var(--manga-black)]"
+              onValueChange={value => value && selectLanguage(value)}
             >
-              <option value="">Choose a language&hellip;</option>
-              {curatedOptions.map(option => (
-                <option
-                  key={option.code}
-                  value={option.code}
-                >
-                  {option.label} ({option.code})
-                  {option.code === primaryLanguage ? ' - dictation source' : ''}
-                </option>
-              ))}
-            </select>
-          </label>
+              <SelectTrigger
+                aria-label="Language"
+                className="w-full border-3 shadow-[3px_3px_0_var(--manga-black)]"
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Choose a language&hellip;</SelectItem>
+                {curatedOptions.map(option => (
+                  <SelectItem
+                    key={option.code}
+                    value={option.code}
+                  >
+                    {option.label} ({option.code})
+                    {option.code === primaryLanguage
+                      ? ' - dictation source'
+                      : ''}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
           <div className="grid gap-2">
             <Label

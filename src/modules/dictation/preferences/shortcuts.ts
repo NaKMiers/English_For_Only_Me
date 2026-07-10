@@ -2,8 +2,7 @@
 
 import { useEffect } from 'react'
 
-export type DictationShortcutAction =
-  'check' | 'next' | 'previous' | 'replay'
+export type DictationShortcutAction = 'check' | 'next' | 'previous' | 'replay'
 
 export interface DictationShortcutHandlers {
   check?: () => void
@@ -36,6 +35,7 @@ export function getDictationShortcutAction(
   const key = event.key.toLowerCase()
 
   if (key === 'alt' && event.altKey && !event.repeat) return 'replay'
+  if (key === 'meta' && event.metaKey && !event.repeat) return 'replay'
   if (event.altKey && key === ' ') return 'replay'
   if (!event.ctrlKey && !event.metaKey && !event.altKey && key === 'enter')
     return 'check'

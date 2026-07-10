@@ -15,12 +15,14 @@ export function ConfirmSubmitButton({
   confirmMessage,
   confirmLabel = 'Delete',
   className,
+  ariaLabel,
 }: {
   children: React.ReactNode
   confirmTitle?: string
   confirmMessage: string
   confirmLabel?: string
   className?: string
+  ariaLabel?: string
 }) {
   const ref = useRef<HTMLButtonElement>(null)
   const [open, setOpen] = useState(false)
@@ -30,6 +32,7 @@ export function ConfirmSubmitButton({
       <button
         ref={ref}
         type="button"
+        aria-label={ariaLabel}
         className={className}
         onClick={() => setOpen(true)}
       >

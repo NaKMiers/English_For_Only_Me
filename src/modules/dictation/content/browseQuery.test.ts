@@ -14,7 +14,7 @@ describe('parseBrowseQuery', () => {
     expect(parseBrowseQuery({})).toEqual({
       search: '',
       level: null,
-      sort: 'newest',
+      sort: 'order',
       page: 1,
     })
     expect(
@@ -28,7 +28,7 @@ describe('parseBrowseQuery', () => {
   it('rejects invalid level/sort/page', () => {
     const q = parseBrowseQuery({ level: 'Z9', sort: 'bogus', page: '-2' })
     expect(q.level).toBeNull()
-    expect(q.sort).toBe('newest')
+    expect(q.sort).toBe('order')
     expect(q.page).toBe(1)
   })
 
@@ -68,7 +68,10 @@ describe('buildVideoMongoSort', () => {
     expect(buildVideoMongoSort(parseBrowseQuery({ sort: 'title' }))).toEqual({
       title: 1,
     })
-    expect(buildVideoMongoSort(parseBrowseQuery({}))).toEqual({ createdAt: -1 })
+    expect(buildVideoMongoSort(parseBrowseQuery({}))).toEqual({
+      order: 1,
+      createdAt: -1,
+    })
   })
 })
 

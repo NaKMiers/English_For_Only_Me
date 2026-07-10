@@ -12,8 +12,10 @@ import {
   createTopic,
   deleteSection,
   deleteTopic,
+  deleteVideo,
   reorderSections,
   reorderTopics,
+  reorderVideos,
   updateTopic,
 } from './adminContentRepository'
 
@@ -111,6 +113,23 @@ export async function deleteSectionAction(formData: FormData) {
   if (!id) return
 
   await deleteSection(id)
+  revalidateBrowse()
+}
+
+export async function deleteVideoAction(formData: FormData) {
+  await guardAdmin()
+
+  const id = str(formData, 'id')
+  if (!id) return
+
+  await deleteVideo(id)
+  revalidateBrowse()
+}
+
+/** Reorder videos by their id order (drag-to-reorder). */
+export async function reorderVideosAction(ids: string[]) {
+  await guardAdmin()
+  await reorderVideos(ids)
   revalidateBrowse()
 }
 

@@ -145,6 +145,25 @@ export async function deleteSection(id: string) {
   await DictationSectionModel.deleteOne({ _id: id })
 }
 
+/** Archive a video so it disappears from admin and app browse surfaces. */
+export async function deleteVideo(id: string) {
+  await DictationVideoModel.updateOne(
+    { _id: id, status: { $ne: 'archived' } },
+    { $set: { status: 'archived' } }
+  )
+}
+
+/** Set each video's display order to its index in the given id list. */
+export async function reorderVideos(ids: string[]) {
+  if (ids.length === 0) return
+
+  await DictationVideoModel.bulkWrite(
+    ids.map((id, index) => ({
+      updateOne: { filter: { _id: id }, update: { $set: { order: index } } },
+    }))
+  )
+}
+
 export interface VideoAssignment {
   topicId?: string | null
   sectionId?: string | null

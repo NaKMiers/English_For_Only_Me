@@ -93,10 +93,10 @@ export function DictationLibraryScene({ videos = [] }: Props) {
         title="Choose a video. Turn it into practice."
         action={
           <MangaButton
-            href="/dictation/videos"
+            href="/dictation"
             tone="paper"
           >
-            Saved Videos
+            Browse Videos
           </MangaButton>
         }
       >
@@ -140,7 +140,7 @@ export function DictationLibraryScene({ videos = [] }: Props) {
             </div>
 
             <MangaButton
-              href="/dictation/import"
+              href="/admin/import"
               icon={
                 <Plus
                   aria-hidden="true"

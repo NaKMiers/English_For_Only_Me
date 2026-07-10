@@ -60,11 +60,10 @@ function EditUnavailableState({
 export default async function Page({ params }: Props) {
   const { videoId } = await params
 
-  // Admin-only: editing mutates shared catalog content.
+  // Editing mutates a video, so only an admin or the video's owner may open it.
   const user = await getOptionalUser()
   if (!user)
-    redirect(`/api/auth/signin?callbackUrl=/dictation/videos/${videoId}/edit`)
-  if (user.role !== 'admin') redirect('/dictation')
+    redirect(`/api/auth/signin?callbackUrl=/admin/videos/${videoId}/edit`)
 
   if (!/^[a-f\d]{24}$/i.test(videoId)) notFound()
 
@@ -78,7 +77,6 @@ export default async function Page({ params }: Props) {
 
   await connectDatabase()
 
-  // Global content: no owner filter (admin edits any video).
   const video = await DictationVideoModel.findOne({
     _id: videoId,
     status: {
@@ -87,6 +85,10 @@ export default async function Page({ params }: Props) {
   }).lean()
 
   if (!video) notFound()
+
+  // Admin edits any video; everyone else only the videos they own.
+  if (user.role !== 'admin' && String(video.ownerId) !== user.id)
+    redirect('/dictation')
 
   const trackDocuments = await DictationTranscriptModel.find({
     videoId: video._id,

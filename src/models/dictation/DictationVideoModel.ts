@@ -171,6 +171,12 @@ const DictationVideoSchema = new Schema(
       default: null,
       index: true,
     },
+    order: {
+      type: Number,
+      required: true,
+      default: 0,
+      index: true,
+    },
   },
   {
     timestamps: true,
@@ -179,6 +185,7 @@ const DictationVideoSchema = new Schema(
 
 DictationVideoSchema.index({ ownerId: 1, createdAt: -1 })
 DictationVideoSchema.index({ topicId: 1, sectionId: 1 })
+DictationVideoSchema.index({ order: 1, createdAt: -1 })
 DictationVideoSchema.index({ ownerId: 1, youtubeUrl: 1 }, { unique: true })
 DictationVideoSchema.index(
   { ownerId: 1, youtubeVideoId: 1 },

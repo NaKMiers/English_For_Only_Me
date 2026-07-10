@@ -26,6 +26,7 @@ export function toDictationVideoRecord(video: {
   topicId?: unknown
   sectionId?: unknown
   level?: DictationLevel | null
+  order?: number
   lastPracticedAt?: Date | null
   createdAt: Date
   updatedAt: Date
@@ -57,6 +58,7 @@ export function toDictationVideoRecord(video: {
     topicId: video.topicId ? String(video.topicId) : null,
     sectionId: video.sectionId ? String(video.sectionId) : null,
     level: video.level ?? null,
+    order: video.order ?? 0,
     lastPracticedAt: video.lastPracticedAt ?? null,
     createdAt: video.createdAt,
     updatedAt: video.updatedAt,

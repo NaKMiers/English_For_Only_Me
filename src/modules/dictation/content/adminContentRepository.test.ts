@@ -1,12 +1,16 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 const videoUpdateMany = vi.fn()
+const videoUpdateOne = vi.fn()
+const videoBulkWrite = vi.fn()
 const sectionDeleteMany = vi.fn()
 const topicDeleteOne = vi.fn()
 
 vi.mock('@/models/dictation/DictationVideoModel', () => ({
   DictationVideoModel: {
     updateMany: (...a: unknown[]) => videoUpdateMany(...a),
+    updateOne: (...a: unknown[]) => videoUpdateOne(...a),
+    bulkWrite: (...a: unknown[]) => videoBulkWrite(...a),
   },
 }))
 vi.mock('@/models/dictation/DictationSectionModel', () => ({
@@ -20,7 +24,12 @@ vi.mock('@/models/dictation/DictationTopicModel', () => ({
   },
 }))
 
-import { assignVideos, deleteTopic } from './adminContentRepository'
+import {
+  assignVideos,
+  deleteTopic,
+  deleteVideo,
+  reorderVideos,
+} from './adminContentRepository'
 
 afterEach(() => vi.clearAllMocks())
 
@@ -74,5 +83,29 @@ describe('deleteTopic', () => {
     )
     expect(sectionDeleteMany).toHaveBeenCalledWith({ topicId: 't1' })
     expect(topicDeleteOne).toHaveBeenCalledWith({ _id: 't1' })
+  })
+})
+
+describe('deleteVideo', () => {
+  it('archives the video instead of hard-deleting it', async () => {
+    videoUpdateOne.mockResolvedValue({ modifiedCount: 1 })
+
+    await deleteVideo('v1')
+
+    expect(videoUpdateOne).toHaveBeenCalledWith(
+      { _id: 'v1', status: { $ne: 'archived' } },
+      { $set: { status: 'archived' } }
+    )
+  })
+})
+
+describe('reorderVideos', () => {
+  it('sets each video order to its provided index', async () => {
+    await reorderVideos(['v2', 'v1'])
+
+    expect(videoBulkWrite).toHaveBeenCalledWith([
+      { updateOne: { filter: { _id: 'v2' }, update: { $set: { order: 0 } } } },
+      { updateOne: { filter: { _id: 'v1' }, update: { $set: { order: 1 } } } },
+    ])
   })
 })

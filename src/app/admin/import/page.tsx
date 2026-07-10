@@ -21,7 +21,7 @@ export default async function DictationImportPage() {
   // Admin-only: importing creates shared catalog content (gated in place;
   // relocation into /admin is a deferred follow-up).
   const user = await getOptionalUser()
-  if (!user) redirect('/api/auth/signin?callbackUrl=/dictation/import')
+  if (!user) redirect('/api/auth/signin?callbackUrl=/admin/import')
   if (user.role !== 'admin') redirect('/dictation')
 
   return (

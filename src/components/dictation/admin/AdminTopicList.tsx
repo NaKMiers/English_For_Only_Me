@@ -32,6 +32,7 @@ export function AdminTopicList({ topics }: { topics: AdminTopicData[] }) {
           key={topic.id}
           accept={MIME_TOPIC}
           onDrop={draggedId => reorder(draggedId, topic.id)}
+          className="min-w-0"
         >
           <AdminTopicCard topic={topic} />
         </DropZone>

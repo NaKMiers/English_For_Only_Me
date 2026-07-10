@@ -14,7 +14,6 @@ const firstSegment = {
 }
 const video = {
   activeTranscriptId: '507f1f77bcf86cd799439022',
-  ownerId,
   status: 'ready',
 }
 
@@ -55,22 +54,17 @@ describe('session route decisions', () => {
     })
   })
 
-  test('blocks practice without ownership, transcript, or segments', () => {
+  test('blocks practice for a missing video, transcript, or segments', () => {
     expect(
       getSessionStartGuardDecision({
         firstSegment,
-        ownerId,
-        video: {
-          ...video,
-          ownerId: 'other-owner',
-        },
+        video: null,
       })
     ).toMatchObject({ status: 404 })
 
     expect(
       getSessionStartGuardDecision({
         firstSegment,
-        ownerId,
         video: {
           ...video,
           activeTranscriptId: null,
@@ -81,7 +75,6 @@ describe('session route decisions', () => {
     expect(
       getSessionStartGuardDecision({
         firstSegment: null,
-        ownerId,
         video,
       })
     ).toMatchObject({ status: 409 })

@@ -29,6 +29,7 @@ function makeVideo(
     importWarning: null,
     lastPracticedAt: null,
     ownerId: 'owner-one',
+    order: 0,
     purpose: 'ielts-listening',
     sentenceCount: 0,
     sourceType: 'youtube',

@@ -1,12 +1,9 @@
-import { BookOpen, Search, Settings } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 
 import { PRIMARY_NAV_ITEMS } from '@/constants/modules'
 import { cn } from '@/lib/utils'
-
-import { IconButton } from '../ui/IconButton'
 
 interface NavItem {
   href: string
@@ -56,10 +53,10 @@ export function AppTopbar({
           className="border-manga-black bg-manga-white size-14 border-3 object-contain shadow-[4px_4px_0_var(--manga-black)]"
         />
         <span className="grid min-w-0 gap-1">
-          <strong className="font-sans text-[clamp(1.25rem,5vw,2rem)] leading-none font-black tracking-normal wrap-break-word uppercase sm:text-[clamp(1.3rem,2.4vw,2.1rem)]">
+          <strong className="font-sans text-[clamp(1.05rem,3.5vw,1.5rem)] leading-tight font-black tracking-normal text-balance uppercase sm:text-[clamp(1.1rem,1.8vw,1.6rem)]">
             {title}
           </strong>
-          <span className="text-manga-ink-soft text-sm leading-tight font-black wrap-break-word">
+          <span className="text-manga-ink-soft truncate text-xs leading-tight font-black sm:text-sm">
             {subtitle}
           </span>
         </span>
@@ -82,27 +79,6 @@ export function AppTopbar({
       </nav>
 
       <div className="flex justify-start gap-2 sm:col-span-2 lg:col-span-1 lg:justify-end">
-        <IconButton
-          href="/dictation"
-          label="Open Dictation Lab"
-        >
-          <BookOpen
-            aria-hidden="true"
-            className="size-5"
-          />
-        </IconButton>
-        <IconButton label="Search study desk">
-          <Search
-            aria-hidden="true"
-            className="size-5"
-          />
-        </IconButton>
-        <IconButton label="Open settings">
-          <Settings
-            aria-hidden="true"
-            className="size-5"
-          />
-        </IconButton>
         {authControl}
       </div>
     </header>

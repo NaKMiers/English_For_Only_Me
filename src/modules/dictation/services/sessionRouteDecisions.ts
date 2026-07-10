@@ -39,7 +39,6 @@ export type SessionRouteDecision<T> =
 
 interface SessionGuardVideo {
   activeTranscriptId?: unknown
-  ownerId: string
   status: string
 }
 
@@ -112,14 +111,12 @@ export function parseSessionPatchRequest(
 
 export function getSessionStartGuardDecision({
   firstSegment,
-  ownerId,
   video,
 }: {
   firstSegment: SessionGuardSegment | null
-  ownerId: string
   video: SessionGuardVideo | null
 }): ApiErrorDecision | null {
-  if (!video || video.ownerId !== ownerId)
+  if (!video)
     return {
       status: 404,
       body: {

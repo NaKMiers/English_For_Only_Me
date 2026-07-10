@@ -39,6 +39,56 @@ clear actions, responsive by default, and reusable component primitives.
   overflow.
 - Do not use clickable `div`s when a real `button` or `Link` is correct.
 
+## Component Library (shadcn/ui) — use it instead of raw HTML
+
+- ALWAYS reach for the project's shadcn/ui primitive in `src/components/ui`
+  instead of writing a raw HTML form/control element, whenever an equivalent
+  exists. Raw `<select>`, `<input>`, `<textarea>`, `<button>`, `<label>`,
+  `<dialog>`/ad-hoc modals, checkboxes, and switches are NOT allowed when a
+  primitive covers the case. Standard mapping:
+  - `<select>` → `Select` / `SelectTrigger` / `SelectValue` / `SelectContent` /
+    `SelectItem`
+  - `<input type="text|search|number|email">` → `Input`
+  - `<input type="checkbox">` → `Checkbox`
+  - `<input type="range">` → `Slider`
+  - on/off preference → `Switch`
+  - `<textarea>` → `Textarea`
+  - `<label>` → `Label`
+  - `<button>` → `MangaButton` (primary/labelled actions), `IconButton`
+    (icon-only), or `Button` (base); destructive/confirm submits →
+    `ConfirmSubmitButton`
+  - menus → `DropdownMenu`; modals/confirms → `Dialog`; tabs → `Tabs`;
+    tooltips → `Tooltip`; progress → `Progress`; separators → `Separator`
+- The primitives are themed ONCE to the manga aesthetic at the source
+  (`src/components/ui/*`): sharp corners (`rounded-none`), `border-2`/`border-3`
+  `border-manga-black`, `bg-manga-white`, hard offset shadows
+  (`shadow-[Npx_Npx_0_var(--manga-black)]`), `font-sans font-black`. When you
+  find a primitive still carrying default shadcn styling (rounded-lg, `ring`,
+  `bg-popover`, `bg-primary`), fix it in the primitive — do not paper over it
+  per call site. Per-site `className` is for layout/size overrides only.
+- If a needed primitive does not exist yet, add it under `src/components/ui`
+  and theme it to the manga tokens before using it. Do not hand-roll a
+  bespoke dropdown/modal/menu.
+- Replacements must preserve behavior AND appearance. Known gotchas:
+  - base-ui `Select` `onValueChange` yields `string | null` — coerce null to
+    `''` (`value => onChange(value ?? '')`); keep an item with `value=""` for
+    the "all/none" option.
+  - base-ui `Checkbox` submits its `name` as the value unless you pass
+    `value="on"` — required when a server action reads
+    `formData.get(name) === 'on'`. Use `defaultChecked` for uncontrolled
+    server-action forms.
+  - `MangaButton` forwards `type` and `disabled`; keep `type="submit"` on
+    buttons that drive a `<form action={serverAction}>`.
+  - `Label` may wrap a native or labelable control (input/textarea/checkbox/
+    the Switch button); it renders a real `<label>`.
+- Documented exceptions — KEEP RAW (no primitive fits, or a swap would break
+  behavior): hidden form fields (`<input type="hidden">`), file inputs using a
+  `ref` + `sr-only` trigger, segmented toggles relying on `aria-pressed`,
+  disclosure/accordion triggers relying on `aria-expanded`/`aria-controls`,
+  native HTML5 drag handles (`draggable` + `onDragStart`), and deliberate
+  transparent/overlay inputs (e.g. the dictation answer overlay). Leave a brief
+  comment when keeping raw for one of these reasons.
+
 ## Loading, Empty, And Error States
 
 - Add route-level `loading.tsx` or component-level loading UI for slow pages.

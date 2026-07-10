@@ -10,6 +10,10 @@ import {
 } from '@/components/dictation/admin/AdminTopicCard'
 import { AdminTopicList } from '@/components/dictation/admin/AdminTopicList'
 import { AdminUnassignedPanel } from '@/components/dictation/admin/AdminUnassignedPanel'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { MangaButton } from '@/components/ui/MangaButton'
 import { hasMongoDbUri } from '@/constants/environments'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { createTopicAction } from '@/modules/dictation/content/adminActions'
@@ -25,9 +29,7 @@ export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
 const input =
-  'border-manga-black border-3 bg-manga-white px-3 py-2 font-sans text-base font-black'
-const submit =
-  'border-manga-black bg-manga-paper-soft hover:bg-manga-pale-red inline-flex min-h-11 items-center border-3 px-4 font-sans text-sm font-black shadow-[3px_3px_0_var(--manga-black)]'
+  'border-manga-black min-h-11 rounded-none border-3 bg-manga-white px-3 py-2 font-sans text-base font-black'
 
 async function buildTopicData(): Promise<AdminTopicData[]> {
   const topics = await listTopics()
@@ -47,6 +49,7 @@ async function buildTopicData(): Promise<AdminTopicData[]> {
           id: video.id,
           title: video.title,
           level: video.level,
+          status: video.status,
           thumbnailUrl: video.thumbnailUrl,
           youtubeVideoId: video.youtubeVideoId,
         }
@@ -91,6 +94,7 @@ export default async function AdminTopicsPage() {
       id: video.id,
       title: video.title,
       level: video.level,
+      status: video.status,
       thumbnailUrl: video.thumbnailUrl,
       youtubeVideoId: video.youtubeVideoId,
     }))
@@ -125,39 +129,31 @@ export default async function AdminTopicsPage() {
           <h2 className="font-sans text-base font-black uppercase">
             New topic
           </h2>
-          <input
+          <Input
             name="title"
             placeholder="Title (e.g. Short Stories)"
             required
             className={input}
           />
-          <input
+          <Input
             name="description"
             placeholder="Description (optional)"
             className={input}
           />
           <div className="flex flex-wrap items-center gap-4">
-            <input
-              name="order"
-              type="number"
-              placeholder="Order"
-              defaultValue={0}
-              className={`${input} w-28`}
-            />
-            <label className="flex items-center gap-2 font-sans text-sm font-black">
-              <input
-                type="checkbox"
+            <Label className="font-sans text-sm font-black">
+              <Checkbox
                 name="hasVideoMedia"
-                className="size-5"
+                value="on"
               />
               Video badge
-            </label>
-            <button
+            </Label>
+            <MangaButton
               type="submit"
-              className={submit}
+              tone="primary"
             >
               Create topic
-            </button>
+            </MangaButton>
           </div>
         </form>
 

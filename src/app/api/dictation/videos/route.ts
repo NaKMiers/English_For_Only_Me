@@ -5,6 +5,7 @@ import { connectDatabase } from '@/lib/db/connectDatabase'
 import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
 import { toDictationVideoRecord } from '@/modules/dictation/services/dictationVideoRecords'
 import { getCurrentOwnerId } from '@/modules/dictation/services/getCurrentOwnerId'
+import { requireAdmin } from '@/modules/dictation/services/getCurrentUser'
 import {
   type ApiErrorDecision,
   getMissingMongoResponse,
@@ -18,7 +19,28 @@ function jsonError(decision: ApiErrorDecision) {
   return NextResponse.json(decision.body, { status: decision.status })
 }
 
+// requireAdmin throws 401/403 — surface as JSON instead of a 500.
+function authErrorDecision(error: unknown): ApiErrorDecision | null {
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'status' in error &&
+    (error.status === 401 || error.status === 403)
+  )
+    return {
+      status: error.status,
+      body: {
+        message: (error as { message?: string }).message ?? 'Access denied.',
+      },
+    }
+
+  return null
+}
+
 function toCreateError(error: unknown): ApiErrorDecision {
+  const authError = authErrorDecision(error)
+  if (authError) return authError
+
   if (
     typeof error === 'object' &&
     error !== null &&
@@ -85,7 +107,7 @@ export async function GET() {
         $ne: 'archived',
       },
     })
-      .sort({ createdAt: -1 })
+      .sort({ order: 1, createdAt: -1 })
       .limit(50)
       .lean()
 
@@ -103,6 +125,10 @@ export async function POST(request: Request) {
   if (missingMongo) return jsonError(missingMongo)
 
   try {
+    // Only admins create catalog videos (owner-based access applies to
+    // edit/delete, never to creation of new global content).
+    await requireAdmin()
+
     const body = await request.json()
     const ownerId = await getCurrentOwnerId()
     const parsed = parseCreateVideoRequest({ body, ownerId })
@@ -111,7 +137,10 @@ export async function POST(request: Request) {
 
     await connectDatabase()
 
-    const video = await DictationVideoModel.create(parsed.data)
+    const order = await DictationVideoModel.countDocuments({
+      status: { $ne: 'archived' },
+    })
+    const video = await DictationVideoModel.create({ ...parsed.data, order })
 
     return NextResponse.json(
       {

@@ -114,7 +114,7 @@ export async function listVideosForTopic(
     topicId,
     ...VISIBLE_VIDEO_FILTER,
   })
-    .sort({ createdAt: -1 })
+    .sort({ order: 1, createdAt: -1 })
     .lean()
 
   return videos.map(toDictationVideoRecord)
@@ -129,7 +129,7 @@ export async function listNoTopicVideos(): Promise<DictationVideoApiRecord[]> {
     topicId: null,
     ...VISIBLE_VIDEO_FILTER,
   })
-    .sort({ createdAt: -1 })
+    .sort({ order: 1, createdAt: -1 })
     .lean()
 
   return videos.map(toDictationVideoRecord)
@@ -173,7 +173,7 @@ export async function listManageableVideos(): Promise<
   DictationVideoApiRecord[]
 > {
   const videos = await DictationVideoModel.find(VISIBLE_VIDEO_FILTER)
-    .sort({ createdAt: -1 })
+    .sort({ order: 1, createdAt: -1 })
     .lean()
 
   return videos.map(toDictationVideoRecord)

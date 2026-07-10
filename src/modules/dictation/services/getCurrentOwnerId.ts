@@ -1,22 +1,15 @@
 import 'server-only'
 
-import { ENV_KEYS, getOptionalServerEnv } from '@/constants/environments'
-
-import { getOptionalUser } from './getCurrentUser'
 import { PERSONAL_OWNER_ID } from './ownerConstants'
 
 export { PERSONAL_OWNER_ID }
 
 /**
- * Resolve the owner id for per-user data. Now derived from the session: a
- * signed-in user owns their own rows (their Mongo ObjectId). When anonymous, we
- * fall back to the legacy sentinel so single-tenant/dev flows keep working until
- * per-endpoint auth (R3) lands in later chunks.
+ * The app is single-tenant: content is created by admins and practiced by
+ * everyone, with no per-user ownership. All practice data is written under one
+ * shared owner id. This helper stays only to populate the (now inert) `ownerId`
+ * schema field on inserts; nothing gates access on its value anymore.
  */
 export async function getCurrentOwnerId() {
-  const user = await getOptionalUser()
-
-  if (user) return user.id
-
-  return getOptionalServerEnv(ENV_KEYS.appOwnerId) ?? PERSONAL_OWNER_ID
+  return PERSONAL_OWNER_ID
 }

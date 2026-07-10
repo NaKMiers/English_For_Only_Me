@@ -186,7 +186,7 @@ export function DictationSegmentEditor({ className, initialSegments }: Props) {
             </div>
 
             <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
-              <label className="grid gap-2">
+              <Label className="grid gap-2">
                 <span className="font-sans text-xs font-black tracking-normal uppercase">
                   Start ms
                 </span>
@@ -199,8 +199,8 @@ export function DictationSegmentEditor({ className, initialSegments }: Props) {
                   }
                   className="border-manga-black bg-manga-white min-h-11 min-w-0 rounded-none border-3 px-3 py-2 font-semibold shadow-[3px_3px_0_var(--manga-black)]"
                 />
-              </label>
-              <label className="grid gap-2">
+              </Label>
+              <Label className="grid gap-2">
                 <span className="font-sans text-xs font-black tracking-normal uppercase">
                   End ms
                 </span>
@@ -213,7 +213,7 @@ export function DictationSegmentEditor({ className, initialSegments }: Props) {
                   }
                   className="border-manga-black bg-manga-white min-h-11 min-w-0 rounded-none border-3 px-3 py-2 font-semibold shadow-[3px_3px_0_var(--manga-black)]"
                 />
-              </label>
+              </Label>
               <MangaButton
                 tone={segment.warningAccepted ? 'paper' : 'primary'}
                 className="self-end"

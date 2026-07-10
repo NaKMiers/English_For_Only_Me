@@ -3,7 +3,7 @@ import {
   type DictationLevel,
 } from '@/modules/dictation/levels'
 
-export type BrowseSort = 'newest' | 'oldest' | 'title'
+export type BrowseSort = 'order' | 'newest' | 'oldest' | 'title'
 
 export interface BrowseQuery {
   search: string
@@ -14,7 +14,7 @@ export interface BrowseQuery {
 
 export const BROWSE_PAGE_SIZE = 20
 
-const SORTS: BrowseSort[] = ['newest', 'oldest', 'title']
+const SORTS: BrowseSort[] = ['order', 'newest', 'oldest', 'title']
 
 /** Parse raw (string | string[] | undefined) search params into a clean query. */
 export function parseBrowseQuery(params: {
@@ -35,7 +35,7 @@ export function parseBrowseQuery(params: {
     level: isDictationLevel(levelRaw) ? levelRaw : null,
     sort: (SORTS as string[]).includes(sortRaw)
       ? (sortRaw as BrowseSort)
-      : 'newest',
+      : 'order',
     page: Number.isFinite(pageNum) && pageNum > 0 ? pageNum : 1,
   }
 }
@@ -65,6 +65,8 @@ export function buildVideoMongoSort(
   query: BrowseQuery
 ): Record<string, 1 | -1> {
   switch (query.sort) {
+    case 'order':
+      return { order: 1, createdAt: -1 }
     case 'oldest':
       return { createdAt: 1 }
     case 'title':

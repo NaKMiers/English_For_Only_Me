@@ -104,6 +104,7 @@ export interface DictationVideoApiRecord {
   topicId: string | null
   sectionId: string | null
   level: DictationLevel | null
+  order: number
   lastPracticedAt: Date | null
   createdAt: Date
   updatedAt: Date

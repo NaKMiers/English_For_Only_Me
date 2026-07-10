@@ -1,13 +1,10 @@
 'use client'
 
-import { GripVertical, Pencil } from 'lucide-react'
-import Link from 'next/link'
+import { GripVertical } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 
-import { DictationVideoThumbnail } from '@/components/dictation/DictationVideoThumbnail'
-import { PageTag } from '@/components/ui/PageTag'
 import { cn } from '@/lib/utils'
-import { removeVideoFromSectionAction } from '@/modules/dictation/content/adminActions'
+import type { DictationVideoStatus } from '@/modules/dictation/types'
 
 export { reorderIds } from '@/modules/dictation/content/reorder'
 
@@ -15,6 +12,7 @@ export { reorderIds } from '@/modules/dictation/content/reorder'
 // (move a video, reorder topics, reorder sections) never cross-activate each
 // other's drop zones. Browsers lowercase custom types in dataTransfer.types.
 export const MIME_VIDEO = 'application/x-efom-video'
+export const MIME_VIDEO_SECTION = 'application/x-efom-video-section'
 export const MIME_TOPIC = 'application/x-efom-topic'
 export const MIME_SECTION = 'application/x-efom-section'
 
@@ -22,6 +20,7 @@ export interface AdminSectionVideo {
   id: string
   title: string
   level: string | null
+  status: DictationVideoStatus
   thumbnailUrl: string | null
   youtubeVideoId: string | null
 }
@@ -98,71 +97,3 @@ export function ReorderHandle({
     </button>
   )
 }
-
-/**
- * Draggable video row (grip handle carries the video id). When `sectioned`, also
- * shows a Remove button that unassigns it from its section (never deletes).
- */
-export function DraggableVideoRow({
-  video,
-  sectioned,
-}: {
-  video: AdminSectionVideo
-  sectioned: boolean
-}) {
-  return (
-    <li
-      draggable
-      onDragStart={event => {
-        event.dataTransfer.setData(MIME_VIDEO, video.id)
-        event.dataTransfer.effectAllowed = 'move'
-      }}
-      className="border-manga-black bg-manga-white flex cursor-grab items-center gap-2 border-2 p-2 active:cursor-grabbing"
-    >
-      <GripVertical
-        aria-hidden="true"
-        className="text-manga-ink-soft size-4 shrink-0"
-      />
-      <DictationVideoThumbnail
-        title={video.title}
-        thumbnailUrl={video.thumbnailUrl}
-        youtubeVideoId={video.youtubeVideoId}
-        sizes="96px"
-        className="w-24 shrink-0"
-      />
-      <span className="min-w-0 flex-1 truncate font-sans text-sm font-black">
-        {video.title}
-      </span>
-      {video.level && <PageTag tone="sky">{video.level}</PageTag>}
-      <Link
-        href={`/dictation/videos/${video.id}/edit`}
-        className="border-manga-black bg-manga-paper-soft hover:bg-manga-pale-red inline-flex min-h-9 shrink-0 items-center gap-1 border-2 px-3 font-sans text-xs font-black shadow-[2px_2px_0_var(--manga-black)]"
-      >
-        <Pencil
-          aria-hidden="true"
-          className="size-3"
-        />{' '}
-        Captions
-      </Link>
-      {sectioned && (
-        <form
-          action={removeVideoFromSectionAction}
-          className="shrink-0"
-        >
-          <input
-            type="hidden"
-            name="videoId"
-            value={video.id}
-          />
-          <button
-            type="submit"
-            className="border-manga-black bg-manga-white hover:bg-manga-pale-red inline-flex min-h-9 items-center border-2 px-3 font-sans text-xs font-black uppercase"
-          >
-            Remove
-          </button>
-        </form>
-      )}
-    </li>
-  )
-}
-

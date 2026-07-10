@@ -8,12 +8,8 @@ import { PageTag } from '@/components/ui/PageTag'
 import { cn } from '@/lib/utils'
 import { moveVideoAction } from '@/modules/dictation/content/adminActions'
 
-import {
-  DraggableVideoRow,
-  DropZone,
-  MIME_VIDEO,
-  type AdminSectionVideo,
-} from './adminVideoDnd'
+import { AdminVideoRow } from './AdminVideoRow'
+import { DropZone, MIME_VIDEO, type AdminSectionVideo } from './adminVideoDnd'
 
 /**
  * Page-level pool of videos with no topic. A persistent drag SOURCE (drag a
@@ -28,6 +24,8 @@ export function AdminUnassignedPanel({
   const router = useRouter()
   const [open, setOpen] = useState(true)
   const [, startTransition] = useTransition()
+
+  if (videos.length === 0) return null
 
   function unassign(videoId: string) {
     startTransition(async () => {
@@ -65,21 +63,19 @@ export function AdminUnassignedPanel({
             Drag a video into a topic&apos;s section below to organize it. Drop
             a video here to unassign it.
           </p>
-          {videos.length === 0 ? (
-            <p className="text-manga-ink-soft border-manga-black bg-manga-paper-soft border-2 p-3 text-sm">
-              Everything is assigned to a topic.
-            </p>
-          ) : (
-            <ul className="grid gap-2">
-              {videos.map(video => (
-                <DraggableVideoRow
-                  key={video.id}
-                  video={video}
-                  sectioned={false}
-                />
-              ))}
-            </ul>
-          )}
+          <ul className="grid gap-2">
+            {videos.map(video => (
+              <AdminVideoRow
+                key={video.id}
+                video={video}
+                gripLabel={`Drag ${video.title}`}
+                acceptReorderMime={MIME_VIDEO}
+                onDragStartData={dataTransfer =>
+                  dataTransfer.setData(MIME_VIDEO, video.id)
+                }
+              />
+            ))}
+          </ul>
         </DropZone>
       )}
     </div>

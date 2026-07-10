@@ -4,6 +4,7 @@ import { Bot, Loader2, RotateCcw } from 'lucide-react'
 import { useState } from 'react'
 
 import { MangaPanel } from '@/components/common/MangaPanel'
+import { Label } from '@/components/ui/label'
 import { MangaButton } from '@/components/ui/MangaButton'
 import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
@@ -116,7 +117,7 @@ export function DictationDebriefPanel({
         transcript data, missed words, traps, and your notes.
       </p>
 
-      <label className="grid gap-2 text-sm font-black">
+      <Label className="grid gap-2 text-sm font-black">
         Notes for this debrief
         <Textarea
           value={notes}
@@ -124,7 +125,7 @@ export function DictationDebriefPanel({
           placeholder="Optional: what felt hard, what IELTS target you care about, or what to focus on next."
           className="border-manga-black bg-manga-white min-h-24 rounded-none border-2 text-base shadow-[3px_3px_0_var(--manga-black)]"
         />
-      </label>
+      </Label>
 
       {!canGenerate ? (
         <div className="border-manga-black bg-manga-paper-soft border-2 p-3 text-sm leading-6 font-black shadow-[3px_3px_0_var(--manga-black)]">

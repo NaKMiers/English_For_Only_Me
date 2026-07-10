@@ -12,6 +12,7 @@ import {
   GuidedAnswerInput,
   type GuidedStatus,
 } from '@/components/dictation/GuidedAnswerInput'
+import { Label } from '@/components/ui/label'
 import { MangaButton } from '@/components/ui/MangaButton'
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -436,12 +437,7 @@ export function DictationPracticeShell({
     )
 
     return () => playerControllerRef.current.pause()
-  }, [
-    activeCaptionEndMs,
-    activeCaptionStartMs,
-    activeView,
-    isRepeatingCaption,
-  ])
+  }, [activeCaptionEndMs, activeCaptionStartMs, activeView, isRepeatingCaption])
 
   const toggleVideo = useCallback(() => {
     const nextValue = !preferences.isVideoHidden
@@ -900,7 +896,7 @@ export function DictationPracticeShell({
                   </div>
 
                   <div className="flex flex-col gap-2">
-                    <label className="flex items-center gap-2 text-base font-black">
+                    <Label className="flex items-center gap-2 text-base font-black">
                       <Switch
                         size="lg"
                         checked={preferences.showAnswerImmediately}
@@ -912,8 +908,8 @@ export function DictationPracticeShell({
                         }
                       />
                       Show answer immediately
-                    </label>
-                    <label className="flex items-center gap-2 text-base font-black">
+                    </Label>
+                    <Label className="flex items-center gap-2 text-base font-black">
                       <Switch
                         size="lg"
                         checked={preferences.showFullAnswer}
@@ -925,7 +921,7 @@ export function DictationPracticeShell({
                         }
                       />
                       Show full answer
-                    </label>
+                    </Label>
                   </div>
 
                   {translationTracks.length > 0 && selectedLanguage ? (
@@ -991,14 +987,14 @@ export function DictationPracticeShell({
           <div className="flex flex-wrap items-center justify-between gap-3">
             {preferences.showShortcuts ? (
               <div className="text-manga-ink-soft flex flex-wrap gap-x-3 gap-y-1 text-xs font-black">
-                <span>Alt · replay</span>
+                <span>Command / Alt · replay</span>
                 <span>Enter · check</span>
                 <span>Ctrl + [ ] · move</span>
               </div>
             ) : (
               <span />
             )}
-            <label className="flex items-center gap-2 text-sm font-black">
+            <Label className="flex items-center gap-2 text-sm font-black">
               <Switch
                 size="default"
                 checked={preferences.showShortcuts}
@@ -1013,7 +1009,7 @@ export function DictationPracticeShell({
                 }}
               />
               Show shortcut hints
-            </label>
+            </Label>
           </div>
         </footer>
       </section>

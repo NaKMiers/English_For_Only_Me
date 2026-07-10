@@ -20,6 +20,9 @@ export const metadata: Metadata = { title: 'Admin · Videos' }
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
+const actionLink =
+  'border-manga-black bg-manga-paper-soft hover:bg-manga-pale-red inline-flex min-h-10 items-center border-3 px-4 font-sans text-sm font-black shadow-[3px_3px_0_var(--manga-black)]'
+
 export default async function AdminVideosPage() {
   let rows: AdminVideoRow[] = []
   let topics: Array<{ id: string; title: string }> = []
@@ -46,6 +49,7 @@ export default async function AdminVideosPage() {
       id: video.id,
       title: video.title,
       level: video.level,
+      status: video.status,
       topicTitle: video.topicId
         ? (topicTitle.get(video.topicId) ?? null)
         : null,
@@ -54,6 +58,7 @@ export default async function AdminVideosPage() {
         : null,
       thumbnailUrl: video.thumbnailUrl,
       youtubeVideoId: video.youtubeVideoId,
+      order: video.order,
     }))
   }
 
@@ -71,12 +76,20 @@ export default async function AdminVideosPage() {
           <h1 className="font-sans text-[clamp(1.6rem,4vw,2.4rem)] leading-none font-black uppercase">
             Videos
           </h1>
-          <Link
-            href="/admin"
-            className="text-manga-red text-sm font-black hover:underline"
-          >
-            ← Admin
-          </Link>
+          <div className="flex flex-wrap items-center gap-3">
+            <Link
+              href="/admin/import"
+              className={actionLink}
+            >
+              Import video
+            </Link>
+            <Link
+              href="/admin"
+              className="text-manga-red text-sm font-black hover:underline"
+            >
+              ← Admin
+            </Link>
+          </div>
         </header>
         <p className="text-manga-ink-soft text-sm">
           Select videos, pick a topic/section/level, then assign. Assigning sets

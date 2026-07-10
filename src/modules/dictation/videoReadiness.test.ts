@@ -26,6 +26,7 @@ function buildVideo(
     importWarning: null,
     lastPracticedAt: null,
     ownerId: 'owner-one',
+    order: 0,
     purpose: 'ielts-listening',
     sentenceCount: 0,
     sourceType: 'youtube',
@@ -48,7 +49,7 @@ describe('dictation video readiness', () => {
 
     expect(hasDictationTranscript(video)).toBe(false)
     expect(getDictationVideoAction(video)).toEqual({
-      href: '/dictation/videos/507f1f77bcf86cd799439011/edit',
+      href: '/admin/videos/507f1f77bcf86cd799439011/edit',
       label: 'Add Transcript',
     })
   })

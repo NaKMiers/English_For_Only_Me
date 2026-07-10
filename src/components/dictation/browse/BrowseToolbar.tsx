@@ -3,10 +3,18 @@
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
+import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { DICTATION_LEVELS } from '@/modules/dictation/levels'
 
 const controlClass =
-  'border-manga-black border-2 bg-manga-white px-3 py-2 font-sans text-sm font-black'
+  'border-manga-black min-h-11 rounded-none border-2 bg-manga-white px-3 py-2 font-sans text-sm font-black'
 
 /**
  * URL-driven browse toolbar: debounced live search (no OK button, per design
@@ -49,7 +57,7 @@ export function BrowseToolbar({
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <input
+      <Input
         type="search"
         aria-label="Search lessons"
         placeholder="Search"
@@ -57,32 +65,39 @@ export function BrowseToolbar({
         onChange={event => setSearch(event.target.value)}
         className={`${controlClass} min-w-40 flex-1`}
       />
-      <select
-        aria-label="Level"
+      <Select
         value={level ?? ''}
-        onChange={event => commit({ level: event.target.value })}
-        className={controlClass}
+        onValueChange={value => commit({ level: value ?? '' })}
       >
-        <option value="">All levels</option>
-        {DICTATION_LEVELS.map(l => (
-          <option
-            key={l}
-            value={l}
-          >
-            {l}
-          </option>
-        ))}
-      </select>
-      <select
-        aria-label="Sort"
+        <SelectTrigger aria-label="Level">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="">All levels</SelectItem>
+          {DICTATION_LEVELS.map(l => (
+            <SelectItem
+              key={l}
+              value={l}
+            >
+              {l}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <Select
         value={sort}
-        onChange={event => commit({ sort: event.target.value })}
-        className={controlClass}
+        onValueChange={value => commit({ sort: value ?? '' })}
       >
-        <option value="newest">Newest</option>
-        <option value="oldest">Oldest</option>
-        <option value="title">Title A–Z</option>
-      </select>
+        <SelectTrigger aria-label="Sort">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="order">Custom order</SelectItem>
+          <SelectItem value="newest">Newest</SelectItem>
+          <SelectItem value="oldest">Oldest</SelectItem>
+          <SelectItem value="title">Title A–Z</SelectItem>
+        </SelectContent>
+      </Select>
     </div>
   )
 }

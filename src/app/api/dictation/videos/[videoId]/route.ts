@@ -4,7 +4,10 @@ import { MissingEnvironmentError } from '@/constants/environments'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
 import { toDictationVideoRecord } from '@/modules/dictation/services/dictationVideoRecords'
-import { requireAdmin } from '@/modules/dictation/services/getCurrentUser'
+import {
+  type CurrentUser,
+  requireUser,
+} from '@/modules/dictation/services/getCurrentUser'
 import {
   type ApiErrorDecision,
   getMissingMongoResponse,
@@ -24,7 +27,7 @@ function jsonError(decision: ApiErrorDecision) {
   return NextResponse.json(decision.body, { status: decision.status })
 }
 
-// requireAdmin throws 401/403 — map to JSON instead of a 500.
+// requireUser throws 401 — map to JSON instead of a 500.
 function authErrorDecision(error: unknown): ApiErrorDecision | null {
   if (
     typeof error === 'object' &&
@@ -40,6 +43,13 @@ function authErrorDecision(error: unknown): ApiErrorDecision | null {
     }
 
   return null
+}
+
+// Admins may edit/delete any video; a non-admin only the videos they own.
+// Applying this as a query filter means someone else's video simply isn't
+// matched (404) rather than modified.
+function ownerScope(user: CurrentUser) {
+  return user.role === 'admin' ? {} : { ownerId: user.id }
 }
 
 function toArchiveError(error: unknown): ApiErrorDecision {
@@ -80,17 +90,18 @@ export async function DELETE(_request: Request, { params }: Props) {
     })
 
   try {
-    await requireAdmin()
+    const user = await requireUser()
 
     await connectDatabase()
 
-    // Global content: admin archives any video (no owner filter).
+    // Admin archives any video; an owner only their own.
     const video = await DictationVideoModel.findOneAndUpdate(
       {
         _id: videoId,
         status: {
           $ne: 'archived',
         },
+        ...ownerScope(user),
       },
       {
         $set: {
@@ -156,7 +167,7 @@ export async function PATCH(request: Request, { params }: Props) {
     })
 
   try {
-    await requireAdmin()
+    const user = await requireUser()
 
     const body = await request.json()
     const parsed = parseUpdateVideoRequest(body)
@@ -165,13 +176,14 @@ export async function PATCH(request: Request, { params }: Props) {
 
     await connectDatabase()
 
-    // Global content: admin updates any video (no owner filter).
+    // Admin updates any video; an owner only their own.
     const video = await DictationVideoModel.findOneAndUpdate(
       {
         _id: videoId,
         status: {
           $ne: 'archived',
         },
+        ...ownerScope(user),
       },
       {
         $set: {

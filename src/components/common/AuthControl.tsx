@@ -1,12 +1,9 @@
-import { LogIn, LogOut } from 'lucide-react'
+import { LogIn } from 'lucide-react'
 
+import { UserMenu } from '@/components/common/UserMenu'
+import { MangaButton } from '@/components/ui/MangaButton'
 import { hasGoogleAuth } from '@/constants/environments'
 import { auth, signIn, signOut } from '@/lib/auth/auth'
-import { cn } from '@/lib/utils'
-
-const buttonClass = cn(
-  'border-manga-black bg-manga-white hover:bg-manga-paper-soft inline-flex min-h-11 shrink-0 items-center gap-2 border-3 px-3 font-sans text-sm font-black whitespace-nowrap shadow-[3px_3px_0_var(--manga-black)] transition-colors'
-)
 
 /**
  * Topbar auth control. Server component (JWT session read via auth()). Renders a
@@ -28,16 +25,18 @@ export async function AuthControl() {
           await signIn('google')
         }}
       >
-        <button
+        <MangaButton
           type="submit"
-          className={buttonClass}
+          tone="paper"
+          icon={
+            <LogIn
+              aria-hidden="true"
+              className="size-4"
+            />
+          }
         >
-          <LogIn
-            aria-hidden="true"
-            className="size-4"
-          />
           Sign in
-        </button>
+        </MangaButton>
       </form>
     )
 
@@ -45,40 +44,14 @@ export async function AuthControl() {
   const initial = label.charAt(0).toUpperCase()
 
   return (
-    <div className="flex min-w-0 items-center gap-2">
-      <span className="border-manga-black bg-manga-white flex min-h-11 min-w-0 items-center gap-2 border-3 px-2 shadow-[3px_3px_0_var(--manga-black)]">
-        <span
-          aria-hidden="true"
-          className="bg-manga-black text-manga-white grid size-7 shrink-0 place-items-center font-sans text-sm font-black"
-        >
-          {initial}
-        </span>
-        <span className="grid min-w-0 leading-tight">
-          <span className="truncate font-sans text-sm font-black">{label}</span>
-          {user.role === 'admin' && (
-            <span className="text-manga-ink-soft text-xs font-black uppercase">
-              Admin
-            </span>
-          )}
-        </span>
-      </span>
-      <form
-        action={async () => {
-          'use server'
-          await signOut()
-        }}
-      >
-        <button
-          type="submit"
-          aria-label="Sign out"
-          className={buttonClass}
-        >
-          <LogOut
-            aria-hidden="true"
-            className="size-4"
-          />
-        </button>
-      </form>
-    </div>
+    <UserMenu
+      label={label}
+      initial={initial}
+      isAdmin={user.role === 'admin'}
+      signOutAction={async () => {
+        'use server'
+        await signOut()
+      }}
+    />
   )
 }

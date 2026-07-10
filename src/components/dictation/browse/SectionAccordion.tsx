@@ -35,8 +35,21 @@ function VideoRow({
   canFavorite: boolean
 }) {
   return (
-    <li className="border-manga-black bg-manga-white flex items-center justify-between gap-3 border-2 p-2">
-      <div className="flex min-w-0 items-center gap-3">
+    <li
+      className={cn(
+        'border-manga-black bg-manga-white relative flex items-center justify-between gap-3 border-2 p-2',
+        video.practiceHref &&
+          'hover:bg-manga-paper-soft focus-within:bg-manga-paper-soft cursor-pointer'
+      )}
+    >
+      {video.practiceHref && (
+        <Link
+          href={video.practiceHref}
+          aria-label={`Practice ${video.title}`}
+          className="absolute inset-0 z-0"
+        />
+      )}
+      <div className="pointer-events-none flex min-w-0 items-center gap-3">
         <DictationVideoThumbnail
           title={video.title}
           thumbnailUrl={video.thumbnailUrl}
@@ -57,19 +70,21 @@ function VideoRow({
           </span>
         </div>
       </div>
-      <div className="flex shrink-0 items-center gap-2">
-        <FavoriteButton
-          videoId={video.id}
-          initialFavorited={video.favorited}
-          canFavorite={canFavorite}
-        />
+      <div className="pointer-events-none relative z-10 flex shrink-0 items-center gap-2">
+        <span className="pointer-events-auto">
+          <FavoriteButton
+            videoId={video.id}
+            initialFavorited={video.favorited}
+            canFavorite={canFavorite}
+          />
+        </span>
         {video.practiceHref ? (
-          <Link
-            href={video.practiceHref}
+          <span
+            aria-hidden="true"
             className="border-manga-black bg-manga-paper-soft hover:bg-manga-pale-red inline-flex min-h-9 items-center border-2 px-3 font-sans text-sm font-black shadow-[2px_2px_0_var(--manga-black)]"
           >
             Practice
-          </Link>
+          </span>
         ) : (
           <span className="text-manga-ink-soft text-xs font-black uppercase">
             No transcript

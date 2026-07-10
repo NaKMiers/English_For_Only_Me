@@ -60,7 +60,6 @@ export async function POST(request: Request) {
 
     const video = await DictationVideoModel.findOne({
       _id: parsed.data.videoId,
-      ownerId,
       status: {
         $ne: 'archived',
       },
@@ -69,14 +68,12 @@ export async function POST(request: Request) {
     const firstSegment =
       video && activeTranscriptId
         ? await DictationSegmentModel.findOne({
-            ownerId,
             transcriptId: activeTranscriptId,
             videoId: video._id,
           }).sort({ order: 1 })
         : null
     const guardDecision = getSessionStartGuardDecision({
       firstSegment,
-      ownerId,
       video,
     })
 

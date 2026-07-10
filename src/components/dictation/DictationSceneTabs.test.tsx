@@ -30,6 +30,7 @@ describe('DictationSceneTabs', () => {
     importWarning: null,
     lastPracticedAt: null,
     ownerId: 'owner-one',
+    order: 0,
     purpose: 'ielts-listening',
     sentenceCount: 40,
     sourceType: 'youtube',
@@ -61,7 +62,7 @@ describe('DictationSceneTabs', () => {
         name: 'Choose a video. Turn it into practice.',
       })
     ).not.toBeNull()
-    expect(view.getByRole('link', { name: 'Saved Videos' })).not.toBeNull()
+    expect(view.getByRole('link', { name: 'Browse Videos' })).not.toBeNull()
 
     fireEvent.click(view.getByRole('tab', { name: 'Practice' }))
 

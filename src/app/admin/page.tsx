@@ -28,7 +28,7 @@ const LINKS = [
     desc: 'Assign videos to a topic, section, and level.',
   },
   {
-    href: '/dictation/import',
+    href: '/admin/import',
     title: 'Import',
     desc: 'Add a new YouTube source.',
   },

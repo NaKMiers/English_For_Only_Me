@@ -10,7 +10,7 @@ export function hasDictationTranscript(video: DictationVideoApiRecord) {
 export function getDictationVideoAction(video: DictationVideoApiRecord) {
   if (!hasDictationTranscript(video))
     return {
-      href: `/dictation/videos/${video.id}/edit`,
+      href: `/admin/videos/${video.id}/edit`,
       label: 'Add Transcript',
     }
 
@@ -33,7 +33,7 @@ export function getDictationVideoAction(video: DictationVideoApiRecord) {
     }
 
   return {
-    href: `/dictation/videos/${video.id}/edit`,
+    href: `/admin/videos/${video.id}/edit`,
     label: 'Continue Setup',
   }
 }

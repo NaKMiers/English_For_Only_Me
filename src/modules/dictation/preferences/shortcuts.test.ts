@@ -37,6 +37,15 @@ describe('dictation shortcuts', () => {
     expect(getDictationShortcutAction(event)).toBe('replay')
   })
 
+  test('maps Command key tap to replay', () => {
+    const event = new window.KeyboardEvent('keydown', {
+      key: 'Meta',
+      metaKey: true,
+    })
+
+    expect(getDictationShortcutAction(event)).toBe('replay')
+  })
+
   test('maps Ctrl + brackets to navigation', () => {
     const next = new window.KeyboardEvent('keydown', {
       ctrlKey: true,

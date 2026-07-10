@@ -63,12 +63,12 @@ function PracticeSetupState({
           <div className="flex flex-wrap gap-3">
             <MangaButton href="/dictation">Back To Dictation Lab</MangaButton>
             {videoId ? (
-              <MangaButton href={`/dictation/videos/${videoId}/edit`}>
+              <MangaButton href={`/admin/videos/${videoId}/edit`}>
                 Add Transcript
               </MangaButton>
             ) : null}
             <MangaButton
-              href="/dictation/import"
+              href="/admin/import"
               tone="paper"
             >
               Import Video
@@ -102,7 +102,6 @@ export default async function Page({ params }: Props) {
 
   const video = await DictationVideoModel.findOne({
     _id: videoId,
-    ownerId,
     status: {
       $ne: 'archived',
     },
@@ -122,7 +121,6 @@ export default async function Page({ params }: Props) {
     )
 
   const segments = await DictationSegmentModel.find({
-    ownerId,
     videoId: video._id,
     transcriptId: video.activeTranscriptId,
   })
@@ -149,7 +147,6 @@ export default async function Page({ params }: Props) {
     .lean()
 
   const trackDocuments = await DictationTranscriptModel.find({
-    ownerId,
     videoId: video._id,
     language: { $ne: video.defaultLanguage },
     cueCount: { $gt: 0 },
