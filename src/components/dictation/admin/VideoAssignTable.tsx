@@ -6,6 +6,7 @@ import { useMemo, useState, useTransition } from 'react'
 import { DICTATION_LEVELS } from '@/modules/dictation/levels'
 import type { DictationLevel } from '@/modules/dictation/levels'
 import { assignVideosAction } from '@/modules/dictation/content/adminActions'
+import { matchesBrowseQuery } from '@/modules/dictation/content/browseQuery'
 
 export interface AdminVideoRow {
   id: string
@@ -31,10 +32,28 @@ export function VideoAssignTable({ videos, topics, sections }: Props) {
   const [topicId, setTopicId] = useState('')
   const [sectionId, setSectionId] = useState('')
   const [level, setLevel] = useState('')
+  const [filterSearch, setFilterSearch] = useState('')
+  const [filterLevel, setFilterLevel] = useState('')
 
   const topicSections = useMemo(
     () => sections.filter(s => s.topicId === topicId),
     [sections, topicId]
+  )
+
+  const visibleVideos = useMemo(
+    () =>
+      videos.filter(video =>
+        matchesBrowseQuery(
+          { title: video.title, level: video.level as DictationLevel | null },
+          {
+            search: filterSearch,
+            level: (filterLevel || null) as DictationLevel | null,
+            sort: 'newest',
+            page: 1,
+          }
+        )
+      ),
+    [videos, filterSearch, filterLevel]
   )
 
   function toggle(id: string) {
@@ -129,11 +148,41 @@ export function VideoAssignTable({ videos, topics, sections }: Props) {
         </button>
       </div>
 
+      <div className="flex flex-wrap items-center gap-2">
+        <input
+          type="search"
+          aria-label="Filter videos"
+          placeholder="Filter by title"
+          value={filterSearch}
+          onChange={e => setFilterSearch(e.target.value)}
+          className={`${controlClass} min-w-40 flex-1`}
+        />
+        <select
+          aria-label="Filter level"
+          value={filterLevel}
+          onChange={e => setFilterLevel(e.target.value)}
+          className={controlClass}
+        >
+          <option value="">All levels</option>
+          {DICTATION_LEVELS.map(l => (
+            <option
+              key={l}
+              value={l}
+            >
+              {l}
+            </option>
+          ))}
+        </select>
+        <span className="text-manga-ink-soft text-xs font-black">
+          {visibleVideos.length}/{videos.length}
+        </span>
+      </div>
+
       <ul className="grid gap-1">
-        {videos.length === 0 ? (
-          <li className="text-manga-ink-soft text-sm">No videos.</li>
+        {visibleVideos.length === 0 ? (
+          <li className="text-manga-ink-soft text-sm">No videos match.</li>
         ) : (
-          videos.map(video => (
+          visibleVideos.map(video => (
             <li
               key={video.id}
               className="border-manga-black bg-manga-white flex items-center gap-3 border-2 p-2"

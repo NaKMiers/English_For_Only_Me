@@ -15,6 +15,14 @@ import type {
 } from '@/modules/dictation/types'
 
 import {
+  buildVideoMongoFilter,
+  buildVideoMongoSort,
+  paginate,
+  type BrowseQuery,
+  type Pagination,
+} from './browseQuery'
+
+import {
   buildTopicSummaries,
   type TopicSectionAggregate,
   type TopicVideoAggregate,
@@ -132,6 +140,32 @@ export async function countNoTopicVideos(): Promise<number> {
     topicId: null,
     ...VISIBLE_VIDEO_FILTER,
   })
+}
+
+/**
+ * Search/filter/sort/paginate the videos within a topic (flat list mode). Uses
+ * the shared browseQuery helpers so behavior matches the admin table predicate.
+ */
+export async function searchVideosInTopic(
+  topicId: string,
+  query: BrowseQuery
+): Promise<{ videos: DictationVideoApiRecord[]; pagination: Pagination }> {
+  const filter = {
+    topicId,
+    ...VISIBLE_VIDEO_FILTER,
+    ...buildVideoMongoFilter(query),
+  }
+
+  const total = await DictationVideoModel.countDocuments(filter)
+  const pagination = paginate(query.page, total)
+
+  const videos = await DictationVideoModel.find(filter)
+    .sort(buildVideoMongoSort(query))
+    .skip(pagination.skip)
+    .limit(pagination.pageSize)
+    .lean()
+
+  return { videos: videos.map(toDictationVideoRecord), pagination }
 }
 
 /** All non-archived videos, for the admin management table. */
