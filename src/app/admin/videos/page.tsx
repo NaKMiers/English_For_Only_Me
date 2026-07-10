@@ -52,6 +52,8 @@ export default async function AdminVideosPage() {
       sectionTitle: video.sectionId
         ? (sectionTitle.get(video.sectionId) ?? null)
         : null,
+      thumbnailUrl: video.thumbnailUrl,
+      youtubeVideoId: video.youtubeVideoId,
     }))
   }
 

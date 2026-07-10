@@ -14,6 +14,8 @@ const video = (
   practiceHref: `/dictation/videos/${id}/practice`,
   favorited: false,
   done: false,
+  thumbnailUrl: null,
+  youtubeVideoId: null,
   ...over,
 })
 

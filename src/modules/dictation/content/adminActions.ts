@@ -98,6 +98,17 @@ export async function deleteSectionAction(formData: FormData) {
   revalidateBrowse()
 }
 
+/** Remove a video from its section (unassign only — never deletes the video). */
+export async function removeVideoFromSectionAction(formData: FormData) {
+  await guardAdmin()
+
+  const videoId = str(formData, 'videoId')
+  if (!videoId) return
+
+  await assignVideos([videoId], { sectionId: null })
+  revalidateBrowse()
+}
+
 export interface AssignVideosInput {
   videoIds: string[]
   topicId: string | null

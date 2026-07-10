@@ -45,9 +45,10 @@ function TopicCard({
   const lessonLabel = `${lessonCount} ${lessonCount === 1 ? 'lesson' : 'lessons'}`
 
   return (
-    <article
+    <Link
+      href={href}
       className={cn(
-        'border-manga-black grid grid-cols-[auto_1fr] items-center gap-3 border-3 p-3 shadow-[4px_4px_0_var(--manga-black)]',
+        'border-manga-black hover:bg-manga-pale-red grid grid-cols-[auto_1fr] items-center gap-3 border-3 p-3 shadow-[4px_4px_0_var(--manga-black)] transition-colors',
         muted ? 'bg-manga-paper' : 'bg-manga-white'
       )}
     >
@@ -57,12 +58,9 @@ function TopicCard({
       />
       <div className="grid min-w-0 gap-1">
         <div className="flex min-w-0 flex-wrap items-center gap-2">
-          <Link
-            href={href}
-            className="text-manga-red truncate font-sans text-lg font-black hover:underline"
-          >
+          <span className="text-manga-red truncate font-sans text-lg font-black">
             {title}
-          </Link>
+          </span>
           {hasVideoMedia && <PageTag tone="yellow">Video</PageTag>}
         </div>
         <p className="text-manga-ink-soft font-sans text-sm font-black">
@@ -70,7 +68,7 @@ function TopicCard({
         </p>
         <p className="text-manga-ink-soft text-sm">{lessonLabel}</p>
       </div>
-    </article>
+    </Link>
   )
 }
 

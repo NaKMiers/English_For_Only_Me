@@ -3,6 +3,10 @@
 import { useRouter } from 'next/navigation'
 import { useMemo, useState, useTransition } from 'react'
 
+import { Pencil } from 'lucide-react'
+import Link from 'next/link'
+
+import { DictationVideoThumbnail } from '@/components/dictation/DictationVideoThumbnail'
 import { DICTATION_LEVELS } from '@/modules/dictation/levels'
 import type { DictationLevel } from '@/modules/dictation/levels'
 import { assignVideosAction } from '@/modules/dictation/content/adminActions'
@@ -14,6 +18,8 @@ export interface AdminVideoRow {
   level: string | null
   topicTitle: string | null
   sectionTitle: string | null
+  thumbnailUrl: string | null
+  youtubeVideoId: string | null
 }
 
 interface Props {
@@ -192,16 +198,33 @@ export function VideoAssignTable({ videos, topics, sections }: Props) {
                 aria-label={`Select ${video.title}`}
                 checked={selected.has(video.id)}
                 onChange={() => toggle(video.id)}
-                className="size-4 shrink-0"
+                className="size-5 shrink-0"
+              />
+              <DictationVideoThumbnail
+                title={video.title}
+                thumbnailUrl={video.thumbnailUrl}
+                youtubeVideoId={video.youtubeVideoId}
+                sizes="96px"
+                className="w-24 shrink-0"
               />
               <span className="min-w-0 flex-1 truncate font-sans text-sm font-black">
                 {video.title}
               </span>
-              <span className="text-manga-ink-soft shrink-0 text-xs font-black">
+              <span className="text-manga-ink-soft hidden shrink-0 text-xs font-black sm:block">
                 {video.topicTitle ?? 'No topic'}
                 {video.sectionTitle ? ` · ${video.sectionTitle}` : ''}
                 {video.level ? ` · ${video.level}` : ''}
               </span>
+              <Link
+                href={`/dictation/videos/${video.id}/edit`}
+                className="border-manga-black bg-manga-paper-soft hover:bg-manga-pale-red inline-flex min-h-9 shrink-0 items-center gap-1 border-2 px-3 font-sans text-xs font-black shadow-[2px_2px_0_var(--manga-black)]"
+              >
+                <Pencil
+                  aria-hidden="true"
+                  className="size-3"
+                />{' '}
+                Captions
+              </Link>
             </li>
           ))
         )}

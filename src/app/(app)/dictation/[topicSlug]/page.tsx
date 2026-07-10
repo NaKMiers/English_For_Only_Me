@@ -53,6 +53,8 @@ function toBrowseItem(
       : null,
     favorited: favoritedSet.has(video.id),
     done: completedSet.has(video.id),
+    thumbnailUrl: video.thumbnailUrl,
+    youtubeVideoId: video.youtubeVideoId,
   }
 }
 

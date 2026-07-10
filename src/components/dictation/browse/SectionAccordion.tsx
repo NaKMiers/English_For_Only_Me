@@ -4,6 +4,7 @@ import { Check, ChevronDown } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
 
+import { DictationVideoThumbnail } from '@/components/dictation/DictationVideoThumbnail'
 import { PageTag } from '@/components/ui/PageTag'
 import { cn } from '@/lib/utils'
 
@@ -16,6 +17,8 @@ export interface BrowseVideoItem {
   practiceHref: string | null
   favorited: boolean
   done: boolean
+  thumbnailUrl: string | null
+  youtubeVideoId: string | null
 }
 
 export interface BrowseSectionGroup {
@@ -32,18 +35,27 @@ function VideoRow({
   canFavorite: boolean
 }) {
   return (
-    <li className="border-manga-black bg-manga-white flex items-center justify-between gap-3 border-2 p-3">
-      <div className="flex min-w-0 items-center gap-2">
-        {video.done && (
-          <Check
-            aria-label="Completed"
-            className="text-manga-red size-4 shrink-0"
-          />
-        )}
-        {video.level && <PageTag tone="sky">{video.level}</PageTag>}
-        <span className="truncate font-sans text-sm font-black">
-          {video.title}
-        </span>
+    <li className="border-manga-black bg-manga-white flex items-center justify-between gap-3 border-2 p-2">
+      <div className="flex min-w-0 items-center gap-3">
+        <DictationVideoThumbnail
+          title={video.title}
+          thumbnailUrl={video.thumbnailUrl}
+          youtubeVideoId={video.youtubeVideoId}
+          sizes="112px"
+          className="w-28 shrink-0"
+        />
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
+          {video.done && (
+            <Check
+              aria-label="Completed"
+              className="text-manga-red size-4 shrink-0"
+            />
+          )}
+          {video.level && <PageTag tone="sky">{video.level}</PageTag>}
+          <span className="truncate font-sans text-sm font-black">
+            {video.title}
+          </span>
+        </div>
       </div>
       <div className="flex shrink-0 items-center gap-2">
         <FavoriteButton

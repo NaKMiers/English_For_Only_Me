@@ -50,6 +50,8 @@ export default async function NoTopicPage() {
         : null,
       favorited: favoritedSet.has(video.id),
       done: completedSet.has(video.id),
+      thumbnailUrl: video.thumbnailUrl,
+      youtubeVideoId: video.youtubeVideoId,
     }))
   }
 

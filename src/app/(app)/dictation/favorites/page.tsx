@@ -44,6 +44,8 @@ export default async function FavoritesPage() {
         : null,
       favorited: true,
       done: completedSet.has(video.id),
+      thumbnailUrl: video.thumbnailUrl,
+      youtubeVideoId: video.youtubeVideoId,
     }))
   }
 

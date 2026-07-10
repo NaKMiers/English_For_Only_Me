@@ -4,138 +4,82 @@ import Link from 'next/link'
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { AuthControl } from '@/components/common/AuthControl'
 import { MangaPageShell } from '@/components/common/MangaPageShell'
-import { Input } from '@/components/ui/input'
-import { PageTag } from '@/components/ui/PageTag'
+import {
+  AdminTopicCard,
+  type AdminSectionVideo,
+  type AdminTopicData,
+} from '@/components/dictation/admin/AdminTopicCard'
 import { hasMongoDbUri } from '@/constants/environments'
 import { connectDatabase } from '@/lib/db/connectDatabase'
-import {
-  createSectionAction,
-  createTopicAction,
-  deleteSectionAction,
-  deleteTopicAction,
-} from '@/modules/dictation/content/adminActions'
+import { createTopicAction } from '@/modules/dictation/content/adminActions'
 import {
   listSectionsForTopic,
   listTopics,
+  listVideosForTopic,
 } from '@/modules/dictation/content/contentRepository'
-import type {
-  DictationSectionApiRecord,
-  DictationTopicApiRecord,
-} from '@/modules/dictation/types'
 
 export const metadata: Metadata = { title: 'Admin · Topics' }
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
-const inputClass = 'border-manga-black border-3 bg-manga-white px-3 py-2'
-const submitClass =
+const input =
+  'border-manga-black border-3 bg-manga-white px-3 py-2 font-sans text-base font-black'
+const submit =
   'border-manga-black bg-manga-paper-soft hover:bg-manga-pale-red inline-flex min-h-11 items-center border-3 px-4 font-sans text-sm font-black shadow-[3px_3px_0_var(--manga-black)]'
-const dangerClass =
-  'border-manga-black bg-manga-white hover:bg-manga-pale-red inline-flex min-h-9 items-center border-2 px-3 font-sans text-xs font-black uppercase'
 
-function TopicBlock({
-  topic,
-  sections,
-}: {
-  topic: DictationTopicApiRecord
-  sections: DictationSectionApiRecord[]
-}) {
-  return (
-    <div className="border-manga-black bg-manga-white grid gap-3 border-3 p-4 shadow-[4px_4px_0_var(--manga-black)]">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <Link
-            href={`/dictation/${topic.slug}`}
-            className="text-manga-red font-sans text-lg font-black hover:underline"
-          >
-            {topic.title}
-          </Link>
-          {topic.hasVideoMedia && <PageTag tone="yellow">Video</PageTag>}
-          <span className="text-manga-ink-soft text-xs">/{topic.slug}</span>
-        </div>
-        <form action={deleteTopicAction}>
-          <input
-            type="hidden"
-            name="id"
-            value={topic.id}
-          />
-          <button
-            type="submit"
-            className={dangerClass}
-          >
-            Delete topic
-          </button>
-        </form>
-      </div>
+async function buildTopicData(): Promise<AdminTopicData[]> {
+  const topics = await listTopics()
 
-      <div className="grid gap-2">
-        {sections.length === 0 ? (
-          <p className="text-manga-ink-soft text-sm">No sections yet.</p>
-        ) : (
-          <ul className="grid gap-1">
-            {sections.map(section => (
-              <li
-                key={section.id}
-                className="border-manga-black bg-manga-paper-soft flex items-center justify-between gap-2 border-2 px-3 py-2"
-              >
-                <span className="font-sans text-sm font-black">
-                  {section.title}
-                </span>
-                <form action={deleteSectionAction}>
-                  <input
-                    type="hidden"
-                    name="id"
-                    value={section.id}
-                  />
-                  <button
-                    type="submit"
-                    className={dangerClass}
-                  >
-                    Remove
-                  </button>
-                </form>
-              </li>
-            ))}
-          </ul>
-        )}
+  return Promise.all(
+    topics.map(async topic => {
+      const [sections, videos] = await Promise.all([
+        listSectionsForTopic(topic.id),
+        listVideosForTopic(topic.id),
+      ])
 
-        <form
-          action={createSectionAction}
-          className="flex flex-wrap gap-2"
-        >
-          <input
-            type="hidden"
-            name="topicId"
-            value={topic.id}
-          />
-          <Input
-            name="title"
-            placeholder="New section title"
-            required
-            className={`${inputClass} flex-1`}
-          />
-          <button
-            type="submit"
-            className={submitClass}
-          >
-            Add section
-          </button>
-        </form>
-      </div>
-    </div>
+      const bySection = new Map<string, AdminSectionVideo[]>()
+      const ungrouped: AdminSectionVideo[] = []
+
+      for (const video of videos) {
+        const item: AdminSectionVideo = {
+          id: video.id,
+          title: video.title,
+          level: video.level,
+          thumbnailUrl: video.thumbnailUrl,
+          youtubeVideoId: video.youtubeVideoId,
+        }
+        if (video.sectionId) {
+          const bucket = bySection.get(video.sectionId) ?? []
+          bucket.push(item)
+          bySection.set(video.sectionId, bucket)
+        } else ungrouped.push(item)
+      }
+
+      return {
+        id: topic.id,
+        slug: topic.slug,
+        title: topic.title,
+        description: topic.description,
+        order: topic.order,
+        hasVideoMedia: topic.hasVideoMedia,
+        videoCount: videos.length,
+        sections: sections.map(section => ({
+          id: section.id,
+          title: section.title,
+          videos: bySection.get(section.id) ?? [],
+        })),
+        ungrouped,
+      } satisfies AdminTopicData
+    })
   )
 }
 
 export default async function AdminTopicsPage() {
-  let topics: DictationTopicApiRecord[] = []
-  let sectionsByTopic: DictationSectionApiRecord[][] = []
+  let topics: AdminTopicData[] = []
 
   if (hasMongoDbUri()) {
     await connectDatabase()
-    topics = await listTopics()
-    sectionsByTopic = await Promise.all(
-      topics.map(topic => listSectionsForTopic(topic.id))
-    )
+    topics = await buildTopicData()
   }
 
   return (
@@ -167,36 +111,36 @@ export default async function AdminTopicsPage() {
           <h2 className="font-sans text-base font-black uppercase">
             New topic
           </h2>
-          <Input
+          <input
             name="title"
             placeholder="Title (e.g. Short Stories)"
             required
-            className={inputClass}
+            className={input}
           />
-          <Input
+          <input
             name="description"
             placeholder="Description (optional)"
-            className={inputClass}
+            className={input}
           />
           <div className="flex flex-wrap items-center gap-4">
-            <Input
+            <input
               name="order"
               type="number"
               placeholder="Order"
               defaultValue={0}
-              className={`${inputClass} w-28`}
+              className={`${input} w-28`}
             />
             <label className="flex items-center gap-2 font-sans text-sm font-black">
               <input
                 type="checkbox"
                 name="hasVideoMedia"
-                className="size-4"
+                className="size-5"
               />
               Video badge
             </label>
             <button
               type="submit"
-              className={submitClass}
+              className={submit}
             >
               Create topic
             </button>
@@ -209,11 +153,10 @@ export default async function AdminTopicsPage() {
               No topics yet. Create one above.
             </p>
           ) : (
-            topics.map((topic, i) => (
-              <TopicBlock
+            topics.map(topic => (
+              <AdminTopicCard
                 key={topic.id}
                 topic={topic}
-                sections={sectionsByTopic[i] ?? []}
               />
             ))
           )}
