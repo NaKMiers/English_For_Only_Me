@@ -1,8 +1,9 @@
 'use client'
 
-import { ChevronDown, Pencil } from 'lucide-react'
+import { ChevronDown, GripVertical, Pencil } from 'lucide-react'
 import Link from 'next/link'
-import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { useState, useTransition, type ReactNode } from 'react'
 
 import { DictationVideoThumbnail } from '@/components/dictation/DictationVideoThumbnail'
 import { PageTag } from '@/components/ui/PageTag'
@@ -11,6 +12,7 @@ import {
   createSectionAction,
   deleteSectionAction,
   deleteTopicAction,
+  moveVideoAction,
   removeVideoFromSectionAction,
   updateTopicAction,
 } from '@/modules/dictation/content/adminActions'
@@ -43,12 +45,46 @@ export interface AdminTopicData {
   ungrouped: AdminSectionVideo[]
 }
 
+const DRAG_MIME = 'text/plain'
+
 const input =
   'border-manga-black border-3 bg-manga-white px-3 py-2 font-sans text-base font-black'
 const btn =
   'border-manga-black bg-manga-paper-soft hover:bg-manga-pale-red inline-flex min-h-11 items-center border-3 px-4 font-sans text-sm font-black shadow-[3px_3px_0_var(--manga-black)]'
 const danger =
   'border-manga-black bg-manga-white hover:bg-manga-pale-red inline-flex min-h-11 items-center border-3 px-3 font-sans text-sm font-black shadow-[3px_3px_0_var(--manga-black)]'
+
+/** A div that accepts a dropped video row and highlights while dragged over. */
+function DropZone({
+  onDropVideo,
+  className,
+  children,
+}: {
+  onDropVideo: (videoId: string) => void
+  className?: string
+  children: ReactNode
+}) {
+  const [over, setOver] = useState(false)
+
+  return (
+    <div
+      onDragOver={event => {
+        event.preventDefault()
+        if (!over) setOver(true)
+      }}
+      onDragLeave={() => setOver(false)}
+      onDrop={event => {
+        event.preventDefault()
+        setOver(false)
+        const videoId = event.dataTransfer.getData(DRAG_MIME)
+        if (videoId) onDropVideo(videoId)
+      }}
+      className={cn(className, over && 'ring-manga-red ring-3')}
+    >
+      {children}
+    </div>
+  )
+}
 
 function VideoRow({
   video,
@@ -58,7 +94,15 @@ function VideoRow({
   sectioned: boolean
 }) {
   return (
-    <li className="border-manga-black bg-manga-white flex items-center gap-3 border-2 p-2">
+    <li
+      draggable
+      onDragStart={event => event.dataTransfer.setData(DRAG_MIME, video.id)}
+      className="border-manga-black bg-manga-white flex cursor-grab items-center gap-2 border-2 p-2 active:cursor-grabbing"
+    >
+      <GripVertical
+        aria-hidden="true"
+        className="text-manga-ink-soft size-4 shrink-0"
+      />
       <DictationVideoThumbnail
         title={video.title}
         thumbnailUrl={video.thumbnailUrl}
@@ -102,11 +146,20 @@ function VideoRow({
   )
 }
 
-function SectionBlock({ section }: { section: AdminSectionData }) {
+function SectionBlock({
+  section,
+  onDropVideo,
+}: {
+  section: AdminSectionData
+  onDropVideo: (videoId: string, sectionId: string) => void
+}) {
   const [open, setOpen] = useState(false)
 
   return (
-    <div className="border-manga-black bg-manga-paper-soft border-2">
+    <DropZone
+      onDropVideo={videoId => onDropVideo(videoId, section.id)}
+      className="border-manga-black bg-manga-paper-soft border-2"
+    >
       <div className="flex items-center justify-between gap-2 px-3 py-2">
         <button
           type="button"
@@ -143,7 +196,7 @@ function SectionBlock({ section }: { section: AdminSectionData }) {
         <ul className="border-manga-black grid gap-2 border-t-2 p-2">
           {section.videos.length === 0 ? (
             <li className="text-manga-ink-soft p-2 text-sm">
-              No videos in this section.
+              No videos yet — drag one here.
             </li>
           ) : (
             section.videos.map(video => (
@@ -156,12 +209,21 @@ function SectionBlock({ section }: { section: AdminSectionData }) {
           )}
         </ul>
       )}
-    </div>
+    </DropZone>
   )
 }
 
 export function AdminTopicCard({ topic }: { topic: AdminTopicData }) {
+  const router = useRouter()
   const [editing, setEditing] = useState(false)
+  const [, startTransition] = useTransition()
+
+  function moveVideo(videoId: string, sectionId: string | null) {
+    startTransition(async () => {
+      await moveVideoAction({ videoId, topicId: topic.id, sectionId })
+      router.refresh()
+    })
+  }
 
   return (
     <div className="border-manga-black bg-manga-white grid gap-3 border-3 p-4 shadow-[4px_4px_0_var(--manga-black)]">
@@ -259,19 +321,32 @@ export function AdminTopicCard({ topic }: { topic: AdminTopicData }) {
         </form>
       )}
 
+      <p className="text-manga-ink-soft text-xs">
+        Tip: drag a video by its handle into another section or topic to move
+        it.
+      </p>
+
       <div className="grid gap-2">
         {topic.sections.map(section => (
           <SectionBlock
             key={section.id}
             section={section}
+            onDropVideo={moveVideo}
           />
         ))}
 
-        {topic.ungrouped.length > 0 && (
-          <div className="border-manga-black bg-manga-paper-soft border-2 p-2">
-            <p className="mb-2 font-sans text-sm font-black">
-              Ungrouped in this topic ({topic.ungrouped.length})
+        <DropZone
+          onDropVideo={videoId => moveVideo(videoId, null)}
+          className="border-manga-black bg-manga-paper-soft border-2 p-2"
+        >
+          <p className="mb-2 font-sans text-sm font-black">
+            Ungrouped in this topic ({topic.ungrouped.length})
+          </p>
+          {topic.ungrouped.length === 0 ? (
+            <p className="text-manga-ink-soft text-sm">
+              Drop a video here to remove it from its section.
             </p>
+          ) : (
             <ul className="grid gap-2">
               {topic.ungrouped.map(video => (
                 <VideoRow
@@ -281,8 +356,8 @@ export function AdminTopicCard({ topic }: { topic: AdminTopicData }) {
                 />
               ))}
             </ul>
-          </div>
-        )}
+          )}
+        </DropZone>
 
         <form
           action={createSectionAction}

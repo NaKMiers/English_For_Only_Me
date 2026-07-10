@@ -109,6 +109,28 @@ export async function removeVideoFromSectionAction(formData: FormData) {
   revalidateBrowse()
 }
 
+/**
+ * Move one video to a topic + section (drag-and-drop). Sets only topic/section —
+ * never the level. Either may be null (no topic / ungrouped).
+ */
+export async function moveVideoAction(input: {
+  videoId: string
+  topicId: string | null
+  sectionId: string | null
+}) {
+  await guardAdmin()
+
+  if (!input.videoId) return { ok: false as const }
+
+  await assignVideos([input.videoId], {
+    topicId: input.topicId,
+    sectionId: input.sectionId,
+  })
+  revalidateBrowse()
+
+  return { ok: true as const }
+}
+
 export interface AssignVideosInput {
   videoIds: string[]
   topicId: string | null
