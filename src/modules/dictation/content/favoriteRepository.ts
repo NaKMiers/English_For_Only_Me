@@ -1,6 +1,9 @@
 import 'server-only'
 
 import { DictationFavoriteModel } from '@/models/dictation/DictationFavoriteModel'
+import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
+import { toDictationVideoRecord } from '@/modules/dictation/services/dictationVideoRecords'
+import type { DictationVideoApiRecord } from '@/modules/dictation/types'
 
 /**
  * Add a favorite (idempotent via the unique {userId, videoId} index). Returns
@@ -54,4 +57,33 @@ export async function listFavoriteVideoIds(userId: string): Promise<string[]> {
     .lean<Array<{ videoId: unknown }>>()
 
   return rows.map(row => String(row.videoId))
+}
+
+/**
+ * The user's favorited videos (non-archived), most-recently-favorited first.
+ * For the favorites page.
+ */
+export async function listFavoriteVideosForUser(
+  userId: string
+): Promise<DictationVideoApiRecord[]> {
+  const favorites = await DictationFavoriteModel.find({ userId })
+    .sort({ createdAt: -1 })
+    .lean<Array<{ videoId: unknown }>>()
+
+  const orderedIds = favorites.map(favorite => String(favorite.videoId))
+  if (orderedIds.length === 0) return []
+
+  const videos = await DictationVideoModel.find({
+    _id: { $in: orderedIds },
+    status: { $ne: 'archived' },
+  }).lean()
+
+  const byId = new Map(
+    videos.map(video => [String(video._id), toDictationVideoRecord(video)])
+  )
+
+  // Preserve favorite recency order; drop any archived/missing videos.
+  return orderedIds
+    .map(id => byId.get(id))
+    .filter((video): video is DictationVideoApiRecord => Boolean(video))
 }

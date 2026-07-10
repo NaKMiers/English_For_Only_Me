@@ -12,6 +12,8 @@ const video = (
   level: null,
   sectionId,
   practiceHref: `/dictation/videos/${id}/practice`,
+  favorited: false,
+  done: false,
   ...over,
 })
 

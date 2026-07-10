@@ -1,17 +1,21 @@
 'use client'
 
-import { ChevronDown } from 'lucide-react'
+import { Check, ChevronDown } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
 
 import { PageTag } from '@/components/ui/PageTag'
 import { cn } from '@/lib/utils'
 
+import { FavoriteButton } from './FavoriteButton'
+
 export interface BrowseVideoItem {
   id: string
   title: string
   level: string | null
   practiceHref: string | null
+  favorited: boolean
+  done: boolean
 }
 
 export interface BrowseSectionGroup {
@@ -20,38 +24,59 @@ export interface BrowseSectionGroup {
   videos: BrowseVideoItem[]
 }
 
-function VideoRow({ video }: { video: BrowseVideoItem }) {
+function VideoRow({
+  video,
+  canFavorite,
+}: {
+  video: BrowseVideoItem
+  canFavorite: boolean
+}) {
   return (
     <li className="border-manga-black bg-manga-white flex items-center justify-between gap-3 border-2 p-3">
       <div className="flex min-w-0 items-center gap-2">
+        {video.done && (
+          <Check
+            aria-label="Completed"
+            className="text-manga-red size-4 shrink-0"
+          />
+        )}
         {video.level && <PageTag tone="sky">{video.level}</PageTag>}
         <span className="truncate font-sans text-sm font-black">
           {video.title}
         </span>
       </div>
-      {video.practiceHref ? (
-        <Link
-          href={video.practiceHref}
-          className="border-manga-black bg-manga-paper-soft hover:bg-manga-pale-red inline-flex min-h-9 shrink-0 items-center border-2 px-3 font-sans text-sm font-black shadow-[2px_2px_0_var(--manga-black)]"
-        >
-          Practice
-        </Link>
-      ) : (
-        <span className="text-manga-ink-soft shrink-0 text-xs font-black uppercase">
-          No transcript
-        </span>
-      )}
+      <div className="flex shrink-0 items-center gap-2">
+        <FavoriteButton
+          videoId={video.id}
+          initialFavorited={video.favorited}
+          canFavorite={canFavorite}
+        />
+        {video.practiceHref ? (
+          <Link
+            href={video.practiceHref}
+            className="border-manga-black bg-manga-paper-soft hover:bg-manga-pale-red inline-flex min-h-9 items-center border-2 px-3 font-sans text-sm font-black shadow-[2px_2px_0_var(--manga-black)]"
+          >
+            Practice
+          </Link>
+        ) : (
+          <span className="text-manga-ink-soft text-xs font-black uppercase">
+            No transcript
+          </span>
+        )}
+      </div>
     </li>
   )
 }
 
 export function BrowseVideoList({
   videos,
+  canFavorite,
   id,
   emptyLabel = 'No lessons here yet.',
   className,
 }: {
   videos: BrowseVideoItem[]
+  canFavorite: boolean
   id?: string
   emptyLabel?: string
   className?: string
@@ -68,6 +93,7 @@ export function BrowseVideoList({
           <VideoRow
             key={video.id}
             video={video}
+            canFavorite={canFavorite}
           />
         ))
       )}
@@ -75,9 +101,16 @@ export function BrowseVideoList({
   )
 }
 
-function SectionPanel({ group }: { group: BrowseSectionGroup }) {
+function SectionPanel({
+  group,
+  canFavorite,
+}: {
+  group: BrowseSectionGroup
+  canFavorite: boolean
+}) {
   const [open, setOpen] = useState(false)
   const panelId = `section-${group.key}`
+  const doneCount = group.videos.filter(video => video.done).length
 
   return (
     <div className="border-manga-black bg-manga-white border-3 shadow-[4px_4px_0_var(--manga-black)]">
@@ -90,7 +123,11 @@ function SectionPanel({ group }: { group: BrowseSectionGroup }) {
       >
         <span className="flex items-center gap-2">
           <span className="font-sans text-base font-black">{group.title}</span>
-          <PageTag tone="pale">{group.videos.length}</PageTag>
+          <PageTag tone={doneCount > 0 ? 'red' : 'pale'}>
+            {canFavorite && group.videos.length > 0
+              ? `${doneCount}/${group.videos.length}`
+              : group.videos.length}
+          </PageTag>
         </span>
         <ChevronDown
           aria-hidden="true"
@@ -101,6 +138,7 @@ function SectionPanel({ group }: { group: BrowseSectionGroup }) {
         <BrowseVideoList
           id={panelId}
           videos={group.videos}
+          canFavorite={canFavorite}
           emptyLabel="No lessons in this section yet."
           className="border-manga-black border-t-3 p-3"
         />
@@ -109,7 +147,13 @@ function SectionPanel({ group }: { group: BrowseSectionGroup }) {
   )
 }
 
-export function SectionAccordion({ groups }: { groups: BrowseSectionGroup[] }) {
+export function SectionAccordion({
+  groups,
+  canFavorite,
+}: {
+  groups: BrowseSectionGroup[]
+  canFavorite: boolean
+}) {
   if (groups.length === 0)
     return (
       <div className="border-manga-black bg-manga-white border-3 p-6 text-center shadow-[4px_4px_0_var(--manga-black)]">
@@ -126,6 +170,7 @@ export function SectionAccordion({ groups }: { groups: BrowseSectionGroup[] }) {
         <SectionPanel
           key={group.key}
           group={group}
+          canFavorite={canFavorite}
         />
       ))}
     </div>

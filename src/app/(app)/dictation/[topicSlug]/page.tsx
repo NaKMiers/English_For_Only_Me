@@ -13,7 +13,10 @@ import {
   listSectionsForTopic,
   listVideosForTopic,
 } from '@/modules/dictation/content/contentRepository'
+import { listFavoriteVideoIds } from '@/modules/dictation/content/favoriteRepository'
+import { listCompletedVideoIdsForUser } from '@/modules/dictation/content/progressRepository'
 import { buildSectionGroups } from '@/modules/dictation/content/sectionGroups'
+import { getOptionalUser } from '@/modules/dictation/services/getCurrentUser'
 import { hasDictationTranscript } from '@/modules/dictation/videoReadiness'
 
 export const dynamic = 'force-dynamic'
@@ -62,10 +65,20 @@ export default async function TopicPage({ params }: PageProps) {
 
   if (!topic) notFound()
 
-  const [sections, videos] = await Promise.all([
+  const user = await getOptionalUser()
+  const canFavorite = Boolean(user)
+
+  const [sections, videos, favoritedIds, completedIds] = await Promise.all([
     listSectionsForTopic(topic.id),
     listVideosForTopic(topic.id),
+    user ? listFavoriteVideoIds(user.id) : Promise.resolve<string[]>([]),
+    user
+      ? listCompletedVideoIdsForUser(user.id)
+      : Promise.resolve<string[]>([]),
   ])
+
+  const favoritedSet = new Set(favoritedIds)
+  const completedSet = new Set(completedIds)
 
   const groups = buildSectionGroups(
     sections.map(section => ({ id: section.id, title: section.title })),
@@ -77,6 +90,8 @@ export default async function TopicPage({ params }: PageProps) {
       practiceHref: hasDictationTranscript(video)
         ? `/dictation/videos/${video.id}/practice`
         : null,
+      favorited: favoritedSet.has(video.id),
+      done: completedSet.has(video.id),
     }))
   )
 
@@ -100,7 +115,10 @@ export default async function TopicPage({ params }: PageProps) {
             {topic.description}
           </p>
         )}
-        <SectionAccordion groups={groups} />
+        <SectionAccordion
+          groups={groups}
+          canFavorite={canFavorite}
+        />
       </section>
     </MangaPageShell>
   )

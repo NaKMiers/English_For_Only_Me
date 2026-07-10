@@ -28,17 +28,12 @@ export function buildSectionGroups(
   const ungrouped: BrowseVideoItem[] = []
 
   for (const video of videos) {
-    const item: BrowseVideoItem = {
-      id: video.id,
-      title: video.title,
-      level: video.level,
-      practiceHref: video.practiceHref,
-    }
+    const { sectionId, ...item } = video
 
-    if (video.sectionId) {
-      const bucket = bySection.get(video.sectionId) ?? []
+    if (sectionId) {
+      const bucket = bySection.get(sectionId) ?? []
       bucket.push(item)
-      bySection.set(video.sectionId, bucket)
+      bySection.set(sectionId, bucket)
     } else ungrouped.push(item)
   }
 

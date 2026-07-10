@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { AuthControl } from '@/components/common/AuthControl'
@@ -57,7 +58,15 @@ export default async function DictationPage() {
     >
       <section className="grid gap-5 p-4 sm:p-6 lg:p-8">
         <header className="grid gap-2">
-          <PageTag tone="red">Listening</PageTag>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <PageTag tone="red">Listening</PageTag>
+            <Link
+              href="/dictation/favorites"
+              className="text-manga-red text-sm font-black hover:underline"
+            >
+              ★ Favorites
+            </Link>
+          </div>
           <h1 className="font-sans text-[clamp(1.8rem,4vw,2.6rem)] leading-none font-black uppercase">
             All topics
           </h1>
