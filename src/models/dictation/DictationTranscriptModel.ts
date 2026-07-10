@@ -41,12 +41,6 @@ const DictationCueSchema = new Schema(
 
 const DictationTranscriptSchema = new Schema(
   {
-    ownerId: {
-      type: String,
-      required: true,
-      trim: true,
-      index: true,
-    },
     videoId: {
       type: Schema.Types.ObjectId,
       ref: 'DictationVideo',
@@ -123,9 +117,9 @@ const DictationTranscriptSchema = new Schema(
   }
 )
 
-DictationTranscriptSchema.index({ ownerId: 1, videoId: 1, isActive: 1 })
+DictationTranscriptSchema.index({ videoId: 1, isActive: 1 })
 DictationTranscriptSchema.index(
-  { ownerId: 1, videoId: 1, sourceHash: 1 },
+  { videoId: 1, sourceHash: 1 },
   { unique: true }
 )
 

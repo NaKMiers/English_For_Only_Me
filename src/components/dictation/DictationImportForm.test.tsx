@@ -37,7 +37,6 @@ function videoRecord() {
     importStatus: 'metadataReady',
     importWarning: null,
     lastPracticedAt: null,
-    ownerId: 'owner-one',
     purpose: 'ielts-listening',
     sentenceCount: 0,
     sourceType: 'youtube',

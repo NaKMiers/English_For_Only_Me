@@ -31,6 +31,21 @@ describe('buildDictationCorrection', () => {
     ).toBe(true)
   })
 
+  test('passes numeric words and measurement unit variants both ways', () => {
+    expect(compare('5 kilograms', 'five kg').isPassed).toBe(true)
+    expect(compare('five kg', '5 kilograms').isPassed).toBe(true)
+    expect(compare('5kg', 'five kilograms').isPassed).toBe(true)
+    expect(compare('2 metres', 'two meters').isPassed).toBe(true)
+    expect(compare('one litter', '1 litre').isPassed).toBe(true)
+  })
+
+  test('passes compound numbers, percent, money, and time variants', () => {
+    expect(compare('twenty-first', '21st').isPassed).toBe(true)
+    expect(compare('ten per cent', '10%').isPassed).toBe(true)
+    expect(compare('five dollars', '$5').isPassed).toBe(true)
+    expect(compare('seven a.m.', '7am').isPassed).toBe(true)
+  })
+
   test('classifies missing, extra, and wrong words', () => {
     const missing = compare('I want coffee', 'I want some coffee')
     const extra = compare('I really want coffee', 'I want coffee')

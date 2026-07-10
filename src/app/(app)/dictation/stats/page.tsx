@@ -7,8 +7,8 @@ import { DictationGlobalStats } from '@/components/dictation/DictationGlobalStat
 import { MangaButton } from '@/components/ui/MangaButton'
 import { hasMongoDbUri } from '@/constants/environments'
 import { connectDatabase } from '@/lib/db/connectDatabase'
-import { getCurrentOwnerId } from '@/modules/dictation/services/getCurrentOwnerId'
-import { getGlobalStatsForOwner } from '@/modules/dictation/stats/globalStatsService'
+import { getPracticeActorId } from '@/modules/dictation/services/getCurrentUser'
+import { getGlobalStatsForUser } from '@/modules/dictation/stats/globalStatsService'
 
 export const metadata: Metadata = {
   title: 'Dictation Stats',
@@ -44,11 +44,13 @@ export default async function Page() {
       </MangaPageShell>
     )
 
-  const ownerId = await getCurrentOwnerId()
+  // Stats are open to everyone; a visitor with no practice history gets zeroed
+  // stats rather than a login wall.
+  const actorId = (await getPracticeActorId()) ?? ''
 
   await connectDatabase()
 
-  const stats = await getGlobalStatsForOwner(ownerId)
+  const stats = await getGlobalStatsForUser(actorId)
 
   return (
     <MangaPageShell

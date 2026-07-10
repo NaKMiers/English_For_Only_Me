@@ -37,7 +37,7 @@ const DictationDebriefVocabularySchema = new Schema(
 
 const DictationDebriefSchema = new Schema(
   {
-    ownerId: {
+    userId: {
       type: String,
       required: true,
       trim: true,
@@ -126,13 +126,13 @@ const DictationDebriefSchema = new Schema(
 )
 
 DictationDebriefSchema.index({
-  ownerId: 1,
+  userId: 1,
   videoId: 1,
   status: 1,
   createdAt: -1,
 })
 DictationDebriefSchema.index({
-  ownerId: 1,
+  userId: 1,
   videoId: 1,
   inputSnapshotHash: 1,
   status: 1,

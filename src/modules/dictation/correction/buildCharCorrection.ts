@@ -5,6 +5,10 @@ import type {
 } from '@/modules/dictation/types'
 
 import { buildDictationCorrection } from './compareAnswer'
+import {
+  canonicalizeCorrectionToken,
+  expandSymbolicVariants,
+} from './normalizeAnswer'
 import { DEFAULT_CORRECTION_OPTIONS, type CorrectionOptions } from './types'
 
 /**
@@ -171,12 +175,17 @@ function locateBoundary(
 /** Lowercase + strip surrounding/embedded punctuation for comparison, mirroring
  * normalizeAnswer's per-token canonicalization but WITHOUT contraction
  * expansion (kept 1:1 so raw display units and comparison units stay aligned). */
-function normalizeUnit(value: string) {
-  return value
+function normalizeUnit(
+  value: string,
+  options: Required<CorrectionOptions> = DEFAULT_CORRECTION_OPTIONS
+) {
+  const token = value
     .normalize('NFKC')
     .replace(/[‘’‛′]/g, "'")
     .toLowerCase()
     .replace(/[^\p{L}\p{N}']/gu, '')
+
+  return canonicalizeCorrectionToken(token, options)
 }
 
 /** A word is a hint when it carries an uppercase letter that is not merely the
@@ -230,14 +239,16 @@ function buildCharCells(expected: string, typed: string | null): CharCell[] {
 
 function countFullyMatched(
   expectedUnits: string[],
-  typedUnits: string[]
+  typedUnits: string[],
+  options: Required<CorrectionOptions> = DEFAULT_CORRECTION_OPTIONS
 ): number {
   let matched = 0
 
   while (
     matched < expectedUnits.length &&
     matched < typedUnits.length &&
-    normalizeUnit(expectedUnits[matched]) === normalizeUnit(typedUnits[matched])
+    normalizeUnit(expectedUnits[matched], options) ===
+      normalizeUnit(typedUnits[matched], options)
   )
     matched += 1
 
@@ -263,10 +274,12 @@ function isPunctuationOnlyUnit(unit: string) {
  * so the learner can fix the boundary. Pure — exported for tests. */
 export function autoCorrectAnswer(
   expectedText: string,
-  typedAnswer: string
+  typedAnswer: string,
+  optionsInput: CorrectionOptions = {}
 ): string {
+  const options = { ...DEFAULT_CORRECTION_OPTIONS, ...optionsInput }
   const expectedUnits = splitUnits(expectedText)
-  const typedUnits = splitUnits(typedAnswer)
+  const typedUnits = splitUnits(expandSymbolicVariants(typedAnswer))
   const canonical: string[] = []
   let expectedIndex = 0
   let typedIndex = 0
@@ -299,8 +312,8 @@ export function autoCorrectAnswer(
     }
 
     if (
-      normalizeUnit(typedUnits[typedIndex]) ===
-      normalizeUnit(expectedUnits[expectedIndex])
+      normalizeUnit(typedUnits[typedIndex], options) ===
+      normalizeUnit(expectedUnits[expectedIndex], options)
     ) {
       canonical.push(expectedUnits[expectedIndex])
       expectedIndex += 1
@@ -356,7 +369,10 @@ function collectHints(expectedUnits: string[], fromIndex: number): string[] {
 /** Proper-noun hints for the sentence, live from the current draft - no Check
  * required. Cheap subset of buildCharCorrection (skips segments/analytics) so
  * the UI can recompute it on every keystroke. */
-export function computeHints(expectedText: string, typedAnswer: string): string[] {
+export function computeHints(
+  expectedText: string,
+  typedAnswer: string
+): string[] {
   const expectedUnits = splitUnits(expectedText)
   const typedUnits = splitUnits(typedAnswer)
   const fullyMatched = countFullyMatched(expectedUnits, typedUnits)
@@ -368,9 +384,11 @@ function buildSegments({
   expectedUnits,
   typedUnits,
   fullyMatched,
+  options,
 }: {
   expectedUnits: string[]
   fullyMatched: number
+  options: Required<CorrectionOptions>
   typedUnits: string[]
 }): { segments: WordSegment[]; boundaryIndex: number; caretValue: string } {
   const segments: WordSegment[] = []
@@ -399,7 +417,10 @@ function buildSegments({
   const cleanPrefix =
     boundaryTyped !== null &&
     !hasContentAfter &&
-    isCleanPrefix(normalizeUnit(boundaryExpected), normalizeUnit(boundaryTyped))
+    isCleanPrefix(
+      normalizeUnit(boundaryExpected, options),
+      normalizeUnit(boundaryTyped, options)
+    )
 
   let caretValue = matchedCaret
 
@@ -504,10 +525,11 @@ export function buildCharCorrection({
     }
   }
 
-  const fullyMatched = countFullyMatched(expectedUnits, typedUnits)
+  const fullyMatched = countFullyMatched(expectedUnits, typedUnits, options)
   const { boundaryIndex, caretValue, segments } = buildSegments({
     expectedUnits,
     fullyMatched,
+    options,
     typedUnits,
   })
   // Anchor the boundary word inside the raw draft so the guided input can

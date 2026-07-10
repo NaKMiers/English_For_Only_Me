@@ -2,9 +2,9 @@ import { NextResponse } from 'next/server'
 
 import { MissingEnvironmentError } from '@/constants/environments'
 import { connectDatabase } from '@/lib/db/connectDatabase'
-import { generateDictationDebriefForOwner } from '@/modules/dictation/ai/debriefService'
+import { generateDictationDebriefForUser } from '@/modules/dictation/ai/debriefService'
 import { parseDebriefPayload } from '@/modules/dictation/ai/debriefDecisions'
-import { getCurrentOwnerId } from '@/modules/dictation/services/getCurrentOwnerId'
+import { requirePracticeActor } from '@/modules/dictation/services/getCurrentUser'
 import {
   type ApiErrorDecision,
   getMissingMongoResponse,
@@ -18,6 +18,19 @@ function jsonError(decision: ApiErrorDecision) {
 }
 
 function toDebriefError(error: unknown): ApiErrorDecision {
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'status' in error &&
+    (error.status === 401 || error.status === 403)
+  )
+    return {
+      status: error.status,
+      body: {
+        message: (error as { message?: string }).message ?? 'Access denied.',
+      },
+    }
+
   if (error instanceof MissingEnvironmentError)
     return {
       status: 500,
@@ -47,13 +60,13 @@ export async function POST(request: Request) {
 
     if (!parsed.ok) return jsonError(parsed)
 
-    const ownerId = await getCurrentOwnerId()
+    const actor = await requirePracticeActor()
 
     await connectDatabase()
 
-    const result = await generateDictationDebriefForOwner({
+    const result = await generateDictationDebriefForUser({
       notes: parsed.data.notes,
-      ownerId,
+      userId: actor.id,
       videoId: parsed.data.videoId,
     })
 

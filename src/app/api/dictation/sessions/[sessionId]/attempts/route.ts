@@ -11,7 +11,7 @@ import { buildDictationCorrection } from '@/modules/dictation/correction'
 import { recomputeReviewItemsForVideo } from '@/modules/dictation/review/reviewItemService'
 import { toDictationAttemptRecord } from '@/modules/dictation/services/dictationAttemptRecords'
 import { toDictationSessionRecord } from '@/modules/dictation/services/dictationSessionRecords'
-import { getCurrentOwnerId } from '@/modules/dictation/services/getCurrentOwnerId'
+import { requirePracticeActor } from '@/modules/dictation/services/getCurrentUser'
 import {
   getAttemptSegmentStatus,
   getCheckSegmentStatus,
@@ -39,6 +39,19 @@ function jsonError(decision: ApiErrorDecision) {
 }
 
 function toAttemptError(error: unknown): ApiErrorDecision {
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'status' in error &&
+    (error.status === 401 || error.status === 403)
+  )
+    return {
+      status: error.status,
+      body: {
+        message: (error as { message?: string }).message ?? 'Access denied.',
+      },
+    }
+
   if (error instanceof MissingEnvironmentError)
     return {
       status: 500,
@@ -73,12 +86,12 @@ export async function POST(request: Request, context: RouteContext) {
 
     if (!parsedBody.ok) return jsonError(parsedBody)
 
-    const ownerId = await getCurrentOwnerId()
+    const actor = await requirePracticeActor()
 
     await connectDatabase()
 
     const existingAttempt = await DictationAttemptModel.findOne({
-      ownerId,
+      userId: actor.id,
       sessionId: parsedSessionId.data.sessionId,
       idempotencyKey: parsedBody.data.idempotencyKey,
     }).lean()
@@ -89,7 +102,7 @@ export async function POST(request: Request, context: RouteContext) {
     if (submissionMode.attempt) {
       const session = await DictationSessionModel.findOne({
         _id: parsedSessionId.data.sessionId,
-        ownerId,
+        userId: actor.id,
       }).lean()
 
       if (!session)
@@ -112,7 +125,7 @@ export async function POST(request: Request, context: RouteContext) {
 
     const session = await DictationSessionModel.findOne({
       _id: parsedSessionId.data.sessionId,
-      ownerId,
+      userId: actor.id,
     })
 
     if (!session)
@@ -141,7 +154,6 @@ export async function POST(request: Request, context: RouteContext) {
 
     const segment = await DictationSegmentModel.findOne({
       _id: parsedBody.data.segmentId,
-      ownerId,
       transcriptId: session.transcriptId,
       videoId: session.videoId,
     })
@@ -162,7 +174,7 @@ export async function POST(request: Request, context: RouteContext) {
     })
     const now = new Date()
     const attempt = new DictationAttemptModel({
-      ownerId,
+      userId: actor.id,
       videoId: session.videoId,
       transcriptId: session.transcriptId,
       sessionId: session._id,
@@ -198,7 +210,6 @@ export async function POST(request: Request, context: RouteContext) {
       })
     ) {
       const nextSegment = await DictationSegmentModel.findOne({
-        ownerId,
         order: { $gt: segment.order },
         transcriptId: session.transcriptId,
         videoId: session.videoId,
@@ -215,7 +226,6 @@ export async function POST(request: Request, context: RouteContext) {
         await DictationVideoModel.updateOne(
           {
             _id: session.videoId,
-            ownerId,
           },
           {
             $inc: {
@@ -233,7 +243,7 @@ export async function POST(request: Request, context: RouteContext) {
     session.lastActiveAt = now
     await session.save()
     await recomputeReviewItemsForVideo({
-      ownerId,
+      userId: actor.id,
       videoId: String(session.videoId),
     })
 

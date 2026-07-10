@@ -4,7 +4,6 @@ import { MissingEnvironmentError } from '@/constants/environments'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
 import { toDictationVideoRecord } from '@/modules/dictation/services/dictationVideoRecords'
-import { getCurrentOwnerId } from '@/modules/dictation/services/getCurrentOwnerId'
 import { requireAdmin } from '@/modules/dictation/services/getCurrentUser'
 import {
   type ApiErrorDecision,
@@ -50,7 +49,7 @@ function toCreateError(error: unknown): ApiErrorDecision {
     return {
       status: 409,
       body: {
-        message: 'This video is already in your dictation library.',
+        message: 'This video is already in the dictation library.',
       },
     }
 
@@ -97,12 +96,9 @@ export async function GET() {
   if (missingMongo) return jsonError(missingMongo)
 
   try {
-    const ownerId = await getCurrentOwnerId()
-
     await connectDatabase()
 
     const videos = await DictationVideoModel.find({
-      ownerId,
       status: {
         $ne: 'archived',
       },
@@ -125,13 +121,11 @@ export async function POST(request: Request) {
   if (missingMongo) return jsonError(missingMongo)
 
   try {
-    // Only admins create catalog videos (owner-based access applies to
-    // edit/delete, never to creation of new global content).
+    // Only admins create catalog videos; content is global (no owner).
     await requireAdmin()
 
     const body = await request.json()
-    const ownerId = await getCurrentOwnerId()
-    const parsed = parseCreateVideoRequest({ body, ownerId })
+    const parsed = parseCreateVideoRequest({ body })
 
     if (!parsed.ok) return jsonError(parsed)
 

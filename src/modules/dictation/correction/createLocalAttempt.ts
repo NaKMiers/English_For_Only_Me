@@ -6,7 +6,7 @@ interface CreateLocalAttemptInput {
   correction: DictationCorrectionResult
   expectedText: string
   idempotencyKey: string
-  ownerId: string
+  userId: string
   replayCountDelta: number
   segmentId: string
   sessionId: string
@@ -26,7 +26,7 @@ export function createLocalDictationAttempt({
   correction,
   expectedText,
   idempotencyKey,
-  ownerId,
+  userId,
   replayCountDelta,
   segmentId,
   sessionId,
@@ -39,7 +39,7 @@ export function createLocalDictationAttempt({
 
   return {
     id: `local-${idempotencyKey}`,
-    ownerId,
+    userId,
     videoId,
     transcriptId,
     sessionId,

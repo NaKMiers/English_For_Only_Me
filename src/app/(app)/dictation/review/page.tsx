@@ -7,8 +7,8 @@ import { DictationReviewQueue } from '@/components/dictation/DictationReviewQueu
 import { MangaButton } from '@/components/ui/MangaButton'
 import { hasMongoDbUri } from '@/constants/environments'
 import { connectDatabase } from '@/lib/db/connectDatabase'
-import { listDueReviewItemsForOwner } from '@/modules/dictation/review/reviewItemService'
-import { getCurrentOwnerId } from '@/modules/dictation/services/getCurrentOwnerId'
+import { listDueReviewItemsForUser } from '@/modules/dictation/review/reviewItemService'
+import { getPracticeActorId } from '@/modules/dictation/services/getCurrentUser'
 import type { DictationReviewItemApiRecord } from '@/modules/dictation/types'
 
 export const metadata: Metadata = {
@@ -22,15 +22,17 @@ export default async function Page() {
   const reviewItems: DictationReviewItemApiRecord[] = []
 
   if (hasMongoDbUri()) {
-    const ownerId = await getCurrentOwnerId()
+    const actorId = await getPracticeActorId()
 
-    await connectDatabase()
-    reviewItems.push(
-      ...(await listDueReviewItemsForOwner({
-        limit: 30,
-        ownerId,
-      }))
-    )
+    if (actorId) {
+      await connectDatabase()
+      reviewItems.push(
+        ...(await listDueReviewItemsForUser({
+          limit: 30,
+          userId: actorId,
+        }))
+      )
+    }
   }
 
   return (

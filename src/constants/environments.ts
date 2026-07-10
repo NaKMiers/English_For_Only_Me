@@ -1,5 +1,4 @@
 export const ENV_KEYS = {
-  appOwnerId: 'APP_OWNER_ID',
   ieltsGoal: 'IELTS_GOAL',
   openAiDebriefModel: 'OPENAI_DEBRIEF_MODEL',
   mongoDbUri: 'MONGODB_URI',
@@ -9,7 +8,6 @@ export const ENV_KEYS = {
   googleClientSecret: 'GOOGLE_CLIENT_SECRET',
   authSecret: 'AUTH_SECRET',
   adminEmails: 'ADMIN_EMAILS',
-  ownerEmail: 'OWNER_EMAIL',
   siteUrl: 'SITE_URL',
 } as const
 
@@ -82,14 +80,6 @@ export function getAdminEmails() {
       .map(email => email.trim().toLowerCase())
       .filter(Boolean)
   )
-}
-
-/**
- * The single account (lower-cased) that inherits legacy pre-auth practice data
- * on first login. See system-update-plan D12.
- */
-export function getOwnerEmail() {
-  return getOptionalServerEnv(ENV_KEYS.ownerEmail)?.toLowerCase() ?? null
 }
 
 /** Canonical origin for SEO (metadata, sitemap). No trailing slash. */

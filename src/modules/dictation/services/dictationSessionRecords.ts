@@ -8,7 +8,7 @@ export function toDictationSessionRecord(session: {
   currentSegmentOrder?: number
   isVideoHidden?: boolean
   lastActiveAt: Date
-  ownerId: string
+  userId: string
   playbackSpeed?: number
   showShortcuts?: boolean
   startedAt: Date
@@ -27,7 +27,7 @@ export function toDictationSessionRecord(session: {
     currentSegmentOrder: session.currentSegmentOrder ?? 0,
     isVideoHidden: session.isVideoHidden ?? false,
     lastActiveAt: session.lastActiveAt,
-    ownerId: session.ownerId,
+    userId: session.userId,
     playbackSpeed: session.playbackSpeed ?? 1,
     showShortcuts: session.showShortcuts ?? true,
     startedAt: session.startedAt,

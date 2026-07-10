@@ -81,7 +81,6 @@ export interface DictationCueRecord {
 
 export interface DictationVideoApiRecord {
   id: string
-  ownerId: string
   sourceType: 'youtube'
   title: string
   youtubeUrl: string
@@ -147,7 +146,6 @@ export interface DictationFavoriteApiRecord {
 
 export interface DictationTranscriptApiRecord {
   id: string
-  ownerId: string
   videoId: string
   sourceType: DictationTranscriptSourceType
   language: string
@@ -166,7 +164,6 @@ export interface DictationTranscriptApiRecord {
 
 export interface DictationSegmentApiRecord {
   id: string
-  ownerId: string
   videoId: string
   transcriptId: string
   transcriptSourceHash: string
@@ -187,7 +184,7 @@ export interface DictationSegmentApiRecord {
 
 export interface DictationSessionApiRecord {
   id: string
-  ownerId: string
+  userId: string
   videoId: string
   transcriptId: string
   status: DictationSessionStatus
@@ -223,7 +220,7 @@ export interface DictationCorrectionStatsRecord {
 
 export interface DictationAttemptApiRecord {
   id: string
-  ownerId: string
+  userId: string
   videoId: string
   transcriptId: string
   sessionId: string
@@ -309,7 +306,7 @@ export interface DictationReviewStatsSnapshotRecord {
 
 export interface DictationReviewItemApiRecord {
   id: string
-  ownerId: string
+  userId: string
   videoId: string
   segmentId: string
   kind: DictationReviewItemKind
@@ -326,7 +323,7 @@ export interface DictationReviewItemApiRecord {
 
 export interface DictationDebriefApiRecord {
   id: string
-  ownerId: string
+  userId: string
   videoId: string
   sessionId: string
   status: DictationDebriefStatus

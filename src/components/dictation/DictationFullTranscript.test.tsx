@@ -21,7 +21,6 @@ function makeSegment(
     endMs: (overrides.order + 1) * 1000,
     lastAttemptAt: null,
     normalizedText: '',
-    ownerId: 'owner-1',
     qualityFlags: [],
     startMs: overrides.order * 1000,
     text: `Sentence ${overrides.order + 1}`,

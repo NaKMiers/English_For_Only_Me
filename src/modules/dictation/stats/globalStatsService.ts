@@ -9,26 +9,24 @@ import { toDictationVideoRecord } from '@/modules/dictation/services/dictationVi
 
 import { aggregateGlobalDictationStats } from './globalStats'
 
-export async function getGlobalStatsForOwner(ownerId: string) {
+export async function getGlobalStatsForUser(userId: string) {
   const [attempts, reviewItems, videos] = await Promise.all([
     DictationAttemptModel.find({
-      ownerId,
+      userId,
     })
       .sort({ createdAt: 1 })
       .lean(),
     DictationReviewItemModel.find({
-      ownerId,
+      userId,
     }).lean(),
-    DictationVideoModel.find({
-      ownerId,
-    })
+    DictationVideoModel.find({})
       .sort({ createdAt: -1 })
       .lean(),
   ])
 
   return aggregateGlobalDictationStats({
     attempts: attempts.map(toDictationAttemptRecord),
-    ownerId,
+    userId,
     reviewItems: reviewItems.map(toDictationReviewItemRecord),
     videos: videos.map(toDictationVideoRecord),
   })

@@ -42,6 +42,9 @@ export function DictationAnswerBox({
       <Textarea
         aria-label="Dictation answer"
         data-dictation-shortcuts="allow"
+        spellCheck={false}
+        autoCorrect="off"
+        autoCapitalize="off"
         value={answer}
         onChange={event => onAnswerChange(event.target.value)}
         placeholder="Type what you hear..."

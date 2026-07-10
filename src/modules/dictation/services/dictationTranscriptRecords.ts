@@ -27,7 +27,6 @@ function isTranscriptQualityFlag(
 
 export function toDictationTranscriptRecord(transcript: {
   _id: unknown
-  ownerId: string
   videoId: unknown
   sourceType: DictationTranscriptRecord['sourceType']
   language: string
@@ -45,7 +44,6 @@ export function toDictationTranscriptRecord(transcript: {
 }): DictationTranscriptRecord {
   return {
     id: String(transcript._id),
-    ownerId: transcript.ownerId,
     videoId: String(transcript.videoId),
     sourceType: transcript.sourceType,
     language: transcript.language,

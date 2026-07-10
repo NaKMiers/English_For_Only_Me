@@ -136,6 +136,184 @@ const BRITISH_AMERICAN_VARIANTS: Record<string, string> = {
   travelling: 'traveling',
 }
 
+const MEASUREMENT_VARIANTS: Record<string, string> = {
+  centimeter: 'cm',
+  centimeters: 'cm',
+  centimetre: 'cm',
+  centimetres: 'cm',
+  cm: 'cm',
+  feet: 'ft',
+  foot: 'ft',
+  ft: 'ft',
+  g: 'g',
+  gallon: 'gal',
+  gallons: 'gal',
+  gal: 'gal',
+  gram: 'g',
+  grams: 'g',
+  in: 'in',
+  inch: 'in',
+  inches: 'in',
+  kilogram: 'kg',
+  kilograms: 'kg',
+  kilometer: 'km',
+  kilometers: 'km',
+  kilometre: 'km',
+  kilometres: 'km',
+  kg: 'kg',
+  km: 'km',
+  l: 'l',
+  lb: 'lb',
+  lbs: 'lb',
+  liter: 'l',
+  liters: 'l',
+  litre: 'l',
+  litres: 'l',
+  litter: 'l',
+  litters: 'l',
+  m: 'm',
+  meter: 'm',
+  meters: 'm',
+  metre: 'm',
+  metres: 'm',
+  mi: 'mi',
+  mile: 'mi',
+  miles: 'mi',
+  milligram: 'mg',
+  milligrams: 'mg',
+  milliliter: 'ml',
+  milliliters: 'ml',
+  millilitre: 'ml',
+  millilitres: 'ml',
+  millimeter: 'mm',
+  millimeters: 'mm',
+  millimetre: 'mm',
+  millimetres: 'mm',
+  mg: 'mg',
+  ml: 'ml',
+  mm: 'mm',
+  ounce: 'oz',
+  ounces: 'oz',
+  oz: 'oz',
+  pound: 'lb',
+  pounds: 'lb',
+  tonne: 't',
+  tonnes: 't',
+  ton: 't',
+  tons: 't',
+  yard: 'yd',
+  yards: 'yd',
+  yd: 'yd',
+}
+
+const CURRENCY_VARIANTS: Record<string, string> = {
+  dollar: 'usd',
+  dollars: 'usd',
+  dong: 'vnd',
+  euro: 'eur',
+  euros: 'eur',
+  usd: 'usd',
+  vnd: 'vnd',
+  yen: 'jpy',
+  yuan: 'cny',
+}
+
+const SYMBOL_VARIANTS: Record<string, string> = {
+  celsius: 'celsius',
+  centigrade: 'celsius',
+  fahrenheit: 'fahrenheit',
+  percent: 'percent',
+  percentage: 'percent',
+  pct: 'percent',
+}
+
+const CARDINAL_VALUES: Record<string, number> = {
+  eight: 8,
+  eighteen: 18,
+  eleven: 11,
+  fifteen: 15,
+  five: 5,
+  four: 4,
+  fourteen: 14,
+  nine: 9,
+  nineteen: 19,
+  one: 1,
+  seven: 7,
+  seventeen: 17,
+  six: 6,
+  sixteen: 16,
+  ten: 10,
+  thirteen: 13,
+  three: 3,
+  twelve: 12,
+  two: 2,
+  zero: 0,
+}
+
+const ORDINAL_VALUES: Record<string, number> = {
+  eighth: 8,
+  eighteenth: 18,
+  eleventh: 11,
+  fifteenth: 15,
+  fifth: 5,
+  first: 1,
+  fourth: 4,
+  fourteenth: 14,
+  ninth: 9,
+  nineteenth: 19,
+  second: 2,
+  seventh: 7,
+  seventeenth: 17,
+  sixth: 6,
+  sixteenth: 16,
+  tenth: 10,
+  third: 3,
+  thirteenth: 13,
+  twelfth: 12,
+}
+
+const TENS_VALUES: Record<string, number> = {
+  eighty: 80,
+  fifty: 50,
+  forty: 40,
+  ninety: 90,
+  seventy: 70,
+  sixty: 60,
+  thirty: 30,
+  twenty: 20,
+}
+
+const TENS_ORDINAL_VALUES: Record<string, number> = {
+  eightieth: 80,
+  fiftieth: 50,
+  fortieth: 40,
+  ninetieth: 90,
+  seventieth: 70,
+  sixtieth: 60,
+  thirtieth: 30,
+  twentieth: 20,
+}
+
+function getOrdinalSuffix(value: number) {
+  const teen = value % 100
+
+  if (teen >= 11 && teen <= 13) return 'th'
+  if (value % 10 === 1) return 'st'
+  if (value % 10 === 2) return 'nd'
+  if (value % 10 === 3) return 'rd'
+
+  return 'th'
+}
+
+function addGeneratedNumberVariants() {
+  for (let value = 0; value <= 99; value += 1) {
+    NUMBER_VARIANTS[String(value)] = String(value)
+    NUMBER_VARIANTS[`${value}${getOrdinalSuffix(value)}`] = String(value)
+  }
+}
+
+addGeneratedNumberVariants()
+
 function normalizeUnicode(value: string) {
   return value
     .normalize('NFKC')
@@ -152,11 +330,160 @@ function expandContractions(value: string) {
   )
 }
 
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+function expandAttachedUnits(value: string) {
+  const units = Object.keys(MEASUREMENT_VARIANTS)
+    .sort((left, right) => right.length - left.length)
+    .map(escapeRegExp)
+    .join('|')
+
+  return value.replace(
+    new RegExp(`\\b(\\d+(?:[.,]\\d+)?)\\s*(${units})\\b`, 'gi'),
+    '$1 $2'
+  )
+}
+
+export function expandSymbolicVariants(value: string) {
+  return expandAttachedUnits(value)
+    .replace(/\ba\.?\s*m\.?\b/gi, 'am')
+    .replace(/\bp\.?\s*m\.?\b/gi, 'pm')
+    .replace(/\b(\d+(?:[.,]\d+)?)(am|pm)\b/g, '$1 $2')
+    .replace(/\b(\d+(?:[.,]\d+)?)\s*%/g, '$1 percent')
+    .replace(/%/g, ' percent ')
+    .replace(/\b(\d+(?:[.,]\d+)?)\s*(?:°\s*c|℃)\b/g, '$1 celsius')
+    .replace(/\b(\d+(?:[.,]\d+)?)\s*(?:°\s*f|℉)\b/g, '$1 fahrenheit')
+    .replace(/\$\s*(\d+(?:[.,]\d+)?)/g, '$1 dollar')
+    .replace(/(\d+(?:[.,]\d+)?)\s*\$/g, '$1 dollar')
+    .replace(/€\s*(\d+(?:[.,]\d+)?)/g, '$1 euro')
+    .replace(/(\d+(?:[.,]\d+)?)\s*€/g, '$1 euro')
+    .replace(/¥\s*(\d+(?:[.,]\d+)?)/g, '$1 yen')
+    .replace(/(\d+(?:[.,]\d+)?)\s*¥/g, '$1 yen')
+    .replace(/₫\s*(\d+(?:[.,]\d+)?)/g, '$1 dong')
+    .replace(/(\d+(?:[.,]\d+)?)\s*₫/g, '$1 dong')
+}
+
 function removePunctuation(value: string) {
   return value.replace(/[^\p{L}\p{N}\s]/gu, ' ')
 }
 
-function canonicalizeToken(
+function readUnderOneHundred(tokens: string[], startIndex: number) {
+  const first = tokens[startIndex]
+
+  if (!first) return null
+
+  const singleValue = CARDINAL_VALUES[first] ?? ORDINAL_VALUES[first]
+
+  if (singleValue !== undefined)
+    return {
+      length: 1,
+      value: singleValue,
+    }
+
+  const tensValue = TENS_VALUES[first] ?? TENS_ORDINAL_VALUES[first]
+
+  if (tensValue === undefined) return null
+
+  const second = tokens[startIndex + 1]
+  const secondValue =
+    second === undefined
+      ? undefined
+      : (CARDINAL_VALUES[second] ?? ORDINAL_VALUES[second])
+
+  if (secondValue !== undefined && secondValue > 0 && secondValue < 10)
+    return {
+      length: 2,
+      value: tensValue + secondValue,
+    }
+
+  return {
+    length: 1,
+    value: tensValue,
+  }
+}
+
+function readNumberPhrase(tokens: string[], startIndex: number) {
+  const first = readUnderOneHundred(tokens, startIndex)
+
+  if (!first) return null
+
+  const nextToken = tokens[startIndex + first.length]
+
+  if (nextToken === 'hundred') {
+    const afterHundredIndex = startIndex + first.length + 1
+    const afterAndIndex =
+      tokens[afterHundredIndex] === 'and'
+        ? afterHundredIndex + 1
+        : afterHundredIndex
+    const remainder = readUnderOneHundred(tokens, afterAndIndex)
+
+    if (remainder && remainder.value > 0)
+      return {
+        length: afterAndIndex - startIndex + remainder.length,
+        value: first.value * 100 + remainder.value,
+      }
+
+    return {
+      length: first.length + 1,
+      value: first.value * 100,
+    }
+  }
+
+  if (nextToken === 'thousand')
+    return {
+      length: first.length + 1,
+      value: first.value * 1000,
+    }
+
+  return first.length > 1 ? first : null
+}
+
+function canonicalizeTokenList(
+  originalTokens: string[],
+  options: Required<CorrectionOptions>
+) {
+  const collapsedOriginalTokens: string[] = []
+  const tokens: string[] = []
+  let index = 0
+
+  while (index < originalTokens.length) {
+    if (options.acceptNumberVariants) {
+      const numberPhrase = readNumberPhrase(originalTokens, index)
+
+      if (numberPhrase) {
+        collapsedOriginalTokens.push(
+          originalTokens.slice(index, index + numberPhrase.length).join(' ')
+        )
+        tokens.push(String(numberPhrase.value))
+        index += numberPhrase.length
+        continue
+      }
+    }
+
+    if (
+      originalTokens[index] === 'per' &&
+      originalTokens[index + 1] === 'cent'
+    ) {
+      collapsedOriginalTokens.push('per cent')
+      tokens.push('percent')
+      index += 2
+      continue
+    }
+
+    collapsedOriginalTokens.push(originalTokens[index])
+    tokens.push(canonicalizeCorrectionToken(originalTokens[index], options))
+    index += 1
+  }
+
+  return {
+    originalTokens: collapsedOriginalTokens,
+    tokens,
+  }
+}
+
+export function canonicalizeCorrectionToken(
   token: string,
   options: Required<CorrectionOptions>
 ) {
@@ -166,10 +493,19 @@ function canonicalizeToken(
     if (numberVariant) return numberVariant
   }
 
-  if (options.acceptBritishAmericanVariants)
-    return BRITISH_AMERICAN_VARIANTS[token] ?? token
+  const spellingVariant = options.acceptBritishAmericanVariants
+    ? (BRITISH_AMERICAN_VARIANTS[token] ?? token)
+    : token
 
-  return token
+  if (options.acceptMeasurementVariants)
+    return (
+      MEASUREMENT_VARIANTS[spellingVariant] ??
+      CURRENCY_VARIANTS[spellingVariant] ??
+      SYMBOL_VARIANTS[spellingVariant] ??
+      spellingVariant
+    )
+
+  return spellingVariant
 }
 
 export function normalizeAnswer(
@@ -181,9 +517,10 @@ export function normalizeAnswer(
     ...optionsInput,
   }
   const lowercased = normalizeUnicode(value).toLowerCase()
+  const symbolicExpanded = expandSymbolicVariants(lowercased)
   const expanded = options.expandContractions
-    ? expandContractions(lowercased)
-    : lowercased
+    ? expandContractions(symbolicExpanded)
+    : symbolicExpanded
   const withoutPunctuation = options.ignorePunctuation
     ? removePunctuation(expanded)
     : expanded
@@ -192,11 +529,11 @@ export function normalizeAnswer(
     .trim()
     .split(' ')
     .filter(Boolean)
-  const tokens = originalTokens.map(token => canonicalizeToken(token, options))
+  const canonicalized = canonicalizeTokenList(originalTokens, options)
 
   return {
-    normalizedText: tokens.join(' '),
-    originalTokens,
-    tokens,
+    normalizedText: canonicalized.tokens.join(' '),
+    originalTokens: canonicalized.originalTokens,
+    tokens: canonicalized.tokens,
   }
 }

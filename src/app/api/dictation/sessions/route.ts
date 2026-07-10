@@ -6,7 +6,7 @@ import { DictationSegmentModel } from '@/models/dictation/DictationSegmentModel'
 import { DictationSessionModel } from '@/models/dictation/DictationSessionModel'
 import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
 import { toDictationSessionRecord } from '@/modules/dictation/services/dictationSessionRecords'
-import { getCurrentOwnerId } from '@/modules/dictation/services/getCurrentOwnerId'
+import { requirePracticeActor } from '@/modules/dictation/services/getCurrentUser'
 import {
   getSessionStartGuardDecision,
   parseSessionStartRequest,
@@ -25,6 +25,19 @@ function jsonError(decision: ApiErrorDecision) {
 }
 
 function toSessionError(error: unknown): ApiErrorDecision {
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'status' in error &&
+    (error.status === 401 || error.status === 403)
+  )
+    return {
+      status: error.status,
+      body: {
+        message: (error as { message?: string }).message ?? 'Access denied.',
+      },
+    }
+
   if (error instanceof MissingEnvironmentError)
     return {
       status: 500,
@@ -54,7 +67,7 @@ export async function POST(request: Request) {
 
     if (!parsed.ok) return jsonError(parsed)
 
-    const ownerId = await getCurrentOwnerId()
+    const actor = await requirePracticeActor()
 
     await connectDatabase()
 
@@ -87,7 +100,7 @@ export async function POST(request: Request) {
       })
 
     const existingSession = await DictationSessionModel.findOne({
-      ownerId,
+      userId: actor.id,
       status: 'active',
       videoId: video._id,
     }).sort({ lastActiveAt: -1 })
@@ -110,7 +123,7 @@ export async function POST(request: Request) {
     }
 
     const session = await DictationSessionModel.create({
-      ownerId,
+      userId: actor.id,
       videoId: video._id,
       transcriptId: activeTranscriptId,
       status: 'active',

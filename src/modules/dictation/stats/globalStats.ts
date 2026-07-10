@@ -192,45 +192,45 @@ function getFirstTryAccuracyTrend({
 export function aggregateGlobalDictationStats({
   attempts,
   now = new Date(),
-  ownerId,
+  userId,
   reviewItems,
   videos,
 }: {
   attempts: DictationAttemptApiRecord[]
   now?: Date
-  ownerId: string
+  userId: string
   reviewItems: DictationReviewItemApiRecord[]
   videos: DictationVideoApiRecord[]
 }): DictationGlobalStatsRecord {
-  const ownerAttempts = attempts.filter(attempt => attempt.ownerId === ownerId)
-  const ownerVideos = videos.filter(video => video.ownerId === ownerId)
-  const ownerReviewItems = reviewItems.filter(item => item.ownerId === ownerId)
+  // Content (videos) is global; practice data (attempts, review items) is
+  // per-user, so only those are filtered by the current user's id.
+  const userAttempts = attempts.filter(attempt => attempt.userId === userId)
+  const userReviewItems = reviewItems.filter(item => item.userId === userId)
 
   return {
     activeStreakDays: getActiveStreakDays({
-      attempts: ownerAttempts,
+      attempts: userAttempts,
       now,
     }),
-    completedSegmentCount: getCompletedSegmentCount(ownerAttempts),
-    completedVideoCount: ownerVideos.filter(
-      video => video.status === 'completed'
-    ).length,
-    dueReviewItemCount: ownerReviewItems.filter(item =>
+    completedSegmentCount: getCompletedSegmentCount(userAttempts),
+    completedVideoCount: videos.filter(video => video.status === 'completed')
+      .length,
+    dueReviewItemCount: userReviewItems.filter(item =>
       ACTIVE_REVIEW_STATUSES.has(item.status)
     ).length,
     firstTryAccuracyTrend: getFirstTryAccuracyTrend({
-      attempts: ownerAttempts,
+      attempts: userAttempts,
       now,
     }),
     monthlyPracticeTimeMs: getPracticeTimeSince({
-      attempts: ownerAttempts,
+      attempts: userAttempts,
       since: getDaysAgo(now, 30),
     }),
-    repeatedMistakeTypes: getRepeatedMistakeTypes(ownerAttempts),
-    totalVideoCount: ownerVideos.length,
-    weakWords: getWeakWords(ownerAttempts),
+    repeatedMistakeTypes: getRepeatedMistakeTypes(userAttempts),
+    totalVideoCount: videos.length,
+    weakWords: getWeakWords(userAttempts),
     weeklyPracticeTimeMs: getPracticeTimeSince({
-      attempts: ownerAttempts,
+      attempts: userAttempts,
       since: getDaysAgo(now, 7),
     }),
   }

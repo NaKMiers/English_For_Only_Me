@@ -3,7 +3,6 @@ import type { DictationLevel } from '@/modules/dictation/levels'
 
 export function toDictationVideoRecord(video: {
   _id: unknown
-  ownerId: string
   sourceType?: 'youtube'
   title: string
   youtubeUrl: string
@@ -33,7 +32,6 @@ export function toDictationVideoRecord(video: {
 }): DictationVideoRecord {
   return {
     id: String(video._id),
-    ownerId: video.ownerId,
     sourceType: video.sourceType ?? 'youtube',
     title: video.title,
     youtubeUrl: video.youtubeUrl,

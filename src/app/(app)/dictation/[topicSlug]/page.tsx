@@ -27,7 +27,10 @@ import {
 import { listFavoriteVideoIds } from '@/modules/dictation/content/favoriteRepository'
 import { listCompletedVideoIdsForUser } from '@/modules/dictation/content/progressRepository'
 import { buildSectionGroups } from '@/modules/dictation/content/sectionGroups'
-import { getOptionalUser } from '@/modules/dictation/services/getCurrentUser'
+import {
+  getOptionalUser,
+  getPracticeActorId,
+} from '@/modules/dictation/services/getCurrentUser'
 import type { DictationVideoApiRecord } from '@/modules/dictation/types'
 import { hasDictationTranscript } from '@/modules/dictation/videoReadiness'
 
@@ -100,12 +103,15 @@ export default async function TopicPage({ params, searchParams }: PageProps) {
 
   const user = await getOptionalUser()
   const canFavorite = Boolean(user)
+  // Completion badges follow the practice actor (guest or user) so anonymous
+  // progress shows up; favoriting stays login-only.
+  const actorId = await getPracticeActorId()
   const filtering = isBrowseQueryActive(query)
 
   const [favoritedIds, completedIds] = await Promise.all([
     user ? listFavoriteVideoIds(user.id) : Promise.resolve<string[]>([]),
-    user
-      ? listCompletedVideoIdsForUser(user.id)
+    actorId
+      ? listCompletedVideoIdsForUser(actorId)
       : Promise.resolve<string[]>([]),
   ])
   const favoritedSet = new Set(favoritedIds)

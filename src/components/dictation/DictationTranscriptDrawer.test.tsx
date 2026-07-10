@@ -23,7 +23,6 @@ function createSegment(
     lastAttemptAt: null,
     normalizedText: 'people often miss quiet words',
     order: 0,
-    ownerId: 'owner-one',
     qualityFlags: [],
     startMs: 1000,
     text: 'People often miss quiet words.',

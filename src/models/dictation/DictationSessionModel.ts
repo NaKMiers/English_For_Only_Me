@@ -12,7 +12,7 @@ import type { DictationSessionApiRecord } from '@/modules/dictation/types'
 
 const DictationSessionSchema = new Schema(
   {
-    ownerId: {
+    userId: {
       type: String,
       required: true,
       trim: true,
@@ -86,8 +86,8 @@ const DictationSessionSchema = new Schema(
   }
 )
 
-DictationSessionSchema.index({ ownerId: 1, videoId: 1, status: 1 })
-DictationSessionSchema.index({ ownerId: 1, lastActiveAt: -1 })
+DictationSessionSchema.index({ userId: 1, videoId: 1, status: 1 })
+DictationSessionSchema.index({ userId: 1, lastActiveAt: -1 })
 
 export type DictationSessionDocument = InferSchemaType<
   typeof DictationSessionSchema

@@ -7,7 +7,7 @@ import { DictationTranscriptModel } from '@/models/dictation/DictationTranscript
 import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
 import { buildDictationSegments } from '@/modules/dictation/segmenting/buildSegments'
 import { toDictationSegmentRecord } from '@/modules/dictation/services/dictationSegmentRecords'
-import { getCurrentOwnerId } from '@/modules/dictation/services/getCurrentOwnerId'
+import { requireAdmin } from '@/modules/dictation/services/getCurrentUser'
 import type { DictationCueRecord } from '@/modules/dictation/types'
 import {
   getSegmentBuildGuardDecision,
@@ -32,6 +32,19 @@ function jsonError(decision: ApiErrorDecision) {
 }
 
 function toSegmentError(error: unknown): ApiErrorDecision {
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'status' in error &&
+    (error.status === 401 || error.status === 403)
+  )
+    return {
+      status: error.status,
+      body: {
+        message: (error as { message?: string }).message ?? 'Access denied.',
+      },
+    }
+
   if (error instanceof MissingEnvironmentError)
     return {
       status: 500,
@@ -77,13 +90,12 @@ export async function GET(_request: Request, context: RouteContext) {
   if (!parsed.ok) return jsonError(parsed)
 
   try {
-    const ownerId = await getCurrentOwnerId()
+    await requireAdmin()
 
     await connectDatabase()
 
     const transcript = await DictationTranscriptModel.findOne({
       _id: parsed.data.transcriptId,
-      ownerId,
     }).lean()
 
     if (!transcript)
@@ -95,7 +107,6 @@ export async function GET(_request: Request, context: RouteContext) {
       })
 
     const segments = await DictationSegmentModel.find({
-      ownerId,
       transcriptId: transcript._id,
     })
       .sort({ order: 1 })
@@ -121,22 +132,19 @@ export async function POST(_request: Request, context: RouteContext) {
   if (!parsed.ok) return jsonError(parsed)
 
   try {
-    const ownerId = await getCurrentOwnerId()
+    await requireAdmin()
 
     await connectDatabase()
 
     const transcript = await DictationTranscriptModel.findOne({
       _id: parsed.data.transcriptId,
-      ownerId,
     })
     const video = transcript
       ? await DictationVideoModel.findOne({
           _id: transcript.videoId,
-          ownerId,
         })
       : null
     const guardDecision = getSegmentBuildGuardDecision({
-      ownerId,
       transcript,
       video,
     })
@@ -164,13 +172,11 @@ export async function POST(_request: Request, context: RouteContext) {
       })
 
     await DictationSegmentModel.deleteMany({
-      ownerId,
       transcriptId: transcript._id,
     })
 
     const createdSegments = await DictationSegmentModel.insertMany(
       built.segments.map(segment => ({
-        ownerId,
         videoId: video._id,
         transcriptId: transcript._id,
         transcriptSourceHash: transcript.sourceHash,

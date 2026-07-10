@@ -29,7 +29,6 @@ function track(
 ): DictationTranscriptApiRecord {
   return {
     id,
-    ownerId: 'owner',
     videoId: 'video-1',
     sourceType: 'captionFile',
     language,

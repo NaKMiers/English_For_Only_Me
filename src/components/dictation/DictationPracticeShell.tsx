@@ -142,6 +142,7 @@ export function DictationPracticeShell({
   const [answerDrafts, setAnswerDrafts] = useState<Record<string, string>>(() =>
     readDictationAnswerDrafts(video.id)
   )
+  const answerDraftsRef = useRef(answerDrafts)
   const [activeView, setActiveView] = useState<'practice' | 'transcript'>(
     'practice'
   )
@@ -153,10 +154,23 @@ export function DictationPracticeShell({
   const [retriedSegmentIds, setRetriedSegmentIds] = useState<Set<string>>(
     () => new Set()
   )
+  const [correctSegmentIds, setCorrectSegmentIds] = useState<Set<string>>(
+    () =>
+      new Set(
+        segments
+          .filter(segment => segment.attemptStatus === 'correct')
+          .map(segment => segment.id)
+      )
+  )
   const replayCountRef = useRef<Record<string, number>>({})
   const segmentStartedAtRef = useRef(0)
   const autoPlayedSegmentIdRef = useRef<string | null>(null)
+  const answerTextareaRef = useRef<HTMLTextAreaElement>(null)
   const persistQueueRef = useRef<Promise<unknown>>(Promise.resolve())
+  const sessionRequestRef = useRef<Promise<DictationSessionApiRecord> | null>(
+    null
+  )
+  const isMountedRef = useRef(false)
   const [currentIndex, setCurrentIndex] = useState(() =>
     clampIndex(initialSession?.currentSegmentOrder ?? 0, segments.length)
   )
@@ -185,16 +199,29 @@ export function DictationPracticeShell({
     getInitialPreferences(initialSession)
   )
   const currentSegment = segments[currentIndex] ?? null
-  const currentAnswer = currentSegment
-    ? (answerDrafts[currentSegment.id] ?? '')
-    : ''
+  const hasCurrentAnswerDraft = currentSegment
+    ? Object.prototype.hasOwnProperty.call(answerDrafts, currentSegment.id)
+    : false
+  const currentAnswerDraft =
+    currentSegment && hasCurrentAnswerDraft
+      ? (answerDrafts[currentSegment.id] ?? '')
+      : ''
   // Translation only unlocks once the learner types it correctly — revealing or
   // skipping shows the answer but keeps the translation gated. A retried segment
   // re-locks the translation (even if it was passed before) until it's passed again.
   const passedAttempt = Boolean(currentAttempt?.isPassed)
   const passedCurrentSegment =
-    currentSegment?.attemptStatus === 'correct' &&
+    currentSegment !== null &&
+    (currentSegment.attemptStatus === 'correct' ||
+      correctSegmentIds.has(currentSegment.id)) &&
     !retriedSegmentIds.has(currentSegment.id)
+  const currentAnswer =
+    currentSegment && !hasCurrentAnswerDraft && passedCurrentSegment
+      ? currentSegment.text
+      : currentAnswerDraft
+  const currentAnswerMatchesSegment = Boolean(
+    currentSegment && currentAnswer === currentSegment.text
+  )
   const translationSegmentId = passedAttempt
     ? currentAttempt?.segmentId
     : passedCurrentSegment
@@ -314,6 +341,31 @@ export function DictationPracticeShell({
     writeDictationAnswerDrafts(video.id, answerDrafts)
   }, [answerDrafts, video.id])
 
+  const updateAnswerDrafts = useCallback(
+    (
+      updater:
+        | Record<string, string>
+        | ((currentDrafts: Record<string, string>) => Record<string, string>)
+    ) => {
+      const nextDrafts =
+        typeof updater === 'function'
+          ? updater(answerDraftsRef.current)
+          : updater
+
+      answerDraftsRef.current = nextDrafts
+      setAnswerDrafts(nextDrafts)
+    },
+    []
+  )
+
+  useEffect(() => {
+    isMountedRef.current = true
+
+    return () => {
+      isMountedRef.current = false
+    }
+  }, [])
+
   const patchSession = useCallback(
     (payload: Parameters<typeof updateDictationSessionApi>[1]) => {
       if (!session) return
@@ -331,35 +383,48 @@ export function DictationPracticeShell({
     [session]
   )
 
+  const ensurePracticeSession = useCallback(async () => {
+    if (session) return session
+    if (segments.length === 0) return null
+
+    if (!sessionRequestRef.current) {
+      setSessionError(null)
+      sessionRequestRef.current = startOrResumeDictationSessionApi({
+        videoId: video.id,
+      })
+        .then(response => {
+          if (isMountedRef.current) {
+            setSession(response.session)
+            setSessionMode(response.mode ?? 'start')
+            setCurrentIndex(
+              clampIndex(response.session.currentSegmentOrder, segments.length)
+            )
+          }
+
+          return response.session
+        })
+        .catch(error => {
+          sessionRequestRef.current = null
+
+          if (isMountedRef.current)
+            setSessionError(
+              error instanceof Error
+                ? error.message
+                : 'Could not start this practice session.'
+            )
+
+          throw error
+        })
+    }
+
+    return sessionRequestRef.current
+  }, [segments.length, session, video.id])
+
   useEffect(() => {
     if (session || segments.length === 0) return
 
-    let isMounted = true
-
-    startOrResumeDictationSessionApi({ videoId: video.id })
-      .then(response => {
-        if (!isMounted) return
-
-        setSession(response.session)
-        setSessionMode(response.mode ?? 'start')
-        setCurrentIndex(
-          clampIndex(response.session.currentSegmentOrder, segments.length)
-        )
-      })
-      .catch(error => {
-        if (!isMounted) return
-
-        setSessionError(
-          error instanceof Error
-            ? error.message
-            : 'Could not start this practice session.'
-        )
-      })
-
-    return () => {
-      isMounted = false
-    }
-  }, [segments.length, session, video.id])
+    void ensurePracticeSession().catch(() => undefined)
+  }, [ensurePracticeSession, segments.length, session])
 
   const goToIndex = useCallback(
     (nextIndex: number) => {
@@ -464,133 +529,170 @@ export function DictationPracticeShell({
     (action: DictationAttemptAction) => {
       if (!currentSegment) return
 
-      if (!session) {
-        setSessionError('Practice session is still starting.')
-        return
-      }
-
-      const idempotencyKey = createIdempotencyKey()
-      const replayCountDelta = replayCountRef.current[currentSegment.id] ?? 0
-      const timeSpentMs = Math.max(0, Date.now() - segmentStartedAtRef.current)
-      const typedAnswer = currentAnswer
-      // Check also auto-corrects: rewrite the words the learner got right to the
-      // canonical case/punctuation/spacing, while genuinely wrong words are kept
-      // for them to fix. The char display then renders THIS corrected draft.
-      const displayAnswer =
-        action === 'check'
-          ? autoCorrectAnswer(currentSegment.text, typedAnswer)
-          : typedAnswer
-      // Word-level result feeds analytics/persistence and scores the ORIGINAL
-      // typing; the char-level result drives the guided display of the corrected
-      // draft. Same expected text, two representations (F1).
-      const correction = buildDictationCorrection({
-        action,
-        expectedText: currentSegment.text,
-        typedAnswer,
-      })
-      const charResult = buildCharCorrection({
-        action,
-        expectedText: currentSegment.text,
-        typedAnswer: displayAnswer,
-      })
-      const localAttempt = createLocalDictationAttempt({
-        correction,
-        expectedText: currentSegment.text,
-        idempotencyKey,
-        ownerId: currentSegment.ownerId,
-        replayCountDelta,
-        segmentId: currentSegment.id,
-        sessionId: session.id,
-        timeSpentMs,
-        transcriptId: currentSegment.transcriptId,
-        typedAnswer,
-        videoId: currentSegment.videoId,
-      })
-
-      // Score on the client for instant feedback; the server recomputes the
-      // identical correction when it persists the attempt in the background.
-      setDraftNotice(null)
-      setSessionError(null)
-
-      // Resolved (correct / reveal / skip): fill the full canonical answer into
-      // the textarea like DailyDictation, and keep it so revisiting the segment
-      // shows the answer again. A wrong Check swaps in the auto-corrected draft:
-      // matched words become canonical, the boundary word is underlined in place,
-      // and the caret drops just after it so nothing typed past it is lost.
-      if (correction.isPassed || action === 'reveal' || action === 'skip')
-        setAnswerDrafts(currentDrafts => ({
-          ...currentDrafts,
-          [currentSegment.id]: currentSegment.text,
-        }))
-      else if (action === 'check')
-        setAnswerDrafts(currentDrafts => ({
-          ...currentDrafts,
-          [currentSegment.id]: displayAnswer,
-        }))
-
-      replayCountRef.current[currentSegment.id] = 0
-      segmentStartedAtRef.current = Date.now()
-
-      // A fresh pass re-unlocks the translation for a previously retried segment.
-      if (correction.isPassed)
-        setRetriedSegmentIds(currentIds => {
-          if (!currentIds.has(currentSegment.id)) return currentIds
-
-          const nextIds = new Set(currentIds)
-
-          nextIds.delete(currentSegment.id)
-
-          return nextIds
-        })
-
-      // Feedback is shown in place; the learner advances with Next / Enter.
-      setCurrentAttempt(localAttempt)
-      setCharCorrection(charResult)
-
-      const segmentId = currentSegment.id
-
-      // Serialize persistence so the server's segment-cursor guard sees attempts
-      // in the same order the learner made them.
-      persistQueueRef.current = persistQueueRef.current
-        .catch(() => undefined)
-        .then(() =>
-          submitDictationAttemptApi(session.id, {
-            action,
-            idempotencyKey,
-            replayCountDelta,
-            segmentId,
-            timeSpentMs,
-            typedAnswer,
-          })
-        )
-        .then(response => {
-          setSession(response.session)
-        })
-        .catch(error => {
+      void (async () => {
+        const activeSession = await ensurePracticeSession().catch(error => {
           setSessionError(
             error instanceof Error
               ? error.message
-              : 'Could not save this dictation attempt.'
+              : 'Could not start this practice session.'
           )
+
+          return null
         })
+
+        if (!activeSession) return
+
+        const idempotencyKey = createIdempotencyKey()
+        const replayCountDelta = replayCountRef.current[currentSegment.id] ?? 0
+        const timeSpentMs = Math.max(
+          0,
+          Date.now() - segmentStartedAtRef.current
+        )
+        const typedAnswer =
+          answerDraftsRef.current[currentSegment.id] ??
+          answerTextareaRef.current?.value ??
+          currentAnswer
+        // Check also auto-corrects: rewrite the words the learner got right to the
+        // canonical case/punctuation/spacing, while genuinely wrong words are kept
+        // for them to fix. The char display then renders THIS corrected draft.
+        const displayAnswer =
+          action === 'check'
+            ? autoCorrectAnswer(currentSegment.text, typedAnswer)
+            : typedAnswer
+        // Word-level result feeds analytics/persistence and scores the ORIGINAL
+        // typing; the char-level result drives the guided display of the corrected
+        // draft. Same expected text, two representations (F1).
+        const correction = buildDictationCorrection({
+          action,
+          expectedText: currentSegment.text,
+          typedAnswer,
+        })
+        const charResult = buildCharCorrection({
+          action,
+          expectedText: currentSegment.text,
+          typedAnswer: displayAnswer,
+        })
+        const localAttempt = createLocalDictationAttempt({
+          correction,
+          expectedText: currentSegment.text,
+          idempotencyKey,
+          userId: activeSession.userId,
+          replayCountDelta,
+          segmentId: currentSegment.id,
+          sessionId: activeSession.id,
+          timeSpentMs,
+          transcriptId: currentSegment.transcriptId,
+          typedAnswer,
+          videoId: currentSegment.videoId,
+        })
+
+        // Score on the client for instant feedback; the server recomputes the
+        // identical correction when it persists the attempt in the background.
+        setDraftNotice(null)
+        setSessionError(null)
+
+        // Resolved (correct / reveal / skip): fill the full canonical answer into
+        // the textarea like DailyDictation, and keep it so revisiting the segment
+        // shows the answer again. A wrong Check swaps in the auto-corrected draft:
+        // matched words become canonical, the boundary word is underlined in place,
+        // and the caret drops just after it so nothing typed past it is lost.
+        if (correction.isPassed || action === 'reveal' || action === 'skip')
+          updateAnswerDrafts(currentDrafts => ({
+            ...currentDrafts,
+            [currentSegment.id]: currentSegment.text,
+          }))
+        else if (action === 'check')
+          updateAnswerDrafts(currentDrafts => ({
+            ...currentDrafts,
+            [currentSegment.id]: displayAnswer,
+          }))
+
+        replayCountRef.current[currentSegment.id] = 0
+        segmentStartedAtRef.current = Date.now()
+
+        // A fresh pass re-unlocks the translation for a previously retried segment.
+        if (correction.isPassed) {
+          setCorrectSegmentIds(currentIds => {
+            if (currentIds.has(currentSegment.id)) return currentIds
+
+            const nextIds = new Set(currentIds)
+
+            nextIds.add(currentSegment.id)
+
+            return nextIds
+          })
+          setRetriedSegmentIds(currentIds => {
+            if (!currentIds.has(currentSegment.id)) return currentIds
+
+            const nextIds = new Set(currentIds)
+
+            nextIds.delete(currentSegment.id)
+
+            return nextIds
+          })
+        }
+
+        // Feedback is shown in place; the learner advances with Next / Enter.
+        setCurrentAttempt(localAttempt)
+        setCharCorrection(charResult)
+
+        const segmentId = currentSegment.id
+
+        // Serialize persistence so the server's segment-cursor guard sees attempts
+        // in the same order the learner made them.
+        persistQueueRef.current = persistQueueRef.current
+          .catch(() => undefined)
+          .then(() =>
+            submitDictationAttemptApi(activeSession.id, {
+              action,
+              idempotencyKey,
+              replayCountDelta,
+              segmentId,
+              timeSpentMs,
+              typedAnswer,
+            })
+          )
+          .then(response => {
+            setSession(response.session)
+          })
+          .catch(error => {
+            setSessionError(
+              error instanceof Error
+                ? error.message
+                : 'Could not save this dictation attempt.'
+            )
+          })
+      })()
     },
-    [currentAnswer, currentSegment, session]
+    [currentAnswer, currentSegment, ensurePracticeSession, updateAnswerDrafts]
   )
 
   // A resolved attempt (passed, revealed, or skipped) shows the answer and waits
   // for the learner to advance with Next / Enter.
+  const persistedCorrectDraft = Boolean(
+    !currentAttempt && passedCurrentSegment && currentAnswerMatchesSegment
+  )
   const attemptResolved = currentAttempt
     ? currentAttempt.isPassed ||
       currentAttempt.action === 'reveal' ||
       currentAttempt.action === 'skip'
-    : false
-  const guidedStatus: GuidedStatus = !currentAttempt
-    ? 'idle'
-    : currentAttempt.isPassed
+    : persistedCorrectDraft
+  const isRevealedAttempt = Boolean(
+    currentAttempt &&
+    (currentAttempt.action === 'reveal' || currentAttempt.action === 'skip')
+  )
+  const guidedStatus: GuidedStatus = isRevealedAttempt
+    ? 'revealed'
+    : currentAnswerMatchesSegment
       ? 'correct'
-      : currentAttempt.action === 'reveal' || currentAttempt.action === 'skip'
-        ? 'revealed'
-        : 'incorrect'
+      : currentAttempt
+        ? currentAttempt.isPassed
+          ? 'correct'
+          : currentAttempt.action === 'reveal' ||
+              currentAttempt.action === 'skip'
+            ? 'revealed'
+            : 'incorrect'
+        : 'idle'
   // Retry stays available for any segment the learner has checked at least once —
   // whether from this attempt or a persisted one from an earlier visit.
   const hasCheckedCurrent =
@@ -608,7 +710,7 @@ export function DictationPracticeShell({
 
   const retryCurrent = useCallback(() => {
     if (currentSegment) {
-      setAnswerDrafts(currentDrafts => ({
+      updateAnswerDrafts(currentDrafts => ({
         ...currentDrafts,
         [currentSegment.id]: '',
       }))
@@ -619,12 +721,21 @@ export function DictationPracticeShell({
 
         return nextIds
       })
+      setCorrectSegmentIds(currentIds => {
+        if (!currentIds.has(currentSegment.id)) return currentIds
+
+        const nextIds = new Set(currentIds)
+
+        nextIds.delete(currentSegment.id)
+
+        return nextIds
+      })
     }
 
     setCurrentAttempt(null)
     setCharCorrection(null)
     replayCurrentSegment()
-  }, [currentSegment, replayCurrentSegment])
+  }, [currentSegment, replayCurrentSegment, updateAnswerDrafts])
 
   // Rewind: just navigate back to the first segment, keep drafts and stats.
   const goToFirstSegment = useCallback(() => {
@@ -637,10 +748,10 @@ export function DictationPracticeShell({
   // Restart: clear this session's local progress (typed drafts, retry locks)
   // and rewind. Saved attempt history / accuracy stats are left alone.
   const restartProgress = useCallback(() => {
-    setAnswerDrafts({})
+    updateAnswerDrafts({})
     setRetriedSegmentIds(new Set())
     goToFirstSegment()
-  }, [goToFirstSegment])
+  }, [goToFirstSegment, updateAnswerDrafts])
 
   // Check / Enter: grade the draft, or advance once the answer is resolved.
   const checkDraft = useCallback(() => {
@@ -648,29 +759,30 @@ export function DictationPracticeShell({
     else runAttempt('check')
   }, [advanceAfterAttempt, attemptResolved, runAttempt])
 
-  // Esc: retry after a correct answer, otherwise reveal the full answer.
-  const revealSegment = useCallback(() => {
-    if (currentAttempt?.isPassed) retryCurrent()
-    else runAttempt('reveal')
-  }, [currentAttempt, retryCurrent, runAttempt])
-
   // Skip button: reveal the answer (recorded as a skip) and wait for Next.
   const skipSegment = useCallback(() => {
     if (attemptResolved) advanceAfterAttempt()
     else runAttempt('skip')
   }, [advanceAfterAttempt, attemptResolved, runAttempt])
 
+  const handleEscapeShortcut = useCallback(() => {
+    if (hasCheckedCurrent) retryCurrent()
+    else skipSegment()
+  }, [hasCheckedCurrent, retryCurrent, skipSegment])
+
   // Ctrl+[ / Ctrl+] use the tab-aware handlers so they move the dictation cursor
   // on the practice tab and scrub captions on the Full Transcript tab.
   const shortcutHandlers = useMemo(
     () => ({
       check: checkDraft,
+      escape: handleEscapeShortcut,
       next: handleControlsGoNext,
       previous: handleControlsGoPrevious,
       replay: replayCurrentSegment,
     }),
     [
       checkDraft,
+      handleEscapeShortcut,
       handleControlsGoNext,
       handleControlsGoPrevious,
       replayCurrentSegment,
@@ -841,14 +953,23 @@ export function DictationPracticeShell({
                     answerTextSize={preferences.answerTextSize}
                     correction={charCorrection}
                     expectedText={currentSegment.text}
-                    onChange={answer =>
-                      setAnswerDrafts(currentDrafts => ({
+                    inputRef={answerTextareaRef}
+                    onChange={answer => {
+                      if (
+                        currentAttempt?.isPassed &&
+                        answer !== currentSegment.text
+                      ) {
+                        setCurrentAttempt(null)
+                        setCharCorrection(null)
+                      }
+
+                      updateAnswerDrafts(currentDrafts => ({
                         ...currentDrafts,
                         [currentSegment.id]: answer,
                       }))
-                    }
+                    }}
                     onCheck={checkDraft}
-                    onReveal={revealSegment}
+                    onReveal={handleEscapeShortcut}
                     showAnswerImmediately={preferences.showAnswerImmediately}
                     showFullAnswer={preferences.showFullAnswer}
                     status={guidedStatus}

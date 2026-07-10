@@ -39,9 +39,8 @@ describe('/api/dictation/videos route decisions', () => {
     expect(getMissingMongoResponse()).toBeNull()
   })
 
-  it('builds a server-owned create input from a valid payload', () => {
+  it('builds a create input from a valid payload', () => {
     const parsed = parseCreateVideoRequest({
-      ownerId: 'server-owner',
       body: {
         title: '  City transport dictation  ',
         youtubeUrl: 'https://www.youtube.com/watch?v=abc123',
@@ -51,7 +50,6 @@ describe('/api/dictation/videos route decisions', () => {
     expect(parsed).toEqual({
       ok: true,
       data: {
-        ownerId: 'server-owner',
         title: 'City transport dictation',
         youtubeUrl: 'https://www.youtube.com/watch?v=abc123',
         transcriptStatus: 'manualNeeded',
@@ -62,7 +60,6 @@ describe('/api/dictation/videos route decisions', () => {
 
   it('defaults placeholder title when the payload has no title', () => {
     const parsed = parseCreateVideoRequest({
-      ownerId: 'server-owner',
       body: {
         youtubeUrl: 'https://www.youtube.com/watch?v=abc123',
       },
@@ -78,7 +75,6 @@ describe('/api/dictation/videos route decisions', () => {
 
   it('rejects invalid payloads before database work', () => {
     const parsed = parseCreateVideoRequest({
-      ownerId: 'server-owner',
       body: {
         youtubeUrl: 'not a url',
       },

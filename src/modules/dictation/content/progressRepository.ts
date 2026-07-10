@@ -5,13 +5,13 @@ import { DictationSessionModel } from '@/models/dictation/DictationSessionModel'
 /**
  * Video ids the user has completed at least once (E1 progress). A video counts
  * as done when the user has a session with status 'completed'. Per-user data is
- * keyed by ownerId (= the authenticated user's id since Chunk 1).
+ * keyed by the authenticated user's id.
  */
 export async function listCompletedVideoIdsForUser(
   userId: string
 ): Promise<string[]> {
   const ids = await DictationSessionModel.find({
-    ownerId: userId,
+    userId,
     status: 'completed',
   }).distinct('videoId')
 

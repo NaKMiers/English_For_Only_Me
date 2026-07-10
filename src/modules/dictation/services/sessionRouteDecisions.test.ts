@@ -7,7 +7,7 @@ import {
   resolveSessionStart,
 } from './sessionRouteDecisions'
 
-const ownerId = 'owner-one'
+const userId = 'user-one'
 const firstSegment = {
   _id: '507f1f77bcf86cd799439033',
   order: 0,
@@ -91,7 +91,7 @@ describe('session route decisions', () => {
           id: 'session-one',
           isVideoHidden: false,
           lastActiveAt: new Date(),
-          ownerId,
+          userId,
           playbackSpeed: 1,
           showShortcuts: true,
           startedAt: new Date(),

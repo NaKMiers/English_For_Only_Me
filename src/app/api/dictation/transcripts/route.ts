@@ -7,7 +7,7 @@ import { DictationSegmentModel } from '@/models/dictation/DictationSegmentModel'
 import { DictationTranscriptModel } from '@/models/dictation/DictationTranscriptModel'
 import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
 import { toDictationTranscriptRecord } from '@/modules/dictation/services/dictationTranscriptRecords'
-import { getCurrentOwnerId } from '@/modules/dictation/services/getCurrentOwnerId'
+import { requireAdmin } from '@/modules/dictation/services/getCurrentUser'
 import { parseTranscriptRequest } from '@/modules/dictation/services/transcriptRouteDecisions'
 import {
   type ApiErrorDecision,
@@ -25,13 +25,11 @@ function jsonError(decision: ApiErrorDecision) {
 // wins, delete any older same-language transcripts and their orphaned segments
 // so re-uploading English overwrites instead of accumulating dead rows.
 async function pruneSupersededTranscripts(
-  ownerId: string,
   videoId: Types.ObjectId,
   keepId: Types.ObjectId,
   language: string
 ) {
   const superseded = await DictationTranscriptModel.find({
-    ownerId,
     videoId,
     language,
     _id: { $ne: keepId },
@@ -44,13 +42,25 @@ async function pruneSupersededTranscripts(
   const ids = superseded.map(item => item._id)
 
   await DictationSegmentModel.deleteMany({
-    ownerId,
     transcriptId: { $in: ids },
   })
   await DictationTranscriptModel.deleteMany({ _id: { $in: ids } })
 }
 
 function toTranscriptError(error: unknown): ApiErrorDecision {
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'status' in error &&
+    (error.status === 401 || error.status === 403)
+  )
+    return {
+      status: error.status,
+      body: {
+        message: (error as { message?: string }).message ?? 'Access denied.',
+      },
+    }
+
   if (
     typeof error === 'object' &&
     error !== null &&
@@ -93,13 +103,12 @@ export async function POST(request: Request) {
 
     if (!parsed.ok) return jsonError(parsed)
 
-    const ownerId = await getCurrentOwnerId()
+    await requireAdmin()
 
     await connectDatabase()
 
     const video = await DictationVideoModel.findOne({
       _id: parsed.data.videoId,
-      ownerId,
       status: {
         $ne: 'archived',
       },
@@ -117,7 +126,6 @@ export async function POST(request: Request) {
     // touching the English primary (no activeTranscriptId change, no segments).
     if (parsed.data.role === 'translation') {
       const existingTrack = await DictationTranscriptModel.findOne({
-        ownerId,
         videoId: video._id,
         sourceHash: parsed.data.normalized.sourceHash,
       })
@@ -131,14 +139,12 @@ export async function POST(request: Request) {
       // One track per language: replacing a language's captions removes the old
       // file so practice never sees two tracks for the same language.
       await DictationTranscriptModel.deleteMany({
-        ownerId,
         videoId: video._id,
         language: parsed.data.normalized.language,
         isActive: false,
       })
 
       const track = await DictationTranscriptModel.create({
-        ownerId,
         videoId: video._id,
         sourceType: parsed.data.normalized.sourceType,
         language: parsed.data.normalized.language,
@@ -163,14 +169,16 @@ export async function POST(request: Request) {
     }
 
     const existingTranscript = await DictationTranscriptModel.findOne({
-      ownerId,
       videoId: video._id,
       sourceHash: parsed.data.normalized.sourceHash,
     })
 
     if (existingTranscript) {
       await DictationTranscriptModel.updateMany(
-        { ownerId, videoId: video._id, _id: { $ne: existingTranscript._id } },
+        {
+          videoId: video._id,
+          _id: { $ne: existingTranscript._id },
+        },
         { $set: { isActive: false } }
       )
 
@@ -183,7 +191,6 @@ export async function POST(request: Request) {
       await video.save()
 
       await pruneSupersededTranscripts(
-        ownerId,
         video._id,
         existingTranscript._id,
         parsed.data.normalized.language
@@ -196,12 +203,11 @@ export async function POST(request: Request) {
     }
 
     await DictationTranscriptModel.updateMany(
-      { ownerId, videoId: video._id, isActive: true },
+      { videoId: video._id, isActive: true },
       { $set: { isActive: false } }
     )
 
     const transcript = await DictationTranscriptModel.create({
-      ownerId,
       videoId: video._id,
       sourceType: parsed.data.normalized.sourceType,
       language: parsed.data.normalized.language,
@@ -222,7 +228,6 @@ export async function POST(request: Request) {
     await video.save()
 
     await pruneSupersededTranscripts(
-      ownerId,
       video._id,
       transcript._id,
       parsed.data.normalized.language

@@ -15,7 +15,7 @@ import {
 } from '@/modules/dictation/segmenting/editSegments'
 import type { EditableSegment } from '@/modules/dictation/segmenting/types'
 import { toDictationSegmentRecord } from '@/modules/dictation/services/dictationSegmentRecords'
-import { getCurrentOwnerId } from '@/modules/dictation/services/getCurrentOwnerId'
+import { requireAdmin } from '@/modules/dictation/services/getCurrentUser'
 import {
   getSegmentEditGuardDecision,
   parseSegmentEditRequest,
@@ -40,6 +40,19 @@ function jsonError(decision: ApiErrorDecision) {
 }
 
 function toSegmentError(error: unknown): ApiErrorDecision {
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'status' in error &&
+    (error.status === 401 || error.status === 403)
+  )
+    return {
+      status: error.status,
+      body: {
+        message: (error as { message?: string }).message ?? 'Access denied.',
+      },
+    }
+
   if (error instanceof MissingEnvironmentError)
     return {
       status: 500,
@@ -77,26 +90,23 @@ function toEditableSegment(
 }
 
 async function updateSegmentCount({
-  ownerId,
   transcriptId,
   videoId,
 }: {
-  ownerId: string
   transcriptId: DictationSegmentDocument['transcriptId']
   videoId: DictationSegmentDocument['videoId']
 }) {
   const segmentCount = await DictationSegmentModel.countDocuments({
-    ownerId,
     transcriptId,
   })
 
   await Promise.all([
     DictationTranscriptModel.updateOne(
-      { _id: transcriptId, ownerId },
+      { _id: transcriptId },
       { $set: { segmentCount } }
     ),
     DictationVideoModel.updateOne(
-      { _id: videoId, ownerId },
+      { _id: videoId },
       { $set: { sentenceCount: segmentCount } }
     ),
   ])
@@ -104,22 +114,19 @@ async function updateSegmentCount({
   return segmentCount
 }
 
-async function loadSegmentGraph(segmentId: string, ownerId: string) {
+async function loadSegmentGraph(segmentId: string) {
   const segment = await DictationSegmentModel.findOne({
     _id: segmentId,
-    ownerId,
   })
 
   if (!segment) return { segment: null, transcript: null, video: null }
 
   const transcript = await DictationTranscriptModel.findOne({
     _id: segment.transcriptId,
-    ownerId,
   })
   const video = transcript
     ? await DictationVideoModel.findOne({
         _id: segment.videoId,
-        ownerId,
       })
     : null
 
@@ -155,13 +162,12 @@ export async function PATCH(request: Request, context: RouteContext) {
 
     if (!parsedBody.ok) return jsonError(parsedBody)
 
-    const ownerId = await getCurrentOwnerId()
+    await requireAdmin()
 
     await connectDatabase()
 
     const { segment, transcript, video } = await loadSegmentGraph(
-      parsedId.data.segmentId,
-      ownerId
+      parsedId.data.segmentId
     )
 
     if (!segment)
@@ -173,7 +179,6 @@ export async function PATCH(request: Request, context: RouteContext) {
       })
 
     const guardDecision = getSegmentEditGuardDecision({
-      ownerId,
       segmentSourceHash: segment.transcriptSourceHash,
       transcript,
       video,
@@ -213,7 +218,6 @@ export async function PATCH(request: Request, context: RouteContext) {
 
       await DictationSegmentModel.updateMany(
         {
-          ownerId,
           transcriptId: segment.transcriptId,
           order: { $gt: segment.order },
         },
@@ -224,7 +228,6 @@ export async function PATCH(request: Request, context: RouteContext) {
       await segment.save()
 
       const createdSegment = await DictationSegmentModel.create({
-        ownerId,
         videoId: segment.videoId,
         transcriptId: segment.transcriptId,
         transcriptSourceHash: segment.transcriptSourceHash,
@@ -241,7 +244,6 @@ export async function PATCH(request: Request, context: RouteContext) {
       })
 
       await updateSegmentCount({
-        ownerId,
         transcriptId: segment.transcriptId,
         videoId: segment.videoId,
       })
@@ -256,7 +258,6 @@ export async function PATCH(request: Request, context: RouteContext) {
     const neighborOrder =
       direction === 'mergePrevious' ? segment.order - 1 : segment.order + 1
     const neighbor = await DictationSegmentModel.findOne({
-      ownerId,
       transcriptId: segment.transcriptId,
       order: neighborOrder,
     })
@@ -284,7 +285,6 @@ export async function PATCH(request: Request, context: RouteContext) {
     await segmentToDelete.deleteOne()
     await DictationSegmentModel.updateMany(
       {
-        ownerId,
         transcriptId: segment.transcriptId,
         order: { $gt: deletedOrder },
       },
@@ -292,7 +292,6 @@ export async function PATCH(request: Request, context: RouteContext) {
     )
 
     await updateSegmentCount({
-      ownerId,
       transcriptId: segment.transcriptId,
       videoId: segment.videoId,
     })

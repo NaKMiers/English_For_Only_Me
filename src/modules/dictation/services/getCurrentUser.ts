@@ -1,6 +1,7 @@
 import 'server-only'
 
 import { auth } from '@/lib/auth/auth'
+import { getGuestId, getOrCreateGuestId } from '@/lib/auth/guestUser'
 import type { UserRole } from '@/lib/auth/roles'
 
 export interface CurrentUser {
@@ -9,6 +10,16 @@ export interface CurrentUser {
   role: UserRole
   name: string | null
   image: string | null
+}
+
+/**
+ * The actor that owns a piece of per-user practice data: either a signed-in
+ * user or an anonymous guest. Practice does not require login (product rule);
+ * guest data is scoped to a cookie-backed id and merged on first sign-in.
+ */
+export interface PracticeActor {
+  id: string
+  isGuest: boolean
 }
 
 export class UnauthenticatedError extends Error {
@@ -55,6 +66,33 @@ export async function requireUser(): Promise<CurrentUser> {
   if (!user) throw new UnauthenticatedError()
 
   return user
+}
+
+/**
+ * Resolve the owner of per-user practice data: the signed-in user when present,
+ * otherwise a guest identity. Mints the guest cookie when missing, so this may
+ * only be called from Route Handlers or Server Functions (it writes a cookie).
+ * Never throws — anonymous practice is always allowed.
+ */
+export async function requirePracticeActor(): Promise<PracticeActor> {
+  const user = await getOptionalUser()
+
+  if (user) return { id: user.id, isGuest: false }
+
+  return { id: await getOrCreateGuestId(), isGuest: true }
+}
+
+/**
+ * Read-only variant of requirePracticeActor for Server Components: returns the
+ * user id, an existing guest id, or null when neither exists yet (a first-time
+ * visitor who has not practiced). Never writes a cookie.
+ */
+export async function getPracticeActorId(): Promise<string | null> {
+  const user = await getOptionalUser()
+
+  if (user) return user.id
+
+  return getGuestId()
 }
 
 /** Require an admin. Throws UnauthenticatedError (401) or ForbiddenError (403). */

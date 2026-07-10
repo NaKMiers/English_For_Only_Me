@@ -17,27 +17,26 @@ import type { DictationReviewItemStatus } from '@/modules/dictation/types'
 const ACTIVE_REVIEW_STATUSES: DictationReviewItemStatus[] = ['due', 'scheduled']
 
 export async function recomputeReviewItemsForVideo({
-  ownerId,
+  userId,
   videoId,
 }: {
-  ownerId: string
+  userId: string
   videoId: string
 }) {
   const [attempts, segments, existingItems] = await Promise.all([
     DictationAttemptModel.find({
-      ownerId,
+      userId,
       videoId,
     })
       .sort({ createdAt: 1 })
       .lean(),
     DictationSegmentModel.find({
-      ownerId,
       videoId,
     })
       .sort({ order: 1 })
       .lean(),
     DictationReviewItemModel.find({
-      ownerId,
+      userId,
       videoId,
       status: { $in: ACTIVE_REVIEW_STATUSES },
     }).lean(),
@@ -61,7 +60,7 @@ export async function recomputeReviewItemsForVideo({
 
   const createdItems = await DictationReviewItemModel.insertMany(
     candidates.map(candidate => ({
-      ownerId,
+      userId,
       videoId: new Types.ObjectId(candidate.videoId),
       segmentId: new Types.ObjectId(candidate.segmentId),
       kind: candidate.kind,
@@ -80,17 +79,17 @@ export async function recomputeReviewItemsForVideo({
   return createdItems.map(item => toDictationReviewItemRecord(item.toObject()))
 }
 
-export async function listDueReviewItemsForOwner({
+export async function listDueReviewItemsForUser({
   limit = 20,
-  ownerId,
+  userId,
   videoId,
 }: {
   limit?: number
-  ownerId: string
+  userId: string
   videoId?: string
 }) {
   const query = {
-    ownerId,
+    userId,
     ...(videoId ? { videoId } : {}),
     status: { $in: ACTIVE_REVIEW_STATUSES },
   }
@@ -102,20 +101,20 @@ export async function listDueReviewItemsForOwner({
   return items.map(toDictationReviewItemRecord)
 }
 
-export async function markReviewItemForOwner({
+export async function markReviewItemForUser({
   action,
-  ownerId,
+  userId,
   reviewItemId,
 }: {
   action: 'complete' | 'dismiss'
-  ownerId: string
+  userId: string
   reviewItemId: string
 }) {
   const now = new Date()
   const item = await DictationReviewItemModel.findOneAndUpdate(
     {
       _id: reviewItemId,
-      ownerId,
+      userId,
     },
     {
       $set: {

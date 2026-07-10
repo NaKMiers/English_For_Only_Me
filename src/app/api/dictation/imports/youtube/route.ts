@@ -5,7 +5,6 @@ import { connectDatabase } from '@/lib/db/connectDatabase'
 import { getYouTubeVideoMetadata } from '@/lib/youtube/getYouTubeVideoMetadata'
 import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
 import { toDictationVideoRecord } from '@/modules/dictation/services/dictationVideoRecords'
-import { getCurrentOwnerId } from '@/modules/dictation/services/getCurrentOwnerId'
 import { requireAdmin } from '@/modules/dictation/services/getCurrentUser'
 import {
   type ApiErrorDecision,
@@ -97,7 +96,6 @@ export async function POST(request: Request) {
         },
       })
 
-    const ownerId = await getCurrentOwnerId()
     const importWarning =
       metadata.state === 'apiKeyMissing' ? metadata.warning : metadata.warning
     const importStatus =
@@ -115,12 +113,10 @@ export async function POST(request: Request) {
 
     const video = await DictationVideoModel.findOneAndUpdate(
       {
-        ownerId,
         youtubeVideoId: parsed.data.videoId,
       },
       {
         $setOnInsert: {
-          ownerId,
           sourceType: 'youtube',
           youtubeUrl: parsed.data.normalizedUrl,
           sourceUrl: parsed.data.normalizedUrl,

@@ -29,7 +29,6 @@ export function toDictationSegmentRecord(segment: {
   lastAttemptAt?: Date | null
   normalizedText: string
   order: number
-  ownerId: string
   qualityFlags?: string[]
   startMs?: number | null
   text: string
@@ -49,7 +48,6 @@ export function toDictationSegmentRecord(segment: {
     lastAttemptAt: segment.lastAttemptAt ?? null,
     normalizedText: segment.normalizedText,
     order: segment.order,
-    ownerId: segment.ownerId,
     qualityFlags: (segment.qualityFlags ?? []).filter(isSegmentQualityFlag),
     startMs: segment.startMs ?? null,
     text: segment.text,

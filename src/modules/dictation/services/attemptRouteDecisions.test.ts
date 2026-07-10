@@ -21,7 +21,7 @@ function makeAttempt(): DictationAttemptApiRecord {
     feedbackTokens: [],
     idempotencyKey: 'same-submit-key',
     isPassed: true,
-    ownerId: 'owner',
+    userId: 'owner',
     replayCountDelta: 0,
     segmentId: objectId,
     sessionId: objectId,
@@ -56,7 +56,6 @@ describe('attempt route decisions', () => {
       parseAttemptPayload({
         action: 'check',
         idempotencyKey: 'short',
-        ownerId: 'client-owner',
         segmentId: 'bad',
       }).ok
     ).toBe(false)

@@ -3,11 +3,11 @@ import { NextResponse } from 'next/server'
 import { MissingEnvironmentError } from '@/constants/environments'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import {
-  listDueReviewItemsForOwner,
-  markReviewItemForOwner,
+  listDueReviewItemsForUser,
+  markReviewItemForUser,
   recomputeReviewItemsForVideo,
 } from '@/modules/dictation/review/reviewItemService'
-import { getCurrentOwnerId } from '@/modules/dictation/services/getCurrentOwnerId'
+import { requirePracticeActor } from '@/modules/dictation/services/getCurrentUser'
 import {
   parseListReviewItemsRequest,
   parseRecomputeReviewItemsRequest,
@@ -26,6 +26,19 @@ function jsonError(decision: ApiErrorDecision) {
 }
 
 function toReviewItemError(error: unknown): ApiErrorDecision {
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'status' in error &&
+    (error.status === 401 || error.status === 403)
+  )
+    return {
+      status: error.status,
+      body: {
+        message: (error as { message?: string }).message ?? 'Access denied.',
+      },
+    }
+
   if (error instanceof MissingEnvironmentError)
     return {
       status: 500,
@@ -54,14 +67,14 @@ export async function GET(request: Request) {
   if (!parsed.ok) return jsonError(parsed)
 
   try {
-    const ownerId = await getCurrentOwnerId()
+    const actor = await requirePracticeActor()
 
     await connectDatabase()
 
     return NextResponse.json({
-      reviewItems: await listDueReviewItemsForOwner({
+      reviewItems: await listDueReviewItemsForUser({
         limit: parsed.data.limit,
-        ownerId,
+        userId: actor.id,
         videoId: parsed.data.videoId,
       }),
     })
@@ -81,13 +94,13 @@ export async function POST(request: Request) {
 
     if (!parsed.ok) return jsonError(parsed)
 
-    const ownerId = await getCurrentOwnerId()
+    const actor = await requirePracticeActor()
 
     await connectDatabase()
 
     return NextResponse.json({
       reviewItems: await recomputeReviewItemsForVideo({
-        ownerId,
+        userId: actor.id,
         videoId: parsed.data.videoId,
       }),
     })
@@ -115,13 +128,13 @@ export async function PATCH(request: Request) {
 
     if (!parsed.ok) return jsonError(parsed)
 
-    const ownerId = await getCurrentOwnerId()
+    const actor = await requirePracticeActor()
 
     await connectDatabase()
 
-    const reviewItem = await markReviewItemForOwner({
+    const reviewItem = await markReviewItemForUser({
       action: parsed.data.action,
-      ownerId,
+      userId: actor.id,
       reviewItemId: parsed.data.reviewItemId,
     })
 

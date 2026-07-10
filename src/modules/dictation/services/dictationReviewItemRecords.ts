@@ -55,7 +55,7 @@ export function toDictationReviewItemRecord(item: {
   kind: DictationReviewItemApiRecord['kind']
   label: string
   lastReviewedAt?: Date | null
-  ownerId: string
+  userId: string
   priority: number
   reason: DictationReviewItemApiRecord['reason']
   segmentId: unknown
@@ -71,7 +71,7 @@ export function toDictationReviewItemRecord(item: {
     kind: item.kind,
     label: item.label,
     lastReviewedAt: item.lastReviewedAt ?? null,
-    ownerId: item.ownerId,
+    userId: item.userId,
     priority: item.priority,
     reason: item.reason,
     segmentId: String(item.segmentId),

@@ -21,7 +21,7 @@ import {
   parseDictationDebriefJson,
 } from '@/modules/dictation/ai/debriefSchema'
 import { toDictationDebriefRecord } from '@/modules/dictation/services/dictationDebriefRecords'
-import { getVideoStatsForOwner } from '@/modules/dictation/stats/videoStatsService'
+import { getVideoStatsForUser } from '@/modules/dictation/stats/videoStatsService'
 import type { DictationDebriefApiRecord } from '@/modules/dictation/types'
 
 const TRANSCRIPT_EXCERPT_LIMIT = 4000
@@ -48,11 +48,11 @@ function getTranscriptExcerpt(rawText: string) {
 
 async function buildDebriefSnapshot({
   notes,
-  ownerId,
+  userId,
   videoId,
 }: {
   notes: string
-  ownerId: string
+  userId: string
   videoId: string
 }): Promise<
   | {
@@ -68,7 +68,6 @@ async function buildDebriefSnapshot({
 > {
   const video = await DictationVideoModel.findOne({
     _id: videoId,
-    ownerId,
   }).lean()
 
   if (!video)
@@ -79,7 +78,7 @@ async function buildDebriefSnapshot({
     }
 
   const completedSession = await DictationSessionModel.findOne({
-    ownerId,
+    userId,
     status: 'completed',
     videoId,
   })
@@ -106,14 +105,13 @@ async function buildDebriefSnapshot({
     }
 
   const [stats, transcript] = await Promise.all([
-    getVideoStatsForOwner({
-      ownerId,
+    getVideoStatsForUser({
+      userId,
       videoId,
     }),
     video.activeTranscriptId
       ? DictationTranscriptModel.findOne({
           _id: video.activeTranscriptId,
-          ownerId,
           videoId,
         }).lean()
       : null,
@@ -155,14 +153,14 @@ async function buildDebriefSnapshot({
 async function createFailedDebrief({
   failureReason,
   inputSnapshotHash,
-  ownerId,
+  userId,
   rawOutput,
   sessionId,
   videoId,
 }: {
   failureReason: string
   inputSnapshotHash: string
-  ownerId: string
+  userId: string
   rawOutput: unknown
   sessionId: string
   videoId: string
@@ -177,7 +175,7 @@ async function createFailedDebrief({
     listeningTraps: [],
     model: getOpenAiDebriefModel(),
     nextActions: ['Retry the AI debrief after checking provider settings.'],
-    ownerId,
+    userId,
     promptVersion: DICTATION_DEBRIEF_PROMPT_VERSION,
     rawOutput,
     sessionId: new Types.ObjectId(sessionId),
@@ -189,18 +187,18 @@ async function createFailedDebrief({
   return toDictationDebriefRecord(failedDebrief.toObject())
 }
 
-export async function generateDictationDebriefForOwner({
+export async function generateDictationDebriefForUser({
   notes = '',
-  ownerId,
+  userId,
   videoId,
 }: {
   notes?: string
-  ownerId: string
+  userId: string
   videoId: string
 }): Promise<DictationDebriefServiceResult> {
   const snapshotResult = await buildDebriefSnapshot({
     notes,
-    ownerId,
+    userId,
     videoId,
   })
 
@@ -211,7 +209,7 @@ export async function generateDictationDebriefForOwner({
   )
   const cachedDebrief = await DictationDebriefModel.findOne({
     inputSnapshotHash,
-    ownerId,
+    userId,
     status: 'ready',
     videoId,
   })
@@ -235,7 +233,7 @@ export async function generateDictationDebriefForOwner({
     await createFailedDebrief({
       failureReason: providerResult.message,
       inputSnapshotHash,
-      ownerId,
+      userId,
       rawOutput: null,
       sessionId: snapshotResult.sessionId,
       videoId,
@@ -255,7 +253,7 @@ export async function generateDictationDebriefForOwner({
       failureReason: null,
       inputSnapshotHash,
       model: getOpenAiDebriefModel(),
-      ownerId,
+      userId,
       promptVersion: DICTATION_DEBRIEF_PROMPT_VERSION,
       rawOutput: providerResult.rawOutput,
       sessionId: new Types.ObjectId(snapshotResult.sessionId),
@@ -272,7 +270,7 @@ export async function generateDictationDebriefForOwner({
     await createFailedDebrief({
       failureReason: 'AI debrief output did not match the required schema.',
       inputSnapshotHash,
-      ownerId,
+      userId,
       rawOutput: providerResult.rawOutput,
       sessionId: snapshotResult.sessionId,
       videoId,

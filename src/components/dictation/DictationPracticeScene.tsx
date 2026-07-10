@@ -207,6 +207,9 @@ export function DictationPracticeScene() {
           </div>
           <Textarea
             aria-label="Sentence answer"
+            spellCheck={false}
+            autoCorrect="off"
+            autoCapitalize="off"
             value={answer}
             onChange={event => setAnswer(event.target.value)}
             className="border-manga-black bg-manga-white min-h-28 rounded-none border-3 text-base leading-7 font-semibold shadow-[3px_3px_0_var(--manga-black)]"

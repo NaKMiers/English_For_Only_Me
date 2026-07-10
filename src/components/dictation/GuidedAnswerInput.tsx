@@ -1,7 +1,7 @@
 'use client'
 
 import { CircleCheck, Eye, Lightbulb, TriangleAlert } from 'lucide-react'
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, type RefObject } from 'react'
 
 import { cn } from '@/lib/utils'
 import {
@@ -39,6 +39,7 @@ interface Props {
   correction: CharCorrectionResult | null
   disabled?: boolean
   expectedText: string
+  inputRef?: RefObject<HTMLTextAreaElement | null>
   onChange: (value: string) => void
   onCheck: () => void
   onReveal: () => void
@@ -151,6 +152,7 @@ export function GuidedAnswerInput({
   correction,
   disabled = false,
   expectedText,
+  inputRef,
   onChange,
   onCheck,
   onReveal,
@@ -159,7 +161,8 @@ export function GuidedAnswerInput({
   status,
   value,
 }: Props) {
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const localTextareaRef = useRef<HTMLTextAreaElement>(null)
+  const textareaRef = inputRef ?? localTextareaRef
   const inputTextStyle = ANSWER_TEXT_STYLE[answerTextSize]
 
   // Live from the current draft, no Check required — recomputes the matched
@@ -199,7 +202,7 @@ export function GuidedAnswerInput({
     textarea.focus()
     const caret = Math.min(correction.caretOffset, textarea.value.length)
     textarea.setSelectionRange(caret, caret)
-  }, [correction, status])
+  }, [correction, status, textareaRef])
 
   // Shared by Tab and clicking a hint chip: insert the word, then keep focus
   // and the caret in the textarea so typing continues right after it.
@@ -309,12 +312,18 @@ export function GuidedAnswerInput({
           aria-label="Type what you hear"
           data-dictation-shortcuts="allow"
           disabled={disabled}
+          spellCheck={false}
+          autoCorrect="off"
+          autoCapitalize="off"
           value={value}
           onChange={event => onChange(event.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Type what you hear..."
           style={inputTextStyle}
-          className="text-manga-black placeholder:text-manga-ink-soft relative z-10 block field-sizing-content min-h-40 w-full resize-y overflow-hidden border-0 bg-transparent px-2.5 py-2 font-semibold wrap-break-word whitespace-pre-wrap outline-none"
+          className={cn(
+            'placeholder:text-manga-ink-soft relative z-10 block field-sizing-content min-h-40 w-full resize-y overflow-hidden border-0 bg-transparent px-2.5 py-2 font-semibold wrap-break-word whitespace-pre-wrap outline-none',
+            status === 'correct' ? 'text-emerald-700' : 'text-manga-black'
+          )}
         />
       </div>
 

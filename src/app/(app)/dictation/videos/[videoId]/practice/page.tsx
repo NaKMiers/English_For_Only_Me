@@ -16,7 +16,7 @@ import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
 import { toDictationSegmentRecord } from '@/modules/dictation/services/dictationSegmentRecords'
 import { toDictationSessionRecord } from '@/modules/dictation/services/dictationSessionRecords'
 import { toDictationVideoRecord } from '@/modules/dictation/services/dictationVideoRecords'
-import { getCurrentOwnerId } from '@/modules/dictation/services/getCurrentOwnerId'
+import { getPracticeActorId } from '@/modules/dictation/services/getCurrentUser'
 import { hasDictationTranscript } from '@/modules/dictation/videoReadiness'
 
 export const metadata: Metadata = {
@@ -96,7 +96,10 @@ export default async function Page({ params }: Props) {
       />
     )
 
-  const ownerId = await getCurrentOwnerId()
+  // Practice is open to everyone — a signed-in user resumes their own session,
+  // an anonymous guest resumes the one tied to their guest cookie (null until
+  // they start practicing, in which case the shell creates one).
+  const actorId = await getPracticeActorId()
 
   await connectDatabase()
 
@@ -138,13 +141,15 @@ export default async function Page({ params }: Props) {
       />
     )
 
-  const session = await DictationSessionModel.findOne({
-    ownerId,
-    status: 'active',
-    videoId: video._id,
-  })
-    .sort({ lastActiveAt: -1 })
-    .lean()
+  const session = actorId
+    ? await DictationSessionModel.findOne({
+        userId: actorId,
+        status: 'active',
+        videoId: video._id,
+      })
+        .sort({ lastActiveAt: -1 })
+        .lean()
+    : null
 
   const trackDocuments = await DictationTranscriptModel.find({
     videoId: video._id,

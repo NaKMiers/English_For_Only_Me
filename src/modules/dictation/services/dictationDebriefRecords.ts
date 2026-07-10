@@ -12,7 +12,7 @@ export function toDictationDebriefRecord(debrief: {
   listeningTraps?: string[] | null
   model: string
   nextActions?: string[] | null
-  ownerId: string
+  userId: string
   promptVersion: string
   sessionId: unknown
   status: DictationDebriefApiRecord['status']
@@ -32,7 +32,7 @@ export function toDictationDebriefRecord(debrief: {
     listeningTraps: debrief.listeningTraps ?? [],
     model: debrief.model,
     nextActions: debrief.nextActions ?? [],
-    ownerId: debrief.ownerId,
+    userId: debrief.userId,
     promptVersion: debrief.promptVersion,
     sessionId: String(debrief.sessionId),
     status: debrief.status,

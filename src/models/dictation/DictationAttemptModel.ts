@@ -53,7 +53,7 @@ const DictationCorrectionTokenSchema = new Schema(
 
 const DictationAttemptSchema = new Schema(
   {
-    ownerId: {
+    userId: {
       type: String,
       required: true,
       trim: true,
@@ -179,11 +179,11 @@ const DictationAttemptSchema = new Schema(
 )
 
 DictationAttemptSchema.index(
-  { ownerId: 1, sessionId: 1, idempotencyKey: 1 },
+  { userId: 1, sessionId: 1, idempotencyKey: 1 },
   { unique: true }
 )
-DictationAttemptSchema.index({ ownerId: 1, segmentId: 1, createdAt: -1 })
-DictationAttemptSchema.index({ ownerId: 1, videoId: 1, createdAt: -1 })
+DictationAttemptSchema.index({ userId: 1, segmentId: 1, createdAt: -1 })
+DictationAttemptSchema.index({ userId: 1, videoId: 1, createdAt: -1 })
 
 export type DictationAttemptDocument = InferSchemaType<
   typeof DictationAttemptSchema

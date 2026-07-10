@@ -8,17 +8,14 @@ import {
   parseTranscriptIdParam,
 } from './segmentRouteDecisions'
 
-const ownerId = 'owner-one'
 const transcript = {
   _id: '507f1f77bcf86cd799439011',
-  ownerId,
   qualityStatus: 'ready',
   sourceHash: 'source-hash-one',
 }
 const video = {
   _id: '507f1f77bcf86cd799439022',
   activeTranscriptId: transcript._id,
-  ownerId,
 }
 
 describe('segment route decisions', () => {
@@ -59,14 +56,10 @@ describe('segment route decisions', () => {
     })
   })
 
-  test('blocks segment building when ownership does not match', () => {
+  test('blocks segment building when the transcript is missing', () => {
     expect(
       getSegmentBuildGuardDecision({
-        ownerId,
-        transcript: {
-          ...transcript,
-          ownerId: 'other-owner',
-        },
+        transcript: null,
         video,
       })
     ).toMatchObject({
@@ -77,7 +70,6 @@ describe('segment route decisions', () => {
   test('blocks segment building for stale active transcript state', () => {
     expect(
       getSegmentBuildGuardDecision({
-        ownerId,
         transcript,
         video: {
           ...video,
@@ -92,7 +84,6 @@ describe('segment route decisions', () => {
   test('blocks segment editing when source hash is stale', () => {
     expect(
       getSegmentEditGuardDecision({
-        ownerId,
         segmentSourceHash: 'old-hash',
         transcript,
         video,

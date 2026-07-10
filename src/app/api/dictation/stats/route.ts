@@ -2,15 +2,15 @@ import { NextResponse } from 'next/server'
 
 import { MissingEnvironmentError } from '@/constants/environments'
 import { connectDatabase } from '@/lib/db/connectDatabase'
-import { getCurrentOwnerId } from '@/modules/dictation/services/getCurrentOwnerId'
+import { requirePracticeActor } from '@/modules/dictation/services/getCurrentUser'
 import { parseStatsSearchParams } from '@/modules/dictation/services/statsRouteDecisions'
 import {
   type ApiErrorDecision,
   getMissingMongoResponse,
   MISSING_MONGODB_MESSAGE,
 } from '@/modules/dictation/services/videoRouteDecisions'
-import { getGlobalStatsForOwner } from '@/modules/dictation/stats/globalStatsService'
-import { getVideoStatsForOwner } from '@/modules/dictation/stats/videoStatsService'
+import { getGlobalStatsForUser } from '@/modules/dictation/stats/globalStatsService'
+import { getVideoStatsForUser } from '@/modules/dictation/stats/videoStatsService'
 
 export const runtime = 'nodejs'
 
@@ -19,6 +19,19 @@ function jsonError(decision: ApiErrorDecision) {
 }
 
 function toStatsError(error: unknown): ApiErrorDecision {
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'status' in error &&
+    (error.status === 401 || error.status === 403)
+  )
+    return {
+      status: error.status,
+      body: {
+        message: (error as { message?: string }).message ?? 'Access denied.',
+      },
+    }
+
   if (error instanceof MissingEnvironmentError)
     return {
       status: 500,
@@ -47,18 +60,18 @@ export async function GET(request: Request) {
   if (!parsed.ok) return jsonError(parsed)
 
   try {
-    const ownerId = await getCurrentOwnerId()
+    const actor = await requirePracticeActor()
 
     await connectDatabase()
 
     if (parsed.data.scope === 'global')
       return NextResponse.json({
-        stats: await getGlobalStatsForOwner(ownerId),
+        stats: await getGlobalStatsForUser(actor.id),
       })
 
     return NextResponse.json({
-      stats: await getVideoStatsForOwner({
-        ownerId,
+      stats: await getVideoStatsForUser({
+        userId: actor.id,
         videoId: parsed.data.videoId,
       }),
     })

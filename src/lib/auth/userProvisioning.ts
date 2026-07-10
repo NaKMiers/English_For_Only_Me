@@ -12,8 +12,9 @@ interface GoogleProfileInput {
 
 /**
  * Upsert the app User on sign-in. Returns the Mongo ObjectId string used as the
- * canonical userId for user-scoped rows (e.g. favorites). Practice content and
- * progress are single-tenant and not tied to this id — see getCurrentOwnerId.
+ * canonical userId for all user-scoped rows: favorites, sessions, attempts,
+ * review items, debriefs, and stats. Catalog content (videos, transcripts,
+ * segments) is global and not tied to this id.
  */
 export async function provisionUserOnSignIn(profile: GoogleProfileInput) {
   await connectDatabase()

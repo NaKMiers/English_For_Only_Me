@@ -42,7 +42,7 @@ export function toDictationAttemptRecord(attempt: {
   feedbackTokens?: AttemptFeedbackTokenInput[]
   idempotencyKey: string
   isPassed: boolean
-  ownerId: string
+  userId: string
   replayCountDelta?: number
   segmentId: unknown
   sessionId: unknown
@@ -61,7 +61,7 @@ export function toDictationAttemptRecord(attempt: {
     feedbackTokens: toFeedbackTokens(attempt.feedbackTokens),
     idempotencyKey: attempt.idempotencyKey,
     isPassed: attempt.isPassed,
-    ownerId: attempt.ownerId,
+    userId: attempt.userId,
     replayCountDelta: attempt.replayCountDelta ?? 0,
     segmentId: String(attempt.segmentId),
     sessionId: String(attempt.sessionId),

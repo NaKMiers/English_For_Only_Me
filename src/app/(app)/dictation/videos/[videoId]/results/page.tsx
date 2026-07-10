@@ -13,11 +13,11 @@ import { hasMongoDbUri } from '@/constants/environments'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { DictationDebriefModel } from '@/models/dictation/DictationDebriefModel'
 import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
-import { listDueReviewItemsForOwner } from '@/modules/dictation/review/reviewItemService'
+import { listDueReviewItemsForUser } from '@/modules/dictation/review/reviewItemService'
 import { toDictationDebriefRecord } from '@/modules/dictation/services/dictationDebriefRecords'
 import { toDictationVideoRecord } from '@/modules/dictation/services/dictationVideoRecords'
-import { getCurrentOwnerId } from '@/modules/dictation/services/getCurrentOwnerId'
-import { getVideoStatsForOwner } from '@/modules/dictation/stats/videoStatsService'
+import { getPracticeActorId } from '@/modules/dictation/services/getCurrentUser'
+import { getVideoStatsForUser } from '@/modules/dictation/stats/videoStatsService'
 import { hasDictationTranscript } from '@/modules/dictation/videoReadiness'
 
 export const metadata: Metadata = {
@@ -92,7 +92,9 @@ export default async function Page({ params }: Props) {
       />
     )
 
-  const ownerId = await getCurrentOwnerId()
+  // Results are open to everyone. An empty actor id (a visitor with no practice
+  // history) simply matches no rows and renders the empty "Practice first" state.
+  const actorId = (await getPracticeActorId()) ?? ''
 
   await connectDatabase()
 
@@ -117,16 +119,16 @@ export default async function Page({ params }: Props) {
     )
 
   const [stats, reviewItems, latestDebrief] = await Promise.all([
-    getVideoStatsForOwner({
-      ownerId,
+    getVideoStatsForUser({
+      userId: actorId,
       videoId,
     }),
-    listDueReviewItemsForOwner({
-      ownerId,
+    listDueReviewItemsForUser({
+      userId: actorId,
       videoId,
     }),
     DictationDebriefModel.findOne({
-      ownerId,
+      userId: actorId,
       status: 'ready',
       videoId,
     })

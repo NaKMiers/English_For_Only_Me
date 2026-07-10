@@ -131,6 +131,21 @@ describe('GuidedAnswerInput - display gating', () => {
 
     expect(view.getByRole('status').textContent).toBe('You are correct!')
   })
+
+  test('colors the typed answer green only while the segment is correct', () => {
+    const { rerender, view } = renderInput({
+      status: 'correct',
+      value: WALL,
+    })
+    const textarea = view.getByLabelText('Type what you hear')
+
+    expect(textarea.className).toContain('text-emerald-700')
+
+    rerender({ status: 'idle', value: `${WALL} edited` })
+
+    expect(textarea.className).toContain('text-manga-black')
+    expect(textarea.className).not.toContain('text-emerald-700')
+  })
 })
 
 describe('GuidedAnswerInput - boundary underline', () => {
@@ -150,9 +165,9 @@ describe('GuidedAnswerInput - boundary underline', () => {
     ).toBe(typed)
 
     // The wrong 'x' is drawn in its own red-underlined span in the mirror.
-    const redChar = view.getAllByText('x').find(node =>
-      node.className.includes('decoration-red-700')
-    )
+    const redChar = view
+      .getAllByText('x')
+      .find(node => node.className.includes('decoration-red-700'))
 
     expect(redChar).toBeDefined()
   })
@@ -224,7 +239,12 @@ describe('GuidedAnswerInput - keyboard', () => {
     fireEvent.click(view.getByText('Jiangs'))
     expect(onChange).toHaveBeenCalledWith('the Jiangs')
 
-    rerender({ correction, expectedText: meng, status: 'incorrect', value: 'the Jiangs' })
+    rerender({
+      correction,
+      expectedText: meng,
+      status: 'incorrect',
+      value: 'the Jiangs',
+    })
 
     expect(view.getByText('Mengs')).toBeDefined()
     expect(view.queryByText('Jiangs')).toBeNull()
@@ -266,13 +286,23 @@ describe('GuidedAnswerInput - keyboard', () => {
     })
 
     // Tab fill is reflected by the parent re-rendering with the new value.
-    rerender({ correction, expectedText: meng, status: 'incorrect', value: 'the Mengs' })
+    rerender({
+      correction,
+      expectedText: meng,
+      status: 'incorrect',
+      value: 'the Mengs',
+    })
 
     expect(view.queryByText('Mengs')).toBeNull()
     expect(view.getByText('Jiangs')).toBeDefined()
 
     // Backspacing the filled word brings its hint chip back.
-    rerender({ correction, expectedText: meng, status: 'incorrect', value: 'the' })
+    rerender({
+      correction,
+      expectedText: meng,
+      status: 'incorrect',
+      value: 'the',
+    })
 
     expect(view.getByText('Mengs')).toBeDefined()
     expect(view.getByText('Jiangs')).toBeDefined()

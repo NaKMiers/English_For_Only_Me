@@ -6,7 +6,7 @@ import { createLocalDictationAttempt } from './createLocalAttempt'
 const BASE_INPUT = {
   expectedText: 'Being able to remember',
   idempotencyKey: 'key-123',
-  ownerId: 'owner-1',
+  userId: 'owner-1',
   replayCountDelta: 2,
   segmentId: 'segment-1',
   sessionId: 'session-1',

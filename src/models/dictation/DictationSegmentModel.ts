@@ -24,12 +24,6 @@ const segmentQualityFlags = [
 
 const DictationSegmentSchema = new Schema(
   {
-    ownerId: {
-      type: String,
-      required: true,
-      trim: true,
-      index: true,
-    },
     videoId: {
       type: Schema.Types.ObjectId,
       ref: 'DictationVideo',
@@ -119,8 +113,8 @@ const DictationSegmentSchema = new Schema(
   }
 )
 
-DictationSegmentSchema.index({ ownerId: 1, transcriptId: 1, order: 1 })
-DictationSegmentSchema.index({ ownerId: 1, videoId: 1, order: 1 })
+DictationSegmentSchema.index({ transcriptId: 1, order: 1 })
+DictationSegmentSchema.index({ videoId: 1, order: 1 })
 
 export type DictationSegmentDocument = InferSchemaType<
   typeof DictationSegmentSchema

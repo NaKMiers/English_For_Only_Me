@@ -1,5 +1,4 @@
 import { JSDOM } from 'jsdom'
-import { cleanup } from '@testing-library/react'
 import { afterEach } from 'vitest'
 
 let hasRegisteredCleanup = false
@@ -24,6 +23,30 @@ export function setupDom() {
     configurable: true,
     value: domWindow.HTMLElement,
   })
+  Object.defineProperty(globalThis, 'Element', {
+    configurable: true,
+    value: domWindow.Element,
+  })
+  Object.defineProperty(globalThis, 'Node', {
+    configurable: true,
+    value: domWindow.Node,
+  })
+  Object.defineProperty(globalThis, 'Event', {
+    configurable: true,
+    value: domWindow.Event,
+  })
+  Object.defineProperty(globalThis, 'InputEvent', {
+    configurable: true,
+    value: domWindow.InputEvent,
+  })
+  Object.defineProperty(globalThis, 'KeyboardEvent', {
+    configurable: true,
+    value: domWindow.KeyboardEvent,
+  })
+  Object.defineProperty(globalThis, 'MouseEvent', {
+    configurable: true,
+    value: domWindow.MouseEvent,
+  })
   Object.defineProperty(globalThis, 'SVGElement', {
     configurable: true,
     value: domWindow.SVGElement,
@@ -45,8 +68,12 @@ export function setupDom() {
 
   hasRegisteredCleanup = true
 
-  afterEach(() => {
+  afterEach(async () => {
+    const { cleanup } = await import('@testing-library/react')
+
     cleanup()
     document.body.innerHTML = ''
   })
 }
+
+setupDom()

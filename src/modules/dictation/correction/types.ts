@@ -12,6 +12,7 @@ export interface NormalizedAnswer {
 
 export interface CorrectionOptions {
   acceptBritishAmericanVariants?: boolean
+  acceptMeasurementVariants?: boolean
   acceptNumberVariants?: boolean
   expandContractions?: boolean
   ignorePunctuation?: boolean
@@ -28,6 +29,7 @@ export interface DictationCorrectionResult {
 
 export const DEFAULT_CORRECTION_OPTIONS: Required<CorrectionOptions> = {
   acceptBritishAmericanVariants: true,
+  acceptMeasurementVariants: true,
   acceptNumberVariants: true,
   expandContractions: true,
   ignorePunctuation: true,

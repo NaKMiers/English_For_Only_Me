@@ -84,8 +84,7 @@ describe('buildCharCorrection - reveal + mask model', () => {
   })
 
   test('keeps the full draft and points the caret just past the wrong word', () => {
-    const expected =
-      'There are Kaijus with biological armour, who spit acid'
+    const expected = 'There are Kaijus with biological armour, who spit acid'
     const typed = 'There are Kaijus wh biological armour, who spit acid'
     const result = check(typed, expected)
 
@@ -213,6 +212,14 @@ describe('autoCorrectAnswer', () => {
     expect(
       autoCorrectAnswer('The quick brown fox', 'the quick brown fox')
     ).toBe('The quick brown fox')
+  })
+
+  test('rewrites equivalent numbers and measurement units into expected form', () => {
+    expect(autoCorrectAnswer('five kg', '5 kilograms')).toBe('five kg')
+    expect(autoCorrectAnswer('five kg', '5kg')).toBe('five kg')
+    expect(autoCorrectAnswer('5 kilograms', 'five kg')).toBe('5 kilograms')
+    expect(autoCorrectAnswer('2 meters', 'two metres')).toBe('2 meters')
+    expect(autoCorrectAnswer('one litre', '1 litter')).toBe('one litre')
   })
 
   // The de-dup is generic: any standalone punctuation token the learner types is

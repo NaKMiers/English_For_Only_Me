@@ -13,7 +13,10 @@ import { connectDatabase } from '@/lib/db/connectDatabase'
 import { listNoTopicVideos } from '@/modules/dictation/content/contentRepository'
 import { listFavoriteVideoIds } from '@/modules/dictation/content/favoriteRepository'
 import { listCompletedVideoIdsForUser } from '@/modules/dictation/content/progressRepository'
-import { getOptionalUser } from '@/modules/dictation/services/getCurrentUser'
+import {
+  getOptionalUser,
+  getPracticeActorId,
+} from '@/modules/dictation/services/getCurrentUser'
 import { hasDictationTranscript } from '@/modules/dictation/videoReadiness'
 
 export const metadata: Metadata = {
@@ -27,6 +30,9 @@ export const runtime = 'nodejs'
 export default async function NoTopicPage() {
   const user = await getOptionalUser()
   const canFavorite = Boolean(user)
+  // Completion badges follow the practice actor (guest or user); favoriting
+  // stays login-only.
+  const actorId = await getPracticeActorId()
   let items: BrowseVideoItem[] = []
 
   if (hasMongoDbUri()) {
@@ -34,8 +40,8 @@ export default async function NoTopicPage() {
     const [videos, favoritedIds, completedIds] = await Promise.all([
       listNoTopicVideos(),
       user ? listFavoriteVideoIds(user.id) : Promise.resolve<string[]>([]),
-      user
-        ? listCompletedVideoIdsForUser(user.id)
+      actorId
+        ? listCompletedVideoIdsForUser(actorId)
         : Promise.resolve<string[]>([]),
     ])
     const favoritedSet = new Set(favoritedIds)

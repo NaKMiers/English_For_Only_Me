@@ -59,4 +59,12 @@ describe('dictation shortcuts', () => {
     expect(getDictationShortcutAction(next)).toBe('next')
     expect(getDictationShortcutAction(previous)).toBe('previous')
   })
+
+  test('maps Escape to the practice escape action', () => {
+    const event = new window.KeyboardEvent('keydown', {
+      key: 'Escape',
+    })
+
+    expect(getDictationShortcutAction(event)).toBe('escape')
+  })
 })

@@ -6,7 +6,7 @@ import { connectDatabase } from '@/lib/db/connectDatabase'
 import { DictationSegmentModel } from '@/models/dictation/DictationSegmentModel'
 import { DictationSessionModel } from '@/models/dictation/DictationSessionModel'
 import { toDictationSessionRecord } from '@/modules/dictation/services/dictationSessionRecords'
-import { getCurrentOwnerId } from '@/modules/dictation/services/getCurrentOwnerId'
+import { requirePracticeActor } from '@/modules/dictation/services/getCurrentUser'
 import {
   parseSessionIdParam,
   parseSessionPatchRequest,
@@ -30,6 +30,19 @@ function jsonError(decision: ApiErrorDecision) {
 }
 
 function toSessionError(error: unknown): ApiErrorDecision {
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'status' in error &&
+    (error.status === 401 || error.status === 403)
+  )
+    return {
+      status: error.status,
+      body: {
+        message: (error as { message?: string }).message ?? 'Access denied.',
+      },
+    }
+
   if (error instanceof MissingEnvironmentError)
     return {
       status: 500,
@@ -59,13 +72,13 @@ export async function GET(_request: Request, context: RouteContext) {
   if (!parsed.ok) return jsonError(parsed)
 
   try {
-    const ownerId = await getCurrentOwnerId()
+    const actor = await requirePracticeActor()
 
     await connectDatabase()
 
     const session = await DictationSessionModel.findOne({
       _id: parsed.data.sessionId,
-      ownerId,
+      userId: actor.id,
     }).lean()
 
     if (!session)
@@ -100,13 +113,13 @@ export async function PATCH(request: Request, context: RouteContext) {
 
     if (!parsedBody.ok) return jsonError(parsedBody)
 
-    const ownerId = await getCurrentOwnerId()
+    const actor = await requirePracticeActor()
 
     await connectDatabase()
 
     const session = await DictationSessionModel.findOne({
       _id: parsedId.data.sessionId,
-      ownerId,
+      userId: actor.id,
     })
 
     if (!session)
@@ -120,7 +133,6 @@ export async function PATCH(request: Request, context: RouteContext) {
     if (parsedBody.data.currentSegmentId) {
       const segment = await DictationSegmentModel.findOne({
         _id: parsedBody.data.currentSegmentId,
-        ownerId,
         transcriptId: session.transcriptId,
         videoId: session.videoId,
       }).lean()

@@ -6,22 +6,21 @@ import { aggregateVideoStats } from '@/modules/dictation/stats/videoStats'
 import { toDictationAttemptRecord } from '@/modules/dictation/services/dictationAttemptRecords'
 import { toDictationSegmentRecord } from '@/modules/dictation/services/dictationSegmentRecords'
 
-export async function getVideoStatsForOwner({
-  ownerId,
+export async function getVideoStatsForUser({
+  userId,
   videoId,
 }: {
-  ownerId: string
+  userId: string
   videoId: string
 }) {
   const [attempts, segments] = await Promise.all([
     DictationAttemptModel.find({
-      ownerId,
+      userId,
       videoId,
     })
       .sort({ createdAt: 1 })
       .lean(),
     DictationSegmentModel.find({
-      ownerId,
       videoId,
     })
       .sort({ order: 1 })

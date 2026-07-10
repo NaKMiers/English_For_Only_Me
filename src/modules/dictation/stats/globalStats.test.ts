@@ -28,7 +28,6 @@ function makeVideo(
     importStatus: 'metadataReady',
     importWarning: null,
     lastPracticedAt: null,
-    ownerId: 'owner-one',
     order: 0,
     purpose: 'ielts-listening',
     sentenceCount: 0,
@@ -65,7 +64,7 @@ function makeAttempt(
     id: 'attempt-one',
     idempotencyKey: 'key-one',
     isPassed: false,
-    ownerId: 'owner-one',
+    userId: 'user-one',
     replayCountDelta: 1,
     segmentId: 'segment-one',
     sessionId: 'session-one',
@@ -97,7 +96,7 @@ function makeReviewItem(
     kind: 'segment',
     label: 'I want coffee.',
     lastReviewedAt: null,
-    ownerId: 'owner-one',
+    userId: 'user-one',
     priority: 80,
     reason: 'lowAccuracy',
     segmentId: 'segment-one',
@@ -120,7 +119,7 @@ function makeReviewItem(
 }
 
 describe('aggregateGlobalDictationStats', () => {
-  test('does not leak attempts, videos, or review items across owners', () => {
+  test('scopes attempts and review items per user while videos stay global', () => {
     const stats = aggregateGlobalDictationStats({
       attempts: [
         makeAttempt({
@@ -128,18 +127,18 @@ describe('aggregateGlobalDictationStats', () => {
         }),
         makeAttempt({
           id: 'other-attempt',
-          ownerId: 'other-owner',
+          userId: 'other-user',
           segmentId: 'other-segment',
           timeSpentMs: 600_000,
         }),
       ],
       now,
-      ownerId: 'owner-one',
+      userId: 'user-one',
       reviewItems: [
         makeReviewItem(),
         makeReviewItem({
           id: 'other-review',
-          ownerId: 'other-owner',
+          userId: 'other-user',
         }),
       ],
       videos: [
@@ -148,13 +147,14 @@ describe('aggregateGlobalDictationStats', () => {
         }),
         makeVideo({
           id: 'other-video',
-          ownerId: 'other-owner',
           status: 'completed',
         }),
       ],
     })
 
-    expect(stats.completedVideoCount).toBe(1)
+    // Videos are global content, so both completed videos count.
+    expect(stats.completedVideoCount).toBe(2)
+    // Practice data stays per-user: the other user's attempts/reviews drop out.
     expect(stats.completedSegmentCount).toBe(1)
     expect(stats.dueReviewItemCount).toBe(1)
     expect(stats.weeklyPracticeTimeMs).toBe(60_000)
@@ -170,7 +170,7 @@ describe('aggregateGlobalDictationStats', () => {
     const stats = aggregateGlobalDictationStats({
       attempts: [],
       now,
-      ownerId: 'owner-one',
+      userId: 'user-one',
       reviewItems: [],
       videos: [],
     })
@@ -196,7 +196,7 @@ describe('aggregateGlobalDictationStats', () => {
     const stats = aggregateGlobalDictationStats({
       attempts,
       now,
-      ownerId: 'owner-one',
+      userId: 'user-one',
       reviewItems: [],
       videos: [
         makeVideo({

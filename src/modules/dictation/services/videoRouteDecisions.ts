@@ -18,7 +18,6 @@ export interface ApiErrorDecision {
 }
 
 interface CreateVideoInput {
-  ownerId: string
   body: unknown
 }
 
@@ -33,7 +32,7 @@ export function getMissingMongoResponse() {
   } satisfies ApiErrorDecision
 }
 
-export function parseCreateVideoRequest({ body, ownerId }: CreateVideoInput) {
+export function parseCreateVideoRequest({ body }: CreateVideoInput) {
   const parsed = createDictationVideoPayloadSchema.safeParse(body)
 
   if (!parsed.success)
@@ -50,7 +49,6 @@ export function parseCreateVideoRequest({ body, ownerId }: CreateVideoInput) {
   return {
     ok: true,
     data: {
-      ownerId,
       title,
       youtubeUrl: parsed.data.youtubeUrl,
       transcriptStatus: parsed.data.transcriptStatus,

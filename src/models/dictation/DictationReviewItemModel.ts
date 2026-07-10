@@ -84,7 +84,7 @@ const DictationReviewStatsSnapshotSchema = new Schema(
 
 const DictationReviewItemSchema = new Schema(
   {
-    ownerId: {
+    userId: {
       type: String,
       required: true,
       trim: true,
@@ -157,14 +157,14 @@ const DictationReviewItemSchema = new Schema(
 )
 
 DictationReviewItemSchema.index({
-  ownerId: 1,
+  userId: 1,
   status: 1,
   dueAt: 1,
   priority: -1,
 })
-DictationReviewItemSchema.index({ ownerId: 1, videoId: 1, status: 1 })
+DictationReviewItemSchema.index({ userId: 1, videoId: 1, status: 1 })
 DictationReviewItemSchema.index({
-  ownerId: 1,
+  userId: 1,
   segmentId: 1,
   kind: 1,
   reason: 1,

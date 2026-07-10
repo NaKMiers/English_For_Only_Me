@@ -41,7 +41,6 @@ export type SegmentRouteDecision<T> =
 
 interface SegmentGuardTranscript {
   _id: unknown
-  ownerId: string
   qualityStatus: string
   sourceHash: string
 }
@@ -49,7 +48,6 @@ interface SegmentGuardTranscript {
 interface SegmentGuardVideo {
   _id: unknown
   activeTranscriptId?: unknown
-  ownerId: string
 }
 
 export function parseTranscriptIdParam(
@@ -133,15 +131,13 @@ export function parseSegmentEditRequest(
 }
 
 export function getSegmentBuildGuardDecision({
-  ownerId,
   transcript,
   video,
 }: {
-  ownerId: string
   transcript: SegmentGuardTranscript | null
   video: SegmentGuardVideo | null
 }): ApiErrorDecision | null {
-  if (!transcript || transcript.ownerId !== ownerId)
+  if (!transcript)
     return {
       status: 404,
       body: {
@@ -149,7 +145,7 @@ export function getSegmentBuildGuardDecision({
       },
     }
 
-  if (!video || video.ownerId !== ownerId)
+  if (!video)
     return {
       status: 404,
       body: {
@@ -179,18 +175,15 @@ export function getSegmentBuildGuardDecision({
 }
 
 export function getSegmentEditGuardDecision({
-  ownerId,
   segmentSourceHash,
   transcript,
   video,
 }: {
-  ownerId: string
   segmentSourceHash: string
   transcript: SegmentGuardTranscript | null
   video: SegmentGuardVideo | null
 }): ApiErrorDecision | null {
   const buildGuard = getSegmentBuildGuardDecision({
-    ownerId,
     transcript,
     video,
   })
