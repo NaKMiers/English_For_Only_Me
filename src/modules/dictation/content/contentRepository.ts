@@ -1,13 +1,17 @@
 import 'server-only'
 
+import { cache } from 'react'
+
 import { DictationSectionModel } from '@/models/dictation/DictationSectionModel'
 import { DictationTopicModel } from '@/models/dictation/DictationTopicModel'
 import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
 import type { DictationLevel } from '@/modules/dictation/levels'
+import { toDictationVideoRecord } from '@/modules/dictation/services/dictationVideoRecords'
 import type {
   DictationSectionApiRecord,
   DictationTopicApiRecord,
   DictationTopicSummaryRecord,
+  DictationVideoApiRecord,
 } from '@/modules/dictation/types'
 
 import {
@@ -70,15 +74,17 @@ export async function listTopics(): Promise<DictationTopicApiRecord[]> {
   return topics.map(toTopicRecord)
 }
 
-export async function getTopicBySlug(
-  slug: string
-): Promise<DictationTopicApiRecord | null> {
-  const topic = await DictationTopicModel.findOne({
-    slug: slug.trim().toLowerCase(),
-  }).lean<TopicLean | null>()
+// Wrapped in React cache so generateMetadata + the page body share one query
+// per request (they both resolve the same slug).
+export const getTopicBySlug = cache(
+  async (slug: string): Promise<DictationTopicApiRecord | null> => {
+    const topic = await DictationTopicModel.findOne({
+      slug: slug.trim().toLowerCase(),
+    }).lean<TopicLean | null>()
 
-  return topic ? toTopicRecord(topic) : null
-}
+    return topic ? toTopicRecord(topic) : null
+  }
+)
 
 export async function listSectionsForTopic(
   topicId: string
@@ -88,6 +94,44 @@ export async function listSectionsForTopic(
     .lean<SectionLean[]>()
 
   return sections.map(toSectionRecord)
+}
+
+const VISIBLE_VIDEO_FILTER = { status: { $ne: 'archived' } } as const
+
+/** All non-archived videos filed under a topic (any/no section). */
+export async function listVideosForTopic(
+  topicId: string
+): Promise<DictationVideoApiRecord[]> {
+  const videos = await DictationVideoModel.find({
+    topicId,
+    ...VISIBLE_VIDEO_FILTER,
+  })
+    .sort({ createdAt: -1 })
+    .lean()
+
+  return videos.map(toDictationVideoRecord)
+}
+
+/**
+ * Videos with no topic (the "Uncategorized" group). `{ topicId: null }` matches
+ * both explicit null and absent (pre-backfill) fields in MongoDB.
+ */
+export async function listNoTopicVideos(): Promise<DictationVideoApiRecord[]> {
+  const videos = await DictationVideoModel.find({
+    topicId: null,
+    ...VISIBLE_VIDEO_FILTER,
+  })
+    .sort({ createdAt: -1 })
+    .lean()
+
+  return videos.map(toDictationVideoRecord)
+}
+
+export async function countNoTopicVideos(): Promise<number> {
+  return DictationVideoModel.countDocuments({
+    topicId: null,
+    ...VISIBLE_VIDEO_FILTER,
+  })
 }
 
 /**

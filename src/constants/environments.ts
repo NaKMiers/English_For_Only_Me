@@ -10,6 +10,7 @@ export const ENV_KEYS = {
   authSecret: 'AUTH_SECRET',
   adminEmails: 'ADMIN_EMAILS',
   ownerEmail: 'OWNER_EMAIL',
+  siteUrl: 'SITE_URL',
 } as const
 
 export class MissingEnvironmentError extends Error {
@@ -89,4 +90,14 @@ export function getAdminEmails() {
  */
 export function getOwnerEmail() {
   return getOptionalServerEnv(ENV_KEYS.ownerEmail)?.toLowerCase() ?? null
+}
+
+/** Canonical origin for SEO (metadata, sitemap). No trailing slash. */
+export function getSiteUrl() {
+  const raw =
+    getOptionalServerEnv(ENV_KEYS.siteUrl) ??
+    getOptionalServerEnv('AUTH_URL') ??
+    'http://localhost:3000'
+
+  return raw.replace(/\/+$/, '')
 }
