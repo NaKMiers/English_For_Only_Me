@@ -1,7 +1,7 @@
 /**
  * Move `draggedId` to the position of `beforeId` within `ids`, returning the new
  * order. Returns the input unchanged when the move is a no-op or the target is
- * missing. Pure — drives drag-to-reorder for topics and sections.
+ * missing. Pure - drives drag-to-reorder for topics and sections.
  */
 export function reorderIds(
   ids: string[],

@@ -16,7 +16,7 @@ const UNGROUPED_KEY = 'ungrouped'
 
 /**
  * Group a topic's videos into its sections (in the given order), appending an
- * "Ungrouped" group for videos with no section — but only when such videos
+ * "Ungrouped" group for videos with no section - but only when such videos
  * exist. Empty sections are still shown (an admin made them on purpose). Pure so
  * the grouping is unit-tested without a DB.
  */

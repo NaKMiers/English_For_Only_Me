@@ -190,7 +190,7 @@ export async function listAllSections(): Promise<DictationSectionApiRecord[]> {
 
 /**
  * Topics with derived level range, section count, and lesson count for the
- * browse grid. Counts are computed live via aggregation (I4) — not stored.
+ * browse grid. Counts are computed live via aggregation (I4) - not stored.
  */
 export async function listTopicSummaries(): Promise<
   DictationTopicSummaryRecord[]

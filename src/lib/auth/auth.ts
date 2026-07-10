@@ -11,7 +11,7 @@ import { provisionUserOnSignIn } from './userProvisioning'
  * Full Auth.js instance (Node runtime). Extends the edge-safe authConfig with a
  * jwt callback that provisions the Mongoose user on first sign-in and stamps its
  * ObjectId into the token. Imported by server components, route handlers, and
- * the /api/auth handler — never by middleware.
+ * the /api/auth handler - never by middleware.
  */
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
@@ -32,7 +32,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.uid = id
 
         // First sign-in: fold any anonymous practice done under the guest
-        // cookie into this account. Best-effort — never let it block login.
+        // cookie into this account. Best-effort - never let it block login.
         try {
           const guestId = await getGuestId()
 

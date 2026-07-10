@@ -162,6 +162,7 @@ function renderPracticeShell(
 ) {
   return render(
     <DictationPracticeShell
+      completions={0}
       initialSession={initialSession}
       segments={[segmentOverride]}
       translationTracks={[]}

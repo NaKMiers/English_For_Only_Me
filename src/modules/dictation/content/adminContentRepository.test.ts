@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 const videoUpdateMany = vi.fn()
 const videoUpdateOne = vi.fn()
 const videoBulkWrite = vi.fn()
+const videoCountDocuments = vi.fn()
 const sectionDeleteMany = vi.fn()
 const topicDeleteOne = vi.fn()
 
@@ -11,6 +12,7 @@ vi.mock('@/models/dictation/DictationVideoModel', () => ({
     updateMany: (...a: unknown[]) => videoUpdateMany(...a),
     updateOne: (...a: unknown[]) => videoUpdateOne(...a),
     bulkWrite: (...a: unknown[]) => videoBulkWrite(...a),
+    countDocuments: (...a: unknown[]) => videoCountDocuments(...a),
   },
 }))
 vi.mock('@/models/dictation/DictationSectionModel', () => ({
@@ -70,19 +72,30 @@ describe('assignVideos', () => {
 })
 
 describe('deleteTopic', () => {
-  it('cascades: unfiles videos, removes sections, then deletes the topic', async () => {
-    videoUpdateMany.mockResolvedValue({ modifiedCount: 3 })
+  it('removes the (empty) sections then deletes the topic when it has no videos', async () => {
+    videoCountDocuments.mockResolvedValue(0)
     sectionDeleteMany.mockResolvedValue({ deletedCount: 2 })
     topicDeleteOne.mockResolvedValue({ deletedCount: 1 })
 
-    await deleteTopic('t1')
+    const result = await deleteTopic('t1')
 
-    expect(videoUpdateMany).toHaveBeenCalledWith(
-      { topicId: 't1' },
-      { $set: { topicId: null, sectionId: null } }
-    )
+    expect(videoCountDocuments).toHaveBeenCalledWith({
+      topicId: 't1',
+      status: { $ne: 'archived' },
+    })
     expect(sectionDeleteMany).toHaveBeenCalledWith({ topicId: 't1' })
     expect(topicDeleteOne).toHaveBeenCalledWith({ _id: 't1' })
+    expect(result).toEqual({ ok: true })
+  })
+
+  it('refuses when the topic still has videos', async () => {
+    videoCountDocuments.mockResolvedValue(3)
+
+    const result = await deleteTopic('t1')
+
+    expect(sectionDeleteMany).not.toHaveBeenCalled()
+    expect(topicDeleteOne).not.toHaveBeenCalled()
+    expect(result).toEqual({ ok: false, videoCount: 3 })
   })
 })
 

@@ -65,7 +65,7 @@ function escapeRegExp(text: string): string {
 
 /** True once the hint's word sits in the draft as its own whitespace-delimited
  * token. Clicking (or Tab-filling) any hint chip appends it to the end of the
- * draft, which may be out of its grammatical slot — this presence check hides
+ * draft, which may be out of its grammatical slot - this presence check hides
  * it immediately regardless, while `computeHints` still decides when it
  * should reappear (deleting the word un-hides it). */
 function isHintTyped(value: string, hint: string): boolean {
@@ -165,7 +165,7 @@ export function GuidedAnswerInput({
   const textareaRef = inputRef ?? localTextareaRef
   const inputTextStyle = ANSWER_TEXT_STYLE[answerTextSize]
 
-  // Live from the current draft, no Check required — recomputes the matched
+  // Live from the current draft, no Check required - recomputes the matched
   // prefix on every keystroke, so a hint reappears the moment the learner
   // deletes its word. The extra presence filter hides a hint the instant it's
   // typed/clicked even if it landed out of its grammatical slot.
@@ -180,7 +180,7 @@ export function GuidedAnswerInput({
 
   // The boundary word (the first mistake) underlined IN PLACE inside the draft:
   // amber under the whole wrong word, red under the exact wrong characters. Only
-  // while the draft still equals what was checked — editing it hides the marks
+  // while the draft still equals what was checked - editing it hides the marks
   // until the next Check. A transparent mirror layer draws the underline so the
   // real text, caret, and IME stay native.
   const boundary =
@@ -191,7 +191,7 @@ export function GuidedAnswerInput({
   // After a wrong Check, drop the caret just past the boundary word ONCE so the
   // learner fixes the mistake without losing the text they typed after it. Keyed
   // on `correction` (a fresh object per Check) so it fires once, not on every
-  // keystroke — the caret is then free to move as they edit.
+  // keystroke - the caret is then free to move as they edit.
   useEffect(() => {
     if (status !== 'incorrect' || !correction) return
 

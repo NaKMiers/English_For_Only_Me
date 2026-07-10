@@ -9,7 +9,7 @@ import { resolveRole } from './roles'
  * Edge-safe Auth.js config: providers + token/session shaping + the /admin
  * authorization guard. Imports ONLY environments + roles (no Mongoose), so it
  * can run in `middleware.ts` on the edge runtime. The DB-touching user
- * provisioning lives in `auth.ts` (Node only) — see system-update-plan §2.2.
+ * provisioning lives in `auth.ts` (Node only) - see system-update-plan §2.2.
  */
 export const authConfig = {
   providers: [

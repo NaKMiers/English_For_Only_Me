@@ -3,15 +3,82 @@
 import { GripVertical, Pencil } from 'lucide-react'
 import Link from 'next/link'
 import type { DragEvent, ReactNode } from 'react'
+import { useTransition } from 'react'
 
 import { DictationVideoThumbnail } from '@/components/dictation/DictationVideoThumbnail'
 import { PageTag } from '@/components/ui/PageTag'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { cn } from '@/lib/utils'
+import { updateVideoLevelAction } from '@/modules/dictation/content/adminActions'
+import {
+  DICTATION_LEVELS,
+  type DictationLevel,
+} from '@/modules/dictation/levels'
 import {
   getDictationStatusLabel,
   getDictationStatusTone,
 } from '@/modules/dictation/statusDisplay'
 import type { DictationVideoStatus } from '@/modules/dictation/types'
+
+/** Click-to-edit level badge; changes persist immediately, without touching topic/section. */
+function AdminVideoLevelBadge({
+  videoId,
+  level,
+}: {
+  videoId: string
+  level: string | null
+}) {
+  const [, startTransition] = useTransition()
+
+  return (
+    // Stops the click from bubbling to an ancestor selectable row's onClick:
+    // Select's popup renders in a portal, but React re-parents portal events
+    // onto this element's tree for bubbling purposes, not the popup's DOM parent.
+    <div onClick={event => event.stopPropagation()}>
+      <Select
+        value={level ?? ''}
+        onValueChange={value => {
+          startTransition(async () => {
+            await updateVideoLevelAction(
+              videoId,
+              (value || null) as DictationLevel | null
+            )
+          })
+        }}
+      >
+        <SelectTrigger
+          size="sm"
+          onKeyDown={event => event.stopPropagation()}
+          className={cn(
+            'min-h-6 gap-1 border-2 px-2 py-0 text-xs font-black shadow-none',
+            level
+              ? 'bg-sky-100 text-sky-950'
+              : 'bg-manga-white text-manga-ink-soft'
+          )}
+        >
+          <SelectValue placeholder="No level" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="">No level</SelectItem>
+          {DICTATION_LEVELS.map(option => (
+            <SelectItem
+              key={option}
+              value={option}
+            >
+              {option}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  )
+}
 
 export interface AdminVideoItem {
   id: string
@@ -38,7 +105,7 @@ export function dropPlacement(
  *
  * Drag model: the row and its grip both start a drag by writing `onDragStartData`
  * to the dataTransfer. Dropping another row that carries `acceptReorderMime` onto
- * this row calls `onReorder` — returning true marks the drop handled and stops it
+ * this row calls `onReorder` - returning true marks the drop handled and stops it
  * bubbling to any enclosing move/unassign DropZone.
  */
 export function AdminVideoRow({
@@ -144,7 +211,10 @@ export function AdminVideoRow({
       <span className="min-w-0 flex-1 truncate font-sans text-sm font-black">
         {video.title}
       </span>
-      {video.level && <PageTag tone="sky">{video.level}</PageTag>}
+      <AdminVideoLevelBadge
+        videoId={video.id}
+        level={video.level}
+      />
       {meta}
       {video.status && (
         <PageTag

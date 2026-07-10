@@ -12,7 +12,7 @@ import { hasMongoDbUri } from '@/constants/environments'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { listNoTopicVideos } from '@/modules/dictation/content/contentRepository'
 import { listFavoriteVideoIds } from '@/modules/dictation/content/favoriteRepository'
-import { listCompletedVideoIdsForUser } from '@/modules/dictation/content/progressRepository'
+import { getCompletionCountsForUser } from '@/modules/dictation/content/progressRepository'
 import {
   getOptionalUser,
   getPracticeActorId,
@@ -37,15 +37,14 @@ export default async function NoTopicPage() {
 
   if (hasMongoDbUri()) {
     await connectDatabase()
-    const [videos, favoritedIds, completedIds] = await Promise.all([
+    const [videos, favoritedIds, completionCounts] = await Promise.all([
       listNoTopicVideos(),
       user ? listFavoriteVideoIds(user.id) : Promise.resolve<string[]>([]),
       actorId
-        ? listCompletedVideoIdsForUser(actorId)
-        : Promise.resolve<string[]>([]),
+        ? getCompletionCountsForUser(actorId)
+        : Promise.resolve<Map<string, number>>(new Map()),
     ])
     const favoritedSet = new Set(favoritedIds)
-    const completedSet = new Set(completedIds)
 
     items = videos.map(video => ({
       id: video.id,
@@ -55,7 +54,7 @@ export default async function NoTopicPage() {
         ? `/dictation/videos/${video.id}/practice`
         : null,
       favorited: favoritedSet.has(video.id),
-      done: completedSet.has(video.id),
+      completions: completionCounts.get(video.id) ?? 0,
       thumbnailUrl: video.thumbnailUrl,
       youtubeVideoId: video.youtubeVideoId,
     }))

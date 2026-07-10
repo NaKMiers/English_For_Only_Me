@@ -71,6 +71,7 @@ interface TranslationTrack {
 }
 
 interface Props {
+  completions: number
   initialSession: DictationSessionApiRecord | null
   segments: DictationSegmentApiRecord[]
   translationTracks: TranslationTrack[]
@@ -116,6 +117,7 @@ const PRACTICE_TAB_TRIGGER_CLASS_NAME =
   'border-manga-black text-manga-ink-soft bg-manga-white shadow-[2px_2px_0_var(--manga-black)] hover:bg-manga-paper-soft focus-visible:ring-manga-red/35 data-active:bg-manga-red! data-active:text-manga-white! data-active:shadow-[5px_5px_0_var(--manga-black)]! data-active:-translate-x-[2px] data-active:-translate-y-[2px] !h-auto min-h-11 flex-1 rounded-none border-3 px-3 py-2 font-sans text-sm font-black transition-all after:hidden sm:flex-none'
 
 export function DictationPracticeShell({
+  completions,
   initialSession,
   segments,
   translationTracks,
@@ -206,10 +208,13 @@ export function DictationPracticeShell({
     currentSegment && hasCurrentAnswerDraft
       ? (answerDrafts[currentSegment.id] ?? '')
       : ''
-  // Translation only unlocks once the learner types it correctly — revealing or
-  // skipping shows the answer but keeps the translation gated. A retried segment
-  // re-locks the translation (even if it was passed before) until it's passed again.
+  // Translation unlocks once the learner types it correctly, or skips it -
+  // skipping already reveals the answer, so gating the translation too would
+  // just be a second wall. Revealing still keeps the translation gated. A
+  // retried segment re-locks the translation (even if it was passed before)
+  // until it's passed again.
   const passedAttempt = Boolean(currentAttempt?.isPassed)
+  const skippedAttempt = currentAttempt?.action === 'skip'
   const passedCurrentSegment =
     currentSegment !== null &&
     (currentSegment.attemptStatus === 'correct' ||
@@ -222,13 +227,14 @@ export function DictationPracticeShell({
   const currentAnswerMatchesSegment = Boolean(
     currentSegment && currentAnswer === currentSegment.text
   )
-  const translationSegmentId = passedAttempt
-    ? currentAttempt?.segmentId
-    : passedCurrentSegment
-      ? currentSegment?.id
-      : null
+  const translationSegmentId =
+    passedAttempt || skippedAttempt
+      ? currentAttempt?.segmentId
+      : passedCurrentSegment
+        ? currentSegment?.id
+        : null
   const isTranslationUnlocked = Boolean(
-    (passedAttempt && currentAttempt?.segmentId) ||
+    ((passedAttempt || skippedAttempt) && currentAttempt?.segmentId) ||
     (passedCurrentSegment && currentSegment?.id)
   )
   const selectedTrack =
@@ -488,7 +494,7 @@ export function DictationPracticeShell({
 
   // Loop the caption the learner is viewing while Repeat is on, and follow it if
   // they select another. The controller is read from a ref so this only re-fires
-  // when the caption or the toggle changes — not on every player status flip.
+  // when the caption or the toggle changes - not on every player status flip.
   const activeCaptionStartMs = activeCaptionSegment?.startMs ?? null
   const activeCaptionEndMs = activeCaptionSegment?.endMs ?? null
   useEffect(() => {
@@ -693,7 +699,7 @@ export function DictationPracticeShell({
             ? 'revealed'
             : 'incorrect'
         : 'idle'
-  // Retry stays available for any segment the learner has checked at least once —
+  // Retry stays available for any segment the learner has checked at least once -
   // whether from this attempt or a persisted one from an earlier visit.
   const hasCheckedCurrent =
     Boolean(currentAttempt) || (currentSegment?.attemptCount ?? 0) > 0
@@ -811,7 +817,9 @@ export function DictationPracticeShell({
     <div className="mx-auto grid w-full min-w-0 gap-4">
       <section className="border-manga-black bg-manga-white grid min-w-0 gap-3 border-3 p-3 shadow-[5px_5px_0_var(--manga-black)] sm:p-4">
         <DictationPracticeHeader
+          completions={completions}
           eyebrow={sessionMode === 'resume' ? 'Resume dictation' : 'Dictation'}
+          level={video.level}
           title={video.title}
           translationLanguages={translationTracks.map(track => track.language)}
           translationLanguage={selectedLanguage}

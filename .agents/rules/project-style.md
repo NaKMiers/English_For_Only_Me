@@ -11,6 +11,8 @@ Use this for all TypeScript, React, and shared code.
 - Prefer Bun commands because this repo has `bun.lock`.
 - Keep files ASCII unless the product copy or existing file content clearly
   needs non-ASCII text.
+- Do not use the em dash character. Use a plain hyphen instead, in code,
+  comments, copy, and everywhere.
 
 ## TypeScript
 

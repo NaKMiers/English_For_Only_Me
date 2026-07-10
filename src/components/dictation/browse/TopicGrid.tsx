@@ -64,7 +64,7 @@ function TopicCard({
           {hasVideoMedia && <PageTag tone="yellow">Video</PageTag>}
         </div>
         <p className="text-manga-ink-soft font-sans text-sm font-black">
-          Levels: {levelRange ?? '—'}
+          Levels: {levelRange ?? '-'}
         </p>
         <p className="text-manga-ink-soft text-sm">{lessonLabel}</p>
       </div>
@@ -79,7 +79,7 @@ interface Props {
 
 /**
  * The all-topics browse grid. The "Uncategorized" bucket renders as a muted card
- * sorted last, and only when it holds videos (design review D — no-topic).
+ * sorted last, and only when it holds videos (design review D - no-topic).
  */
 export function TopicGrid({ topics, noTopicCount }: Props) {
   if (topics.length === 0 && noTopicCount === 0)

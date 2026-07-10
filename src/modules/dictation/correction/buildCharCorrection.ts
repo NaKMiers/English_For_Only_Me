@@ -256,7 +256,7 @@ function countFullyMatched(
 }
 
 /** A token that is pure punctuation (normalises to nothing), e.g. a standalone
- * "–", "—" or ":" that the expected text carries between words. */
+ * "–", "-" or ":" that the expected text carries between words. */
 function isPunctuationOnlyUnit(unit: string) {
   return normalizeUnit(unit) === ''
 }
@@ -268,10 +268,10 @@ function isPunctuationOnlyUnit(unit: string) {
  *
  * When the learner has typed a clean prefix (no wrong word), the correction also
  * looks AHEAD: it fills any punctuation that immediately follows the last matched
- * word, then leaves a trailing space if more words are still to come — so the
+ * word, then leaves a trailing space if more words are still to come - so the
  * caret is parked right where the next word goes. A genuinely wrong word stops
  * all of that; everything from there on is kept as typed (whitespace-collapsed)
- * so the learner can fix the boundary. Pure — exported for tests. */
+ * so the learner can fix the boundary. Pure - exported for tests. */
 export function autoCorrectAnswer(
   expectedText: string,
   typedAnswer: string,
@@ -286,8 +286,8 @@ export function autoCorrectAnswer(
   let matchedCleanly = true
 
   while (typedIndex < typedUnits.length) {
-    // Carry standalone punctuation tokens ("–", "—", ":") in canonical form. If
-    // the learner also typed a punctuation token here, consume it too — otherwise
+    // Carry standalone punctuation tokens ("–", "-", ":") in canonical form. If
+    // the learner also typed a punctuation token here, consume it too - otherwise
     // their "–" would survive alongside the inserted one and duplicate on each
     // Check.
     while (
@@ -533,7 +533,7 @@ export function buildCharCorrection({
     typedUnits,
   })
   // Anchor the boundary word inside the raw draft so the guided input can
-  // underline it and drop the caret just past it — keeping everything the
+  // underline it and drop the caret just past it - keeping everything the
   // learner typed after the mistake instead of truncating to the prefix.
   const boundary = locateBoundary(
     typedAnswer,

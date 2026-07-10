@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
@@ -25,7 +26,7 @@ import {
   searchVideosInTopic,
 } from '@/modules/dictation/content/contentRepository'
 import { listFavoriteVideoIds } from '@/modules/dictation/content/favoriteRepository'
-import { listCompletedVideoIdsForUser } from '@/modules/dictation/content/progressRepository'
+import { getCompletionCountsForUser } from '@/modules/dictation/content/progressRepository'
 import { buildSectionGroups } from '@/modules/dictation/content/sectionGroups'
 import {
   getOptionalUser,
@@ -45,7 +46,7 @@ interface PageProps {
 function toBrowseItem(
   video: DictationVideoApiRecord,
   favoritedSet: Set<string>,
-  completedSet: Set<string>
+  completionCounts: Map<string, number>
 ): BrowseVideoItem {
   return {
     id: video.id,
@@ -55,7 +56,7 @@ function toBrowseItem(
       ? `/dictation/videos/${video.id}/practice`
       : null,
     favorited: favoritedSet.has(video.id),
-    done: completedSet.has(video.id),
+    completions: completionCounts.get(video.id) ?? 0,
     thumbnailUrl: video.thumbnailUrl,
     youtubeVideoId: video.youtubeVideoId,
   }
@@ -108,14 +109,13 @@ export default async function TopicPage({ params, searchParams }: PageProps) {
   const actorId = await getPracticeActorId()
   const filtering = isBrowseQueryActive(query)
 
-  const [favoritedIds, completedIds] = await Promise.all([
+  const [favoritedIds, completionCounts] = await Promise.all([
     user ? listFavoriteVideoIds(user.id) : Promise.resolve<string[]>([]),
     actorId
-      ? listCompletedVideoIdsForUser(actorId)
-      : Promise.resolve<string[]>([]),
+      ? getCompletionCountsForUser(actorId)
+      : Promise.resolve<Map<string, number>>(new Map()),
   ])
   const favoritedSet = new Set(favoritedIds)
-  const completedSet = new Set(completedIds)
 
   return (
     <MangaPageShell
@@ -128,7 +128,15 @@ export default async function TopicPage({ params, searchParams }: PageProps) {
       }
     >
       <section className="grid gap-5 p-4 sm:p-6 lg:p-8">
-        <BrowseBreadcrumb current={topic.title} />
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <BrowseBreadcrumb current={topic.title} />
+          <Link
+            href="/dictation/favorites"
+            className="text-manga-red text-sm font-black hover:underline"
+          >
+            ★ Favorites
+          </Link>
+        </div>
         <h1 className="font-sans text-[clamp(1.8rem,4vw,2.6rem)] leading-none font-black uppercase">
           {topic.title}
         </h1>
@@ -151,14 +159,14 @@ export default async function TopicPage({ params, searchParams }: PageProps) {
             basePath={`/dictation/${topic.slug}`}
             canFavorite={canFavorite}
             favoritedSet={favoritedSet}
-            completedSet={completedSet}
+            completionCounts={completionCounts}
           />
         ) : (
           <TopicAccordion
             topicId={topic.id}
             canFavorite={canFavorite}
             favoritedSet={favoritedSet}
-            completedSet={completedSet}
+            completionCounts={completionCounts}
           />
         )}
       </section>
@@ -170,12 +178,12 @@ async function TopicAccordion({
   topicId,
   canFavorite,
   favoritedSet,
-  completedSet,
+  completionCounts,
 }: {
   topicId: string
   canFavorite: boolean
   favoritedSet: Set<string>
-  completedSet: Set<string>
+  completionCounts: Map<string, number>
 }) {
   const [sections, videos] = await Promise.all([
     listSectionsForTopic(topicId),
@@ -185,7 +193,7 @@ async function TopicAccordion({
   const groups = buildSectionGroups(
     sections.map(section => ({ id: section.id, title: section.title })),
     videos.map(video => ({
-      ...toBrowseItem(video, favoritedSet, completedSet),
+      ...toBrowseItem(video, favoritedSet, completionCounts),
       sectionId: video.sectionId,
     }))
   )
@@ -204,18 +212,18 @@ async function FlatResults({
   basePath,
   canFavorite,
   favoritedSet,
-  completedSet,
+  completionCounts,
 }: {
   topicId: string
   query: ReturnType<typeof parseBrowseQuery>
   basePath: string
   canFavorite: boolean
   favoritedSet: Set<string>
-  completedSet: Set<string>
+  completionCounts: Map<string, number>
 }) {
   const { videos, pagination } = await searchVideosInTopic(topicId, query)
   const items = videos.map(video =>
-    toBrowseItem(video, favoritedSet, completedSet)
+    toBrowseItem(video, favoritedSet, completionCounts)
   )
 
   return (

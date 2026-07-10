@@ -15,7 +15,7 @@ import { DictationSessionModel } from '@/models/dictation/DictationSessionModel'
  * Only collision-safe collections are merged. Attempts are safe because their
  * unique index is `{ userId, sessionId, idempotencyKey }` and the guest's
  * sessionIds are unique ObjectIds the real user cannot already own. Favorites
- * are intentionally excluded — favoriting requires login, so a guest never
+ * are intentionally excluded - favoriting requires login, so a guest never
  * creates any, and their unique `{ userId, videoId }` index would otherwise
  * risk a merge collision.
  */

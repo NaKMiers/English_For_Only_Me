@@ -27,4 +27,8 @@ export const PAGE_TAG_TONES = {
   pale: 'bg-manga-pale-red text-manga-black',
   sky: 'bg-sky-100 text-sky-950',
   yellow: 'bg-yellow-100 text-yellow-950',
+  copper: 'bg-orange-200 text-orange-950',
+  silver: 'bg-slate-200 text-slate-950',
+  gold: 'bg-amber-300 text-amber-950',
+  diamond: 'bg-cyan-200 text-cyan-950',
 } as const

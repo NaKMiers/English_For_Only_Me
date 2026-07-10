@@ -12,7 +12,7 @@ import {
 import { hasMongoDbUri } from '@/constants/environments'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { listFavoriteVideosForUser } from '@/modules/dictation/content/favoriteRepository'
-import { listCompletedVideoIdsForUser } from '@/modules/dictation/content/progressRepository'
+import { getCompletionCountsForUser } from '@/modules/dictation/content/progressRepository'
 import { getOptionalUser } from '@/modules/dictation/services/getCurrentUser'
 import { hasDictationTranscript } from '@/modules/dictation/videoReadiness'
 
@@ -21,7 +21,7 @@ export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
 export default async function FavoritesPage() {
-  // Favorites are per-user — require sign-in.
+  // Favorites are per-user - require sign-in.
   const user = await getOptionalUser()
   if (!user) redirect('/api/auth/signin?callbackUrl=/dictation/favorites')
 
@@ -29,11 +29,10 @@ export default async function FavoritesPage() {
 
   if (hasMongoDbUri()) {
     await connectDatabase()
-    const [videos, completedIds] = await Promise.all([
+    const [videos, completionCounts] = await Promise.all([
       listFavoriteVideosForUser(user.id),
-      listCompletedVideoIdsForUser(user.id),
+      getCompletionCountsForUser(user.id),
     ])
-    const completedSet = new Set(completedIds)
 
     items = videos.map(video => ({
       id: video.id,
@@ -43,7 +42,7 @@ export default async function FavoritesPage() {
         ? `/dictation/videos/${video.id}/practice`
         : null,
       favorited: true,
-      done: completedSet.has(video.id),
+      completions: completionCounts.get(video.id) ?? 0,
       thumbnailUrl: video.thumbnailUrl,
       youtubeVideoId: video.youtubeVideoId,
     }))
@@ -67,7 +66,7 @@ export default async function FavoritesPage() {
         <BrowseVideoList
           videos={items}
           canFavorite
-          emptyLabel="No favorites yet — tap the star on any lesson."
+          emptyLabel="No favorites yet - tap the star on any lesson."
         />
       </section>
     </MangaPageShell>

@@ -7,6 +7,11 @@ import type { DictationLevel } from '@/modules/dictation/levels'
 
 import { slugify } from './slugify'
 
+// Archived videos are soft-deleted and hidden from every admin/browse count,
+// so "does this topic/section still have videos" must ignore them too -
+// otherwise delete guards would block on videos nobody can see anymore.
+const VISIBLE_VIDEO_FILTER = { status: { $ne: 'archived' } } as const
+
 export interface TopicInput {
   title: string
   description?: string | null
@@ -81,7 +86,7 @@ export async function updateTopic(id: string, patch: Partial<TopicInput>) {
   if (patch.title !== undefined) {
     update.title = patch.title.trim()
     // Keep the slug in sync with the title (regenerated, uniqued). Changes the
-    // public URL — acceptable pre-launch; revisit if URLs must be stable.
+    // public URL - acceptable pre-launch; revisit if URLs must be stable.
     update.slug = await uniqueTopicSlug(patch.title, id)
   }
   if (patch.description !== undefined)
@@ -96,16 +101,19 @@ export async function updateTopic(id: string, patch: Partial<TopicInput>) {
 }
 
 /**
- * Delete a topic and cascade: its videos fall back to no-topic/ungrouped and its
- * sections are removed. Videos are never deleted — only unfiled.
+ * Delete a topic and its (empty) sections. Refuses if any video is still
+ * assigned to the topic - caller must move or unassign them first.
  */
 export async function deleteTopic(id: string) {
-  await DictationVideoModel.updateMany(
-    { topicId: id },
-    { $set: { topicId: null, sectionId: null } }
-  )
+  const videoCount = await DictationVideoModel.countDocuments({
+    topicId: id,
+    ...VISIBLE_VIDEO_FILTER,
+  })
+  if (videoCount > 0) return { ok: false as const, videoCount }
+
   await DictationSectionModel.deleteMany({ topicId: id })
   await DictationTopicModel.deleteOne({ _id: id })
+  return { ok: true as const }
 }
 
 export async function createSection(
@@ -136,13 +144,16 @@ export async function updateSection(
   await DictationSectionModel.updateOne({ _id: id }, { $set: update })
 }
 
-/** Delete a section; its videos fall back to the topic's Ungrouped bucket. */
+/** Delete a section. Refuses if it still has videos - remove those first. */
 export async function deleteSection(id: string) {
-  await DictationVideoModel.updateMany(
-    { sectionId: id },
-    { $set: { sectionId: null } }
-  )
+  const videoCount = await DictationVideoModel.countDocuments({
+    sectionId: id,
+    ...VISIBLE_VIDEO_FILTER,
+  })
+  if (videoCount > 0) return { ok: false as const, videoCount }
+
   await DictationSectionModel.deleteOne({ _id: id })
+  return { ok: true as const }
 }
 
 /** Archive a video so it disappears from admin and app browse surfaces. */

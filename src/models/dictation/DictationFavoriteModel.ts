@@ -10,7 +10,7 @@ import {
 
 /**
  * Favorite: per-user star on a video. Keyed by the authenticated user's Mongo
- * ObjectId (userId) — NOT the content owner. The unique compound index makes
+ * ObjectId (userId) - NOT the content owner. The unique compound index makes
  * favoriting idempotent (one row per user+video).
  */
 const DictationFavoriteSchema = new Schema(

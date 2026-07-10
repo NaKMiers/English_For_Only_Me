@@ -88,7 +88,7 @@ describe('buildCharCorrection - reveal + mask model', () => {
     const typed = 'There are Kaijus wh biological armour, who spit acid'
     const result = check(typed, expected)
 
-    // The draft is NOT truncated — everything the learner typed is preserved.
+    // The draft is NOT truncated - everything the learner typed is preserved.
     expect(result.typedValue).toBe(typed)
     // Boundary word "wh" sits at offset 17..19; caret lands right after it.
     expect(typed.slice(result.boundary!.start, result.boundary!.end)).toBe('wh')
@@ -224,7 +224,7 @@ describe('autoCorrectAnswer', () => {
 
   // The de-dup is generic: any standalone punctuation token the learner types is
   // consumed once, never re-inserted, and re-checking is idempotent.
-  test.each(['–', '—', '-', ':', ';', '…', '...', '•'])(
+  test.each(['–', '-', '-', ':', ';', '…', '...', '•'])(
     'keeps a typed "%s" once and stays idempotent',
     mark => {
       const expected = `alpha ${mark} beta gamma`

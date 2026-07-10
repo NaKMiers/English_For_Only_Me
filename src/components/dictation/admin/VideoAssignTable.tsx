@@ -12,14 +12,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { DICTATION_LEVELS } from '@/modules/dictation/levels'
-import type { DictationLevel } from '@/modules/dictation/levels'
 import {
   assignVideosAction,
   deleteVideoAction,
   reorderVideosAction,
 } from '@/modules/dictation/content/adminActions'
 import { matchesBrowseQuery } from '@/modules/dictation/content/browseQuery'
+import type { DictationLevel } from '@/modules/dictation/levels'
+import { DICTATION_LEVELS } from '@/modules/dictation/levels'
 import type { DictationVideoStatus } from '@/modules/dictation/types'
 
 import { AdminVideoRow } from './AdminVideoRow'
@@ -75,6 +75,23 @@ export function VideoAssignTable({ videos, topics, sections }: Props) {
   const topicSections = useMemo(
     () => sections.filter(s => s.topicId === topicId),
     [sections, topicId]
+  )
+  const topicItems = useMemo(
+    () => [
+      { value: '', label: 'No topic' },
+      ...topics.map(topic => ({ value: topic.id, label: topic.title })),
+    ],
+    [topics]
+  )
+  const sectionItems = useMemo(
+    () => [
+      { value: '', label: 'No section' },
+      ...topicSections.map(section => ({
+        value: section.id,
+        label: section.title,
+      })),
+    ],
+    [topicSections]
   )
 
   const visibleVideos = useMemo(
@@ -148,6 +165,7 @@ export function VideoAssignTable({ videos, topics, sections }: Props) {
         </span>
         <Select
           value={topicId}
+          items={topicItems}
           onValueChange={value => {
             setTopicId(value ?? '')
             setSectionId('')
@@ -173,6 +191,7 @@ export function VideoAssignTable({ videos, topics, sections }: Props) {
         </Select>
         <Select
           value={sectionId}
+          items={sectionItems}
           onValueChange={value => setSectionId(value ?? '')}
           disabled={!topicId}
         >
@@ -223,7 +242,7 @@ export function VideoAssignTable({ videos, topics, sections }: Props) {
           disabled={selected.size === 0 || pending}
           className="min-h-9 border-2 shadow-[2px_2px_0_var(--manga-black)]"
         >
-          {pending ? 'Assigning…' : 'Assign selected'}
+          {pending ? 'Applying…' : 'Apply'}
         </MangaButton>
       </div>
 

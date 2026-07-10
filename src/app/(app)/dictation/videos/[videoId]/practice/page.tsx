@@ -13,6 +13,7 @@ import { DictationSegmentModel } from '@/models/dictation/DictationSegmentModel'
 import { DictationSessionModel } from '@/models/dictation/DictationSessionModel'
 import { DictationTranscriptModel } from '@/models/dictation/DictationTranscriptModel'
 import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
+import { getCompletionCountForVideo } from '@/modules/dictation/content/progressRepository'
 import { toDictationSegmentRecord } from '@/modules/dictation/services/dictationSegmentRecords'
 import { toDictationSessionRecord } from '@/modules/dictation/services/dictationSessionRecords'
 import { toDictationVideoRecord } from '@/modules/dictation/services/dictationVideoRecords'
@@ -96,7 +97,7 @@ export default async function Page({ params }: Props) {
       />
     )
 
-  // Practice is open to everyone — a signed-in user resumes their own session,
+  // Practice is open to everyone - a signed-in user resumes their own session,
   // an anonymous guest resumes the one tied to their guest cookie (null until
   // they start practicing, in which case the shell creates one).
   const actorId = await getPracticeActorId()
@@ -141,15 +142,18 @@ export default async function Page({ params }: Props) {
       />
     )
 
-  const session = actorId
-    ? await DictationSessionModel.findOne({
-        userId: actorId,
-        status: 'active',
-        videoId: video._id,
-      })
-        .sort({ lastActiveAt: -1 })
-        .lean()
-    : null
+  const [session, completions] = await Promise.all([
+    actorId
+      ? DictationSessionModel.findOne({
+          userId: actorId,
+          status: 'active',
+          videoId: video._id,
+        })
+          .sort({ lastActiveAt: -1 })
+          .lean()
+      : null,
+    actorId ? getCompletionCountForVideo(actorId, String(video._id)) : 0,
+  ])
 
   const trackDocuments = await DictationTranscriptModel.find({
     videoId: video._id,
@@ -178,6 +182,7 @@ export default async function Page({ params }: Props) {
     >
       <section className="p-4 sm:p-6 lg:p-8">
         <DictationPracticeShell
+          completions={completions}
           initialSession={session ? toDictationSessionRecord(session) : null}
           segments={segments.map(toDictationSegmentRecord)}
           translationTracks={translationTracks}

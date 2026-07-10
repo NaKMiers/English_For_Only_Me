@@ -15,6 +15,7 @@ import {
   listManageableVideos,
   listTopics,
 } from '@/modules/dictation/content/contentRepository'
+import { LucideArrowLeft } from 'lucide-react'
 
 export const metadata: Metadata = { title: 'Admin · Videos' }
 export const dynamic = 'force-dynamic'
@@ -73,23 +74,23 @@ export default async function AdminVideosPage() {
     >
       <section className="grid gap-5 p-4 sm:p-6 lg:p-8">
         <header className="flex flex-wrap items-center justify-between gap-2">
-          <h1 className="font-sans text-[clamp(1.6rem,4vw,2.4rem)] leading-none font-black uppercase">
-            Videos
-          </h1>
           <div className="flex flex-wrap items-center gap-3">
+            <h1 className="font-sans text-[clamp(1.6rem,4vw,2.4rem)] leading-none font-black uppercase">
+              Videos
+            </h1>
             <Link
               href="/admin/import"
               className={actionLink}
             >
               Import video
             </Link>
-            <Link
-              href="/admin"
-              className="text-manga-red text-sm font-black hover:underline"
-            >
-              ← Admin
-            </Link>
           </div>
+          <Link
+            href="/admin"
+            className="text-manga-red flex items-center gap-2 text-sm font-black hover:underline"
+          >
+            <LucideArrowLeft size={14} /> Admin
+          </Link>
         </header>
         <p className="text-manga-ink-soft text-sm">
           Select videos, pick a topic/section/level, then assign. Assigning sets

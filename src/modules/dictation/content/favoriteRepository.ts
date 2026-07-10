@@ -20,7 +20,7 @@ export async function addFavorite(userId: string, videoId: string) {
     return (result.upsertedCount ?? 0) > 0
   } catch (error) {
     // Concurrent upserts can race the unique {userId, videoId} index (rapid
-    // double-click). A duplicate key means it is already favorited — idempotent.
+    // double-click). A duplicate key means it is already favorited - idempotent.
     if ((error as { code?: number }).code === 11000) return false
 
     throw error

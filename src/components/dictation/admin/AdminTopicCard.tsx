@@ -18,6 +18,7 @@ import {
   removeVideoFromSectionAction,
   reorderSectionsAction,
   reorderVideosAction,
+  updateSectionAction,
   updateTopicAction,
 } from '@/modules/dictation/content/adminActions'
 
@@ -117,6 +118,7 @@ function SectionBlock({
   ) => boolean
 }) {
   const [open, setOpen] = useState(false)
+  const [editingTitle, setEditingTitle] = useState(false)
 
   return (
     <DropZone
@@ -137,40 +139,95 @@ function SectionBlock({
               id={section.id}
               label={`Reorder ${section.title}`}
             />
-            <button
-              type="button"
-              aria-expanded={open}
-              onClick={() => setOpen(v => !v)}
-              className="flex min-w-0 flex-1 items-center gap-2 text-left"
-            >
-              <ChevronDown
-                aria-hidden="true"
-                className={cn(
-                  'size-4 transition-transform',
-                  open && 'rotate-180'
-                )}
-              />
-              <span className="truncate font-sans text-sm font-black">
-                {section.title}
-              </span>
-              <PageTag tone="pale">{section.videos.length}</PageTag>
-            </button>
+            {editingTitle ? (
+              <form
+                action={formData => {
+                  updateSectionAction(formData)
+                  setEditingTitle(false)
+                }}
+                className="flex min-w-0 flex-1 items-center gap-2"
+              >
+                <input
+                  type="hidden"
+                  name="id"
+                  value={section.id}
+                />
+                <Input
+                  name="title"
+                  defaultValue={section.title}
+                  required
+                  autoFocus
+                  className={`${input} min-h-9 flex-1 py-1 text-sm`}
+                />
+                <MangaButton
+                  type="submit"
+                  tone="primary"
+                  className="min-h-9 border-2 px-3 text-xs uppercase shadow-none"
+                >
+                  Save
+                </MangaButton>
+                <MangaButton
+                  type="button"
+                  tone="paper"
+                  onClick={() => setEditingTitle(false)}
+                  className="min-h-9 border-2 px-3 text-xs uppercase shadow-none"
+                >
+                  Cancel
+                </MangaButton>
+              </form>
+            ) : (
+              <button
+                type="button"
+                aria-expanded={open}
+                onClick={() => setOpen(v => !v)}
+                className="flex min-w-0 flex-1 items-center gap-2 text-left"
+              >
+                <ChevronDown
+                  aria-hidden="true"
+                  className={cn(
+                    'size-4 transition-transform',
+                    open && 'rotate-180'
+                  )}
+                />
+                <span className="truncate font-sans text-sm font-black">
+                  {section.title}
+                </span>
+                <PageTag tone="pale">{section.videos.length}</PageTag>
+              </button>
+            )}
           </div>
-          <form action={deleteSectionAction}>
-            <input
-              type="hidden"
-              name="id"
-              value={section.id}
-            />
-            <ConfirmSubmitButton
-              confirmTitle="Remove section?"
-              confirmMessage={`Remove "${section.title}"? Its videos stay but become ungrouped. This does not delete any video.`}
-              confirmLabel="Remove section"
-              className="border-manga-black bg-manga-white hover:bg-manga-pale-red inline-flex min-h-9 items-center border-2 px-3 font-sans text-xs font-black uppercase"
-            >
-              Remove
-            </ConfirmSubmitButton>
-          </form>
+          {!editingTitle && (
+            <div className="flex shrink-0 items-center gap-2">
+              <MangaButton
+                type="button"
+                tone="paper"
+                onClick={() => {
+                  setEditingTitle(true)
+                  setOpen(true)
+                }}
+                className="min-h-9 border-2 px-3 text-xs uppercase shadow-none"
+              >
+                Edit
+              </MangaButton>
+              <form action={deleteSectionAction}>
+                <input
+                  type="hidden"
+                  name="id"
+                  value={section.id}
+                />
+                <ConfirmSubmitButton
+                  confirmTitle="Remove section?"
+                  confirmMessage={`Remove "${section.title}"? This does not delete any video.`}
+                  confirmLabel="Remove section"
+                  disabled={section.videos.length > 0}
+                  disabledReason="Move or remove its videos first - a section with videos can't be removed."
+                  className="border-manga-black bg-manga-white hover:bg-manga-pale-red inline-flex min-h-9 items-center border-2 px-3 font-sans text-xs font-black uppercase"
+                >
+                  Remove
+                </ConfirmSubmitButton>
+              </form>
+            </div>
+          )}
         </div>
         {open && (
           <ul
@@ -198,7 +255,7 @@ function SectionBlock({
           >
             {section.videos.length === 0 ? (
               <li className="text-manga-ink-soft p-2 text-sm">
-                No videos yet — drag one here.
+                No videos yet - drag one here.
               </li>
             ) : (
               section.videos.map(video => (
@@ -254,7 +311,7 @@ export function AdminTopicCard({ topic }: { topic: AdminTopicData }) {
   // drag-to-reorder feel like it did nothing). When fresh server data arrives we
   // reconcile it during render (the React-recommended alternative to a
   // prop-syncing effect): a section whose video *set* is unchanged keeps the
-  // order the user just dragged — otherwise the post-refresh render would snap
+  // order the user just dragged - otherwise the post-refresh render would snap
   // it back to the server's ordering and undo the drag. A section whose set
   // changed (a move/add/remove) adopts the server version wholesale.
   const [sections, setSections] = useState(topic.sections)
@@ -400,8 +457,10 @@ export function AdminTopicCard({ topic }: { topic: AdminTopicData }) {
             />
             <ConfirmSubmitButton
               confirmTitle="Delete topic?"
-              confirmMessage={`Delete "${topic.title}"? Its sections are removed and its videos become uncategorized. No video is deleted.`}
+              confirmMessage={`Delete "${topic.title}"? Its (empty) sections are removed along with it.`}
               confirmLabel="Delete topic"
+              disabled={topic.videoCount > 0}
+              disabledReason="Move or remove its videos first - a topic with videos can't be deleted."
               className={danger}
             >
               Delete

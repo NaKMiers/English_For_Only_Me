@@ -94,21 +94,34 @@ export function DictationImportForm({
   }
 
   return (
-    <div className="grid min-w-0 gap-5">
+    <div className="grid min-w-0 gap-5 lg:grid-cols-2 lg:items-start">
       <MangaPanel
         eyebrow={isEditMode ? 'Video' : 'Import'}
         title={isEditMode ? 'Saved YouTube video' : 'Save a YouTube video'}
+        className={!video ? 'lg:col-span-2' : undefined}
       >
         {isEditMode && video ? (
           <>
-            <DictationVideoThumbnail
-              title={video.title}
-              thumbnailUrl={video.thumbnailUrl}
-              youtubeVideoId={video.youtubeVideoId}
-              priority
-              sizes="(min-width: 1280px) 45vw, 100vw"
-              className="max-w-xl"
-            />
+            {video.youtubeVideoId ? (
+              <div className="border-manga-black bg-manga-paper-soft relative aspect-video w-full max-w-xl overflow-hidden border-2 shadow-[3px_3px_0_var(--manga-black)]">
+                <iframe
+                  src={`https://www.youtube.com/embed/${video.youtubeVideoId}`}
+                  title={video.title}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="absolute inset-0 h-full w-full"
+                />
+              </div>
+            ) : (
+              <DictationVideoThumbnail
+                title={video.title}
+                thumbnailUrl={video.thumbnailUrl}
+                youtubeVideoId={video.youtubeVideoId}
+                priority
+                sizes="(min-width: 1280px) 45vw, 100vw"
+                className="max-w-xl"
+              />
+            )}
             <QueueRow
               title={video.title}
               meta={video.channelTitle ?? 'URL-only draft'}

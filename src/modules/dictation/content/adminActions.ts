@@ -3,7 +3,10 @@
 import { revalidatePath } from 'next/cache'
 
 import { connectDatabase } from '@/lib/db/connectDatabase'
-import type { DictationLevel } from '@/modules/dictation/levels'
+import {
+  isDictationLevel,
+  type DictationLevel,
+} from '@/modules/dictation/levels'
 import { requireAdmin } from '@/modules/dictation/services/getCurrentUser'
 
 import {
@@ -16,6 +19,7 @@ import {
   reorderSections,
   reorderTopics,
   reorderVideos,
+  updateSection,
   updateTopic,
 } from './adminContentRepository'
 
@@ -48,7 +52,7 @@ export async function createTopicAction(formData: FormData) {
     description: str(formData, 'description') || null,
     thumbnailUrl: str(formData, 'thumbnailUrl') || null,
     hasVideoMedia: formData.get('hasVideoMedia') === 'on',
-    // order omitted — new topics append; ordering is via drag-to-reorder.
+    // order omitted - new topics append; ordering is via drag-to-reorder.
   })
 
   revalidateBrowse()
@@ -65,7 +69,7 @@ export async function updateTopicAction(formData: FormData) {
     description: str(formData, 'description') || null,
     thumbnailUrl: str(formData, 'thumbnailUrl') || null,
     hasVideoMedia: formData.get('hasVideoMedia') === 'on',
-    // order omitted — managed by drag-to-reorder.
+    // order omitted - managed by drag-to-reorder.
   })
 
   revalidateBrowse()
@@ -77,8 +81,8 @@ export async function deleteTopicAction(formData: FormData) {
   const id = str(formData, 'id')
   if (!id) return
 
-  await deleteTopic(id)
-  revalidateBrowse()
+  const result = await deleteTopic(id)
+  if (result.ok) revalidateBrowse()
 }
 
 export async function createSectionAction(formData: FormData) {
@@ -106,14 +110,25 @@ export async function reorderSectionsAction(ids: string[]) {
   revalidateBrowse()
 }
 
+export async function updateSectionAction(formData: FormData) {
+  await guardAdmin()
+
+  const id = str(formData, 'id')
+  const title = str(formData, 'title')
+  if (!id || !title) return
+
+  await updateSection(id, { title })
+  revalidateBrowse()
+}
+
 export async function deleteSectionAction(formData: FormData) {
   await guardAdmin()
 
   const id = str(formData, 'id')
   if (!id) return
 
-  await deleteSection(id)
-  revalidateBrowse()
+  const result = await deleteSection(id)
+  if (result.ok) revalidateBrowse()
 }
 
 export async function deleteVideoAction(formData: FormData) {
@@ -133,7 +148,7 @@ export async function reorderVideosAction(ids: string[]) {
   revalidateBrowse()
 }
 
-/** Remove a video from its section (unassign only — never deletes the video). */
+/** Remove a video from its section (unassign only - never deletes the video). */
 export async function removeVideoFromSectionAction(formData: FormData) {
   await guardAdmin()
 
@@ -145,7 +160,7 @@ export async function removeVideoFromSectionAction(formData: FormData) {
 }
 
 /**
- * Move one video to a topic + section (drag-and-drop). Sets only topic/section —
+ * Move one video to a topic + section (drag-and-drop). Sets only topic/section -
  * never the level. Either may be null (no topic / ungrouped).
  */
 export async function moveVideoAction(input: {
@@ -166,6 +181,20 @@ export async function moveVideoAction(input: {
   return { ok: true as const }
 }
 
+/** Update a single video's level in place (never touches topic/section). */
+export async function updateVideoLevelAction(
+  videoId: string,
+  level: DictationLevel | null
+) {
+  await guardAdmin()
+
+  if (!videoId) return
+  if (level !== null && !isDictationLevel(level)) return
+
+  await assignVideos([videoId], { level })
+  revalidateBrowse()
+}
+
 export interface AssignVideosInput {
   videoIds: string[]
   topicId: string | null
@@ -173,7 +202,7 @@ export interface AssignVideosInput {
   level: DictationLevel | null
 }
 
-/** Assign one or many videos (typed — called from the client video table). */
+/** Assign one or many videos (typed - called from the client video table). */
 export async function assignVideosAction(input: AssignVideosInput) {
   await guardAdmin()
 

@@ -16,6 +16,8 @@ export function ConfirmSubmitButton({
   confirmLabel = 'Delete',
   className,
   ariaLabel,
+  disabled = false,
+  disabledReason,
 }: {
   children: React.ReactNode
   confirmTitle?: string
@@ -23,6 +25,8 @@ export function ConfirmSubmitButton({
   confirmLabel?: string
   className?: string
   ariaLabel?: string
+  disabled?: boolean
+  disabledReason?: string
 }) {
   const ref = useRef<HTMLButtonElement>(null)
   const [open, setOpen] = useState(false)
@@ -33,7 +37,9 @@ export function ConfirmSubmitButton({
         ref={ref}
         type="button"
         aria-label={ariaLabel}
-        className={className}
+        title={disabled ? disabledReason : undefined}
+        disabled={disabled}
+        className={cn(className, disabled && 'cursor-not-allowed opacity-50')}
         onClick={() => setOpen(true)}
       >
         {children}

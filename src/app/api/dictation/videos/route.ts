@@ -18,7 +18,7 @@ function jsonError(decision: ApiErrorDecision) {
   return NextResponse.json(decision.body, { status: decision.status })
 }
 
-// requireAdmin throws 401/403 — surface as JSON instead of a 500.
+// requireAdmin throws 401/403 - surface as JSON instead of a 500.
 function authErrorDecision(error: unknown): ApiErrorDecision | null {
   if (
     typeof error === 'object' &&

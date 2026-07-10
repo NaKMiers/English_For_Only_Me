@@ -20,7 +20,7 @@ function jsonError(decision: ApiErrorDecision) {
 }
 
 function toImportError(error: unknown): ApiErrorDecision {
-  // Admin gate (requireAdmin) throws 401/403 — surface as JSON, not a 500.
+  // Admin gate (requireAdmin) throws 401/403 - surface as JSON, not a 500.
   if (
     typeof error === 'object' &&
     error !== null &&

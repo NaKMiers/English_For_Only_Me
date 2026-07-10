@@ -58,7 +58,7 @@ export async function getOptionalUser(): Promise<CurrentUser | null> {
 /**
  * R3 seam: require an authenticated user for per-user data. Throws
  * UnauthenticatedError (401) when anonymous. Callers scope every per-user query
- * to the returned id — never a client-supplied id.
+ * to the returned id - never a client-supplied id.
  */
 export async function requireUser(): Promise<CurrentUser> {
   const user = await getOptionalUser()
@@ -72,7 +72,7 @@ export async function requireUser(): Promise<CurrentUser> {
  * Resolve the owner of per-user practice data: the signed-in user when present,
  * otherwise a guest identity. Mints the guest cookie when missing, so this may
  * only be called from Route Handlers or Server Functions (it writes a cookie).
- * Never throws — anonymous practice is always allowed.
+ * Never throws - anonymous practice is always allowed.
  */
 export async function requirePracticeActor(): Promise<PracticeActor> {
   const user = await getOptionalUser()

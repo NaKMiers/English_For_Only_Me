@@ -4,6 +4,7 @@ import { Check, ChevronDown } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
 
+import { CompletionBadge } from '@/components/dictation/CompletionBadge'
 import { DictationVideoThumbnail } from '@/components/dictation/DictationVideoThumbnail'
 import { PageTag } from '@/components/ui/PageTag'
 import { cn } from '@/lib/utils'
@@ -16,7 +17,7 @@ export interface BrowseVideoItem {
   level: string | null
   practiceHref: string | null
   favorited: boolean
-  done: boolean
+  completions: number
   thumbnailUrl: string | null
   youtubeVideoId: string | null
 }
@@ -27,7 +28,7 @@ export interface BrowseSectionGroup {
   videos: BrowseVideoItem[]
 }
 
-function VideoRow({
+function VideoCard({
   video,
   canFavorite,
 }: {
@@ -37,7 +38,7 @@ function VideoRow({
   return (
     <li
       className={cn(
-        'border-manga-black bg-manga-white relative flex items-center justify-between gap-3 border-2 p-2',
+        'border-manga-black bg-manga-white relative grid min-w-0 gap-2 border-2 p-2',
         video.practiceHref &&
           'hover:bg-manga-paper-soft focus-within:bg-manga-paper-soft cursor-pointer'
       )}
@@ -49,39 +50,40 @@ function VideoRow({
           className="absolute inset-0 z-0"
         />
       )}
-      <div className="pointer-events-none flex min-w-0 items-center gap-3">
+      <div className="pointer-events-none relative">
         <DictationVideoThumbnail
           title={video.title}
           thumbnailUrl={video.thumbnailUrl}
           youtubeVideoId={video.youtubeVideoId}
-          sizes="112px"
-          className="w-28 shrink-0"
+          sizes="(min-width: 1024px) 22vw, (min-width: 640px) 33vw, 50vw"
+          className="w-full"
         />
-        <div className="flex min-w-0 flex-wrap items-center gap-2">
-          {video.done && (
-            <Check
-              aria-label="Completed"
-              className="text-manga-red size-4 shrink-0"
-            />
-          )}
-          {video.level && <PageTag tone="sky">{video.level}</PageTag>}
-          <span className="truncate font-sans text-sm font-black">
-            {video.title}
-          </span>
-        </div>
-      </div>
-      <div className="pointer-events-none relative z-10 flex shrink-0 items-center gap-2">
-        <span className="pointer-events-auto">
+        <span className="pointer-events-auto absolute top-1 right-1 z-10">
           <FavoriteButton
             videoId={video.id}
             initialFavorited={video.favorited}
             canFavorite={canFavorite}
           />
         </span>
+      </div>
+      <div className="pointer-events-none flex min-w-0 flex-wrap items-center gap-1.5">
+        {video.completions > 0 && (
+          <Check
+            aria-label="Completed"
+            className="text-manga-red size-4 shrink-0"
+          />
+        )}
+        {video.level && <PageTag tone="sky">{video.level}</PageTag>}
+        <span className="line-clamp-2 min-w-0 font-sans text-base leading-tight font-black">
+          {video.title}
+        </span>
+        <CompletionBadge completions={video.completions} />
+      </div>
+      <div className="pointer-events-none relative z-10">
         {video.practiceHref ? (
           <span
             aria-hidden="true"
-            className="border-manga-black bg-manga-paper-soft hover:bg-manga-pale-red inline-flex min-h-9 items-center border-2 px-3 font-sans text-sm font-black shadow-[2px_2px_0_var(--manga-black)]"
+            className="border-manga-black bg-manga-paper-soft hover:bg-manga-pale-red inline-flex min-h-9 w-full items-center justify-center border-2 px-3 font-sans text-sm font-black shadow-[2px_2px_0_var(--manga-black)]"
           >
             Practice
           </span>
@@ -108,22 +110,31 @@ export function BrowseVideoList({
   emptyLabel?: string
   className?: string
 }) {
+  if (videos.length === 0)
+    return (
+      <p
+        id={id}
+        className={cn('text-manga-ink-soft p-2 text-sm', className)}
+      >
+        {emptyLabel}
+      </p>
+    )
+
   return (
     <ul
       id={id}
-      className={cn('grid gap-2', className)}
-    >
-      {videos.length === 0 ? (
-        <li className="text-manga-ink-soft p-2 text-sm">{emptyLabel}</li>
-      ) : (
-        videos.map(video => (
-          <VideoRow
-            key={video.id}
-            video={video}
-            canFavorite={canFavorite}
-          />
-        ))
+      className={cn(
+        'grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4',
+        className
       )}
+    >
+      {videos.map(video => (
+        <VideoCard
+          key={video.id}
+          video={video}
+          canFavorite={canFavorite}
+        />
+      ))}
     </ul>
   )
 }
@@ -137,7 +148,7 @@ function SectionPanel({
 }) {
   const [open, setOpen] = useState(false)
   const panelId = `section-${group.key}`
-  const doneCount = group.videos.filter(video => video.done).length
+  const doneCount = group.videos.filter(video => video.completions > 0).length
 
   return (
     <div className="border-manga-black bg-manga-white border-3 shadow-[4px_4px_0_var(--manga-black)]">

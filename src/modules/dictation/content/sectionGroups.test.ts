@@ -13,7 +13,7 @@ const video = (
   sectionId,
   practiceHref: `/dictation/videos/${id}/practice`,
   favorited: false,
-  done: false,
+  completions: 0,
   thumbnailUrl: null,
   youtubeVideoId: null,
   ...over,

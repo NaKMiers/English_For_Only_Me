@@ -1,5 +1,5 @@
 /**
- * CEFR levels, lowest to highest. Order is significant — it drives the derived
+ * CEFR levels, lowest to highest. Order is significant - it drives the derived
  * "level range" shown on topic cards (e.g. "A1–C1").
  */
 export const DICTATION_LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as const

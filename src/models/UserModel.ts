@@ -14,7 +14,7 @@ import {
  * shares one ODM and one MongoDB driver (see system-update-plan: adapter would
  * peer-require mongodb ^6 while the project ships mongodb 7 via mongoose 9).
  *
- * `role` is NOT stored as source of truth — it is derived from ADMIN_EMAILS at
+ * `role` is NOT stored as source of truth - it is derived from ADMIN_EMAILS at
  * token time. We persist only durable identity + a login timestamp.
  */
 const UserSchema = new Schema(

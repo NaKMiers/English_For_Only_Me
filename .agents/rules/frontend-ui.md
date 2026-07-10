@@ -39,7 +39,7 @@ clear actions, responsive by default, and reusable component primitives.
   overflow.
 - Do not use clickable `div`s when a real `button` or `Link` is correct.
 
-## Component Library (shadcn/ui) — use it instead of raw HTML
+## Component Library (shadcn/ui) - use it instead of raw HTML
 
 - ALWAYS reach for the project's shadcn/ui primitive in `src/components/ui`
   instead of writing a raw HTML form/control element, whenever an equivalent
@@ -64,24 +64,24 @@ clear actions, responsive by default, and reusable component primitives.
   `border-manga-black`, `bg-manga-white`, hard offset shadows
   (`shadow-[Npx_Npx_0_var(--manga-black)]`), `font-sans font-black`. When you
   find a primitive still carrying default shadcn styling (rounded-lg, `ring`,
-  `bg-popover`, `bg-primary`), fix it in the primitive — do not paper over it
+  `bg-popover`, `bg-primary`), fix it in the primitive - do not paper over it
   per call site. Per-site `className` is for layout/size overrides only.
 - If a needed primitive does not exist yet, add it under `src/components/ui`
   and theme it to the manga tokens before using it. Do not hand-roll a
   bespoke dropdown/modal/menu.
 - Replacements must preserve behavior AND appearance. Known gotchas:
-  - base-ui `Select` `onValueChange` yields `string | null` — coerce null to
+  - base-ui `Select` `onValueChange` yields `string | null` - coerce null to
     `''` (`value => onChange(value ?? '')`); keep an item with `value=""` for
     the "all/none" option.
   - base-ui `Checkbox` submits its `name` as the value unless you pass
-    `value="on"` — required when a server action reads
+    `value="on"` - required when a server action reads
     `formData.get(name) === 'on'`. Use `defaultChecked` for uncontrolled
     server-action forms.
   - `MangaButton` forwards `type` and `disabled`; keep `type="submit"` on
     buttons that drive a `<form action={serverAction}>`.
   - `Label` may wrap a native or labelable control (input/textarea/checkbox/
     the Switch button); it renders a real `<label>`.
-- Documented exceptions — KEEP RAW (no primitive fits, or a swap would break
+- Documented exceptions - KEEP RAW (no primitive fits, or a swap would break
   behavior): hidden form fields (`<input type="hidden">`), file inputs using a
   `ref` + `sr-only` trigger, segmented toggles relying on `aria-pressed`,
   disclosure/accordion triggers relying on `aria-expanded`/`aria-controls`,

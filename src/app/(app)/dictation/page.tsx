@@ -17,7 +17,7 @@ import type { DictationTopicSummaryRecord } from '@/modules/dictation/types'
 export const metadata: Metadata = {
   title: 'All Topics',
   description:
-    'Browse dictation practice topics by level and section — short stories, conversations, TOEIC, IELTS listening and more.',
+    'Browse dictation practice topics by level and section - short stories, conversations, TOEIC, IELTS listening and more.',
 }
 
 export const dynamic = 'force-dynamic'

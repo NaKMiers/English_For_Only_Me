@@ -5,13 +5,13 @@ import { cookies } from 'next/headers'
 /**
  * Guest identity for anonymous dictation practice. A guest gets a stable random
  * id persisted in an httpOnly cookie and used as the `userId` on their sessions,
- * attempts, review items, and debriefs — exactly like a signed-in user. On first
+ * attempts, review items, and debriefs - exactly like a signed-in user. On first
  * login the guest's rows are merged into the real account (see mergeGuestData).
  */
 export const GUEST_COOKIE_NAME = 'dictationGuestId'
 
 const GUEST_ID_PREFIX = 'guest_'
-// One year — guests keep their progress across visits until they sign in.
+// One year - guests keep their progress across visits until they sign in.
 const GUEST_COOKIE_MAX_AGE = 60 * 60 * 24 * 365
 
 /** True when an id belongs to a guest rather than a provisioned user. */
@@ -37,7 +37,7 @@ export async function getGuestId(): Promise<string | null> {
 /**
  * Return the guest id, minting and persisting a fresh one on the outgoing
  * response when absent. Writes a cookie, so only call from Route Handlers or
- * Server Functions — never during Server Component render.
+ * Server Functions - never during Server Component render.
  */
 export async function getOrCreateGuestId(): Promise<string> {
   const store = await cookies()

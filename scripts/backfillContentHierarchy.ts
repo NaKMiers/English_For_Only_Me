@@ -3,7 +3,7 @@
  * (no-topic / ungrouped, null level). Safe by default: runs a DRY RUN unless
  * --apply is passed.
  *
- * Runs under Node (NOT bun — the mongodb driver needs node:v8 snapshot APIs bun
+ * Runs under Node (NOT bun - the mongodb driver needs node:v8 snapshot APIs bun
  * lacks) via tsx, with the react-server condition so `server-only` imports
  * resolve to their no-op stub.
  *
