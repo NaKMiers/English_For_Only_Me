@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { MangaPageShell } from '@/components/common/MangaPageShell'
@@ -11,7 +11,7 @@ import { DictationTranscriptModel } from '@/models/dictation/DictationTranscript
 import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
 import { toDictationTranscriptRecord } from '@/modules/dictation/services/dictationTranscriptRecords'
 import { toDictationVideoRecord } from '@/modules/dictation/services/dictationVideoRecords'
-import { getCurrentOwnerId } from '@/modules/dictation/services/getCurrentOwnerId'
+import { getOptionalUser } from '@/modules/dictation/services/getCurrentUser'
 
 export const metadata: Metadata = {
   title: 'Edit Dictation Video',
@@ -60,6 +60,12 @@ function EditUnavailableState({
 export default async function Page({ params }: Props) {
   const { videoId } = await params
 
+  // Admin-only: editing mutates shared catalog content.
+  const user = await getOptionalUser()
+  if (!user)
+    redirect(`/api/auth/signin?callbackUrl=/dictation/videos/${videoId}/edit`)
+  if (user.role !== 'admin') redirect('/dictation')
+
   if (!/^[a-f\d]{24}$/i.test(videoId)) notFound()
 
   if (!hasMongoDbUri())
@@ -70,13 +76,11 @@ export default async function Page({ params }: Props) {
       />
     )
 
-  const ownerId = await getCurrentOwnerId()
-
   await connectDatabase()
 
+  // Global content: no owner filter (admin edits any video).
   const video = await DictationVideoModel.findOne({
     _id: videoId,
-    ownerId,
     status: {
       $ne: 'archived',
     },
@@ -85,7 +89,6 @@ export default async function Page({ params }: Props) {
   if (!video) notFound()
 
   const trackDocuments = await DictationTranscriptModel.find({
-    ownerId,
     videoId: video._id,
   })
     .sort({ language: 1 })

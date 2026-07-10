@@ -1,9 +1,12 @@
 import type { Metadata } from 'next'
+import { redirect } from 'next/navigation'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { MangaPageShell } from '@/components/common/MangaPageShell'
+import { AuthControl } from '@/components/common/AuthControl'
 import { DictationImportForm } from '@/components/dictation/DictationImportForm'
 import { PageTag } from '@/components/ui/PageTag'
+import { getOptionalUser } from '@/modules/dictation/services/getCurrentUser'
 
 export const metadata: Metadata = {
   title: 'Import Dictation Video',
@@ -11,13 +14,23 @@ export const metadata: Metadata = {
     'Save a YouTube video and attach manual English transcript source text.',
 }
 
-export default function DictationImportPage() {
+export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
+
+export default async function DictationImportPage() {
+  // Admin-only: importing creates shared catalog content (gated in place;
+  // relocation into /admin is a deferred follow-up).
+  const user = await getOptionalUser()
+  if (!user) redirect('/api/auth/signin?callbackUrl=/dictation/import')
+  if (user.role !== 'admin') redirect('/dictation')
+
   return (
     <MangaPageShell
       topbar={
         <AppTopbar
           activeHref="/dictation"
           subtitle="Dictation Lab import desk"
+          authControl={<AuthControl />}
         />
       }
       footer={

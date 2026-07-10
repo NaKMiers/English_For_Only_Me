@@ -4,7 +4,7 @@ import { MissingEnvironmentError } from '@/constants/environments'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
 import { toDictationVideoRecord } from '@/modules/dictation/services/dictationVideoRecords'
-import { getCurrentOwnerId } from '@/modules/dictation/services/getCurrentOwnerId'
+import { requireAdmin } from '@/modules/dictation/services/getCurrentUser'
 import {
   type ApiErrorDecision,
   getMissingMongoResponse,
@@ -24,7 +24,28 @@ function jsonError(decision: ApiErrorDecision) {
   return NextResponse.json(decision.body, { status: decision.status })
 }
 
+// requireAdmin throws 401/403 — map to JSON instead of a 500.
+function authErrorDecision(error: unknown): ApiErrorDecision | null {
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'status' in error &&
+    (error.status === 401 || error.status === 403)
+  )
+    return {
+      status: error.status,
+      body: {
+        message: (error as { message?: string }).message ?? 'Access denied.',
+      },
+    }
+
+  return null
+}
+
 function toArchiveError(error: unknown): ApiErrorDecision {
+  const authError = authErrorDecision(error)
+  if (authError) return authError
+
   if (error instanceof MissingEnvironmentError)
     return {
       status: 500,
@@ -59,14 +80,14 @@ export async function DELETE(_request: Request, { params }: Props) {
     })
 
   try {
-    const ownerId = await getCurrentOwnerId()
+    await requireAdmin()
 
     await connectDatabase()
 
+    // Global content: admin archives any video (no owner filter).
     const video = await DictationVideoModel.findOneAndUpdate(
       {
         _id: videoId,
-        ownerId,
         status: {
           $ne: 'archived',
         },
@@ -98,6 +119,9 @@ export async function DELETE(_request: Request, { params }: Props) {
 }
 
 function toUpdateError(error: unknown): ApiErrorDecision {
+  const authError = authErrorDecision(error)
+  if (authError) return authError
+
   if (error instanceof MissingEnvironmentError)
     return {
       status: 500,
@@ -132,19 +156,19 @@ export async function PATCH(request: Request, { params }: Props) {
     })
 
   try {
+    await requireAdmin()
+
     const body = await request.json()
     const parsed = parseUpdateVideoRequest(body)
 
     if (!parsed.ok) return jsonError(parsed)
 
-    const ownerId = await getCurrentOwnerId()
-
     await connectDatabase()
 
+    // Global content: admin updates any video (no owner filter).
     const video = await DictationVideoModel.findOneAndUpdate(
       {
         _id: videoId,
-        ownerId,
         status: {
           $ne: 'archived',
         },

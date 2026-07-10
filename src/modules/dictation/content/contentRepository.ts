@@ -134,6 +134,26 @@ export async function countNoTopicVideos(): Promise<number> {
   })
 }
 
+/** All non-archived videos, for the admin management table. */
+export async function listManageableVideos(): Promise<
+  DictationVideoApiRecord[]
+> {
+  const videos = await DictationVideoModel.find(VISIBLE_VIDEO_FILTER)
+    .sort({ createdAt: -1 })
+    .lean()
+
+  return videos.map(toDictationVideoRecord)
+}
+
+/** Every section across all topics (for admin title lookups / dropdowns). */
+export async function listAllSections(): Promise<DictationSectionApiRecord[]> {
+  const sections = await DictationSectionModel.find()
+    .sort({ topicId: 1, order: 1 })
+    .lean<SectionLean[]>()
+
+  return sections.map(toSectionRecord)
+}
+
 /**
  * Topics with derived level range, section count, and lesson count for the
  * browse grid. Counts are computed live via aggregation (I4) — not stored.

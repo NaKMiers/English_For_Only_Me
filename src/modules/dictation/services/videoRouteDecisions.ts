@@ -8,7 +8,7 @@ import { normalizeTranslationLanguage } from '@/modules/dictation/translations/l
 export const MISSING_MONGODB_MESSAGE =
   'MongoDB is not configured. Set MONGODB_URI on the server to use the dictation video library.'
 
-type ApiErrorStatus = 400 | 404 | 409 | 500 | 503
+type ApiErrorStatus = 400 | 401 | 403 | 404 | 409 | 500 | 503
 
 export interface ApiErrorDecision {
   status: ApiErrorStatus

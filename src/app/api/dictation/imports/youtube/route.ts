@@ -6,6 +6,7 @@ import { getYouTubeVideoMetadata } from '@/lib/youtube/getYouTubeVideoMetadata'
 import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
 import { toDictationVideoRecord } from '@/modules/dictation/services/dictationVideoRecords'
 import { getCurrentOwnerId } from '@/modules/dictation/services/getCurrentOwnerId'
+import { requireAdmin } from '@/modules/dictation/services/getCurrentUser'
 import {
   type ApiErrorDecision,
   getMissingMongoResponse,
@@ -20,6 +21,20 @@ function jsonError(decision: ApiErrorDecision) {
 }
 
 function toImportError(error: unknown): ApiErrorDecision {
+  // Admin gate (requireAdmin) throws 401/403 — surface as JSON, not a 500.
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'status' in error &&
+    (error.status === 401 || error.status === 403)
+  )
+    return {
+      status: error.status,
+      body: {
+        message: (error as { message?: string }).message ?? 'Access denied.',
+      },
+    }
+
   if (
     typeof error === 'object' &&
     error !== null &&
@@ -57,6 +72,8 @@ export async function POST(request: Request) {
   if (missingMongo) return jsonError(missingMongo)
 
   try {
+    await requireAdmin()
+
     const body = await request.json()
     const parsed = parseYouTubeImportRequest(body)
 
