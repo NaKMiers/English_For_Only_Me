@@ -261,6 +261,59 @@ function isPunctuationOnlyUnit(unit: string) {
   return normalizeUnit(unit) === ''
 }
 
+function getRedundantExpandedTokens(
+  unit: string,
+  options: Required<CorrectionOptions>
+) {
+  const expandedUnits = splitUnits(expandSymbolicVariants(unit))
+
+  if (expandedUnits.length <= 1) return []
+
+  const normalizedUnit = normalizeUnit(unit, options)
+  const expandedTokens = expandedUnits.map(expandedUnit =>
+    normalizeUnit(expandedUnit, options)
+  )
+
+  if (expandedTokens[0] !== normalizedUnit) return []
+
+  return expandedTokens.slice(1)
+}
+
+function consumeRedundantExpandedTokens({
+  expectedUnit,
+  options,
+  typedIndex,
+  typedUnits,
+}: {
+  expectedUnit: string
+  options: Required<CorrectionOptions>
+  typedIndex: number
+  typedUnits: string[]
+}) {
+  let nextTypedIndex = typedIndex
+
+  for (const token of getRedundantExpandedTokens(expectedUnit, options)) {
+    if (
+      token === 'percent' &&
+      normalizeUnit(typedUnits[nextTypedIndex] ?? '', options) === 'per' &&
+      normalizeUnit(typedUnits[nextTypedIndex + 1] ?? '', options) === 'cent'
+    ) {
+      nextTypedIndex += 2
+      continue
+    }
+
+    if (
+      nextTypedIndex >= typedUnits.length ||
+      normalizeUnit(typedUnits[nextTypedIndex], options) !== token
+    )
+      break
+
+    nextTypedIndex += 1
+  }
+
+  return nextTypedIndex
+}
+
 /** Rewrite the learner's draft toward the canonical answer on Check: the words
  * they got right (ignoring case, punctuation, and extra whitespace) are replaced
  * with the expected spelling + punctuation, and standalone punctuation tokens the
@@ -315,9 +368,17 @@ export function autoCorrectAnswer(
       normalizeUnit(typedUnits[typedIndex], options) ===
       normalizeUnit(expectedUnits[expectedIndex], options)
     ) {
-      canonical.push(expectedUnits[expectedIndex])
+      const expectedUnit = expectedUnits[expectedIndex]
+
+      canonical.push(expectedUnit)
       expectedIndex += 1
       typedIndex += 1
+      typedIndex = consumeRedundantExpandedTokens({
+        expectedUnit,
+        options,
+        typedIndex,
+        typedUnits,
+      })
     } else {
       matchedCleanly = false
       break

@@ -222,6 +222,18 @@ describe('autoCorrectAnswer', () => {
     expect(autoCorrectAnswer('one litre', '1 litter')).toBe('one litre')
   })
 
+  test('adds a percent mark once and stays idempotent', () => {
+    const expected =
+      'At about 13% alcohol, the by-products wild yeasts generate during fermentation become toxic and kill them.'
+    const corrected = 'At about 13% '
+
+    expect(autoCorrectAnswer(expected, 'At about 13')).toBe(corrected)
+    expect(autoCorrectAnswer(expected, 'At about 13%')).toBe(corrected)
+    expect(autoCorrectAnswer(expected, 'At about 13 percent')).toBe(corrected)
+    expect(autoCorrectAnswer(expected, 'At about 13 per cent')).toBe(corrected)
+    expect(autoCorrectAnswer(expected, corrected)).toBe(corrected)
+  })
+
   // The de-dup is generic: any standalone punctuation token the learner types is
   // consumed once, never re-inserted, and re-checking is idempotent.
   test.each(['–', '-', '-', ':', ';', '…', '...', '•'])(

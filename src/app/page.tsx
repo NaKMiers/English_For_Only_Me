@@ -16,7 +16,5 @@ export default async function Home() {
 
   await connectDatabase()
 
-  return (
-    <HomeStudyDesk dictationStats={await getGlobalStatsForUser(user.id)} />
-  )
+  return <HomeStudyDesk dictationStats={await getGlobalStatsForUser(user.id)} />
 }

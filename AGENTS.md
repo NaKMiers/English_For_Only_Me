@@ -56,6 +56,14 @@ Key routing rules:
 - Save progress, checkpoint, resume -> use `/checkpoint` when available
 - Code quality, health check -> use `/health` when available
 
+Project-local skills (canonical under `.agents/skills/`, shared by Codex and
+Claude via thin `.claude/skills/` wrappers; see `.agents/README.md`):
+
+- Update `docs/` after source changes, "sync docs", "regenerate docs" -> use
+  `/documentlization`
+- Reconcile Codex `.agents` and Claude `.claude` skill wrappers, "sync skills"
+  -> use `/skill-sync` (manual only)
+
 ## Web browsing
 
 Use the `/browse` skill from gstack for web browsing tasks in this repository.

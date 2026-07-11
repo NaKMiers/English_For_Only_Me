@@ -1,0 +1,13 @@
+{
+  "lastDocumentedCommit": "259bc562808896edb5f8bee0d89841a327535dba",
+  "note": "Baseline set by initial documentlization run. HEAD had uncommitted change to src/app/page.tsx; docs reflect the working tree.",
+  "docs": [
+    "01-overview.md",
+    "02-architecture.md",
+    "03-data-model.md",
+    "04-api-reference.md",
+    "05-modules.md",
+    "06-frontend.md",
+    "07-auth-infra-testing.md"
+  ]
+}

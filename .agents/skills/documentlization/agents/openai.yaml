@@ -1,0 +1,4 @@
+interface:
+  display_name: "Documentlization"
+  short_description: "Keep docs/ in sync with the source code for this app"
+  default_prompt: "Use $documentlization to update the docs/ folder for the changed source code."
