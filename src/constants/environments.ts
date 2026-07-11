@@ -3,6 +3,7 @@ export const ENV_KEYS = {
   openAiDebriefModel: 'OPENAI_DEBRIEF_MODEL',
   mongoDbUri: 'MONGODB_URI',
   openAiApiKey: 'OPENAI_API_KEY',
+  cloudinaryUrl: 'CLOUDINARY_URL',
   youtubeApiKey: 'YOUTUBE_API_KEY',
   googleClientId: 'GOOGLE_CLIENT_ID',
   googleClientSecret: 'GOOGLE_CLIENT_SECRET',
@@ -48,6 +49,10 @@ export function getYoutubeApiKey() {
 
 export function getOpenAiApiKey() {
   return getOptionalServerEnv(ENV_KEYS.openAiApiKey)
+}
+
+export function getCloudinaryUrl() {
+  return getRequiredServerEnv(ENV_KEYS.cloudinaryUrl)
 }
 
 export function getOpenAiDebriefModel() {

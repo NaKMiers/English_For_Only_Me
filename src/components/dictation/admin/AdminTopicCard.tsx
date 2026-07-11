@@ -23,6 +23,7 @@ import {
 } from '@/modules/dictation/content/adminActions'
 
 import { ConfirmSubmitButton } from './ConfirmSubmitButton'
+import { AdminTopicThumbnailFields } from './AdminTopicThumbnailFields'
 import { AdminVideoRow } from './AdminVideoRow'
 import {
   DropZone,
@@ -48,6 +49,7 @@ export interface AdminTopicData {
   slug: string
   title: string
   description: string | null
+  thumbnailUrl: string | null
   order: number
   hasVideoMedia: boolean
   videoCount: number
@@ -141,8 +143,10 @@ function SectionBlock({
             />
             {editingTitle ? (
               <form
-                action={formData => {
-                  updateSectionAction(formData)
+                action={async formData => {
+                  const result = await updateSectionAction(formData)
+                  if (!result?.ok) return
+
                   setEditingTitle(false)
                 }}
                 className="flex min-w-0 flex-1 items-center gap-2"
@@ -471,7 +475,13 @@ export function AdminTopicCard({ topic }: { topic: AdminTopicData }) {
 
       {editing && (
         <form
-          action={updateTopicAction}
+          action={async formData => {
+            const result = await updateTopicAction(formData)
+            if (!result?.ok) return
+
+            setEditing(false)
+          }}
+          encType="multipart/form-data"
           className="border-manga-black bg-manga-paper-soft grid gap-3 border-2 p-3"
         >
           <input
@@ -479,23 +489,31 @@ export function AdminTopicCard({ topic }: { topic: AdminTopicData }) {
             name="id"
             value={topic.id}
           />
-          <Label className="grid gap-1 font-sans text-sm font-black">
-            Title
-            <Input
-              name="title"
-              defaultValue={topic.title}
-              required
-              className={input}
+          <div className="grid gap-3 md:grid-cols-[auto_1fr]">
+            <AdminTopicThumbnailFields
+              defaultUrl={topic.thumbnailUrl}
+              title={topic.title}
             />
-          </Label>
-          <Label className="grid gap-1 font-sans text-sm font-black">
-            Description
-            <Input
-              name="description"
-              defaultValue={topic.description ?? ''}
-              className={input}
-            />
-          </Label>
+            <div className="grid gap-3">
+              <Label className="grid gap-1 font-sans text-sm font-black">
+                Title
+                <Input
+                  name="title"
+                  defaultValue={topic.title}
+                  required
+                  className={input}
+                />
+              </Label>
+              <Label className="grid gap-1 font-sans text-sm font-black">
+                Description
+                <Input
+                  name="description"
+                  defaultValue={topic.description ?? ''}
+                  className={input}
+                />
+              </Label>
+            </div>
+          </div>
           <p className="text-manga-ink-soft text-xs">
             Renaming updates the topic&apos;s URL (/dictation/{topic.slug}).
           </p>

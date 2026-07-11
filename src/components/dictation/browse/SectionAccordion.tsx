@@ -74,18 +74,21 @@ function VideoCard({
           />
         )}
         {video.level && <PageTag tone="sky">{video.level}</PageTag>}
-        <span className="line-clamp-2 min-w-0 font-sans text-base leading-tight font-black">
-          {video.title}
-        </span>
         <CompletionBadge completions={video.completions} />
       </div>
+      <span className="pointer-events-none line-clamp-2 min-w-0 font-sans text-base leading-tight font-black">
+        {video.title}
+      </span>
       <div className="pointer-events-none relative z-10">
         {video.practiceHref ? (
           <span
             aria-hidden="true"
-            className="border-manga-black bg-manga-paper-soft hover:bg-manga-pale-red inline-flex min-h-9 w-full items-center justify-center border-2 px-3 font-sans text-sm font-black shadow-[2px_2px_0_var(--manga-black)]"
+            className={cn(
+              'border-manga-black hover:bg-manga-pale-red inline-flex min-h-9 w-full items-center justify-center border-2 px-3 font-sans text-sm font-black shadow-[2px_2px_0_var(--manga-black)]',
+              video.completions > 0 ? 'bg-manga-yellow' : 'bg-manga-paper-soft'
+            )}
           >
-            Practice
+            {video.completions > 0 ? 'Practice again' : 'Practice'}
           </span>
         ) : (
           <span className="text-manga-ink-soft text-xs font-black uppercase">

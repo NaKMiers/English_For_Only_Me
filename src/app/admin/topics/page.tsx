@@ -4,19 +4,15 @@ import Link from 'next/link'
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { AuthControl } from '@/components/common/AuthControl'
 import { MangaPageShell } from '@/components/common/MangaPageShell'
+import { AdminCreateTopicForm } from '@/components/dictation/admin/AdminCreateTopicForm'
 import {
   type AdminSectionVideo,
   type AdminTopicData,
 } from '@/components/dictation/admin/AdminTopicCard'
 import { AdminTopicList } from '@/components/dictation/admin/AdminTopicList'
 import { AdminUnassignedPanel } from '@/components/dictation/admin/AdminUnassignedPanel'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { MangaButton } from '@/components/ui/MangaButton'
 import { hasMongoDbUri } from '@/constants/environments'
 import { connectDatabase } from '@/lib/db/connectDatabase'
-import { createTopicAction } from '@/modules/dictation/content/adminActions'
 import {
   listNoTopicVideos,
   listSectionsForTopic,
@@ -27,9 +23,6 @@ import {
 export const metadata: Metadata = { title: 'Admin · Topics' }
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
-
-const input =
-  'border-manga-black min-h-11 rounded-none border-3 bg-manga-white px-3 py-2 font-sans text-base font-black'
 
 async function buildTopicData(): Promise<AdminTopicData[]> {
   const topics = await listTopics()
@@ -65,6 +58,7 @@ async function buildTopicData(): Promise<AdminTopicData[]> {
         slug: topic.slug,
         title: topic.title,
         description: topic.description,
+        thumbnailUrl: topic.thumbnailUrl,
         order: topic.order,
         hasVideoMedia: topic.hasVideoMedia,
         videoCount: videos.length,
@@ -122,40 +116,7 @@ export default async function AdminTopicsPage() {
           </Link>
         </header>
 
-        <form
-          action={createTopicAction}
-          className="border-manga-black bg-manga-white grid gap-3 border-3 p-4 shadow-[4px_4px_0_var(--manga-black)]"
-        >
-          <h2 className="font-sans text-base font-black uppercase">
-            New topic
-          </h2>
-          <Input
-            name="title"
-            placeholder="Title (e.g. Short Stories)"
-            required
-            className={input}
-          />
-          <Input
-            name="description"
-            placeholder="Description (optional)"
-            className={input}
-          />
-          <div className="flex flex-wrap items-center gap-4">
-            <Label className="font-sans text-sm font-black">
-              <Checkbox
-                name="hasVideoMedia"
-                value="on"
-              />
-              Video badge
-            </Label>
-            <MangaButton
-              type="submit"
-              tone="primary"
-            >
-              Create topic
-            </MangaButton>
-          </div>
-        </form>
+        <AdminCreateTopicForm />
 
         <AdminUnassignedPanel videos={unassigned} />
 

@@ -1,6 +1,7 @@
 'use client'
 
 import { BookOpen, ChartColumn, LogOut, Shield } from 'lucide-react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
 
@@ -23,6 +24,7 @@ import {
 import { MangaButton } from '@/components/ui/MangaButton'
 
 interface Props {
+  avatarUrl?: string | null
   label: string
   initial: string
   isAdmin: boolean
@@ -37,19 +39,38 @@ interface Props {
  * primitives. The signOut server action is injected so this client file never
  * imports the NextAuth/Mongoose chain into the browser bundle.
  */
-export function UserMenu({ label, initial, isAdmin, signOutAction }: Props) {
+export function UserMenu({
+  avatarUrl,
+  label,
+  initial,
+  isAdmin,
+  signOutAction,
+}: Props) {
   const [confirmOpen, setConfirmOpen] = useState(false)
 
   return (
     <>
       <DropdownMenu>
         <DropdownMenuTrigger className="border-manga-black bg-manga-white hover:bg-manga-paper-soft flex min-h-11 min-w-0 items-center gap-2 border-3 px-2 shadow-[3px_3px_0_var(--manga-black)] transition-colors">
-          <span
-            aria-hidden="true"
-            className="bg-manga-black text-manga-white grid size-7 shrink-0 place-items-center font-sans text-sm font-black"
-          >
-            {initial}
-          </span>
+          {avatarUrl ? (
+            <Image
+              src={avatarUrl}
+              alt=""
+              aria-hidden="true"
+              width={28}
+              height={28}
+              unoptimized
+              referrerPolicy="no-referrer"
+              className="border-manga-black bg-manga-white size-7 shrink-0 border-2 object-cover"
+            />
+          ) : (
+            <span
+              aria-hidden="true"
+              className="bg-manga-black text-manga-white grid size-7 shrink-0 place-items-center font-sans text-sm font-black"
+            >
+              {initial}
+            </span>
+          )}
           <span className="grid min-w-0 leading-tight">
             <span className="truncate font-sans text-sm font-black">
               {label}

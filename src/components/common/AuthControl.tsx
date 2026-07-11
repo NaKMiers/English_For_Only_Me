@@ -45,6 +45,7 @@ export async function AuthControl() {
 
   return (
     <UserMenu
+      avatarUrl={user.image}
       label={label}
       initial={initial}
       isAdmin={user.role === 'admin'}

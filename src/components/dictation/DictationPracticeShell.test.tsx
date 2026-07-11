@@ -14,13 +14,52 @@ import type {
   DictationVideoApiRecord,
 } from '@/modules/dictation/types'
 import { submitDictationAttemptApi } from '@/requests/dictationAttemptsApi'
-import { startOrResumeDictationSessionApi } from '@/requests/dictationSessionsApi'
+import {
+  startOrResumeDictationSessionApi,
+  updateDictationSessionApi,
+} from '@/requests/dictationSessionsApi'
 
 import { DictationPracticeShell } from './DictationPracticeShell'
 
-vi.mock('@/components/dictation/DictationYoutubePlayer', () => ({
-  DictationYoutubePlayer: () => <div>Mock player</div>,
-}))
+const playSegmentMock = vi.fn()
+
+vi.mock('@/components/dictation/DictationYoutubePlayer', async () => {
+  const React = await import('react')
+
+  interface MockPlayerProps {
+    onControllerChange?: (controller: {
+      canReplay: boolean
+      getCurrentTimeMs: () => number | null
+      message: string
+      pause: () => void
+      playFromMs: (startMs: number) => void
+      playSegment: (startMs: number, endMs: number) => void
+      replay: () => void
+      seekToMs: (startMs: number, options: { play: boolean }) => void
+      status: 'ready'
+    }) => void
+  }
+
+  return {
+    DictationYoutubePlayer: ({ onControllerChange }: MockPlayerProps) => {
+      React.useEffect(() => {
+        onControllerChange?.({
+          canReplay: true,
+          getCurrentTimeMs: () => null,
+          message: 'Mock player is ready.',
+          pause: vi.fn(),
+          playFromMs: vi.fn(),
+          playSegment: playSegmentMock,
+          replay: vi.fn(),
+          seekToMs: vi.fn(),
+          status: 'ready',
+        })
+      }, [onControllerChange])
+
+      return <div>Mock player</div>
+    },
+  }
+})
 
 vi.mock('@/requests/dictationAttemptsApi', () => ({
   submitDictationAttemptApi: vi.fn(async (sessionId: string) => ({
@@ -43,6 +82,9 @@ const submitDictationAttemptMock = submitDictationAttemptApi as ReturnType<
 >
 const startOrResumeDictationSessionMock =
   startOrResumeDictationSessionApi as ReturnType<typeof vi.fn>
+const updateDictationSessionMock = updateDictationSessionApi as ReturnType<
+  typeof vi.fn
+>
 
 setupDom()
 afterEach(() => {
@@ -138,6 +180,15 @@ const segment: DictationSegmentApiRecord = {
   videoId: video.id,
   warningAccepted: false,
 }
+const secondSegment: DictationSegmentApiRecord = {
+  ...segment,
+  endMs: 5000,
+  id: '507f1f77bcf86cd799439015',
+  normalizedText: 'second sentence',
+  order: 1,
+  startMs: 3000,
+  text: 'Second sentence.',
+}
 const session: DictationSessionApiRecord = {
   completedAt: null,
   createdAt: now,
@@ -158,13 +209,15 @@ const session: DictationSessionApiRecord = {
 
 function renderPracticeShell(
   initialSession: DictationSessionApiRecord | null = session,
-  segmentOverride: DictationSegmentApiRecord = segment
+  segmentOverride: DictationSegmentApiRecord = segment,
+  completions = 0,
+  segmentList: DictationSegmentApiRecord[] = [segmentOverride]
 ) {
   return render(
     <DictationPracticeShell
-      completions={0}
+      completions={completions}
       initialSession={initialSession}
-      segments={[segmentOverride]}
+      segments={segmentList}
       translationTracks={[]}
       video={video}
     />
@@ -293,5 +346,40 @@ describe('DictationPracticeShell attempts', () => {
       expect(view.getByRole('status').textContent).toContain('Answer revealed')
     })
     expect(view.getByRole('button', { name: 'Finish' })).not.toBeNull()
+  })
+
+  test('Restart keeps the completion badge but clears old answers client-side', async () => {
+    const completedSegment: DictationSegmentApiRecord = {
+      ...segment,
+      attemptCount: 1,
+      attemptStatus: 'correct',
+    }
+    const resumedSession: DictationSessionApiRecord = {
+      ...session,
+      currentSegmentId: secondSegment.id,
+      currentSegmentOrder: 1,
+    }
+    const view = renderPracticeShell(resumedSession, completedSegment, 1, [
+      completedSegment,
+      secondSegment,
+    ])
+
+    expect(view.getByText('Copper')).not.toBeNull()
+
+    fireEvent.click(view.getByRole('button', { name: 'Restart progress' }))
+    fireEvent.click(view.getByRole('button', { name: 'Restart' }))
+
+    const textarea = await view.findByLabelText('Type what you hear')
+
+    expect((textarea as HTMLTextAreaElement).value).toBe('')
+    expect(view.getByLabelText('Current segment').textContent).toContain(
+      '1 / 2'
+    )
+    expect(view.getByText('Copper')).not.toBeNull()
+    expect(playSegmentMock).toHaveBeenCalledWith(
+      completedSegment.startMs,
+      completedSegment.endMs
+    )
+    expect(updateDictationSessionMock).not.toHaveBeenCalled()
   })
 })

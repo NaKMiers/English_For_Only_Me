@@ -157,13 +157,11 @@ export function DictationPracticeShell({
     () => new Set()
   )
   const [correctSegmentIds, setCorrectSegmentIds] = useState<Set<string>>(
-    () =>
-      new Set(
-        segments
-          .filter(segment => segment.attemptStatus === 'correct')
-          .map(segment => segment.id)
-      )
+    () => new Set()
   )
+  const [locallyResetSegmentIds, setLocallyResetSegmentIds] = useState<
+    Set<string>
+  >(() => new Set())
   const replayCountRef = useRef<Record<string, number>>({})
   const segmentStartedAtRef = useRef(0)
   const autoPlayedSegmentIdRef = useRef<string | null>(null)
@@ -208,6 +206,9 @@ export function DictationPracticeShell({
     currentSegment && hasCurrentAnswerDraft
       ? (answerDrafts[currentSegment.id] ?? '')
       : ''
+  const currentSegmentWasLocallyReset = Boolean(
+    currentSegment && locallyResetSegmentIds.has(currentSegment.id)
+  )
   // Translation unlocks once the learner types it correctly, or skips it -
   // skipping already reveals the answer, so gating the translation too would
   // just be a second wall. Revealing still keeps the translation gated. A
@@ -217,7 +218,8 @@ export function DictationPracticeShell({
   const skippedAttempt = currentAttempt?.action === 'skip'
   const passedCurrentSegment =
     currentSegment !== null &&
-    (currentSegment.attemptStatus === 'correct' ||
+    ((currentSegment.attemptStatus === 'correct' &&
+      !currentSegmentWasLocallyReset) ||
       correctSegmentIds.has(currentSegment.id)) &&
     !retriedSegmentIds.has(currentSegment.id)
   const currentAnswer =
@@ -627,6 +629,15 @@ export function DictationPracticeShell({
 
             return nextIds
           })
+          setLocallyResetSegmentIds(currentIds => {
+            if (!currentIds.has(currentSegment.id)) return currentIds
+
+            const nextIds = new Set(currentIds)
+
+            nextIds.delete(currentSegment.id)
+
+            return nextIds
+          })
           setRetriedSegmentIds(currentIds => {
             if (!currentIds.has(currentSegment.id)) return currentIds
 
@@ -702,7 +713,8 @@ export function DictationPracticeShell({
   // Retry stays available for any segment the learner has checked at least once -
   // whether from this attempt or a persisted one from an earlier visit.
   const hasCheckedCurrent =
-    Boolean(currentAttempt) || (currentSegment?.attemptCount ?? 0) > 0
+    Boolean(currentAttempt) ||
+    (!currentSegmentWasLocallyReset && (currentSegment?.attemptCount ?? 0) > 0)
 
   const advanceAfterAttempt = useCallback(() => {
     // Keep the resolved answer in the draft so revisiting the segment shows it.
@@ -751,13 +763,31 @@ export function DictationPracticeShell({
     goToIndex(0)
   }, [goToIndex])
 
-  // Restart: clear this session's local progress (typed drafts, retry locks)
-  // and rewind. Saved attempt history / accuracy stats are left alone.
+  // Restart: clear this session's local progress and replay from segment one.
+  // Saved attempts, completions, badges, and server cursor stay untouched.
   const restartProgress = useCallback(() => {
+    const firstSegment = segments[0]
+
     updateAnswerDrafts({})
+    setCurrentIndex(0)
+    setActivePlaybackIndex(0)
+    setActiveView('practice')
+    setDraftNotice(null)
+    setCurrentAttempt(null)
+    setCharCorrection(null)
+    setIsCompleted(false)
+    setHasStarted(true)
+    setCorrectSegmentIds(new Set())
+    setLocallyResetSegmentIds(new Set(segments.map(segment => segment.id)))
     setRetriedSegmentIds(new Set())
-    goToFirstSegment()
-  }, [goToFirstSegment, updateAnswerDrafts])
+    autoPlayedSegmentIdRef.current = null
+
+    if (firstSegment?.startMs !== null && firstSegment?.endMs !== null)
+      playerControllerRef.current.playSegment(
+        firstSegment.startMs,
+        firstSegment.endMs
+      )
+  }, [segments, updateAnswerDrafts])
 
   // Check / Enter: grade the draft, or advance once the answer is resolved.
   const checkDraft = useCallback(() => {

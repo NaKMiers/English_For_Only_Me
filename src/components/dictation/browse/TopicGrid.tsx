@@ -8,28 +8,58 @@ import type { DictationTopicSummaryRecord } from '@/modules/dictation/types'
 interface TopicCardProps {
   href: string
   title: string
+  thumbnailUrl?: string | null
   levelRange: string | null
   lessonCount: number
   hasVideoMedia?: boolean
   muted?: boolean
 }
 
-// Topic thumbnails are admin-set (Chunk 4); until then every card shows a
-// lettered placeholder tile so the grid never looks broken.
-function ThumbTile({ title, muted }: { title: string; muted?: boolean }) {
+function getSafeImageUrl(url: string | null | undefined) {
+  if (!url) return null
+
+  try {
+    const parsed = new URL(url)
+    if (parsed.protocol !== 'https:') return null
+
+    return parsed.toString()
+  } catch {
+    return null
+  }
+}
+
+function ThumbTile({
+  title,
+  thumbnailUrl,
+  muted,
+}: {
+  title: string
+  thumbnailUrl?: string | null
+  muted?: boolean
+}) {
   const initial = title.trim().charAt(0).toUpperCase() || '?'
+  const safeThumbnailUrl = getSafeImageUrl(thumbnailUrl)
 
   return (
     <div
       aria-hidden="true"
       className={cn(
-        'border-manga-black grid size-16 shrink-0 place-items-center border-3 font-sans text-2xl font-black shadow-[3px_3px_0_var(--manga-black)] sm:size-20',
+        'border-manga-black grid size-16 shrink-0 place-items-center overflow-hidden border-3 bg-cover bg-center font-sans text-2xl font-black shadow-[3px_3px_0_var(--manga-black)] sm:size-20',
         muted
           ? 'bg-manga-paper-soft text-manga-ink-soft'
           : 'bg-manga-pale-red text-manga-black'
       )}
+      style={
+        safeThumbnailUrl
+          ? { backgroundImage: `url("${safeThumbnailUrl}")` }
+          : {}
+      }
     >
-      {muted ? <Layers className="size-7" /> : initial}
+      {safeThumbnailUrl ? null : muted ? (
+        <Layers className="size-7" />
+      ) : (
+        initial
+      )}
     </div>
   )
 }
@@ -37,6 +67,7 @@ function ThumbTile({ title, muted }: { title: string; muted?: boolean }) {
 function TopicCard({
   href,
   title,
+  thumbnailUrl,
   levelRange,
   lessonCount,
   hasVideoMedia,
@@ -54,6 +85,7 @@ function TopicCard({
     >
       <ThumbTile
         title={title}
+        thumbnailUrl={thumbnailUrl}
         muted={muted}
       />
       <div className="grid min-w-0 gap-1">
@@ -100,6 +132,7 @@ export function TopicGrid({ topics, noTopicCount }: Props) {
           key={topic.id}
           href={`/dictation/${topic.slug}`}
           title={topic.title}
+          thumbnailUrl={topic.thumbnailUrl}
           levelRange={topic.levelRange}
           lessonCount={topic.lessonCount}
           hasVideoMedia={topic.hasVideoMedia}

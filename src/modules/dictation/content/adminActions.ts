@@ -2,6 +2,10 @@
 
 import { revalidatePath } from 'next/cache'
 
+import {
+  getImageFile,
+  uploadImageToCloudinary,
+} from '@/lib/cloudinary/uploadImage'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import {
   isDictationLevel,
@@ -41,6 +45,23 @@ function str(formData: FormData, key: string): string {
   return String(formData.get(key) ?? '').trim()
 }
 
+async function topicThumbnailUrl(formData: FormData) {
+  const imageFile = getImageFile(formData, 'thumbnailFile')
+  if (imageFile) return uploadImageToCloudinary(imageFile)
+
+  return str(formData, 'thumbnailUrl') || null
+}
+
+export async function uploadTopicThumbnailAction(formData: FormData) {
+  await guardAdmin()
+
+  const imageFile = getImageFile(formData, 'thumbnailFile')
+  if (!imageFile) return { ok: false as const, message: 'Choose an image.' }
+
+  const url = await uploadImageToCloudinary(imageFile)
+  return { ok: true as const, url }
+}
+
 export async function createTopicAction(formData: FormData) {
   await guardAdmin()
 
@@ -50,7 +71,7 @@ export async function createTopicAction(formData: FormData) {
   await createTopic({
     title,
     description: str(formData, 'description') || null,
-    thumbnailUrl: str(formData, 'thumbnailUrl') || null,
+    thumbnailUrl: await topicThumbnailUrl(formData),
     hasVideoMedia: formData.get('hasVideoMedia') === 'on',
     // order omitted - new topics append; ordering is via drag-to-reorder.
   })
@@ -62,17 +83,19 @@ export async function updateTopicAction(formData: FormData) {
   await guardAdmin()
 
   const id = str(formData, 'id')
-  if (!id) return
+  const title = str(formData, 'title')
+  if (!id || !title) return { ok: false as const }
 
   await updateTopic(id, {
-    title: str(formData, 'title'),
+    title,
     description: str(formData, 'description') || null,
-    thumbnailUrl: str(formData, 'thumbnailUrl') || null,
+    thumbnailUrl: await topicThumbnailUrl(formData),
     hasVideoMedia: formData.get('hasVideoMedia') === 'on',
     // order omitted - managed by drag-to-reorder.
   })
 
   revalidateBrowse()
+  return { ok: true as const }
 }
 
 export async function deleteTopicAction(formData: FormData) {
@@ -115,10 +138,11 @@ export async function updateSectionAction(formData: FormData) {
 
   const id = str(formData, 'id')
   const title = str(formData, 'title')
-  if (!id || !title) return
+  if (!id || !title) return { ok: false as const }
 
   await updateSection(id, { title })
   revalidateBrowse()
+  return { ok: true as const }
 }
 
 export async function deleteSectionAction(formData: FormData) {
