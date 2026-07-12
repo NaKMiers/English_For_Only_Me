@@ -125,6 +125,7 @@ function normalizePayload(data: unknown, term: string, now: Date) {
     definitions: definitions.slice(0, 12),
     examples: examples.slice(0, 8),
     license,
+    localizedMeanings: [],
     lemma: lemma ?? term,
     partOfSpeech,
     phonetics: phonetics.slice(0, 8),

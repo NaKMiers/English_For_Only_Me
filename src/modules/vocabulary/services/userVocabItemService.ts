@@ -16,6 +16,7 @@ import type {
   VocabOccurrenceReason,
   VocabRecallCardRecord,
 } from '@/modules/vocabulary/types'
+import { VOCAB_REQUIRES_VI_MEANING_FILTER } from '@/modules/vocabulary/vietnameseMeaning'
 
 import { toUserVocabItemRecord } from './userVocabItemRecords'
 import { toVocabEntryRecord } from './vocabEntryRecords'
@@ -30,6 +31,16 @@ export interface RecordOccurrenceInput {
   userId: string
   videoId?: string | null
   vocabEntryId: string
+}
+
+class MissingVietnameseMeaningError extends Error {
+  status = 409 as const
+
+  constructor() {
+    super(
+      'This vocabulary entry needs a Vietnamese meaning before it can be learned.'
+    )
+  }
 }
 
 function toObjectIdOrNull(id: string | null | undefined) {
@@ -64,9 +75,12 @@ export async function setUserVocabItemStatus({
   userId: string
   vocabEntryId: string
 }): Promise<UserVocabItemApiRecord | null> {
-  const entryExists = await VocabEntryModel.exists({ _id: vocabEntryId })
+  const entryExists = await VocabEntryModel.exists({
+    _id: vocabEntryId,
+    ...VOCAB_REQUIRES_VI_MEANING_FILTER,
+  })
 
-  if (!entryExists) return null
+  if (!entryExists) throw new MissingVietnameseMeaningError()
 
   const existingItem = await UserVocabItemModel.findOne({
     userId,
@@ -132,6 +146,7 @@ export async function listDueVocabRecallCardsForUser({
 
   const entries = await VocabEntryModel.find({
     _id: { $in: items.map(item => item.vocabEntryId) },
+    ...VOCAB_REQUIRES_VI_MEANING_FILTER,
   }).lean()
   const entryById = new Map(entries.map(entry => [String(entry._id), entry]))
 

@@ -11,6 +11,10 @@ import type {
   VocabEntryApiRecord,
   VocabEntryWithUserStateRecord,
 } from '@/modules/vocabulary/types'
+import {
+  getEnglishDefinition,
+  getRequiredVietnameseMeaning,
+} from '@/modules/vocabulary/vietnameseMeaning'
 
 import { VocabTermHeader } from './VocabTermHeader'
 
@@ -30,12 +34,12 @@ interface Props {
   showExploreIndex: (index: number) => void
 }
 
+function getVietnamesePreview(entry: VocabEntryApiRecord) {
+  return getRequiredVietnameseMeaning(entry)
+}
+
 function getDefinitionPreview(entry: VocabEntryApiRecord) {
-  return (
-    entry.definitions[0]?.definition ??
-    entry.localizedMeanings[0]?.meaning ??
-    'No definition yet. Lookup or admin enrich can fill this word.'
-  )
+  return getEnglishDefinition(entry)
 }
 
 function getExploreDecisionLabel(decision: ExploreDecision | undefined) {
@@ -184,7 +188,10 @@ export function VocabularyExplorePanel({
                         #{entry.entry.frequencyRank ?? index + 1}
                       </PageTag>
                     </div>
-                    <p className="text-manga-ink-soft max-w-2xl text-base leading-7 font-semibold">
+                    <p className="text-manga-ink-soft ml-auto max-w-2xl text-right text-base leading-7 font-semibold">
+                      {getVietnamesePreview(entry.entry)}
+                    </p>
+                    <p className="text-manga-ink-soft max-w-2xl text-sm leading-6 font-semibold">
                       {getDefinitionPreview(entry.entry)}
                     </p>
                   </div>

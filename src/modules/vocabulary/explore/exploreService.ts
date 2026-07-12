@@ -8,6 +8,7 @@ import {
   VOCAB_EXPLORE_MAX_LIMIT,
 } from '@/modules/vocabulary/constants'
 import type { VocabEntryWithUserStateRecord } from '@/modules/vocabulary/types'
+import { VOCAB_REQUIRES_VI_MEANING_FILTER } from '@/modules/vocabulary/vietnameseMeaning'
 
 import { toVocabEntryRecord } from '../services/vocabEntryRecords'
 
@@ -33,6 +34,7 @@ export async function listExploreVocabEntriesForUser({
       $match: {
         enrichmentStatus: 'ready',
         language,
+        ...VOCAB_REQUIRES_VI_MEANING_FILTER,
         frequencyRank: { $ne: null },
       },
     },

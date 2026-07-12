@@ -1,6 +1,6 @@
 'use client'
 
-import { LogOut, Shield } from 'lucide-react'
+import { Heart, LogOut, Shield } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
@@ -87,6 +87,10 @@ export function UserMenu({
           align="end"
           className="w-56"
         >
+          <DropdownMenuItem render={<Link href="/dictation/favorites" />}>
+            <Heart aria-hidden="true" />
+            Favorites
+          </DropdownMenuItem>
           {isAdmin && (
             <DropdownMenuItem render={<Link href="/admin" />}>
               <Shield aria-hidden="true" />

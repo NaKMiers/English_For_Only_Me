@@ -1,6 +1,6 @@
 'use client'
 
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Trophy } from 'lucide-react'
 import { useMemo, useState } from 'react'
 
 import { Badge } from '@/components/ui/badge'
@@ -94,43 +94,58 @@ export function DictationRecentVideosGrid({ videos }: Props) {
       className="grid gap-3"
     >
       <div className="grid gap-3 md:grid-cols-3">
-        {visibleVideos.map(video => (
-          <article
-            key={video.id}
-            className="border-manga-black bg-manga-white grid min-w-0 gap-2 border-2 p-3 shadow-[3px_3px_0_var(--manga-black)]"
-          >
-            <DictationVideoThumbnail
-              title={video.title}
-              thumbnailUrl={video.thumbnailUrl}
-              youtubeVideoId={video.youtubeVideoId}
-              sizes="(min-width: 768px) 28vw, 100vw"
-            />
-            <strong className="font-sans text-base leading-tight font-black wrap-break-word">
-              {video.title}
-            </strong>
-            <span className="text-manga-ink-soft text-sm leading-5 font-semibold">
-              {video.meta}
-            </span>
-            <Badge
-              variant="outline"
+        {visibleVideos.map(video => {
+          const isResultsAction = video.action?.label === 'Open Results'
+
+          return (
+            <article
+              key={video.id}
               className={cn(
-                'border-manga-black w-fit rounded-none border-2 font-black shadow-[2px_2px_0_var(--manga-black)]',
-                PAGE_TAG_TONES[video.statusTone]
+                'border-manga-black bg-manga-white grid min-w-0 gap-2 border-2 p-3 shadow-[3px_3px_0_var(--manga-black)]',
+                isResultsAction && 'bg-manga-paper-soft'
               )}
             >
-              {video.statusLabel}
-            </Badge>
-            {video.action ? (
-              <MangaButton
-                href={video.action.href}
-                tone="paper"
-                className="min-h-10 px-3 py-1 text-xs"
+              <DictationVideoThumbnail
+                title={video.title}
+                thumbnailUrl={video.thumbnailUrl}
+                youtubeVideoId={video.youtubeVideoId}
+                sizes="(min-width: 768px) 28vw, 100vw"
+              />
+              <strong className="font-sans text-base leading-tight font-black wrap-break-word">
+                {video.title}
+              </strong>
+              <span className="text-manga-ink-soft text-sm leading-5 font-semibold">
+                {video.meta}
+              </span>
+              <Badge
+                variant="outline"
+                className={cn(
+                  'border-manga-black w-fit rounded-none border-2 font-black shadow-[2px_2px_0_var(--manga-black)]',
+                  PAGE_TAG_TONES[video.statusTone]
+                )}
               >
-                {video.action.label}
-              </MangaButton>
-            ) : null}
-          </article>
-        ))}
+                {video.statusLabel}
+              </Badge>
+              {video.action ? (
+                <MangaButton
+                  href={video.action.href}
+                  tone={isResultsAction ? 'ink' : 'paper'}
+                  className="min-h-10 px-3 py-1 text-xs"
+                  icon={
+                    isResultsAction ? (
+                      <Trophy
+                        aria-hidden="true"
+                        className="size-4"
+                      />
+                    ) : undefined
+                  }
+                >
+                  {isResultsAction ? 'View Results' : video.action.label}
+                </MangaButton>
+              ) : null}
+            </article>
+          )
+        })}
       </div>
 
       {pageCount > 1 ? (

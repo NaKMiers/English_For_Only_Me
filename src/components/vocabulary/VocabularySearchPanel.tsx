@@ -6,6 +6,11 @@ import { MangaPanel } from '@/components/common/MangaPanel'
 import { Input } from '@/components/ui/input'
 import { MangaButton } from '@/components/ui/MangaButton'
 import type { VocabEntryWithUserStateRecord } from '@/modules/vocabulary/types'
+import {
+  getRequiredVietnameseMeaning,
+  hasVietnameseMeaning,
+  getVietnameseMeaning,
+} from '@/modules/vocabulary/vietnameseMeaning'
 
 import { VocabTermHeader } from './VocabTermHeader'
 
@@ -78,12 +83,22 @@ export function VocabularySearchPanel({
               : ''}
           </p>
 
+          <div className="border-manga-black bg-manga-paper-soft border-3 p-3 text-right">
+            <p className="text-xs font-black uppercase">Vietnamese meaning</p>
+            <p className="mt-1 text-base leading-7 font-black">
+              {getRequiredVietnameseMeaning(selectedEntry.entry)}
+            </p>
+          </div>
+
           <div className="grid gap-2 lg:grid-cols-3">
             {selectedEntry.entry.definitions.slice(0, 3).map(definition => (
               <div
                 key={`${definition.partOfSpeech}:${definition.definition}`}
-                className="border-manga-black bg-manga-paper-soft border-2 p-3"
+                className="border-manga-black bg-manga-white border-2 p-3"
               >
+                <p className="text-manga-ink-soft text-xs font-black uppercase">
+                  English definition
+                </p>
                 <p className="text-sm leading-6 font-semibold">
                   {definition.definition}
                 </p>
@@ -111,7 +126,7 @@ export function VocabularySearchPanel({
           <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
             <MangaButton
               className="[&>span:last-child]:whitespace-nowrap"
-              disabled={isLoading}
+              disabled={isLoading || !hasVietnameseMeaning(selectedEntry.entry)}
               icon={<BookOpen className="size-4" />}
               onClick={() =>
                 markEntry({
@@ -125,7 +140,7 @@ export function VocabularySearchPanel({
             </MangaButton>
             <MangaButton
               className="[&>span:last-child]:whitespace-nowrap"
-              disabled={isLoading}
+              disabled={isLoading || !hasVietnameseMeaning(selectedEntry.entry)}
               icon={<Check className="size-4" />}
               onClick={() =>
                 markEntry({
@@ -139,6 +154,11 @@ export function VocabularySearchPanel({
               Already Know
             </MangaButton>
           </div>
+          {!hasVietnameseMeaning(selectedEntry.entry) ? (
+            <p className="text-manga-red text-sm font-black">
+              Vietnamese meaning is required before this word can be learned.
+            </p>
+          ) : null}
         </div>
       ) : null}
 
@@ -156,6 +176,10 @@ export function VocabularySearchPanel({
               />
               <p className="text-manga-ink-soft text-xs font-black uppercase">
                 {result.userItem?.status ?? result.entry.enrichmentStatus}
+              </p>
+              <p className="line-clamp-2 text-right text-sm leading-6 font-semibold">
+                {getVietnameseMeaning(result.entry) ??
+                  'Needs Vietnamese meaning.'}
               </p>
             </div>
           ))}

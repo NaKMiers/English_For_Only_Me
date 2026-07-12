@@ -92,6 +92,7 @@ export const APP_MODULES: AppModule[] = [
 export const PRIMARY_NAV_ITEMS = [
   { label: 'Study Desk', href: '/' },
   ...APP_MODULES.map(module => ({
+    disabled: module.status !== 'active',
     label: module.shortTitle,
     href: module.href,
   })),

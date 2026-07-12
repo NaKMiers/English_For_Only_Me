@@ -11,6 +11,7 @@ import {
 import {
   ENRICHABLE_ENTRY_STATUSES,
   VOCAB_DEFAULT_LANGUAGE,
+  VOCAB_DEFAULT_LOCALIZED_LANGUAGE,
   VOCAB_ENRICHMENT_LEASE_MS,
   VOCAB_LOOKUP_TIMEOUT_MS,
 } from '@/modules/vocabulary/constants'
@@ -19,16 +20,25 @@ import {
   type VocabProviderAdapter,
   type VocabProviderResult,
 } from '@/modules/vocabulary/providers'
+import {
+  MY_MEMORY_PROVIDER,
+  translateTextToVietnamese,
+} from '@/modules/vocabulary/providers/myMemoryTranslate'
 import type {
   VocabAdminQueueSummaryRecord,
   VocabAudioUrlRecord,
   VocabDefinitionRecord,
   VocabEntryApiRecord,
   VocabExampleRecord,
+  VocabLocalizedMeaningRecord,
   VocabPhoneticRecord,
   VocabRelatedWordRecord,
   VocabSourceAttributionRecord,
 } from '@/modules/vocabulary/types'
+import {
+  VOCAB_MISSING_VI_MEANING_FILTER,
+  VOCAB_REQUIRES_VI_MEANING_FILTER,
+} from '@/modules/vocabulary/vietnameseMeaning'
 
 import { toVocabEntryRecord } from '../services/vocabEntryRecords'
 
@@ -40,6 +50,7 @@ interface LockedEntry {
   definitions?: VocabDefinitionRecord[] | null
   examples?: VocabExampleRecord[] | null
   language?: string | null
+  localizedMeanings?: VocabLocalizedMeaningRecord[] | null
   normalizedTerm: string
   phonetics?: VocabPhoneticRecord[] | null
   relatedWords?: VocabRelatedWordRecord[] | null
@@ -79,6 +90,10 @@ function getEligibleLeaseFilter(
     $or: [
       { enrichmentStatus: { $in: ['seeded', 'pending'] } },
       {
+        enrichmentStatus: 'ready',
+        ...VOCAB_MISSING_VI_MEANING_FILTER,
+      },
+      {
         enrichmentStatus: 'failed',
         $or: [{ nextRetryAt: null }, { nextRetryAt: { $lte: now } }],
       },
@@ -115,6 +130,51 @@ function mergeByKey<T>(
 
 function mergeStrings(left: string[] | null | undefined, right: string[]) {
   return Array.from(new Set([...(left ?? []), ...right])).filter(Boolean)
+}
+
+function hasVietnameseMeaning(
+  meanings: VocabLocalizedMeaningRecord[] | null | undefined
+) {
+  return Boolean(
+    meanings?.some(
+      meaning =>
+        meaning.language === VOCAB_DEFAULT_LOCALIZED_LANGUAGE &&
+        meaning.meaning.trim().length > 0
+    )
+  )
+}
+
+async function buildVietnameseMeanings({
+  existingMeanings,
+  fetcher,
+  partOfSpeech,
+  term,
+}: {
+  existingMeanings?: VocabLocalizedMeaningRecord[] | null
+  fetcher?: typeof fetch
+  partOfSpeech?: string | null
+  term: string
+}) {
+  const meanings = [...(existingMeanings ?? [])]
+
+  if (hasVietnameseMeaning(meanings)) return meanings
+
+  const translated = await translateTextToVietnamese({
+    fetcher,
+    text: term,
+    timeoutMs: VOCAB_LOOKUP_TIMEOUT_MS,
+  })
+
+  if (translated)
+    meanings.push({
+      language: VOCAB_DEFAULT_LOCALIZED_LANGUAGE,
+      license: null,
+      meaning: translated,
+      partOfSpeech: partOfSpeech ?? null,
+      source: MY_MEMORY_PROVIDER,
+    })
+
+  return meanings
 }
 
 async function acquireEnrichmentLease({
@@ -211,17 +271,47 @@ function toProviderError(
 
 async function persistReadyResult({
   entry,
+  fetcher,
   lockId,
   now,
   result,
 }: {
   entry: LockedEntry
+  fetcher?: typeof fetch
   lockId: string
   now: Date
   result: Extract<VocabProviderResult, { status: 'ready' }>
 }) {
   const payload = result.payload
+  const mergedDefinitions = mergeByKey(
+    entry.definitions,
+    payload.definitions,
+    item => `${item.partOfSpeech ?? ''}:${item.definition}`
+  )
+  const localizedMeanings = await buildVietnameseMeanings({
+    existingMeanings: mergeByKey(
+      entry.localizedMeanings,
+      payload.localizedMeanings,
+      item => `${item.language}:${item.partOfSpeech ?? ''}:${item.meaning}`
+    ),
+    fetcher,
+    partOfSpeech: payload.partOfSpeech ?? mergedDefinitions[0]?.partOfSpeech,
+    term: entry.term,
+  })
+  const isReady = hasVietnameseMeaning(localizedMeanings)
   const update = {
+    ...(isReady
+      ? {}
+      : {
+          $push: {
+            providerErrors: {
+              at: now,
+              message: 'Vietnamese meaning is required before this word is ready.',
+              provider: MY_MEMORY_PROVIDER,
+              status: 'missingVietnameseMeaning',
+            },
+          },
+        }),
     $set: {
       [`rawProviderData.${getProviderRawKey(result.provider)}`]:
         payload.rawData,
@@ -230,20 +320,17 @@ async function persistReadyResult({
         payload.audioUrls,
         item => item.url
       ),
-      definitions: mergeByKey(
-        entry.definitions,
-        payload.definitions,
-        item => `${item.partOfSpeech ?? ''}:${item.definition}`
-      ),
+      definitions: mergedDefinitions,
       examples: mergeByKey(entry.examples, payload.examples, item => item.text),
       enrichmentLeaseExpiresAt: null,
       enrichmentLockId: null,
       enrichmentLockedAt: null,
-      enrichmentStatus: 'ready',
+      enrichmentStatus: isReady ? 'ready' : 'failed',
       lastEnrichedAt: now,
       lemma: payload.lemma,
       license: payload.license,
-      nextRetryAt: null,
+      localizedMeanings,
+      nextRetryAt: isReady ? null : new Date(now.getTime() + RETRY_DELAY_MS),
       partOfSpeech: payload.partOfSpeech,
       phonetics: mergeByKey(
         entry.phonetics,
@@ -364,6 +451,7 @@ export async function enrichVocabEntryIfNeeded({
   if (result)
     return persistReadyResult({
       entry: locked.entry,
+      fetcher,
       lockId: locked.lockId,
       now,
       result,
@@ -400,14 +488,17 @@ async function processLockedEntry({
   if (result) {
     const entry = await persistReadyResult({
       entry: locked.entry,
+      fetcher,
       lockId: locked.lockId,
       now,
       result,
     })
 
-    return entry
+    if (!entry) return { status: 'skipped' } as const
+
+    return entry.enrichmentStatus === 'ready'
       ? ({ status: 'ready' } as const)
-      : ({ status: 'skipped' } as const)
+      : ({ status: 'failed' } as const)
   }
 
   const persisted = await persistFailedResult({
@@ -490,10 +581,21 @@ export async function getVocabAdminQueueSummary(
   const [seededCount, readyCount, failedCount, notFoundCount, staleLeaseCount] =
     await Promise.all([
       VocabEntryModel.countDocuments({
-        enrichmentStatus: { $in: ENRICHABLE_ENTRY_STATUSES },
-        $or: [{ nextRetryAt: null }, { nextRetryAt: { $lte: now } }],
+        $or: [
+          {
+            enrichmentStatus: { $in: ENRICHABLE_ENTRY_STATUSES },
+            $or: [{ nextRetryAt: null }, { nextRetryAt: { $lte: now } }],
+          },
+          {
+            enrichmentStatus: 'ready',
+            ...VOCAB_MISSING_VI_MEANING_FILTER,
+          },
+        ],
       }),
-      VocabEntryModel.countDocuments({ enrichmentStatus: 'ready' }),
+      VocabEntryModel.countDocuments({
+        enrichmentStatus: 'ready',
+        ...VOCAB_REQUIRES_VI_MEANING_FILTER,
+      }),
       VocabEntryModel.countDocuments({ enrichmentStatus: 'failed' }),
       VocabEntryModel.countDocuments({ enrichmentStatus: 'notFound' }),
       VocabEntryModel.countDocuments({

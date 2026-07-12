@@ -1,6 +1,9 @@
 import 'server-only'
 
 import { DictationSessionModel } from '@/models/dictation/DictationSessionModel'
+import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
+import { toDictationVideoRecord } from '@/modules/dictation/services/dictationVideoRecords'
+import type { DictationVideoApiRecord } from '@/modules/dictation/types'
 
 /**
  * How many times each video has been completed, keyed by video id. A
@@ -32,4 +35,25 @@ export async function getCompletionCountForVideo(
     videoId,
     status: 'completed',
   })
+}
+
+/** Latest completed video for the current user, used as a prominent results CTA. */
+export async function getLatestCompletedVideoForUser(
+  userId: string
+): Promise<DictationVideoApiRecord | null> {
+  const session = await DictationSessionModel.findOne({
+    userId,
+    status: 'completed',
+  })
+    .sort({ completedAt: -1, updatedAt: -1 })
+    .lean<{ videoId: unknown } | null>()
+
+  if (!session) return null
+
+  const video = await DictationVideoModel.findOne({
+    _id: session.videoId,
+    status: { $ne: 'archived' },
+  }).lean()
+
+  return video ? toDictationVideoRecord(video) : null
 }

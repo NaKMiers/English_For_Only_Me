@@ -6,6 +6,7 @@ import { PRIMARY_NAV_ITEMS } from '@/constants/modules'
 import { cn } from '@/lib/utils'
 
 interface NavItem {
+  disabled?: boolean
   href: string
   label: string
 }
@@ -66,16 +67,27 @@ export function AppTopbar({
         aria-label="Primary"
         className="flex min-w-0 items-center gap-2 overflow-x-auto pb-1"
       >
-        {navItems.map(item => (
-          <Link
-            key={item.href}
-            href={item.href}
-            aria-current={item.href === activeHref ? 'page' : undefined}
-            className="border-manga-black bg-manga-white hover:bg-manga-paper-soft aria-[current=page]:bg-manga-paper-soft inline-flex min-h-11 shrink-0 items-center border-3 px-3 font-sans text-sm font-black whitespace-nowrap shadow-[3px_3px_0_var(--manga-black)] transition-colors"
-          >
-            {item.label}
-          </Link>
-        ))}
+        {navItems.map(item =>
+          item.disabled ? (
+            <span
+              key={item.href}
+              aria-disabled="true"
+              title="Coming soon"
+              className="border-manga-black bg-manga-white/70 text-manga-ink-soft inline-flex min-h-11 shrink-0 cursor-not-allowed items-center border-3 px-3 font-sans text-sm font-black whitespace-nowrap opacity-70 shadow-[3px_3px_0_var(--manga-black)]"
+            >
+              {item.label}
+            </span>
+          ) : (
+            <Link
+              key={item.href}
+              href={item.href}
+              aria-current={item.href === activeHref ? 'page' : undefined}
+              className="border-manga-black bg-manga-white hover:bg-manga-paper-soft aria-[current=page]:bg-manga-paper-soft inline-flex min-h-11 shrink-0 items-center border-3 px-3 font-sans text-sm font-black whitespace-nowrap shadow-[3px_3px_0_var(--manga-black)] transition-colors"
+            >
+              {item.label}
+            </Link>
+          )
+        )}
       </nav>
 
       <div className="flex justify-start gap-2 sm:col-span-2 lg:col-span-1 lg:justify-end">

@@ -11,6 +11,7 @@ import {
 
 import { cn } from '@/lib/utils'
 import {
+  buildCharCorrection,
   computeHints,
   type CharCell,
   type CharCorrectionResult,
@@ -54,6 +55,7 @@ interface Props {
     className: string
     term: string
   }) => ReactNode
+  revealAnswerWords?: boolean
   showAnswerImmediately: boolean
   showFullAnswer: boolean
   status: GuidedStatus
@@ -61,14 +63,20 @@ interface Props {
   value: string
 }
 
-/** Append the next hint word to the current draft, keeping a single trailing
- * space between words. Pure so the Tab behaviour is unit-testable. */
-export function insertNextHint(value: string, hint: string): string {
+/** Append the next hint word to the current draft, keeping clean spacing. When
+ * the sentence still has words after that hint, leave one trailing space so the
+ * learner can continue typing immediately. */
+export function insertNextHint(
+  value: string,
+  hint: string,
+  hasWordsAfterHint = false
+): string {
   const trimmed = value.replace(/\s+$/, '')
+  const suffix = hasWordsAfterHint ? ' ' : ''
 
-  if (trimmed.length === 0) return hint
+  if (trimmed.length === 0) return `${hint}${suffix}`
 
-  return `${trimmed} ${hint}`
+  return `${trimmed} ${hint}${suffix}`
 }
 
 function escapeRegExp(text: string): string {
@@ -82,6 +90,16 @@ function escapeRegExp(text: string): string {
  * should reappear (deleting the word un-hides it). */
 function isHintTyped(value: string, hint: string): boolean {
   return new RegExp(`(?:^|\\s)${escapeRegExp(hint)}(?:$|\\s)`, 'i').test(value)
+}
+
+function hasWordsAfterHint(expectedText: string, hint: string): boolean {
+  const wordPattern = /[A-Za-z][A-Za-z'-]*/g
+  const words = Array.from(expectedText.matchAll(wordPattern))
+  const hintIndex = words.findIndex(
+    match => match[0].toLowerCase() === hint.toLowerCase()
+  )
+
+  return hintIndex >= 0 && hintIndex < words.length - 1
 }
 
 interface DisplayCell {
@@ -169,6 +187,7 @@ export function GuidedAnswerInput({
   onCheck,
   onReveal,
   renderCorrectionWord,
+  revealAnswerWords = false,
   showAnswerImmediately,
   showFullAnswer,
   status,
@@ -191,6 +210,16 @@ export function GuidedAnswerInput({
     () => structuralHints.filter(hint => !isHintTyped(value, hint)),
     [structuralHints, value]
   )
+  const displayCorrection = useMemo(() => {
+    if (correction) return correction
+    if (!revealAnswerWords || status !== 'correct') return null
+
+    return buildCharCorrection({
+      action: 'check',
+      expectedText,
+      typedAnswer: expectedText,
+    })
+  }, [correction, expectedText, revealAnswerWords, status])
 
   // The boundary word (the first mistake) underlined IN PLACE inside the draft:
   // amber under the whole wrong word, red under the exact wrong characters. Only
@@ -221,7 +250,7 @@ export function GuidedAnswerInput({
   // Shared by Tab and clicking a hint chip: insert the word, then keep focus
   // and the caret in the textarea so typing continues right after it.
   function fillHint(hint: string) {
-    onChange(insertNextHint(value, hint))
+    onChange(insertNextHint(value, hint, hasWordsAfterHint(expectedText, hint)))
 
     const textarea = textareaRef.current
 
@@ -258,9 +287,10 @@ export function GuidedAnswerInput({
   }
 
   const showCorrection =
-    correction !== null &&
-    showAnswerImmediately &&
-    (status === 'incorrect' || status === 'revealed')
+    displayCorrection !== null &&
+    ((showAnswerImmediately &&
+      (status === 'incorrect' || status === 'revealed')) ||
+      revealAnswerWords)
 
   function renderCorrectionSegment(segment: WordSegment, index: number) {
     const children = segmentCells(segment, index, showFullAnswer).map(cell => (
@@ -405,7 +435,7 @@ export function GuidedAnswerInput({
           className="border-manga-black bg-manga-paper-soft border-2 p-3 font-semibold wrap-break-word shadow-[2px_2px_0_var(--manga-black)]"
           data-testid="answer-line"
         >
-          {correction.segments.map((segment, index) => (
+          {displayCorrection.segments.map((segment, index) => (
             <span key={`${segment.expected}-${index}`}>
               {index > 0 ? ' ' : null}
               {renderCorrectionSegment(segment, index)}

@@ -134,6 +134,7 @@ export function DictationPracticeShell({
   const [sessionError, setSessionError] = useState<string | null>(null)
   const [draftNotice, setDraftNotice] = useState<string | null>(null)
   const [vocabLookupError, setVocabLookupError] = useState<string | null>(null)
+  const [showAnswerWords, setShowAnswerWords] = useState(false)
   const [currentAttempt, setCurrentAttempt] =
     useState<DictationAttemptApiRecord | null>(null)
   // Char-level correction is captured at Check time and frozen, so rewriting the
@@ -446,6 +447,7 @@ export function DictationPracticeShell({
       setCurrentIndex(safeIndex)
       setDraftNotice(null)
       setVocabLookupError(null)
+      setShowAnswerWords(false)
       setCurrentAttempt(null)
       setCharCorrection(null)
       patchSession({
@@ -602,6 +604,7 @@ export function DictationPracticeShell({
         setDraftNotice(null)
         setSessionError(null)
         setVocabLookupError(null)
+        setShowAnswerWords(false)
 
         // Resolved (correct / reveal / skip): fill the full canonical answer into
         // the textarea like DailyDictation, and keep it so revisiting the segment
@@ -725,6 +728,7 @@ export function DictationPracticeShell({
     if (canGoNext) goToIndex(currentIndex + 1)
     else {
       setVocabLookupError(null)
+      setShowAnswerWords(false)
       setCurrentAttempt(null)
       setCharCorrection(null)
       setIsCompleted(true)
@@ -758,6 +762,7 @@ export function DictationPracticeShell({
     setCurrentAttempt(null)
     setCharCorrection(null)
     setVocabLookupError(null)
+    setShowAnswerWords(false)
     replayCurrentSegment()
   }, [currentSegment, replayCurrentSegment, updateAnswerDrafts])
 
@@ -765,6 +770,7 @@ export function DictationPracticeShell({
   const goToFirstSegment = useCallback(() => {
     setIsCompleted(false)
     setVocabLookupError(null)
+    setShowAnswerWords(false)
     setCurrentAttempt(null)
     setCharCorrection(null)
     goToIndex(0)
@@ -781,6 +787,7 @@ export function DictationPracticeShell({
     setActiveView('practice')
     setDraftNotice(null)
     setVocabLookupError(null)
+    setShowAnswerWords(false)
     setCurrentAttempt(null)
     setCharCorrection(null)
     setIsCompleted(false)
@@ -973,8 +980,12 @@ export function DictationPracticeShell({
                   title="You have completed this exercise, good job!"
                 >
                   <div className="flex flex-wrap gap-2">
+                    <MangaButton href={`/dictation/videos/${video.id}/results`}>
+                      View Results
+                    </MangaButton>
                     <MangaButton
                       href="/dictation"
+                      tone="paper"
                       icon={undefined}
                     >
                       Next Exercise
@@ -1061,19 +1072,33 @@ export function DictationPracticeShell({
                         {children}
                       </QuickVocabWordButton>
                     )}
+                    revealAnswerWords={showAnswerWords}
                     showAnswerImmediately={preferences.showAnswerImmediately}
                     showFullAnswer={preferences.showFullAnswer}
                     status={guidedStatus}
                     statusAction={
                       <>
                         {attemptResolved ? (
-                          <MangaButton
-                            type="button"
-                            className="text-base"
-                            onClick={advanceAfterAttempt}
-                          >
-                            {canGoNext ? 'Next' : 'Finish'}
-                          </MangaButton>
+                          <>
+                            {guidedStatus === 'correct' &&
+                            !showAnswerWords ? (
+                              <MangaButton
+                                type="button"
+                                tone="paper"
+                                className="text-base"
+                                onClick={() => setShowAnswerWords(true)}
+                              >
+                                Show answer words
+                              </MangaButton>
+                            ) : null}
+                            <MangaButton
+                              type="button"
+                              className="text-base"
+                              onClick={advanceAfterAttempt}
+                            >
+                              {canGoNext ? 'Next' : 'Finish'}
+                            </MangaButton>
+                          </>
                         ) : (
                           <>
                             <MangaButton

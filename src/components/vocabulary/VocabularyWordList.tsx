@@ -20,6 +20,10 @@ import type {
   VocabWordListRecord,
   VocabWordListView,
 } from '@/modules/vocabulary/types'
+import {
+  getEnglishDefinition,
+  getRequiredVietnameseMeaning,
+} from '@/modules/vocabulary/vietnameseMeaning'
 import { setVocabItemStatusApi } from '@/requests/vocabularyApi'
 
 import { VocabTermHeader } from './VocabTermHeader'
@@ -80,12 +84,12 @@ const VIEW_LABELS: Record<VocabWordListView, string> = {
 const PER_PAGE_OPTIONS = [5, 10, 20, 30, 50, 100, 200] as const
 const DEFAULT_PER_PAGE = 50
 
+function getVietnamesePreview(word: VocabWordListRecord) {
+  return getRequiredVietnameseMeaning(word.entry)
+}
+
 function getDefinitionPreview(word: VocabWordListRecord) {
-  return (
-    word.entry.definitions[0]?.definition ??
-    word.entry.localizedMeanings[0]?.meaning ??
-    'No definition is available yet.'
-  )
+  return getEnglishDefinition(word.entry)
 }
 
 function formatDate(value: Date | string | null) {
@@ -236,11 +240,13 @@ export function VocabularyWordList({ activeView, words }: Props) {
           <Link
             key={tab.view}
             className={cn(
-              'border-manga-black px-3 py-2 text-sm font-black shadow-[3px_3px_0_var(--manga-black)] transition-[background,box-shadow,transform] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none',
+              'border-manga-black relative px-3 py-2 text-sm font-black shadow-[3px_3px_0_var(--manga-black)] transition-[background,color,box-shadow,transform] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none',
               VIEW_TAB_CLASS_NAMES[tab.view],
-              tab.view === activeView && 'outline-manga-bright-red outline-3'
+              tab.view === activeView &&
+                'translate-x-[3px] translate-y-[3px] shadow-none after:bg-manga-black after:absolute after:-bottom-2 after:left-2 after:right-2 after:h-1'
             )}
             href={tab.href}
+            aria-current={tab.view === activeView ? 'page' : undefined}
           >
             {tab.label}
           </Link>
@@ -354,9 +360,14 @@ export function VocabularyWordList({ activeView, words }: Props) {
                 </PageTag>
               </div>
 
-              <p className="text-manga-ink-soft line-clamp-4 text-sm leading-6 font-semibold">
-                {getDefinitionPreview(word)}
-              </p>
+              <div className="grid gap-1">
+                <p className="line-clamp-2 text-right text-sm leading-6 font-black">
+                  {getVietnamesePreview(word)}
+                </p>
+                <p className="text-manga-ink-soft line-clamp-3 text-sm leading-6 font-semibold">
+                  {getDefinitionPreview(word)}
+                </p>
+              </div>
 
               <div className="flex flex-wrap items-center gap-2 text-xs font-black uppercase">
                 <span className="border-manga-black bg-manga-paper-soft grid size-8 place-items-center border-2">

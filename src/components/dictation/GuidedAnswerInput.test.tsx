@@ -60,11 +60,13 @@ function renderInput(props: Partial<Parameters<typeof GuidedAnswerInput>[0]>) {
 describe('insertNextHint', () => {
   test('sets the first hint when the draft is empty', () => {
     expect(insertNextHint('', 'Mengs')).toBe('Mengs')
+    expect(insertNextHint('', 'Mengs', true)).toBe('Mengs ')
   })
 
   test('appends with a single space and trims trailing whitespace', () => {
     expect(insertNextHint('the ', 'Mengs')).toBe('the Mengs')
     expect(insertNextHint('the Mengs', 'Jiangs')).toBe('the Mengs Jiangs')
+    expect(insertNextHint('the ', 'Mengs', true)).toBe('the Mengs ')
   })
 })
 
@@ -237,13 +239,13 @@ describe('GuidedAnswerInput - keyboard', () => {
 
     // Click the SECOND hint while the first ("Mengs") is still outstanding.
     fireEvent.click(view.getByText('Jiangs'))
-    expect(onChange).toHaveBeenCalledWith('the Jiangs')
+    expect(onChange).toHaveBeenCalledWith('the Jiangs ')
 
     rerender({
       correction,
       expectedText: meng,
       status: 'incorrect',
-      value: 'the Jiangs',
+      value: 'the Jiangs ',
     })
 
     expect(view.getByText('Mengs')).toBeDefined()
@@ -263,7 +265,7 @@ describe('GuidedAnswerInput - keyboard', () => {
       key: 'Tab',
     })
 
-    expect(onChange).toHaveBeenCalledWith('the Mengs')
+    expect(onChange).toHaveBeenCalledWith('the Mengs ')
     // preventDefault ran, so the focus did not move out
     expect(event).toBe(false)
   })
@@ -290,7 +292,7 @@ describe('GuidedAnswerInput - keyboard', () => {
       correction,
       expectedText: meng,
       status: 'incorrect',
-      value: 'the Mengs',
+      value: 'the Mengs ',
     })
 
     expect(view.queryByText('Mengs')).toBeNull()

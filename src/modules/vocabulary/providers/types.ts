@@ -3,6 +3,7 @@ import type {
   VocabDefinitionRecord,
   VocabExampleRecord,
   VocabLicenseRecord,
+  VocabLocalizedMeaningRecord,
   VocabPhoneticRecord,
   VocabProviderName,
   VocabRelatedWordRecord,
@@ -16,6 +17,7 @@ export interface NormalizedProviderPayload {
   definitions: VocabDefinitionRecord[]
   examples: VocabExampleRecord[]
   license: VocabLicenseRecord | null
+  localizedMeanings: VocabLocalizedMeaningRecord[]
   lemma: string | null
   partOfSpeech: string | null
   phonetics: VocabPhoneticRecord[]

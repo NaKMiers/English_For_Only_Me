@@ -19,6 +19,10 @@ import type {
   VocabRecallTaskRecord,
   VocabRecallTaskType,
 } from '@/modules/vocabulary/types'
+import {
+  getEnglishDefinition,
+  getRequiredVietnameseMeaning,
+} from '@/modules/vocabulary/vietnameseMeaning'
 import { answerVocabRecallApi } from '@/requests/vocabularyApi'
 
 import { VocabTermHeader } from './VocabTermHeader'
@@ -110,11 +114,7 @@ function getInstruction(type: VocabRecallTaskType) {
 }
 
 function getDefinition(task: VocabRecallTaskRecord) {
-  return (
-    task.entry.definitions[0]?.definition ??
-    task.entry.localizedMeanings[0]?.meaning ??
-    'No definition is available yet.'
-  )
+  return getEnglishDefinition(task.entry)
 }
 
 function getCorrectOptionId(task: VocabRecallTaskRecord) {
@@ -142,11 +142,7 @@ function getCorrectAnswerText(task: VocabRecallTaskRecord) {
 
 function getQuestionText(task: VocabRecallTaskRecord) {
   if (task.type === 'definitionChooseWord')
-    return (
-      task.entry.definitions[0]?.definition ??
-      task.entry.localizedMeanings[0]?.meaning ??
-      'No definition is available.'
-    )
+    return getEnglishDefinition(task.entry)
 
   if (task.type === 'wordChooseDefinition') return task.entry.term
   if (task.type === 'exampleRemember')
@@ -425,6 +421,9 @@ export function VocabRecallModal({
                     entry={task.entry}
                     size="lg"
                   />
+                  <div className="border-manga-black bg-manga-paper-soft border-2 p-3 text-right text-sm leading-6 font-black sm:text-base">
+                    {getRequiredVietnameseMeaning(task.entry)}
+                  </div>
                   <div className="border-manga-black bg-manga-white border-2 p-3 text-sm leading-6 font-semibold sm:text-base">
                     {getDefinition(task)}
                   </div>

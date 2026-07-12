@@ -14,17 +14,17 @@ import type {
   VocabRecallTaskRecord,
   VocabRecallTaskType,
 } from '@/modules/vocabulary/types'
+import {
+  getEnglishDefinition,
+  VOCAB_REQUIRES_VI_MEANING_FILTER,
+} from '@/modules/vocabulary/vietnameseMeaning'
 
 import { toUserVocabItemRecord } from '../services/userVocabItemRecords'
 import { toVocabEntryRecord } from '../services/vocabEntryRecords'
 import { createVocabRecallTaskToken } from './recallTaskToken'
 
 function getDefinition(entry: VocabEntryApiRecord) {
-  return (
-    entry.definitions[0]?.definition ??
-    entry.localizedMeanings[0]?.meaning ??
-    `A saved vocabulary item for "${entry.term}".`
-  )
+  return getEnglishDefinition(entry)
 }
 
 function getExampleSentence(entry: VocabEntryApiRecord) {
@@ -185,10 +185,14 @@ export async function listDueVocabRecallTasksForUser({
 
   const entryIds = items.map(item => item.vocabEntryId)
   const [entries, distractorEntries] = await Promise.all([
-    VocabEntryModel.find({ _id: { $in: entryIds } }).lean(),
+    VocabEntryModel.find({
+      _id: { $in: entryIds },
+      ...VOCAB_REQUIRES_VI_MEANING_FILTER,
+    }).lean(),
     VocabEntryModel.find({
       _id: { $nin: entryIds },
       enrichmentStatus: 'ready',
+      ...VOCAB_REQUIRES_VI_MEANING_FILTER,
     })
       .sort({ frequencyRank: 1, normalizedTerm: 1 })
       .limit(Math.max(24, limit * 8))

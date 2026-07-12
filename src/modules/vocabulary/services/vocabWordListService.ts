@@ -12,6 +12,7 @@ import type {
   VocabWordListRecord,
   VocabWordListView,
 } from '@/modules/vocabulary/types'
+import { VOCAB_REQUIRES_VI_MEANING_FILTER } from '@/modules/vocabulary/vietnameseMeaning'
 
 import { toUserVocabItemRecord } from './userVocabItemRecords'
 import { toVocabEntryRecord } from './vocabEntryRecords'
@@ -105,6 +106,7 @@ export async function listVocabWordsForUser({
 
   const entries = await VocabEntryModel.find({
     _id: { $in: items.map(item => item.vocabEntryId) },
+    ...VOCAB_REQUIRES_VI_MEANING_FILTER,
   }).lean()
   const entryById = new Map(entries.map(entry => [String(entry._id), entry]))
 

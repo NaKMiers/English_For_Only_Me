@@ -1,6 +1,9 @@
+import { Trophy } from 'lucide-react'
+
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { AuthControl } from '@/components/common/AuthControl'
 import { MangaPageShell } from '@/components/common/MangaPageShell'
+import { MangaButton } from '@/components/ui/MangaButton'
 import { PageTag } from '@/components/ui/PageTag'
 import type {
   DictationGlobalStatsRecord,
@@ -21,6 +24,8 @@ export function DictationHome({
   reviewItems = [],
   videos = [],
 }: Props) {
+  const latestCompletedVideo = videos.find(video => video.status === 'completed')
+
   return (
     <MangaPageShell
       topbar={
@@ -64,7 +69,29 @@ export function DictationHome({
                 then turn weak spots into review.
               </p>
             </div>
-            <PageTag tone="red">Listening</PageTag>
+            <div className="flex shrink-0 flex-col items-start gap-3 sm:items-end">
+              <PageTag tone="red">Listening</PageTag>
+              {latestCompletedVideo ? (
+                <div className="grid max-w-xs gap-2 sm:justify-items-end">
+                  <MangaButton
+                    href={`/dictation/videos/${latestCompletedVideo.id}/results`}
+                    tone="ink"
+                    className="w-full sm:w-auto"
+                    icon={
+                      <Trophy
+                        aria-hidden="true"
+                        className="size-4"
+                      />
+                    }
+                  >
+                    View Latest Results
+                  </MangaButton>
+                  <span className="text-manga-ink-soft text-left text-xs leading-5 font-black sm:text-right">
+                    {latestCompletedVideo.title}
+                  </span>
+                </div>
+              ) : null}
+            </div>
           </div>
 
           <DictationSceneTabs

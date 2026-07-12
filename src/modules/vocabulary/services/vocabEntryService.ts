@@ -9,6 +9,7 @@ import {
 } from '@/modules/vocabulary/constants'
 import { normalizeVocabTerm } from '@/modules/vocabulary/normalizeVocabTerm'
 import type { VocabEntryWithUserStateRecord } from '@/modules/vocabulary/types'
+import { VOCAB_REQUIRES_VI_MEANING_FILTER } from '@/modules/vocabulary/vietnameseMeaning'
 
 import { toUserVocabItemRecord } from './userVocabItemRecords'
 import { toVocabEntryRecord } from './vocabEntryRecords'
@@ -108,6 +109,7 @@ export async function searchVocabEntries({
   const entries = await VocabEntryModel.find({
     language,
     normalizedTerm: regex,
+    ...VOCAB_REQUIRES_VI_MEANING_FILTER,
   })
     .sort({ frequencyRank: 1, normalizedTerm: 1 })
     .limit(finalLimit)

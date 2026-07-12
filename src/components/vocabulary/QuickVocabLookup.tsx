@@ -14,6 +14,11 @@ import { Button } from '@/components/ui/button'
 import { MangaButton } from '@/components/ui/MangaButton'
 import type { VocabEntryWithUserStateRecord } from '@/modules/vocabulary/types'
 import {
+  getEnglishDefinition,
+  getRequiredVietnameseMeaning,
+  hasVietnameseMeaning,
+} from '@/modules/vocabulary/vietnameseMeaning'
+import {
   lookupVocabEntryApi,
   setVocabItemStatusApi,
 } from '@/requests/vocabularyApi'
@@ -43,12 +48,12 @@ interface WordButtonProps {
   videoId?: string | null
 }
 
+function getVietnamese(entry: VocabEntryWithUserStateRecord) {
+  return getRequiredVietnameseMeaning(entry.entry)
+}
+
 function getDefinition(entry: VocabEntryWithUserStateRecord) {
-  return (
-    entry.entry.definitions[0]?.definition ??
-    entry.entry.localizedMeanings[0]?.meaning ??
-    'No definition is available yet.'
-  )
+  return getEnglishDefinition(entry.entry)
 }
 
 function tokenize(text: string) {
@@ -130,6 +135,7 @@ export function QuickVocabWordButton({
         ...entry,
         userItem: response.item,
       })
+      setOpen(false)
     } catch (requestError) {
       setError(
         requestError instanceof Error
@@ -168,12 +174,16 @@ export function QuickVocabWordButton({
               </DialogHeader>
               <div className="grid gap-3">
                 <VocabTermHeader entry={entry.entry} />
-                <div className="border-manga-black bg-manga-paper-soft border-2 p-3 text-base leading-7 font-semibold">
+                <div className="border-manga-black bg-manga-paper-soft border-2 p-3 text-right text-base leading-7 font-black">
+                  {getVietnamese(entry)}
+                </div>
+                <div className="border-manga-black bg-manga-white border-2 p-3 text-base leading-7 font-semibold">
                   {getDefinition(entry)}
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <MangaButton
                     className="[&>span:last-child]:whitespace-nowrap"
+                    disabled={!hasVietnameseMeaning(entry.entry)}
                     icon={<BookOpen className="size-4" />}
                     onClick={() => mark('shouldLearn')}
                   >
@@ -181,6 +191,7 @@ export function QuickVocabWordButton({
                   </MangaButton>
                   <MangaButton
                     className="[&>span:last-child]:whitespace-nowrap"
+                    disabled={!hasVietnameseMeaning(entry.entry)}
                     icon={<Check className="size-4" />}
                     onClick={() => mark('alreadyKnow')}
                     tone="paper"
@@ -194,6 +205,12 @@ export function QuickVocabWordButton({
                 </p>
                 {error ? (
                   <p className="text-manga-red text-sm font-black">{error}</p>
+                ) : null}
+                {!hasVietnameseMeaning(entry.entry) ? (
+                  <p className="text-manga-red text-sm font-black">
+                    Vietnamese meaning is required before this word can be
+                    learned.
+                  </p>
                 ) : null}
               </div>
             </>
@@ -263,6 +280,7 @@ export function QuickVocabLookup({
         ...entry,
         userItem: response.item,
       })
+      setOpen(false)
     } catch (requestError) {
       setError(
         requestError instanceof Error
@@ -313,12 +331,16 @@ export function QuickVocabLookup({
               </DialogHeader>
               <div className="grid gap-3">
                 <VocabTermHeader entry={entry.entry} />
-                <div className="border-manga-black bg-manga-paper-soft border-2 p-3 text-base leading-7 font-semibold">
+                <div className="border-manga-black bg-manga-paper-soft border-2 p-3 text-right text-base leading-7 font-black">
+                  {getVietnamese(entry)}
+                </div>
+                <div className="border-manga-black bg-manga-white border-2 p-3 text-base leading-7 font-semibold">
                   {getDefinition(entry)}
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <MangaButton
                     className="[&>span:last-child]:whitespace-nowrap"
+                    disabled={!hasVietnameseMeaning(entry.entry)}
                     icon={<BookOpen className="size-4" />}
                     onClick={() => mark('shouldLearn')}
                   >
@@ -326,6 +348,7 @@ export function QuickVocabLookup({
                   </MangaButton>
                   <MangaButton
                     className="[&>span:last-child]:whitespace-nowrap"
+                    disabled={!hasVietnameseMeaning(entry.entry)}
                     icon={<Check className="size-4" />}
                     onClick={() => mark('alreadyKnow')}
                     tone="paper"
@@ -337,6 +360,12 @@ export function QuickVocabLookup({
                   <Search className="size-4" />
                   {entry.userItem?.status ?? 'Not picked yet'}
                 </p>
+                {!hasVietnameseMeaning(entry.entry) ? (
+                  <p className="text-manga-red text-sm font-black">
+                    Vietnamese meaning is required before this word can be
+                    learned.
+                  </p>
+                ) : null}
               </div>
             </>
           ) : null}

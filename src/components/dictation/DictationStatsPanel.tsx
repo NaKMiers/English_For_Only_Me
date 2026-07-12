@@ -67,7 +67,7 @@ export function DictationStatsPanel({ stats }: Props) {
         />
       </div>
 
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(320px,0.8fr)]">
+      <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(320px,0.8fr)]">
         <MangaPanel
           eyebrow="Weakest"
           title="Hardest segments"
@@ -120,7 +120,7 @@ export function DictationStatsPanel({ stats }: Props) {
         </MangaPanel>
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-2">
+      <div className="grid items-start gap-5 lg:grid-cols-2">
         <MangaPanel
           eyebrow="Words"
           title="Common missed words"
