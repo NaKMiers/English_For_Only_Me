@@ -46,6 +46,7 @@ Registered model names (the string passed to `model(...)`):
 | `VocabEntry`          | `src/models/vocabulary/VocabEntryModel.ts`         | global dictionary cache   |
 | `UserVocabItem`       | `src/models/vocabulary/UserVocabItemModel.ts`      | per-user vocabulary state |
 | `VocabOccurrence`     | `src/models/vocabulary/VocabOccurrenceModel.ts`    | per-user vocabulary trail |
+| `VocabRecallAttempt`  | `src/models/vocabulary/VocabRecallAttemptModel.ts` | per-user recall attempts  |
 
 *`DictationSegment` is global content, but it carries per-segment aggregate progress fields (`attemptStatus`, `attemptCount`, `lastAttemptAt`) that are not user-scoped (see section 6).
 
@@ -84,6 +85,8 @@ erDiagram
 
     VocabEntry ||--o{ UserVocabItem : "classified by (vocabEntryId)"
     VocabEntry ||--o{ VocabOccurrence : "encountered as (vocabEntryId)"
+    VocabEntry ||--o{ VocabRecallAttempt : "reviewed as (vocabEntryId)"
+    UserVocabItem ||--o{ VocabRecallAttempt : "attempted as (itemId)"
 ```
 
 ## 3. Models
@@ -456,6 +459,29 @@ are schema-supported for the deferred dictation popover follow-up.
   `{ userId: 1, reason: 1, createdAt: -1 }`.
 - Timestamps: yes.
 
+### 3.15 VocabRecallAttempt (`src/models/vocabulary/VocabRecallAttemptModel.ts`)
+
+Purpose: an append-only record of one vocabulary recall answer. It backs vocab
+accuracy, streaks, reviews-today, and hardest-word stats, and it gives the
+recall answer route an idempotent write target.
+
+| Field                                   | Type                           | Required / Default                    | Meaning                                                   |
+| --------------------------------------- | ------------------------------ | ------------------------------------- | --------------------------------------------------------- |
+| `userId`                                | String                         | required, indexed                     | Owner (user id or guest id).                              |
+| `itemId`                                | ObjectId (`ref UserVocabItem`) | required, indexed                     | User-specific vocab item being reviewed.                  |
+| `vocabEntryId`                          | ObjectId (`ref VocabEntry`)    | required, indexed                     | Global entry reviewed.                                    |
+| `taskType`                              | String enum                    | required, indexed                     | One of the five recall task types.                        |
+| `taskId`, `idempotencyKey`              | String                         | required                              | Signed task id and client idempotency key.                |
+| `selectedAnswer`, `correctAnswer`       | String or null / String        | selected default `null`               | Submitted answer/action and server-signed correct answer. |
+| `isCorrect`                             | Boolean                        | required, indexed                     | Server-graded result.                                     |
+| `recallStageBefore`, `recallStageAfter` | Number                         | required, min 1, max 7                | Stage transition snapshot.                                |
+| `statusAfter`                           | String                         | required                              | Item status after applying the scheduler.                 |
+| `answeredAt`                            | Date                           | required, default `Date.now`, indexed | Answer timestamp for stats/streaks.                       |
+
+- Indexes: unique `{ userId: 1, idempotencyKey: 1 }`; stats indexes
+  `{ userId: 1, answeredAt: -1 }` and `{ userId: 1, taskType: 1, answeredAt: -1 }`.
+- Timestamps: yes.
+
 ## 4. Status and Enum Unions
 
 All unions are defined in `src/modules/dictation/types.ts` and mirrored by the schema `enum:` arrays.
@@ -568,6 +594,9 @@ Enum-constrained on `DictationSegment.qualityFlags` via `segmentQualityFlags` (`
 `VocabOccurrenceReason`: `manualSearch`, `dictionaryLookup`, `explore`,
 `clickedInAnswer`, `missedWord`, `aiDebrief`.
 
+`VocabRecallTaskType`: `listenChooseWord`, `listenChooseDefinition`,
+`exampleRemember`, `definitionChooseWord`, `wordChooseDefinition`.
+
 ## 5. Derived vs Stored Fields
 
 Several fields are denormalized counters/cursors kept in sync by application code, not computed on read:
@@ -580,7 +609,8 @@ Several fields are denormalized counters/cursors kept in sync by application cod
 - `order` fields (`DictationTopic.order`, `DictationSection.order`, `DictationVideo.order`): manual drag-to-reorder positions, rewritten in bulk in `src/modules/dictation/content/adminContentRepository.ts:67,78,173` via `$set: { order: index }`.
 - `DictationReviewItem.statsSnapshot`: a frozen copy of stats, recomputed by `recomputeReviewItemsForVideo` (attempts route `:245`).
 - `UserVocabItem.dueAt`, `recallStage`, and mastered/known timestamps: maintained
-  by `src/modules/vocabulary/recall/recallScheduler.ts` and
+  by `src/modules/vocabulary/recall/recallScheduler.ts`,
+  `src/modules/vocabulary/recall/recallAnswerService.ts`, and
   `src/modules/vocabulary/services/userVocabItemService.ts`.
 
 Truly derived-on-read (never stored): topic `levelRange`, `sectionCount`, `lessonCount` are computed by aggregation for the browse grid (comment `DictationTopicModel.ts:11-15`; `DictationTopicSummaryRecord` at `types.ts:124-129`). Global learner stats (`DictationGlobalStatsRecord`, `DictationVideoStatsRecord`) are computed from attempts/segments at read time (`src/modules/dictation/stats/videoStats.ts`).
@@ -589,7 +619,10 @@ Truly derived-on-read (never stored): topic `levelRange`, `sectionCount`, `lesso
 
 Global content (no per-user scope): `DictationTopic`, `DictationSection`, `DictationVideo`, `DictationTranscript`, `DictationSegment`, and `VocabEntry`. These are admin-curated or globally cached and shared by all learners. Note that `DictationSegment` carries aggregate progress fields (`attemptStatus`, `attemptCount`, `lastAttemptAt`) that are global, not per-user; per-user progress lives in `DictationAttempt`.
 
-Per-user data (scoped by `userId`): `DictationSession`, `DictationAttempt`, `DictationReviewItem`, `DictationDebrief`, `UserVocabItem`, `VocabOccurrence` (all `userId: String`), and `DictationFavorite` (`userId: ObjectId ref User`).
+Per-user data (scoped by `userId`): `DictationSession`, `DictationAttempt`,
+`DictationReviewItem`, `DictationDebrief`, `UserVocabItem`, `VocabOccurrence`,
+`VocabRecallAttempt` (all `userId: String`), and `DictationFavorite`
+(`userId: ObjectId ref User`).
 
 Guest-user story: anonymous practice is supported. `src/lib/auth/guestUser.ts` mints a stable random id prefixed `guest_` (`GUEST_ID_PREFIX`, `guestUser.ts:13`) stored in an httpOnly cookie (`dictationGuestId`, 1-year max age). That guest id is used as the `String` `userId` on sessions, attempts, review items, and debriefs - exactly like a signed-in user (comment `guestUser.ts:5-10`). `isGuestId()` distinguishes guest ids from real user ObjectIds.
 

@@ -1,7 +1,13 @@
 'use client'
 
 import { CircleCheck, Eye, Lightbulb, TriangleAlert } from 'lucide-react'
-import { useEffect, useMemo, useRef, type RefObject } from 'react'
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  type ReactNode,
+  type RefObject,
+} from 'react'
 
 import { cn } from '@/lib/utils'
 import {
@@ -43,9 +49,15 @@ interface Props {
   onChange: (value: string) => void
   onCheck: () => void
   onReveal: () => void
+  renderCorrectionWord?: (input: {
+    children: ReactNode
+    className: string
+    term: string
+  }) => ReactNode
   showAnswerImmediately: boolean
   showFullAnswer: boolean
   status: GuidedStatus
+  statusAction?: ReactNode
   value: string
 }
 
@@ -156,9 +168,11 @@ export function GuidedAnswerInput({
   onChange,
   onCheck,
   onReveal,
+  renderCorrectionWord,
   showAnswerImmediately,
   showFullAnswer,
   status,
+  statusAction,
   value,
 }: Props) {
   const localTextareaRef = useRef<HTMLTextAreaElement>(null)
@@ -248,6 +262,29 @@ export function GuidedAnswerInput({
     showAnswerImmediately &&
     (status === 'incorrect' || status === 'revealed')
 
+  function renderCorrectionSegment(segment: WordSegment, index: number) {
+    const children = segmentCells(segment, index, showFullAnswer).map(cell => (
+      <span
+        key={cell.key}
+        className={cell.className}
+      >
+        {cell.char}
+      </span>
+    ))
+    const className =
+      'inline bg-transparent p-0 text-left align-baseline font-inherit text-inherit underline-offset-4 hover:bg-manga-white hover:outline-2 hover:outline-manga-black disabled:opacity-60'
+    const isMaskedWord = segment.kind === 'remaining' && !showFullAnswer
+
+    if (renderCorrectionWord && !isMaskedWord)
+      return renderCorrectionWord({
+        children,
+        className,
+        term: segment.expected,
+      })
+
+    return children
+  }
+
   return (
     <section
       aria-label="Dictation answer"
@@ -327,47 +364,51 @@ export function GuidedAnswerInput({
         />
       </div>
 
-      <p
-        aria-live="polite"
-        className={cn(
-          'flex items-center gap-2 text-base font-black',
-          status === 'correct' && 'text-emerald-700',
-          status === 'incorrect' && 'text-amber-600'
-        )}
-        role="status"
-      >
-        {status === 'correct' ? (
-          <CircleCheck
-            aria-hidden="true"
-            className="size-5 shrink-0"
-          />
-        ) : status === 'incorrect' ? (
-          <TriangleAlert
-            aria-hidden="true"
-            className="size-5 shrink-0"
-          />
-        ) : status === 'revealed' ? (
-          <Eye
-            aria-hidden="true"
-            className="size-5 shrink-0"
-          />
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p
+          aria-live="polite"
+          className={cn(
+            'flex items-center gap-2 text-base font-black',
+            status === 'correct' && 'text-emerald-700',
+            status === 'incorrect' && 'text-amber-600'
+          )}
+          role="status"
+        >
+          {status === 'correct' ? (
+            <CircleCheck
+              aria-hidden="true"
+              className="size-5 shrink-0"
+            />
+          ) : status === 'incorrect' ? (
+            <TriangleAlert
+              aria-hidden="true"
+              className="size-5 shrink-0"
+            />
+          ) : status === 'revealed' ? (
+            <Eye
+              aria-hidden="true"
+              className="size-5 shrink-0"
+            />
+          ) : null}
+          {statusMessage(status)}
+        </p>
+        {statusAction ? (
+          <div className="flex flex-wrap items-center gap-2">
+            {statusAction}
+          </div>
         ) : null}
-        {statusMessage(status)}
-      </p>
+      </div>
 
       {showCorrection ? (
         <p
-          aria-hidden="true"
           style={inputTextStyle}
           className="border-manga-black bg-manga-paper-soft border-2 p-3 font-semibold wrap-break-word shadow-[2px_2px_0_var(--manga-black)]"
           data-testid="answer-line"
         >
-          {answerLineCells(correction, showFullAnswer).map(cell => (
-            <span
-              key={cell.key}
-              className={cell.className}
-            >
-              {cell.char}
+          {correction.segments.map((segment, index) => (
+            <span key={`${segment.expected}-${index}`}>
+              {index > 0 ? ' ' : null}
+              {renderCorrectionSegment(segment, index)}
             </span>
           ))}
         </p>

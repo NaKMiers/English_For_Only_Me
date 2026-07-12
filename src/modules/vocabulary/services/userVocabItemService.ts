@@ -68,6 +68,18 @@ export async function setUserVocabItemStatus({
 
   if (!entryExists) return null
 
+  const existingItem = await UserVocabItemModel.findOne({
+    userId,
+    vocabEntryId,
+  }).lean()
+
+  if (
+    existingItem &&
+    status === 'shouldLearn' &&
+    existingItem.status === 'learning'
+  )
+    return toUserVocabItemRecord(existingItem)
+
   const state =
     status === 'shouldLearn'
       ? getInitialLearningState(now)

@@ -174,8 +174,8 @@ collision-safe (guest sessionIds are unique ObjectIds).
 | GET       | `/api/vocab/search`                                  | Search cached vocab entries by prefix        | user or guest | `searchVocabApi`                                                     |
 | GET       | `/api/vocab/explore`                                 | Return unclassified common words             | user or guest | `getExploreVocabApi`                                                 |
 | POST      | `/api/vocab/items`                                   | Mark a word `Should learn` or `Already know` | user or guest | `setVocabItemStatusApi`                                              |
-| GET       | `/api/vocab/recall/due`                              | List due vocab flashcards                    | user or guest | `getDueVocabRecallApi`                                               |
-| POST      | `/api/vocab/recall/answer`                           | Apply correct/wrong recall answer            | user or guest | `answerVocabRecallApi`                                               |
+| GET       | `/api/vocab/recall/due`                              | List signed five-mode vocab recall tasks     | user or guest | `getDueVocabRecallApi`                                               |
+| POST      | `/api/vocab/recall/answer`                           | Server-grade a signed recall answer          | user or guest | `answerVocabRecallApi`                                               |
 | GET       | `/api/vocab/stats`                                   | Vocabulary stats and daily growth            | user or guest | `getVocabStatsApi`                                                   |
 | GET, POST | `/api/admin/vocab/enrich`                            | Inspect/admin-enrich the vocab queue         | admin         | `getVocabAdminQueueApi`, `enrichVocabularyAdminApi`                  |
 
@@ -649,29 +649,38 @@ File: `src/app/api/vocab/items/route.ts`.
 
 File: `src/app/api/vocab/recall/due/route.ts`.
 
-- Query: `limit` optional (1-50, default 20).
+- Query: `limit` optional (1-50, default 20), `excludeListening` optional
+  (`1`/`true` to skip listening task types).
 - Behavior: finds `UserVocabItem` rows with `status = learning` and
-  `dueAt <= now`, loads their `VocabEntry` rows, and returns recall cards.
-- Success: `{ cards: Array<{ item, entry }> }`.
+  `dueAt <= now`, loads their `VocabEntry` rows, builds task options with a
+  bounded distractor query, and returns signed recall tasks. Task types are
+  `listenChooseWord`, `listenChooseDefinition`, `exampleRemember`,
+  `definitionChooseWord`, and `wordChooseDefinition`.
+- Success: `{ tasks: Array<{ taskId, token, type, item, entry, options, exampleSentence }> }`.
 
 #### POST /api/vocab/recall/answer
 
 File: `src/app/api/vocab/recall/answer/route.ts`.
 
-- Body: `{ itemId, correct: boolean }`.
-- Behavior: ownership-scoped update. Correct answers advance through stages 1-7;
-  a correct stage 7 answer sets `status = mastered`. Wrong answers reset to
-  stage 1 and due now.
-- Success: `{ item }`.
-- Errors: `400` invalid body; `404` missing/wrong-owner/non-learning item.
+- Body: `{ token, idempotencyKey, selectedOptionId?, action? }`, where
+  `action` is `lookup`, `notSure`, or `remember` for non-option flows.
+- Behavior: verifies the signed task token, checks actor ownership, due date,
+  and recall stage server-side, grades the answer from the signed correct
+  option/action, writes a `VocabRecallAttempt`, and applies the seven-touch
+  scheduler. Correct answers advance through stages 1-7; a correct stage 7
+  answer sets `status = mastered`. Wrong or unsure answers reset to stage 1 and
+  due now.
+- Success: `{ attemptId, isCorrect, item }`.
+- Errors: `400` invalid body; `409` stale/expired/wrong-owner/non-learning item.
 
 #### GET /api/vocab/stats
 
 File: `src/app/api/vocab/stats/route.ts`.
 
 - Behavior: aggregates `learningCount`, `alreadyKnowCount`, `masteredCount`,
-  `dueTodayCount`, `totalKnownCount`, `totalStartedCount`, and 14-day daily
-  growth from the actor's `UserVocabItem` rows.
+  `dueTodayCount`, `totalKnownCount`, `totalStartedCount`, overdue count,
+  learned-today count, reviews-today count, recall accuracy, active vocab
+  streak, hardest words, and 14-day daily growth from bounded Mongo queries.
 - Success: `{ stats }`.
 
 ### Admin vocabulary enrichment

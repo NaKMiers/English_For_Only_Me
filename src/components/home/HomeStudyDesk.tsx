@@ -3,6 +3,7 @@ import { AuthControl } from '@/components/common/AuthControl'
 import { MangaPageShell } from '@/components/common/MangaPageShell'
 import { PageTag } from '@/components/ui/PageTag'
 import type { DictationGlobalStatsRecord } from '@/modules/dictation/types'
+import type { VocabStatsRecord } from '@/modules/vocabulary/types'
 
 import { HomeFutureModuleMap } from './HomeFutureModuleMap'
 import { HomeIeltsSnapshot } from './HomeIeltsSnapshot'
@@ -108,9 +109,69 @@ function StudyDeskSketch() {
 
 interface Props {
   dictationStats?: DictationGlobalStatsRecord | null
+  vocabStats?: VocabStatsRecord | null
 }
 
-export function HomeStudyDesk({ dictationStats = null }: Props) {
+function HomeVocabularySnapshot({
+  vocabStats = null,
+}: {
+  vocabStats?: VocabStatsRecord | null
+}) {
+  const cards = [
+    {
+      detail: 'due today',
+      label: 'Recall',
+      value: vocabStats?.dueTodayCount ?? 0,
+    },
+    {
+      detail: 'known total',
+      label: 'Known',
+      value: vocabStats?.totalKnownCount ?? 0,
+    },
+    {
+      detail: 'day streak',
+      label: 'Streak',
+      value: vocabStats?.activeStreakDays ?? 0,
+    },
+    {
+      detail: 'accuracy',
+      label: 'Recall',
+      value: `${vocabStats?.accuracyPercent ?? 0}%`,
+    },
+  ]
+
+  return (
+    <section className="grid gap-3">
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="font-sans text-xl leading-none font-black uppercase">
+          Vocabulary spine
+        </h3>
+        <PageTag tone="pale">Vocab</PageTag>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        {cards.map(card => (
+          <div
+            key={`${card.label}-${card.detail}`}
+            className="border-manga-black bg-manga-paper-soft grid gap-1 border-2 p-3 shadow-[3px_3px_0_var(--manga-black)]"
+          >
+            <span className="text-xs font-black uppercase">{card.label}</span>
+            <strong className="font-sans text-2xl leading-none font-black">
+              {card.value}
+            </strong>
+            <span className="text-manga-ink-soft text-xs font-semibold">
+              {card.detail}
+            </span>
+          </div>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+export function HomeStudyDesk({
+  dictationStats = null,
+  vocabStats = null,
+}: Props) {
   return (
     <MangaPageShell
       topbar={
@@ -183,6 +244,7 @@ export function HomeStudyDesk({ dictationStats = null }: Props) {
           </div>
 
           <HomeIeltsSnapshot dictationStats={dictationStats} />
+          <HomeVocabularySnapshot vocabStats={vocabStats} />
           <HomeFutureModuleMap />
         </aside>
       </div>

@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server'
 
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { requirePracticeActor } from '@/modules/dictation/services/getCurrentUser'
+import { submitVocabRecallAnswerForUser } from '@/modules/vocabulary/recall/recallAnswerService'
 import { toVocabApiError } from '@/modules/vocabulary/services/vocabApiErrors'
-import { answerVocabRecallForUser } from '@/modules/vocabulary/services/userVocabItemService'
 import {
   getMissingVocabMongoResponse,
   parseRecallAnswerRequest,
@@ -31,19 +31,21 @@ export async function POST(request: Request) {
 
     await connectDatabase()
 
-    const item = await answerVocabRecallForUser({
-      isCorrect: parsed.data.correct,
-      itemId: parsed.data.itemId,
+    const result = await submitVocabRecallAnswerForUser({
+      action: parsed.data.action,
+      idempotencyKey: parsed.data.idempotencyKey,
+      selectedOptionId: parsed.data.selectedOptionId,
+      token: parsed.data.token,
       userId: actor.id,
     })
 
-    if (!item)
+    if (!result)
       return jsonError({
-        status: 404,
-        body: { message: 'This recall card was not found.' },
+        status: 409,
+        body: { message: 'This recall card is stale. Refresh recall.' },
       })
 
-    return NextResponse.json({ item })
+    return NextResponse.json(result)
   } catch (error) {
     if (error instanceof SyntaxError)
       return jsonError({

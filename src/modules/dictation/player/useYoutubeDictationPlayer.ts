@@ -85,7 +85,11 @@ export function useYoutubeDictationPlayer({
   const [hasPlayer, setHasPlayer] = useState(false)
   const [status, setStatus] = useState<YoutubePlayerStatus>('idle')
   const replayWindow = useMemo(
-    () => getReplayWindow(timing),
+    () =>
+      getReplayWindow({
+        endMs: timing.endMs,
+        startMs: timing.startMs,
+      }),
     [timing.endMs, timing.startMs]
   )
   const canReplay = Boolean(replayWindow && hasPlayer)

@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server'
 
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { requirePracticeActor } from '@/modules/dictation/services/getCurrentUser'
+import { listDueVocabRecallTasksForUser } from '@/modules/vocabulary/recall/recallTaskService'
 import { toVocabApiError } from '@/modules/vocabulary/services/vocabApiErrors'
-import { listDueVocabRecallCardsForUser } from '@/modules/vocabulary/services/userVocabItemService'
 import {
   getMissingVocabMongoResponse,
   parseRecallDueRequest,
@@ -31,7 +31,8 @@ export async function GET(request: Request) {
     await connectDatabase()
 
     return NextResponse.json({
-      cards: await listDueVocabRecallCardsForUser({
+      tasks: await listDueVocabRecallTasksForUser({
+        excludeListening: parsed.data.excludeListening,
         limit: parsed.data.limit,
         userId: actor.id,
       }),

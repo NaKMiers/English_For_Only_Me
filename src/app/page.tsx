@@ -3,6 +3,7 @@ import { hasMongoDbUri } from '@/constants/environments'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { getOptionalUser } from '@/modules/dictation/services/getCurrentUser'
 import { getGlobalStatsForUser } from '@/modules/dictation/stats/globalStatsService'
+import { getVocabStatsForUser } from '@/modules/vocabulary/stats/vocabStatsService'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -16,5 +17,15 @@ export default async function Home() {
 
   await connectDatabase()
 
-  return <HomeStudyDesk dictationStats={await getGlobalStatsForUser(user.id)} />
+  const [dictationStats, vocabStats] = await Promise.all([
+    getGlobalStatsForUser(user.id),
+    getVocabStatsForUser({ userId: user.id }),
+  ])
+
+  return (
+    <HomeStudyDesk
+      dictationStats={dictationStats}
+      vocabStats={vocabStats}
+    />
+  )
 }

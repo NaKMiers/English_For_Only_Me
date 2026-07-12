@@ -35,7 +35,14 @@ const occurrenceSchema = z
     attemptId: optionalObjectIdSchema,
     contextSentence: z.string().trim().max(3000).nullish(),
     reason: z
-      .enum(['manualSearch', 'dictionaryLookup', 'explore'])
+      .enum([
+        'manualSearch',
+        'dictionaryLookup',
+        'explore',
+        'clickedInAnswer',
+        'missedWord',
+        'aiDebrief',
+      ])
       .default('dictionaryLookup'),
     segmentId: optionalObjectIdSchema,
     selectedText: z.string().trim().max(500).nullish(),
@@ -73,7 +80,14 @@ const exploreSchema = z.object({
 const itemStatusSchema = z
   .object({
     occurrenceReason: z
-      .enum(['manualSearch', 'dictionaryLookup', 'explore'])
+      .enum([
+        'manualSearch',
+        'dictionaryLookup',
+        'explore',
+        'clickedInAnswer',
+        'missedWord',
+        'aiDebrief',
+      ])
       .optional(),
     source: z
       .enum(['search', 'explore', 'dictionary', 'manual'])
@@ -84,6 +98,10 @@ const itemStatusSchema = z
   .strict()
 
 const recallDueSchema = z.object({
+  excludeListening: z
+    .enum(['0', '1', 'false', 'true'])
+    .optional()
+    .transform(value => value === '1' || value === 'true'),
   limit: z.coerce
     .number()
     .int()
@@ -94,8 +112,10 @@ const recallDueSchema = z.object({
 
 const recallAnswerSchema = z
   .object({
-    correct: z.boolean(),
-    itemId: objectIdSchema,
+    action: z.enum(['lookup', 'notSure', 'remember']).nullish(),
+    idempotencyKey: z.string().trim().min(8).max(160),
+    selectedOptionId: z.string().trim().min(1).max(160).nullish(),
+    token: z.string().trim().min(20).max(5000),
   })
   .strict()
 
@@ -189,6 +209,7 @@ export function parseRecallDueRequest(
   searchParams: URLSearchParams
 ): VocabRouteDecision<ParsedRecallDueRequest> {
   const result = recallDueSchema.safeParse({
+    excludeListening: searchParams.get('excludeListening') ?? undefined,
     limit: searchParams.get('limit') ?? undefined,
   })
 

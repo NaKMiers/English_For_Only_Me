@@ -4,6 +4,7 @@ import type {
   VocabAdminQueueSummaryRecord,
   VocabEntryWithUserStateRecord,
   VocabRecallCardRecord,
+  VocabRecallTaskRecord,
   VocabStatsRecord,
 } from '@/modules/vocabulary/types'
 import type { AdminEnrichResult } from '@/modules/vocabulary/enrichment/enrichmentService'
@@ -22,8 +23,18 @@ export interface VocabRecallCardsResponse {
   cards: VocabRecallCardRecord[]
 }
 
+export interface VocabRecallTasksResponse {
+  tasks: VocabRecallTaskRecord[]
+}
+
 export interface VocabStatsResponse {
   stats: VocabStatsRecord
+}
+
+export interface VocabRecallAnswerResponse {
+  attemptId: string
+  isCorrect: boolean
+  item: UserVocabItemApiRecord
 }
 
 export interface VocabAdminQueueResponse {
@@ -51,6 +62,10 @@ async function readJson<T>(response: Response): Promise<T> {
   if (!response.ok) throw new Error(await readApiError(response))
 
   return (await response.json()) as T
+}
+
+function isObjectId(value: string | null | undefined) {
+  return typeof value === 'string' && /^[a-f\d]{24}$/i.test(value)
 }
 
 export async function getVocabStatsApi(input = VOCAB_API_PATHS.stats) {
@@ -94,14 +109,43 @@ export async function searchVocabApi({
 
 export async function lookupVocabEntryApi({
   input = VOCAB_API_PATHS.lookup,
+  occurrence,
   term,
 }: {
   input?: string
+  occurrence?: {
+    attemptId?: string | null
+    contextSentence?: string | null
+    reason:
+      | 'manualSearch'
+      | 'dictionaryLookup'
+      | 'explore'
+      | 'clickedInAnswer'
+      | 'missedWord'
+      | 'aiDebrief'
+    segmentId?: string | null
+    selectedText?: string | null
+    videoId?: string | null
+  }
   term: string
 }) {
+  const safeOccurrence = occurrence
+    ? {
+        ...occurrence,
+        attemptId: isObjectId(occurrence.attemptId)
+          ? occurrence.attemptId
+          : undefined,
+        segmentId: isObjectId(occurrence.segmentId)
+          ? occurrence.segmentId
+          : undefined,
+        videoId: isObjectId(occurrence.videoId)
+          ? occurrence.videoId
+          : undefined,
+      }
+    : undefined
   const response = await fetch(input, {
     body: JSON.stringify({
-      occurrence: {
+      occurrence: safeOccurrence ?? {
         reason: 'dictionaryLookup',
         selectedText: term,
       },
@@ -137,35 +181,46 @@ export async function setVocabItemStatusApi({
 }
 
 export async function getDueVocabRecallApi({
+  excludeListening,
   input = VOCAB_API_PATHS.dueRecall,
   limit,
 }: {
+  excludeListening?: boolean
   input?: string
   limit?: number
 } = {}) {
-  const params = limit ? `?limit=${encodeURIComponent(String(limit))}` : ''
-  const response = await fetch(`${input}${params}`, { cache: 'no-store' })
+  const params = new URLSearchParams()
 
-  return readJson<VocabRecallCardsResponse>(response)
+  if (limit) params.set('limit', String(limit))
+  if (excludeListening) params.set('excludeListening', '1')
+
+  const query = params.size > 0 ? `?${params.toString()}` : ''
+  const response = await fetch(`${input}${query}`, { cache: 'no-store' })
+
+  return readJson<VocabRecallTasksResponse>(response)
 }
 
 export async function answerVocabRecallApi({
-  correct,
+  action,
   input = VOCAB_API_PATHS.recallAnswer,
-  itemId,
+  idempotencyKey,
+  selectedOptionId,
+  token,
 }: {
-  correct: boolean
+  action?: 'lookup' | 'notSure' | 'remember' | null
   input?: string
-  itemId: string
+  idempotencyKey: string
+  selectedOptionId?: string | null
+  token: string
 }) {
   const response = await fetch(input, {
-    body: JSON.stringify({ correct, itemId }),
+    body: JSON.stringify({ action, idempotencyKey, selectedOptionId, token }),
     cache: 'no-store',
     headers: { 'content-type': 'application/json' },
     method: 'POST',
   })
 
-  return readJson<VocabItemResponse>(response)
+  return readJson<VocabRecallAnswerResponse>(response)
 }
 
 export async function getVocabAdminQueueApi(

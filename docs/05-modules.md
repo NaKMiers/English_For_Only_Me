@@ -755,8 +755,8 @@ recall, power Explore, and aggregate vocabulary stats.
 ### Core contracts
 
 - `types.ts`: shared API records and status unions for `VocabEntry`,
-  `UserVocabItem`, `VocabOccurrence`, recall cards, stats, provider payloads,
-  and admin queue summaries.
+  `UserVocabItem`, `VocabOccurrence`, five-mode recall tasks, signed answer
+  actions, stats, provider payloads, and admin queue summaries.
 - `constants.ts`: limits and vocabulary policy. Important values include
   `VOCAB_ADMIN_ENRICH_MAX_LIMIT = 10`, `VOCAB_EXPLORE_DEFAULT_LIMIT = 20`,
   `VOCAB_SEARCH_DEFAULT_LIMIT = 12`, `VOCAB_STATS_TREND_DAYS = 14`, provider
@@ -817,9 +817,22 @@ out of Explore until lookup or admin enrichment has filled provider data.
 - Correct stage 7 -> `mastered`.
 - Any wrong answer -> reset to stage 1 due now.
 
+`recall/recallTaskService.ts` builds the due review session as server-signed
+tasks. It supports five modes: listen and choose the word, listen and choose
+the definition, example sentence memory check, definition to word, and word to
+definition. Listening tasks can be excluded for a short client-side "cannot
+listen now" window.
+
+`recall/recallTaskToken.ts` signs each task with HMAC and embeds the item,
+entry, stage, task type, correct option, user id, and expiry. `POST
+/api/vocab/recall/answer` therefore does not trust a client-sent `correct`
+boolean. `recall/recallAnswerService.ts` verifies the token, re-checks owner,
+due date, and stage, writes a `VocabRecallAttempt`, and only then applies the
+seven-touch scheduler patch.
+
 `services/userVocabItemService.ts` upserts `Should learn` and `Already know`
-states, records occurrences, lists due recall cards, and applies recall answers
-with ownership scoped to the server-resolved actor id.
+states, records occurrences, and preserves an already-learning item's stage when
+the user picks `Should learn` again.
 
 ### Search, Explore, and stats
 
@@ -830,8 +843,10 @@ with ownership scoped to the server-resolved actor id.
   using a bounded MongoDB `$lookup` against `UserVocabItem`, avoiding an
   app-memory anti-join over all words.
 - `stats/vocabStats.ts` and `stats/vocabStatsService.ts`: count learning,
-  already-known, mastered, due-today, total-known, total-started, and daily
-  growth buckets.
+  already-known, mastered, due-today, total-known, total-started, overdue,
+  reviews today, learned today, recall accuracy, active vocab streak, hardest
+  words, and daily growth buckets. The service version uses Mongo aggregation
+  and bounded queries instead of loading all user vocabulary into memory.
 - `services/vocabWordListService.ts`: parses the `/vocabulary/words` `view`
   param and lists the current actor's words for `learning`, `dueToday`,
   `alreadyKnow`, `mastered`, or `knownTotal`, joining each `UserVocabItem` to

@@ -59,4 +59,38 @@ describe('vocab stats', () => {
       label: '01-10',
     })
   })
+
+  test('summarizes accuracy, streaks, and hardest words', () => {
+    const stats = aggregateVocabStats({
+      items: [
+        makeItem('learning', {
+          correctCount: 3,
+          lastReviewedAt: now,
+          reviewCount: 5,
+          vocabEntryId: 'hard-entry',
+          wrongCount: 2,
+        }),
+        makeItem('learning', {
+          correctCount: 1,
+          lastReviewedAt: new Date('2026-01-09T12:00:00.000Z'),
+          reviewCount: 4,
+          vocabEntryId: 'harder-entry',
+          wrongCount: 3,
+        }),
+      ],
+      now,
+      trendDays: 2,
+    })
+
+    expect(stats).toMatchObject({
+      accuracyPercent: 44,
+      activeStreakDays: 2,
+      reviewsTodayCount: 1,
+    })
+    expect(stats.hardestWords[0]).toMatchObject({
+      term: 'harder-entry',
+      vocabEntryId: 'harder-entry',
+      wrongCount: 3,
+    })
+  })
 })

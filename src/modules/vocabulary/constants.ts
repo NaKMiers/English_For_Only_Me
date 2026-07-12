@@ -5,6 +5,7 @@ import type {
   VocabLearningSource,
   VocabOccurrenceReason,
   VocabProviderName,
+  VocabRecallTaskType,
   VocabUserItemStatus,
 } from './types'
 
@@ -80,6 +81,21 @@ export const VOCAB_CORE_PROVIDER_NAMES: VocabProviderName[] = [
 ]
 
 export const VOCAB_RECALL_STAGES = [1, 2, 3, 4, 5, 6, 7] as const
+
+export const VOCAB_RECALL_TASK_TYPES: VocabRecallTaskType[] = [
+  'listenChooseWord',
+  'listenChooseDefinition',
+  'exampleRemember',
+  'definitionChooseWord',
+  'wordChooseDefinition',
+]
+
+export const VOCAB_RECALL_LISTENING_TASK_TYPES: VocabRecallTaskType[] = [
+  'listenChooseWord',
+  'listenChooseDefinition',
+]
+
+export const VOCAB_RECALL_TASK_TOKEN_TTL_MS = 30 * 60_000
 
 export const VOCAB_RECALL_STAGE_INTERVAL_DAYS: Record<
   1 | 2 | 3 | 4 | 5 | 6,

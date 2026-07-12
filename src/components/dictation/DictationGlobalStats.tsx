@@ -140,7 +140,7 @@ export function DictationGlobalStats({ stats }: Props) {
         </div>
       )}
 
-      <div className="grid gap-5 lg:grid-cols-2">
+      <div className="grid items-start gap-5 lg:grid-cols-2">
         <MangaPanel
           eyebrow="Words"
           title="Weak words"

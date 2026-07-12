@@ -16,6 +16,7 @@ import { Label } from '@/components/ui/label'
 import { MangaButton } from '@/components/ui/MangaButton'
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { QuickVocabWordButton } from '@/components/vocabulary/QuickVocabLookup'
 import { cn } from '@/lib/utils'
 import {
   autoCorrectAnswer,
@@ -132,6 +133,7 @@ export function DictationPracticeShell({
   )
   const [sessionError, setSessionError] = useState<string | null>(null)
   const [draftNotice, setDraftNotice] = useState<string | null>(null)
+  const [vocabLookupError, setVocabLookupError] = useState<string | null>(null)
   const [currentAttempt, setCurrentAttempt] =
     useState<DictationAttemptApiRecord | null>(null)
   // Char-level correction is captured at Check time and frozen, so rewriting the
@@ -443,6 +445,7 @@ export function DictationPracticeShell({
 
       setCurrentIndex(safeIndex)
       setDraftNotice(null)
+      setVocabLookupError(null)
       setCurrentAttempt(null)
       setCharCorrection(null)
       patchSession({
@@ -598,6 +601,7 @@ export function DictationPracticeShell({
         // identical correction when it persists the attempt in the background.
         setDraftNotice(null)
         setSessionError(null)
+        setVocabLookupError(null)
 
         // Resolved (correct / reveal / skip): fill the full canonical answer into
         // the textarea like DailyDictation, and keep it so revisiting the segment
@@ -720,6 +724,7 @@ export function DictationPracticeShell({
     // Keep the resolved answer in the draft so revisiting the segment shows it.
     if (canGoNext) goToIndex(currentIndex + 1)
     else {
+      setVocabLookupError(null)
       setCurrentAttempt(null)
       setCharCorrection(null)
       setIsCompleted(true)
@@ -752,12 +757,14 @@ export function DictationPracticeShell({
 
     setCurrentAttempt(null)
     setCharCorrection(null)
+    setVocabLookupError(null)
     replayCurrentSegment()
   }, [currentSegment, replayCurrentSegment, updateAnswerDrafts])
 
   // Rewind: just navigate back to the first segment, keep drafts and stats.
   const goToFirstSegment = useCallback(() => {
     setIsCompleted(false)
+    setVocabLookupError(null)
     setCurrentAttempt(null)
     setCharCorrection(null)
     goToIndex(0)
@@ -773,6 +780,7 @@ export function DictationPracticeShell({
     setActivePlaybackIndex(0)
     setActiveView('practice')
     setDraftNotice(null)
+    setVocabLookupError(null)
     setCurrentAttempt(null)
     setCharCorrection(null)
     setIsCompleted(false)
@@ -829,6 +837,22 @@ export function DictationPracticeShell({
     enabled: preferences.showShortcuts,
     handlers: shortcutHandlers,
   })
+
+  const hasCompletedBefore = completions > 0
+  const hasSavedPracticeProgress =
+    segments.some(segment => segment.attemptCount > 0) ||
+    Object.values(answerDrafts).some(draft => draft.trim().length > 0) ||
+    (session?.currentSegmentOrder ?? 0) > 0
+  const readyActionLabel = hasCompletedBefore
+    ? 'Restart Dictation'
+    : hasSavedPracticeProgress
+      ? 'Continue Dictation'
+      : 'Start Dictation'
+  const readyActionTitle = hasCompletedBefore
+    ? 'Restart dictation'
+    : hasSavedPracticeProgress
+      ? 'Continue dictation'
+      : 'Start dictation'
 
   if (!currentSegment)
     return (
@@ -973,16 +997,32 @@ export function DictationPracticeShell({
               ) : !hasStarted ? (
                 <MangaPanel
                   eyebrow="Ready"
-                  title="Start dictation"
+                  title={readyActionTitle}
+                  className={
+                    hasCompletedBefore
+                      ? 'bg-manga-paper-soft'
+                      : hasSavedPracticeProgress
+                        ? 'bg-cyan-50'
+                        : undefined
+                  }
                 >
                   <p className="text-manga-ink-soft text-base leading-7 font-semibold">
-                    Press start to play the first sentence and begin typing.
+                    {hasCompletedBefore
+                      ? 'Start over from the first sentence. Your completion record stays saved.'
+                      : hasSavedPracticeProgress
+                        ? 'Pick up from your saved sentence and keep going.'
+                        : 'Press start to play the first sentence and begin typing.'}
                   </p>
                   <MangaButton
                     type="button"
-                    onClick={() => setHasStarted(true)}
+                    tone={hasCompletedBefore ? 'paper' : undefined}
+                    onClick={
+                      hasCompletedBefore
+                        ? restartProgress
+                        : () => setHasStarted(true)
+                    }
                   >
-                    Start Dictation
+                    {readyActionLabel}
                   </MangaButton>
                 </MangaPanel>
               ) : (
@@ -1008,51 +1048,83 @@ export function DictationPracticeShell({
                     }}
                     onCheck={checkDraft}
                     onReveal={handleEscapeShortcut}
+                    renderCorrectionWord={({ children, className, term }) => (
+                      <QuickVocabWordButton
+                        attemptId={currentAttempt?.id ?? null}
+                        className={className}
+                        contextSentence={currentSegment.text}
+                        onError={setVocabLookupError}
+                        segmentId={currentSegment.id}
+                        term={term}
+                        videoId={video.id}
+                      >
+                        {children}
+                      </QuickVocabWordButton>
+                    )}
                     showAnswerImmediately={preferences.showAnswerImmediately}
                     showFullAnswer={preferences.showFullAnswer}
                     status={guidedStatus}
+                    statusAction={
+                      <>
+                        {attemptResolved ? (
+                          <MangaButton
+                            type="button"
+                            className="text-base"
+                            onClick={advanceAfterAttempt}
+                          >
+                            {canGoNext ? 'Next' : 'Finish'}
+                          </MangaButton>
+                        ) : (
+                          <>
+                            <MangaButton
+                              type="button"
+                              className="text-base"
+                              onClick={checkDraft}
+                            >
+                              Check
+                            </MangaButton>
+                            <MangaButton
+                              type="button"
+                              tone="paper"
+                              className="text-base"
+                              onClick={skipSegment}
+                            >
+                              Skip
+                            </MangaButton>
+                          </>
+                        )}
+                        {hasCheckedCurrent ? (
+                          <MangaButton
+                            type="button"
+                            tone="paper"
+                            className="text-base"
+                            onClick={retryCurrent}
+                          >
+                            Retry
+                          </MangaButton>
+                        ) : null}
+                      </>
+                    }
                     value={currentAnswer}
                   />
 
-                  <div className="flex flex-wrap items-center gap-2">
-                    {attemptResolved ? (
-                      <MangaButton
-                        type="button"
-                        className="text-base"
-                        onClick={advanceAfterAttempt}
-                      >
-                        {canGoNext ? 'Next' : 'Finish'}
-                      </MangaButton>
-                    ) : (
-                      <>
-                        <MangaButton
-                          type="button"
-                          className="text-base"
-                          onClick={checkDraft}
-                        >
-                          Check
-                        </MangaButton>
-                        <MangaButton
-                          type="button"
-                          tone="paper"
-                          className="text-base"
-                          onClick={skipSegment}
-                        >
-                          Skip
-                        </MangaButton>
-                      </>
-                    )}
-                    {hasCheckedCurrent ? (
-                      <MangaButton
-                        type="button"
-                        tone="paper"
-                        className="text-base"
-                        onClick={retryCurrent}
-                      >
-                        Retry
-                      </MangaButton>
-                    ) : null}
-                  </div>
+                  {vocabLookupError ? (
+                    <div
+                      role="status"
+                      className="border-manga-black bg-manga-pale-red text-manga-red border-2 p-3 text-sm font-black shadow-[2px_2px_0_var(--manga-black)]"
+                    >
+                      {vocabLookupError}
+                    </div>
+                  ) : null}
+
+                  {translationTracks.length > 0 && selectedLanguage ? (
+                    <DictationTranslation
+                      isUnlocked={isTranslationUnlocked}
+                      language={selectedLanguage}
+                      text={translationText}
+                      textSize={preferences.answerTextSize}
+                    />
+                  ) : null}
 
                   <div className="flex flex-col gap-2">
                     <Label className="flex items-center gap-2 text-base font-black">
@@ -1082,15 +1154,6 @@ export function DictationPracticeShell({
                       Show full answer
                     </Label>
                   </div>
-
-                  {translationTracks.length > 0 && selectedLanguage ? (
-                    <DictationTranslation
-                      isUnlocked={isTranslationUnlocked}
-                      language={selectedLanguage}
-                      text={translationText}
-                      textSize={preferences.answerTextSize}
-                    />
-                  ) : null}
                 </>
               )}
             </TabsContent>

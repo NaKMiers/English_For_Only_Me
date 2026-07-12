@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { AuthControl } from '@/components/common/AuthControl'
 import { MangaPageShell } from '@/components/common/MangaPageShell'
+import { DictationGlobalStats } from '@/components/dictation/DictationGlobalStats'
 import { TopicGrid } from '@/components/dictation/browse/TopicGrid'
 import { PageTag } from '@/components/ui/PageTag'
 import { hasMongoDbUri } from '@/constants/environments'
@@ -12,7 +13,12 @@ import {
   countNoTopicVideos,
   listTopicSummaries,
 } from '@/modules/dictation/content/contentRepository'
-import type { DictationTopicSummaryRecord } from '@/modules/dictation/types'
+import { getPracticeActorId } from '@/modules/dictation/services/getCurrentUser'
+import { getGlobalStatsForUser } from '@/modules/dictation/stats/globalStatsService'
+import type {
+  DictationGlobalStatsRecord,
+  DictationTopicSummaryRecord,
+} from '@/modules/dictation/types'
 
 export const metadata: Metadata = {
   title: 'All Topics',
@@ -35,13 +41,16 @@ function BrowseFooter() {
 
 export default async function DictationPage() {
   let topics: DictationTopicSummaryRecord[] = []
+  let globalStats: DictationGlobalStatsRecord | null = null
   let noTopicCount = 0
 
   if (hasMongoDbUri()) {
     await connectDatabase()
-    ;[topics, noTopicCount] = await Promise.all([
+    const actorId = (await getPracticeActorId()) ?? ''
+    ;[topics, noTopicCount, globalStats] = await Promise.all([
       listTopicSummaries(),
       countNoTopicVideos(),
+      getGlobalStatsForUser(actorId),
     ])
   }
 
@@ -79,6 +88,11 @@ export default async function DictationPage() {
           topics={topics}
           noTopicCount={noTopicCount}
         />
+        {globalStats ? (
+          <div className="border-manga-black/20 mt-4 border-t-2 pt-8">
+            <DictationGlobalStats stats={globalStats} />
+          </div>
+        ) : null}
       </section>
     </MangaPageShell>
   )

@@ -41,7 +41,7 @@ export function DictationPracticeHeader({
       </div>
 
       <DictationTranslationBar
-        className="shrink-0"
+        className="ml-auto shrink-0 justify-end"
         languages={translationLanguages}
         onChange={onTranslationLanguageChange}
         value={translationLanguage}

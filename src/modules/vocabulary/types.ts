@@ -26,6 +26,15 @@ export type VocabProviderName =
 
 export type VocabRecallStage = 1 | 2 | 3 | 4 | 5 | 6 | 7
 
+export type VocabRecallTaskType =
+  | 'listenChooseWord'
+  | 'listenChooseDefinition'
+  | 'exampleRemember'
+  | 'definitionChooseWord'
+  | 'wordChooseDefinition'
+
+export type VocabRecallAnswerAction = 'lookup' | 'notSure' | 'remember'
+
 export interface VocabPhoneticRecord {
   source: string
   text: string
@@ -161,6 +170,22 @@ export interface VocabRecallCardRecord {
   item: UserVocabItemApiRecord
 }
 
+export interface VocabRecallOptionRecord {
+  definition: string | null
+  id: string
+  term: string | null
+}
+
+export interface VocabRecallTaskRecord {
+  entry: VocabEntryApiRecord
+  exampleSentence: string | null
+  item: UserVocabItemApiRecord
+  options: VocabRecallOptionRecord[]
+  taskId: string
+  token: string
+  type: VocabRecallTaskType
+}
+
 export interface VocabWordListRecord {
   entry: VocabEntryApiRecord
   item: UserVocabItemApiRecord
@@ -171,12 +196,26 @@ export interface VocabDailyGrowthRecord {
   label: string
 }
 
+export interface VocabHardWordRecord {
+  accuracyPercent: number
+  reviewCount: number
+  term: string
+  vocabEntryId: string
+  wrongCount: number
+}
+
 export interface VocabStatsRecord {
   alreadyKnowCount: number
+  accuracyPercent: number
+  activeStreakDays: number
   dailyGrowth: VocabDailyGrowthRecord[]
   dueTodayCount: number
+  hardestWords: VocabHardWordRecord[]
+  learnedTodayCount: number
   learningCount: number
   masteredCount: number
+  overdueCount: number
+  reviewsTodayCount: number
   totalKnownCount: number
   totalStartedCount: number
 }

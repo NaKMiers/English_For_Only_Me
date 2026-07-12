@@ -22,6 +22,8 @@ import type {
 } from '@/modules/vocabulary/types'
 import { setVocabItemStatusApi } from '@/requests/vocabularyApi'
 
+import { VocabTermHeader } from './VocabTermHeader'
+
 interface Props {
   activeView: VocabWordListView
   words: VocabWordListRecord[]
@@ -339,10 +341,8 @@ export function VocabularyWordList({ activeView, words }: Props) {
               className="border-manga-black bg-manga-white grid min-w-0 gap-3 border-3 p-4 shadow-[4px_4px_0_var(--manga-black)]"
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="grid min-w-0 gap-1">
-                  <h2 className="font-sans text-3xl leading-none font-black wrap-break-word">
-                    {word.entry.term}
-                  </h2>
+                <div className="grid min-w-0 flex-1 gap-1">
+                  <VocabTermHeader entry={word.entry} />
                   <p className="text-manga-ink-soft text-xs font-black uppercase">
                     {getStatusMeta(word)}
                   </p>
