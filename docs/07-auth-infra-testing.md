@@ -229,7 +229,7 @@ gracefully when its key is absent.
   `{ ok: false, message }`. No network, no key.
 - `src/lib/youtube/getYouTubeVideoMetadata.ts` - calls
   `GET https://www.googleapis.com/youtube/v3/videos` (`part=snippet,
-  contentDetails,status`, `cache: 'no-store'`) via an injectable `fetcher`.
+contentDetails,status`, `cache: 'no-store'`) via an injectable `fetcher`.
   Graceful degradation: with no key it returns `{ state: 'apiKeyMissing' }` and
   the video is saved as a URL-only draft (transcript can be added manually).
   Other states: `notFound` (404 or empty items), `failed` (unreadable body,
@@ -288,22 +288,23 @@ Central access is `src/constants/environments.ts` via `ENV_KEYS`,
 (per `api-security.md`). Every key below is present (declared, values not shown)
 in `.env.development` and `.env.example`.
 
-| Key | Required? | Purpose | Default |
-| --- | --- | --- | --- |
-| `MONGODB_URI` | Required (for DB features) | Mongoose connection string | none (`getMongoDbUri` throws if unset) |
-| `AUTH_SECRET` | Required for sign-in | Auth.js JWT signing secret | none |
-| `GOOGLE_CLIENT_ID` | Required for Google auth | OAuth client id | `''` fallback in provider |
-| `GOOGLE_CLIENT_SECRET` | Required for Google auth | OAuth client secret | `''` fallback in provider |
-| `ADMIN_EMAILS` | Optional | Comma-separated admin allowlist | empty set (no admins) |
-| `YOUTUBE_API_KEY` | Optional | YouTube Data API metadata import | none -> URL-only drafts |
-| `OPENAI_API_KEY` | Optional | OpenAI debrief/translation calls | none -> AI unavailable state |
-| `OPENAI_DEBRIEF_MODEL` | Optional | Model id for AI debrief | `gpt-5.4-nano` |
-| `OPENAI_TRANSLATION_MODEL` | Optional | Model id for translation | `gpt-5.4-nano` (env-file value) |
-| `CLOUDINARY_URL` | Required for thumbnail upload | `cloudinary://` credentials | none (`getCloudinaryUrl` throws if unset) |
-| `IELTS_GOAL` | Optional | Prompt/goal string for AI debrief | `IELTS Listening Band 7+` |
-| `SITE_URL` | Optional | Canonical origin for SEO/sitemap/OG, no trailing slash | falls back to `AUTH_URL`, then `http://localhost:3000` |
+| Key                        | Required?                     | Purpose                                                | Default                                                |
+| -------------------------- | ----------------------------- | ------------------------------------------------------ | ------------------------------------------------------ |
+| `MONGODB_URI`              | Required (for DB features)    | Mongoose connection string                             | none (`getMongoDbUri` throws if unset)                 |
+| `AUTH_SECRET`              | Required for sign-in          | Auth.js JWT signing secret                             | none                                                   |
+| `GOOGLE_CLIENT_ID`         | Required for Google auth      | OAuth client id                                        | `''` fallback in provider                              |
+| `GOOGLE_CLIENT_SECRET`     | Required for Google auth      | OAuth client secret                                    | `''` fallback in provider                              |
+| `ADMIN_EMAILS`             | Optional                      | Comma-separated admin allowlist                        | empty set (no admins)                                  |
+| `YOUTUBE_API_KEY`          | Optional                      | YouTube Data API metadata import                       | none -> URL-only drafts                                |
+| `OPENAI_API_KEY`           | Optional                      | OpenAI debrief/translation calls                       | none -> AI unavailable state                           |
+| `OPENAI_DEBRIEF_MODEL`     | Optional                      | Model id for AI debrief                                | `gpt-5.4-nano`                                         |
+| `OPENAI_TRANSLATION_MODEL` | Optional                      | Model id for translation                               | `gpt-5.4-nano` (env-file value)                        |
+| `CLOUDINARY_URL`           | Required for thumbnail upload | `cloudinary://` credentials                            | none (`getCloudinaryUrl` throws if unset)              |
+| `IELTS_GOAL`               | Optional                      | Prompt/goal string for AI debrief                      | `IELTS Listening Band 7+`                              |
+| `SITE_URL`                 | Optional                      | Canonical origin for SEO/sitemap/OG, no trailing slash | falls back to `AUTH_URL`, then `http://localhost:3000` |
 
 Notes:
+
 - `getSiteUrl()` strips trailing slashes and cascades `SITE_URL` -> `AUTH_URL`
   -> `http://localhost:3000`.
 - `getAdminEmails()` normalizes and lower-cases the list into a `Set`.
@@ -338,6 +339,7 @@ outside their intended environment; the stub is an empty module
 unit-tested directly under jsdom without the guard aborting the import.
 
 Setup files:
+
 - `src/test/setup.ts` - imports `@testing-library/jest-dom/vitest`, runs
   `cleanup()` after each test, and globally mocks `@/components/common/AuthControl`
   to render `null` (it is an async server component that reads the JWT session
@@ -354,7 +356,11 @@ Setup files:
 
 ### 5.3 Count, naming, and style
 
-- `find src -name '*.test.ts*' | wc -l` => 61 co-located test files.
+- `find src -name '*.test.ts*' | wc -l` => 69 co-located test files.
+- `find src -name '*.e2e.ts' | wc -l` => 1 Playwright smoke file
+  (`src/modules/vocabulary/vocabularyCore.e2e.ts`). It is skipped unless
+  `PLAYWRIGHT_BASE_URL` and `MONGODB_URI` are set, because it needs a running app
+  and a real vocabulary database.
 - Naming convention (per `.agents/rules/testing-quality.md`): unit tests sit
   next to source as `*.test.ts` / `*.test.tsx`; Playwright e2e as `*.e2e.ts`.
 - Heavy use of pure decision-function unit tests: the rules direct extracting
@@ -362,21 +368,22 @@ Setup files:
   "without a full database/auth environment." Examples in this doc's scope:
   `extractYouTubeId`, `parseIso8601DurationSeconds`,
   `mapYouTubeVideosListResponse`, `requestOpenAiStructuredOutput` (injectable
-  `fetcher`), `resolveRole`/`isAdminEmail`, and `backfillContentHierarchy`
-  (which accepts an injected `BackfillVideoModel` so it runs with a mock instead
-  of a live DB).
+  `fetcher`), `resolveRole`/`isAdminEmail`, `normalizeVocabTerm`,
+  vocabulary provider adapters, vocabulary route-decision helpers, recall
+  scheduling, and `backfillContentHierarchy` (which accepts an injected
+  `BackfillVideoModel` so it runs with a mock instead of a live DB).
 
 ### 5.4 Quality gates
 
 From `package.json` scripts and `.agents/rules/testing-quality.md` (preferred
 runtime is Bun because the repo has `bun.lock`):
 
-| Gate | Command | Notes |
-| --- | --- | --- |
-| Lint | `bun run lint` (`eslint`) | TS/React changes must pass |
-| Format | `bun run format:check` (`prettier . --check`) | Prettier, no-semi single-quote house style |
-| Build | `bun run build` (`next build`) | Run for App Router / metadata / build-sensitive changes |
-| Test | `bun test` / `bun run test` (`vitest run`) | Watch via `test:watch` |
+| Gate   | Command                                       | Notes                                                   |
+| ------ | --------------------------------------------- | ------------------------------------------------------- |
+| Lint   | `bun run lint` (`eslint`)                     | TS/React changes must pass                              |
+| Format | `bun run format:check` (`prettier . --check`) | Prettier, no-semi single-quote house style              |
+| Build  | `bun run build` (`next build`)                | Run for App Router / metadata / build-sensitive changes |
+| Test   | `bun test` / `bun run test` (`vitest run`)    | Watch via `test:watch`                                  |
 
 Additional expectations: API/security changes verify both success and unhappy
 paths; broaden the verification set when changes affect auth, data, routing, or
@@ -398,3 +405,9 @@ idempotent: it matches videos missing any of `topicId`/`sectionId`/`level` and
 `$set`s them to `null`; a second run matches zero. The model is injected
 (`BackfillVideoModel` interface) so the logic is unit-testable without a live
 database.
+
+`scripts/seedVocabulary.ts` (npm script `vocab:seed`) downloads the official NGSL
+stats CSV through `src/modules/vocabulary/seed/seedVocabulary.ts`, parses the top
+1000 ranked terms, connects through `connectDatabase()`, and upserts seeded
+`VocabEntry` shells. It runs with `node --conditions=react-server --import tsx`
+for the same `server-only` compatibility reason as the backfill script.

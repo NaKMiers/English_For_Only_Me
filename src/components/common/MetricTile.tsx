@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import type { ReactNode } from 'react'
 
 import { cn } from '@/lib/utils'
@@ -5,6 +6,7 @@ import { cn } from '@/lib/utils'
 interface Props {
   className?: string
   detail?: string
+  href?: string
   icon?: ReactNode
   label: string
   tone?: 'red' | 'paper' | 'ink'
@@ -21,20 +23,23 @@ const toneClassName = {
 export function MetricTile({
   className,
   detail,
+  href,
   icon,
   label,
   tone = 'paper',
   trend,
   value,
 }: Props) {
-  return (
-    <article
-      className={cn(
-        'border-manga-black grid min-h-36 min-w-0 gap-3 border-3 p-4 shadow-[4px_4px_0_var(--manga-black)]',
-        toneClassName[tone],
-        className
-      )}
-    >
+  const classNames = cn(
+    'border-manga-black grid min-h-36 min-w-0 gap-3 border-3 p-4 shadow-[4px_4px_0_var(--manga-black)]',
+    href &&
+      'transition-[background,box-shadow,transform] hover:bg-manga-pale-red active:translate-x-[3px] active:translate-y-[3px] active:shadow-none',
+    toneClassName[tone],
+    className
+  )
+
+  const content = (
+    <>
       <div className="flex min-w-0 items-center justify-between gap-3">
         <span className="text-xs leading-tight font-black tracking-normal uppercase">
           {label}
@@ -52,6 +57,18 @@ export function MetricTile({
         {detail ? <p>{detail}</p> : null}
         {trend ? <p className="text-manga-red font-black">{trend}</p> : null}
       </div>
-    </article>
+    </>
   )
+
+  if (href)
+    return (
+      <Link
+        className={classNames}
+        href={href}
+      >
+        {content}
+      </Link>
+    )
+
+  return <article className={classNames}>{content}</article>
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { BookOpen, ChartColumn, LogOut, Shield } from 'lucide-react'
+import { ChartColumn, LogOut, Shield } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
@@ -34,10 +34,10 @@ interface Props {
 
 /**
  * Account menu in the topbar. The identity chip is the dropdown trigger; the
- * menu holds the app shortcuts (Dictation Lab, Stats), the admin console
- * (admins only), and sign-out. Built on the shared shadcn DropdownMenu + Dialog
- * primitives. The signOut server action is injected so this client file never
- * imports the NextAuth/Mongoose chain into the browser bundle.
+ * menu holds app shortcuts, the admin console (admins only), and sign-out.
+ * Built on the shared shadcn DropdownMenu + Dialog primitives. The signOut
+ * server action is injected so this client file never imports the
+ * NextAuth/Mongoose chain into the browser bundle.
  */
 export function UserMenu({
   avatarUrl,
@@ -87,10 +87,6 @@ export function UserMenu({
           align="end"
           className="w-56"
         >
-          <DropdownMenuItem render={<Link href="/dictation" />}>
-            <BookOpen aria-hidden="true" />
-            Dictation Lab
-          </DropdownMenuItem>
           <DropdownMenuItem render={<Link href="/dictation/stats" />}>
             <ChartColumn aria-hidden="true" />
             Stats

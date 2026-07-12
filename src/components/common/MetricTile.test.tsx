@@ -19,4 +19,17 @@ describe('MetricTile', () => {
     expect(html).toContain('days in rhythm')
     expect(html).toContain('+3 this week')
   })
+
+  test('renders as a link when href is provided', () => {
+    const html = renderToStaticMarkup(
+      <MetricTile
+        href="/vocabulary/words?view=learning"
+        label="Learning"
+        value="7"
+      />
+    )
+
+    expect(html).toContain('href="/vocabulary/words?view=learning"')
+    expect(html).toContain('Learning')
+  })
 })

@@ -33,6 +33,11 @@ const LINKS = [
     desc: 'Add a new YouTube source.',
   },
   {
+    href: '/admin/vocab',
+    title: 'Vocabulary',
+    desc: 'Seed and enrich the global vocabulary cache.',
+  },
+  {
     href: '/dictation/stats',
     title: 'Stats',
     desc: 'Practice stats dashboard.',

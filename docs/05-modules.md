@@ -1,14 +1,12 @@
 # 05 - Domain and Business-Logic Modules
 
 This document describes the domain/business-logic layer of "English For Only Me", a
-Next.js dictation-based IELTS practice app. Almost all logic lives under
-`src/modules/dictation/`, organized into cohesive subsystems: an answer-grading
-correction engine, a transcript-to-segments pipeline, transcript ingestion,
-translation-caption alignment, a review (spaced-repetition-style) queue, analytics
-(global and per-video stats), an LLM debrief generator, the content hierarchy
-(topics/sections/videos plus browse, favorites, progress), local preferences and
-keyboard shortcuts, the YouTube player hook, and a services layer. The layer follows
-one dominant pattern: small, side-effect-free "decision"/"aggregation" functions that
+Next.js IELTS practice app. Logic lives under `src/modules/`, organized into
+cohesive subsystems: dictation answer grading, a transcript-to-segments
+pipeline, transcript ingestion, translation-caption alignment, a review queue,
+analytics, an LLM debrief generator, the content hierarchy, local preferences,
+the YouTube player hook, and the vocabulary lookup/enrichment/recall spine. The
+layer follows one dominant pattern: small, side-effect-free "decision"/"aggregation" functions that
 are heavily unit-tested (the many `*.test.ts` files), kept strictly separate from the
 thin `server-only` I/O modules that read/write MongoDB and call external providers.
 Every path below is absolute-relative to the repo root
@@ -37,6 +35,9 @@ Two conventions recur across every subsystem and are worth stating once:
 - Serialization is centralized in `services/dictation*Records.ts` mappers
   (`toDictationXRecord`) that coerce Mongo documents (`_id`, `ObjectId` refs) to string
   ids and default every optional field, so pure code never sees `undefined`.
+- Vocabulary follows the same split: pure normalization, recall, stats, and
+  route-decision helpers are separate from provider calls, Mongoose services,
+  and record mappers.
 
 The correction engine takes this further with a tested invariant called "correction
 parity" (see the correction deep dive).
@@ -121,8 +122,8 @@ For `action === 'check'`:
      within a near-miss limit (1 for expected tokens of length <= 4, else 2) ->
      `spellingVariant` (cost 1.25),
    - else `wrong` (cost 1.5).
-   Insertions/deletions each cost 1, producing `extra` (typed but not expected) and
-   `missing` (expected but not typed) steps during backtrace.
+     Insertions/deletions each cost 1, producing `extra` (typed but not expected) and
+     `missing` (expected but not typed) steps during backtrace.
 2. `buildFeedbackTokens` turns alignment steps into `DictationCorrectionTokenRecord`s,
    carrying both canonical (`actual`/`expected`) and surface (`actualOriginal`/
    `expectedOriginal`) forms plus the status.
@@ -344,13 +345,13 @@ chars), a `statsSnapshot`, `dueAt`, `priority`, and a `reason`.
 
 Trigger reasons and their priorities (higher = surfaced first):
 
-| Reason | Condition | Priority |
-| --- | --- | --- |
-| `skipped` | any attempt with `action === 'skip'` | 95 |
-| `revealed` | any attempt with `action === 'reveal'` | 90 |
-| `highRetry` | failed `check` attempts > `REVIEW_RETRY_THRESHOLD` (2) | 80 |
-| `repeatedMistake` | any mistake-taxonomy count >= `REVIEW_REPEATED_MISTAKE_THRESHOLD` (2) | 75 |
-| `lowAccuracy` | first-check accuracy < `REVIEW_LOW_ACCURACY_THRESHOLD` (70) | 70 |
+| Reason            | Condition                                                             | Priority |
+| ----------------- | --------------------------------------------------------------------- | -------- |
+| `skipped`         | any attempt with `action === 'skip'`                                  | 95       |
+| `revealed`        | any attempt with `action === 'reveal'`                                | 90       |
+| `highRetry`       | failed `check` attempts > `REVIEW_RETRY_THRESHOLD` (2)                | 80       |
+| `repeatedMistake` | any mistake-taxonomy count >= `REVIEW_REPEATED_MISTAKE_THRESHOLD` (2) | 75       |
+| `lowAccuracy`     | first-check accuracy < `REVIEW_LOW_ACCURACY_THRESHOLD` (70)           | 70       |
 
 A single segment can generate multiple candidates (for example both `skipped` and
 `lowAccuracy`). `statsSnapshot` (`DictationReviewStatsSnapshotRecord`) aggregates the
@@ -667,8 +668,7 @@ export interface ApiErrorDecision {
 }
 // per-module generic wrapper, e.g. attemptRouteDecisions.ts:
 export type AttemptRouteDecision<T> =
-  | { data: T; ok: true }
-  | (ApiErrorDecision & { ok: false })
+  { data: T; ok: true } | (ApiErrorDecision & { ok: false })
 ```
 
 Two categories appear: parse/validate functions that wrap a Zod `safeParse` and translate
@@ -741,3 +741,106 @@ Files: `src/modules/dictation/{levels,completionBadges,videoReadiness,statusDisp
   its `feedbackTokens`/`stats`, `DictationVideoStatsRecord`, `DictationGlobalStatsRecord`,
   `DictationReviewItemApiRecord`, `DictationDebriefApiRecord`). It is the shared contract that
   lets the pure and I/O layers pass data without duplication.
+
+---
+
+## vocabulary/ - dictionary cache and recall spine
+
+Files: `src/modules/vocabulary/**`.
+
+Responsibility: seed common English words, normalize search terms, enrich
+entries through free providers, manage per-user word status, schedule daily
+recall, power Explore, and aggregate vocabulary stats.
+
+### Core contracts
+
+- `types.ts`: shared API records and status unions for `VocabEntry`,
+  `UserVocabItem`, `VocabOccurrence`, recall cards, stats, provider payloads,
+  and admin queue summaries.
+- `constants.ts`: limits and vocabulary policy. Important values include
+  `VOCAB_ADMIN_ENRICH_MAX_LIMIT = 10`, `VOCAB_EXPLORE_DEFAULT_LIMIT = 20`,
+  `VOCAB_SEARCH_DEFAULT_LIMIT = 12`, `VOCAB_STATS_TREND_DAYS = 14`, provider
+  names, recall stage intervals, and `ENRICHABLE_ENTRY_STATUSES`.
+- `normalizeVocabTerm.ts`: normalizes terms at boundaries with NFKC, quote
+  normalization, whitespace collapse, lowercase, punctuation trimming, a max
+  length of 80, and a letter/apostrophe/space/hyphen safe regex. Returns
+  `word` or `phrase`, or `null` for invalid input.
+
+### Seed
+
+`seed/seedVocabulary.ts` downloads
+`https://www.newgeneralservicelist.com/s/NGSL_12_stats.csv`, parses ranked NGSL
+rows, and upserts the top 1000 shells through
+`scripts/seedVocabulary.ts` / `bun run vocab:seed`. Seed rows set
+`enrichmentStatus = seeded`, `frequencyRank`, `difficultyLevel = core-1000`,
+and attribution/license metadata for the New General Service List.
+
+### Provider adapters and enrichment
+
+`providers/dictionaryApiDev.ts` and `providers/freeDictionaryApi.ts` normalize
+two free dictionary APIs behind `providers/types.ts`. Each adapter returns a
+typed result: `ready`, `notFound`, `rateLimited`, `timeout`, `malformed`, or
+`emptyUsefulData`. The adapters collect definitions, examples, phonetics,
+audio URLs, source attribution, license metadata, synonyms, antonyms, and
+related words. Browser text-to-speech is a UI fallback and is not persisted.
+
+`enrichment/enrichmentService.ts` owns the lease pipeline:
+
+1. Acquire a short lease with `findOneAndUpdate`, setting `enrichmentStatus =
+enriching`, a random `enrichmentLockId`, and `enrichmentLeaseExpiresAt`.
+2. Call providers in priority order with timeout and fallback.
+3. Persist a ready/failed/notFound result only if the same `lockId` still owns
+   the row.
+4. Release the lease or set `nextRetryAt` for retryable failure.
+
+`enrichNextVocabularyEntries` is the admin batch path: max 10 rows/request,
+concurrency 2, summary counts for processed, ready, failed, not found, skipped,
+and rate-limited rows.
+
+`explore/exploreService.ts` returns only frequency-ranked entries whose
+`enrichmentStatus` is `ready`, then excludes words the actor has already
+classified through a MongoDB `$lookup` against `UserVocabItem`. Seed shells stay
+out of Explore until lookup or admin enrichment has filled provider data.
+
+### User status and recall
+
+`recall/recallScheduler.ts` implements the seven-touch schedule:
+
+- `Should learn`: stage 1, due now.
+- Correct stage 1 -> stage 2 due in 1 day.
+- Correct stage 2 -> stage 3 due in 1 day.
+- Correct stage 3 -> stage 4 due in 4 days.
+- Correct stage 4 -> stage 5 due in 7 days.
+- Correct stage 5 -> stage 6 due in 14 days.
+- Correct stage 6 -> stage 7 due in 17 days, which lands on day 45 from the
+  first touch.
+- Correct stage 7 -> `mastered`.
+- Any wrong answer -> reset to stage 1 due now.
+
+`services/userVocabItemService.ts` upserts `Should learn` and `Already know`
+states, records occurrences, lists due recall cards, and applies recall answers
+with ownership scoped to the server-resolved actor id.
+
+### Search, Explore, and stats
+
+- `services/vocabEntryService.ts`: creates shells safely, catches duplicate-key
+  races by re-reading, maps entries with current user state, and searches by
+  normalized prefix.
+- `explore/exploreService.ts`: returns unclassified frequency-ranked entries
+  using a bounded MongoDB `$lookup` against `UserVocabItem`, avoiding an
+  app-memory anti-join over all words.
+- `stats/vocabStats.ts` and `stats/vocabStatsService.ts`: count learning,
+  already-known, mastered, due-today, total-known, total-started, and daily
+  growth buckets.
+- `services/vocabWordListService.ts`: parses the `/vocabulary/words` `view`
+  param and lists the current actor's words for `learning`, `dueToday`,
+  `alreadyKnow`, `mastered`, or `knownTotal`, joining each `UserVocabItem` to
+  its `VocabEntry`.
+
+### Route decisions and record mappers
+
+`services/vocabularyRouteDecisions.ts` contains zod validation for lookup,
+search, Explore, item status, recall due, recall answer, and admin enrich
+payloads. `services/vocabEntryRecords.ts`, `userVocabItemRecords.ts`, and
+`vocabOccurrenceRecords.ts` convert Mongoose/aggregation rows to safe API
+records.

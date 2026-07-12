@@ -1,9 +1,10 @@
 # Architecture: English For Only Me
 
 English For Only Me is a private IELTS study app built on Next.js 16 (App Router),
-React 19, Mongoose, and Auth.js v5. Its only live module is the "Dictation Lab", where
-a learner transcribes short segments of a YouTube video and gets token-level
-correction, review scheduling, and stats. This document describes how the codebase is
+React 19, Mongoose, and Auth.js v5. Its live modules are the "Dictation Lab",
+where a learner transcribes short segments of a YouTube video and gets
+token-level correction, review scheduling, and stats, and "Vocabulary", where a
+learner searches, classifies, enriches, and recalls words. This document describes how the codebase is
 layered so an AI (or engineer) can reason about the system without reading every file.
 It is reference-heavy: every claim cites a repo-relative path you can open. Repo root is
 `/home/nakmiers/ME/IT_IT/Webs/EnglishForOnlyMe`; the `@/*` import alias maps to `src/*`
@@ -15,43 +16,43 @@ The package manager is Bun (`bun.lock` is present; `.agents/rules/testing-qualit
 and `.agents/rules/project-style.md` both direct contributors to prefer Bun). All
 versions below are read from `package.json`.
 
-| Concern | Choice | Version | Notes |
-| --- | --- | --- | --- |
-| Framework | `next` | 16.2.10 | App Router; middleware renamed to `proxy.ts` (Next 16). See `next.config.ts`. |
-| UI runtime | `react`, `react-dom` | 19.2.4 | Server Components by default. |
-| Language | `typescript` | ^5 | `strict: true`, `moduleResolution: "bundler"` (`tsconfig.json`). |
-| Data / ODM | `mongoose` | ^9.7.3 | Models in `src/models`; shared connection in `src/lib/db/connectDatabase.ts`. |
-| Auth | `next-auth` (Auth.js) | 5.0.0-beta.31 | Google provider; edge-safe config split from Node config. |
-| Validation | `zod` | ^4.4.3 | Payload/param parsing at API boundaries and in schemas. |
-| UI primitives | `@base-ui/react` | ^1.6.0 | Underlying primitive layer for the shadcn components. |
-| Component generator | `shadcn` | ^4.13.0 | Config in `components.json` (style `base-nova`, `rsc: true`, lucide icons). Generated primitives live in `src/components/ui`. |
-| Styling | `tailwindcss` + `@tailwindcss/postcss` | ^4 | Tailwind v4 via PostCSS only (`postcss.config.mjs`); no `tailwind.config`. Tokens in `src/app/globals.css`. |
-| Animations | `tw-animate-css` | ^1.4.0 | Tailwind animation utilities. |
-| Class utilities | `clsx`, `tailwind-merge`, `class-variance-authority` | ^2.1.1 / ^3.5.0 / ^0.7.1 | `cn()` helper in `src/lib/utils.ts`; `cva` for variant styling in UI primitives. |
-| Icons | `lucide-react` | ^1.23.0 | Standard icon set (`components.json` -> `iconLibrary: "lucide"`). |
-| Server boundary | `server-only` | ^0.0.1 | Imported by server modules to fail the build if pulled client-side. |
-| Testing (unit) | `vitest`, `@testing-library/*`, `jsdom` | ^4.1.9 / ... | Config in `vitest.config.mts`; jsdom env, globals on. |
-| Testing (e2e) | `playwright` | ^1.61.1 | Config in `playwright.config.ts`; matches `**/*.e2e.ts` under `src`. |
-| Lint / format | `eslint` (+ `eslint-config-next`), `prettier` (+ tailwind plugin) | ^9 / ^3.8.1 | `eslint.config.mjs` bans `any` (`@typescript-eslint/no-explicit-any: error`). |
+| Concern             | Choice                                                            | Version                  | Notes                                                                                                                         |
+| ------------------- | ----------------------------------------------------------------- | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| Framework           | `next`                                                            | 16.2.10                  | App Router; middleware renamed to `proxy.ts` (Next 16). See `next.config.ts`.                                                 |
+| UI runtime          | `react`, `react-dom`                                              | 19.2.4                   | Server Components by default.                                                                                                 |
+| Language            | `typescript`                                                      | ^5                       | `strict: true`, `moduleResolution: "bundler"` (`tsconfig.json`).                                                              |
+| Data / ODM          | `mongoose`                                                        | ^9.7.3                   | Models in `src/models`; shared connection in `src/lib/db/connectDatabase.ts`.                                                 |
+| Auth                | `next-auth` (Auth.js)                                             | 5.0.0-beta.31            | Google provider; edge-safe config split from Node config.                                                                     |
+| Validation          | `zod`                                                             | ^4.4.3                   | Payload/param parsing at API boundaries and in schemas.                                                                       |
+| UI primitives       | `@base-ui/react`                                                  | ^1.6.0                   | Underlying primitive layer for the shadcn components.                                                                         |
+| Component generator | `shadcn`                                                          | ^4.13.0                  | Config in `components.json` (style `base-nova`, `rsc: true`, lucide icons). Generated primitives live in `src/components/ui`. |
+| Styling             | `tailwindcss` + `@tailwindcss/postcss`                            | ^4                       | Tailwind v4 via PostCSS only (`postcss.config.mjs`); no `tailwind.config`. Tokens in `src/app/globals.css`.                   |
+| Animations          | `tw-animate-css`                                                  | ^1.4.0                   | Tailwind animation utilities.                                                                                                 |
+| Class utilities     | `clsx`, `tailwind-merge`, `class-variance-authority`              | ^2.1.1 / ^3.5.0 / ^0.7.1 | `cn()` helper in `src/lib/utils.ts`; `cva` for variant styling in UI primitives.                                              |
+| Icons               | `lucide-react`                                                    | ^1.23.0                  | Standard icon set (`components.json` -> `iconLibrary: "lucide"`).                                                             |
+| Server boundary     | `server-only`                                                     | ^0.0.1                   | Imported by server modules to fail the build if pulled client-side.                                                           |
+| Testing (unit)      | `vitest`, `@testing-library/*`, `jsdom`                           | ^4.1.9 / ...             | Config in `vitest.config.mts`; jsdom env, globals on.                                                                         |
+| Testing (e2e)       | `playwright`                                                      | ^1.61.1                  | Config in `playwright.config.ts`; matches `**/*.e2e.ts` under `src`.                                                          |
+| Lint / format       | `eslint` (+ `eslint-config-next`), `prettier` (+ tailwind plugin) | ^9 / ^3.8.1              | `eslint.config.mjs` bans `any` (`@typescript-eslint/no-explicit-any: error`).                                                 |
 
 ## 2. Top-level directory map
 
 Every path below is under `src/` unless noted otherwise.
 
-| Directory | Purpose (one line) |
-| --- | --- |
-| `src/app` | App Router tree: pages, layouts, `loading`/`error`, route handlers under `api/**/route.ts`, plus `layout.tsx`, `page.tsx`, `sitemap.ts`. |
-| `src/components` | Shared React UI, split into `ui` (themed primitives), `common` (cross-feature), and domain folders `dictation`, `home`. |
-| `src/constants` | Reusable settings and env wrappers: `environments.ts`, `dictation.ts`, `modules.ts`, `theme.ts`. |
-| `src/lib` | Framework-agnostic infrastructure: `db`, `auth`, `ai`, `youtube`, `cloudinary`, and `utils.ts` (the `cn` helper). |
-| `src/models` | Mongoose schemas and models (`UserModel.ts` plus `dictation/*Model.ts`). |
-| `src/modules` | Business logic for the dictation domain (`modules/dictation`): pure logic, services, repositories, schemas, correction, review, stats. |
-| `src/requests` | Client-side fetch wrappers around the internal API; every export ends in `Api`. |
-| `src/types` | Ambient/global type declarations (`next-auth.d.ts` augments the session type). |
-| `src/test` | Vitest setup and stubs (`setup.ts`, `setupDom.ts`, `serverOnlyStub.ts`, `jsdom.d.ts`). |
-| `scripts` (repo root) | One-off maintenance scripts, e.g. `backfillContentHierarchy.ts` (run via `bun run backfill:content`). |
-| `public` (repo root) | Static assets: favicons, `site.webmanifest`, icons referenced by `src/app/layout.tsx`. |
-| `.agents/rules` (repo root) | The six rule files defining the intended layering and conventions (style, App Router, API security, data/state, frontend UI, testing). |
+| Directory                   | Purpose (one line)                                                                                                                       |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/app`                   | App Router tree: pages, layouts, `loading`/`error`, route handlers under `api/**/route.ts`, plus `layout.tsx`, `page.tsx`, `sitemap.ts`. |
+| `src/components`            | Shared React UI, split into `ui` (themed primitives), `common` (cross-feature), and domain folders `dictation`, `home`.                  |
+| `src/constants`             | Reusable settings and env wrappers: `environments.ts`, `dictation.ts`, `modules.ts`, `theme.ts`.                                         |
+| `src/lib`                   | Framework-agnostic infrastructure: `db`, `auth`, `ai`, `youtube`, `cloudinary`, and `utils.ts` (the `cn` helper).                        |
+| `src/models`                | Mongoose schemas and models (`UserModel.ts` plus `dictation/*Model.ts` and `vocabulary/*Model.ts`).                                      |
+| `src/modules`               | Business logic for learning domains: dictation (`modules/dictation`) and vocabulary (`modules/vocabulary`).                              |
+| `src/requests`              | Client-side fetch wrappers around the internal API; every export ends in `Api`.                                                          |
+| `src/types`                 | Ambient/global type declarations (`next-auth.d.ts` augments the session type).                                                           |
+| `src/test`                  | Vitest setup and stubs (`setup.ts`, `setupDom.ts`, `serverOnlyStub.ts`, `jsdom.d.ts`).                                                   |
+| `scripts` (repo root)       | One-off maintenance scripts, e.g. `backfillContentHierarchy.ts` (run via `bun run backfill:content`).                                    |
+| `public` (repo root)        | Static assets: favicons, `site.webmanifest`, icons referenced by `src/app/layout.tsx`.                                                   |
+| `.agents/rules` (repo root) | The six rule files defining the intended layering and conventions (style, App Router, API security, data/state, frontend UI, testing).   |
 
 ## 3. Layered architecture and dependency direction
 
@@ -64,7 +65,7 @@ through `connectDatabase()` and models, and client code talks to the server only
 
 Roles of the three easily-confused layers:
 
-- `src/modules/dictation` is the domain layer. It holds pure business logic (no
+- `src/modules/dictation` is the listening domain layer. It holds pure business logic (no
   framework imports) alongside server services and repositories. Examples:
   - Pure logic (unit-testable, no I/O): `correction/compareAnswer.ts` (token alignment
     and scoring), `correction/normalizeAnswer.ts`, `segmenting/buildSegments.ts`,
@@ -77,6 +78,19 @@ Roles of the three easily-confused layers:
     `review/reviewItemService.ts`, `stats/globalStatsService.ts`,
     `stats/videoStatsService.ts`, `ai/debriefService.ts`.
   - Schemas: `schemas/*.ts` (zod payload schemas for videos, transcripts, YouTube import).
+- `src/modules/vocabulary` is the vocabulary domain layer. It mirrors the same
+  pure-decision plus server-service pattern:
+  - Pure logic: `normalizeVocabTerm.ts`, `recall/recallScheduler.ts`,
+    `stats/vocabStats.ts`, and `services/vocabularyRouteDecisions.ts`.
+  - Server services: `services/vocabEntryService.ts`,
+    `services/userVocabItemService.ts`, `services/vocabWordListService.ts`,
+    `explore/exploreService.ts`, `stats/vocabStatsService.ts`, and
+    `enrichment/enrichmentService.ts`.
+  - Providers: `providers/dictionaryApiDev.ts` and
+    `providers/freeDictionaryApi.ts` normalize free dictionary responses behind
+    one typed provider contract.
+  - Seed: `seed/seedVocabulary.ts` downloads and parses the official NGSL CSV,
+    then upserts the top 1000 shells.
 - `src/lib` is framework-agnostic infrastructure shared across modules: the Mongoose
   connection cache (`db/connectDatabase.ts`), Auth.js setup (`auth/auth.ts`,
   `auth/auth.config.ts`, `auth/roles.ts`, `auth/guestUser.ts`), the OpenAI client
@@ -99,8 +113,8 @@ flowchart TD
   subgraph server["Server (Node runtime)"]
     PAGE["Server Components / pages<br/>src/app/**/page.tsx, layout.tsx"]
     ROUTE["Route handlers<br/>src/app/api/**/route.ts"]
-    DEC["Decision + pure logic<br/>modules/dictation/**"]
-    SVC["Services + repositories<br/>modules/dictation/services, content, review, stats"]
+    DEC["Decision + pure logic<br/>modules/dictation/**<br/>modules/vocabulary/**"]
+    SVC["Services + repositories<br/>modules/dictation/**<br/>modules/vocabulary/**"]
     LIB["Infra<br/>src/lib (db, auth, ai, youtube, cloudinary)"]
     MODEL["Mongoose models<br/>src/models/**"]
   end
@@ -257,14 +271,19 @@ src/app/
       [topicSlug]/                          Topic browse
       videos/[videoId]/practice/            Practice screen (hosts the client shell)
       videos/[videoId]/results/             Results summary
+    vocabulary/
+      page.tsx, words/                       Dashboard and filtered word lists
   admin/                Admin section (protected by proxy + layout re-check)
-    layout.tsx, page.tsx, import/, topics/, videos/, videos/[videoId]/edit/
+    layout.tsx, page.tsx, import/, topics/, videos/, videos/[videoId]/edit/, vocab/
   api/                  Route handlers (all POST/GET etc. under **/route.ts)
     auth/[...nextauth]/route.ts             Auth.js handler
     dictation/
       sessions/, sessions/[sessionId]/, sessions/[sessionId]/attempts/
       segments/[segmentId]/, transcripts/, transcripts/[transcriptId]/...
       videos/, videos/[videoId]/, stats/, review-items/, debriefs/, imports/youtube/
+    vocab/
+      entries/lookup/, search/, explore/, items/, recall/due/, recall/answer/, stats/
+    admin/vocab/enrich/
 ```
 
 The `(app)` group applies shared learner layout without adding an `/app` URL segment;
@@ -297,19 +316,20 @@ env vars are provided.
 
 From `package.json` scripts (run with Bun per project convention, e.g. `bun run dev`):
 
-| Command | Action |
-| --- | --- |
-| `bun run dev` | `next dev` - local development server. |
-| `bun run build` | `next build` - production build (exercises App Router / metadata). |
-| `bun run start` | `next start` - serve the production build. |
-| `bun run lint` | `eslint` - lint (bans `any`, warns on stray `console`). |
-| `bun run lint:fix` | `eslint . --fix`. |
-| `bun run test` | `vitest run` - single-pass unit tests (jsdom). |
-| `bun run test:watch` | `vitest` - watch mode. |
-| `bun run format` | `prettier . --write`. |
-| `bun run format:check` | `prettier . --check`. |
-| `bun run backfill:content` | `node --conditions=react-server --import tsx scripts/backfillContentHierarchy.ts` - one-off content-hierarchy migration. |
-| `bun run clean` | `rm -rf .next node_modules bun.lock` - destructive; do not run unless asked. |
+| Command                    | Action                                                                                                                                             |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bun run dev`              | `next dev` - local development server.                                                                                                             |
+| `bun run build`            | `next build` - production build (exercises App Router / metadata).                                                                                 |
+| `bun run start`            | `next start` - serve the production build.                                                                                                         |
+| `bun run lint`             | `eslint` - lint (bans `any`, warns on stray `console`).                                                                                            |
+| `bun run lint:fix`         | `eslint . --fix`.                                                                                                                                  |
+| `bun run test`             | `vitest run` - single-pass unit tests (jsdom).                                                                                                     |
+| `bun run test:watch`       | `vitest` - watch mode.                                                                                                                             |
+| `bun run format`           | `prettier . --write`.                                                                                                                              |
+| `bun run format:check`     | `prettier . --check`.                                                                                                                              |
+| `bun run backfill:content` | `node --conditions=react-server --import tsx scripts/backfillContentHierarchy.ts` - one-off content-hierarchy migration.                           |
+| `bun run vocab:seed`       | `node --conditions=react-server --import tsx scripts/seedVocabulary.ts` - downloads the NGSL stats CSV and upserts the top 1000 vocabulary shells. |
+| `bun run clean`            | `rm -rf .next node_modules bun.lock` - destructive; do not run unless asked.                                                                       |
 
 End-to-end tests use Playwright (`playwright.config.ts`, matching `**/*.e2e.ts` under
 `src`) and are run via the Playwright CLI rather than a package script.

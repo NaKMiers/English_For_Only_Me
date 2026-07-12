@@ -1,24 +1,27 @@
 # API Reference
 
 This document is the contract-level reference for the HTTP API of "English For
-Only Me", a dictation-based IELTS practice app built on Next.js 16 App Router.
-Every dictation endpoint lives under the base path `/api/dictation` and is a
-Route Handler (`src/app/api/dictation/**/route.ts`) that delegates parsing and
-gating to pure "route decision" helpers in
-`src/modules/dictation/services/*RouteDecisions.ts` (plus schema files in
-`src/modules/dictation/schemas/`). Authentication (Google via Auth.js) is served
-under `/api/auth/[...nextauth]`. This reference is grounded in the actual route
-and helper code; status codes and shapes below are taken from those files, not
-assumed.
+Only Me", an IELTS practice app built on Next.js 16 App Router. Dictation
+endpoints live under `/api/dictation`; vocabulary endpoints live under
+`/api/vocab`, plus `/api/admin/vocab/enrich` for admin batch enrichment. Route
+Handlers (`src/app/api/**/route.ts`) delegate parsing and gating to pure "route
+decision" helpers in `src/modules/dictation/services/*RouteDecisions.ts` and
+`src/modules/vocabulary/services/vocabularyRouteDecisions.ts` (plus schema files
+in `src/modules/dictation/schemas/`). Authentication (Google via Auth.js) is
+served under `/api/auth/[...nextauth]`. This reference is grounded in the actual
+route and helper code; status codes and shapes below are taken from those files,
+not assumed.
 
 ## 1. Conventions
 
 ### Base path and runtime
 
-- All dictation endpoints are under `/api/dictation`. Auth endpoints are under
-  `/api/auth`.
-- Every dictation route sets `export const runtime = 'nodejs'` (Mongoose and
-  cookies require the Node runtime, not edge).
+- Dictation endpoints are under `/api/dictation`; vocabulary learner endpoints
+  are under `/api/vocab`; vocabulary admin enrichment is under
+  `/api/admin/vocab/enrich`; Auth endpoints are under `/api/auth`.
+- Every dictation and vocabulary route sets `export const runtime = 'nodejs'`
+  (Mongoose, cookies, and server-side providers require the Node runtime, not
+  edge).
 
 ### Success response shape
 
@@ -124,7 +127,7 @@ callback in `src/lib/auth/auth.ts` on first sign-in:
 
 - No-op unless `isGuestId(guestId)` and `guestId !== userId`.
 - Reassigns ownership by running `updateMany({ userId: guestId }, { $set: {
-  userId } })` on sessions, attempts, review items, and debriefs.
+userId } })` on sessions, attempts, review items, and debriefs.
 - Favorites are intentionally excluded (favoriting requires login, so a guest
   never creates any; their `{ userId, videoId }` unique index would risk a merge
   collision).
@@ -145,28 +148,36 @@ collision-safe (guest sessionIds are unique ObjectIds).
 
 ## 2. Endpoint summary
 
-| Method | Path | Purpose | Auth | Client helper (`src/requests`) |
-| --- | --- | --- | --- | --- |
-| GET, POST | `/api/auth/[...nextauth]` | Auth.js sign-in/out, callback, session | public | (Auth.js `signIn`/`signOut`; no `requests` module) |
-| GET | `/api/dictation/videos` | List non-archived catalog videos | public | `listDictationVideosApi` |
-| POST | `/api/dictation/videos` | Create a catalog video | admin | `createDictationVideoApi` |
-| PATCH | `/api/dictation/videos/[videoId]` | Update video default language | admin | `updateDictationVideoApi` |
-| DELETE | `/api/dictation/videos/[videoId]` | Archive (soft-delete) a video | admin | `archiveDictationVideoApi` |
-| POST | `/api/dictation/transcripts` | Attach primary or translation transcript | admin | `attachDictationTranscriptApi`, `attachDictationTranslationTrackApi` |
-| DELETE | `/api/dictation/transcripts/[transcriptId]` | Delete a non-active transcript track | admin | `deleteDictationTranscriptApi` |
-| GET | `/api/dictation/transcripts/[transcriptId]/segments` | List a transcript's segments | admin | (none) |
-| POST | `/api/dictation/transcripts/[transcriptId]/segments` | (Re)build segments from transcript | admin | `buildDictationSegmentsApi` |
-| PATCH | `/api/dictation/segments/[segmentId]` | Edit/split/merge/accept-warning a segment | admin | (none) |
-| POST | `/api/dictation/sessions` | Start or resume a practice session | user or guest | `startOrResumeDictationSessionApi` |
-| GET | `/api/dictation/sessions/[sessionId]` | Read one owned session | user or guest | (none) |
-| PATCH | `/api/dictation/sessions/[sessionId]` | Update session cursor/settings/status | user or guest | `updateDictationSessionApi` |
-| POST | `/api/dictation/sessions/[sessionId]/attempts` | Submit a dictation attempt | user or guest | `submitDictationAttemptApi` |
-| GET | `/api/dictation/review-items` | List due review items | user or guest | (none) |
-| POST | `/api/dictation/review-items` | Recompute review items for a video | user or guest | (none) |
-| PATCH | `/api/dictation/review-items` | Complete/dismiss a review item | user or guest | (none) |
-| POST | `/api/dictation/debriefs` | Generate/return an AI debrief | user or guest | `createDictationDebriefApi` |
-| GET | `/api/dictation/stats` | Global or per-video stats | user or guest | `getDictationGlobalStatsApi`, `getDictationVideoStatsApi` |
-| POST | `/api/dictation/imports/youtube` | Import a YouTube video by URL | admin | `importYouTubeVideoApi` |
+| Method    | Path                                                 | Purpose                                      | Auth          | Client helper (`src/requests`)                                       |
+| --------- | ---------------------------------------------------- | -------------------------------------------- | ------------- | -------------------------------------------------------------------- |
+| GET, POST | `/api/auth/[...nextauth]`                            | Auth.js sign-in/out, callback, session       | public        | (Auth.js `signIn`/`signOut`; no `requests` module)                   |
+| GET       | `/api/dictation/videos`                              | List non-archived catalog videos             | public        | `listDictationVideosApi`                                             |
+| POST      | `/api/dictation/videos`                              | Create a catalog video                       | admin         | `createDictationVideoApi`                                            |
+| PATCH     | `/api/dictation/videos/[videoId]`                    | Update video default language                | admin         | `updateDictationVideoApi`                                            |
+| DELETE    | `/api/dictation/videos/[videoId]`                    | Archive (soft-delete) a video                | admin         | `archiveDictationVideoApi`                                           |
+| POST      | `/api/dictation/transcripts`                         | Attach primary or translation transcript     | admin         | `attachDictationTranscriptApi`, `attachDictationTranslationTrackApi` |
+| DELETE    | `/api/dictation/transcripts/[transcriptId]`          | Delete a non-active transcript track         | admin         | `deleteDictationTranscriptApi`                                       |
+| GET       | `/api/dictation/transcripts/[transcriptId]/segments` | List a transcript's segments                 | admin         | (none)                                                               |
+| POST      | `/api/dictation/transcripts/[transcriptId]/segments` | (Re)build segments from transcript           | admin         | `buildDictationSegmentsApi`                                          |
+| PATCH     | `/api/dictation/segments/[segmentId]`                | Edit/split/merge/accept-warning a segment    | admin         | (none)                                                               |
+| POST      | `/api/dictation/sessions`                            | Start or resume a practice session           | user or guest | `startOrResumeDictationSessionApi`                                   |
+| GET       | `/api/dictation/sessions/[sessionId]`                | Read one owned session                       | user or guest | (none)                                                               |
+| PATCH     | `/api/dictation/sessions/[sessionId]`                | Update session cursor/settings/status        | user or guest | `updateDictationSessionApi`                                          |
+| POST      | `/api/dictation/sessions/[sessionId]/attempts`       | Submit a dictation attempt                   | user or guest | `submitDictationAttemptApi`                                          |
+| GET       | `/api/dictation/review-items`                        | List due review items                        | user or guest | (none)                                                               |
+| POST      | `/api/dictation/review-items`                        | Recompute review items for a video           | user or guest | (none)                                                               |
+| PATCH     | `/api/dictation/review-items`                        | Complete/dismiss a review item               | user or guest | (none)                                                               |
+| POST      | `/api/dictation/debriefs`                            | Generate/return an AI debrief                | user or guest | `createDictationDebriefApi`                                          |
+| GET       | `/api/dictation/stats`                               | Global or per-video stats                    | user or guest | `getDictationGlobalStatsApi`, `getDictationVideoStatsApi`            |
+| POST      | `/api/dictation/imports/youtube`                     | Import a YouTube video by URL                | admin         | `importYouTubeVideoApi`                                              |
+| POST      | `/api/vocab/entries/lookup`                          | Find/create and enrich one vocab entry       | user or guest | `lookupVocabEntryApi`                                                |
+| GET       | `/api/vocab/search`                                  | Search cached vocab entries by prefix        | user or guest | `searchVocabApi`                                                     |
+| GET       | `/api/vocab/explore`                                 | Return unclassified common words             | user or guest | `getExploreVocabApi`                                                 |
+| POST      | `/api/vocab/items`                                   | Mark a word `Should learn` or `Already know` | user or guest | `setVocabItemStatusApi`                                              |
+| GET       | `/api/vocab/recall/due`                              | List due vocab flashcards                    | user or guest | `getDueVocabRecallApi`                                               |
+| POST      | `/api/vocab/recall/answer`                           | Apply correct/wrong recall answer            | user or guest | `answerVocabRecallApi`                                               |
+| GET       | `/api/vocab/stats`                                   | Vocabulary stats and daily growth            | user or guest | `getVocabStatsApi`                                                   |
+| GET, POST | `/api/admin/vocab/enrich`                            | Inspect/admin-enrich the vocab queue         | admin         | `getVocabAdminQueueApi`, `enrichVocabularyAdminApi`                  |
 
 "user or guest" means `requirePracticeActor()`: no login required; data is scoped
 to the signed-in user id or the guest cookie id. "(none)" means there is no typed
@@ -201,7 +212,7 @@ Decisions: `videoRouteDecisions.ts`. Schemas:
 - Auth: public. No `requireAdmin`/actor call.
 - Query/body: none.
 - Behavior: `connectDatabase()`, then `DictationVideoModel.find({ status: { $ne:
-  'archived' } })` sorted by `{ order: 1, createdAt: -1 }`, limited to 50,
+'archived' } })` sorted by `{ order: 1, createdAt: -1 }`, limited to 50,
   mapped by `toDictationVideoRecord`.
 - Success `200`: `{ "videos": DictationVideoApiRecord[] }`.
 - Errors: `500` on `MissingEnvironmentError` (missing Mongo) or unexpected error
@@ -215,7 +226,7 @@ Decisions: `videoRouteDecisions.ts`. Schemas:
   defaults to "Untitled dictation video"), `transcriptStatus` (optional enum
   `none | manualNeeded | manualAdded`, default `manualNeeded`). Parsed by
   `parseCreateVideoRequest`; new video is created with `status:
-  'needsTranscript'` and `order = countDocuments(non-archived)`.
+'needsTranscript'` and `order = countDocuments(non-archived)`.
 - Success `201`: `{ "video": DictationVideoApiRecord }`.
 - Errors: `400` invalid JSON or zod failure; `401`/`403` via `requireAdmin`;
   `409` duplicate (`code 11000`, "This video is already in the dictation
@@ -242,7 +253,7 @@ Decisions: `videoRouteDecisions.ts`. Schemas:
 - Path param: `videoId` (same 24-hex check; `400` "Invalid video id.").
 - Auth: admin (`requireAdmin`).
 - Behavior: soft-delete via `findOneAndUpdate({ _id, status != archived },
-  { $set: { status: 'archived' } })`.
+{ $set: { status: 'archived' } })`.
 - Success `200`: `{ "video": DictationVideoApiRecord }` (the archived doc).
 - Errors: `400` bad id; `401`/`403`; `404` "Dictation video was not found.";
   `500` ("Could not delete this dictation video.").
@@ -264,9 +275,9 @@ Decisions: `transcriptRouteDecisions.ts` (POST) and
 - Body: `transcriptPayloadSchema` (strict): `videoId` (24-hex),
   `language` (2-12, default `en`), `role` (`primary | translation`, default
   `primary`), `sourceType` (optional enum `manualText | manualTimedText |
-  captionFile`), `rawText` (trimmed, 20 to 500000 chars). `parseTranscriptRequest`
+captionFile`), `rawText` (trimmed, 20 to 500000 chars). `parseTranscriptRequest`
   runs `normalizeTranscriptSource`; if the normalized `qualityStatus ===
-  'blocked'` it returns `400` "Transcript source does not contain usable English
+'blocked'` it returns `400` "Transcript source does not contain usable English
   text."
 - Behavior:
   - Video must exist and be non-archived, else `404` "This dictation video was
@@ -316,7 +327,7 @@ Decisions: `segmentRouteDecisions.ts`. Segment building/editing logic:
 - Behavior: loads transcript (`404` "This transcript was not found."), then
   lists `DictationSegmentModel.find({ transcriptId })` sorted by `{ order: 1 }`.
 - Success `200`: `{ "segments": DictationSegmentApiRecord[], "transcriptId":
-  string }`.
+string }`.
 - Errors: `400` bad id; `401`/`403`; `404`; `500` ("Could not build dictation
   segments." - shared error mapper).
 - Client: none.
@@ -332,13 +343,13 @@ Decisions: `segmentRouteDecisions.ts`. Segment building/editing logic:
     segmented." when `qualityStatus === 'blocked'`;
   - `409` "This transcript is no longer the active source for the video. Reload
     before segmenting." when `video.activeTranscriptId !== transcript._id`.
-  Then `buildDictationSegments` runs; if it yields zero segments -> `409` "This
-  transcript did not produce usable segments." Otherwise all existing segments
-  for the transcript are deleted and rebuilt via `insertMany`; transcript
-  `segmentCount` and video `sentenceCount` are updated and `video.status` set to
-  `ready`.
+    Then `buildDictationSegments` runs; if it yields zero segments -> `409` "This
+    transcript did not produce usable segments." Otherwise all existing segments
+    for the transcript are deleted and rebuilt via `insertMany`; transcript
+    `segmentCount` and video `sentenceCount` are updated and `video.status` set to
+    `ready`.
 - Success `201`: `{ "qualityFlags": [...], "qualityStatus": "...", "segments":
-  DictationSegmentApiRecord[], "transcriptId": string, "videoId": string }`.
+DictationSegmentApiRecord[], "transcriptId": string, "videoId": string }`.
 - Errors: `400` bad id; `401`/`403`; `404`; `409` guard/empty-build; `500`.
 - Client: `buildDictationSegmentsApi`.
 
@@ -355,7 +366,7 @@ Decisions: `segmentRouteDecisions.ts`. Segment building/editing logic:
   - `split`: `splitAt` (int >= 1). Splits into two segments and reorders.
   - `mergePrevious` / `mergeNext`: merges with the adjacent segment; `409`
     "There is no adjacent segment to merge." when no neighbor exists.
-  Invalid payloads -> `400` "Segment edit payload is invalid."
+    Invalid payloads -> `400` "Segment edit payload is invalid."
 - Guard: after loading segment + transcript + video, `getSegmentEditGuardDecision`
   applies the build guard rules plus a stale-source check: `409` "Segments were
   built from an older transcript source. Rebuild segments before editing." when
@@ -387,12 +398,12 @@ Decisions: `sessionRouteDecisions.ts`. Record mapper:
     transcript);
   - `409` "Build sentence segments before starting practice." (no first
     segment).
-  If an `active` session already exists for `{ userId, videoId }`, its
-  `lastActiveAt` is bumped and it is returned with `mode: 'resume'` (`200`).
-  Otherwise a new session is created (cursor at the first segment,
-  `playbackSpeed: 1`, `showShortcuts: true`) and the video flips
-  `ready`/`transcriptReady` -> `inProgress`; returned with `mode: 'start'`
-  (`201`). Mode is computed by `resolveSessionStart`.
+    If an `active` session already exists for `{ userId, videoId }`, its
+    `lastActiveAt` is bumped and it is returned with `mode: 'resume'` (`200`).
+    Otherwise a new session is created (cursor at the first segment,
+    `playbackSpeed: 1`, `showShortcuts: true`) and the video flips
+    `ready`/`transcriptReady` -> `inProgress`; returned with `mode: 'start'`
+    (`201`). Mode is computed by `resolveSessionStart`.
 - Success: `{ "mode": "resume" | "start", "session": DictationSessionApiRecord }`.
 - Errors: `400` invalid JSON / zod; `401`/`403` only if an auth-status error
   bubbles (practice actor itself does not throw); `404`; `409` guards; `500`.
@@ -452,7 +463,7 @@ Decisions: `attemptRouteDecisions.ts` (payload + status/cursor logic) and
 - Fresh submission validation:
   - `404` "This dictation session was not found." (not owned);
   - `409` "This dictation session is not active." (`session.status !==
-    'active'`);
+'active'`);
   - `409` "This attempt is not for the current session segment." (segmentId !=
     session cursor);
   - `404` "This dictation segment was not found." (segment not in
@@ -465,7 +476,7 @@ Decisions: `attemptRouteDecisions.ts` (payload + status/cursor logic) and
   video's `completedSessionCount` is incremented and its `status` set to
   `completed`. After saving, `recomputeReviewItemsForVideo` runs for the actor.
 - Success `201`: `{ "attempt": DictationAttemptApiRecord, "mode": "create",
-  "nextSegmentId": string | null, "session": DictationSessionApiRecord }`.
+"nextSegmentId": string | null, "session": DictationSessionApiRecord }`.
   Idempotent replays return the same shape with `mode: "idempotent"` and `200`.
 - Errors: `400` bad id / invalid JSON / zod; `404`; `409` non-active / wrong
   segment; `500` ("Could not save this dictation attempt.").
@@ -527,7 +538,7 @@ Decisions: `ai/debriefDecisions.ts`. Service: `ai/debriefService.ts`.
   the specific code, for example a completion blocker). On success returns the
   debrief and its `mode`.
 - Success `200`: `{ "debrief": DictationDebriefApiRecord, "mode": "cache" |
-  "created" }`.
+"created" }`.
 - Errors: `400` invalid JSON / zod; service-provided status when
   `result.ok === false`; `401`/`403` if bubbled; `500` ("Could not generate this
   dictation debrief.").
@@ -574,14 +585,107 @@ Decisions: `youtubeImportDecisions.ts`. Schema:
   - `state === 'ready'` -> uses real title/channel/duration/thumbnail;
     `importStatus` is `metadataReadyEmbedBlocked` when not embeddable, else
     `metadataReady`.
-  Then upserts `DictationVideoModel` on `{ youtubeVideoId }` with `$setOnInsert`
-  (sourceType youtube, urls, `status: 'needsTranscript'`, `transcriptStatus:
-  'manualNeeded'`) and `$set` of the metadata + import status/warning.
+    Then upserts `DictationVideoModel` on `{ youtubeVideoId }` with `$setOnInsert`
+    (sourceType youtube, urls, `status: 'needsTranscript'`, `transcriptStatus:
+'manualNeeded'`) and `$set` of the metadata + import status/warning.
 - Success `201`: `{ "video": DictationVideoApiRecord, "warning": string | null }`.
 - Errors: `400` invalid JSON / zod / bad URL; `401`/`403`; `404` not found;
   `409` duplicate (`code 11000`, "This YouTube video is already in your dictation
   library."); `500` fetch-failed / missing Mongo / unexpected.
 - Client: `importYouTubeVideoApi`.
+
+### Vocabulary
+
+Vocabulary route files live under `src/app/api/vocab/**/route.ts` and share
+validation helpers from
+`src/modules/vocabulary/services/vocabularyRouteDecisions.ts`. They all guard
+missing MongoDB with `getMissingVocabMongoResponse()` and resolve ownership with
+`requirePracticeActor()`.
+
+#### POST /api/vocab/entries/lookup
+
+File: `src/app/api/vocab/entries/lookup/route.ts`.
+
+- Body: `{ term: string, occurrence?: { reason, selectedText?, contextSentence?, videoId?, segmentId?, attemptId? } }`.
+- Behavior: normalizes the term, finds or creates a `VocabEntry` shell, records
+  an optional occurrence, enriches the entry if eligible, and returns the entry
+  plus the current user's item state.
+- Success: `{ entry, userItem }`.
+- Errors: `400` invalid JSON/payload/term; `404` missing entry after lookup;
+  `500` missing MongoDB or unexpected provider/service failure.
+
+#### GET /api/vocab/search
+
+File: `src/app/api/vocab/search/route.ts`.
+
+- Query: `q` required, `limit` optional (1-25, default 12).
+- Behavior: prefix-searches cached `VocabEntry` rows only. It does not enrich by
+  itself; lookup owns provider calls.
+- Success: `{ entries: Array<{ entry, userItem }> }`.
+
+#### GET /api/vocab/explore
+
+File: `src/app/api/vocab/explore/route.ts`.
+
+- Query: `limit` optional (1-50, default 20).
+- Behavior: returns frequency-ranked, `enrichmentStatus = ready` words the actor
+  has not classified yet. Exclusion is handled by a MongoDB `$lookup` in
+  `src/modules/vocabulary/explore/exploreService.ts`, not by loading all user
+  items into app memory.
+- Success: `{ entries }`.
+
+#### POST /api/vocab/items
+
+File: `src/app/api/vocab/items/route.ts`.
+
+- Body: `{ vocabEntryId, status: 'shouldLearn' | 'alreadyKnow', source }`.
+- Behavior: upserts one `UserVocabItem` for the actor. `shouldLearn` sets
+  `status = learning`, `recallStage = 1`, and `dueAt = now`; `alreadyKnow` sets
+  `status = alreadyKnow`, `knownAt = now`, and no recall due date.
+- Success: `{ item }`.
+- Errors: `400` invalid body; `404` unknown `vocabEntryId`.
+
+#### GET /api/vocab/recall/due
+
+File: `src/app/api/vocab/recall/due/route.ts`.
+
+- Query: `limit` optional (1-50, default 20).
+- Behavior: finds `UserVocabItem` rows with `status = learning` and
+  `dueAt <= now`, loads their `VocabEntry` rows, and returns recall cards.
+- Success: `{ cards: Array<{ item, entry }> }`.
+
+#### POST /api/vocab/recall/answer
+
+File: `src/app/api/vocab/recall/answer/route.ts`.
+
+- Body: `{ itemId, correct: boolean }`.
+- Behavior: ownership-scoped update. Correct answers advance through stages 1-7;
+  a correct stage 7 answer sets `status = mastered`. Wrong answers reset to
+  stage 1 and due now.
+- Success: `{ item }`.
+- Errors: `400` invalid body; `404` missing/wrong-owner/non-learning item.
+
+#### GET /api/vocab/stats
+
+File: `src/app/api/vocab/stats/route.ts`.
+
+- Behavior: aggregates `learningCount`, `alreadyKnowCount`, `masteredCount`,
+  `dueTodayCount`, `totalKnownCount`, `totalStartedCount`, and 14-day daily
+  growth from the actor's `UserVocabItem` rows.
+- Success: `{ stats }`.
+
+### Admin vocabulary enrichment
+
+File: `src/app/api/admin/vocab/enrich/route.ts`.
+
+- `GET /api/admin/vocab/enrich`: returns `{ queue }` with counts for enrichable,
+  ready, failed, not found, and stale-lease rows.
+- `POST /api/admin/vocab/enrich`: body `{ limit }`, min 1, max 10, default 5.
+  Calls `requireAdmin()`, then enriches up to N eligible rows with leases and
+  provider fallback. Success shape: `{ result, queue }`.
+- Provider work lives in
+  `src/modules/vocabulary/enrichment/enrichmentService.ts` and adapters in
+  `src/modules/vocabulary/providers/*`.
 
 ## 4. Client request layer (`src/requests`)
 
@@ -614,6 +718,12 @@ optional `input` URL override (used for tests and absolute-URL SSR calls).
   `DICTATION_STATS_API_PATH`. Tests in `dictationStatsApi.test.ts`.
 - `dictationImportsApi.ts` -> `importYouTubeVideoApi` (POST). Constant
   `DICTATION_YOUTUBE_IMPORT_API_PATH`.
+- `vocabularyApi.ts` -> vocabulary helpers: `lookupVocabEntryApi`,
+  `searchVocabApi`, `getExploreVocabApi`, `setVocabItemStatusApi`,
+  `getDueVocabRecallApi`, `answerVocabRecallApi`, `getVocabStatsApi`,
+  `getVocabAdminQueueApi`, and `enrichVocabularyAdminApi`. API path constants
+  come from `src/modules/vocabulary/constants.ts`. Tests in
+  `src/requests/vocabularyApi.test.ts`.
 
 There is no `requests` module for review items or for the segment GET/PATCH or
 session GET routes; those are consumed by Server Components / services (for
@@ -642,16 +752,24 @@ error helper):
 - `POST /api/dictation/transcripts/[transcriptId]/segments`
 - `PATCH /api/dictation/segments/[segmentId]`
 - `POST /api/dictation/imports/youtube`
+- `GET`/`POST /api/admin/vocab/enrich`
 
 User-or-guest (per-user practice, guarded by `requirePracticeActor()`; never
 throws, data always scoped to `actor.id`):
 
 - `POST /api/dictation/sessions`, `GET`/`PATCH
-  /api/dictation/sessions/[sessionId]`
+/api/dictation/sessions/[sessionId]`
 - `POST /api/dictation/sessions/[sessionId]/attempts`
 - `GET`/`POST`/`PATCH /api/dictation/review-items`
 - `POST /api/dictation/debriefs`
 - `GET /api/dictation/stats`
+- `POST /api/vocab/entries/lookup`
+- `GET /api/vocab/search`
+- `GET /api/vocab/explore`
+- `POST /api/vocab/items`
+- `GET /api/vocab/recall/due`
+- `POST /api/vocab/recall/answer`
+- `GET /api/vocab/stats`
 
 How the admin re-check works (server-side): the role is not read from the
 request. `requireAdmin` -> `requireUser` -> `getOptionalUser` reads the Auth.js

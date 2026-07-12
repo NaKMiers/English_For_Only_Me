@@ -13,7 +13,8 @@
     "test:watch": "vitest",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
-    "backfill:content": "node --conditions=react-server --import tsx scripts/backfillContentHierarchy.ts"
+    "backfill:content": "node --conditions=react-server --import tsx scripts/backfillContentHierarchy.ts",
+    "vocab:seed": "node --conditions=react-server --env-file-if-exists=.env.development --import tsx scripts/seedVocabulary.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",

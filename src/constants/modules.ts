@@ -37,9 +37,9 @@ export const APP_MODULES: AppModule[] = [
     title: 'Vocabulary',
     shortTitle: 'Vocab',
     href: '/vocabulary',
-    pageTag: 'Future',
+    pageTag: 'Active',
     skill: 'Vocabulary',
-    status: 'future',
+    status: 'active',
     description:
       'Personal word bank, spaced recall, collocations, and weak-word drills.',
   },

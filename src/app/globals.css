@@ -172,6 +172,6 @@ textarea:focus-visible,
 }
 
 ::selection {
-  background: var(--manga-paper-soft);
+  background: #35d1e6;
   color: var(--manga-black);
 }
