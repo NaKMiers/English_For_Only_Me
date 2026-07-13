@@ -76,6 +76,9 @@
     radial-gradient(ellipse at 8% 88%, rgba(5, 5, 5, 0.06), transparent 32%);
   --selection-bg: #35d1e6;
   --selection-fg: var(--manga-black);
+  /* Color for manga offset shadows. Day shadows hardcode var(--manga-black);
+     light-up retints them to a warm ledge via this var (see overrides below). */
+  --manga-offset: var(--manga-black);
 }
 
 /* ============================================================
@@ -119,6 +122,8 @@
   --body-bg: none;
   --selection-bg: #ffbe5e;
   --selection-fg: #1a1410;
+  /* warm amber ledge - visible on the dark room, keeps the hard manga offset */
+  --manga-offset: #7a5626;
 }
 
 @theme inline {
@@ -255,6 +260,41 @@ body {
   .lamp-toggle {
     transition: none;
   }
+}
+
+/* Manga offset-shadow depth in light-up.
+   Day mode: hard offset shadows are `var(--manga-black)` (dark ink on light
+   paper) - the manga signature. In light-up the paper goes dark, so a dark
+   offset shadow vanishes into the room and cards look flat. Retint every manga
+   offset shadow to a warm amber ledge (visible on the dark room) so the 3D
+   block-shadow reads as a lamp-lit card. Text + borders stay dark ink. Rules
+   are unlayered so they beat the Tailwind utilities layer without !important. */
+:root[data-theme='lightup'] .shadow-\[2px_2px_0_var\(--manga-black\)\] {
+  box-shadow: 2px 2px 0 var(--manga-offset);
+}
+:root[data-theme='lightup'] .shadow-\[3px_3px_0_var\(--manga-black\)\] {
+  box-shadow: 3px 3px 0 var(--manga-offset);
+}
+:root[data-theme='lightup'] .shadow-\[4px_4px_0_var\(--manga-black\)\] {
+  box-shadow: 4px 4px 0 var(--manga-offset);
+}
+:root[data-theme='lightup'] .shadow-\[5px_5px_0_var\(--manga-black\)\] {
+  box-shadow: 5px 5px 0 var(--manga-offset);
+}
+:root[data-theme='lightup'] .shadow-\[6px_6px_0_var\(--manga-black\)\] {
+  box-shadow: 6px 6px 0 var(--manga-offset);
+}
+:root[data-theme='lightup']
+  .shadow-\[inset_0_0_0_9px_rgba\(255\2c 255\2c 255\2c 0\.38\)\2c 4px_4px_0_var\(--manga-black\)\] {
+  box-shadow:
+    inset 0 0 0 9px rgba(255, 210, 140, 0.1),
+    4px 4px 0 var(--manga-offset);
+}
+:root[data-theme='lightup']
+  .shadow-\[8px_8px_0_var\(--manga-black\)\2c 18px_18px_0_var\(--manga-shadow\)\] {
+  box-shadow:
+    8px 8px 0 var(--manga-offset),
+    18px 18px 0 rgba(0, 0, 0, 0.35);
 }
 
 /* Opacify translucent card surfaces in light-up so the dark room paper does
