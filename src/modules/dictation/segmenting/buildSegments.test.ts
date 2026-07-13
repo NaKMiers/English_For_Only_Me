@@ -3,6 +3,22 @@ import { describe, expect, test } from 'vitest'
 import { buildDictationSegments } from './buildSegments'
 import { splitTextIntoSentences } from './text'
 
+interface CueInput {
+  index: number
+  startMs: number | null
+  endMs: number | null
+  text: string
+}
+
+function cue(
+  index: number,
+  startMs: number | null,
+  endMs: number | null,
+  text: string
+): CueInput {
+  return { index, startMs, endMs, text }
+}
+
 describe('splitTextIntoSentences', () => {
   test('keeps abbreviations and punctuation in the correct sentence', () => {
     expect(
@@ -17,190 +33,121 @@ describe('splitTextIntoSentences', () => {
   })
 })
 
-interface CueInput {
-  index: number
-  startMs: number | null
-  endMs: number | null
-  text: string
-}
-
-// Tiny fixture helper so the timing/word math in each test reads clearly.
-function cue(
-  index: number,
-  startMs: number | null,
-  endMs: number | null,
-  text: string
-): CueInput {
-  return { index, startMs, endMs, text }
-}
-
-describe('buildDictationSegments (pause-based grouping)', () => {
-  test('merges consecutive cues when there is no pause between them', () => {
-    // gap = 900 - 900 = 0ms (< PAUSE_GAP_MS), so the two cues stay one segment.
+describe('buildDictationSegments (grammar-based, DailyDictation style)', () => {
+  test('keeps a short sentence as a single segment', () => {
     const result = buildDictationSegments({
       rawText: '',
-      rawCues: [
-        cue(0, 0, 900, 'The first thing'),
-        cue(1, 900, 1800, 'we should remember is this.'),
-      ],
+      rawCues: [cue(0, 0, 2000, 'As years passed and the wall grew, few returned home.')],
     })
 
     expect(result.segments).toHaveLength(1)
     expect(result.segments[0]).toMatchObject({
-      cueIndexes: [0, 1],
-      endMs: 1800,
+      text: 'As years passed and the wall grew, few returned home.',
       startMs: 0,
-      text: 'The first thing we should remember is this.',
+      endMs: 2000,
     })
   })
 
-  test('splits at a pause once the group meets the minimum', () => {
-    // gap before cue 1 = 2000 - 1500 = 500ms (>= PAUSE_GAP_MS) and cue 0 has
-    // 5 words (>= MIN_SEGMENT_WORDS), so it cuts between the two cues.
+  test('never merges across a sentence boundary', () => {
     const result = buildDictationSegments({
       rawText: '',
-      rawCues: [
-        cue(0, 0, 1500, 'the first idea here matters'),
-        cue(1, 2000, 3500, 'and the second idea follows'),
-      ],
+      rawCues: [cue(0, 0, 4000, 'Short one. Short two.')],
     })
 
-    expect(result.segments).toHaveLength(2)
-    expect(result.segments[0].cueIndexes).toEqual([0])
-    expect(result.segments[1].cueIndexes).toEqual([1])
+    expect(result.segments.map(s => s.text)).toEqual(['Short one.', 'Short two.'])
   })
 
-  test('does NOT split at a pause when the group is still tiny (merges forward)', () => {
-    // A 1-word 400ms cue then a 600ms pause: below MIN, so it must NOT split -
-    // the stray word merges into the next chunk instead of becoming a fragment.
+  test('splits one sentence spanning cues exactly like DailyDictation', () => {
+    // The real Meng Jiang SRT, cues 1-3 (one sentence across three cues).
     const result = buildDictationSegments({
       rawText: '',
       rawCues: [
-        cue(0, 0, 400, 'hi'),
-        cue(1, 1000, 3000, 'now the real sentence begins here'),
+        cue(0, 7128, 11256, 'According to legend, an emperor long ago declared that he would build'),
+        cue(1, 11256, 14634, 'a great wall spanning thousands of kilometers'),
+        cue(2, 14634, 18765, 'to protect his new empire and ensure his sustained power.'),
       ],
     })
 
-    expect(result.segments).toHaveLength(1)
+    expect(result.segments.map(s => s.text)).toEqual([
+      'According to legend, an emperor long ago declared that he would build a great wall',
+      'spanning thousands of kilometers to protect his new empire and ensure his sustained power.',
+    ])
+    // Segment 1 crosses cues 0 and 1; segment 2 crosses cues 1 and 2.
     expect(result.segments[0].cueIndexes).toEqual([0, 1])
+    expect(result.segments[1].cueIndexes).toEqual([1, 2])
+    // Outer timing stays exact at the real cue boundaries; the mid-cue cut is
+    // interpolated and continuous between the two segments.
+    expect(result.segments[0].startMs).toBe(7128)
+    expect(result.segments[1].endMs).toBe(18765)
+    expect(result.segments[0].endMs).toBe(result.segments[1].startMs)
+    expect(result.segments[0].endMs).toBeGreaterThan(11256)
+    expect(result.segments[0].endMs).toBeLessThan(14634)
   })
 
-  test('force-cuts a run-on with no pause at the duration cap', () => {
-    // 8 continuous 2500ms cues (no gaps, few words). The MS cap (9000) forces a
-    // cut after the 4th cue (10000ms), so the 30s-run-on problem is bounded.
-    const result = buildDictationSegments({
-      rawText: '',
-      rawCues: Array.from({ length: 8 }, (_, i) =>
-        cue(i, i * 2500, (i + 1) * 2500, 'keep talking')
-      ),
-    })
-
-    expect(result.segments).toHaveLength(2)
-    expect(result.segments[0].cueIndexes).toEqual([0, 1, 2, 3])
-    expect(result.segments[1].cueIndexes).toEqual([4, 5, 6, 7])
-  })
-
-  test('force-cuts at the word cap when speech is dense with no pause', () => {
-    // 6 continuous 5-word cues, short durations so MS cap never triggers first.
-    // Word cap (14) closes after the 3rd cue (15 words).
+  test('splits a long sentence at a comma clause boundary', () => {
     const result = buildDictationSegments({
       rawText: '',
       rawCues: [
-        cue(0, 0, 400, 'one two three four five'),
-        cue(1, 400, 800, 'six seven eight nine ten'),
-        cue(2, 800, 1200, 'eleven twelve thirteen fourteen fifteen'),
-        cue(3, 1200, 1600, 'apple banana cherry date fig'),
-        cue(4, 1600, 2000, 'grape kiwi lemon mango olive'),
-        cue(5, 2000, 2400, 'peach plum quince rose sage'),
+        cue(0, 0, 6000, "One particular gourd crossed the fence and extended into the Jiang's yard, so they cared for it."),
+      ],
+    })
+
+    expect(result.segments.map(s => s.text)).toEqual([
+      "One particular gourd crossed the fence and extended into the Jiang's yard,",
+      'so they cared for it.',
+    ])
+  })
+
+  test('splits a long sentence at a coordinating conjunction when there is no comma', () => {
+    const result = buildDictationSegments({
+      rawText: '',
+      rawCues: [
+        cue(0, 0, 6000, 'He ordered many men across China to leave their homes and submit to the grueling labor required for its construction.'),
       ],
     })
 
     expect(result.segments).toHaveLength(2)
-    expect(result.segments[0].cueIndexes).toEqual([0, 1, 2])
-    expect(result.segments[1].cueIndexes).toEqual([3, 4, 5])
+    expect(result.segments[0].text).toBe(
+      'He ordered many men across China to leave their homes'
+    )
+    expect(result.segments[1].text).toBe(
+      'and submit to the grueling labor required for its construction.'
+    )
   })
 
-  test('falls back to the word cap for untimed cues without crashing', () => {
-    // No timings at all: pause + duration logic is inert, only the word cap
-    // splits, and every segment is flagged untimed.
+  test('does not flag missingPunctuation on a clause-cut chunk', () => {
     const result = buildDictationSegments({
       rawText: '',
-      rawCues: Array.from({ length: 4 }, (_, i) =>
-        cue(i, null, null, 'alpha beta gamma delta epsilon')
-      ),
+      rawCues: [
+        cue(0, 0, 6000, "One particular gourd crossed the fence and extended into the Jiang's yard, so they cared for it."),
+      ],
+    })
+
+    expect(result.segments[0].text).toMatch(/,$/)
+    expect(result.segments[0].qualityFlags).not.toContain('missingPunctuation')
+  })
+
+  test('interpolates a mid-cue cut and stays within the cue window', () => {
+    // 16 plain words, one cue 0-16000ms, no commas -> split near the middle.
+    const words = Array.from({ length: 16 }, (_, i) => `w${i}`).join(' ')
+    const result = buildDictationSegments({
+      rawText: '',
+      rawCues: [cue(0, 0, 16000, `${words}.`)],
     })
 
     expect(result.segments.length).toBeGreaterThanOrEqual(2)
-    expect(result.qualityFlags).toContain('untimed')
-    expect(result.segments[0]).toMatchObject({ startMs: null, endMs: null })
+    expect(result.segments[0].startMs).toBe(0)
+    expect(result.segments.at(-1)!.endMs).toBe(16000)
+    expect(result.segments[0].endMs).toBeGreaterThan(0)
+    expect(result.segments[0].endMs).toBeLessThan(16000)
+    // Contiguous: one segment's end is the next segment's start.
+    expect(result.segments[0].endMs).toBe(result.segments[1].startMs)
+    result.segments.forEach(segment =>
+      expect(segment.text.split(' ').length).toBeLessThanOrEqual(15)
+    )
   })
 
-  test('merges overlapping timed cues and flags overlappingTiming', () => {
-    const result = buildDictationSegments({
-      rawText: '',
-      rawCues: [
-        cue(0, 0, 1000, 'first part here now'),
-        cue(1, 800, 1800, 'second part overlaps'),
-      ],
-    })
-
-    expect(result.segments).toHaveLength(1)
-    expect(result.qualityFlags).toContain('overlappingTiming')
-  })
-
-  test('flags partialTiming when a timed and an untimed cue share a segment', () => {
-    // gap is null (untimed cue), so no pause split; they merge and the segment
-    // loses exact timing.
-    const result = buildDictationSegments({
-      rawText: '',
-      rawCues: [
-        cue(0, 0, 1000, 'the timed part'),
-        cue(1, null, null, 'and the untimed part here'),
-      ],
-    })
-
-    expect(result.segments).toHaveLength(1)
-    expect(result.qualityFlags).toContain('partialTiming')
-    expect(result.segments[0]).toMatchObject({ startMs: null, endMs: null })
-  })
-
-  test('flags largeGap when a below-min group spans a long silence', () => {
-    // Stray 1-word cue then a 4500ms gap: below MIN so it cannot pause-split,
-    // the group swallows the gap and gets the largeGap warning instead.
-    const result = buildDictationSegments({
-      rawText: '',
-      rawCues: [
-        cue(0, 0, 500, 'well'),
-        cue(1, 5000, 7000, 'the answer finally comes'),
-      ],
-    })
-
-    expect(result.segments).toHaveLength(1)
-    expect(result.qualityFlags).toContain('largeGap')
-  })
-
-  test('keeps a single short cue as its own segment (never dropped)', () => {
-    const result = buildDictationSegments({
-      rawText: '',
-      rawCues: [cue(0, 0, 800, 'just this')],
-    })
-
-    expect(result.segments).toHaveLength(1)
-    expect(result.segments[0].cueIndexes).toEqual([0])
-  })
-
-  test('does not flag missingPunctuation on pause-cut cue segments', () => {
-    // A cue that ends mid-sentence (no period) must not be warned - that is the
-    // normal shape of a pause-based segment.
-    const result = buildDictationSegments({
-      rawText: '',
-      rawCues: [cue(0, 0, 1500, 'this line ends without a period')],
-    })
-
-    expect(result.qualityFlags).not.toContain('missingPunctuation')
-  })
-
-  test('splits untimed manual text into sentences', () => {
+  test('splits untimed manual text into sentences with null timing', () => {
     const result = buildDictationSegments({
       rawCues: [],
       rawText:
@@ -212,9 +159,24 @@ describe('buildDictationSegments (pause-based grouping)', () => {
       'Careful dictation makes those words visible.',
     ])
     expect(result.qualityFlags).toContain('untimed')
+    expect(result.segments[0]).toMatchObject({ startMs: null, endMs: null })
   })
 
-  test('flags long, short, non-English-ish, and duplicate segments', () => {
+  test('flags partialTiming and drops exact timing when a cue is untimed', () => {
+    const result = buildDictationSegments({
+      rawText: '',
+      rawCues: [
+        cue(0, 0, 1500, 'the timed part and'),
+        cue(1, null, null, 'the untimed part here'),
+      ],
+    })
+
+    // Same sentence, one untimed cue -> merged chunk loses exact timing.
+    expect(result.qualityFlags).toContain('partialTiming')
+    expect(result.segments[0]).toMatchObject({ startMs: null, endMs: null })
+  })
+
+  test('flags short, non-English-ish, duplicate, and long segments', () => {
     const result = buildDictationSegments({
       rawCues: [],
       rawText: [
@@ -222,18 +184,11 @@ describe('buildDictationSegments (pause-based grouping)', () => {
         '123 456 789 000.',
         'This sentence repeats for review.',
         'This sentence repeats for review.',
-        'This sentence is deliberately long because it keeps adding extra clauses, extra details, and extra filler words until it becomes too heavy for one dictation prompt to be useful for focused IELTS listening practice.',
       ].join(' '),
     })
 
     expect(result.qualityFlags).toEqual(
-      expect.arrayContaining([
-        'tooShort',
-        'likelyNonEnglish',
-        'duplicateText',
-        'tooLong',
-      ])
+      expect.arrayContaining(['tooShort', 'likelyNonEnglish', 'duplicateText'])
     )
   })
-
 })
