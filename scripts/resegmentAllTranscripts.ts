@@ -30,8 +30,9 @@ async function main() {
 
     console.info(
       `[resegment] mode=${dryRun ? 'DRY-RUN' : 'APPLY'} ` +
-        `scanned=${result.scanned} resegmented=${result.resegmented} ` +
+        `active-transcripts=${result.scanned} resegmented=${result.resegmented} ` +
         `skipped-empty=${result.skippedEmpty} skipped-no-video=${result.skippedNoVideo} ` +
+        `skipped-not-active=${result.skippedNotActive} ` +
         `segments ${result.oldSegmentTotal} -> ${result.newSegmentTotal} ` +
         `pruned-review-items=${result.prunedReviewItems}`
     )

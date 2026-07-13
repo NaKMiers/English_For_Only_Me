@@ -12,33 +12,39 @@ export interface ResegmentAllResult {
   resegmented: number
   skippedEmpty: number
   skippedNoVideo: number
+  skippedNotActive: number
   prunedReviewItems: number
   oldSegmentTotal: number
   newSegmentTotal: number
 }
 
 /**
- * Re-run segmentation for every stored transcript so existing videos pick up
- * the current (pause-based) segment logic. Dry-run by default: it only reports
- * old-vs-new segment counts. With `dryRun: false` it rebuilds each transcript
- * via the shared {@link persistRebuiltSegments} (same destructive rebuild the
- * "Build Segments" button uses, including pruning orphaned review items).
+ * Re-run segmentation for every video's ACTIVE primary transcript so existing
+ * videos pick up the current (pause-based) segment logic.
  *
- * Idempotent: re-running produces the same segments for an unchanged transcript
- * (same rawCues in, same grouping out).
+ * Only active primary transcripts are processed (isActive: true and matching
+ * the video's activeTranscriptId). Translation caption tracks and superseded
+ * transcripts (isActive: false) never get segments - that mirrors what the
+ * app does, and matches the video count in admin (one active transcript per
+ * video), not the raw transcript count.
+ *
+ * Dry-run by default: only reports old-vs-new segment counts. With
+ * `dryRun: false` it rebuilds via the shared {@link persistRebuiltSegments}
+ * (destructive rebuild + prune of orphaned review items). Idempotent.
  */
 export async function resegmentAllTranscripts({
   dryRun,
 }: {
   dryRun: boolean
 }): Promise<ResegmentAllResult> {
-  const transcripts = await DictationTranscriptModel.find({})
+  const transcripts = await DictationTranscriptModel.find({ isActive: true })
 
   const result: ResegmentAllResult = {
     scanned: 0,
     resegmented: 0,
     skippedEmpty: 0,
     skippedNoVideo: 0,
+    skippedNotActive: 0,
     prunedReviewItems: 0,
     oldSegmentTotal: 0,
     newSegmentTotal: 0,
@@ -46,6 +52,21 @@ export async function resegmentAllTranscripts({
 
   for (const transcript of transcripts) {
     result.scanned += 1
+
+    const video = await DictationVideoModel.findOne({ _id: transcript.videoId })
+
+    if (!video) {
+      result.skippedNoVideo += 1
+      continue
+    }
+
+    // Defensive: only the transcript the video actually points at is the one
+    // practice reads, so never re-segment a stray isActive record.
+    if (String(video.activeTranscriptId) !== String(transcript._id)) {
+      result.skippedNotActive += 1
+      continue
+    }
+
     result.oldSegmentTotal += transcript.segmentCount ?? 0
 
     const built = buildDictationSegments({
@@ -62,13 +83,6 @@ export async function resegmentAllTranscripts({
 
     if (dryRun) {
       result.resegmented += 1
-      continue
-    }
-
-    const video = await DictationVideoModel.findOne({ _id: transcript.videoId })
-
-    if (!video) {
-      result.skippedNoVideo += 1
       continue
     }
 
