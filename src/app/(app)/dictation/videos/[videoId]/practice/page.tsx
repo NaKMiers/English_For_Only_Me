@@ -4,7 +4,6 @@ import { notFound } from 'next/navigation'
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { MangaPageShell } from '@/components/common/MangaPageShell'
 import { MangaPanel } from '@/components/common/MangaPanel'
-import { DictationBuildSegmentsButton } from '@/components/dictation/DictationBuildSegmentsButton'
 import { DictationPracticeShell } from '@/components/dictation/DictationPracticeShell'
 import { MangaButton } from '@/components/ui/MangaButton'
 import { hasMongoDbUri } from '@/constants/environments'
@@ -36,12 +35,10 @@ interface Props {
 function PracticeSetupState({
   message,
   title,
-  transcriptId,
   videoId,
 }: {
   message: string
   title: string
-  transcriptId?: string | null
   videoId?: string | null
 }) {
   return (
@@ -74,9 +71,6 @@ function PracticeSetupState({
             >
               Import Video
             </MangaButton>
-            {transcriptId ? (
-              <DictationBuildSegmentsButton transcriptId={transcriptId} />
-            ) : null}
           </div>
         </MangaPanel>
       </section>
@@ -135,10 +129,8 @@ export default async function Page({ params }: Props) {
     return (
       <PracticeSetupState
         title="Segments are not ready"
-        message="Build sentence segments from the active transcript before opening the practice player."
-        transcriptId={
-          video.activeTranscriptId ? String(video.activeTranscriptId) : null
-        }
+        message="This video has no practice segments yet. Segments are built automatically when its transcript is saved - re-open it in admin and save the captions to rebuild."
+        videoId={videoId}
       />
     )
 
