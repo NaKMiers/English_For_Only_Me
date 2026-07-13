@@ -2,6 +2,14 @@
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
 
+/* Theming is driven entirely by [data-theme] (see :root[data-theme='lightup']),
+   NOT by the OS color scheme. Bind Tailwind's `dark:` variant to an explicit
+   `.dark` class (which this app never adds) so shadcn primitives' built-in
+   `dark:` styles (e.g. Input's dark:bg-input/30) stop firing under
+   prefers-color-scheme: dark and darkening form controls out from under our
+   own light/light-up themes. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --manga-white: #ffffff;
   --manga-black: #050505;
