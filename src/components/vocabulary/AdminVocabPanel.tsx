@@ -92,7 +92,7 @@ export function AdminVocabPanel({ initialQueue, mongoConfigured }: Props) {
 
   return (
     <div className="grid gap-5">
-      <header className="flex flex-wrap items-start justify-between gap-3">
+      <header className="page-hero flex flex-wrap items-start justify-between gap-3">
         <div className="grid min-w-0 gap-2">
           <PageTag tone="ink">Admin</PageTag>
           <h1 className="font-sans text-[clamp(1.8rem,4vw,2.6rem)] leading-none font-black wrap-break-word uppercase">

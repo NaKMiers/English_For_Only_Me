@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { AuthControl } from '@/components/common/AuthControl'
 import { MangaPageShell } from '@/components/common/MangaPageShell'
+import { PageHero } from '@/components/common/PageHero'
 import { BrowseBreadcrumb } from '@/components/dictation/browse/BrowseBreadcrumb'
 import {
   BrowseVideoList,
@@ -59,10 +60,12 @@ export default async function FavoritesPage() {
       }
     >
       <section className="grid gap-5 p-4 sm:p-6 lg:p-8">
-        <BrowseBreadcrumb current="Favorites" />
-        <h1 className="font-sans text-[clamp(1.8rem,4vw,2.6rem)] leading-none font-black uppercase">
-          Favorites
-        </h1>
+        <PageHero>
+          <BrowseBreadcrumb current="Favorites" />
+          <h1 className="font-sans text-[clamp(1.8rem,4vw,2.6rem)] leading-none font-black uppercase">
+            Favorites
+          </h1>
+        </PageHero>
         <BrowseVideoList
           videos={items}
           canFavorite

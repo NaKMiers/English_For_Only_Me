@@ -90,7 +90,7 @@ export function AppTopbar({
         )}
       </nav>
 
-      <div className="flex justify-start gap-2 sm:col-span-2 lg:col-span-1 lg:justify-end">
+      <div className="flex items-center justify-start gap-2 sm:col-span-2 lg:col-span-1 lg:justify-end">
         {authControl}
       </div>
     </header>
