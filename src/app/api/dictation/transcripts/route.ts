@@ -6,8 +6,13 @@ import { connectDatabase } from '@/lib/db/connectDatabase'
 import { DictationSegmentModel } from '@/models/dictation/DictationSegmentModel'
 import { DictationTranscriptModel } from '@/models/dictation/DictationTranscriptModel'
 import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
+import { buildDictationSegments } from '@/modules/dictation/segmenting/buildSegments'
 import { toDictationTranscriptRecord } from '@/modules/dictation/services/dictationTranscriptRecords'
 import { requireAdmin } from '@/modules/dictation/services/getCurrentUser'
+import {
+  persistRebuiltSegments,
+  toCueRecords,
+} from '@/modules/dictation/services/rebuildTranscriptSegments'
 import { parseTranscriptRequest } from '@/modules/dictation/services/transcriptRouteDecisions'
 import {
   type ApiErrorDecision,
@@ -45,6 +50,22 @@ async function pruneSupersededTranscripts(
     transcriptId: { $in: ids },
   })
   await DictationTranscriptModel.deleteMany({ _id: { $in: ids } })
+}
+
+// Build segments for a primary transcript right here on the server, so a new
+// video always has practice segments the moment its captions are saved - the
+// app never depends on a separate client-side build call succeeding.
+async function autoBuildPrimarySegments(
+  transcript: Parameters<typeof persistRebuiltSegments>[0]['transcript'],
+  video: Parameters<typeof persistRebuiltSegments>[0]['video']
+) {
+  const built = buildDictationSegments({
+    rawCues: toCueRecords(transcript.rawCues),
+    rawText: transcript.rawText,
+  })
+
+  if (built.segments.length > 0)
+    await persistRebuiltSegments({ transcript, video, built })
 }
 
 function toTranscriptError(error: unknown): ApiErrorDecision {
@@ -196,6 +217,8 @@ export async function POST(request: Request) {
         parsed.data.normalized.language
       )
 
+      await autoBuildPrimarySegments(existingTranscript, video)
+
       return NextResponse.json({
         transcript: toDictationTranscriptRecord(existingTranscript.toObject()),
         videoId: String(video._id),
@@ -232,6 +255,8 @@ export async function POST(request: Request) {
       transcript._id,
       parsed.data.normalized.language
     )
+
+    await autoBuildPrimarySegments(transcript, video)
 
     return NextResponse.json(
       {
