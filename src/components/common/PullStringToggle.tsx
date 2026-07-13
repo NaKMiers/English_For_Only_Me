@@ -53,36 +53,7 @@ export function PullStringToggle() {
             isLightUp ? 'lamp-hang__bulb--on' : 'lamp-hang__bulb--off'
           )}
         >
-          <svg
-            viewBox="0 0 24 32"
-            width="30"
-            height="40"
-            fill="none"
-          >
-            {/* glass */}
-            <path
-              className="lamp-hang__glass"
-              d="M12 2.5c4.4 0 7.5 3.3 7.5 7.4 0 2.9-1.6 4.9-2.9 6.4-.8 1-1.2 1.8-1.3 2.9H8.7c-.1-1.1-.5-1.9-1.3-2.9-1.3-1.5-2.9-3.5-2.9-6.4C4.5 5.8 7.6 2.5 12 2.5Z"
-              stroke="currentColor"
-              strokeWidth="1.6"
-            />
-            {/* filament */}
-            <path
-              className="lamp-hang__filament"
-              d="M9.3 11.2 12 14l2.7-3.6"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            {/* screw base */}
-            <path
-              d="M8.7 22h6.6M9.3 25h5.4M10 28h4"
-              stroke="currentColor"
-              strokeWidth="1.6"
-              strokeLinecap="round"
-            />
-          </svg>
+          💡
         </span>
       </button>
     </div>

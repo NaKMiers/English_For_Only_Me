@@ -227,8 +227,8 @@ body {
    top edge, sways gently at rest, and swings when yanked. */
 .lamp-hang {
   position: fixed;
-  bottom: clamp(18px, 4vh, 40px);
-  right: clamp(16px, 4vw, 44px);
+  top: 0;
+  right: clamp(12px, 3vw, 40px);
   z-index: 60;
   pointer-events: none;
 }
@@ -261,39 +261,29 @@ body {
   border-radius: 9999px;
   background: var(--manga-line, var(--manga-black));
 }
+/* Bulb hangs upside-down (glass pointing down) like a pendant. rotate(180deg)
+   is the base transform; animation keyframes below keep it while bobbing. */
 .lamp-hang__bulb {
   margin-top: 1px;
-  line-height: 0;
+  font-size: 30px;
+  line-height: 1;
+  transform: rotate(180deg);
   transition:
     filter 0.5s ease,
-    color 0.5s ease,
     transform 0.2s ease;
 }
-.lamp-hang__glass {
-  transition: fill 0.5s ease;
-}
-/* OFF: dim ink outline, hollow glass. */
+/* OFF: dim, desaturated. */
 .lamp-hang__bulb--off {
-  color: var(--manga-line, #6d5730);
+  filter: grayscale(1) brightness(0.7);
 }
-.lamp-hang__bulb--off .lamp-hang__glass {
-  fill: transparent;
-}
-/* ON: warm filament glowing inside lit glass + amber halo. */
+/* ON: warm amber glow halo. */
 .lamp-hang__bulb--on {
-  color: #6e4a15;
   filter: drop-shadow(0 0 7px rgba(255, 190, 94, 0.95))
     drop-shadow(0 0 16px rgba(255, 190, 94, 0.6))
     drop-shadow(0 0 30px rgba(255, 176, 92, 0.35));
 }
-.lamp-hang__bulb--on .lamp-hang__glass {
-  fill: #ffd074;
-}
-.lamp-hang__bulb--on .lamp-hang__filament {
-  color: #b8500f;
-}
 .lamp-hang__btn:hover .lamp-hang__bulb {
-  transform: translateY(2px);
+  transform: rotate(180deg) translateY(2px);
 }
 /* Yank: pull straight down, then swing out and settle (pendulum). */
 .lamp-hang--pulling {
@@ -333,10 +323,10 @@ body {
 }
 @keyframes lamp-flash {
   30% {
-    transform: translateY(4px) scale(1.08);
+    transform: rotate(180deg) translateY(4px) scale(1.08);
   }
   100% {
-    transform: translateY(0) scale(1);
+    transform: rotate(180deg) translateY(0) scale(1);
   }
 }
 @media (prefers-reduced-motion: reduce) {
