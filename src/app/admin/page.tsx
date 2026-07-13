@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { AuthControl } from '@/components/common/AuthControl'
 import { MangaPageShell } from '@/components/common/MangaPageShell'
+import { PageHero } from '@/components/common/PageHero'
 import { PageTag } from '@/components/ui/PageTag'
 import { hasMongoDbUri } from '@/constants/environments'
 import { connectDatabase } from '@/lib/db/connectDatabase'
@@ -68,7 +69,7 @@ export default async function AdminDashboard() {
       }
     >
       <section className="grid gap-5 p-4 sm:p-6 lg:p-8">
-        <header className="grid gap-2">
+        <PageHero>
           <PageTag tone="ink">Admin</PageTag>
           <h1 className="font-sans text-[clamp(1.8rem,4vw,2.6rem)] leading-none font-black uppercase">
             Manage content
@@ -76,7 +77,7 @@ export default async function AdminDashboard() {
           <p className="text-manga-ink-soft text-sm">
             {topicCount} topics · {uncategorized} uncategorized videos
           </p>
-        </header>
+        </PageHero>
         <div className="grid gap-4 sm:grid-cols-2">
           {LINKS.map(link => (
             <Link

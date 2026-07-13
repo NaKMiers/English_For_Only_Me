@@ -46,6 +46,71 @@
   --dark: #343434;
   --light-gray: #fff0ef;
   --dark-gray: #6a6462;
+
+  /* Theme-swappable surfaces (light / day defaults). The light-up theme
+     overrides these under :root[data-theme='lightup'] below. Kept as vars so
+     the page background, selection, and focus ring flip with the theme instead
+     of being hardcoded literals. */
+  --html-bg:
+    radial-gradient(circle at 18px 18px, rgba(5, 5, 5, 0.08) 1px, transparent 1px),
+    linear-gradient(135deg, var(--manga-paper), #ffffff 52%, #fff0ef);
+  --html-bg-size: 26px 26px, auto;
+  --body-bg:
+    linear-gradient(
+      112deg,
+      transparent 0 20%,
+      rgba(5, 5, 5, 0.035) 20% 20.35%,
+      transparent 20.35% 55%,
+      rgba(224, 48, 32, 0.055) 55% 55.35%,
+      transparent 55.35%
+    ),
+    radial-gradient(ellipse at 82% 12%, rgba(224, 48, 32, 0.1), transparent 30%),
+    radial-gradient(ellipse at 8% 88%, rgba(5, 5, 5, 0.06), transparent 32%);
+  --selection-bg: #35d1e6;
+  --selection-fg: var(--manga-black);
+}
+
+/* ============================================================
+   LIGHT-UP MODE ("trang giấy dưới đèn đọc sách")
+   Not a plain dark mode: the shell/body paper goes DARK (a warm
+   room) while cards (--manga-white) go LIGHT (lamp-lit paper).
+   Ink + borders stay dark (they now sit on light cards). We only
+   remap the base --manga-* tokens; every semantic alias and every
+   `bg-manga-*` / `border-manga-*` / shadow utility inherits the
+   flip automatically because they reference these vars.
+   ============================================================ */
+:root[data-theme='lightup'] {
+  --manga-white: #f6e8c1; /* card / panel surface (lit paper) */
+  --manga-black: #1b1206; /* ink: text, borders, offset shadows */
+  --manga-logo-red: #b83115; /* AA on card (4.8:1) - fills + text */
+  --manga-bright-red: #d8432a; /* focus ring / hover pop */
+  --manga-pale-red: #ebd193;
+  --manga-paper: #211710; /* shell + body: the dark warm room */
+  --manga-paper-soft: #e9cd8b; /* secondary card fill */
+  --manga-ink-soft: #6d5730; /* muted text on card (5.6:1) */
+  --manga-shadow: rgba(0, 0, 0, 0.5);
+
+  --dark-primary: #d8432a;
+  --muted-foreground: #6d5730;
+
+  /* dark warm room + soft overhead lamp pool; halftone dot goes warm */
+  --html-bg:
+    radial-gradient(
+      circle at 18px 18px,
+      rgba(255, 200, 120, 0.05) 1px,
+      transparent 1px
+    ),
+    radial-gradient(
+      ellipse 85% 50% at 50% 4%,
+      rgba(255, 198, 120, 0.22),
+      transparent 60%
+    ),
+    radial-gradient(ellipse at 50% 130%, rgba(0, 0, 0, 0.4), transparent 55%),
+    linear-gradient(165deg, #241a10, #1a1209 100%);
+  --html-bg-size: 26px 26px, auto, auto, auto;
+  --body-bg: none;
+  --selection-bg: #ffbe5e;
+  --selection-fg: #1a1410;
 }
 
 @theme inline {
@@ -103,39 +168,94 @@
 
 html {
   min-height: 100%;
-  background:
-    radial-gradient(
-      circle at 18px 18px,
-      rgba(5, 5, 5, 0.08) 1px,
-      transparent 1px
-    ),
-    linear-gradient(135deg, var(--manga-paper), #ffffff 52%, #fff0ef);
+  background: var(--html-bg);
   background-attachment: fixed;
-  background-size:
-    26px 26px,
-    auto;
+  background-size: var(--html-bg-size);
 }
 
 body {
   min-height: 100%;
   overflow-x: hidden;
-  background:
-    linear-gradient(
-      112deg,
-      transparent 0 20%,
-      rgba(5, 5, 5, 0.035) 20% 20.35%,
-      transparent 20.35% 55%,
-      rgba(224, 48, 32, 0.055) 55% 55.35%,
-      transparent 55.35%
-    ),
-    radial-gradient(
-      ellipse at 82% 12%,
-      rgba(224, 48, 32, 0.1),
-      transparent 30%
-    ),
-    radial-gradient(ellipse at 8% 88%, rgba(5, 5, 5, 0.06), transparent 32%);
+  background: var(--body-bg);
   color: var(--foreground);
   font-family: var(--font-source-sans), Arial, Helvetica, sans-serif;
+}
+
+/* Smooth the light <-> light-up flip. Cheap properties only; disabled for
+   users who prefer reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  body,
+  header,
+  section,
+  aside,
+  article,
+  .page-hero,
+  [class*='bg-manga'],
+  [class*='border-manga'] {
+    transition:
+      background-color 0.45s ease,
+      border-color 0.45s ease,
+      color 0.45s ease,
+      box-shadow 0.45s ease;
+  }
+}
+
+/* Page hero surface: bare on paper in day mode (unchanged), lifts into a
+   lit card in light-up so its dark ink text stays readable on the dark room.
+   Fixes the "dark text on now-dark shell paper" problem for the ~6 route
+   heros that render text directly on the shell (not inside a card). */
+:root[data-theme='lightup'] .page-hero {
+  background-color: var(--manga-white);
+  border: 3px solid var(--manga-black);
+  box-shadow: 4px 4px 0 var(--manga-black);
+  padding: 1rem 1.25rem;
+}
+
+/* Pull-string bulb toggle. The bulb glows warm amber when light-up is on;
+   clicking yanks the cord (stretch) and dips the bulb for a beat. */
+.lamp-toggle__bulb--on {
+  filter: drop-shadow(0 0 6px rgba(255, 190, 94, 0.95))
+    drop-shadow(0 0 12px rgba(255, 190, 94, 0.6));
+}
+.lamp-toggle--pulling .lamp-toggle__cord {
+  animation: lamp-cord-yank 0.22s ease;
+}
+.lamp-toggle--pulling .lamp-toggle__bulb {
+  animation: lamp-bulb-dip 0.22s ease;
+}
+@keyframes lamp-cord-yank {
+  40% {
+    transform: scaleY(1.5);
+  }
+  100% {
+    transform: scaleY(1);
+  }
+}
+@keyframes lamp-bulb-dip {
+  40% {
+    transform: translateY(3px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lamp-toggle--pulling .lamp-toggle__cord,
+  .lamp-toggle--pulling .lamp-toggle__bulb {
+    animation: none;
+  }
+  .lamp-toggle {
+    transition: none;
+  }
+}
+
+/* Opacify translucent card surfaces in light-up so the dark room paper does
+   not bleed through and muddy them. Day mode keeps its opacity untouched. */
+:root[data-theme='lightup'] .bg-manga-white\/70,
+:root[data-theme='lightup'] .bg-manga-white\/88,
+:root[data-theme='lightup'] .bg-manga-white\/90,
+:root[data-theme='lightup'] .bg-manga-white\/92 {
+  background-color: var(--manga-white);
 }
 
 /* Keep this in @layer base so Tailwind text utilities (text-3xl, font-semibold,
@@ -172,6 +292,6 @@ textarea:focus-visible,
 }
 
 ::selection {
-  background: #35d1e6;
-  color: var(--manga-black);
+  background: var(--selection-bg);
+  color: var(--selection-fg);
 }

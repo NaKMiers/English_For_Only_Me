@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation'
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { AuthControl } from '@/components/common/AuthControl'
 import { MangaPageShell } from '@/components/common/MangaPageShell'
+import { PageHero } from '@/components/common/PageHero'
 import { BrowseBreadcrumb } from '@/components/dictation/browse/BrowseBreadcrumb'
 import { BrowsePagination } from '@/components/dictation/browse/BrowsePagination'
 import { BrowseToolbar } from '@/components/dictation/browse/BrowseToolbar'
@@ -128,23 +129,25 @@ export default async function TopicPage({ params, searchParams }: PageProps) {
       }
     >
       <section className="grid gap-5 p-4 sm:p-6 lg:p-8">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <BrowseBreadcrumb current={topic.title} />
-          <Link
-            href="/dictation/favorites"
-            className="text-manga-red text-sm font-black hover:underline"
-          >
-            ★ Favorites
-          </Link>
-        </div>
-        <h1 className="font-sans text-[clamp(1.8rem,4vw,2.6rem)] leading-none font-black uppercase">
-          {topic.title}
-        </h1>
-        {topic.description && (
-          <p className="text-manga-ink-soft max-w-2xl text-sm leading-6">
-            {topic.description}
-          </p>
-        )}
+        <PageHero>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <BrowseBreadcrumb current={topic.title} />
+            <Link
+              href="/dictation/favorites"
+              className="text-manga-red text-sm font-black hover:underline"
+            >
+              ★ Favorites
+            </Link>
+          </div>
+          <h1 className="font-sans text-[clamp(1.8rem,4vw,2.6rem)] leading-none font-black uppercase">
+            {topic.title}
+          </h1>
+          {topic.description && (
+            <p className="text-manga-ink-soft max-w-2xl text-sm leading-6">
+              {topic.description}
+            </p>
+          )}
+        </PageHero>
 
         <BrowseToolbar
           search={query.search}

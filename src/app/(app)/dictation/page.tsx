@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { AuthControl } from '@/components/common/AuthControl'
 import { MangaPageShell } from '@/components/common/MangaPageShell'
+import { PageHero } from '@/components/common/PageHero'
 import { DictationGlobalStats } from '@/components/dictation/DictationGlobalStats'
 import { TopicGrid } from '@/components/dictation/browse/TopicGrid'
 import { MangaButton } from '@/components/ui/MangaButton'
@@ -77,7 +78,7 @@ export default async function DictationPage() {
       footer={<BrowseFooter />}
     >
       <section className="grid gap-5 p-4 sm:p-6 lg:p-8">
-        <header className="grid gap-2">
+        <PageHero>
           <div className="flex flex-wrap items-center justify-between gap-2">
             <PageTag tone="red">Listening</PageTag>
             <div className="flex flex-wrap items-center justify-end gap-2">
@@ -112,7 +113,7 @@ export default async function DictationPage() {
               ? 'Pick a topic, then a section, then continue building your listening history.'
               : 'Pick a topic, then a section, then practice a lesson. Sign in to save your progress and favorites.'}
           </p>
-        </header>
+        </PageHero>
         <TopicGrid
           topics={topics}
           noTopicCount={noTopicCount}

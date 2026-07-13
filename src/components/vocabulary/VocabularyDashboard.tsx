@@ -315,7 +315,7 @@ export function VocabularyDashboard({ isAdmin, mongoConfigured }: Props) {
 
   return (
     <div className="grid gap-5 p-4 sm:p-6 lg:p-8">
-      <section className="grid gap-4">
+      <section className="page-hero grid gap-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="grid min-w-0 flex-1 gap-2">
             <PageTag tone="red">Vocabulary</PageTag>
