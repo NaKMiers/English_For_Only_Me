@@ -5,7 +5,6 @@ import type {
 
 import {
   getTextQualityFlags,
-  hasSentenceEnding,
   normalizeSegmentComparisonText,
   normalizeSegmentText,
   splitTextIntoSentences,
@@ -17,7 +16,21 @@ import type {
 } from './types'
 
 const LARGE_GAP_MS = 3500
-const MAX_FRAGMENT_WORDS = 34
+
+// Pause-based grouping. Instead of merging cues up to a sentence boundary, we
+// cut the segment at natural pauses in speech (a long-enough silence between
+// consecutive cues), and force a cut when a group hits a hard duration/word cap
+// so a run-on passage (a speaker who never pauses) stays bite-sized. Cuts land
+// on cue boundaries, so segment start/end timing stays exact for seek/replay.
+// Thresholds are tunable here.
+//
+//   cue  cue │pause│ cue cue cue │cap│ cue …
+//   └── segment ┘   └── segment ┘   (│ = a cut point)
+const PAUSE_GAP_MS = 450 // silence before a cue that marks a natural break
+const MAX_SEGMENT_MS = 9000 // hard cap: force a cut past this even without a pause
+const MAX_SEGMENT_WORDS = 14 // hard cap on words (also covers untimed cues)
+const MIN_SEGMENT_MS = 1200 // do not pause-split a group shorter than this...
+const MIN_SEGMENT_WORDS = 4 // ...unless it already has at least this many words
 
 interface CueGroup {
   cues: DictationCueRecord[]
@@ -66,37 +79,76 @@ function getCueGroupText(cues: DictationCueRecord[]) {
   return normalizeSegmentText(cues.map(cue => cue.text).join(' '))
 }
 
-function shouldCloseCueGroup(cues: DictationCueRecord[]) {
-  const text = getCueGroupText(cues)
+/** Silence (ms) between the previous cue's end and this cue's start; null when
+ *  either side is untimed (so pause detection cannot apply). */
+function gapBeforeMs(previousCue: DictationCueRecord, cue: DictationCueRecord) {
+  if (!isTimedCue(previousCue) || cue.startMs === null) return null
 
-  return hasSentenceEnding(text) || getWordCount(text) >= MAX_FRAGMENT_WORDS
+  return cue.startMs - (previousCue.endMs as number)
 }
 
+/** Wall-clock span of a cue group; null when the first start / last end is
+ *  missing, in which case only the word cap applies. */
+function groupDurationMs(cues: DictationCueRecord[]) {
+  const startMs = cues[0]?.startMs ?? null
+  const endMs = cues.at(-1)?.endMs ?? null
+
+  if (startMs === null || endMs === null) return null
+
+  return endMs - startMs
+}
+
+/** A group big enough that splitting it at a pause won't make a tiny fragment. */
+function groupMeetsMin(cues: DictationCueRecord[]) {
+  if (getWordCount(getCueGroupText(cues)) >= MIN_SEGMENT_WORDS) return true
+
+  const durationMs = groupDurationMs(cues)
+
+  return durationMs !== null && durationMs >= MIN_SEGMENT_MS
+}
+
+/** A group at/over the hard ceiling; force a cut so run-ons stay bite-sized. */
+function groupOverCap(cues: DictationCueRecord[]) {
+  if (getWordCount(getCueGroupText(cues)) >= MAX_SEGMENT_WORDS) return true
+
+  const durationMs = groupDurationMs(cues)
+
+  return durationMs !== null && durationMs >= MAX_SEGMENT_MS
+}
+
+// Close the current group when there's a real pause before the next cue (and
+// the group already meets the minimum), or force-close when it hits the cap.
 function groupTimedCues(cues: DictationCueRecord[]) {
   const groups: CueGroup[] = []
   let currentGroup: DictationCueRecord[] = []
 
-  for (const cue of cues) {
-    const text = normalizeSegmentText(cue.text)
+  for (const rawCue of cues) {
+    const text = normalizeSegmentText(rawCue.text)
 
     if (!text) continue
 
-    currentGroup.push({ ...cue, text })
+    const cue = { ...rawCue, text }
+    const previousCue = currentGroup.at(-1)
 
-    if (shouldCloseCueGroup(currentGroup)) {
-      groups.push({
-        cues: currentGroup,
-        flags: [],
-      })
+    if (previousCue) {
+      const gap = gapBeforeMs(previousCue, cue)
+
+      if (gap !== null && gap >= PAUSE_GAP_MS && groupMeetsMin(currentGroup)) {
+        groups.push({ cues: currentGroup, flags: [] })
+        currentGroup = []
+      }
+    }
+
+    currentGroup.push(cue)
+
+    if (groupOverCap(currentGroup)) {
+      groups.push({ cues: currentGroup, flags: [] })
       currentGroup = []
     }
   }
 
   if (currentGroup.length > 0)
-    groups.push({
-      cues: currentGroup,
-      flags: [],
-    })
+    groups.push({ cues: currentGroup, flags: [] })
 
   return groups
 }
@@ -120,7 +172,11 @@ function createSegmentFromCueGroup(group: CueGroup, order: number) {
     normalizedText: normalizeSegmentComparisonText(text),
     order,
     qualityFlags: dedupeFlags([
-      ...getTextQualityFlags(text),
+      // Pause-based segments legitimately end mid-sentence at a natural pause,
+      // so drop 'missingPunctuation' here (it would flag nearly every segment).
+      ...getTextQualityFlags(text).filter(
+        flag => flag !== 'missingPunctuation'
+      ),
       ...timingFlags,
       ...group.flags,
     ]),

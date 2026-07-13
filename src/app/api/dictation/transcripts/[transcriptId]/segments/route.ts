@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 
 import { MissingEnvironmentError } from '@/constants/environments'
 import { connectDatabase } from '@/lib/db/connectDatabase'
+import { DictationReviewItemModel } from '@/models/dictation/DictationReviewItemModel'
 import { DictationSegmentModel } from '@/models/dictation/DictationSegmentModel'
 import { DictationTranscriptModel } from '@/models/dictation/DictationTranscriptModel'
 import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
@@ -171,6 +172,17 @@ export async function POST(_request: Request, context: RouteContext) {
         },
       })
 
+    // Rebuilding replaces every segment (new ObjectIds), which orphans review
+    // items that pointed at the old segments. Capture the old ids first so we
+    // can prune those review items after the rebuild. Attempts are left intact
+    // - they keep expectedTextSnapshot, so historical accuracy survives.
+    const staleSegmentIds = (
+      await DictationSegmentModel.find(
+        { transcriptId: transcript._id },
+        { _id: 1 }
+      ).lean()
+    ).map(segment => segment._id)
+
     await DictationSegmentModel.deleteMany({
       transcriptId: transcript._id,
     })
@@ -199,6 +211,14 @@ export async function POST(_request: Request, context: RouteContext) {
     video.status = 'ready'
     video.sentenceCount = createdSegments.length
     await video.save()
+
+    // Prune review items orphaned by the rebuild (they referenced the now-gone
+    // segment ids). Scoped to the old ids only, so unrelated review items and
+    // all attempts are untouched.
+    if (staleSegmentIds.length > 0)
+      await DictationReviewItemModel.deleteMany({
+        segmentId: { $in: staleSegmentIds },
+      })
 
     return NextResponse.json(
       {
