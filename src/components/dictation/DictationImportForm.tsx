@@ -12,6 +12,7 @@ import {
   getDictationStatusLabel,
   getDictationStatusTone,
 } from '@/modules/dictation/statusDisplay'
+import { DEFAULT_DICTATION_LANGUAGE } from '@/modules/dictation/translations/languages'
 import type {
   DictationTranscriptApiRecord,
   DictationVideoApiRecord,
@@ -206,7 +207,9 @@ export function DictationImportForm({
 
       {video ? (
         <DictationCaptionManager
-          defaultLanguage={video.defaultLanguage}
+          defaultLanguage={
+            isEditMode ? video.defaultLanguage : DEFAULT_DICTATION_LANGUAGE
+          }
           initialActiveTranscriptId={initialActiveTranscriptId}
           initialTracks={initialTracks}
           videoId={video.id}

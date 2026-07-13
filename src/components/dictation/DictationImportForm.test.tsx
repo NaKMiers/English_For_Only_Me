@@ -31,7 +31,7 @@ function videoRecord() {
     collections: [],
     completedSessionCount: 0,
     createdAt: new Date(),
-    defaultLanguage: 'en',
+    defaultLanguage: 'en-US',
     durationSeconds: 300,
     id: videoId,
     importStatus: 'metadataReady',
@@ -91,5 +91,7 @@ describe('DictationImportForm', () => {
     // The unified caption manager, with English as the default dictation source.
     expect(view.getByRole('button', { name: 'Add Captions' })).not.toBeNull()
     expect(view.getByText('Needs captions')).not.toBeNull()
+    expect(view.getByLabelText('Or language code')).toHaveValue('en')
+    expect(view.queryByDisplayValue('en-US')).toBeNull()
   })
 })

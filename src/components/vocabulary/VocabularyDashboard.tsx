@@ -16,6 +16,7 @@ import {
 } from '@/requests/vocabularyApi'
 import { VOCAB_RECALL_LISTENING_TASK_TYPES } from '@/modules/vocabulary/constants'
 import type {
+  UserVocabItemApiRecord,
   VocabEntryWithUserStateRecord,
   VocabRecallTaskRecord,
   VocabStatsRecord,
@@ -54,6 +55,9 @@ const EMPTY_STATS: VocabStatsRecord = {
 const LISTENING_SKIP_STORAGE_KEY = 'vocab:recall:listening-skip-until'
 const DAILY_AUTO_OPEN_STORAGE_KEY = 'vocab:recall:auto-open-date'
 
+type MarkableSource = 'search' | 'explore' | 'dictionary' | 'manual'
+type MarkableStatus = 'shouldLearn' | 'alreadyKnow'
+
 function getTodayStorageLabel() {
   return new Date().toISOString().slice(0, 10)
 }
@@ -75,6 +79,59 @@ function speakTerm(term: string) {
   window.speechSynthesis.speak(utterance)
 }
 
+function buildOptimisticUserItem({
+  entry,
+  source,
+  status,
+}: {
+  entry: VocabEntryWithUserStateRecord
+  source: MarkableSource
+  status: MarkableStatus
+}): UserVocabItemApiRecord {
+  const now = new Date()
+  const existingItem = entry.userItem
+  const base = {
+    correctCount: existingItem?.correctCount ?? 0,
+    createdAt: existingItem?.createdAt ?? now,
+    firstSeenAt: existingItem?.firstSeenAt ?? now,
+    id: existingItem?.id ?? `optimistic-${entry.entry.id}`,
+    lastReviewedAt: existingItem?.lastReviewedAt ?? null,
+    notes: existingItem?.notes ?? null,
+    reviewCount: existingItem?.reviewCount ?? 0,
+    source,
+    updatedAt: now,
+    userId: existingItem?.userId ?? 'optimistic',
+    vocabEntryId: entry.entry.id,
+    wrongCount: existingItem?.wrongCount ?? 0,
+  }
+
+  if (status === 'shouldLearn')
+    return {
+      ...base,
+      correctCount: 0,
+      dueAt: now,
+      knownAt: null,
+      knownReason: null,
+      masteredAt: null,
+      masteredReason: null,
+      recallStage: 1,
+      reviewCount: 0,
+      status: 'learning',
+      wrongCount: 0,
+    }
+
+  return {
+    ...base,
+    dueAt: null,
+    knownAt: now,
+    knownReason: 'manual',
+    masteredAt: null,
+    masteredReason: null,
+    recallStage: 1,
+    status: 'alreadyKnow',
+  }
+}
+
 export function VocabularyDashboard({ isAdmin, mongoConfigured }: Props) {
   const [stats, setStats] = useState<VocabStatsRecord>(EMPTY_STATS)
   const [query, setQuery] = useState('')
@@ -87,6 +144,9 @@ export function VocabularyDashboard({ isAdmin, mongoConfigured }: Props) {
     VocabEntryWithUserStateRecord[]
   >([])
   const [exploreDecisions, setExploreDecisions] = useState<
+    Record<string, ExploreDecision>
+  >({})
+  const [pendingExploreDecisions, setPendingExploreDecisions] = useState<
     Record<string, ExploreDecision>
   >({})
   const [activeExploreIndex, setActiveExploreIndex] = useState(0)
@@ -182,9 +242,130 @@ export function VocabularyDashboard({ isAdmin, mongoConfigured }: Props) {
     status,
   }: {
     entry: VocabEntryWithUserStateRecord
-    source: 'search' | 'explore' | 'dictionary' | 'manual'
-    status: 'shouldLearn' | 'alreadyKnow'
+    source: MarkableSource
+    status: MarkableStatus
   }) {
+    if (source === 'explore') {
+      const entryId = entry.entry.id
+
+      if (pendingExploreDecisions[entryId]) return
+
+      const previousDecision = exploreDecisions[entryId]
+      const previousUserItem = entry.userItem
+      const optimisticEntry = {
+        ...entry,
+        userItem: buildOptimisticUserItem({
+          entry,
+          source,
+          status,
+        }),
+      }
+
+      setErrorMessage(null)
+      setStatusMessage(
+        status === 'shouldLearn'
+          ? `"${entry.entry.term}" is in your recall queue.`
+          : `"${entry.entry.term}" is marked as known.`
+      )
+      setPendingExploreDecisions(current => ({
+        ...current,
+        [entryId]: status,
+      }))
+      setSelectedEntry(current =>
+        current?.entry.id === entryId ? optimisticEntry : current
+      )
+      setSearchResults(current =>
+        current.map(item =>
+          item.entry.id === entryId ? optimisticEntry : item
+        )
+      )
+      setExploreEntries(current =>
+        current.map(item =>
+          item.entry.id === entryId ? optimisticEntry : item
+        )
+      )
+      setExploreDecisions(current => ({
+        ...current,
+        [entryId]: status,
+      }))
+      setActiveExploreIndex(current =>
+        Math.min(current + 1, exploreEntries.length - 1)
+      )
+
+      setVocabItemStatusApi({
+        source,
+        status,
+        vocabEntryId: entryId,
+      })
+        .then(response => {
+          const nextEntry = {
+            ...entry,
+            userItem: response.item,
+          }
+
+          setSelectedEntry(current =>
+            current?.entry.id === entryId ? nextEntry : current
+          )
+          setSearchResults(current =>
+            current.map(item => (item.entry.id === entryId ? nextEntry : item))
+          )
+          setExploreEntries(current =>
+            current.map(item => (item.entry.id === entryId ? nextEntry : item))
+          )
+          refreshProgressData().catch(error => {
+            setErrorMessage(
+              error instanceof Error
+                ? error.message
+                : 'Could not refresh vocabulary progress.'
+            )
+          })
+        })
+        .catch(error => {
+          const rollbackEntry = {
+            ...entry,
+            userItem: previousUserItem,
+          }
+
+          setSelectedEntry(current =>
+            current?.entry.id === entryId ? rollbackEntry : current
+          )
+          setSearchResults(current =>
+            current.map(item =>
+              item.entry.id === entryId ? rollbackEntry : item
+            )
+          )
+          setExploreEntries(current =>
+            current.map(item =>
+              item.entry.id === entryId ? rollbackEntry : item
+            )
+          )
+          setExploreDecisions(current => {
+            const next = { ...current }
+
+            if (previousDecision) next[entryId] = previousDecision
+            else delete next[entryId]
+
+            return next
+          })
+          setErrorMessage(
+            error instanceof Error
+              ? error.message
+              : 'Could not update this word.'
+          )
+        })
+        .finally(() => {
+          setPendingExploreDecisions(current => {
+            const next = { ...current }
+
+            delete next[entryId]
+
+            return next
+          })
+        })
+
+      return
+    }
+
     setIsLoading(true)
     setErrorMessage(null)
     setStatusMessage(null)
@@ -222,11 +403,7 @@ export function VocabularyDashboard({ isAdmin, mongoConfigured }: Props) {
           ? `"${entry.entry.term}" is in your recall queue.`
           : `"${entry.entry.term}" is marked as known.`
       )
-      if (source === 'explore')
-        window.setTimeout(() => showExploreIndex(activeExploreIndex + 1), 120)
-
-      if (source === 'explore') await refreshProgressData()
-      else await refreshCoreData()
+      await refreshCoreData()
     } catch (error) {
       setErrorMessage(
         error instanceof Error ? error.message : 'Could not update this word.'
@@ -381,9 +558,9 @@ export function VocabularyDashboard({ isAdmin, mongoConfigured }: Props) {
         activeIndex={activeExploreIndex}
         decisions={exploreDecisions}
         entries={exploreEntries}
-        isLoading={isLoading}
         markEntry={markEntry}
         moveExplore={moveExplore}
+        pendingDecisions={pendingExploreDecisions}
         showExploreIndex={showExploreIndex}
       />
 

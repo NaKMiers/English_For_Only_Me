@@ -11,7 +11,11 @@ import {
   getMissingMongoResponse,
   MISSING_MONGODB_MESSAGE,
 } from '@/modules/dictation/services/videoRouteDecisions'
-import { parseYouTubeImportRequest } from '@/modules/dictation/services/youtubeImportDecisions'
+import {
+  getReimportedVideoStatus,
+  parseYouTubeImportRequest,
+} from '@/modules/dictation/services/youtubeImportDecisions'
+import { DEFAULT_DICTATION_LANGUAGE } from '@/modules/dictation/translations/languages'
 
 export const runtime = 'nodejs'
 
@@ -111,6 +115,13 @@ export async function POST(request: Request) {
 
     await connectDatabase()
 
+    const existingVideo = await DictationVideoModel.findOne({
+      youtubeVideoId: parsed.data.videoId,
+    })
+      .select('status')
+      .lean()
+    const nextStatus = getReimportedVideoStatus(existingVideo?.status)
+
     const video = await DictationVideoModel.findOneAndUpdate(
       {
         youtubeVideoId: parsed.data.videoId,
@@ -121,7 +132,6 @@ export async function POST(request: Request) {
           youtubeUrl: parsed.data.normalizedUrl,
           sourceUrl: parsed.data.normalizedUrl,
           youtubeVideoId: parsed.data.videoId,
-          status: 'needsTranscript',
           transcriptStatus: 'manualNeeded',
         },
         $set: {
@@ -134,10 +144,8 @@ export async function POST(request: Request) {
               : null,
           thumbnailUrl:
             metadata.state === 'ready' ? metadata.metadata.thumbnailUrl : null,
-          defaultLanguage:
-            metadata.state === 'ready'
-              ? (metadata.metadata.defaultLanguage ?? 'en')
-              : 'en',
+          defaultLanguage: DEFAULT_DICTATION_LANGUAGE,
+          status: nextStatus,
           importStatus,
           importWarning,
         },

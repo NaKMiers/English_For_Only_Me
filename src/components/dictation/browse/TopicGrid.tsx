@@ -80,7 +80,7 @@ function TopicCard({
       href={href}
       className={cn(
         'border-manga-black hover:bg-manga-pale-red grid grid-cols-[auto_1fr] items-center gap-3 border-3 p-3 shadow-[4px_4px_0_var(--manga-black)] transition-colors',
-        muted ? 'bg-manga-paper' : 'bg-manga-white'
+        muted ? 'bg-manga-paper-soft' : 'bg-manga-white'
       )}
     >
       <ThumbTile
@@ -144,7 +144,6 @@ export function TopicGrid({ topics, noTopicCount }: Props) {
           title="Uncategorized"
           levelRange={null}
           lessonCount={noTopicCount}
-          muted
         />
       )}
     </div>

@@ -1,5 +1,14 @@
 import { extractYouTubeId } from '@/lib/youtube/extractYouTubeId'
 import { youtubeImportPayloadSchema } from '@/modules/dictation/schemas/youtubeImportPayloadSchema'
+import type { DictationVideoStatus } from '@/modules/dictation/types'
+
+export function getReimportedVideoStatus(
+  existingStatus: DictationVideoStatus | null | undefined
+) {
+  return !existingStatus || existingStatus === 'archived'
+    ? ('needsTranscript' as const)
+    : existingStatus
+}
 
 export function parseYouTubeImportRequest(body: unknown) {
   const parsed = youtubeImportPayloadSchema.safeParse(body)

@@ -1,11 +1,18 @@
 import { describe, expect, test } from 'vitest'
 
 import {
+  DEFAULT_DICTATION_LANGUAGE,
   getCuratedLanguageOptions,
   getLanguageLabel,
   isValidTranslationLanguage,
   normalizeTranslationLanguage,
 } from './languages'
+
+describe('DEFAULT_DICTATION_LANGUAGE', () => {
+  test('uses the curated English option for new imports', () => {
+    expect(DEFAULT_DICTATION_LANGUAGE).toBe('en')
+  })
+})
 
 describe('isValidTranslationLanguage', () => {
   test('accepts common codes and regional variants', () => {

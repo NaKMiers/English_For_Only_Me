@@ -1,5 +1,7 @@
 // Codes offered in the picker for quick selection. Any structurally valid
 // language code can still be added by hand; this list is only a convenience.
+export const DEFAULT_DICTATION_LANGUAGE = 'en'
+
 export const CURATED_TRANSLATION_LANGUAGE_CODES = [
   'vi',
   'en',
