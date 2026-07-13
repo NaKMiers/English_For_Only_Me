@@ -231,7 +231,7 @@ async function FlatResults({
 
   return (
     <div className="grid gap-4">
-      <p className="text-manga-ink-soft text-sm font-black">
+      <p className="text-sm font-black opacity-80">
         {pagination.total} {pagination.total === 1 ? 'lesson' : 'lessons'}
       </p>
       <BrowseVideoList

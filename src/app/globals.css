@@ -212,6 +212,30 @@ body {
   }
 }
 
+/* Readable text everywhere in light-up (safety net for any heading/label that
+   sits directly on the dark shell room rather than inside a card).
+   - The shell's default (inherited) text becomes warm cream so bare titles and
+     labels read on the dark room.
+   - Every light card surface resets inherited text back to dark ink so content
+     inside cards stays readable. Explicit text-manga-* on children still wins.
+   This makes text visible on the shell without per-page wrapping; PageHero and
+   cards still render their own dark ink on their light surfaces. */
+:root[data-theme='lightup'] .manga-shell {
+  color: #ecdcbc;
+}
+:root[data-theme='lightup'] .manga-shell :is(
+    .bg-manga-white,
+    .bg-manga-white\/70,
+    .bg-manga-white\/88,
+    .bg-manga-white\/90,
+    .bg-manga-white\/92,
+    .bg-manga-paper-soft,
+    .bg-manga-pale-red,
+    .page-hero
+  ) {
+  color: var(--manga-black);
+}
+
 /* Page hero surface: bare on paper in day mode (unchanged), lifts into a
    lit card in light-up so its dark ink text stays readable on the dark room.
    Fixes the "dark text on now-dark shell paper" problem for the ~6 route

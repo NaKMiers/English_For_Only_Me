@@ -104,7 +104,7 @@ export default async function AdminTopicsPage() {
       }
     >
       <section className="grid gap-5 p-4 sm:p-6 lg:p-8">
-        <header className="flex flex-wrap items-center justify-between gap-2">
+        <header className="page-hero flex flex-wrap items-center justify-between gap-2">
           <h1 className="font-sans text-[clamp(1.6rem,4vw,2.4rem)] leading-none font-black uppercase">
             Topics
           </h1>
