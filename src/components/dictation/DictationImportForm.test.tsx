@@ -81,6 +81,13 @@ describe('DictationImportForm', () => {
       expect(view.getByText('Language captions')).not.toBeNull()
     })
 
+    const savedVideo = view.getByTitle('A listening practice video')
+
+    expect(savedVideo).toBeInstanceOf(window.HTMLIFrameElement)
+    expect(savedVideo.getAttribute('src')).toBe(
+      'https://www.youtube.com/embed/abc123abc12'
+    )
+
     // The unified caption manager, with English as the default dictation source.
     expect(view.getByRole('button', { name: 'Add Captions' })).not.toBeNull()
     expect(view.getByText('Needs captions')).not.toBeNull()
