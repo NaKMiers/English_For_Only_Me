@@ -14,6 +14,7 @@
     "format": "prettier . --write",
     "format:check": "prettier . --check",
     "backfill:content": "node --conditions=react-server --import tsx scripts/backfillContentHierarchy.ts",
+    "resegment": "node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/resegmentAllTranscripts.ts",
     "vocab:seed": "node --conditions=react-server --env-file-if-exists=.env.development --import tsx scripts/seedVocabulary.ts",
     "vocab:backfill-vi": "node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/backfillVocabularyVietnameseMeanings.ts"
   },

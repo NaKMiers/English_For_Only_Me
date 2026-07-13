@@ -2,14 +2,16 @@ import { NextResponse } from 'next/server'
 
 import { MissingEnvironmentError } from '@/constants/environments'
 import { connectDatabase } from '@/lib/db/connectDatabase'
-import { DictationReviewItemModel } from '@/models/dictation/DictationReviewItemModel'
 import { DictationSegmentModel } from '@/models/dictation/DictationSegmentModel'
 import { DictationTranscriptModel } from '@/models/dictation/DictationTranscriptModel'
 import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
 import { buildDictationSegments } from '@/modules/dictation/segmenting/buildSegments'
 import { toDictationSegmentRecord } from '@/modules/dictation/services/dictationSegmentRecords'
 import { requireAdmin } from '@/modules/dictation/services/getCurrentUser'
-import type { DictationCueRecord } from '@/modules/dictation/types'
+import {
+  persistRebuiltSegments,
+  toCueRecords,
+} from '@/modules/dictation/services/rebuildTranscriptSegments'
 import {
   getSegmentBuildGuardDecision,
   parseTranscriptIdParam,
@@ -62,22 +64,6 @@ function toSegmentError(error: unknown): ApiErrorDecision {
       message: 'Could not build dictation segments.',
     },
   }
-}
-
-function toCueRecords(
-  cues: {
-    endMs?: number | null
-    index: number
-    startMs?: number | null
-    text: string
-  }[]
-): DictationCueRecord[] {
-  return cues.map(cue => ({
-    endMs: cue.endMs ?? null,
-    index: cue.index,
-    startMs: cue.startMs ?? null,
-    text: cue.text,
-  }))
 }
 
 export async function GET(_request: Request, context: RouteContext) {
@@ -172,53 +158,11 @@ export async function POST(_request: Request, context: RouteContext) {
         },
       })
 
-    // Rebuilding replaces every segment (new ObjectIds), which orphans review
-    // items that pointed at the old segments. Capture the old ids first so we
-    // can prune those review items after the rebuild. Attempts are left intact
-    // - they keep expectedTextSnapshot, so historical accuracy survives.
-    const staleSegmentIds = (
-      await DictationSegmentModel.find(
-        { transcriptId: transcript._id },
-        { _id: 1 }
-      ).lean()
-    ).map(segment => segment._id)
-
-    await DictationSegmentModel.deleteMany({
-      transcriptId: transcript._id,
+    const { createdSegments } = await persistRebuiltSegments({
+      transcript,
+      video,
+      built,
     })
-
-    const createdSegments = await DictationSegmentModel.insertMany(
-      built.segments.map(segment => ({
-        videoId: video._id,
-        transcriptId: transcript._id,
-        transcriptSourceHash: transcript.sourceHash,
-        order: segment.order,
-        text: segment.text,
-        normalizedText: segment.normalizedText,
-        startMs: segment.startMs,
-        endMs: segment.endMs,
-        cueIndexes: segment.cueIndexes,
-        qualityFlags: segment.qualityFlags,
-        warningAccepted: segment.warningAccepted,
-        attemptStatus: 'notStarted',
-        attemptCount: 0,
-      }))
-    )
-
-    transcript.segmentCount = createdSegments.length
-    await transcript.save()
-
-    video.status = 'ready'
-    video.sentenceCount = createdSegments.length
-    await video.save()
-
-    // Prune review items orphaned by the rebuild (they referenced the now-gone
-    // segment ids). Scoped to the old ids only, so unrelated review items and
-    // all attempts are untouched.
-    if (staleSegmentIds.length > 0)
-      await DictationReviewItemModel.deleteMany({
-        segmentId: { $in: staleSegmentIds },
-      })
 
     return NextResponse.json(
       {
