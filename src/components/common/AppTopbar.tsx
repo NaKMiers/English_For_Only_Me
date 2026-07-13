@@ -2,7 +2,6 @@ import Image from 'next/image'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 
-import { PullStringToggle } from '@/components/common/PullStringToggle'
 import { PRIMARY_NAV_ITEMS } from '@/constants/modules'
 import { cn } from '@/lib/utils'
 
@@ -92,7 +91,6 @@ export function AppTopbar({
       </nav>
 
       <div className="flex items-center justify-start gap-2 sm:col-span-2 lg:col-span-1 lg:justify-end">
-        <PullStringToggle />
         {authControl}
       </div>
     </header>

@@ -79,6 +79,9 @@
   /* Color for manga offset shadows. Day shadows hardcode var(--manga-black);
      light-up retints them to a warm ledge via this var (see overrides below). */
   --manga-offset: var(--manga-black);
+  /* Border ink. Day = black; light-up = warm sepia so frames/footer/panel
+     outlines stay visible on the dark room (a dark border vanished into it). */
+  --manga-line: var(--manga-black);
 }
 
 /* ============================================================
@@ -124,6 +127,8 @@
   --selection-fg: #1a1410;
   /* warm amber ledge - visible on the dark room, keeps the hard manga offset */
   --manga-offset: #7a5626;
+  /* warm sepia border ink - pops on the dark room and still outlines cards */
+  --manga-line: #8a6330;
 }
 
 @theme inline {
@@ -194,22 +199,16 @@ body {
   font-family: var(--font-source-sans), Arial, Helvetica, sans-serif;
 }
 
-/* Smooth the light <-> light-up flip. Cheap properties only; disabled for
-   users who prefer reduced motion. */
+/* Smooth the light <-> light-up flip on the page backdrop only. Scoped to
+   html/body so it never overrides the `transition` property on interactive
+   elements (buttons, cards) - doing that previously clobbered their
+   transition-transform and killed press/card animations. */
 @media (prefers-reduced-motion: no-preference) {
-  body,
-  header,
-  section,
-  aside,
-  article,
-  .page-hero,
-  [class*='bg-manga'],
-  [class*='border-manga'] {
+  html,
+  body {
     transition:
-      background-color 0.45s ease,
-      border-color 0.45s ease,
-      color 0.45s ease,
-      box-shadow 0.45s ease;
+      background-color 0.4s ease,
+      color 0.4s ease;
   }
 }
 
@@ -224,41 +223,127 @@ body {
   padding: 1rem 1.25rem;
 }
 
-/* Pull-string bulb toggle. The bulb glows warm amber when light-up is on;
-   clicking yanks the cord (stretch) and dips the bulb for a beat. */
-.lamp-toggle__bulb--on {
-  filter: drop-shadow(0 0 6px rgba(255, 190, 94, 0.95))
-    drop-shadow(0 0 12px rgba(255, 190, 94, 0.6));
+/* Hanging pull-string bulb, fixed to the top-right corner. Dangles from the
+   top edge, sways gently at rest, and swings when yanked. */
+.lamp-hang {
+  position: fixed;
+  bottom: clamp(18px, 4vh, 40px);
+  right: clamp(16px, 4vw, 44px);
+  z-index: 60;
+  pointer-events: none;
 }
-.lamp-toggle--pulling .lamp-toggle__cord {
-  animation: lamp-cord-yank 0.22s ease;
+.lamp-hang__btn {
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  background: none;
+  border: 0;
+  padding: 0 10px 6px;
+  cursor: pointer;
+  transform-origin: top center;
+  animation: lamp-sway 5s ease-in-out infinite;
 }
-.lamp-toggle--pulling .lamp-toggle__bulb {
-  animation: lamp-bulb-dip 0.22s ease;
+.lamp-hang__btn:hover {
+  animation-duration: 2.4s;
 }
-@keyframes lamp-cord-yank {
-  40% {
-    transform: scaleY(1.5);
+.lamp-hang__cord {
+  width: 2px;
+  height: 34px;
+  background: var(--manga-line, var(--manga-black));
+  opacity: 0.75;
+}
+.lamp-hang__knob {
+  width: 8px;
+  height: 8px;
+  margin-top: -1px;
+  border-radius: 9999px;
+  background: var(--manga-line, var(--manga-black));
+}
+.lamp-hang__bulb {
+  margin-top: 1px;
+  line-height: 0;
+  transition:
+    filter 0.5s ease,
+    color 0.5s ease,
+    transform 0.2s ease;
+}
+.lamp-hang__glass {
+  transition: fill 0.5s ease;
+}
+/* OFF: dim ink outline, hollow glass. */
+.lamp-hang__bulb--off {
+  color: var(--manga-line, #6d5730);
+}
+.lamp-hang__bulb--off .lamp-hang__glass {
+  fill: transparent;
+}
+/* ON: warm filament glowing inside lit glass + amber halo. */
+.lamp-hang__bulb--on {
+  color: #6e4a15;
+  filter: drop-shadow(0 0 7px rgba(255, 190, 94, 0.95))
+    drop-shadow(0 0 16px rgba(255, 190, 94, 0.6))
+    drop-shadow(0 0 30px rgba(255, 176, 92, 0.35));
+}
+.lamp-hang__bulb--on .lamp-hang__glass {
+  fill: #ffd074;
+}
+.lamp-hang__bulb--on .lamp-hang__filament {
+  color: #b8500f;
+}
+.lamp-hang__btn:hover .lamp-hang__bulb {
+  transform: translateY(2px);
+}
+/* Yank: pull straight down, then swing out and settle (pendulum). */
+.lamp-hang--pulling {
+  animation: lamp-yank 0.64s cubic-bezier(0.3, 0.7, 0.3, 1);
+}
+.lamp-hang--pulling .lamp-hang__bulb {
+  animation: lamp-flash 0.64s ease;
+}
+@keyframes lamp-sway {
+  0%,
+  100% {
+    transform: rotate(-1.6deg);
+  }
+  50% {
+    transform: rotate(1.6deg);
+  }
+}
+@keyframes lamp-yank {
+  0% {
+    transform: translateY(0) rotate(0deg);
+  }
+  22% {
+    transform: translateY(7px) rotate(0deg);
+  }
+  45% {
+    transform: translateY(0) rotate(7deg);
+  }
+  65% {
+    transform: translateY(0) rotate(-4.5deg);
+  }
+  82% {
+    transform: translateY(0) rotate(2.5deg);
   }
   100% {
-    transform: scaleY(1);
+    transform: translateY(0) rotate(0deg);
   }
 }
-@keyframes lamp-bulb-dip {
-  40% {
-    transform: translateY(3px);
+@keyframes lamp-flash {
+  30% {
+    transform: translateY(4px) scale(1.08);
   }
   100% {
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .lamp-toggle--pulling .lamp-toggle__cord,
-  .lamp-toggle--pulling .lamp-toggle__bulb {
+  .lamp-hang__btn,
+  .lamp-hang--pulling,
+  .lamp-hang--pulling .lamp-hang__bulb {
     animation: none;
-  }
-  .lamp-toggle {
-    transition: none;
   }
 }
 
@@ -295,6 +380,14 @@ body {
   box-shadow:
     8px 8px 0 var(--manga-offset),
     18px 18px 0 rgba(0, 0, 0, 0.35);
+}
+
+/* Warm sepia borders in light-up: the black ink border vanished against the
+   dark room (page frame, footer divider, panel edges all blended). Retint
+   `border-manga-black` to the warm line ink so frames and outlines pop on the
+   dark room while still outlining the lit cards. Day mode untouched. */
+:root[data-theme='lightup'] .border-manga-black {
+  border-color: var(--manga-line);
 }
 
 /* Opacify translucent card surfaces in light-up so the dark room paper does

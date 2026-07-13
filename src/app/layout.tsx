@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import type { CSSProperties } from 'react'
 import './globals.css'
 
+import { PullStringToggle } from '@/components/common/PullStringToggle'
 import { ThemeProvider } from '@/components/common/ThemeProvider'
 
 const fontVariables = {
@@ -61,7 +62,10 @@ export default function RootLayout({
     >
       <body className="flex min-h-full flex-col">
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          {children}
+          <PullStringToggle />
+        </ThemeProvider>
       </body>
     </html>
   )
