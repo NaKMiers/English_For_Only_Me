@@ -15,10 +15,6 @@ vi.mock('@/requests/dictationTranscriptsApi', () => ({
   deleteDictationTranscriptApi: vi.fn(),
 }))
 
-vi.mock('@/requests/dictationSegmentsApi', () => ({
-  buildDictationSegmentsApi: vi.fn(),
-}))
-
 const mockedDelete = vi.mocked(deleteDictationTranscriptApi)
 
 function track(

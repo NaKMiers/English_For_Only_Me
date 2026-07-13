@@ -26,7 +26,6 @@ import {
   normalizeTranslationLanguage,
 } from '@/modules/dictation/translations/languages'
 import type { DictationTranscriptApiRecord } from '@/modules/dictation/types'
-import { buildDictationSegmentsApi } from '@/requests/dictationSegmentsApi'
 import {
   attachDictationTranscriptApi,
   attachDictationTranslationTrackApi,
@@ -195,18 +194,14 @@ export function DictationCaptionManager({
   }
 
   async function attachPrimary(code: string) {
+    // Segments are built server-side when the transcript is saved, so the
+    // response already carries the segment count - no separate build call.
     const response = await attachDictationTranscriptApi({
       videoId,
       language: code,
       rawText: captionText,
     })
-    const segmentResponse = await buildDictationSegmentsApi(
-      response.transcript.id
-    )
-    const readyTranscript: DictationTranscriptApiRecord = {
-      ...response.transcript,
-      segmentCount: segmentResponse.segments.length,
-    }
+    const readyTranscript = response.transcript
 
     setTracks(current => [
       readyTranscript,
@@ -216,7 +211,7 @@ export function DictationCaptionManager({
     ])
     setActiveId(readyTranscript.id)
     setMessage(
-      `${getLanguageLabel(code)} captions saved - ${segmentResponse.segments.length} sentences ready for practice.`
+      `${getLanguageLabel(code)} captions saved - ${readyTranscript.segmentCount} sentences ready for practice.`
     )
   }
 
