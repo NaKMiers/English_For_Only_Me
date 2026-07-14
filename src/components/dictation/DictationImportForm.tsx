@@ -1,10 +1,12 @@
 'use client'
 
 import { CheckCircle2, LinkIcon, Save } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { useState, type FormEvent } from 'react'
 
 import { MangaPanel } from '@/components/common/MangaPanel'
 import { QueueRow } from '@/components/common/QueueRow'
+import { AdminVideoTranscriptPreview } from '@/components/dictation/AdminVideoTranscriptPreview'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { MangaButton } from '@/components/ui/MangaButton'
@@ -12,12 +14,18 @@ import {
   getDictationStatusLabel,
   getDictationStatusTone,
 } from '@/modules/dictation/statusDisplay'
-import { DEFAULT_DICTATION_LANGUAGE } from '@/modules/dictation/translations/languages'
+import type { CaptionCue } from '@/modules/dictation/translations/captionOverlap'
+import {
+  DEFAULT_DICTATION_LANGUAGE,
+  normalizeTranslationLanguage,
+} from '@/modules/dictation/translations/languages'
 import type {
+  DictationSegmentApiRecord,
   DictationTranscriptApiRecord,
   DictationVideoApiRecord,
 } from '@/modules/dictation/types'
 import { importYouTubeVideoApi } from '@/requests/dictationImportsApi'
+import { getDictationVideoDetailApi } from '@/requests/dictationVideosApi'
 
 import { DictationCaptionManager } from './DictationCaptionManager'
 import { DictationVideoThumbnail } from './DictationVideoThumbnail'
@@ -26,9 +34,42 @@ type FormStage = 'idle' | 'savingVideo' | 'videoSaved'
 
 interface Props {
   initialActiveTranscriptId?: string | null
+  initialSegments?: DictationSegmentApiRecord[]
   initialTracks?: DictationTranscriptApiRecord[]
+  initialTranslationTracks?: TranslationTrack[]
   initialVideo?: DictationVideoApiRecord | null
   mode?: 'import' | 'edit'
+}
+
+interface TranslationTrack {
+  cues: CaptionCue[]
+  language: string
+}
+
+function getPreviewTranslationTracks({
+  primaryLanguage,
+  tracks,
+}: {
+  primaryLanguage: string
+  tracks: DictationTranscriptApiRecord[]
+}): TranslationTrack[] {
+  const normalizedPrimaryLanguage =
+    normalizeTranslationLanguage(primaryLanguage)
+
+  return tracks
+    .filter(
+      track =>
+        normalizeTranslationLanguage(track.language) !==
+          normalizedPrimaryLanguage && track.cueCount > 0
+    )
+    .map(track => ({
+      language: track.language,
+      cues: track.rawCues.map(cue => ({
+        endMs: cue.endMs,
+        startMs: cue.startMs,
+        text: cue.text,
+      })),
+    }))
 }
 
 function StatusMessage({
@@ -52,12 +93,27 @@ function StatusMessage({
   )
 }
 
-function SavedVideoPreview({ video }: { video: DictationVideoApiRecord }) {
+function SavedVideoPreview({
+  segments,
+  translationTracks,
+  video,
+}: {
+  segments: DictationSegmentApiRecord[]
+  translationTracks: TranslationTrack[]
+  video: DictationVideoApiRecord
+}) {
   const videoStatus = video.status
 
   return (
     <>
-      {video.youtubeVideoId ? (
+      {segments.length > 0 ? (
+        <AdminVideoTranscriptPreview
+          segments={segments}
+          title={video.title}
+          translationTracks={translationTracks}
+          youtubeVideoId={video.youtubeVideoId}
+        />
+      ) : video.youtubeVideoId ? (
         <div className="border-manga-black bg-manga-paper-soft relative aspect-video w-full max-w-xl overflow-hidden border-2 shadow-[3px_3px_0_var(--manga-black)]">
           <iframe
             src={`https://www.youtube.com/embed/${video.youtubeVideoId}`}
@@ -95,14 +151,27 @@ function SavedVideoPreview({ video }: { video: DictationVideoApiRecord }) {
 
 export function DictationImportForm({
   initialActiveTranscriptId = null,
+  initialSegments = [],
   initialTracks = [],
+  initialTranslationTracks = [],
   initialVideo = null,
   mode = 'import',
 }: Props) {
+  const router = useRouter()
   const [youtubeUrl, setYoutubeUrl] = useState(initialVideo?.youtubeUrl ?? '')
   const [video, setVideo] = useState<DictationVideoApiRecord | null>(
     initialVideo
   )
+  const [activeTranscriptId, setActiveTranscriptId] = useState<string | null>(
+    initialActiveTranscriptId
+  )
+  const [segments, setSegments] =
+    useState<DictationSegmentApiRecord[]>(initialSegments)
+  const [tracks, setTracks] =
+    useState<DictationTranscriptApiRecord[]>(initialTracks)
+  const [translationTracks, setTranslationTracks] = useState<
+    TranslationTrack[]
+  >(initialTranslationTracks)
   const [stage, setStage] = useState<FormStage>(
     initialVideo ? 'videoSaved' : 'idle'
   )
@@ -110,6 +179,31 @@ export function DictationImportForm({
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const isEditMode = mode === 'edit'
+
+  async function refreshVideoPreview(nextVideo = video) {
+    if (!nextVideo) return
+
+    try {
+      const response = await getDictationVideoDetailApi(nextVideo.id)
+
+      setVideo(response.video)
+      setActiveTranscriptId(response.video.activeTranscriptId)
+      setSegments(response.segments)
+      setTracks(response.tracks)
+      setTranslationTracks(
+        getPreviewTranslationTracks({
+          primaryLanguage: response.video.defaultLanguage,
+          tracks: response.tracks,
+        })
+      )
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : 'Captions were saved, but the preview could not refresh.'
+      )
+    }
+  }
 
   async function handleVideoSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -120,7 +214,16 @@ export function DictationImportForm({
     try {
       const response = await importYouTubeVideoApi({ youtubeUrl })
 
+      if (response.alreadyExists) {
+        router.push(`/admin/videos/${response.video.id}/edit`)
+        return
+      }
+
       setVideo(response.video)
+      setActiveTranscriptId(response.video.activeTranscriptId)
+      setSegments([])
+      setTracks([])
+      setTranslationTracks([])
       setStage('videoSaved')
       setMessage(
         response.warning ??
@@ -142,7 +245,11 @@ export function DictationImportForm({
         className={!video ? 'lg:col-span-2' : undefined}
       >
         {video ? (
-          <SavedVideoPreview video={video} />
+          <SavedVideoPreview
+            segments={segments}
+            translationTracks={translationTracks}
+            video={video}
+          />
         ) : (
           <>
             <p className="text-manga-ink-soft text-base leading-7 font-semibold">
@@ -210,8 +317,11 @@ export function DictationImportForm({
           defaultLanguage={
             isEditMode ? video.defaultLanguage : DEFAULT_DICTATION_LANGUAGE
           }
-          initialActiveTranscriptId={initialActiveTranscriptId}
-          initialTracks={initialTracks}
+          initialActiveTranscriptId={activeTranscriptId}
+          initialTracks={tracks}
+          onTracksChanged={() => {
+            void refreshVideoPreview()
+          }}
           videoId={video.id}
         />
       ) : null}

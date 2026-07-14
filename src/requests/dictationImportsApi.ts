@@ -5,6 +5,7 @@ export const DICTATION_YOUTUBE_IMPORT_API_PATH =
   '/api/dictation/imports/youtube'
 
 interface YouTubeImportResponse {
+  alreadyExists: boolean
   video: DictationVideoApiRecord
   warning: string | null
 }

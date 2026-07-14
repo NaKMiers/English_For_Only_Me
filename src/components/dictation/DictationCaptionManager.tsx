@@ -41,6 +41,7 @@ interface Props {
   initialActiveTranscriptId: string | null
   initialTracks: DictationTranscriptApiRecord[]
   onDefaultLanguageChange?: (language: string) => void
+  onTracksChanged?: () => void
   videoId: string
 }
 
@@ -57,6 +58,7 @@ export function DictationCaptionManager({
   defaultLanguage,
   initialActiveTranscriptId,
   initialTracks,
+  onTracksChanged,
   videoId,
 }: Props) {
   const primaryLanguage = normalizeTranslationLanguage(defaultLanguage)
@@ -213,6 +215,7 @@ export function DictationCaptionManager({
     setMessage(
       `${getLanguageLabel(code)} captions saved - ${readyTranscript.segmentCount} sentences ready for practice.`
     )
+    onTracksChanged?.()
   }
 
   async function attachTranslation(code: string) {
@@ -235,6 +238,7 @@ export function DictationCaptionManager({
         ? `${getLanguageLabel(code)} captions saved (${response.transcript.cueCount} timed cues).`
         : `${getLanguageLabel(code)} saved, but no timings were detected - practice can only align timed (SRT/VTT) captions.`
     )
+    onTracksChanged?.()
   }
 
   async function handleAttach() {
@@ -279,6 +283,7 @@ export function DictationCaptionManager({
       await deleteDictationTranscriptApi(track.id)
       setTracks(current => current.filter(item => item.id !== track.id))
       setMessage(`Removed ${getLanguageLabel(track.language)} captions.`)
+      onTracksChanged?.()
     } catch (error) {
       setErrorMessage(
         error instanceof Error ? error.message : 'Could not remove this track.'

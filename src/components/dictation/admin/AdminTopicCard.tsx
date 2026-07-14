@@ -1,10 +1,18 @@
 'use client'
 
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, EllipsisVertical, Pencil, Trash2, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import type { ReactNode } from 'react'
 import { useState, useTransition } from 'react'
 
 import { Checkbox } from '@/components/ui/checkbox'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { MangaButton } from '@/components/ui/MangaButton'
@@ -59,8 +67,38 @@ export interface AdminTopicData {
 
 const input =
   'border-manga-black min-h-11 rounded-none border-3 bg-manga-white px-3 py-2 font-sans text-base font-black'
-const danger =
-  'border-manga-black bg-manga-white hover:bg-manga-pale-red inline-flex min-h-11 items-center border-3 px-3 font-sans text-sm font-black shadow-[3px_3px_0_var(--manga-black)]'
+const menuButton =
+  'flex min-h-11 w-full items-center gap-2 px-3 font-sans text-sm font-black whitespace-nowrap transition-colors'
+const menuDangerButton = `${menuButton} text-manga-red hover:bg-manga-red hover:text-manga-white focus:bg-manga-red focus:text-manga-white`
+
+function AdminCardActionsMenu({
+  label,
+  children,
+}: {
+  label: string
+  children: ReactNode
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        aria-label={label}
+        title="Actions"
+        className="border-manga-black bg-manga-white hover:bg-manga-paper-soft grid size-9 shrink-0 place-items-center border-2 shadow-[2px_2px_0_var(--manga-black)] transition-colors"
+      >
+        <EllipsisVertical
+          aria-hidden="true"
+          className="size-4"
+        />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="end"
+        className="w-44"
+      >
+        {children}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
 
 /**
  * Merge fresh server sections with the local (optimistically reordered) copy.
@@ -201,18 +239,17 @@ function SectionBlock({
             )}
           </div>
           {!editingTitle && (
-            <div className="flex shrink-0 items-center gap-2">
-              <MangaButton
-                type="button"
-                tone="paper"
+            <AdminCardActionsMenu label={`Actions for ${section.title}`}>
+              <DropdownMenuItem
                 onClick={() => {
                   setEditingTitle(true)
                   setOpen(true)
                 }}
-                className="min-h-9 border-2 px-3 text-xs uppercase shadow-none"
               >
+                <Pencil aria-hidden="true" />
                 Edit
-              </MangaButton>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
               <form action={deleteSectionAction}>
                 <input
                   type="hidden"
@@ -225,12 +262,16 @@ function SectionBlock({
                   confirmLabel="Remove section"
                   disabled={section.videos.length > 0}
                   disabledReason="Move or remove its videos first - a section with videos can't be removed."
-                  className="border-manga-black bg-manga-white hover:bg-manga-pale-red inline-flex min-h-9 items-center border-2 px-3 font-sans text-xs font-black uppercase"
+                  className={menuDangerButton}
                 >
+                  <X
+                    aria-hidden="true"
+                    className="size-4"
+                  />
                   Remove
                 </ConfirmSubmitButton>
               </form>
-            </div>
+            </AdminCardActionsMenu>
           )}
         </div>
         {open && (
@@ -275,7 +316,7 @@ function SectionBlock({
                   onReorder={(draggedId, targetId, placement) =>
                     onReorderVideo(section, draggedId, targetId, placement)
                   }
-                  actions={
+                  menuActions={
                     <form
                       action={removeVideoFromSectionAction}
                       className="shrink-0"
@@ -285,13 +326,15 @@ function SectionBlock({
                         name="videoId"
                         value={video.id}
                       />
-                      <MangaButton
-                        type="submit"
-                        tone="paper"
-                        className="min-h-9 border-2 px-3 text-xs uppercase shadow-none"
+                      <DropdownMenuItem
+                        render={<button type="submit" />}
+                        nativeButton
+                        variant="destructive"
+                        className="w-full"
                       >
+                        <X aria-hidden="true" />
                         Remove
-                      </MangaButton>
+                      </DropdownMenuItem>
                     </form>
                   }
                 />
@@ -445,14 +488,12 @@ export function AdminTopicCard({ topic }: { topic: AdminTopicData }) {
             <span className="text-manga-ink-soft text-xs">/{topic.slug}</span>
           </button>
         </div>
-        <div className="flex items-center gap-2">
-          <MangaButton
-            type="button"
-            tone="primary"
-            onClick={() => setEditing(v => !v)}
-          >
+        <AdminCardActionsMenu label={`Actions for ${topic.title}`}>
+          <DropdownMenuItem onClick={() => setEditing(v => !v)}>
+            {editing ? <X aria-hidden="true" /> : <Pencil aria-hidden="true" />}
             {editing ? 'Close' : 'Edit'}
-          </MangaButton>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
           <form action={deleteTopicAction}>
             <input
               type="hidden"
@@ -465,12 +506,16 @@ export function AdminTopicCard({ topic }: { topic: AdminTopicData }) {
               confirmLabel="Delete topic"
               disabled={topic.videoCount > 0}
               disabledReason="Move or remove its videos first - a topic with videos can't be deleted."
-              className={danger}
+              className={menuDangerButton}
             >
+              <Trash2
+                aria-hidden="true"
+                className="size-4"
+              />
               Delete
             </ConfirmSubmitButton>
           </form>
-        </div>
+        </AdminCardActionsMenu>
       </div>
 
       {editing && (

@@ -1,11 +1,18 @@
 'use client'
 
-import { GripVertical, Pencil } from 'lucide-react'
+import { EllipsisVertical, GripVertical, Pencil } from 'lucide-react'
 import Link from 'next/link'
 import type { DragEvent, ReactNode } from 'react'
 import { useTransition } from 'react'
 
 import { DictationVideoThumbnail } from '@/components/dictation/DictationVideoThumbnail'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { PageTag } from '@/components/ui/PageTag'
 import {
   Select,
@@ -89,6 +96,50 @@ export interface AdminVideoItem {
   youtubeVideoId: string | null
 }
 
+function AdminVideoActionsMenu({
+  video,
+  children,
+}: {
+  video: AdminVideoItem
+  children?: ReactNode
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        aria-label={`Actions for ${video.title}`}
+        title="Actions"
+        onClick={event => event.stopPropagation()}
+        onKeyDown={event => event.stopPropagation()}
+        className="border-manga-black bg-manga-white hover:bg-manga-paper-soft grid size-9 shrink-0 place-items-center border-2 shadow-[2px_2px_0_var(--manga-black)] transition-colors"
+      >
+        <EllipsisVertical
+          aria-hidden="true"
+          className="size-4"
+        />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="end"
+        onClick={event => event.stopPropagation()}
+        onKeyDown={event => event.stopPropagation()}
+        className="w-44"
+      >
+        <DropdownMenuItem
+          render={<Link href={`/admin/videos/${video.id}/edit`} />}
+        >
+          <Pencil aria-hidden="true" />
+          Edit
+        </DropdownMenuItem>
+        {children && (
+          <>
+            <DropdownMenuSeparator />
+            {children}
+          </>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+
 /** Whether a drop lands before or after the hovered row (by cursor Y midpoint). */
 export function dropPlacement(
   event: DragEvent<HTMLElement>
@@ -99,14 +150,13 @@ export function dropPlacement(
 
 /**
  * Shared admin video row: grip handle, thumbnail, title, level + status badges,
- * an Edit (captions) link, and a trailing `actions` slot. Both /admin/videos
- * (selectable, with a checkbox) and /admin/topics (drag to move/reorder within a
- * section) render this so the two surfaces stay visually identical.
+ * and a trailing actions menu. Both /admin/videos and /admin/topics render this
+ * so the two surfaces stay visually identical.
  *
- * Drag model: the row and its grip both start a drag by writing `onDragStartData`
- * to the dataTransfer. Dropping another row that carries `acceptReorderMime` onto
- * this row calls `onReorder` - returning true marks the drop handled and stops it
- * bubbling to any enclosing move/unassign DropZone.
+ * Drag model: the row and its grip both start a drag by writing
+ * `onDragStartData` to the dataTransfer. Dropping another row that carries
+ * `acceptReorderMime` onto this row calls `onReorder` - returning true marks
+ * the drop handled and stops it bubbling to any enclosing drop zone.
  */
 export function AdminVideoRow({
   video,
@@ -118,7 +168,7 @@ export function AdminVideoRow({
   selected = false,
   onToggleSelect,
   meta,
-  actions,
+  menuActions,
 }: {
   video: AdminVideoItem
   gripLabel: string
@@ -133,7 +183,7 @@ export function AdminVideoRow({
   selected?: boolean
   onToggleSelect?: () => void
   meta?: ReactNode
-  actions?: ReactNode
+  menuActions?: ReactNode
 }) {
   function startDrag(event: DragEvent<HTMLElement>) {
     onDragStartData(event.dataTransfer)
@@ -224,20 +274,10 @@ export function AdminVideoRow({
           {getDictationStatusLabel(video.status)}
         </PageTag>
       )}
-      <div className="flex w-full items-center gap-2 sm:w-auto">
-        <Link
-          href={`/admin/videos/${video.id}/edit`}
-          onClick={event => event.stopPropagation()}
-          onKeyDown={event => event.stopPropagation()}
-          className="border-manga-black bg-manga-paper-soft hover:bg-manga-pale-red inline-flex min-h-9 shrink-0 items-center gap-1 border-2 px-3 font-sans text-xs font-black shadow-[2px_2px_0_var(--manga-black)]"
-        >
-          <Pencil
-            aria-hidden="true"
-            className="size-3"
-          />{' '}
-          Edit
-        </Link>
-        {actions}
+      <div className="flex shrink-0 items-center">
+        <AdminVideoActionsMenu video={video}>
+          {menuActions}
+        </AdminVideoActionsMenu>
       </div>
     </li>
   )

@@ -274,7 +274,9 @@ export function DictationPracticeShell({
   }, [selectedTrack, segments])
   const canGoPrevious = currentIndex > 0
   const canGoNext = currentIndex < segments.length - 1
-  const isPlaying = playerController.status === 'playing'
+  const shouldContinuePlayback =
+    playerController.status === 'playing' ||
+    playerController.status === 'buffering'
   // The segment counter and transcript highlight track a single "active caption"
   // so they stay in sync with the video. On the transcript tab the learner
   // scrubs playback freely, so the active caption follows the playhead (updated
@@ -479,9 +481,11 @@ export function DictationPracticeShell({
       setActivePlaybackIndex(safeIndex)
 
       if (segment.startMs !== null)
-        playerController.seekToMs(segment.startMs, { play: isPlaying })
+        playerController.seekToMs(segment.startMs, {
+          play: shouldContinuePlayback,
+        })
     },
-    [isPlaying, playerController, segments]
+    [playerController, segments, shouldContinuePlayback]
   )
 
   const handleControlsGoPrevious = useCallback(() => {
@@ -1080,8 +1084,7 @@ export function DictationPracticeShell({
                       <>
                         {attemptResolved ? (
                           <>
-                            {guidedStatus === 'correct' &&
-                            !showAnswerWords ? (
+                            {guidedStatus === 'correct' && !showAnswerWords ? (
                               <MangaButton
                                 type="button"
                                 tone="paper"

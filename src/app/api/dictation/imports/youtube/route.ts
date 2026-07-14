@@ -11,10 +11,7 @@ import {
   getMissingMongoResponse,
   MISSING_MONGODB_MESSAGE,
 } from '@/modules/dictation/services/videoRouteDecisions'
-import {
-  getReimportedVideoStatus,
-  parseYouTubeImportRequest,
-} from '@/modules/dictation/services/youtubeImportDecisions'
+import { parseYouTubeImportRequest } from '@/modules/dictation/services/youtubeImportDecisions'
 import { DEFAULT_DICTATION_LANGUAGE } from '@/modules/dictation/translations/languages'
 
 export const runtime = 'nodejs'
@@ -82,6 +79,25 @@ export async function POST(request: Request) {
 
     if (!parsed.ok) return jsonError(parsed)
 
+    await connectDatabase()
+
+    const existingVideo = await DictationVideoModel.findOne({
+      $or: [
+        { youtubeVideoId: parsed.data.videoId },
+        { youtubeUrl: parsed.data.normalizedUrl },
+        { youtubeUrl: parsed.data.youtubeUrl },
+        { sourceUrl: parsed.data.normalizedUrl },
+        { sourceUrl: parsed.data.youtubeUrl },
+      ],
+    })
+
+    if (existingVideo)
+      return NextResponse.json({
+        alreadyExists: true,
+        video: toDictationVideoRecord(existingVideo.toObject()),
+        warning: null,
+      })
+
     const metadata = await getYouTubeVideoMetadata(parsed.data.videoId)
 
     if (metadata.state === 'notFound')
@@ -113,15 +129,6 @@ export async function POST(request: Request) {
         ? `YouTube video ${parsed.data.videoId}`
         : metadata.metadata.title
 
-    await connectDatabase()
-
-    const existingVideo = await DictationVideoModel.findOne({
-      youtubeVideoId: parsed.data.videoId,
-    })
-      .select('status')
-      .lean()
-    const nextStatus = getReimportedVideoStatus(existingVideo?.status)
-
     const video = await DictationVideoModel.findOneAndUpdate(
       {
         youtubeVideoId: parsed.data.videoId,
@@ -145,7 +152,7 @@ export async function POST(request: Request) {
           thumbnailUrl:
             metadata.state === 'ready' ? metadata.metadata.thumbnailUrl : null,
           defaultLanguage: DEFAULT_DICTATION_LANGUAGE,
-          status: nextStatus,
+          status: 'needsTranscript',
           importStatus,
           importWarning,
         },
@@ -159,6 +166,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(
       {
+        alreadyExists: false,
         video: toDictationVideoRecord(video.toObject()),
         warning: importWarning,
       },

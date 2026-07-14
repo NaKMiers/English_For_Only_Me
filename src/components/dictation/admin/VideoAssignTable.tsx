@@ -1,5 +1,6 @@
 'use client'
 
+import { Trash2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useMemo, useState, useTransition } from 'react'
 
@@ -308,7 +309,7 @@ export function VideoAssignTable({ videos, topics, sections }: Props) {
                   {video.sectionTitle ? ` · ${video.sectionTitle}` : ''}
                 </span>
               }
-              actions={
+              menuActions={
                 <form
                   action={deleteVideoAction}
                   onClick={event => event.stopPropagation()}
@@ -324,8 +325,12 @@ export function VideoAssignTable({ videos, topics, sections }: Props) {
                     confirmTitle="Delete video?"
                     confirmMessage={`Delete "${video.title}"? This archives the video and removes it from admin and app lists.`}
                     confirmLabel="Delete video"
-                    className="border-manga-black bg-manga-white hover:bg-manga-pale-red inline-flex min-h-9 items-center border-2 px-3 font-sans text-xs font-black uppercase shadow-[2px_2px_0_var(--manga-black)]"
+                    className="focus:bg-manga-red focus:text-manga-white text-manga-red hover:bg-manga-red hover:text-manga-white flex min-h-11 w-full items-center gap-2 px-3 font-sans text-sm font-black whitespace-nowrap transition-colors"
                   >
+                    <Trash2
+                      aria-hidden="true"
+                      className="size-4"
+                    />
                     Delete
                   </ConfirmSubmitButton>
                 </form>

@@ -2,7 +2,11 @@ import type {
   CreateDictationVideoPayload,
   UpdateDictationVideoPayload,
 } from '@/modules/dictation/schemas/videoPayloadSchema'
-import type { DictationVideoApiRecord } from '@/modules/dictation/types'
+import type {
+  DictationSegmentApiRecord,
+  DictationTranscriptApiRecord,
+  DictationVideoApiRecord,
+} from '@/modules/dictation/types'
 
 export const DICTATION_VIDEOS_API_PATH = '/api/dictation/videos'
 
@@ -11,6 +15,12 @@ interface DictationVideosResponse {
 }
 
 interface DictationVideoResponse {
+  video: DictationVideoApiRecord
+}
+
+interface DictationVideoDetailResponse {
+  segments: DictationSegmentApiRecord[]
+  tracks: DictationTranscriptApiRecord[]
   video: DictationVideoApiRecord
 }
 
@@ -54,6 +64,19 @@ export async function createDictationVideoApi(
   if (!response.ok) throw new Error(await readApiError(response))
 
   return (await response.json()) as DictationVideoResponse
+}
+
+export async function getDictationVideoDetailApi(
+  videoId: string,
+  input: string = `${DICTATION_VIDEOS_API_PATH}/${videoId}`
+) {
+  const response = await fetch(input, {
+    cache: 'no-store',
+  })
+
+  if (!response.ok) throw new Error(await readApiError(response))
+
+  return (await response.json()) as DictationVideoDetailResponse
 }
 
 export async function updateDictationVideoApi(

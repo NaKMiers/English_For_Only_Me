@@ -111,4 +111,65 @@ describe('YouTube dictation player hook', () => {
     expect(player.pauseVideo).toHaveBeenCalledTimes(1)
     expect(result.current.status).toBe('ready')
   })
+
+  test('paused seek before first playback primes YouTube before pausing', () => {
+    const player: YoutubeDictationPlayerAdapter = {
+      getCurrentTime: vi.fn(() => 0),
+      pauseVideo: vi.fn(),
+      playVideo: vi.fn(),
+      seekTo: vi.fn(),
+      setPlaybackRate: vi.fn(),
+    }
+    const { result } = renderHook(() =>
+      useYoutubeDictationPlayer({
+        playbackSpeed: 1,
+        timing: { endMs: 5000, startMs: 1000 },
+      })
+    )
+
+    act(() => result.current.attachPlayer(player))
+    act(() => result.current.seekToMs(28000, { play: false }))
+
+    expect(player.seekTo).toHaveBeenLastCalledWith(28, true)
+    expect(player.playVideo).toHaveBeenCalledTimes(1)
+    expect(player.pauseVideo).not.toHaveBeenCalled()
+    expect(result.current.status).toBe('buffering')
+
+    act(() => result.current.markPlaying())
+
+    expect(player.pauseVideo).toHaveBeenCalledTimes(1)
+    expect(result.current.status).toBe('ready')
+  })
+
+  test('first paused seek keeps priming when the active timing changes', () => {
+    const player: YoutubeDictationPlayerAdapter = {
+      getCurrentTime: vi.fn(() => 0),
+      pauseVideo: vi.fn(),
+      playVideo: vi.fn(),
+      seekTo: vi.fn(),
+      setPlaybackRate: vi.fn(),
+    }
+    const { rerender, result } = renderHook(
+      ({ endMs, startMs }: { endMs: number; startMs: number }) =>
+        useYoutubeDictationPlayer({
+          playbackSpeed: 1,
+          timing: { endMs, startMs },
+        }),
+      {
+        initialProps: { endMs: 5000, startMs: 1000 },
+      }
+    )
+
+    act(() => result.current.attachPlayer(player))
+    act(() => result.current.seekToMs(28000, { play: false }))
+    rerender({ endMs: 31000, startMs: 28000 })
+
+    expect(player.playVideo).toHaveBeenCalledTimes(1)
+    expect(player.pauseVideo).not.toHaveBeenCalled()
+
+    act(() => result.current.markPlaying())
+
+    expect(player.pauseVideo).toHaveBeenCalledTimes(1)
+    expect(result.current.status).toBe('ready')
+  })
 })

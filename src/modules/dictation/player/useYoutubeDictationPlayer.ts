@@ -81,7 +81,9 @@ export function useYoutubeDictationPlayer({
   const playerRef = useRef<YoutubeDictationPlayerAdapter | null>(null)
   const stopIntervalRef = useRef<number | null>(null)
   const stopTimeoutRef = useRef<number | null>(null)
+  const pauseAfterFirstPlayRef = useRef(false)
   const loopRef = useRef(false)
+  const hasStartedPlaybackRef = useRef(false)
   const [hasPlayer, setHasPlayer] = useState(false)
   const [status, setStatus] = useState<YoutubePlayerStatus>('idle')
   const replayWindow = useMemo(
@@ -94,19 +96,23 @@ export function useYoutubeDictationPlayer({
   )
   const canReplay = Boolean(replayWindow && hasPlayer)
 
-  const clearStopTimer = useCallback(() => {
-    loopRef.current = false
+  const clearStopTimer = useCallback(
+    (options?: { keepFirstPlayPause?: boolean }) => {
+      loopRef.current = false
+      if (!options?.keepFirstPlayPause) pauseAfterFirstPlayRef.current = false
 
-    if (stopIntervalRef.current) {
-      window.clearInterval(stopIntervalRef.current)
-      stopIntervalRef.current = null
-    }
+      if (stopIntervalRef.current) {
+        window.clearInterval(stopIntervalRef.current)
+        stopIntervalRef.current = null
+      }
 
-    if (stopTimeoutRef.current) {
-      window.clearTimeout(stopTimeoutRef.current)
-      stopTimeoutRef.current = null
-    }
-  }, [])
+      if (stopTimeoutRef.current) {
+        window.clearTimeout(stopTimeoutRef.current)
+        stopTimeoutRef.current = null
+      }
+    },
+    []
+  )
 
   const attachPlayer = useCallback(
     (player: YoutubeDictationPlayerAdapter | null) => {
@@ -131,6 +137,7 @@ export function useYoutubeDictationPlayer({
     clearStopTimer()
     player.seekTo(replayWindow.startSeconds, true)
     player.setPlaybackRate?.(playbackSpeed)
+    hasStartedPlaybackRef.current = true
     player.playVideo()
     setStatus('playing')
 
@@ -165,6 +172,7 @@ export function useYoutubeDictationPlayer({
       clearStopTimer()
       player.seekTo(startMs / 1000, true)
       player.setPlaybackRate?.(playbackSpeed)
+      hasStartedPlaybackRef.current = true
       player.playVideo()
       setStatus('playing')
     },
@@ -190,12 +198,14 @@ export function useYoutubeDictationPlayer({
       loopRef.current = loop
       player.seekTo(segmentWindow.startSeconds, true)
       player.setPlaybackRate?.(playbackSpeed)
+      hasStartedPlaybackRef.current = true
       player.playVideo()
       setStatus('playing')
 
       const handleEnd = () => {
         if (loopRef.current) {
           player.seekTo(segmentWindow.startSeconds, true)
+          hasStartedPlaybackRef.current = true
           player.playVideo()
           return
         }
@@ -246,12 +256,25 @@ export function useYoutubeDictationPlayer({
       player.setPlaybackRate?.(playbackSpeed)
 
       if (options.play) {
+        hasStartedPlaybackRef.current = true
         player.playVideo()
         setStatus('playing')
-      } else {
-        player.pauseVideo()
-        setStatus(replayWindow ? 'ready' : 'missingTiming')
+        return
       }
+
+      if (!hasStartedPlaybackRef.current) {
+        // The YouTube iframe can go black when it receives seekTo + pauseVideo
+        // before its first real play. Prime it from the user click, then pause
+        // as soon as YouTube reports PLAYING so the requested paused-seek state
+        // is preserved while a video frame is actually painted.
+        pauseAfterFirstPlayRef.current = true
+        player.playVideo()
+        setStatus('buffering')
+        return
+      }
+
+      player.pauseVideo()
+      setStatus(replayWindow ? 'ready' : 'missingTiming')
     },
     [clearStopTimer, playbackSpeed, replayWindow]
   )
@@ -266,7 +289,18 @@ export function useYoutubeDictationPlayer({
 
   const markBuffering = useCallback(() => setStatus('buffering'), [])
   const markError = useCallback(() => setStatus('error'), [])
-  const markPlaying = useCallback(() => setStatus('playing'), [])
+  const markPlaying = useCallback(() => {
+    hasStartedPlaybackRef.current = true
+
+    if (pauseAfterFirstPlayRef.current) {
+      pauseAfterFirstPlayRef.current = false
+      playerRef.current?.pauseVideo()
+      setStatus(replayWindow ? 'ready' : 'missingTiming')
+      return
+    }
+
+    setStatus('playing')
+  }, [replayWindow])
   const markPaused = useCallback(
     () => setStatus(replayWindow ? 'ready' : 'missingTiming'),
     [replayWindow]
@@ -283,8 +317,8 @@ export function useYoutubeDictationPlayer({
   }, [playbackSpeed])
 
   useEffect(() => {
-    clearStopTimer()
-    playerRef.current?.pauseVideo()
+    clearStopTimer({ keepFirstPlayPause: true })
+    if (!pauseAfterFirstPlayRef.current) playerRef.current?.pauseVideo()
   }, [clearStopTimer, replayWindow])
 
   useEffect(

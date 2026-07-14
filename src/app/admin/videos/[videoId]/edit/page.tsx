@@ -7,11 +7,14 @@ import { DictationImportForm } from '@/components/dictation/DictationImportForm'
 import { PageTag } from '@/components/ui/PageTag'
 import { hasMongoDbUri } from '@/constants/environments'
 import { connectDatabase } from '@/lib/db/connectDatabase'
+import { DictationSegmentModel } from '@/models/dictation/DictationSegmentModel'
 import { DictationTranscriptModel } from '@/models/dictation/DictationTranscriptModel'
 import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
+import { toDictationSegmentRecord } from '@/modules/dictation/services/dictationSegmentRecords'
 import { toDictationTranscriptRecord } from '@/modules/dictation/services/dictationTranscriptRecords'
 import { toDictationVideoRecord } from '@/modules/dictation/services/dictationVideoRecords'
 import { getOptionalUser } from '@/modules/dictation/services/getCurrentUser'
+import { normalizeTranslationLanguage } from '@/modules/dictation/translations/languages'
 
 export const metadata: Metadata = {
   title: 'Edit Dictation Video',
@@ -94,6 +97,30 @@ export default async function Page({ params }: Props) {
     .sort({ language: 1 })
     .lean()
   const tracks = trackDocuments.map(toDictationTranscriptRecord)
+  const primaryLanguage = normalizeTranslationLanguage(video.defaultLanguage)
+  const translationTracks = trackDocuments
+    .filter(
+      track =>
+        normalizeTranslationLanguage(track.language) !== primaryLanguage &&
+        track.cueCount > 0
+    )
+    .map(track => ({
+      language: track.language,
+      cues: (track.rawCues ?? []).map(cue => ({
+        endMs: cue.endMs ?? null,
+        startMs: cue.startMs ?? null,
+        text: cue.text,
+      })),
+    }))
+  const segmentDocuments = video.activeTranscriptId
+    ? await DictationSegmentModel.find({
+        videoId: video._id,
+        transcriptId: video.activeTranscriptId,
+      })
+        .sort({ order: 1 })
+        .lean()
+    : []
+  const segments = segmentDocuments.map(toDictationSegmentRecord)
 
   return (
     <MangaPageShell
@@ -135,7 +162,9 @@ export default async function Page({ params }: Props) {
                   ? String(video.activeTranscriptId)
                   : null
               }
+              initialSegments={segments}
               initialTracks={tracks}
+              initialTranslationTracks={translationTracks}
               initialVideo={toDictationVideoRecord(video)}
               mode="edit"
             />

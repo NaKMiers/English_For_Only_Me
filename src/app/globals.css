@@ -82,6 +82,9 @@
   /* Border ink. Day = black; light-up = warm sepia so frames/footer/panel
      outlines stay visible on the dark room (a dark border vanished into it). */
   --manga-line: var(--manga-black);
+  --scrollbar-track: rgba(255, 255, 255, 0.64);
+  --scrollbar-thumb: rgba(224, 48, 32, 0.38);
+  --scrollbar-thumb-hover: rgba(224, 48, 32, 0.6);
 }
 
 /* ============================================================
@@ -129,6 +132,9 @@
   --manga-offset: #7a5626;
   /* warm sepia border ink - pops on the dark room and still outlines cards */
   --manga-line: #8a6330;
+  --scrollbar-track: rgba(246, 232, 193, 0.42);
+  --scrollbar-thumb: rgba(92, 63, 28, 0.86);
+  --scrollbar-thumb-hover: rgba(184, 49, 21, 0.9);
 }
 
 @theme inline {
@@ -182,6 +188,31 @@
 
 * {
   box-sizing: border-box;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+  scrollbar-width: thin;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border: 3px solid var(--scrollbar-track);
+  border-radius: 999px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+*::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 html {

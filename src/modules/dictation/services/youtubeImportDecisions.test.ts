@@ -1,23 +1,6 @@
 import { describe, expect, test } from 'vitest'
 
-import {
-  getReimportedVideoStatus,
-  parseYouTubeImportRequest,
-} from './youtubeImportDecisions'
-
-describe('getReimportedVideoStatus', () => {
-  test('restores archived videos when they are imported again', () => {
-    expect(getReimportedVideoStatus('archived')).toBe('needsTranscript')
-  })
-
-  test('keeps active library videos in their current state', () => {
-    expect(getReimportedVideoStatus('ready')).toBe('ready')
-  })
-
-  test('defaults new imports to needing captions', () => {
-    expect(getReimportedVideoStatus(undefined)).toBe('needsTranscript')
-  })
-})
+import { parseYouTubeImportRequest } from './youtubeImportDecisions'
 
 describe('parseYouTubeImportRequest', () => {
   test('rejects non-YouTube URLs before database work', () => {

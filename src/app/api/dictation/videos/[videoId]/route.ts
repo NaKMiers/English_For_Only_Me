@@ -2,7 +2,11 @@ import { NextResponse } from 'next/server'
 
 import { MissingEnvironmentError } from '@/constants/environments'
 import { connectDatabase } from '@/lib/db/connectDatabase'
+import { DictationSegmentModel } from '@/models/dictation/DictationSegmentModel'
+import { DictationTranscriptModel } from '@/models/dictation/DictationTranscriptModel'
 import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
+import { toDictationSegmentRecord } from '@/modules/dictation/services/dictationSegmentRecords'
+import { toDictationTranscriptRecord } from '@/modules/dictation/services/dictationTranscriptRecords'
 import { toDictationVideoRecord } from '@/modules/dictation/services/dictationVideoRecords'
 import { requireAdmin } from '@/modules/dictation/services/getCurrentUser'
 import {
@@ -61,6 +65,65 @@ function toArchiveError(error: unknown): ApiErrorDecision {
     body: {
       message: 'Could not delete this dictation video.',
     },
+  }
+}
+
+export async function GET(_request: Request, { params }: Props) {
+  const missingMongo = getMissingMongoResponse()
+
+  if (missingMongo) return jsonError(missingMongo)
+
+  const { videoId } = await params
+
+  if (!/^[a-f\d]{24}$/i.test(videoId))
+    return jsonError({
+      status: 400,
+      body: {
+        message: 'Invalid video id.',
+      },
+    })
+
+  try {
+    await requireAdmin()
+
+    await connectDatabase()
+
+    const video = await DictationVideoModel.findOne({
+      _id: videoId,
+      status: {
+        $ne: 'archived',
+      },
+    }).lean()
+
+    if (!video)
+      return jsonError({
+        status: 404,
+        body: {
+          message: 'Dictation video was not found.',
+        },
+      })
+
+    const trackDocuments = await DictationTranscriptModel.find({
+      videoId: video._id,
+    })
+      .sort({ language: 1 })
+      .lean()
+    const segmentDocuments = video.activeTranscriptId
+      ? await DictationSegmentModel.find({
+          videoId: video._id,
+          transcriptId: video.activeTranscriptId,
+        })
+          .sort({ order: 1 })
+          .lean()
+      : []
+
+    return NextResponse.json({
+      segments: segmentDocuments.map(toDictationSegmentRecord),
+      tracks: trackDocuments.map(toDictationTranscriptRecord),
+      video: toDictationVideoRecord(video),
+    })
+  } catch (error) {
+    return jsonError(toUpdateError(error))
   }
 }
 
