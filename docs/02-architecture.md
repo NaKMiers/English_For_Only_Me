@@ -7,7 +7,7 @@ token-level correction, review scheduling, and stats, and "Vocabulary", where a
 learner searches, classifies, enriches, and recalls words. This document describes how the codebase is
 layered so an AI (or engineer) can reason about the system without reading every file.
 It is reference-heavy: every claim cites a repo-relative path you can open. Repo root is
-`/home/nakmiers/ME/IT_IT/Webs/EnglishForOnlyMe`; the `@/*` import alias maps to `src/*`
+`/home/KHOANA/ME/IT_IT/Webs/English_For_Only_Me`; the `@/*` import alias maps to `src/*`
 (see `tsconfig.json`).
 
 ## 1. Tech stack
@@ -50,7 +50,7 @@ Every path below is under `src/` unless noted otherwise.
 | `src/requests`              | Client-side fetch wrappers around the internal API; every export ends in `Api`.                                                          |
 | `src/types`                 | Ambient/global type declarations (`next-auth.d.ts` augments the session type).                                                           |
 | `src/test`                  | Vitest setup and stubs (`setup.ts`, `setupDom.ts`, `serverOnlyStub.ts`, `jsdom.d.ts`).                                                   |
-| `scripts` (repo root)       | One-off maintenance scripts, e.g. `backfillContentHierarchy.ts` (run via `bun run backfill:content`).                                    |
+| `scripts` (repo root)       | One-off maintenance scripts run with `tsx` under the `react-server` condition: `backfillContentHierarchy.ts`, `resegmentAllTranscripts.ts`, `seedVocabulary.ts`, `backfillVocabularyVietnameseMeanings.ts` (see section 9).                                    |
 | `public` (repo root)        | Static assets: favicons, `site.webmanifest`, icons referenced by `src/app/layout.tsx`.                                                   |
 | `.agents/rules` (repo root) | The six rule files defining the intended layering and conventions (style, App Router, API security, data/state, frontend UI, testing).   |
 
@@ -78,19 +78,27 @@ Roles of the three easily-confused layers:
     `review/reviewItemService.ts`, `stats/globalStatsService.ts`,
     `stats/videoStatsService.ts`, `ai/debriefService.ts`.
   - Schemas: `schemas/*.ts` (zod payload schemas for videos, transcripts, YouTube import).
-- `src/modules/vocabulary` is the vocabulary domain layer. It mirrors the same
-  pure-decision plus server-service pattern:
-  - Pure logic: `normalizeVocabTerm.ts`, `recall/recallScheduler.ts`,
-    `stats/vocabStats.ts`, and `services/vocabularyRouteDecisions.ts`.
-  - Server services: `services/vocabEntryService.ts`,
+- `src/modules/vocabulary` is the vocabulary domain layer, a parallel feature area to
+  dictation. It mirrors the same pure-decision plus server-service pattern:
+  - Pure logic (no I/O): `normalizeVocabTerm.ts`, `recall/recallScheduler.ts`,
+    `recall/recallTaskToken.ts`, `stats/vocabStats.ts`, `vietnameseMeaning.ts` (Vietnamese
+    meaning helpers and the missing-meaning filter), `services/vocabularyRouteDecisions.ts`,
+    and shared `constants.ts` / `types.ts`.
+  - Server services (touch models): `services/vocabEntryService.ts`,
     `services/userVocabItemService.ts`, `services/vocabWordListService.ts`,
-    `explore/exploreService.ts`, `stats/vocabStatsService.ts`, and
-    `enrichment/enrichmentService.ts`.
-  - Providers: `providers/dictionaryApiDev.ts` and
-    `providers/freeDictionaryApi.ts` normalize free dictionary responses behind
-    one typed provider contract.
-  - Seed: `seed/seedVocabulary.ts` downloads and parses the official NGSL CSV,
-    then upserts the top 1000 shells.
+    `explore/exploreService.ts`, `stats/vocabStatsService.ts`,
+    `recall/recallTaskService.ts`, `recall/recallAnswerService.ts`, and
+    `enrichment/enrichmentService.ts` (leases an entry via `VOCAB_ENRICHMENT_LEASE_MS`,
+    runs the providers in order, writes definitions plus the Vietnamese meaning, and sets
+    the entry `enrichmentStatus`). Doc -> API record mappers live in
+    `services/vocabEntryRecords.ts`, `services/userVocabItemRecords.ts`, and
+    `services/vocabOccurrenceRecords.ts`.
+  - Providers (`providers/`): `dictionaryApiDev.ts` and `freeDictionaryApi.ts` normalize
+    free dictionary responses behind one typed adapter contract (`types.ts`,
+    `providerUtils.ts`, `index.ts`); `myMemoryTranslate.ts` supplies Vietnamese
+    translations.
+  - Seed: `seed/seedVocabulary.ts` downloads the official NGSL stats CSV
+    (`NGSL_STATS_CSV_URL`) and upserts the top 1000 word shells (`parseNgslStatsCsv`).
 - `src/lib` is framework-agnostic infrastructure shared across modules: the Mongoose
   connection cache (`db/connectDatabase.ts`), Auth.js setup (`auth/auth.ts`,
   `auth/auth.config.ts`, `auth/roles.ts`, `auth/guestUser.ts`), the OpenAI client
@@ -100,9 +108,13 @@ Roles of the three easily-confused layers:
   with `import 'server-only'` (see `db/connectDatabase.ts`, `services/getCurrentUser.ts`).
 - `src/requests` is the client-side fetch layer. Each file wraps one internal API
   family with `fetch`, sets `cache: 'no-store'`, and rethrows the API's `{ message }` on
-  failure (e.g. `dictationAttemptsApi.ts`, `dictationSessionsApi.ts`,
-  `dictationStatsApi.ts`). Client components import these; they never import server-only
-  modules directly.
+  failure. Dictation wrappers: `dictationAttemptsApi.ts`, `dictationSessionsApi.ts`,
+  `dictationStatsApi.ts`, `dictationVideosApi.ts`, `dictationTranscriptsApi.ts`,
+  `dictationImportsApi.ts`, `dictationDebriefsApi.ts`. Vocabulary wrappers live in a
+  single `vocabularyApi.ts` (`lookupVocabEntryApi`, `searchVocabApi`, `getExploreVocabApi`,
+  `setVocabItemStatusApi`, `getDueVocabRecallApi`, `answerVocabRecallApi`,
+  `getVocabStatsApi`, plus the admin `getVocabAdminQueueApi` / `enrichVocabularyAdminApi`).
+  Client components import these; they never import server-only modules directly.
 
 ```mermaid
 flowchart TD
@@ -165,7 +177,14 @@ props hydrated by a Server Component. `src/lib` and `src/models` never import fr
   `src/app/api/dictation/sessions/[sessionId]/attempts/route.ts`) because Mongoose is not
   edge-compatible.
 
-## 5. Request / data-flow walkthrough: the practice attempt
+## 5. Request / data-flow walkthroughs
+
+The two live subsystems share the same shape: a client component calls a `src/requests`
+wrapper, which hits a route handler that parses input with pure decision helpers, resolves
+the actor, connects to Mongo, delegates to module services, and returns safe records.
+Below are one dictation flow and one vocabulary flow.
+
+### 5.1 Dictation practice attempt
 
 Scenario: the learner types an answer for the current segment and presses check. The app
 shows local feedback immediately, then persists the attempt and advances the session.
@@ -236,6 +255,58 @@ sequenceDiagram
   end
   Api-->>Shell: response
   Shell-->>U: show feedback, advance to next segment
+```
+
+### 5.2 Vocabulary lookup and enrichment
+
+Scenario: the learner looks up a word in the vocabulary UI. The shell (or dictionary
+shell) creates a shell entry on demand, then enriches it from dictionary and translation
+providers before returning definitions and the Vietnamese meaning.
+
+Files involved, in order:
+
+1. `src/components/vocabulary/QuickVocabLookup.tsx` (`'use client'`): reads the term and
+   calls the request wrapper, then renders `getEnglishDefinition` /
+   `getRequiredVietnameseMeaning` from `@/modules/vocabulary/vietnameseMeaning`.
+2. `src/requests/vocabularyApi.ts`: `lookupVocabEntryApi({ term, ... })` does `fetch`
+   `POST /api/vocab/entries/lookup` with `cache: 'no-store'`, rethrowing the API `message`.
+3. `src/app/api/vocab/entries/lookup/route.ts` (`runtime = 'nodejs'`): guards missing
+   Mongo, resolves the actor with `requirePracticeActor()`
+   (`modules/dictation/services/getCurrentUser.ts`, shared across both subsystems), calls
+   `connectDatabase()`, gets-or-creates the entry shell, then calls
+   `enrichVocabEntryIfNeeded({ entryId })`.
+4. `src/modules/vocabulary/enrichment/enrichmentService.ts`: leases the entry
+   (`VOCAB_ENRICHMENT_LEASE_MS`), runs the default providers in order until one returns
+   `status: 'ready'` (`providers/dictionaryApiDev.ts`, `providers/freeDictionaryApi.ts`),
+   fetches the Vietnamese meaning via `providers/myMemoryTranslate.ts`, persists
+   definitions plus `rawProviderData`, and sets `enrichmentStatus` to `ready`, `failed`,
+   or `notFound`.
+5. Response mapping: `services/vocabEntryRecords.ts` converts the Mongoose doc plus the
+   per-user state into a `VocabEntryWithUserStateRecord` returned to the client.
+
+```mermaid
+sequenceDiagram
+  participant U as Learner
+  participant Shell as QuickVocabLookup (client)
+  participant Api as requests/vocabularyApi
+  participant Route as api/vocab/entries/lookup (POST)
+  participant Enrich as enrichment/enrichmentService
+  participant Prov as providers (dictionary + myMemory)
+  participant DB as Mongoose models + MongoDB
+
+  U->>Shell: enter term + look up
+  Shell->>Api: lookupVocabEntryApi({ term })
+  Api->>Route: POST /api/vocab/entries/lookup
+  Route->>Route: requirePracticeActor() + connectDatabase()
+  Route->>DB: get-or-create VocabEntry shell
+  Route->>Enrich: enrichVocabEntryIfNeeded({ entryId })
+  Enrich->>DB: lease entry (enriching)
+  Enrich->>Prov: run providers until ready + translate
+  Enrich->>DB: save definitions, viMeaning, status
+  Enrich-->>Route: enriched entry
+  Route-->>Api: VocabEntryWithUserStateRecord
+  Api-->>Shell: response
+  Shell-->>U: show definition + Vietnamese meaning
 ```
 
 ## 6. Auth and proxy edge protection
@@ -328,7 +399,9 @@ From `package.json` scripts (run with Bun per project convention, e.g. `bun run 
 | `bun run format`           | `prettier . --write`.                                                                                                                              |
 | `bun run format:check`     | `prettier . --check`.                                                                                                                              |
 | `bun run backfill:content` | `node --conditions=react-server --import tsx scripts/backfillContentHierarchy.ts` - one-off content-hierarchy migration.                           |
-| `bun run vocab:seed`       | `node --conditions=react-server --import tsx scripts/seedVocabulary.ts` - downloads the NGSL stats CSV and upserts the top 1000 vocabulary shells. |
+| `bun run resegment`        | `node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/resegmentAllTranscripts.ts` - re-segments every dictation transcript with the current pause logic; DRY RUN unless `-- --apply` is passed (destructive with `--apply`). |
+| `bun run vocab:seed`       | `node --conditions=react-server --env-file-if-exists=.env.development --import tsx scripts/seedVocabulary.ts` - downloads the NGSL stats CSV and upserts the top 1000 vocabulary shells. |
+| `bun run vocab:backfill-vi`| `node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/backfillVocabularyVietnameseMeanings.ts` - backfills Vietnamese meanings for entries missing them (batch limit via arg or `VOCAB_VI_BACKFILL_LIMIT`; `--overwrite` to replace existing). |
 | `bun run clean`            | `rm -rf .next node_modules bun.lock` - destructive; do not run unless asked.                                                                       |
 
 End-to-end tests use Playwright (`playwright.config.ts`, matching `**/*.e2e.ts` under

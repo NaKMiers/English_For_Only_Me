@@ -39,8 +39,8 @@ Success status codes:
 
 - `200` for reads and in-place updates (default `NextResponse.json`).
 - `201` for creations that insert a new row (new video, new transcript, new
-  segment build, new session, new attempt, YouTube import). Idempotent replays
-  and "resume" paths return `200` instead (see attempts and sessions below).
+  session, new attempt, YouTube import). Idempotent replays and "resume" paths
+  return `200` instead (see attempts and sessions below).
 
 ### Error response shape
 
@@ -157,8 +157,6 @@ collision-safe (guest sessionIds are unique ObjectIds).
 | DELETE    | `/api/dictation/videos/[videoId]`                    | Archive (soft-delete) a video                | admin         | `archiveDictationVideoApi`                                           |
 | POST      | `/api/dictation/transcripts`                         | Attach primary or translation transcript     | admin         | `attachDictationTranscriptApi`, `attachDictationTranslationTrackApi` |
 | DELETE    | `/api/dictation/transcripts/[transcriptId]`          | Delete a non-active transcript track         | admin         | `deleteDictationTranscriptApi`                                       |
-| GET       | `/api/dictation/transcripts/[transcriptId]/segments` | List a transcript's segments                 | admin         | (none)                                                               |
-| POST      | `/api/dictation/transcripts/[transcriptId]/segments` | (Re)build segments from transcript           | admin         | `buildDictationSegmentsApi`                                          |
 | PATCH     | `/api/dictation/segments/[segmentId]`                | Edit/split/merge/accept-warning a segment    | admin         | (none)                                                               |
 | POST      | `/api/dictation/sessions`                            | Start or resume a practice session           | user or guest | `startOrResumeDictationSessionApi`                                   |
 | GET       | `/api/dictation/sessions/[sessionId]`                | Read one owned session                       | user or guest | (none)                                                               |
@@ -292,6 +290,17 @@ captionFile`), `rawText` (trimmed, 20 to 500000 chars). `parseTranscriptRequest`
     `200`. Otherwise a new active transcript is created and returned `201`. In
     both primary paths `pruneSupersededTranscripts` deletes older same-language
     transcripts plus their orphaned segments (one transcript per video+language).
+  - Server-side segment build (primary role only): after activating/creating the
+    primary transcript, `autoBuildPrimarySegments` runs `buildDictationSegments`
+    on the transcript's cues/text and, when it yields at least one segment,
+    persists them via `persistRebuiltSegments`
+    (`src/modules/dictation/services/rebuildTranscriptSegments.ts`). That helper
+    is DESTRUCTIVE: it deletes and recreates every segment for the transcript,
+    prunes review items that referenced the old segment ids, updates transcript
+    `segmentCount` + video `sentenceCount`, and flips the video to `status:
+    'ready'`. This means captions are practice-ready the moment they are saved -
+    there is no separate client build call. The `translation` role never builds
+    segments.
 - Success: `{ "transcript": DictationTranscriptApiRecord, "videoId": string }`
   (`201` on create, `200` on re-activate / existing translation track).
 - Errors: `400` invalid JSON / zod / blocked source; `401`/`403`; `404` missing
@@ -315,43 +324,15 @@ captionFile`), `rawText` (trimmed, 20 to 500000 chars). `parseTranscriptRequest`
 
 ### Segments
 
-Files: `src/app/api/dictation/transcripts/[transcriptId]/segments/route.ts`
-(GET/POST), `src/app/api/dictation/segments/[segmentId]/route.ts` (PATCH).
+File: `src/app/api/dictation/segments/[segmentId]/route.ts` (PATCH only).
 Decisions: `segmentRouteDecisions.ts`. Segment building/editing logic:
 `modules/dictation/segmenting/*`.
 
-#### GET /api/dictation/transcripts/[transcriptId]/segments
-
-- Path param: `transcriptId` (`parseTranscriptIdParam`, 24-hex).
-- Auth: admin (`requireAdmin`).
-- Behavior: loads transcript (`404` "This transcript was not found."), then
-  lists `DictationSegmentModel.find({ transcriptId })` sorted by `{ order: 1 }`.
-- Success `200`: `{ "segments": DictationSegmentApiRecord[], "transcriptId":
-string }`.
-- Errors: `400` bad id; `401`/`403`; `404`; `500` ("Could not build dictation
-  segments." - shared error mapper).
-- Client: none.
-
-#### POST /api/dictation/transcripts/[transcriptId]/segments
-
-- Path param: `transcriptId` (`parseTranscriptIdParam`).
-- Auth: admin (`requireAdmin`).
-- Behavior: loads transcript + its video, then applies
-  `getSegmentBuildGuardDecision`:
-  - `404` transcript or video missing;
-  - `409` "This transcript is blocked by quality checks and cannot be
-    segmented." when `qualityStatus === 'blocked'`;
-  - `409` "This transcript is no longer the active source for the video. Reload
-    before segmenting." when `video.activeTranscriptId !== transcript._id`.
-    Then `buildDictationSegments` runs; if it yields zero segments -> `409` "This
-    transcript did not produce usable segments." Otherwise all existing segments
-    for the transcript are deleted and rebuilt via `insertMany`; transcript
-    `segmentCount` and video `sentenceCount` are updated and `video.status` set to
-    `ready`.
-- Success `201`: `{ "qualityFlags": [...], "qualityStatus": "...", "segments":
-DictationSegmentApiRecord[], "transcriptId": string, "videoId": string }`.
-- Errors: `400` bad id; `401`/`403`; `404`; `409` guard/empty-build; `500`.
-- Client: `buildDictationSegmentsApi`.
+Segments are no longer built through a dedicated route. The former GET/POST
+`/api/dictation/transcripts/[transcriptId]/segments` endpoints (and the
+`buildDictationSegmentsApi` client helper) were removed: segments are now built
+server-side inside `POST /api/dictation/transcripts` on save (see the Transcripts
+section). The only remaining segment endpoint is the admin PATCH editor below.
 
 #### PATCH /api/dictation/segments/[segmentId]
 
@@ -586,8 +567,13 @@ Decisions: `youtubeImportDecisions.ts`. Schema:
     `importStatus` is `metadataReadyEmbedBlocked` when not embeddable, else
     `metadataReady`.
     Then upserts `DictationVideoModel` on `{ youtubeVideoId }` with `$setOnInsert`
-    (sourceType youtube, urls, `status: 'needsTranscript'`, `transcriptStatus:
-'manualNeeded'`) and `$set` of the metadata + import status/warning.
+    (sourceType youtube, urls, `transcriptStatus: 'manualNeeded'`) and `$set` of
+    the metadata (title/channel/duration/thumbnail), `defaultLanguage`, import
+    status/warning, and `status`. On re-import `status` is computed by
+    `getReimportedVideoStatus(existingVideo.status)`
+    (`youtubeImportDecisions.ts`): a brand-new or previously `archived` row is
+    reset to `needsTranscript`, while an existing non-archived row keeps its
+    current status so re-importing does not wipe practice progress.
 - Success `201`: `{ "video": DictationVideoApiRecord, "warning": string | null }`.
 - Errors: `400` invalid JSON / zod / bad URL; `401`/`403`; `404` not found;
   `409` duplicate (`code 11000`, "This YouTube video is already in your dictation
@@ -598,100 +584,146 @@ Decisions: `youtubeImportDecisions.ts`. Schema:
 
 Vocabulary route files live under `src/app/api/vocab/**/route.ts` and share
 validation helpers from
-`src/modules/vocabulary/services/vocabularyRouteDecisions.ts`. They all guard
-missing MongoDB with `getMissingVocabMongoResponse()` and resolve ownership with
-`requirePracticeActor()`.
+`src/modules/vocabulary/services/vocabularyRouteDecisions.ts` (the `parseXxx`
+functions, which return `{ ok: true, data }` or a `VocabApiErrorDecision`). They
+all guard missing MongoDB with `getMissingVocabMongoResponse()` (a `500` with
+`VOCAB_MISSING_MONGODB_MESSAGE`) and resolve ownership with
+`requirePracticeActor()` (learner routes) or `requireAdmin()` (the admin enrich
+route). Thrown errors flow through `toVocabApiError`
+(`src/modules/vocabulary/services/vocabApiErrors.ts`), which surfaces a numeric
+`status` of `401`/`403`/`409` as JSON, maps `MissingEnvironmentError` to `500`
+with the missing-Mongo message, and otherwise logs and returns `500` "Could not
+complete the vocabulary request." Each handler also catches `SyntaxError`
+directly as `400` "Request body must be valid JSON." Numeric limits come from
+`src/modules/vocabulary/constants.ts`. Response record shapes are built by the
+mappers `toVocabEntryRecord` (`vocabEntryRecords.ts`), `toUserVocabItemRecord`
+(`userVocabItemRecords.ts`), and `toVocabOccurrenceRecord`
+(`vocabOccurrenceRecords.ts`).
 
 #### POST /api/vocab/entries/lookup
 
 File: `src/app/api/vocab/entries/lookup/route.ts`.
 
-- Body: `{ term: string, occurrence?: { reason, selectedText?, contextSentence?, videoId?, segmentId?, attemptId? } }`.
-- Behavior: normalizes the term, finds or creates a `VocabEntry` shell, records
-  an optional occurrence, enriches the entry if eligible, and returns the entry
-  plus the current user's item state.
-- Success: `{ entry, userItem }`.
-- Errors: `400` invalid JSON/payload/term; `404` missing entry after lookup;
+- Validation: `parseLookupEntryRequest` (`lookupEntrySchema`, strict): `term`
+  (trimmed, 1-80 chars, required); optional `occurrence` object with `reason`
+  (enum `manualSearch | dictionaryLookup | explore | clickedInAnswer |
+  missedWord | aiDebrief`, default `dictionaryLookup`), optional `selectedText`
+  (<=500), `contextSentence` (<=3000), and nullable 24-hex `videoId` /
+  `segmentId` / `attemptId`.
+- Behavior: `findOrCreateVocabEntryShell` normalizes the term and finds/creates a
+  `VocabEntry` shell; if an occurrence is present `recordVocabOccurrence` writes
+  it (defaulting `selectedText` to the term); `enrichVocabEntryIfNeeded` enriches
+  when eligible; `getVocabEntryWithUserState` returns the entry plus the actor's
+  item state.
+- Success `200`: `{ entry, userItem }` (a `VocabEntryWithUserStateRecord`).
+- Errors: `400` invalid JSON / "Vocabulary lookup payload is invalid." /
+  "Vocabulary term is invalid." (null shell); `404` "Vocabulary entry was not
+  found." (null record after lookup); `401`/`403`/`409` bubbled;
   `500` missing MongoDB or unexpected provider/service failure.
 
 #### GET /api/vocab/search
 
 File: `src/app/api/vocab/search/route.ts`.
 
-- Query: `q` required, `limit` optional (1-25, default 12).
-- Behavior: prefix-searches cached `VocabEntry` rows only. It does not enrich by
-  itself; lookup owns provider calls.
-- Success: `{ entries: Array<{ entry, userItem }> }`.
+- Query: `parseSearchRequest` (`searchSchema`): `q` required (trimmed 1-80),
+  `limit` optional (1-25, default 12). Invalid -> `400` "Vocabulary search query
+  is invalid."
+- Behavior: `searchVocabEntries` prefix-searches cached `VocabEntry` rows only.
+  It does not enrich by itself; lookup owns provider calls.
+- Success `200`: `{ entries: Array<{ entry, userItem }> }`.
 
 #### GET /api/vocab/explore
 
 File: `src/app/api/vocab/explore/route.ts`.
 
-- Query: `limit` optional (1-50, default 20).
-- Behavior: returns frequency-ranked, `enrichmentStatus = ready` words the actor
-  has not classified yet. Exclusion is handled by a MongoDB `$lookup` in
+- Query: `parseExploreRequest` (`exploreSchema`): `limit` optional (1-50,
+  default 20). Invalid -> `400` "Vocabulary explore query is invalid."
+- Behavior: `listExploreVocabEntriesForUser` returns frequency-ranked,
+  `enrichmentStatus = ready` words the actor has not classified yet. Exclusion is
+  handled by a MongoDB `$lookup` in
   `src/modules/vocabulary/explore/exploreService.ts`, not by loading all user
   items into app memory.
-- Success: `{ entries }`.
+- Success `200`: `{ entries }`.
 
 #### POST /api/vocab/items
 
 File: `src/app/api/vocab/items/route.ts`.
 
-- Body: `{ vocabEntryId, status: 'shouldLearn' | 'alreadyKnow', source }`.
-- Behavior: upserts one `UserVocabItem` for the actor. `shouldLearn` sets
-  `status = learning`, `recallStage = 1`, and `dueAt = now`; `alreadyKnow` sets
-  `status = alreadyKnow`, `knownAt = now`, and no recall due date.
-- Success: `{ item }`.
-- Errors: `400` invalid body; `404` unknown `vocabEntryId`.
+- Validation: `parseItemStatusRequest` (`itemStatusSchema`, strict):
+  `vocabEntryId` (24-hex), `status` (enum `shouldLearn | alreadyKnow`), `source`
+  (enum `search | explore | dictionary | manual`, default `manual`), optional
+  `occurrenceReason` enum. Invalid -> `400` "Vocabulary item payload is invalid."
+- Behavior: `setUserVocabItemStatus` upserts one `UserVocabItem` for the actor.
+  `shouldLearn` sets `status = learning`, `recallStage = 1`, and `dueAt = now`;
+  `alreadyKnow` sets `status = alreadyKnow`, `knownAt = now`, and no recall due
+  date.
+- Success `200`: `{ item }` (a `UserVocabItemApiRecord`).
+- Errors: `400` invalid JSON / body; `404` "Vocabulary entry was not found."
+  (unknown `vocabEntryId`); `500`.
 
 #### GET /api/vocab/recall/due
 
 File: `src/app/api/vocab/recall/due/route.ts`.
 
-- Query: `limit` optional (1-50, default 20), `excludeListening` optional
-  (`1`/`true` to skip listening task types).
-- Behavior: finds `UserVocabItem` rows with `status = learning` and
-  `dueAt <= now`, loads their `VocabEntry` rows, builds task options with a
-  bounded distractor query, and returns signed recall tasks. Task types are
-  `listenChooseWord`, `listenChooseDefinition`, `exampleRemember`,
-  `definitionChooseWord`, and `wordChooseDefinition`.
-- Success: `{ tasks: Array<{ taskId, token, type, item, entry, options, exampleSentence }> }`.
+- Query: `parseRecallDueRequest` (`recallDueSchema`): `limit` optional (1-50,
+  default 20), `excludeListening` optional (`1`/`true` to skip the listening task
+  types). Invalid -> `400` "Vocabulary recall query is invalid."
+- Behavior: `listDueVocabRecallTasksForUser` finds `UserVocabItem` rows with
+  `status = learning` and `dueAt <= now`, loads their `VocabEntry` rows, builds
+  task options with a bounded distractor query, and returns signed recall tasks.
+  Task types are `listenChooseWord`, `listenChooseDefinition`, `exampleRemember`,
+  `definitionChooseWord`, and `wordChooseDefinition` (listening = the first two).
+- Success `200`: `{ tasks: Array<{ taskId, token, type, item, entry, options, exampleSentence }> }`.
 
 #### POST /api/vocab/recall/answer
 
 File: `src/app/api/vocab/recall/answer/route.ts`.
 
-- Body: `{ token, idempotencyKey, selectedOptionId?, action? }`, where
-  `action` is `lookup`, `notSure`, or `remember` for non-option flows.
-- Behavior: verifies the signed task token, checks actor ownership, due date,
-  and recall stage server-side, grades the answer from the signed correct
-  option/action, writes a `VocabRecallAttempt`, and applies the seven-touch
-  scheduler. Correct answers advance through stages 1-7; a correct stage 7
-  answer sets `status = mastered`. Wrong or unsure answers reset to stage 1 and
-  due now.
-- Success: `{ attemptId, isCorrect, item }`.
-- Errors: `400` invalid body; `409` stale/expired/wrong-owner/non-learning item.
+- Validation: `parseRecallAnswerRequest` (`recallAnswerSchema`, strict): `token`
+  (trimmed 20-5000), `idempotencyKey` (trimmed 8-160), optional nullable
+  `selectedOptionId` (1-160), optional nullable `action` (enum `lookup | notSure
+  | remember` for non-option flows). Invalid -> `400` "Vocabulary recall payload
+  is invalid."
+- Behavior: `submitVocabRecallAnswerForUser` verifies the signed task token,
+  checks actor ownership, due date, and recall stage server-side, grades the
+  answer from the signed correct option/action, writes a `VocabRecallAttempt`,
+  and applies the seven-touch scheduler. Correct answers advance through stages
+  1-7; a correct stage 7 answer sets `status = mastered`. Wrong or unsure answers
+  reset to stage 1 and due now.
+- Success `200`: `{ attemptId, isCorrect, item }`.
+- Errors: `400` invalid JSON / body; `409` "This recall card is stale. Refresh
+  recall." (null result) plus any `409` bubbled for stale/expired/wrong-owner/
+  non-learning item; `500`.
 
 #### GET /api/vocab/stats
 
 File: `src/app/api/vocab/stats/route.ts`.
 
-- Behavior: aggregates `learningCount`, `alreadyKnowCount`, `masteredCount`,
-  `dueTodayCount`, `totalKnownCount`, `totalStartedCount`, overdue count,
-  learned-today count, reviews-today count, recall accuracy, active vocab
-  streak, hardest words, and 14-day daily growth from bounded Mongo queries.
-- Success: `{ stats }`.
+- Query/body: none (`GET` with no params).
+- Behavior: `getVocabStatsForUser` aggregates `learningCount`,
+  `alreadyKnowCount`, `masteredCount`, `dueTodayCount`, `totalKnownCount`,
+  `totalStartedCount`, overdue count, learned-today count, reviews-today count,
+  recall accuracy, active vocab streak, hardest words, and 14-day daily growth
+  (`VOCAB_STATS_TREND_DAYS`) from bounded Mongo queries.
+- Success `200`: `{ stats }` (a `VocabStatsRecord`).
+- Errors: `500` missing MongoDB or unexpected.
 
 ### Admin vocabulary enrichment
 
 File: `src/app/api/admin/vocab/enrich/route.ts`.
 
-- `GET /api/admin/vocab/enrich`: returns `{ queue }` with counts for enrichable,
-  ready, failed, not found, and stale-lease rows.
-- `POST /api/admin/vocab/enrich`: body `{ limit }`, min 1, max 10, default 5.
-  Calls `requireAdmin()`, then enriches up to N eligible rows with leases and
-  provider fallback. Success shape: `{ result, queue }`.
+- Auth: admin. `GET` calls `requireAdmin()` before work; `POST` parses the body
+  first, then calls `requireAdmin()` (so a malformed body can `400` before the
+  admin check). Both map `requireAdmin` failures to `401`/`403` via
+  `toVocabApiError`.
+- `GET /api/admin/vocab/enrich`: no params. Returns `{ queue }`
+  (`getVocabAdminQueueSummary`) with counts for enrichable, ready, failed, not
+  found, and stale-lease rows.
+- `POST /api/admin/vocab/enrich`: `parseAdminEnrichRequest` (`adminEnrichSchema`,
+  strict): `limit` (int 1-10, default 5). Invalid -> `400` "Vocabulary enrich
+  payload is invalid." Calls `enrichNextVocabularyEntries({ limit })`, which
+  enriches up to N eligible rows with leases and provider fallback. Success
+  `200`: `{ result, queue }`.
 - Provider work lives in
   `src/modules/vocabulary/enrichment/enrichmentService.ts` and adapters in
   `src/modules/vocabulary/providers/*`.
@@ -714,8 +746,6 @@ optional `input` URL override (used for tests and absolute-URL SSR calls).
   `attachDictationTranslationTrackApi` (POST, forces `role: 'translation'`),
   `deleteDictationTranscriptApi` (DELETE). Type `DictationTranscriptPayload`;
   constant `DICTATION_TRANSCRIPTS_API_PATH`.
-- `dictationSegmentsApi.ts` -> `buildDictationSegmentsApi` (POST). Helper
-  `getDictationTranscriptSegmentsApiPath(transcriptId)`. (No GET/PATCH wrappers.)
 - `dictationSessionsApi.ts` -> `startOrResumeDictationSessionApi` (POST),
   `updateDictationSessionApi` (PATCH). Constant `DICTATION_SESSIONS_API_PATH`.
 - `dictationAttemptsApi.ts` -> `submitDictationAttemptApi` (POST). Types
@@ -734,9 +764,11 @@ optional `input` URL override (used for tests and absolute-URL SSR calls).
   come from `src/modules/vocabulary/constants.ts`. Tests in
   `src/requests/vocabularyApi.test.ts`.
 
-There is no `requests` module for review items or for the segment GET/PATCH or
+There is no `requests` module for review items or for the segment PATCH or
 session GET routes; those are consumed by Server Components / services (for
 example `reviewItemService`) or admin UI code that calls the routes directly.
+There is no longer a `dictationSegmentsApi.ts` module: server-side segment
+building on transcript save replaced the old client build wrapper.
 There is also no `requests` module for auth (app code uses Auth.js `signIn` /
 `signOut`).
 
@@ -757,8 +789,6 @@ error helper):
 - `DELETE /api/dictation/videos/[videoId]`
 - `POST /api/dictation/transcripts`
 - `DELETE /api/dictation/transcripts/[transcriptId]`
-- `GET /api/dictation/transcripts/[transcriptId]/segments`
-- `POST /api/dictation/transcripts/[transcriptId]/segments`
 - `PATCH /api/dictation/segments/[segmentId]`
 - `POST /api/dictation/imports/youtube`
 - `GET`/`POST /api/admin/vocab/enrich`

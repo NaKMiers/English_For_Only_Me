@@ -87,6 +87,10 @@ erDiagram
     VocabEntry ||--o{ VocabOccurrence : "encountered as (vocabEntryId)"
     VocabEntry ||--o{ VocabRecallAttempt : "reviewed as (vocabEntryId)"
     UserVocabItem ||--o{ VocabRecallAttempt : "attempted as (itemId)"
+
+    DictationVideo ||--o{ VocabOccurrence : "context (videoId, optional)"
+    DictationSegment ||--o{ VocabOccurrence : "context (segmentId, optional)"
+    DictationAttempt ||--o{ VocabOccurrence : "context (attemptId, optional)"
 ```
 
 ## 3. Models
@@ -633,3 +637,5 @@ On first sign-in, `mergeGuestDataIntoUser(guestId, userId)` reassigns the guest'
 `DictationAttempt.idempotencyKey` (String, required, `maxlength 120`, `trim`; `DictationAttemptModel.ts:92-97`) is a client-supplied dedup token. The unique compound index `{ userId, sessionId, idempotencyKey }` (`DictationAttemptModel.ts:181-184`) guarantees at most one attempt row per key within a user's session, so a retried or double-submitted attempt request cannot create duplicate records. This index is also why attempts are safe to merge from guest to user: a guest's `sessionId`s are unique ObjectIds the real user cannot already own (comment `mergeGuestData.ts:16-18`).
 
 `DictationFavorite` gets idempotency from its unique `{ userId, videoId }` index (one star per user+video). `DictationTranscript` dedups content with its unique `{ videoId, sourceHash }` index, and `DictationDebrief` uses `inputSnapshotHash` (indexed, plus a `{ userId, videoId, inputSnapshotHash, status }` compound) to avoid regenerating an identical debrief.
+
+On the vocabulary side, `VocabRecallAttempt.idempotencyKey` (String, required, `maxlength 160`, `trim`; `VocabRecallAttemptModel.ts:45-50`) is a client-supplied dedup token whose unique compound index `{ userId, idempotencyKey }` (`VocabRecallAttemptModel.ts:96-99`) guarantees at most one recall-answer row per key per user, so a retried recall submission cannot double-write. `UserVocabItem` keeps one row per user+entry via its unique `{ userId, vocabEntryId }` index (`UserVocabItemModel.ts:113`), and `VocabEntry` keeps one dictionary row per language+term via its unique `{ language, normalizedTerm }` index (`VocabEntryModel.ts:430`).

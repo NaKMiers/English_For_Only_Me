@@ -2,8 +2,9 @@
 
 This document explains how "English For Only Me" (Next.js 16, Auth.js v5 /
 next-auth 5.0.0-beta.31, Mongoose 9) handles sign-in, roles, guest identity,
-its four external service integrations (Google OAuth, YouTube Data API, OpenAI,
-Cloudinary, plus MongoDB), environment configuration, and the test setup. Every
+its external service integrations (Google OAuth, YouTube Data API, OpenAI,
+Cloudinary, MongoDB, and the vocabulary dictionary/translation providers),
+signed recall task tokens, environment configuration, and the test setup. Every
 claim below is grounded in a specific file so an AI agent can reason about auth,
 authorization, integration fallbacks, env keys, and the test harness without
 reading the whole tree. Package versions: `next` 16.2.10, `next-auth`
@@ -182,6 +183,32 @@ client-sent userId, role..."; "Prefer server-derived identity"):
    `src/app/api/dictation/imports/youtube/route.ts`, the transcript/segment/
    video API routes) call `requireAdmin()` / `requireUser()` themselves.
 
+### 1.7 Signed recall task tokens
+
+`src/modules/vocabulary/recall/recallTaskToken.ts` (`server-only`) issues
+tamper-proof tokens so a vocabulary recall task can be graded without trusting
+the client to send back the correct answer. Design:
+
+- Format: `base64url(JSON payload).base64url(HMAC-SHA256 signature)`.
+  `createVocabRecallTaskToken(payload, now)` stamps
+  `expiresAt = now + VOCAB_RECALL_TASK_TOKEN_TTL_MS` (30 minutes, from
+  `src/modules/vocabulary/constants.ts`) onto the payload, encodes it, and
+  appends an HMAC over the encoded payload.
+- Payload (`VocabRecallTaskTokenPayload`) carries `correctAnswer`,
+  `correctOptionId`, `entryId`, `itemId`, `recallStage`, `taskId`, `type`,
+  `userId`, and `expiresAt`. The correct answer travels inside the signed blob,
+  never in a client-writable field.
+- Signing secret cascade (`getSigningSecret`): `AUTH_SECRET` ->
+  `NEXTAUTH_SECRET` -> the literal dev fallback
+  `'development-vocab-recall-task-secret'`, so signing never throws in a
+  no-secret dev setup while production reuses the Auth.js secret.
+- `verifyVocabRecallTaskToken({ token, userId, now })` splits the token,
+  recomputes the HMAC, and compares with `crypto.timingSafeEqual` (after a
+  length guard) to resist timing attacks. It then parses the payload and returns
+  `null` unless `payload.userId === userId` and `payload.expiresAt >= now`. Any
+  parse error also yields `null`. Binding to `userId` stops one user replaying
+  another user's task token.
+
 ---
 
 ## 2. Roles and Authorization
@@ -240,8 +267,11 @@ contentDetails,status`, `cache: 'no-store'`) via an injectable `fetcher`.
 ### 3.3 OpenAI
 
 - Env: `OPENAI_API_KEY` (optional), `OPENAI_DEBRIEF_MODEL` (default
-  `gpt-5.4-nano` via `getOpenAiDebriefModel()`), `OPENAI_TRANSLATION_MODEL`
-  (present in env files; default handled in translation code).
+  `gpt-5.4-nano` via `getOpenAiDebriefModel()`). `OPENAI_TRANSLATION_MODEL` is
+  still declared in `.env`/`.env.example` but is legacy: it is NOT in `ENV_KEYS`
+  and no source module reads it. Vocabulary translation now uses the MyMemory
+  provider (see 3.6), and vocabulary enrichment does not call OpenAI at all.
+  OpenAI is used only for the dictation debrief.
 - `src/lib/ai/openAiClientCore.ts` - provider-agnostic core
   (`requestOpenAiStructuredOutput`). Posts to
   `https://api.openai.com/v1/responses` with a strict `json_schema` format,
@@ -278,6 +308,83 @@ contentDetails,status`, `cache: 'no-store'`) via an injectable `fetcher`.
   memoizes the connect promise, sets `bufferCommands: false`, and clears the
   cached promise on failure so a later call can retry.
 
+### 3.6 Vocabulary dictionary and translation providers
+
+The vocabulary feature enriches seeded terms by calling free public APIs. No
+provider needs an API key. Code lives under
+`src/modules/vocabulary/providers/*`; the enrichment orchestrator is
+`src/modules/vocabulary/enrichment/enrichmentService.ts`.
+
+Provider contract (`providers/types.ts`): every dictionary adapter is a
+`VocabProviderAdapter` (`(VocabProviderInput) => Promise<VocabProviderResult>`).
+`VocabProviderResult` is a discriminated union with statuses `ready` (carries a
+`NormalizedProviderPayload`), `notFound`, `rateLimited` (optional `retryAfter`),
+`timeout`, `malformed` (carries `message`), and `emptyUsefulData`. Input accepts
+an injectable `fetcher` (so adapters are unit-tested with a mock), `language`,
+`term`, `now`, and `timeoutMs`.
+
+Shared HTTP layer (`providers/providerUtils.ts`): `fetchProviderJson` runs the
+request behind an `AbortController` that aborts after
+`input.timeoutMs ?? VOCAB_LOOKUP_TIMEOUT_MS` (8000 ms, from
+`src/modules/vocabulary/constants.ts`). It maps HTTP status to result:
+`404 -> notFound`, `429 -> rateLimited` (parsing the `retry-after` header via
+`getRetryAfter`), other non-2xx -> `malformed`, an `AbortError` -> `timeout`,
+and any other throw -> `malformed`. `hasUsefulPayload` gates a normalized
+payload: an adapter downgrades a parsed-but-empty result to `emptyUsefulData`
+unless it has at least one definition, phonetic, audio url, synonym, or related
+word.
+
+| Provider (`VocabProviderName`) | File | External API | Role | Key |
+| ------------------------------ | ---- | ------------ | ---- | --- |
+| `dictionaryapi.dev` | `providers/dictionaryApiDev.ts` | `GET https://api.dictionaryapi.dev/api/v2/entries/<lang>/<term>` | Primary dictionary lookup; parses phonetics, audio urls, definitions, examples, synonyms/antonyms, license, and `sourceUrls` | none |
+| `freedictionaryapi.com` | `providers/freeDictionaryApi.ts` | `GET https://freedictionaryapi.com/api/v1/entries/<lang>/<term>` | Fallback dictionary lookup; parses `entries[].senses`, pronunciations, `forms` -> related words, per-source license/attribution (no audio urls) | none |
+| `mymemory.translated.net` | `providers/myMemoryTranslate.ts` | `GET https://api.mymemory.translated.net/get?langpair=en\|vi&mt=1&q=<text>` | Vietnamese translation, not a dictionary adapter | none |
+
+Dictionary fallback chain: `getDefaultVocabProviders()` (`providers/index.ts`)
+returns `[fetchDictionaryApiDevEntry, fetchFreeDictionaryApiEntry]` in order.
+`runProviders` (enrichment service) calls each in turn and stops at the first
+`ready`; if none is ready it collects every non-ready result for error
+reporting.
+
+Translation (`myMemoryTranslate.ts`): `translateTextToVietnamese` is a separate
+helper (not part of the adapter chain). It trims the query to a 480-byte
+provider limit (`trimToProviderLimit`, UTF-8 aware), runs behind the same
+8000 ms `AbortController`, and returns `null` on any non-ok response, malformed
+JSON, empty/echoed translation, timeout, or thrown error - never a partial
+result. The provider name is exported as `MY_MEMORY_PROVIDER`.
+
+Enrichment orchestration (`enrichment/enrichmentService.ts`, `server-only`):
+
+- Lease-based locking: `acquireEnrichmentLease` / `acquireNextEnrichmentLease`
+  do a `findOneAndUpdate` that flips an eligible entry to `enriching`, stamps a
+  random `enrichmentLockId`, increments `enrichmentAttempts`, and sets a lease
+  that expires after `VOCAB_ENRICHMENT_LEASE_MS` (60000 ms). Eligible entries
+  are `seeded`/`pending`, `ready`-but-missing-Vietnamese, `failed` past
+  `nextRetryAt`, or `enriching` with an expired lease (so a crashed worker's
+  lock self-heals). All writes back are guarded on the matching `lockId`.
+- After a `ready` dictionary result, `persistReadyResult` merges definitions,
+  examples, phonetics, audio, synonyms/antonyms, related words, and source
+  attributions into the entry, then calls `buildVietnameseMeanings`, which uses
+  `translateTextToVietnamese` when no Vietnamese meaning exists yet. An entry is
+  only marked `ready` if it has a Vietnamese meaning; otherwise it is set back
+  to `failed` with a `missingVietnameseMeaning` provider error and a
+  `nextRetryAt` one hour out.
+- `persistFailedResult` records up to the last 20 provider errors, sets
+  `notFound` when every provider returned `notFound`, else `failed` with a
+  `nextRetryAt` (honoring a provider `retryAfter` when present).
+- `enrichVocabEntryIfNeeded(entryId)` enriches one entry; the admin batch path
+  `enrichNextVocabularyEntries({ limit })` clamps `limit` to 1..10 and runs up
+  to two workers in parallel, returning an `AdminEnrichResult` tally.
+  `getVocabAdminQueueSummary` counts pending/ready/failed/notFound/stale-lease
+  entries.
+
+Admin enrich route: `src/app/api/admin/vocab/enrich/route.ts`
+(`runtime = 'nodejs'`). Both `GET` (queue summary) and `POST` (run a batch)
+first call `getMissingVocabMongoResponse()` (503 when `MONGODB_URI` is unset),
+then `requireAdmin()` and `connectDatabase()`. `POST` validates the body with
+`parseAdminEnrichRequest` and maps a bad JSON body to a 400. All errors funnel
+through `toVocabApiError`.
+
 ---
 
 ## 4. Environment Variables
@@ -285,33 +392,39 @@ contentDetails,status`, `cache: 'no-store'`) via an injectable `fetcher`.
 Central access is `src/constants/environments.ts` via `ENV_KEYS`,
 `getOptionalServerEnv`, and `getRequiredServerEnv` (which throws
 `MissingEnvironmentError`). All keys are server-only; none is `NEXT_PUBLIC_*`
-(per `api-security.md`). Every key below is present (declared, values not shown)
-in `.env.development` and `.env.example`.
+(per `api-security.md`). Every key below is declared (values not shown) in
+`.env` and `.env.example`. `ENV_KEYS` maps a camelCase alias to each raw key.
 
 | Key                        | Required?                     | Purpose                                                | Default                                                |
 | -------------------------- | ----------------------------- | ------------------------------------------------------ | ------------------------------------------------------ |
 | `MONGODB_URI`              | Required (for DB features)    | Mongoose connection string                             | none (`getMongoDbUri` throws if unset)                 |
-| `AUTH_SECRET`              | Required for sign-in          | Auth.js JWT signing secret                             | none                                                   |
+| `AUTH_SECRET`              | Required for sign-in          | Auth.js JWT signing secret; also signs recall tokens   | none (recall token falls back to a dev literal)        |
 | `GOOGLE_CLIENT_ID`         | Required for Google auth      | OAuth client id                                        | `''` fallback in provider                              |
 | `GOOGLE_CLIENT_SECRET`     | Required for Google auth      | OAuth client secret                                    | `''` fallback in provider                              |
 | `ADMIN_EMAILS`             | Optional                      | Comma-separated admin allowlist                        | empty set (no admins)                                  |
 | `YOUTUBE_API_KEY`          | Optional                      | YouTube Data API metadata import                       | none -> URL-only drafts                                |
-| `OPENAI_API_KEY`           | Optional                      | OpenAI debrief/translation calls                       | none -> AI unavailable state                           |
+| `OPENAI_API_KEY`           | Optional                      | OpenAI dictation debrief calls                         | none -> AI unavailable state                           |
 | `OPENAI_DEBRIEF_MODEL`     | Optional                      | Model id for AI debrief                                | `gpt-5.4-nano`                                         |
-| `OPENAI_TRANSLATION_MODEL` | Optional                      | Model id for translation                               | `gpt-5.4-nano` (env-file value)                        |
+| `OPENAI_TRANSLATION_MODEL` | Legacy / unused               | Declared in env files but read by no code (see below)  | not applicable                                         |
 | `CLOUDINARY_URL`           | Required for thumbnail upload | `cloudinary://` credentials                            | none (`getCloudinaryUrl` throws if unset)              |
 | `IELTS_GOAL`               | Optional                      | Prompt/goal string for AI debrief                      | `IELTS Listening Band 7+`                              |
 | `SITE_URL`                 | Optional                      | Canonical origin for SEO/sitemap/OG, no trailing slash | falls back to `AUTH_URL`, then `http://localhost:3000` |
 
 Notes:
 
+- The vocabulary dictionary/translation providers (3.6) need no env keys.
+- `OPENAI_TRANSLATION_MODEL` is present in `.env`/`.env.example` for historical
+  reasons only; it is not in `ENV_KEYS` and no source module reads it. Do not
+  rely on it - vocabulary translation goes through the keyless MyMemory
+  provider.
+- `NEXTAUTH_SECRET` is not in `ENV_KEYS` either, but `recallTaskToken.ts` reads
+  it via `getOptionalServerEnv('NEXTAUTH_SECRET')` as a fallback after
+  `AUTH_SECRET` (see 1.7).
 - `getSiteUrl()` strips trailing slashes and cascades `SITE_URL` -> `AUTH_URL`
   -> `http://localhost:3000`.
 - `getAdminEmails()` normalizes and lower-cases the list into a `Set`.
-- `.env.development` declares the same eleven keys (`IELTS_GOAL`, `MONGODB_URI`,
-  `YOUTUBE_API_KEY`, `OPENAI_API_KEY`, `OPENAI_DEBRIEF_MODEL`,
-  `OPENAI_TRANSLATION_MODEL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`,
-  `AUTH_SECRET`, `ADMIN_EMAILS`, `CLOUDINARY_URL`). Secret values are not
+- There is no committed `.env.development`; the vocab seed script references it
+  only via `--env-file-if-exists` (a no-op when absent). Secret values are not
   reproduced here.
 
 ---
@@ -323,10 +436,13 @@ Notes:
 - Unit/component: Vitest 4 with `@vitejs/plugin-react`, jsdom environment, and
   Testing Library (`@testing-library/react`, `@testing-library/jest-dom`,
   `@testing-library/dom`). Config: `vitest.config.mts`.
-- E2E: Playwright (`playwright.config.ts`), `testDir: './src'`,
-  `testMatch: '**/*.e2e.ts'`, Chromium project, base URL
-  `PLAYWRIGHT_BASE_URL` or `http://127.0.0.1:3000`; on CI `forbidOnly`,
-  `retries: 2`, single worker.
+- E2E: Playwright (`playwright.config.ts`). The dependency is the `playwright`
+  package (`^1.61.1`), so tests and the config import from `playwright/test`
+  (not `@playwright/test`). Config: `testDir: './src'`,
+  `testMatch: '**/*.e2e.ts'`, `fullyParallel: true`, a single Chromium project,
+  base URL `PLAYWRIGHT_BASE_URL` or `http://127.0.0.1:3000`; on CI it sets
+  `forbidOnly`, `retries: 2`, and a single worker. There is no `bun`/`package.json`
+  script for Playwright; run it directly (for example `bunx playwright test`).
 
 ### 5.2 Vitest setup and the server-only stub
 
@@ -356,11 +472,22 @@ Setup files:
 
 ### 5.3 Count, naming, and style
 
-- `find src -name '*.test.ts*' | wc -l` => 69 co-located test files.
+- `find src -name '*.test.ts*' | wc -l` => 74 co-located test files.
 - `find src -name '*.e2e.ts' | wc -l` => 1 Playwright smoke file
-  (`src/modules/vocabulary/vocabularyCore.e2e.ts`). It is skipped unless
-  `PLAYWRIGHT_BASE_URL` and `MONGODB_URI` are set, because it needs a running app
-  and a real vocabulary database.
+  (`src/modules/vocabulary/vocabularyCore.e2e.ts`). It `test.skip`s itself unless
+  both `PLAYWRIGHT_BASE_URL` and `MONGODB_URI` are set, because it needs a running
+  app and a real vocabulary database. The flow searches a term, saves it to the
+  learn list, answers one recall task, and asserts the stats/queue update.
+- New vocabulary unit tests since the last docs pass:
+  `src/modules/vocabulary/providers/dictionaryApiDev.test.ts` and
+  `src/modules/vocabulary/providers/freeDictionaryApi.test.ts` (adapter parsing
+  with a mock `fetcher`), alongside existing
+  `src/modules/vocabulary/services/vocabularyRouteDecisions.test.ts`,
+  `recall/recallScheduler.test.ts`, `stats/vocabStats.test.ts`,
+  `normalizeVocabTerm.test.ts`, `seed/seedVocabulary.test.ts`, and
+  `services/vocabWordListService.test.ts`. There is no dedicated unit test yet
+  for `myMemoryTranslate`, `providerUtils`, `enrichmentService`, or
+  `recallTaskToken`.
 - Naming convention (per `.agents/rules/testing-quality.md`): unit tests sit
   next to source as `*.test.ts` / `*.test.tsx`; Playwright e2e as `*.e2e.ts`.
 - Heavy use of pure decision-function unit tests: the rules direct extracting
@@ -406,8 +533,21 @@ idempotent: it matches videos missing any of `topicId`/`sectionId`/`level` and
 (`BackfillVideoModel` interface) so the logic is unit-testable without a live
 database.
 
-`scripts/seedVocabulary.ts` (npm script `vocab:seed`) downloads the official NGSL
+`scripts/seedVocabulary.ts` (script `vocab:seed`) downloads the official NGSL
 stats CSV through `src/modules/vocabulary/seed/seedVocabulary.ts`, parses the top
 1000 ranked terms, connects through `connectDatabase()`, and upserts seeded
-`VocabEntry` shells. It runs with `node --conditions=react-server --import tsx`
-for the same `server-only` compatibility reason as the backfill script.
+`VocabEntry` shells. It runs with
+`node --conditions=react-server --env-file-if-exists=.env.development --import tsx`
+for the same `server-only` compatibility reason as the backfill script (the
+`--env-file-if-exists` flag is a no-op since no `.env.development` is committed).
+
+`scripts/backfillVocabularyVietnameseMeanings.ts` (script `vocab:backfill-vi`)
+fills in missing Vietnamese meanings for existing entries. It connects via
+`connectDatabase()`, selects entries matching `VOCAB_MISSING_VI_MEANING_FILTER`
+(or all when `--overwrite` is passed), and reuses `enrichVocabEntryIfNeeded` plus
+`translateTextToVietnamese` (3.6). Batch size comes from a numeric argv, the
+`VOCAB_VI_BACKFILL_LIMIT` env var, or a default of 25. It runs with the same
+`node --conditions=react-server --env-file-if-exists=.env --import tsx` wrapper.
+
+`scripts/resegmentAllTranscripts.ts` (script `resegment`) rebuilds dictation
+transcript segments and runs under the same Node/`tsx` wrapper.

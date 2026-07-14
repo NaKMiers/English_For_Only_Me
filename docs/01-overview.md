@@ -26,8 +26,8 @@ API, OpenAI, Cloudinary) are not configured.
   history.
 - Start from the NGSL top 1000 vocabulary shells, then enrich words on demand or
   in admin batches through free dictionary providers.
-- Search, lookup, Explore, classify, and recall vocabulary words on a seven
-  stage schedule through day 45.
+- Search, lookup, Explore, classify, and recall vocabulary words on a
+  seven-touch (stage 1-7) recall schedule whose intervals span 44 days.
 - Read an AI debrief (content summary, key vocabulary, listening traps, weak
   patterns, next actions) generated from the session by an LLM.
 - Browse content by Topic -> Section -> Video, search/filter/sort/paginate,
@@ -95,6 +95,8 @@ shape the intended product surface.
 | Vocab entry      | A global dictionary-cache row keyed by language and normalized term.          |
 | User vocab item  | A per-user word-learning state: learning, already know, mastered, or ignored. |
 | Vocab occurrence | A trail of where a user encountered or looked up a word.                      |
+| Vocab recall attempt | One graded touch in the seven-touch recall schedule (task type, stage, verdict). |
+| Recall task     | A single generated recall exercise (listen/definition/example), signed into a short-lived token. |
 
 The full field-level model is in [docs/03-data-model.md](./03-data-model.md).
 

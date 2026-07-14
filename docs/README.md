@@ -19,9 +19,9 @@ so you can jump from a doc statement to the exact file that backs it.
 | 02  | [02-architecture.md](./02-architecture.md)             | Directory map, layered architecture and dependency direction, server/client boundaries, the practice-attempt data flow, edge auth protection, and build/run/test commands. |
 | 03  | [03-data-model.md](./03-data-model.md)                 | The Mongoose collections, ER diagrams, per-model field tables and indexes, every status/enum union, and the guest-vs-user ownership split.                                 |
 | 04  | [04-api-reference.md](./04-api-reference.md)           | Every route handler (contracts, auth gating, status codes), the zod request schemas, and the `src/requests` client fetch helpers.                                          |
-| 05  | [05-modules.md](./05-modules.md)                       | The domain logic under `src/modules/dictation`: the correction engine, segmenting, transcripts, review scheduler, stats, AI debrief, and content operations.               |
+| 05  | [05-modules.md](./05-modules.md)                       | The domain logic under `src/modules`: dictation (correction engine, segmenting, transcripts, review scheduler, stats, AI debrief, content) and vocabulary (normalization, dictionary providers, enrichment, explore, seven-touch recall, stats). |
 | 06  | [06-frontend.md](./06-frontend.md)                     | Pages and routing, the manga-page design system, the UI primitive library, and the component trees for the browse / practice / results / review / stats / admin flows.     |
-| 07  | [07-auth-infra-testing.md](./07-auth-infra-testing.md) | Auth.js v5 (edge/Node split, Google OAuth, roles, guest identity and merge), external integrations (YouTube, OpenAI, Cloudinary, MongoDB), env vars, and the test setup.   |
+| 07  | [07-auth-infra-testing.md](./07-auth-infra-testing.md) | Auth.js v5 (edge/Node split, Google OAuth, roles, guest identity and merge), external integrations (YouTube, OpenAI, Cloudinary, MongoDB, keyless vocabulary dictionary/translation providers), signed recall task tokens, env vars, and the test setup. |
 
 ## Quick orientation
 

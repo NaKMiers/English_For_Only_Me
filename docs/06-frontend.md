@@ -4,12 +4,16 @@
 (App Router), React 19, and Tailwind CSS v4. Its frontend is organized around a
 distinctive "manga / comic page" visual theme: every screen is a bordered paper
 page with hard ink drop-shadows, halftone dot textures, and comic-style "page tag"
-labels. This document maps the design system, the shared UI primitive library, the
-full route tree, and the component trees for the home "Study Desk" and the
-dictation feature (browse, practice, results, review, stats, admin). All claims are
-grounded in the source files cited by their repo-relative paths. Note: the app's
-only shipped feature module is Dictation; the other modules (Vocabulary, Writing,
-etc.) exist only as launcher cards pointing at not-yet-built routes.
+labels. The theme has two moods - a day "light" mode and an evening "light-up"
+mode (manga paper under a reading lamp) toggled by a hanging pull-string bulb. This
+document maps the design system, the light/light-up theming engine, the shared UI
+primitive library, the full route tree, and the component trees for the home
+"Study Desk", the dictation feature (browse, practice, results, review, stats,
+admin), and the vocabulary feature (dashboard, word lists, recall, admin
+enrichment). All claims are grounded in the source files cited by their
+repo-relative paths. Two feature modules are shipped: Dictation and Vocabulary; the
+remaining modules (Writing, AI Coach, Reading, Speaking) exist only as launcher
+cards pointing at not-yet-built routes.
 
 ---
 
@@ -25,7 +29,8 @@ uppercase black-weight display type, and warm paper tones.
 | ---------------- | ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `MangaPageShell` | `src/components/common/MangaPageShell.tsx` | The outer "page". A centered, max-1460px bordered sheet with a halftone/ink gradient overlay (`::before`), a dashed inset frame (`::after`), and slots for `topbar`, `children` (main), and `footer`. Server component.                                   |
 | `MangaPanel`     | `src/components/common/MangaPanel.tsx`     | A bordered white "panel" card built on the `Card` primitive. Optional `eyebrow` (rendered as a `PageTag`), `title` (uppercase h2), and `action` slot. Server component.                                                                                   |
-| `MangaButton`    | `src/components/ui/MangaButton.tsx`        | The standard action button. Renders either a `Link` (when `href` is passed) or the base `Button`. Three tones: `primary` (paper-soft), `paper` (white), `ink` (black). Active state nudges the element down-right and drops its shadow. Server component. |
+| `MangaButton`    | `src/components/ui/MangaButton.tsx`        | The standard action button. Renders either a `Link` (when `href` is passed) or the base `Button`. Three tones: `primary` (paper-soft), `paper` (white), `ink` (black). Optional leading `icon` slot. Active state nudges the element down-right and drops its shadow. Server component. |
+| `PageHero`       | `src/components/common/PageHero.tsx`       | Wrapper for a route hero block (eyebrow/tag/h1/description) that sits on the shell paper rather than in a card. Adds the `.page-hero` class so light-up mode lifts it into a lit card (see 1.5). Server component.                                          |
 | `PageTag`        | `src/components/ui/PageTag.tsx`            | The small comic "page label" chip (e.g. "Home 00", "Page 01", "Listening"). Tone-driven background via `PAGE_TAG_TONES`. Server component.                                                                                                                |
 | `IconButton`     | `src/components/ui/IconButton.tsx`         | Square 11x11 icon-only button/link, same manga border + shadow + active-nudge treatment. Server component.                                                                                                                                                |
 | `ModuleCard`     | `src/components/ui/ModuleCard.tsx`         | Large module tile used by the home launcher: page tag, icon chip, title, description, skill label, CTA. Server component.                                                                                                                                 |
@@ -93,6 +98,36 @@ overrides win. `class-variance-authority` (`cva`) is used inside the base shadcn
 primitives (`button.tsx` `buttonVariants`, `badge.tsx`, `tabs.tsx`) to define
 variant/size class maps; `MangaButton` and `IconButton` layer their manga styling
 on top of `buttonVariants({ variant, size })`.
+
+### 1.5 Light and light-up theming
+
+The app has two themes, both manga - not a generic dark mode: a day `light`
+(ink-on-white-paper) and an evening `lightup` ("trang giay duoi den doc sach", the
+paper under a reading lamp). In light-up the shell/body paper goes dark (a warm
+room) while cards stay light (lamp-lit paper); ink and borders stay dark because
+they now sit on light cards. It auto-switches on the clock and can be toggled by
+hand.
+
+| Piece | File | Role |
+| ----- | ---- | ---- |
+| Pure theme logic | `src/lib/theme/theme.ts` | Dependency-free helpers: `autoThemeForTime`, `nextThreshold`, `resolveTheme`, `manualState`, `parseStoredTheme`. Window boundaries `MORNING_THRESHOLD_MIN` (06:30) and `EVENING_THRESHOLD_MIN` (18:30); a manual override wins only until the next threshold, then auto resumes. State is persisted under `THEME_STORAGE_KEY` (`efom-theme`). |
+| `ThemeProvider` | `src/components/common/ThemeProvider.tsx` | Client. Reads the theme via `useSyncExternalStore` (external store over localStorage + wall clock; `getServerSnapshot` pins `light` to avoid hydration mismatch). Re-checks on a timer and on `visibilitychange`/`focus`, and syncs `data-theme` onto `<html>`. Exposes `useTheme()` -> `{ theme, toggle }`, with a safe default so it also works inside client `error.tsx` boundaries. |
+| `PullStringToggle` | `src/components/common/PullStringToggle.tsx` | Client. A hanging pull-string bulb fixed to the top-right of the viewport (outside the page chrome). Yanks and swings on click, glows amber in light-up, dim in day; flips the theme via `useTheme().toggle`. Motion respects reduced-motion. |
+| No-FOUC script | `src/app/layout.tsx` | An inline `<script>` (`THEME_INIT_SCRIPT`) that mirrors `theme.ts` and stamps `data-theme` on `<html>` before first paint. `<html suppressHydrationWarning>` covers the difference. The root layout wraps `children` in `ThemeProvider` and renders `PullStringToggle` once, globally. |
+
+`src/app/globals.css` drives the whole flip off the `[data-theme]` attribute (not
+`prefers-color-scheme`): `@custom-variant dark (&:where(.dark, .dark *))` rebinds
+Tailwind's `dark:` variant to an explicit `.dark` class the app never adds, so
+shadcn primitives' built-in `dark:` styles stop firing. The day defaults live on
+`:root` as swappable vars (`--html-bg`, `--body-bg`, `--selection-bg`,
+`--manga-offset` for shadow color, `--manga-line` for border ink), and
+`:root[data-theme='lightup']` remaps the base `--manga-*` tokens plus those vars;
+every `bg-manga-*` / `border-manga-*` / offset-shadow utility inherits the flip
+automatically. Two light-up safety nets: `.page-hero` becomes a lit bordered card
+(so dark hero text stays readable on the dark room), and scoped rules retint the
+common `shadow-[Npx_Npx_0_var(--manga-black)]` offsets to the warm `--manga-offset`
+ledge. The `.lamp-hang*` classes and `lamp-sway`/`lamp-yank`/`lamp-flash`
+keyframes style the pull-string bulb.
 
 ---
 
@@ -182,15 +217,19 @@ inline (defense in depth, plus id-format validation).
 
 ## 4. The home "Study Desk"
 
-`src/app/page.tsx` (server) reads optional per-user global stats
-(`getGlobalStatsForUser`) and renders `HomeStudyDesk` (server,
-`src/components/home/HomeStudyDesk.tsx`). The desk is a two-column
-`MangaPageShell`:
+`src/app/page.tsx` (server) reads optional per-user stats for both shipped
+modules in parallel - `getGlobalStatsForUser` (dictation) and
+`getVocabStatsForUser` (vocabulary) - and passes them to `HomeStudyDesk` (server,
+`src/components/home/HomeStudyDesk.tsx`) as `dictationStats` + `vocabStats`.
+Anonymous visitors (or a missing DB) render the desk with no personal stats. The
+desk is a two-column `MangaPageShell`:
 
 - Left "page" (`<section>`): hero title, a hand-drawn `StudyDeskSketch` (inline
   SVG of a desk), the `HomeTodayPanel`, and the `HomeModuleLauncher`.
-- Right "IELTS path" aside: `HomeIeltsSnapshot` (stat tiles + focus panel) and
-  `HomeFutureModuleMap`.
+- Right "IELTS path" aside: `HomeIeltsSnapshot` (dictation stat tiles + focus
+  panel), `HomeVocabularySnapshot` (vocabulary stat cards - recall due, known
+  total, streak, accuracy), and `HomeFutureModuleMap`. `HomeVocabularySnapshot`
+  is an inline component inside `HomeStudyDesk.tsx`, not a separate file.
 
 Sub-panels (all server components):
 
@@ -198,7 +237,8 @@ Sub-panels (all server components):
 | --------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `HomeTodayPanel`      | `home/HomeTodayPanel.tsx`      | "Today" tasks derived from stats: weekly practice minutes, weak-word count, due review count; plus an "Open Dictation Lab" `MangaButton` and a disabled "Add Module Later" button.    |
 | `HomeModuleLauncher`  | `home/HomeModuleLauncher.tsx`  | Grid of the first four `APP_MODULES` as `ModuleCard`s, each with a lucide icon (mapped by module key). Only `active` modules get a live `href` and "Open" CTA; others show "Planned". |
-| `HomeIeltsSnapshot`   | `home/HomeIeltsSnapshot.tsx`   | Four `MetricTile`s (listening streak, videos completed, weak words, next review) from stats, plus a "This week / Focus" `MangaPanel` whose copy switches on whether reviews are due.  |
+| `HomeIeltsSnapshot`   | `home/HomeIeltsSnapshot.tsx`   | Four `MetricTile`s (listening streak, videos completed, weak words, next review) from `dictationStats`, plus a "This week / Focus" `MangaPanel` whose copy switches on whether reviews are due. |
+| `HomeVocabularySnapshot` | `home/HomeStudyDesk.tsx` (inline) | Four vocabulary stat cards (recall due, known total, day streak, recall accuracy) from `vocabStats`. Defined inside `HomeStudyDesk`, rendered in the right aside. |
 | `HomeFutureModuleMap` | `home/HomeFutureModuleMap.tsx` | Four `QueueRow`s (Listening active, Reading/Writing/Speaking "Later") with icon action chips - a static roadmap, not stats-driven.                                                    |
 
 `APP_MODULES` (`src/constants/modules.ts`) is the single source of truth for the
@@ -303,7 +343,7 @@ Practice component reference:
 | `DictationPracticeHeader`      | `DictationPracticeHeader.tsx`      | client  | Eyebrow/title/level + `CompletionBadge` + `DictationTranslationBar`. Presentational.                                                                                                               |
 | `DictationYoutubePlayer`       | `DictationYoutubePlayer.tsx`       | client  | Segment-aware YouTube IFrame wrapper; exposes a controller (replay/seek/playSegment) upward; supports `mockPlayer` for tests. No `src/requests`.                                                   |
 | `DictationControls`            | `DictationControls.tsx`            | client  | Playback/nav toolbar; speed and text-size presets; restart confirm `Dialog`.                                                                                                                       |
-| `GuidedAnswerInput`            | `GuidedAnswerInput.tsx`            | client  | Guided textarea with hint chips (Tab fills next hint) and character-level correction overlay. Uses `correction` module helpers.                                                                    |
+| `GuidedAnswerInput`            | `GuidedAnswerInput.tsx`            | client  | Guided textarea with hint chips (Tab fills next hint) and character-level correction overlay. Uses `correction` module helpers. Exposes a `renderCorrectionWord` slot; the shell passes `QuickVocabWordButton` so corrected words become click-to-look-up vocabulary chips (see section 6). |
 | `DictationAnswerBox`           | `DictationAnswerBox.tsx`           | client  | Simpler standalone answer box (Check/Reveal/Skip). Not used by the shell.                                                                                                                          |
 | `DictationFeedback`            | `DictationFeedback.tsx`            | client  | Standalone attempt-result panel (token chips). Not rendered by the shell.                                                                                                                          |
 | `DictationTranslation`         | `DictationTranslation.tsx`         | client  | After-effort translation caption; returns null until unlocked.                                                                                                                                     |
@@ -375,53 +415,118 @@ action + `router.refresh()`. `VideoAssignTable` uses its own private
 
 ## 6. Vocabulary feature UI
 
-`/vocabulary` is a server page (`src/app/(app)/vocabulary/page.tsx`) that wraps a
-client island, `src/components/vocabulary/VocabularyDashboard.tsx`, inside
-`MangaPageShell` and `AppTopbar`. It passes `mongoConfigured` plus an `isAdmin`
-flag from `auth()`; all live vocabulary data is loaded through
-`src/requests/vocabularyApi.ts` so the client does not import server-only
-modules.
+### 6.1 Vocabulary routes
 
-`VocabularyDashboard` renders four core areas:
+| URL                | File                                     | Type                   | Purpose                                                                                         | Auth                    |
+| ------------------ | ---------------------------------------- | ---------------------- | ----------------------------------------------------------------------------------------------- | ----------------------- |
+| `/vocabulary`      | `src/app/(app)/vocabulary/page.tsx`      | Server + client island | Vocabulary dashboard: stats/growth, recall launcher + modal, dictionary lookup, search, Explore. | Open (practice actor)   |
+| `/vocabulary/words`| `src/app/(app)/vocabulary/words/page.tsx`| Server                 | Filtered word list for `learning`, `dueToday`, `alreadyKnow`, `mastered`, `knownTotal` views.    | Open (practice actor)   |
+| `/admin/vocab`     | `src/app/admin/vocab/page.tsx`           | Server + client island | Enrichment queue summary + `Enrich N` batch control.                                             | Admin only (via layout) |
 
-- Stats and growth: linked `MetricTile` counters plus a 14-day bar chart from
-  `GET /api/vocab/stats`. The five counters navigate to
-  `/vocabulary/words?view=...` for `learning`, `dueToday`, `alreadyKnow`,
-  `mastered`, and `knownTotal`.
-- Recall: the first due flashcard from `GET /api/vocab/recall/due`, with
-  Correct/Missed actions calling `POST /api/vocab/recall/answer`.
-- Dictionary/search: an `Input` plus `Lookup` action calling
-  `POST /api/vocab/entries/lookup`, displaying definitions, examples, synonyms,
-  status, and speech synthesis fallback via the browser.
-- Explore: unclassified, already-enriched frequency-ranked words from
-  `GET /api/vocab/explore`, shown as a stacked carousel with previous/next icon
-  controls and no horizontal scrollbar. Neighbor cards are spaced as clickable
-  layers, so clicking a side card moves it into focus. The minimap below the
-  carousel mirrors each word and jumps directly to the matching card when
-  clicked. Its header includes color swatches: white for unpicked, pink for
-  `Should Learn`, green for `Already Know`, and an outlined active square for
-  the current card. Seed shells are hidden until provider data is ready.
+All three pages set `dynamic = 'force-dynamic'` and `runtime = 'nodejs'` and render
+the manga shell + `AppTopbar`. Server-only data on `/vocabulary` is loaded from the
+client through `src/requests/vocabularyApi.ts` (so the client island never imports
+server modules); `/vocabulary/words` and `/admin/vocab` fetch their initial data on
+the server. The `getPracticeActorId()` actor (user id, else guest cookie) scopes
+per-user data.
 
-`/admin/vocab` (`src/app/admin/vocab/page.tsx`) fetches the initial queue summary
-server-side, then renders `src/components/vocabulary/AdminVocabPanel.tsx`.
-Admins can refresh the queue from the icon button aligned with the "Vocabulary
-queue" header and run `Enrich N`; the client caps through the API route, while
-the server enforces max 10 and `requireAdmin()`. The `/vocabulary` shortcut to
-this page is shown only when `isAdmin` is true.
+### 6.2 `/vocabulary` dashboard tree
 
-The deferred dictation word-popover and Home vocab reminder are not in this
-frontend yet; they are tracked in `TODOS.md`.
+`/vocabulary` (`src/app/(app)/vocabulary/page.tsx`) reads `auth()` only for the
+`isAdmin` flag and passes it plus `mongoConfigured` into the client island
+`VocabularyDashboard` (`src/components/vocabulary/VocabularyDashboard.tsx`). The
+dashboard owns all vocabulary state (stats, search results, selected entry, explore
+entries + optimistic decisions, recall tasks, modal open) and calls the request
+helpers in `vocabularyApi.ts`: `getVocabStatsApi`, `getExploreVocabApi`,
+`getDueVocabRecallApi`, `searchVocabApi`, `lookupVocabEntryApi`,
+`setVocabItemStatusApi`, `answerVocabRecallApi`. When `mongoConfigured` is false it
+renders a "Database needed" `MangaPanel`.
+
+```mermaid
+graph TD
+  Page["vocabulary/page.tsx (server)<br/>reads isAdmin, mongoConfigured"]
+  Page --> Dash["VocabularyDashboard (client)<br/>owns all state + vocabularyApi calls"]
+  Dash --> Hero["Hero: PageTag + h1 + streak badge<br/>+ Admin Enrich MangaButton (isAdmin only)"]
+  Dash --> Stats["VocabularyStatsOverview (client)"]
+  Stats --> Tiles["5 linked MetricTiles<br/>-> /vocabulary/words?view=..."]
+  Stats --> Growth["Growth MangaPanel: Progress + 14-day bars"]
+  Stats --> Hard["Hardest words MangaPanel<br/>(VocabTermHeader rows)"]
+  Dash --> Search["VocabularySearchPanel (client)<br/>Input + Lookup, definitions, synonyms"]
+  Search --> STerm["VocabTermHeader (speak)"]
+  Dash --> Launcher["VocabularyRecallLauncher (client)<br/>due count + Start Recall"]
+  Dash --> Explore["VocabularyExplorePanel (client)<br/>stacked carousel + minimap legend"]
+  Explore --> ETerm["VocabTermHeader per card"]
+  Dash --> Modal["VocabRecallModal (client, Dialog)<br/>listen / choose / example prompts"]
+  Modal --> MTerm["VocabTermHeader"]
+```
+
+Area behavior:
+
+- Stats and growth (`VocabularyStatsOverview`): five linked `MetricTile` counters
+  (Learning, Due Today, Already Know, Mastered, Known Total) navigating to
+  `/vocabulary/words?view=...`, a `Progress` bar plus a 14-day bar chart of daily
+  growth, and a "Hardest words" panel of `VocabTermHeader` rows.
+- Recall (`VocabularyRecallLauncher` + `VocabRecallModal`): the launcher is an
+  ink-toned `MangaPanel` showing the due count and up to four upcoming cards with a
+  "Start Recall" button; the modal is a full-screen `Dialog` that runs the flashcard
+  task types (`listenChooseWord`, `listenChooseDefinition`, `definitionChooseWord`,
+  `wordChooseDefinition`, `exampleRemember`) with speech synthesis, WebAudio
+  correct/wrong tones, a "Correct answer" reveal on a miss, and a "I cannot listen
+  now" skip for listening tasks. The dashboard auto-opens it once per day when cards
+  are due (localStorage-gated).
+- Dictionary/search (`VocabularySearchPanel`): an `Input` + `Lookup` calling
+  `lookupVocabEntryApi`, then `searchVocabApi` for related results; shows the
+  required Vietnamese meaning, English definitions/examples, synonyms, enrichment
+  status, and Should Learn / Already Know actions (disabled until a Vietnamese
+  meaning exists). Speech is browser `speechSynthesis`.
+- Explore (`VocabularyExplorePanel`): unclassified, already-enriched
+  frequency-ranked words as a stacked carousel with prev/next controls and no
+  horizontal scrollbar; neighbor cards are clickable layers that move into focus,
+  and the minimap below jumps to any card. The legend swatches are white
+  (unpicked), pink (`Should Learn`), green (`Already Know`), plus an outlined active
+  square. Should Learn / Already Know decisions are applied optimistically (see
+  `markEntry` with the `explore` source) and rolled back on error.
+
+### 6.3 `/vocabulary/words` list
 
 `/vocabulary/words` parses its `view` search param with
-`src/modules/vocabulary/services/vocabWordListService.ts`, reads the current
-practice actor via `getPracticeActorId()`, and renders
-`src/components/vocabulary/VocabularyWordList.tsx`. The view tabs are colored
-links over the same page. Pagination is client-side over the server-fetched word
-array, defaulting to 50 items per page with presets for 5, 10, 20, 30, 50, 100,
-and 200 plus a custom numeric input. Each word card can call
-`setVocabItemStatusApi` to move the word to `Should Learn` or `Already Know`,
-then updates the current client-side list immediately. There is no separate API
-route for this server-rendered list.
+`parseVocabWordListView` (`src/modules/vocabulary/services/vocabWordListService.ts`),
+reads the current practice actor via `getPracticeActorId()`, loads the words with
+`listVocabWordsForUser`, and renders the client `VocabularyWordList`
+(`src/components/vocabulary/VocabularyWordList.tsx`). The five view tabs are colored
+`Link`s (one per view) with `aria-current` on the active tab. Pagination is
+client-side over the server-fetched array, defaulting to 50 per page with presets
+5/10/20/30/50/100/200 (a `Select`) plus a custom numeric `Input`. Each word card
+(`VocabTermHeader`, status meta, frequency `PageTag`, Vietnamese + English preview)
+can call `setVocabItemStatusApi` to flip the word to `Should Learn` or
+`Already Know`, updating the client list immediately and dropping words that no
+longer match the active view. There is no dedicated API route for this
+server-rendered list.
+
+### 6.4 `/admin/vocab` enrichment
+
+`/admin/vocab` (`src/app/admin/vocab/page.tsx`, guarded by the `/admin` layout)
+fetches the initial queue summary server-side (`getVocabAdminQueueSummary`) and
+renders the client `AdminVocabPanel` (`src/components/vocabulary/AdminVocabPanel.tsx`).
+It shows five `MetricTile` counters (Enrichable, Ready, Failed, Not Found, Stale
+Locks), a refresh icon button (`getVocabAdminQueueApi`), and an `Enrich N` control
+(`enrichVocabularyAdminApi`); the client caps the input at 10, and the server route
+enforces max 10 and `requireAdmin()`. The `/vocabulary` "Admin Enrich" shortcut is
+shown only when `isAdmin` is true.
+
+### 6.5 Vocabulary UI primitives and dictation integration
+
+Two vocabulary-only building blocks recur across the components:
+
+| Component | File | Client? | Role |
+| --------- | ---- | ------- | ---- |
+| `VocabTermHeader` | `vocabulary/VocabTermHeader.tsx` | client | Shared term header: big term + phonetic pronunciation + a speak `Button` (uses an injected `speakTerm` or a `speechSynthesis` fallback). Size presets `md`/`lg`/`xl`. Used by the stats, search, explore, recall, and word-list surfaces. |
+| `QuickVocabLookup` / `QuickVocabWordButton` | `vocabulary/QuickVocabLookup.tsx` | client | `QuickVocabWordButton` wraps a single word as a click-to-look-up trigger that opens a `Dialog` with the entry (Vietnamese meaning, definition, Should Learn / Already Know). `QuickVocabLookup` tokenizes a whole sentence into per-word buttons. Both call `lookupVocabEntryApi` (with occurrence context) and `setVocabItemStatusApi`. |
+
+`QuickVocabWordButton` is wired into dictation: `DictationPracticeShell` passes it
+to `GuidedAnswerInput`'s `renderCorrectionWord` slot, so corrected words in the
+guided answer become click-to-look-up vocabulary chips carrying the current
+`attemptId`, `segmentId`, `videoId`, and context sentence.
 
 ## 7. Shared layout chrome
 
@@ -441,14 +546,20 @@ Every page wraps its content in `MangaPageShell` and passes an `AppTopbar` into 
   (`hasGoogleAuth()`), a "Sign in" `MangaButton` (server-action `signIn('google')`)
   when signed out, or `UserMenu` when signed in.
 - `UserMenu` (`src/components/common/UserMenu.tsx`, client): the identity chip
-  (avatar or initial) as a `DropdownMenu` trigger, with links to Stats, Admin
-  (admins only), and a destructive "Sign out" that opens a confirm `Dialog`.
+  (avatar or initial) as a `DropdownMenu` trigger, with a Favorites link, an Admin
+  link (admins only), and a destructive "Sign out" that opens a confirm `Dialog`.
   The `signOut` server action is injected as a prop so this client file never
   imports the auth chain.
+- `ThemeProvider` + `PullStringToggle` are mounted once in `src/app/layout.tsx`
+  (not in the topbar): the provider wraps every page and the pull-string bulb is
+  fixed to the viewport corner across all routes (see section 1.5). The topbar
+  itself renders no theme control.
 
 Navigation source of truth: `PRIMARY_NAV_ITEMS` in `src/constants/modules.ts`
-("Study Desk" plus every `APP_MODULES` short title). Because only `dictation` is
-active, the non-dictation nav links point at routes that are not yet implemented.
+("Study Desk" plus every `APP_MODULES` short title). Only `dictation` and
+`vocabulary` are `active`; the remaining nav items (Writing, Coach, Reading,
+Speaking) are rendered `disabled` and point at routes that are not yet
+implemented.
 
 ---
 

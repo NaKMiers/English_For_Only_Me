@@ -9,8 +9,8 @@ the YouTube player hook, and the vocabulary lookup/enrichment/recall spine. The
 layer follows one dominant pattern: small, side-effect-free "decision"/"aggregation" functions that
 are heavily unit-tested (the many `*.test.ts` files), kept strictly separate from the
 thin `server-only` I/O modules that read/write MongoDB and call external providers.
-Every path below is absolute-relative to the repo root
-`/home/nakmiers/ME/IT_IT/Webs/EnglishForOnlyMe/`.
+Every path below is repo-relative to the project root
+`/home/KHOANA/ME/IT_IT/Webs/English_For_Only_Me`.
 
 Note on notation: this document uses plain ASCII throughout. Where the source code
 emits a Unicode range separator (an en dash) in a level range string such as
@@ -206,28 +206,48 @@ matches this local record aside from generated ids/dates and the idempotency de-
 
 ## segmenting/ - transcript to practice segments
 
-Files: `src/modules/dictation/segmenting/{buildSegments,editSegments,text,types}.ts`.
+Files: `src/modules/dictation/segmenting/{buildSegments,editSegments,resegmentAll,text,types}.ts`
+plus the shared persister `src/modules/dictation/services/rebuildTranscriptSegments.ts`.
 
 Responsibility: convert a transcript (either timed cues or a plain text blob) into an
-ordered list of practice segments, each with quality flags, and support manual editing
-of that list.
+ordered list of practice segments, each with quality flags, support manual editing
+of that list, and persist/rebuild the segment set (including a one-shot bulk backfill).
 
 ### Deep dive: `buildDictationSegments` (`buildSegments.ts`)
 
 Input `BuildSegmentsInput { rawCues, rawText }`; output `BuildSegmentsResult
 { segments: SegmentDraft[], qualityFlags, qualityStatus }`.
 
-Two paths:
+Segmentation is grammar-based and pause-aware, not cue-based: a sentence is the base
+unit, and a long sentence is only cut where a speaker would naturally pause. The
+guiding rule is integrity over brevity - a meaningful span is kept whole even if that
+leaves a long segment.
 
-- If `rawCues.length > 0`, `groupTimedCues` accumulates cues into groups, closing a group
-  when the accumulated normalized text either ends a sentence (`hasSentenceEnding`) or
-  reaches `MAX_FRAGMENT_WORDS = 34` words. `createSegmentFromCueGroup` then builds a
-  `SegmentDraft`: joins the group's text, derives `startMs`/`endMs` only when every cue is
-  timed (else null), records `cueIndexes`, and assigns timing flags: `untimed` (no cue
-  timed), `partialTiming` (some untimed), `overlappingTiming` (a cue starts before the
-  previous ends), `largeGap` (gap between cues exceeds `LARGE_GAP_MS = 3500`).
-- Otherwise `createUntimedSegments` splits `rawText` into sentences
-  (`splitTextIntoSentences`) and marks each `untimed`.
+The pipeline (`cues -> per-word time -> sentences -> pause-split -> segments`):
+
+- Build a flat `TimedWord[]` stream. With `rawCues.length > 0`, `cueToTimedWords`
+  interpolates a per-word `startMs`/`endMs` inside each cue by character position (so
+  cuts can land mid-cue yet still seek close to the right spot). Otherwise the words
+  come from `rawText` with null timing.
+- `splitWordsIntoSentences` groups the stream into sentences using the
+  abbreviation-aware `splitTextIntoSentences` (see below).
+- `splitSentenceWords` splits each sentence recursively. A chunk of
+  `<= MAX_SEGMENT_WORDS = 15` words is kept as is. Longer chunks are cut at the best
+  pause found by `findBestSplit`, which scores candidate boundaries and only ever cuts
+  on a real pause: priority 2 when the previous word ends with pause punctuation
+  (`,` `;` `:` or a dash - `PAUSE_PUNCTUATION`; a period never applies since sentences
+  are already split on `.` `!` `?`), priority 1 on a real silence gap
+  (`>= PAUSE_GAP_MS = 400`), and 0 (never cut) otherwise. Ties break toward the middle,
+  and both sides keep `>= MIN_SPLIT_SIDE_WORDS = 2`.
+- If a long chunk has no pause at all, it stays whole - unless it is a degenerate run
+  (`exceedsHardLimit`: `> HARD_MAX_WORDS = 80` words or `> HARD_MAX_CHARS = 700` chars,
+  e.g. a punctuation-stripped transcript that would exceed the stored-text limit). Only
+  then does `forceSplitSpan` chop it down to `<= MAX_SEGMENT_WORDS` at the widest
+  silence gap (else the nearest-middle word) as a last resort.
+- `createSegmentFromWords` builds each `SegmentDraft`: joined text, `startMs`/`endMs`
+  only when every word is timed (else null), `cueIndexes`, and timing flags `untimed`
+  (no word timed) or `partialTiming` (some untimed). It intentionally drops the
+  `missingPunctuation` flag, since a legitimate clause cut ends mid-sentence.
 
 After building, `flagDuplicateText` marks any segment whose `normalizedText` repeats an
 earlier one with `duplicateText`, and segments are re-numbered by `order`.
@@ -238,7 +258,9 @@ Text-level quality flags come from `getTextQualityFlags` (`text.ts`):
 (no sentence-ending punctuation), `likelyNonEnglish` (fewer than 4 letters, no Latin
 words, or Latin-letter ratio below 0.65). The full `DictationSegmentQualityFlag` union
 (`types.ts`): `tooLong | tooShort | untimed | partialTiming | missingPunctuation |
-likelyNonEnglish | overlappingTiming | largeGap | duplicateText`.
+likelyNonEnglish | overlappingTiming | largeGap | duplicateText`. `overlappingTiming`
+and `largeGap` remain valid values (still in the model enum and record validators) but
+are no longer produced by the current pause-based builder.
 
 Sentence splitting (`splitTextIntoSentences`) is abbreviation-aware: `findSentenceBoundary`
 skips periods that are decimal points, known abbreviations (`ABBREVIATIONS` set, with
@@ -264,6 +286,33 @@ Operates on `EditableSegment` (a subset of `DictationSegmentApiRecord`). The dis
   end when both are timed, unions and sorts `cueIndexes`, and re-normalizes.
 
 All edits re-densify `order` so the list stays contiguous.
+
+### Persisting and bulk rebuild (`services/rebuildTranscriptSegments.ts`, `resegmentAll.ts`)
+
+Segments are never hand-persisted; one shared writer owns the destructive rebuild.
+`persistRebuiltSegments({ transcript, video, built })` (`rebuildTranscriptSegments.ts`,
+takes a non-empty `BuildSegmentsResult`) captures the old segment ids, `deleteMany`s them,
+`insertMany`s fresh segments (new `ObjectId`s, each stamped with `transcriptSourceHash`,
+`order`, text, timing, `cueIndexes`, `qualityFlags`, `attemptStatus: 'notStarted'`), then
+updates `transcript.segmentCount`, sets `video.status = 'ready'` and `video.sentenceCount`,
+and finally prunes review items that referenced the now-deleted segment ids. Attempts are
+intentionally left intact (they carry `expectedTextSnapshot`, so historical accuracy
+survives a rebuild). `toCueRecords` normalizes embedded transcript cues into the
+`DictationCueRecord` shape the segmenter expects.
+
+Two callers share this writer:
+
+- Transcript save (`POST /api/dictation/transcripts`): `autoBuildPrimarySegments` runs
+  `buildDictationSegments` then `persistRebuiltSegments` right after a transcript is
+  saved, so a video always has practice segments the moment captions are stored (no
+  separate build step). An empty build yields a 409 at the route.
+- Bulk backfill (`resegmentAll.ts`): `resegmentAllTranscripts({ dryRun })` scans every
+  `isActive: true` transcript, processes only the one the video's `activeTranscriptId`
+  actually points at (skipping stray active records, translation tracks, and missing
+  videos), and rebuilds each via `persistRebuiltSegments` so existing videos pick up the
+  current pause-based logic. Dry-run by default reports old-vs-new segment counts;
+  `dryRun: false` rebuilds. It is idempotent and exposed through
+  `scripts/resegmentAllTranscripts.ts`.
 
 ---
 
@@ -573,7 +622,8 @@ counts to 0.
   `status: 'completed'` (replays create new sessions, so counting sessions counts replays).
   `getCompletionCountsForUser` returns a `Map<videoId, count>` via aggregation;
   `getCompletionCountForVideo` counts for one video. These counts feed the completion badge
-  tiers.
+  tiers. `getLatestCompletedVideoForUser` returns the user's most recently completed,
+  non-archived video (sorted by `completedAt` then `updatedAt`) for a prominent results CTA.
 
 ### Backfill migration (`backfill.ts`)
 
@@ -744,118 +794,282 @@ Files: `src/modules/dictation/{levels,completionBadges,videoReadiness,statusDisp
 
 ---
 
-## vocabulary/ - dictionary cache and recall spine
+## vocabulary/ - dictionary cache, enrichment, and recall spine
 
 Files: `src/modules/vocabulary/**`.
 
-Responsibility: seed common English words, normalize search terms, enrich
-entries through free providers, manage per-user word status, schedule daily
-recall, power Explore, and aggregate vocabulary stats.
+Responsibility: seed common English words, normalize lookup terms, enrich entries
+through free dictionary + translation providers, gate every user-facing word on a
+Vietnamese meaning, manage per-user word status, schedule spaced recall as server-signed
+tasks, power Explore, and aggregate vocabulary stats. It reuses the same pure-vs-`server-only`
+split as dictation, and shares the identity/actor helpers in `dictation/services`.
 
-### Core contracts
+The three MongoDB collections it revolves around are `VocabEntry` (global, deduped word
+shells enriched by providers), `UserVocabItem` (per-user learning state and recall
+schedule for one entry), and `VocabRecallAttempt` (an append-only, idempotent answer log).
+`VocabOccurrence` records where a user met a word.
 
-- `types.ts`: shared API records and status unions for `VocabEntry`,
-  `UserVocabItem`, `VocabOccurrence`, five-mode recall tasks, signed answer
-  actions, stats, provider payloads, and admin queue summaries.
-- `constants.ts`: limits and vocabulary policy. Important values include
-  `VOCAB_ADMIN_ENRICH_MAX_LIMIT = 10`, `VOCAB_EXPLORE_DEFAULT_LIMIT = 20`,
-  `VOCAB_SEARCH_DEFAULT_LIMIT = 12`, `VOCAB_STATS_TREND_DAYS = 14`, provider
-  names, recall stage intervals, and `ENRICHABLE_ENTRY_STATUSES`.
-- `normalizeVocabTerm.ts`: normalizes terms at boundaries with NFKC, quote
-  normalization, whitespace collapse, lowercase, punctuation trimming, a max
-  length of 80, and a letter/apostrophe/space/hyphen safe regex. Returns
-  `word` or `phrase`, or `null` for invalid input.
+| Subdir           | Files                                                                                     | Responsibility                                                                 |
+| ---------------- | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| (root)           | `types.ts`, `constants.ts`, `normalizeVocabTerm.ts`, `vietnameseMeaning.ts`               | Shared records/unions, limits + policy, term normalization, VI-meaning gate    |
+| `seed/`          | `seedVocabulary.ts`                                                                        | Download + parse NGSL, upsert the top 1000 word shells                         |
+| `providers/`     | `index.ts`, `types.ts`, `providerUtils.ts`, `dictionaryApiDev.ts`, `freeDictionaryApi.ts`, `myMemoryTranslate.ts` | Normalize free dictionary APIs + a Vietnamese translation API behind one adapter contract |
+| `enrichment/`    | `enrichmentService.ts`                                                                     | Leased, fallback provider pipeline that fills entries and the admin batch/queue |
+| `explore/`       | `exploreService.ts`                                                                        | Frequency-ranked unclassified words via an in-DB anti-join                     |
+| `recall/`        | `recallScheduler.ts`, `recallTaskService.ts`, `recallTaskToken.ts`, `recallAnswerService.ts` | Spaced-repetition scheduler, signed task builder, HMAC token, trusted answer path |
+| `stats/`         | `vocabStats.ts`, `vocabStatsService.ts`                                                    | Pure and aggregation-backed vocabulary analytics                               |
+| `services/`      | `vocabEntryService.ts`, `userVocabItemService.ts`, `vocabWordListService.ts`, `vocabularyRouteDecisions.ts`, `vocab*Records.ts`, `vocabApiErrors.ts` | Entry/item/word-list business logic, route decisions, record mappers, error mapping |
 
-### Seed
+### Core contracts (`types.ts`, `constants.ts`)
 
-`seed/seedVocabulary.ts` downloads
-`https://www.newgeneralservicelist.com/s/NGSL_12_stats.csv`, parses ranked NGSL
-rows, and upserts the top 1000 shells through
-`scripts/seedVocabulary.ts` / `bun run vocab:seed`. Seed rows set
-`enrichmentStatus = seeded`, `frequencyRank`, `difficultyLevel = core-1000`,
-and attribution/license metadata for the New General Service List.
+`types.ts` (no runtime code) defines the status unions and API records: `VocabEntryType`
+(`word | phrase`), `VocabEntryEnrichmentStatus` (`seeded | pending | enriching | ready |
+failed | notFound`), `VocabUserItemStatus` (`learning | alreadyKnow | mastered | ignored`),
+`VocabWordListView`, `VocabRecallStage` (`1..7`), the five `VocabRecallTaskType`s,
+`VocabRecallAnswerAction` (`lookup | notSure | remember`), plus `VocabEntryApiRecord`,
+`UserVocabItemApiRecord`, `VocabOccurrenceApiRecord`, `VocabRecallTaskRecord`,
+`VocabStatsRecord`, and `VocabAdminQueueSummaryRecord`.
 
-### Provider adapters and enrichment
+`constants.ts` holds limits and policy: `VOCAB_MAX_TERM_LENGTH = 80`,
+`VOCAB_LOOKUP_TIMEOUT_MS = 8000`, `VOCAB_ENRICHMENT_LEASE_MS = 60_000`, admin enrich
+default 5 / max 10, explore default 20 / max 50, recall default 20 / max 50, search
+default 12 / max 25, `VOCAB_STATS_TREND_DAYS = 14`, and `VOCAB_RECALL_TASK_TOKEN_TTL_MS`
+(30 minutes). `ENRICHABLE_ENTRY_STATUSES = seeded | pending | failed`. Provider names live
+in `VOCAB_PROVIDER_NAMES` (`dictionaryapi.dev`, `freedictionaryapi.com`, `datamuse`), but
+only `VOCAB_CORE_PROVIDER_NAMES` (the first two) are wired as live adapters; `datamuse` is
+reserved. `VOCAB_RECALL_STAGE_INTERVAL_DAYS = { 1:1, 2:1, 3:4, 4:7, 5:14, 6:17 }`.
+`VOCAB_API_PATHS` centralizes the endpoint strings.
 
-`providers/dictionaryApiDev.ts` and `providers/freeDictionaryApi.ts` normalize
-two free dictionary APIs behind `providers/types.ts`. Each adapter returns a
-typed result: `ready`, `notFound`, `rateLimited`, `timeout`, `malformed`, or
-`emptyUsefulData`. The adapters collect definitions, examples, phonetics,
-audio URLs, source attribution, license metadata, synonyms, antonyms, and
-related words. Browser text-to-speech is a UI fallback and is not persisted.
+### Deep dive: term normalization (`normalizeVocabTerm.ts`)
 
-`enrichment/enrichmentService.ts` owns the lease pipeline:
+`normalizeVocabTerm(input)` returns `{ entryType, normalizedTerm, term }` or `null`. It
+NFKC-normalizes, folds curly quotes and backticks to `'`, collapses whitespace, strips
+edge punctuation (`EDGE_PUNCTUATION_REGEX`), trims, and lowercases. It rejects anything
+empty, longer than 80 chars, or failing `SAFE_TERM_REGEX` (`^[\p{L}\p{M}' -]+$` -
+letters/marks/apostrophe/space/hyphen only, so digits and most symbols are rejected).
+`entryType` is `phrase` when the result contains a space, else `word`. This is the single
+key used for entry dedup (`{ language, normalizedTerm }`), search-prefix regexes, and seed
+upserts, so lookups collapse to one canonical shell.
 
-1. Acquire a short lease with `findOneAndUpdate`, setting `enrichmentStatus =
-enriching`, a random `enrichmentLockId`, and `enrichmentLeaseExpiresAt`.
-2. Call providers in priority order with timeout and fallback.
-3. Persist a ready/failed/notFound result only if the same `lockId` still owns
-   the row.
-4. Release the lease or set `nextRetryAt` for retryable failure.
+### Deep dive: the Vietnamese-meaning gate (`vietnameseMeaning.ts`)
 
-`enrichNextVocabularyEntries` is the admin batch path: max 10 rows/request,
-concurrency 2, summary counts for processed, ready, failed, not found, skipped,
-and rate-limited rows.
+A hard product rule: an entry is only usable once it carries a Vietnamese localized
+meaning. `VOCAB_REQUIRES_VI_MEANING_FILTER` is a Mongo `$elemMatch` requiring a
+non-empty `localizedMeanings` entry with `language === 'vi'`; `VOCAB_MISSING_VI_MEANING_FILTER`
+is its `$nor`. That filter is applied everywhere words reach a user - search
+(`searchVocabEntries`), Explore, recall due-lists and distractors, the word lists, and the
+"can this be learned" guard - so a word with dictionary data but no VI meaning stays
+invisible. `getVietnameseMeaning`/`hasVietnameseMeaning` read the `vi` meaning;
+`getRequiredVietnameseMeaning` falls back to the string `Needs Vietnamese meaning.`, and
+`getEnglishDefinition` returns the first definition or a generated placeholder.
 
-`explore/exploreService.ts` returns only frequency-ranked entries whose
-`enrichmentStatus` is `ready`, then excludes words the actor has already
-classified through a MongoDB `$lookup` against `UserVocabItem`. Seed shells stay
-out of Explore until lookup or admin enrichment has filled provider data.
+### seed/ - NGSL bootstrap (`seedVocabulary.ts`)
 
-### User status and recall
+`seedVocabularyFromOfficialSource` downloads `NGSL_STATS_CSV_URL`
+(`https://www.newgeneralservicelist.com/s/NGSL_12_stats.csv`), and `parseNgslStatsCsv`
+parses ranked rows (a small quote-aware CSV splitter), skipping the header and any row that
+fails `normalizeVocabTerm` or lacks an integer rank, capped at `limit` (1000).
+`seedVocabularyEntries` then `bulkWrite`s unordered upserts keyed by `{ language,
+normalizedTerm }`: `$set` sets `frequencyRank`, `entryType`, license/attribution metadata,
+`difficultyLevel` (`core-1000` when rank <= 1000, else `core`), and `seedRank/seedSource`;
+`$setOnInsert` stamps `enrichmentStatus: 'seeded'` and `enrichmentAttempts: 0`. Idempotent
+(re-running only refreshes `$set`). Run via `scripts/seedVocabulary.ts` / `bun run
+vocab:seed`; a companion `bun run vocab:backfill-vi` backfills Vietnamese meanings.
 
-`recall/recallScheduler.ts` implements the seven-touch schedule:
+### providers/ - adapters and the fallback chain
 
-- `Should learn`: stage 1, due now.
-- Correct stage 1 -> stage 2 due in 1 day.
-- Correct stage 2 -> stage 3 due in 1 day.
-- Correct stage 3 -> stage 4 due in 4 days.
-- Correct stage 4 -> stage 5 due in 7 days.
-- Correct stage 5 -> stage 6 due in 14 days.
-- Correct stage 6 -> stage 7 due in 17 days, which lands on day 45 from the
-  first touch.
-- Correct stage 7 -> `mastered`.
-- Any wrong answer -> reset to stage 1 due now.
+Each dictionary adapter is a `VocabProviderAdapter` (`providers/types.ts`) taking
+`{ term, language, fetcher?, now?, timeoutMs? }` and returning a `VocabProviderResult`
+discriminated union: `ready` (with a `NormalizedProviderPayload`), `notFound`,
+`rateLimited` (optional `retryAfter`), `timeout`, `malformed`, or `emptyUsefulData`.
+`providerUtils.ts` holds the shared HTTP core: `fetchProviderJson` maps HTTP 404 -> `notFound`,
+429 -> `rateLimited` (parsing `retry-after`), other non-2xx -> `malformed`, and an
+`AbortController` timeout (default `VOCAB_LOOKUP_TIMEOUT_MS`) -> `timeout`; `hasUsefulPayload`
+decides whether a normalized payload has any definitions/phonetics/audio/synonyms/related
+words (else `emptyUsefulData`).
 
-`recall/recallTaskService.ts` builds the due review session as server-signed
-tasks. It supports five modes: listen and choose the word, listen and choose
-the definition, example sentence memory check, definition to word, and word to
-definition. Listening tasks can be excluded for a short client-side "cannot
-listen now" window.
+- `dictionaryApiDev.ts` (`dictionaryapi.dev`): walks the array response collecting
+  phonetics, audio URLs (prefixing `//` with `https:`), definitions (with examples,
+  part-of-speech, per-sense synonyms/antonyms), license and `sourceUrls`; caps
+  definitions/examples/phonetics and dedups synonyms/antonyms.
+- `freeDictionaryApi.ts` (`freedictionaryapi.com`): reads the object response's `entries`,
+  collecting pronunciations, `forms` (as related words), senses/definitions with examples,
+  and license from `source`.
+- `myMemoryTranslate.ts` (`mymemory.translated.net`): a separate translation call, not a
+  dictionary adapter. `translateTextToVietnamese` requests `langpair=en|vi` (trimming the
+  query to the provider's ~480-byte limit) and returns the translated string or `null`.
 
-`recall/recallTaskToken.ts` signs each task with HMAC and embeds the item,
-entry, stage, task type, correct option, user id, and expiry. `POST
-/api/vocab/recall/answer` therefore does not trust a client-sent `correct`
-boolean. `recall/recallAnswerService.ts` verifies the token, re-checks owner,
-due date, and stage, writes a `VocabRecallAttempt`, and only then applies the
-seven-touch scheduler patch.
+`providers/index.ts` `getDefaultVocabProviders()` returns the two dictionary adapters in
+priority order. The enrichment service tries them in order and stops at the first `ready`.
 
-`services/userVocabItemService.ts` upserts `Should learn` and `Already know`
-states, records occurrences, and preserves an already-learning item's stage when
-the user picks `Should learn` again.
+```mermaid
+flowchart TD
+  A[enrichment needs an entry] --> B[acquire lease<br/>status = enriching, random lockId]
+  B --> C[dictionaryapi.dev]
+  C -->|ready| R[persistReadyResult]
+  C -->|notFound / timeout / rateLimited<br/>/ malformed / emptyUsefulData| D[freedictionaryapi.com]
+  D -->|ready| R
+  D -->|no ready result| F[persistFailedResult]
+  R --> V{has vi meaning?}
+  V -->|yes| G[status = ready]
+  V -->|no: translate term via MyMemory| T{translation ok?}
+  T -->|yes| G
+  T -->|no| H[status = failed<br/>nextRetryAt = now + 1h]
+  F -->|every result notFound| N[status = notFound]
+  F -->|otherwise| H
+```
 
-### Search, Explore, and stats
+### enrichment/ - Deep dive: the lease pipeline (`enrichmentService.ts`)
 
-- `services/vocabEntryService.ts`: creates shells safely, catches duplicate-key
-  races by re-reading, maps entries with current user state, and searches by
-  normalized prefix.
-- `explore/exploreService.ts`: returns unclassified frequency-ranked entries
-  using a bounded MongoDB `$lookup` against `UserVocabItem`, avoiding an
-  app-memory anti-join over all words.
-- `stats/vocabStats.ts` and `stats/vocabStatsService.ts`: count learning,
-  already-known, mastered, due-today, total-known, total-started, overdue,
-  reviews today, learned today, recall accuracy, active vocab streak, hardest
-  words, and daily growth buckets. The service version uses Mongo aggregation
-  and bounded queries instead of loading all user vocabulary into memory.
-- `services/vocabWordListService.ts`: parses the `/vocabulary/words` `view`
-  param and lists the current actor's words for `learning`, `dueToday`,
-  `alreadyKnow`, `mastered`, or `knownTotal`, joining each `UserVocabItem` to
-  its `VocabEntry`.
+`server-only`. The lease makes concurrent enrichment safe and self-healing:
 
-### Route decisions and record mappers
+1. `getEligibleLeaseFilter(now, entryId?)` selects a row that is `seeded`/`pending`, or
+   `ready` but missing a VI meaning, or `failed` past its `nextRetryAt`, or `enriching`
+   with an expired lease (crash recovery). `acquireEnrichmentLease` (one entry) and
+   `acquireNextEnrichmentLease` (batch, sorted `frequencyRank: 1, updatedAt: 1`) atomically
+   `findOneAndUpdate` it to `enriching`, set a random `enrichmentLockId` and
+   `enrichmentLeaseExpiresAt` (+60s), and `$inc` `enrichmentAttempts`.
+2. `runProviders` calls the adapters in order and returns the first `ready`.
+3. `persistReadyResult` merges the payload into the existing entry (dedup merges by key for
+   definitions/examples/phonetics/related/attributions, set-union for synonyms/antonyms),
+   then `buildVietnameseMeanings` adds a `vi` meaning via MyMemory if none exists. The entry
+   is `ready` only if a VI meaning is present; otherwise it is written `failed` with a
+   `missingVietnameseMeaning` provider error and a retry time. All writes are guarded by
+   `{ _id, enrichmentLockId: lockId }`, so a stale worker cannot clobber a newer lease.
+4. `persistFailedResult` records provider errors (kept to the last 20), sets `notFound`
+   only when every result was `notFound`, else `failed` with `nextRetryAt` = the earliest
+   provider `retryAfter` or now + 1 hour.
 
-`services/vocabularyRouteDecisions.ts` contains zod validation for lookup,
-search, Explore, item status, recall due, recall answer, and admin enrich
-payloads. `services/vocabEntryRecords.ts`, `userVocabItemRecords.ts`, and
-`vocabOccurrenceRecords.ts` convert Mongoose/aggregation rows to safe API
-records.
+`enrichVocabEntryIfNeeded({ entryId })` is the single-entry path (used on lookup); if it
+cannot lease the row it just returns the current record. `enrichNextVocabularyEntries({
+limit })` is the admin batch: `requested = clamp(limit, 1..10)`, up to 2 concurrent
+workers each claiming leases until `requested` is reached, returning an `AdminEnrichResult`
+with counts (`processed/ready/failed/notFound/rateLimited/skipped` and `errors`).
+`getVocabAdminQueueSummary` returns queue counts (`seeded`/enrichable, `ready`-with-VI,
+`failed`, `notFound`, `staleLease`) for the admin dashboard.
+
+### explore/ - unclassified words (`exploreService.ts`)
+
+`listExploreVocabEntriesForUser` runs one aggregation: `$match` on `enrichmentStatus:
+'ready'`, language, `frequencyRank != null`, and the VI-meaning filter; `$sort` by
+`frequencyRank` then term; a `$lookup` into `UserVocabItem` scoped to this user with a
+`$limit: 1`; then `$match { userItems: [] }` to drop words the user already classified; and
+a final `$limit`. The anti-join stays inside MongoDB rather than loading all words into app
+memory. Seed shells (not yet `ready` or missing a VI meaning) never appear here.
+
+### services/ - entry, user item, and word-list logic
+
+- `vocabEntryService.ts` (`server-only`): `findOrCreateVocabEntryShell` normalizes then
+  reads-or-creates a `pending` shell, catching duplicate-key (11000) races by re-reading.
+  `getVocabEntryWithUserState` joins an entry with the caller's `UserVocabItem`.
+  `searchVocabEntries` matches an anchored, metacharacter-escaped `normalizedTerm` prefix
+  regex (VI-meaning gated, sorted by `frequencyRank`) and attaches per-entry user state.
+- `userVocabItemService.ts` (`server-only`): `setUserVocabItemStatus` upserts a
+  `shouldLearn` (-> `getInitialLearningState`) or `alreadyKnow` (-> `getAlreadyKnownState`)
+  item, but first asserts the entry has a VI meaning (else throws a 409
+  `MissingVietnameseMeaningError`); it preserves an already-`learning` item's stage when
+  the user re-picks `Should learn`. `recordVocabOccurrence` writes a `VocabOccurrence`.
+  `listDueVocabRecallCardsForUser` returns plain `{ entry, item }` cards for due items, and
+  `answerVocabRecallForUser({ isCorrect, itemId })` is a direct (non-token) scheduler apply.
+- `vocabWordListService.ts` (`server-only`): `parseVocabWordListView` coerces the
+  `/vocabulary/words` `view` param (defaulting to `learning`); `listVocabWordsForUser`
+  maps each view (`learning | dueToday | alreadyKnow | mastered | knownTotal`) to a status
+  filter and sort, then joins items to their VI-gated entries. `VOCAB_WORD_LIST_VIEW_LABELS`
+  supplies the display names.
+
+### recall/ - Deep dive: spaced repetition
+
+`recallScheduler.ts` (pure) is the seven-touch scheduler. `getInitialLearningState` starts a
+word at stage 1, due now, status `learning`. `applyRecallAnswer({ item, isCorrect, now })`
+returns the patch:
+
+| From stage | On correct  | Next `dueAt` (days from answer) |
+| ---------- | ----------- | ------------------------------- |
+| 1          | stage 2     | +1                              |
+| 2          | stage 3     | +1                              |
+| 3          | stage 4     | +4                              |
+| 4          | stage 5     | +7                              |
+| 5          | stage 6     | +14                             |
+| 6          | stage 7     | +17                             |
+| 7          | `mastered`  | none (`dueAt: null`, `masteredReason: 'recallMastery'`) |
+
+Any wrong answer, from any stage, resets to stage 1 due now and `$inc`s `wrongCount`. The
+correct-answer intervals sum to 44 days, so a perfectly-spaced word reaches `mastered`
+roughly six-and-a-half weeks after the first touch.
+
+```mermaid
+flowchart LR
+  L[Should learn<br/>stage 1, due now] --> S1[stage 1]
+  S1 -->|correct| S2[stage 2 +1d]
+  S2 -->|correct| S3[stage 3 +1d]
+  S3 -->|correct| S4[stage 4 +4d]
+  S4 -->|correct| S5[stage 5 +7d]
+  S5 -->|correct| S6[stage 6 +14d]
+  S6 -->|correct| S7[stage 7 +17d]
+  S7 -->|correct| M[mastered]
+  S1 -.any wrong answer.-> L
+  S7 -.any wrong answer.-> L
+```
+
+`recallTaskService.ts` (`server-only`) builds the due session as signed tasks.
+`listDueVocabRecallTasksForUser` loads due `learning` items (sorted `dueAt: 1, updatedAt: 1`,
+limited), their VI-gated entries, and a pool of `ready` VI-gated distractor entries
+(top by `frequencyRank`). A shuffled task-type deck assigns each item one of five modes:
+
+| Mode                     | Prompt -> answer                | Options                     | Correct option           |
+| ------------------------ | ------------------------------- | --------------------------- | ------------------------ |
+| `listenChooseWord`       | audio -> pick the word          | 4 word options              | `word:<entryId>`         |
+| `listenChooseDefinition` | audio -> pick the definition    | 4 definition options        | `definition:<entryId>`   |
+| `definitionChooseWord`   | definition -> pick the word     | 4 word options              | `word:<entryId>`         |
+| `wordChooseDefinition`   | word -> pick the definition     | 4 definition options        | `definition:<entryId>`   |
+| `exampleRemember`        | example-sentence self-check     | none                        | (self-report `remember`) |
+
+Options are deterministically ordered by a per-task `seed` (so a re-issued task is stable).
+When `excludeListening` is set (a short client-side "cannot listen now" window), the two
+listening modes are removed from the deck.
+
+`recallTaskToken.ts` (`server-only`) signs each task so the answer route never trusts the
+client's verdict. `createVocabRecallTaskToken` builds `base64url(payload).HMAC-SHA256`,
+where the payload carries `itemId`, `entryId`, `recallStage`, `type`, `correctOptionId`,
+`correctAnswer`, `userId`, and `expiresAt` (+30 min); the secret is `AUTH_SECRET` /
+`NEXTAUTH_SECRET` with a dev fallback. `verifyVocabRecallTaskToken` uses `timingSafeEqual`
+and re-checks the `userId` and expiry.
+
+`recallAnswerService.ts` (`server-only`) is the trusted `POST /api/vocab/recall/answer`
+path. `submitVocabRecallAnswerForUser` verifies the token, short-circuits on a prior
+attempt with the same `idempotencyKey`, then re-fetches the item guarded on `_id`,
+`vocabEntryId`, `recallStage`, `status: 'learning'`, `userId`, and `dueAt <= now`. It grades
+server-side (`selectedOptionId === correctOptionId`, or `action === 'remember'` for
+`exampleRemember`), applies the scheduler patch, and writes an idempotent `VocabRecallAttempt`
+(catching duplicate-key on `idempotencyKey`). The client-sent `correct` flag is never
+trusted.
+
+### stats/ - vocabulary analytics
+
+Both files produce a `VocabStatsRecord` (learning/alreadyKnow/mastered counts, due-today,
+overdue, learned-today, reviews-today, `accuracyPercent`, `activeStreakDays`,
+`totalKnownCount`, `totalStartedCount`, `hardestWords`, and a `dailyGrowth` series over
+`VOCAB_STATS_TREND_DAYS = 14` days keyed by UTC day, labeled `MM-DD`).
+
+- `vocabStats.ts` is pure: `aggregateVocabStats({ items, now, trendDays })` computes
+  everything from an in-memory `UserVocabItem` array, and `buildDailyGrowth` buckets
+  `firstSeenAt` by UTC day. Its accuracy and streak derive from item counters, and
+  `hardestWords` uses `vocabEntryId` as the term placeholder (the caller resolves labels).
+- `vocabStatsService.ts` (`server-only`) is the production path: it fans out bounded Mongo
+  aggregations/counts over `UserVocabItem` and `VocabRecallAttempt` instead of loading all
+  rows. Accuracy, reviews-today, and the active streak are attempt-based (from
+  `VocabRecallAttempt.answeredAt`/`isCorrect`), and `hardestWords` resolves the real
+  `term` via a `VocabEntry` lookup. An empty `userId` returns a zeroed record.
+
+### Route decisions, record mappers, and errors
+
+`services/vocabularyRouteDecisions.ts` holds the Zod parse/validate helpers for the vocab
+endpoints (lookup, search, Explore, item status, recall due, recall answer, admin enrich),
+returning the same `{ ok, ... } | ApiErrorDecision` contract used across the app; these are
+documented in detail in `docs/04-api-reference.md`. `services/vocabApiErrors.ts`
+(`toVocabApiError`) maps thrown errors to responses: pass-through 401/403/409 (for example
+the `MissingVietnameseMeaningError`), `MissingEnvironmentError` -> 500 with a Mongo message,
+else a logged generic 500. `services/{vocabEntryRecords,userVocabItemRecords,vocabOccurrenceRecords}.ts`
+are the deterministic serialization seam (`toVocabEntryRecord`, `toUserVocabItemRecord`,
+`toVocabOccurrenceRecord`) that coerce Mongoose/aggregation rows to safe API records with
+string ids and defaulted optional fields.
