@@ -889,6 +889,7 @@ export function DictationPracticeShell({
           translationLanguages={translationTracks.map(track => track.language)}
           translationLanguage={selectedLanguage}
           onTranslationLanguageChange={setSelectedLanguage}
+          videoId={video.id}
         />
 
         <DictationControls

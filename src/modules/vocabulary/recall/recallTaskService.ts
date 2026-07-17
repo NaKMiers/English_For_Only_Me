@@ -1,6 +1,6 @@
 import 'server-only'
 
-import { randomUUID } from 'crypto'
+import { createHash, randomUUID } from 'crypto'
 
 import { UserVocabItemModel } from '@/models/vocabulary/UserVocabItemModel'
 import { VocabEntryModel } from '@/models/vocabulary/VocabEntryModel'
@@ -35,10 +35,18 @@ function getExampleSentence(entry: VocabEntryApiRecord) {
   )
 }
 
+function getOptionSortKey(seed: string, optionId: string) {
+  return createHash('sha1').update(`${seed}:${optionId}`).digest('hex')
+}
+
 function sortOptions(options: VocabRecallOptionRecord[], seed: string) {
-  return [...options].sort((left, right) =>
-    `${seed}:${left.id}`.localeCompare(`${seed}:${right.id}`)
-  )
+  // Sort by a hash of seed+id so the seed actually mixes into the ordering.
+  // A plain `${seed}:${id}` string compare sorts by id alone (the seed is a
+  // shared prefix), which pins the correct answer to the same slot every time.
+  return [...options]
+    .map(option => ({ option, sortKey: getOptionSortKey(seed, option.id) }))
+    .sort((left, right) => left.sortKey.localeCompare(right.sortKey))
+    .map(entry => entry.option)
 }
 
 function buildWordOptions({

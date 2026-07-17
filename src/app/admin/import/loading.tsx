@@ -1,19 +1,17 @@
 import {
   SkeletonHero,
   SkeletonPageShell,
-  SkeletonTileRow,
-  SkeletonVideoGrid,
+  SkeletonPanel,
 } from '@/components/common/PageSkeletons'
 
 export default function Loading() {
   return (
     <SkeletonPageShell
       activeHref="/dictation"
-      subtitle="Browse dictation topics"
+      subtitle="Dictation Lab import desk"
     >
       <SkeletonHero />
-      <SkeletonVideoGrid count={8} />
-      <SkeletonTileRow count={4} />
+      <SkeletonPanel lines={5} />
     </SkeletonPageShell>
   )
 }

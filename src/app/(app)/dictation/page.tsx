@@ -7,17 +7,27 @@ import { AuthControl } from '@/components/common/AuthControl'
 import { MangaPageShell } from '@/components/common/MangaPageShell'
 import { PageHero } from '@/components/common/PageHero'
 import { DictationGlobalStats } from '@/components/dictation/DictationGlobalStats'
+import { InProgressSection } from '@/components/dictation/browse/InProgressSection'
 import { TopicGrid } from '@/components/dictation/browse/TopicGrid'
 import { MangaButton } from '@/components/ui/MangaButton'
 import { PageTag } from '@/components/ui/PageTag'
 import { hasMongoDbUri } from '@/constants/environments'
 import { connectDatabase } from '@/lib/db/connectDatabase'
+import { toBrowseItem } from '@/modules/dictation/content/browseItem'
 import {
   countNoTopicVideos,
   listTopicSummaries,
 } from '@/modules/dictation/content/contentRepository'
-import { getLatestCompletedVideoForUser } from '@/modules/dictation/content/progressRepository'
-import { getPracticeActorId } from '@/modules/dictation/services/getCurrentUser'
+import { listFavoriteVideoIds } from '@/modules/dictation/content/favoriteRepository'
+import {
+  getCompletionCountsForUser,
+  getLatestCompletedVideoForUser,
+  listInProgressVideosForUser,
+} from '@/modules/dictation/content/progressRepository'
+import {
+  getOptionalUser,
+  getPracticeActorId,
+} from '@/modules/dictation/services/getCurrentUser'
 import { getGlobalStatsForUser } from '@/modules/dictation/stats/globalStatsService'
 import type {
   DictationGlobalStatsRecord,
@@ -50,20 +60,51 @@ export default async function DictationPage() {
   let hasPracticeActor = false
   let latestCompletedVideo: DictationVideoApiRecord | null = null
   let noTopicCount = 0
+  let inProgressItems: ReturnType<typeof toBrowseItem>[] = []
+  let canFavorite = false
 
   if (hasMongoDbUri()) {
     await connectDatabase()
-    const actorId = await getPracticeActorId()
+    const [user, actorId] = await Promise.all([
+      getOptionalUser(),
+      getPracticeActorId(),
+    ])
     hasPracticeActor = Boolean(actorId)
-    ;[topics, noTopicCount, globalStats, latestCompletedVideo] =
-      await Promise.all([
-        listTopicSummaries(),
-        countNoTopicVideos(),
-        getGlobalStatsForUser(actorId ?? ''),
-        actorId
-          ? getLatestCompletedVideoForUser(actorId)
-          : Promise.resolve(null),
-      ])
+    canFavorite = Boolean(user)
+
+    const [
+      topicSummaries,
+      noTopicVideos,
+      stats,
+      latest,
+      inProgressVideos,
+      favoritedIds,
+      completionCounts,
+    ] = await Promise.all([
+      listTopicSummaries(),
+      countNoTopicVideos(),
+      getGlobalStatsForUser(actorId ?? ''),
+      actorId ? getLatestCompletedVideoForUser(actorId) : Promise.resolve(null),
+      actorId
+        ? listInProgressVideosForUser(actorId)
+        : Promise.resolve<DictationVideoApiRecord[]>([]),
+      user ? listFavoriteVideoIds(user.id) : Promise.resolve<string[]>([]),
+      actorId
+        ? getCompletionCountsForUser(actorId)
+        : Promise.resolve<Map<string, number>>(new Map()),
+    ])
+
+    topics = topicSummaries
+    noTopicCount = noTopicVideos
+    globalStats = stats
+    latestCompletedVideo = latest
+
+    const favoritedSet = new Set(favoritedIds)
+    const inProgressSet = new Set(inProgressVideos.map(video => video.id))
+
+    inProgressItems = inProgressVideos.map(video =>
+      toBrowseItem(video, { completionCounts, favoritedSet, inProgressSet })
+    )
   }
 
   return (
@@ -114,6 +155,10 @@ export default async function DictationPage() {
               : 'Pick a topic, then a section, then practice a lesson. Sign in to save your progress and favorites.'}
           </p>
         </PageHero>
+        <InProgressSection
+          videos={inProgressItems}
+          canFavorite={canFavorite}
+        />
         <TopicGrid
           topics={topics}
           noTopicCount={noTopicCount}

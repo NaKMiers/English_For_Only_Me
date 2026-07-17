@@ -141,18 +141,16 @@ describe('aggregateGlobalDictationStats', () => {
           userId: 'other-user',
         }),
       ],
+      completedVideoIds: new Set(['video-one', 'other-video']),
       videos: [
-        makeVideo({
-          status: 'completed',
-        }),
+        makeVideo(),
         makeVideo({
           id: 'other-video',
-          status: 'completed',
         }),
       ],
     })
 
-    // Videos are global content, so both completed videos count.
+    // completedVideoCount is per-user now: both videos this user completed.
     expect(stats.completedVideoCount).toBe(2)
     // Practice data stays per-user: the other user's attempts/reviews drop out.
     expect(stats.completedSegmentCount).toBe(1)
@@ -169,6 +167,7 @@ describe('aggregateGlobalDictationStats', () => {
   test('returns a quiet empty state', () => {
     const stats = aggregateGlobalDictationStats({
       attempts: [],
+      completedVideoIds: new Set(),
       now,
       userId: 'user-one',
       reviewItems: [],
@@ -198,10 +197,10 @@ describe('aggregateGlobalDictationStats', () => {
       now,
       userId: 'user-one',
       reviewItems: [],
+      completedVideoIds: new Set(['video-complete']),
       videos: [
         makeVideo({
           id: 'video-complete',
-          status: 'completed',
         }),
       ],
     })

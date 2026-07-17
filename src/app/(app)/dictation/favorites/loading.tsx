@@ -1,7 +1,6 @@
 import {
   SkeletonHero,
   SkeletonPageShell,
-  SkeletonTileRow,
   SkeletonVideoGrid,
 } from '@/components/common/PageSkeletons'
 
@@ -9,11 +8,10 @@ export default function Loading() {
   return (
     <SkeletonPageShell
       activeHref="/dictation"
-      subtitle="Browse dictation topics"
+      subtitle="Your favorites"
     >
       <SkeletonHero />
       <SkeletonVideoGrid count={8} />
-      <SkeletonTileRow count={4} />
     </SkeletonPageShell>
   )
 }

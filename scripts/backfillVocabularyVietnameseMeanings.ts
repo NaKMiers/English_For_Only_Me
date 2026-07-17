@@ -22,11 +22,29 @@ function shouldOverwrite() {
   return process.argv.includes('--overwrite')
 }
 
+// Optional pause between entries (`--delay=400` or VOCAB_VI_BACKFILL_DELAY_MS).
+// Defaults to 0 (unchanged). Set a few hundred ms for large runs so the free
+// MyMemory translation API is less likely to rate-limit (429) the batch.
+function getDelayMs() {
+  const rawValue =
+    process.argv.find(arg => /^--delay=\d+$/.test(arg))?.split('=')[1] ??
+    process.env.VOCAB_VI_BACKFILL_DELAY_MS ??
+    '0'
+  const value = Number(rawValue)
+
+  return Number.isFinite(value) ? Math.max(0, Math.floor(value)) : 0
+}
+
+function sleep(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
 async function main() {
   await connectDatabase()
 
   const limit = getLimit()
   const overwrite = shouldOverwrite()
+  const delayMs = getDelayMs()
   const entries = await VocabEntryModel.find({
     ...(overwrite ? {} : VOCAB_MISSING_VI_MEANING_FILTER),
   })
@@ -38,7 +56,9 @@ async function main() {
   let enriched = 0
   let skipped = 0
 
-  for (const entry of entries) {
+  for (const [index, entry] of entries.entries()) {
+    if (index > 0 && delayMs > 0) await sleep(delayMs)
+
     const definitions = entry.definitions ?? []
 
     if (definitions.length === 0) {

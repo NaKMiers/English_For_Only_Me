@@ -13,11 +13,13 @@ import { hasMongoDbUri } from '@/constants/environments'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { DictationDebriefModel } from '@/models/dictation/DictationDebriefModel'
 import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
+import { getVideoProgressForUser } from '@/modules/dictation/content/progressRepository'
 import { listDueReviewItemsForUser } from '@/modules/dictation/review/reviewItemService'
 import { toDictationDebriefRecord } from '@/modules/dictation/services/dictationDebriefRecords'
 import { toDictationVideoRecord } from '@/modules/dictation/services/dictationVideoRecords'
 import { getPracticeActorId } from '@/modules/dictation/services/getCurrentUser'
 import { getVideoStatsForUser } from '@/modules/dictation/stats/videoStatsService'
+import type { DictationVideoProgress } from '@/modules/dictation/types'
 import { hasDictationTranscript } from '@/modules/dictation/videoReadiness'
 
 export const metadata: Metadata = {
@@ -118,7 +120,7 @@ export default async function Page({ params }: Props) {
       />
     )
 
-  const [stats, reviewItems, latestDebrief] = await Promise.all([
+  const [stats, reviewItems, latestDebrief, progress] = await Promise.all([
     getVideoStatsForUser({
       userId: actorId,
       videoId,
@@ -127,13 +129,18 @@ export default async function Page({ params }: Props) {
       userId: actorId,
       videoId,
     }),
-    DictationDebriefModel.findOne({
-      userId: actorId,
-      status: 'ready',
-      videoId,
-    })
-      .sort({ createdAt: -1 })
-      .lean(),
+    actorId
+      ? DictationDebriefModel.findOne({
+          userId: actorId,
+          status: 'ready',
+          videoId,
+        })
+          .sort({ createdAt: -1 })
+          .lean()
+      : Promise.resolve(null),
+    actorId
+      ? getVideoProgressForUser({ userId: actorId, videoId })
+      : Promise.resolve<DictationVideoProgress>('notStarted'),
   ])
   const isEmpty = stats.segmentCount === 0 || stats.completedSegmentCount === 0
 
@@ -149,28 +156,57 @@ export default async function Page({ params }: Props) {
       <section className="grid gap-5 p-4 sm:p-6 lg:p-8">
         <DictationResultsSummary
           isEmpty={isEmpty}
+          progress={progress}
+          stats={stats}
           thumbnailUrl={video.thumbnailUrl}
           title={video.title}
           videoId={videoId}
-          videoStatus={videoRecord.status}
           youtubeVideoId={video.youtubeVideoId}
         />
 
         {isEmpty ? (
-          <MangaPanel
-            eyebrow="Empty"
-            title="Practice first"
-          >
-            <p className="text-manga-ink-soft text-base leading-7 font-semibold">
-              The review queue stays quiet until there is a real weak sentence
-              to drill.
-            </p>
-          </MangaPanel>
+          stats.segmentCount === 0 ? (
+            <MangaPanel
+              eyebrow="Not ready"
+              title="No practice segments yet"
+            >
+              <p className="text-manga-ink-soft text-base leading-7 font-semibold">
+                This video has no practice segments built from its transcript
+                yet. Segments are created automatically when the transcript is
+                saved.
+              </p>
+            </MangaPanel>
+          ) : progress === 'completed' ? (
+            <MangaPanel
+              eyebrow="Saving"
+              title="Finishing up"
+            >
+              <p className="text-manga-ink-soft text-base leading-7 font-semibold">
+                Your final attempts are still saving. Give it a moment, then
+                refresh to see your full results.
+              </p>
+            </MangaPanel>
+          ) : (
+            <MangaPanel
+              eyebrow={progress === 'inProgress' ? 'Keep going' : 'Empty'}
+              title={
+                progress === 'inProgress'
+                  ? 'Practice in progress'
+                  : 'Practice first'
+              }
+            >
+              <p className="text-manga-ink-soft text-base leading-7 font-semibold">
+                {progress === 'inProgress'
+                  ? 'Resolve a few sentences, then your stats and weak-segment queue appear here.'
+                  : 'The review queue stays quiet until there is a real weak sentence to drill.'}
+              </p>
+            </MangaPanel>
+          )
         ) : (
           <>
             <DictationStatsPanel stats={stats} />
             <DictationDebriefPanel
-              canGenerate={video.status === 'completed'}
+              canGenerate={progress === 'completed'}
               initialDebrief={
                 latestDebrief ? toDictationDebriefRecord(latestDebrief) : null
               }

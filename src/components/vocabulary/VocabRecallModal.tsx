@@ -1,7 +1,7 @@
 'use client'
 
 import { Check, Headphones, Search, Volume2, X } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import {
   Dialog,
@@ -99,6 +99,13 @@ function playFeedbackSound(isCorrect: boolean) {
   })
 
   window.setTimeout(() => void context.close(), 700)
+}
+
+function createRecallIdempotencyKey(taskId: string) {
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto)
+    return crypto.randomUUID()
+
+  return `${taskId}:${Date.now()}`
 }
 
 function getInstruction(type: VocabRecallTaskType) {
@@ -204,34 +211,30 @@ export function VocabRecallModal({
     return () => window.clearTimeout(timeoutId)
   }, [isListeningTask, open, task, wrongFeedback])
 
-  const canSubmitOption = useMemo(() => {
-    if (!task) return false
-    if (task.type === 'exampleRemember') return true
-
-    return Boolean(selectedOptionId)
-  }, [selectedOptionId, task])
-
-  async function submitAnswer(action: VocabRecallAnswerAction | null = null) {
+  async function submitAnswer(
+    action: VocabRecallAnswerAction | null = null,
+    optionId: string | null = null
+  ) {
     if (!task || pendingAnswer) return
-    if (task.type !== 'exampleRemember' && !selectedOptionId && !action) return
+
+    const effectiveOptionId = optionId ?? selectedOptionId
+
+    if (task.type !== 'exampleRemember' && !effectiveOptionId && !action) return
 
     setPendingAnswer(true)
 
     try {
       const response = await answerVocabRecallApi({
         action,
-        idempotencyKey:
-          typeof crypto !== 'undefined' && 'randomUUID' in crypto
-            ? crypto.randomUUID()
-            : `${task.taskId}:${Date.now()}`,
-        selectedOptionId,
+        idempotencyKey: createRecallIdempotencyKey(task.taskId),
+        selectedOptionId: effectiveOptionId,
         token: task.token,
       })
 
       const nextFeedback = {
         isCorrect: response.isCorrect,
         item: response.item,
-        selectedOptionId,
+        selectedOptionId: effectiveOptionId,
         task,
       }
 
@@ -394,12 +397,13 @@ export function VocabRecallModal({
                           'text-manga-black bg-cyan-300'
                       )}
                       disabled={pendingAnswer || Boolean(wrongFeedback)}
-                      onClick={() =>
+                      onClick={() => {
                         setSelectedOption({
                           optionId: option.id,
                           taskId: task.taskId,
                         })
-                      }
+                        void submitAnswer(null, option.id)
+                      }}
                       type="button"
                     >
                       <span className="text-cyan-300">
@@ -445,14 +449,7 @@ export function VocabRecallModal({
               ) : null}
             </div>
 
-            <div
-              className={cn(
-                'border-manga-white/20 grid gap-3 border-t-2 p-3 sm:p-4',
-                wrongFeedback || task.type === 'exampleRemember'
-                  ? 'sm:grid-cols-1'
-                  : 'sm:grid-cols-2'
-              )}
-            >
+            <div className="border-manga-white/20 grid gap-3 border-t-2 p-3 sm:p-4">
               {wrongFeedback ? (
                 <MangaButton
                   className="border-manga-white w-full"
@@ -463,27 +460,15 @@ export function VocabRecallModal({
                   Continue
                 </MangaButton>
               ) : (
-                <>
-                  <MangaButton
-                    className="border-manga-white bg-manga-black text-manga-white hover:bg-manga-black w-full"
-                    disabled={isLoading || pendingAnswer}
-                    icon={<X className="size-4" />}
-                    onClick={() => submitAnswer('notSure')}
-                    tone="ink"
-                  >
-                    Not Sure
-                  </MangaButton>
-                  {task.type !== 'exampleRemember' ? (
-                    <MangaButton
-                      className="border-manga-white w-full"
-                      disabled={isLoading || pendingAnswer || !canSubmitOption}
-                      icon={<Check className="size-4" />}
-                      onClick={() => submitAnswer(null)}
-                    >
-                      Answer
-                    </MangaButton>
-                  ) : null}
-                </>
+                <MangaButton
+                  className="border-manga-white bg-manga-black text-manga-white hover:bg-manga-black w-full"
+                  disabled={isLoading || pendingAnswer}
+                  icon={<X className="size-4" />}
+                  onClick={() => submitAnswer('notSure')}
+                  tone="ink"
+                >
+                  Not Sure
+                </MangaButton>
               )}
             </div>
           </div>

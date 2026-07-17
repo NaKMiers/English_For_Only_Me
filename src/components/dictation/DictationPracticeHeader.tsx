@@ -1,6 +1,9 @@
 'use client'
 
+import { Trophy } from 'lucide-react'
+
 import { CompletionBadge } from '@/components/dictation/CompletionBadge'
+import { MangaButton } from '@/components/ui/MangaButton'
 import { PageTag } from '@/components/ui/PageTag'
 import type { DictationLevel } from '@/modules/dictation/levels'
 
@@ -14,6 +17,7 @@ interface Props {
   title: string
   translationLanguage: string
   translationLanguages: string[]
+  videoId: string
 }
 
 export function DictationPracticeHeader({
@@ -24,9 +28,10 @@ export function DictationPracticeHeader({
   title,
   translationLanguage,
   translationLanguages,
+  videoId,
 }: Props) {
   return (
-    <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
+    <div className="grid min-w-0 gap-3">
       <div className="grid min-w-0 gap-1">
         <span className="text-manga-red text-xs font-black tracking-normal uppercase">
           {eyebrow}
@@ -40,12 +45,31 @@ export function DictationPracticeHeader({
         </div>
       </div>
 
-      <DictationTranslationBar
-        className="ml-auto shrink-0 justify-end"
-        languages={translationLanguages}
-        onChange={onTranslationLanguageChange}
-        value={translationLanguage}
-      />
+      {completions > 0 || translationLanguages.length > 0 ? (
+        <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
+          {completions > 0 ? (
+            <MangaButton
+              href={`/dictation/videos/${videoId}/results`}
+              tone="paper"
+              className="min-h-10 w-fit px-3 py-1 text-xs"
+              icon={
+                <Trophy
+                  aria-hidden="true"
+                  className="size-4"
+                />
+              }
+            >
+              View Results
+            </MangaButton>
+          ) : null}
+          <DictationTranslationBar
+            className="ml-auto shrink-0 justify-end"
+            languages={translationLanguages}
+            onChange={onTranslationLanguageChange}
+            value={translationLanguage}
+          />
+        </div>
+      ) : null}
     </div>
   )
 }

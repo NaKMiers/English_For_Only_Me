@@ -1,15 +1,23 @@
 import type { DictationLevel } from './levels'
 
+// Content-lifecycle status only. Per-user practice progress ('inProgress',
+// 'completed') is derived from sessions (see DictationVideoProgress), never
+// stored on the shared video doc.
 export type DictationVideoStatus =
   | 'draft'
   | 'needsTranscript'
   | 'transcriptReady'
   | 'segmenting'
   | 'ready'
-  | 'inProgress'
-  | 'completed'
   | 'failed'
   | 'archived'
+
+/**
+ * A single user's progress on one video, derived from their sessions (not the
+ * shared video.status). notStarted = no sessions; inProgress = an active
+ * session exists; completed = a completed session and no active one.
+ */
+export type DictationVideoProgress = 'notStarted' | 'inProgress' | 'completed'
 
 export type DictationTranscriptStatus = 'none' | 'manualNeeded' | 'manualAdded'
 

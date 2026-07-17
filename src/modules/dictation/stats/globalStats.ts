@@ -191,19 +191,23 @@ function getFirstTryAccuracyTrend({
 
 export function aggregateGlobalDictationStats({
   attempts,
+  completedVideoIds,
   now = new Date(),
   userId,
   reviewItems,
   videos,
 }: {
   attempts: DictationAttemptApiRecord[]
+  // Ids of videos this user has completed at least one session on (per-user,
+  // derived from sessions — not the shared video.status).
+  completedVideoIds: Set<string>
   now?: Date
   userId: string
   reviewItems: DictationReviewItemApiRecord[]
   videos: DictationVideoApiRecord[]
 }): DictationGlobalStatsRecord {
-  // Content (videos) is global; practice data (attempts, review items) is
-  // per-user, so only those are filtered by the current user's id.
+  // Content (videos) is global; practice data (attempts, review items,
+  // completions) is per-user, so only those are filtered by the current user.
   const userAttempts = attempts.filter(attempt => attempt.userId === userId)
   const userReviewItems = reviewItems.filter(item => item.userId === userId)
 
@@ -213,8 +217,9 @@ export function aggregateGlobalDictationStats({
       now,
     }),
     completedSegmentCount: getCompletedSegmentCount(userAttempts),
-    completedVideoCount: videos.filter(video => video.status === 'completed')
-      .length,
+    completedVideoCount: videos.filter(video =>
+      completedVideoIds.has(video.id)
+    ).length,
     dueReviewItemCount: userReviewItems.filter(item =>
       ACTIVE_REVIEW_STATUSES.has(item.status)
     ).length,

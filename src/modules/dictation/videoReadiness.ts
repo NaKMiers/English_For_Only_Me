@@ -1,4 +1,7 @@
-import type { DictationVideoApiRecord } from './types'
+import type {
+  DictationVideoApiRecord,
+  DictationVideoProgress,
+} from './types'
 
 export function hasDictationTranscript(video: DictationVideoApiRecord) {
   return (
@@ -7,55 +10,24 @@ export function hasDictationTranscript(video: DictationVideoApiRecord) {
   )
 }
 
-export function getDictationVideoAction(video: DictationVideoApiRecord) {
-  if (!hasDictationTranscript(video))
-    return {
-      href: `/admin/videos/${video.id}/edit`,
-      label: 'Add Transcript',
-    }
-
-  if (video.status === 'ready')
-    return {
-      href: `/dictation/videos/${video.id}/practice`,
-      label: 'Start Practice',
-    }
-
-  if (video.status === 'inProgress')
-    return {
-      href: `/dictation/videos/${video.id}/practice`,
-      label: 'Continue Practice',
-    }
-
-  if (video.status === 'completed')
-    return {
-      href: `/dictation/videos/${video.id}/results`,
-      label: 'Open Results',
-    }
-
-  return {
-    href: `/admin/videos/${video.id}/edit`,
-    label: 'Continue Setup',
-  }
-}
-
 export function getDictationResultsAction({
   isEmpty,
+  progress,
   videoId,
-  videoStatus,
 }: {
   isEmpty: boolean
+  progress: DictationVideoProgress
   videoId: string
-  videoStatus: DictationVideoApiRecord['status']
 }) {
   const href = `/dictation/videos/${videoId}/practice`
 
-  if (!isEmpty && videoStatus === 'completed')
+  if (!isEmpty && progress === 'completed')
     return {
       href,
       label: 'Practice Again',
     }
 
-  if (videoStatus === 'inProgress')
+  if (progress === 'inProgress')
     return {
       href,
       label: 'Continue Practice',

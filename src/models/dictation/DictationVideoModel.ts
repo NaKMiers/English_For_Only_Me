@@ -84,8 +84,6 @@ const DictationVideoSchema = new Schema(
         'transcriptReady',
         'segmenting',
         'ready',
-        'inProgress',
-        'completed',
         'failed',
         'archived',
       ],

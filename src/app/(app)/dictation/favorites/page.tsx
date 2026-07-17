@@ -12,10 +12,13 @@ import {
 } from '@/components/dictation/browse/SectionAccordion'
 import { hasMongoDbUri } from '@/constants/environments'
 import { connectDatabase } from '@/lib/db/connectDatabase'
+import { toBrowseItem } from '@/modules/dictation/content/browseItem'
 import { listFavoriteVideosForUser } from '@/modules/dictation/content/favoriteRepository'
-import { getCompletionCountsForUser } from '@/modules/dictation/content/progressRepository'
+import {
+  getCompletionCountsForUser,
+  getInProgressVideoIdsForUser,
+} from '@/modules/dictation/content/progressRepository'
 import { getOptionalUser } from '@/modules/dictation/services/getCurrentUser'
-import { hasDictationTranscript } from '@/modules/dictation/videoReadiness'
 
 export const metadata: Metadata = { title: 'Favorites' }
 export const dynamic = 'force-dynamic'
@@ -30,23 +33,16 @@ export default async function FavoritesPage() {
 
   if (hasMongoDbUri()) {
     await connectDatabase()
-    const [videos, completionCounts] = await Promise.all([
+    const [videos, completionCounts, inProgressSet] = await Promise.all([
       listFavoriteVideosForUser(user.id),
       getCompletionCountsForUser(user.id),
+      getInProgressVideoIdsForUser(user.id),
     ])
+    const favoritedSet = new Set(videos.map(video => video.id))
 
-    items = videos.map(video => ({
-      id: video.id,
-      title: video.title,
-      level: video.level,
-      practiceHref: hasDictationTranscript(video)
-        ? `/dictation/videos/${video.id}/practice`
-        : null,
-      favorited: true,
-      completions: completionCounts.get(video.id) ?? 0,
-      thumbnailUrl: video.thumbnailUrl,
-      youtubeVideoId: video.youtubeVideoId,
-    }))
+    items = videos.map(video =>
+      toBrowseItem(video, { completionCounts, favoritedSet, inProgressSet })
+    )
   }
 
   return (

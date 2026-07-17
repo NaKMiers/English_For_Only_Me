@@ -1,8 +1,8 @@
 import {
+  SkeletonBlock,
   SkeletonHero,
   SkeletonPageShell,
-  SkeletonTileRow,
-  SkeletonVideoGrid,
+  SkeletonRows,
 } from '@/components/common/PageSkeletons'
 
 export default function Loading() {
@@ -12,8 +12,11 @@ export default function Loading() {
       subtitle="Browse dictation topics"
     >
       <SkeletonHero />
-      <SkeletonVideoGrid count={8} />
-      <SkeletonTileRow count={4} />
+      <SkeletonBlock className="h-14" />
+      <SkeletonRows
+        count={4}
+        rowClassName="h-14"
+      />
     </SkeletonPageShell>
   )
 }

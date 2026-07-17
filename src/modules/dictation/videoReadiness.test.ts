@@ -3,7 +3,6 @@ import { describe, expect, test } from 'vitest'
 import type { DictationVideoApiRecord } from './types'
 import {
   getDictationResultsAction,
-  getDictationVideoAction,
   hasDictationTranscript,
 } from './videoReadiness'
 
@@ -43,92 +42,58 @@ function buildVideo(
 }
 
 describe('dictation video readiness', () => {
-  test('routes missing-transcript videos to transcript editing', () => {
-    const video = buildVideo()
-
-    expect(hasDictationTranscript(video)).toBe(false)
-    expect(getDictationVideoAction(video)).toEqual({
-      href: '/admin/videos/507f1f77bcf86cd799439011/edit',
-      label: 'Add Transcript',
-    })
-  })
-
-  test('routes ready videos to practice start', () => {
-    const video = buildVideo({
-      activeTranscriptId: '507f1f77bcf86cd799439022',
-      sentenceCount: 40,
-      status: 'ready',
-      transcriptStatus: 'manualAdded',
-    })
-
-    expect(hasDictationTranscript(video)).toBe(true)
-    expect(getDictationVideoAction(video)).toEqual({
-      href: '/dictation/videos/507f1f77bcf86cd799439011/practice',
-      label: 'Start Practice',
-    })
-  })
-
-  test('routes in-progress videos to practice continuation', () => {
-    const video = buildVideo({
-      activeTranscriptId: '507f1f77bcf86cd799439022',
-      sentenceCount: 40,
-      status: 'inProgress',
-      transcriptStatus: 'manualAdded',
-    })
-
-    expect(getDictationVideoAction(video)).toEqual({
-      href: '/dictation/videos/507f1f77bcf86cd799439011/practice',
-      label: 'Continue Practice',
-    })
-  })
-
-  test('routes completed videos to results', () => {
-    const video = buildVideo({
-      activeTranscriptId: '507f1f77bcf86cd799439022',
-      completedSessionCount: 1,
-      sentenceCount: 40,
-      status: 'completed',
-      transcriptStatus: 'manualAdded',
-    })
-
-    expect(getDictationVideoAction(video)).toEqual({
-      href: '/dictation/videos/507f1f77bcf86cd799439011/results',
-      label: 'Open Results',
-    })
-  })
-
-  test('labels results-page practice actions by progress state', () => {
+  test('detects a usable transcript', () => {
+    expect(hasDictationTranscript(buildVideo())).toBe(false)
     expect(
-      getDictationResultsAction({
-        isEmpty: true,
-        videoId: '507f1f77bcf86cd799439011',
-        videoStatus: 'ready',
-      })
-    ).toEqual({
-      href: '/dictation/videos/507f1f77bcf86cd799439011/practice',
-      label: 'Start Practice',
-    })
+      hasDictationTranscript(
+        buildVideo({
+          activeTranscriptId: '507f1f77bcf86cd799439022',
+          transcriptStatus: 'manualAdded',
+        })
+      )
+    ).toBe(true)
+  })
 
+  test('labels results-page practice actions by per-user progress', () => {
+    const videoId = '507f1f77bcf86cd799439011'
+    const href = `/dictation/videos/${videoId}/practice`
+
+    // notStarted -> Start Practice, regardless of whether stats exist.
     expect(
-      getDictationResultsAction({
-        isEmpty: true,
-        videoId: '507f1f77bcf86cd799439011',
-        videoStatus: 'inProgress',
-      })
-    ).toEqual({
-      href: '/dictation/videos/507f1f77bcf86cd799439011/practice',
-      label: 'Continue Practice',
-    })
-
+      getDictationResultsAction({ isEmpty: true, progress: 'notStarted', videoId })
+    ).toEqual({ href, label: 'Start Practice' })
     expect(
       getDictationResultsAction({
         isEmpty: false,
-        videoId: '507f1f77bcf86cd799439011',
-        videoStatus: 'completed',
+        progress: 'notStarted',
+        videoId,
       })
-    ).toEqual({
-      href: '/dictation/videos/507f1f77bcf86cd799439011/practice',
-      label: 'Practice Again',
-    })
+    ).toEqual({ href, label: 'Start Practice' })
+
+    // inProgress -> Continue Practice, and it wins even with saved stats
+    // (a completed-then-restarted video).
+    expect(
+      getDictationResultsAction({ isEmpty: true, progress: 'inProgress', videoId })
+    ).toEqual({ href, label: 'Continue Practice' })
+    expect(
+      getDictationResultsAction({
+        isEmpty: false,
+        progress: 'inProgress',
+        videoId,
+      })
+    ).toEqual({ href, label: 'Continue Practice' })
+
+    // completed with results -> Practice Again; completed but no attempts
+    // yet (persistence lag) -> Start Practice.
+    expect(
+      getDictationResultsAction({
+        isEmpty: false,
+        progress: 'completed',
+        videoId,
+      })
+    ).toEqual({ href, label: 'Practice Again' })
+    expect(
+      getDictationResultsAction({ isEmpty: true, progress: 'completed', videoId })
+    ).toEqual({ href, label: 'Start Practice' })
   })
 })

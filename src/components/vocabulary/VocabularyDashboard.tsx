@@ -14,7 +14,11 @@ import {
   searchVocabApi,
   setVocabItemStatusApi,
 } from '@/requests/vocabularyApi'
-import { VOCAB_RECALL_LISTENING_TASK_TYPES } from '@/modules/vocabulary/constants'
+import {
+  VOCAB_EXPLORE_MAX_LIMIT,
+  VOCAB_RECALL_LISTENING_TASK_TYPES,
+  VOCAB_RECALL_MAX_LIMIT,
+} from '@/modules/vocabulary/constants'
 import type {
   UserVocabItemApiRecord,
   VocabEntryWithUserStateRecord,
@@ -152,6 +156,7 @@ export function VocabularyDashboard({ isAdmin, mongoConfigured }: Props) {
   const [activeExploreIndex, setActiveExploreIndex] = useState(0)
   const [recallTasks, setRecallTasks] = useState<VocabRecallTaskRecord[]>([])
   const [recallModalOpen, setRecallModalOpen] = useState(false)
+  const [recallAnsweredCount, setRecallAnsweredCount] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
   const [statusMessage, setStatusMessage] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -163,7 +168,7 @@ export function VocabularyDashboard({ isAdmin, mongoConfigured }: Props) {
       getVocabStatsApi(),
       getDueVocabRecallApi({
         excludeListening: isListeningSkipped(),
-        limit: 20,
+        limit: VOCAB_RECALL_MAX_LIMIT,
       }),
     ])
 
@@ -174,7 +179,9 @@ export function VocabularyDashboard({ isAdmin, mongoConfigured }: Props) {
   const refreshExploreData = useCallback(async () => {
     if (!mongoConfigured) return
 
-    const exploreResponse = await getExploreVocabApi({ limit: 18 })
+    const exploreResponse = await getExploreVocabApi({
+      limit: VOCAB_EXPLORE_MAX_LIMIT,
+    })
 
     setExploreEntries(exploreResponse.entries)
     setActiveExploreIndex(0)
@@ -183,6 +190,11 @@ export function VocabularyDashboard({ isAdmin, mongoConfigured }: Props) {
   const refreshCoreData = useCallback(async () => {
     await Promise.all([refreshProgressData(), refreshExploreData()])
   }, [refreshExploreData, refreshProgressData])
+
+  const openRecallModal = useCallback(() => {
+    setRecallAnsweredCount(0)
+    setRecallModalOpen(true)
+  }, [])
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -205,10 +217,49 @@ export function VocabularyDashboard({ isAdmin, mongoConfigured }: Props) {
     if (openedDate === today) return
 
     window.localStorage.setItem(DAILY_AUTO_OPEN_STORAGE_KEY, today)
-    const timeoutId = window.setTimeout(() => setRecallModalOpen(true), 0)
+    const timeoutId = window.setTimeout(() => openRecallModal(), 0)
 
     return () => window.clearTimeout(timeoutId)
-  }, [recallModalOpen, recallTasks.length])
+  }, [openRecallModal, recallModalOpen, recallTasks.length])
+
+  useEffect(() => {
+    if (!mongoConfigured || exploreEntries.length === 0) return
+    if (Object.keys(pendingExploreDecisions).length > 0) return
+
+    const lastIndex = exploreEntries.length - 1
+    const lastDecided = Boolean(
+      exploreDecisions[exploreEntries[lastIndex].entry.id]
+    )
+    const allDecided = exploreEntries.every(
+      entry => exploreDecisions[entry.entry.id]
+    )
+    const reachedEnd = activeExploreIndex >= lastIndex
+
+    // Load the next batch once you have worked through to the end of the deck.
+    // Requiring the final card to be decided guarantees the refetch returns
+    // genuinely new words (decided words are excluded server-side), so it never
+    // loops on the same batch.
+    if (!allDecided && !(reachedEnd && lastDecided)) return
+
+    const timeoutId = window.setTimeout(() => {
+      refreshExploreData().catch(error => {
+        setErrorMessage(
+          error instanceof Error
+            ? error.message
+            : 'Could not load more explore words.'
+        )
+      })
+    }, 0)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [
+    activeExploreIndex,
+    exploreDecisions,
+    exploreEntries,
+    mongoConfigured,
+    pendingExploreDecisions,
+    refreshExploreData,
+  ])
 
   async function runLookup(term: string) {
     const cleanTerm = term.trim()
@@ -445,6 +496,7 @@ export function VocabularyDashboard({ isAdmin, mongoConfigured }: Props) {
     else setStatusMessage(`"${task.entry.term}" reset to stage 1.`)
 
     setRecallTasks(remainingTasks)
+    setRecallAnsweredCount(current => current + 1)
 
     if (remainingTasks.length === 0) {
       setRecallModalOpen(false)
@@ -550,7 +602,7 @@ export function VocabularyDashboard({ isAdmin, mongoConfigured }: Props) {
       ) : null}
 
       <VocabularyRecallLauncher
-        onOpenRecall={() => setRecallModalOpen(true)}
+        onOpenRecall={openRecallModal}
         tasks={recallTasks}
       />
 
@@ -572,8 +624,8 @@ export function VocabularyDashboard({ isAdmin, mongoConfigured }: Props) {
         onOpenChange={setRecallModalOpen}
         open={recallModalOpen}
         task={activeRecall}
-        taskNumber={recallTasks.length > 0 ? 1 : 0}
-        taskTotal={recallTasks.length}
+        taskNumber={recallTasks.length > 0 ? recallAnsweredCount + 1 : 0}
+        taskTotal={recallAnsweredCount + recallTasks.length}
       />
     </div>
   )

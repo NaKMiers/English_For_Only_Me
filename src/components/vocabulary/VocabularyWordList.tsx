@@ -240,7 +240,7 @@ export function VocabularyWordList({ activeView, words }: Props) {
           <Link
             key={tab.view}
             className={cn(
-              'border-manga-black relative px-3 py-2 text-sm font-black shadow-[3px_3px_0_var(--manga-black)] transition-[background,color,box-shadow,transform] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none',
+              'border-manga-black text-manga-black! relative px-3 py-2 text-sm font-black shadow-[3px_3px_0_var(--manga-black)] transition-[background,color,box-shadow,transform] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none',
               VIEW_TAB_CLASS_NAMES[tab.view],
               tab.view === activeView &&
                 'translate-x-[3px] translate-y-[3px] shadow-none after:bg-manga-black after:absolute after:-bottom-2 after:left-2 after:right-2 after:h-1'

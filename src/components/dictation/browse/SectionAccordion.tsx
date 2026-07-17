@@ -18,6 +18,7 @@ export interface BrowseVideoItem {
   practiceHref: string | null
   favorited: boolean
   completions: number
+  inProgress: boolean
   thumbnailUrl: string | null
   youtubeVideoId: string | null
 }
@@ -85,10 +86,18 @@ function VideoCard({
             aria-hidden="true"
             className={cn(
               'border-manga-black hover:bg-manga-pale-red inline-flex min-h-9 w-full items-center justify-center border-2 px-3 font-sans text-sm font-black shadow-[2px_2px_0_var(--manga-black)]',
-              video.completions > 0 ? 'bg-manga-yellow' : 'bg-manga-paper-soft'
+              video.inProgress
+                ? 'bg-cyan-200'
+                : video.completions > 0
+                  ? 'bg-manga-yellow'
+                  : 'bg-manga-paper-soft'
             )}
           >
-            {video.completions > 0 ? 'Practice again' : 'Practice'}
+            {video.inProgress
+              ? 'Continue'
+              : video.completions > 0
+                ? 'Practice again'
+                : 'Practice'}
           </span>
         ) : (
           <span className="text-manga-ink-soft text-xs font-black uppercase">

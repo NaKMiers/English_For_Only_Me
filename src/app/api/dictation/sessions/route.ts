@@ -136,11 +136,6 @@ export async function POST(request: Request) {
       lastActiveAt: now,
     })
 
-    if (video.status === 'ready' || video.status === 'transcriptReady') {
-      video.status = 'inProgress'
-      await video.save()
-    }
-
     return NextResponse.json(
       {
         mode: decision.mode,

@@ -6,7 +6,6 @@ import { connectDatabase } from '@/lib/db/connectDatabase'
 import { DictationAttemptModel } from '@/models/dictation/DictationAttemptModel'
 import { DictationSegmentModel } from '@/models/dictation/DictationSegmentModel'
 import { DictationSessionModel } from '@/models/dictation/DictationSessionModel'
-import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
 import { buildDictationCorrection } from '@/modules/dictation/correction'
 import { recomputeReviewItemsForVideo } from '@/modules/dictation/review/reviewItemService'
 import { toDictationAttemptRecord } from '@/modules/dictation/services/dictationAttemptRecords'
@@ -220,23 +219,11 @@ export async function POST(request: Request, context: RouteContext) {
         session.currentSegmentOrder = nextSegment.order
         nextSegmentId = String(nextSegment._id)
       } else {
+        // Per-user completion only. The shared video.status is no longer
+        // mutated by practice — progress is derived per-user from sessions.
         session.status = 'completed'
         session.completedAt = now
         nextSegmentId = null
-        await DictationVideoModel.updateOne(
-          {
-            _id: session.videoId,
-          },
-          {
-            $inc: {
-              completedSessionCount: 1,
-            },
-            $set: {
-              lastPracticedAt: now,
-              status: 'completed',
-            },
-          }
-        )
       }
     }
 

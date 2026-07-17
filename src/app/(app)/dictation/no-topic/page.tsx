@@ -11,14 +11,17 @@ import {
 } from '@/components/dictation/browse/SectionAccordion'
 import { hasMongoDbUri } from '@/constants/environments'
 import { connectDatabase } from '@/lib/db/connectDatabase'
+import { toBrowseItem } from '@/modules/dictation/content/browseItem'
 import { listNoTopicVideos } from '@/modules/dictation/content/contentRepository'
 import { listFavoriteVideoIds } from '@/modules/dictation/content/favoriteRepository'
-import { getCompletionCountsForUser } from '@/modules/dictation/content/progressRepository'
+import {
+  getCompletionCountsForUser,
+  getInProgressVideoIdsForUser,
+} from '@/modules/dictation/content/progressRepository'
 import {
   getOptionalUser,
   getPracticeActorId,
 } from '@/modules/dictation/services/getCurrentUser'
-import { hasDictationTranscript } from '@/modules/dictation/videoReadiness'
 
 export const metadata: Metadata = {
   title: 'Uncategorized',
@@ -38,27 +41,22 @@ export default async function NoTopicPage() {
 
   if (hasMongoDbUri()) {
     await connectDatabase()
-    const [videos, favoritedIds, completionCounts] = await Promise.all([
-      listNoTopicVideos(),
-      user ? listFavoriteVideoIds(user.id) : Promise.resolve<string[]>([]),
-      actorId
-        ? getCompletionCountsForUser(actorId)
-        : Promise.resolve<Map<string, number>>(new Map()),
-    ])
+    const [videos, favoritedIds, completionCounts, inProgressSet] =
+      await Promise.all([
+        listNoTopicVideos(),
+        user ? listFavoriteVideoIds(user.id) : Promise.resolve<string[]>([]),
+        actorId
+          ? getCompletionCountsForUser(actorId)
+          : Promise.resolve<Map<string, number>>(new Map()),
+        actorId
+          ? getInProgressVideoIdsForUser(actorId)
+          : Promise.resolve<Set<string>>(new Set()),
+      ])
     const favoritedSet = new Set(favoritedIds)
 
-    items = videos.map(video => ({
-      id: video.id,
-      title: video.title,
-      level: video.level,
-      practiceHref: hasDictationTranscript(video)
-        ? `/dictation/videos/${video.id}/practice`
-        : null,
-      favorited: favoritedSet.has(video.id),
-      completions: completionCounts.get(video.id) ?? 0,
-      thumbnailUrl: video.thumbnailUrl,
-      youtubeVideoId: video.youtubeVideoId,
-    }))
+    items = videos.map(video =>
+      toBrowseItem(video, { completionCounts, favoritedSet, inProgressSet })
+    )
   }
 
   return (
