@@ -1,16 +1,19 @@
 import 'server-only'
 
-import type { QueryFilter, SortOrder } from 'mongoose'
+import type { QueryFilter, SortOrder, Types } from 'mongoose'
 
+import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
 import {
   UserVocabItemModel,
   type UserVocabItemDocument,
 } from '@/models/vocabulary/UserVocabItemModel'
 import { VocabEntryModel } from '@/models/vocabulary/VocabEntryModel'
+import { VocabOccurrenceModel } from '@/models/vocabulary/VocabOccurrenceModel'
 import type {
   VocabUserItemStatus,
   VocabWordListRecord,
   VocabWordListView,
+  VocabWordSourceVideoRecord,
 } from '@/modules/vocabulary/types'
 import { VOCAB_REQUIRES_VI_MEANING_FILTER } from '@/modules/vocabulary/vietnameseMeaning'
 
@@ -84,6 +87,70 @@ function getSortForView(view: VocabWordListView): [string, SortOrder][] {
   ]
 }
 
+/**
+ * Resolve the source video for each entry from the user's most recent vocab
+ * occurrence that carries a videoId. The word is looked up (recording an
+ * occurrence with the current videoId) right before it is saved via
+ * "Should Learn", so the latest video-bearing occurrence is the video the word
+ * was learned from. Returns a map keyed by stringified vocabEntryId.
+ */
+async function getSourceVideosByEntryId({
+  entryIds,
+  userId,
+}: {
+  entryIds: Types.ObjectId[]
+  userId: string
+}): Promise<Map<string, VocabWordSourceVideoRecord>> {
+  if (entryIds.length === 0) return new Map()
+
+  const occurrences = await VocabOccurrenceModel.find({
+    userId,
+    vocabEntryId: { $in: entryIds },
+    videoId: { $ne: null },
+  })
+    .sort({ createdAt: -1 })
+    .select('vocabEntryId videoId')
+    .lean()
+
+  // First occurrence per entry wins (sorted newest first).
+  const videoIdByEntryId = new Map<string, string>()
+
+  for (const occurrence of occurrences) {
+    const entryKey = String(occurrence.vocabEntryId)
+
+    if (!videoIdByEntryId.has(entryKey))
+      videoIdByEntryId.set(entryKey, String(occurrence.videoId))
+  }
+
+  if (videoIdByEntryId.size === 0) return new Map()
+
+  const videos = await DictationVideoModel.find({
+    _id: { $in: [...new Set(videoIdByEntryId.values())] },
+  })
+    .select('title youtubeUrl')
+    .lean()
+  const videoById = new Map(
+    videos.map(video => [
+      String(video._id),
+      {
+        id: String(video._id),
+        title: video.title,
+        youtubeUrl: video.youtubeUrl,
+      } satisfies VocabWordSourceVideoRecord,
+    ])
+  )
+
+  const sourceVideoByEntryId = new Map<string, VocabWordSourceVideoRecord>()
+
+  for (const [entryKey, videoId] of videoIdByEntryId) {
+    const video = videoById.get(videoId)
+
+    if (video) sourceVideoByEntryId.set(entryKey, video)
+  }
+
+  return sourceVideoByEntryId
+}
+
 export async function listVocabWordsForUser({
   now = new Date(),
   userId,
@@ -104,10 +171,14 @@ export async function listVocabWordsForUser({
 
   if (items.length === 0) return []
 
-  const entries = await VocabEntryModel.find({
-    _id: { $in: items.map(item => item.vocabEntryId) },
-    ...VOCAB_REQUIRES_VI_MEANING_FILTER,
-  }).lean()
+  const entryIds = items.map(item => item.vocabEntryId)
+  const [entries, sourceVideoByEntryId] = await Promise.all([
+    VocabEntryModel.find({
+      _id: { $in: entryIds },
+      ...VOCAB_REQUIRES_VI_MEANING_FILTER,
+    }).lean(),
+    getSourceVideosByEntryId({ entryIds, userId }),
+  ])
   const entryById = new Map(entries.map(entry => [String(entry._id), entry]))
 
   return items.flatMap(item => {
@@ -118,6 +189,7 @@ export async function listVocabWordsForUser({
       {
         entry: toVocabEntryRecord(entry),
         item: toUserVocabItemRecord(item),
+        sourceVideo: sourceVideoByEntryId.get(String(item.vocabEntryId)) ?? null,
       },
     ]
   })

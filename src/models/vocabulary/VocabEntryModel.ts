@@ -435,6 +435,16 @@ VocabEntrySchema.index({
 })
 VocabEntrySchema.index({ enrichmentLeaseExpiresAt: 1, enrichmentStatus: 1 })
 VocabEntrySchema.index({ language: 1, frequencyRank: 1 })
+// Serves the recall/explore browse queries that sort a large "ready" slice by
+// { frequencyRank, normalizedTerm }. Without an index covering the full sort
+// key, MongoDB does a blocking in-memory sort that throws once the collection
+// grows past the sort memory cap (32MB find / 100MB aggregate) - which is why
+// /api/vocab/recall/due and /api/vocab/explore 500 in production but not locally.
+VocabEntrySchema.index({
+  enrichmentStatus: 1,
+  frequencyRank: 1,
+  normalizedTerm: 1,
+})
 VocabEntrySchema.index({ term: 'text', normalizedTerm: 'text', lemma: 'text' })
 
 export type VocabEntryDocument = InferSchemaType<typeof VocabEntrySchema>

@@ -23,6 +23,8 @@ import { toUserVocabItemRecord } from '../services/userVocabItemRecords'
 import { toVocabEntryRecord } from '../services/vocabEntryRecords'
 import { createVocabRecallTaskToken } from './recallTaskToken'
 
+const DISTRACTOR_POOL_MAX = 300
+
 function getDefinition(entry: VocabEntryApiRecord) {
   return getEnglishDefinition(entry)
 }
@@ -203,7 +205,11 @@ export async function listDueVocabRecallTasksForUser({
       ...VOCAB_REQUIRES_VI_MEANING_FILTER,
     })
       .sort({ frequencyRank: 1, normalizedTerm: 1 })
-      .limit(Math.max(24, limit * 8))
+      // Distractors are a shared pool - each task only needs 3, so a few hundred
+      // gives ample variety. Uncapped (limit * 8 = 8000 at limit=1000) this
+      // loaded thousands of heavy docs and blew the sort memory cap in prod.
+      .limit(Math.min(Math.max(24, limit * 8), DISTRACTOR_POOL_MAX))
+      .allowDiskUse(true)
       .lean(),
   ])
   const entryById = new Map(

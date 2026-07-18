@@ -186,9 +186,19 @@ export interface VocabRecallTaskRecord {
   type: VocabRecallTaskType
 }
 
+export interface VocabWordSourceVideoRecord {
+  id: string
+  title: string
+  youtubeUrl: string
+}
+
 export interface VocabWordListRecord {
   entry: VocabEntryApiRecord
   item: UserVocabItemApiRecord
+  // The dictation video this word was saved from, resolved from the most recent
+  // occurrence that carries a videoId. Null for words with no video source
+  // (e.g. added from Explore/Dictionary).
+  sourceVideo: VocabWordSourceVideoRecord | null
 }
 
 export interface VocabDailyGrowthRecord {

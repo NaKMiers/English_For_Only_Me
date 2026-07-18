@@ -61,7 +61,7 @@ export async function listExploreVocabEntriesForUser({
     },
     { $match: { userItems: { $eq: [] } } },
     { $limit: finalLimit },
-  ])
+  ]).allowDiskUse(true)
 
   return entries.map(entry => ({
     entry: toVocabEntryRecord(entry),

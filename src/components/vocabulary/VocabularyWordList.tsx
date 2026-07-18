@@ -1,6 +1,12 @@
 'use client'
 
-import { BookOpen, CalendarClock, Check, Trophy } from 'lucide-react'
+import {
+  BookOpen,
+  CalendarClock,
+  Check,
+  PlayCircle,
+  Trophy,
+} from 'lucide-react'
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
 
@@ -376,6 +382,21 @@ export function VocabularyWordList({ activeView, words }: Props) {
                 <span>{word.item.source}</span>
                 <span>{word.entry.enrichmentStatus}</span>
               </div>
+
+              {word.sourceVideo ? (
+                <a
+                  className="border-manga-black bg-manga-paper-soft hover:bg-manga-pale-red text-manga-black flex min-w-0 items-center gap-2 border-2 px-3 py-2 text-xs font-black uppercase shadow-[3px_3px_0_var(--manga-black)] transition-[background,box-shadow,transform] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none"
+                  href={`/dictation/videos/${word.sourceVideo.id}/practice`}
+                  rel="noopener noreferrer"
+                  target="_blank"
+                  title={word.sourceVideo.title}
+                >
+                  <PlayCircle className="size-4 shrink-0" />
+                  <span className="truncate">
+                    From: {word.sourceVideo.title}
+                  </span>
+                </a>
+              ) : null}
 
               <div className="grid grid-cols-2 gap-2">
                 <MangaButton
