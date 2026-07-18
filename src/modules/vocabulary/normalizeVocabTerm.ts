@@ -32,3 +32,15 @@ export function normalizeVocabTerm(input: string): NormalizedVocabTerm | null {
     term: normalizedTerm,
   }
 }
+
+// A candidate English word/phrase: ASCII Latin letters only, with optional
+// internal hyphens, apostrophes, or single spaces (e.g. "co-op", "don't",
+// "ice cream"). A cheap, API-free gate that rejects other scripts (Vietnamese,
+// CJK, Cyrillic) before any dictionary call. Latin-but-not-English strings
+// (e.g. "takuetsu") still pass here and are caught by the dictionary-result
+// check downstream.
+const ENGLISH_TERM_REGEX = /^[a-z]+(?:['\- ][a-z]+)*$/i
+
+export function isEnglishTermCandidate(input: string): boolean {
+  return ENGLISH_TERM_REGEX.test(input.trim())
+}

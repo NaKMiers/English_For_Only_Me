@@ -10,6 +10,7 @@ export const ENV_KEYS = {
   authSecret: 'AUTH_SECRET',
   adminEmails: 'ADMIN_EMAILS',
   siteUrl: 'SITE_URL',
+  myMemoryEmail: 'MYMEMORY_EMAIL',
 } as const
 
 export class MissingEnvironmentError extends Error {
@@ -49,6 +50,15 @@ export function getYoutubeApiKey() {
 
 export function getOpenAiApiKey() {
   return getOptionalServerEnv(ENV_KEYS.openAiApiKey)
+}
+
+/**
+ * Optional email passed to MyMemory as the `de` param. A valid email raises the
+ * free translation quota (anonymous per-IP is small; email-tracked is much
+ * higher), which we need for bulk vocabulary enrichment. Unset = anonymous.
+ */
+export function getMyMemoryEmail() {
+  return getOptionalServerEnv(ENV_KEYS.myMemoryEmail)
 }
 
 export function getCloudinaryUrl() {

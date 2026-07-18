@@ -1,8 +1,11 @@
 import { NextResponse } from 'next/server'
 
 import { connectDatabase } from '@/lib/db/connectDatabase'
+import { UserVocabItemModel } from '@/models/vocabulary/UserVocabItemModel'
+import { VocabEntryModel } from '@/models/vocabulary/VocabEntryModel'
 import { enrichVocabEntryIfNeeded } from '@/modules/vocabulary/enrichment/enrichmentService'
 import { requirePracticeActor } from '@/modules/dictation/services/getCurrentUser'
+import { isEnglishTermCandidate } from '@/modules/vocabulary/normalizeVocabTerm'
 import {
   findOrCreateVocabEntryShell,
   getVocabEntryWithUserState,
@@ -36,6 +39,14 @@ export async function POST(request: Request) {
 
     await connectDatabase()
 
+    // Guard 1 (no API): reject input that is not an English word/phrase - other
+    // scripts, digits, symbols - before creating anything or hitting a provider.
+    if (!isEnglishTermCandidate(parsed.data.term))
+      return jsonError({
+        status: 400,
+        body: { message: 'Enter an English word to look up.' },
+      })
+
     const shell = await findOrCreateVocabEntryShell({ term: parsed.data.term })
 
     if (!shell)
@@ -44,18 +55,41 @@ export async function POST(request: Request) {
         body: { message: 'Vocabulary term is invalid.' },
       })
 
+    const entry = await enrichVocabEntryIfNeeded({ entryId: shell.id })
+    const resolved = entry ?? shell
+
+    // Guard 2 (free dictionary result, never OpenAI): no definitions means no
+    // English dictionary entry exists for this term - it is not a real English
+    // word (e.g. "takuetsu", "ogre-faced"). Drop the empty shell we just created
+    // (unless a user already saved it) so it never surfaces in search or lists,
+    // and tell the caller instead of returning a hollow entry.
+    if (resolved.definitions.length === 0) {
+      const claimed = await UserVocabItemModel.exists({
+        vocabEntryId: resolved.id,
+      })
+
+      if (!claimed) await VocabEntryModel.deleteOne({ _id: resolved.id })
+
+      return jsonError({
+        status: 404,
+        body: {
+          message: `No English dictionary entry found for "${shell.term}".`,
+        },
+      })
+    }
+
+    // Valid English word - only now record where the user encountered it.
     if (parsed.data.occurrence)
       await recordVocabOccurrence({
         ...parsed.data.occurrence,
         reason: parsed.data.occurrence.reason,
         selectedText: parsed.data.occurrence.selectedText ?? shell.term,
         userId: actor.id,
-        vocabEntryId: shell.id,
+        vocabEntryId: resolved.id,
       })
 
-    const entry = await enrichVocabEntryIfNeeded({ entryId: shell.id })
     const record = await getVocabEntryWithUserState({
-      entryId: entry?.id ?? shell.id,
+      entryId: resolved.id,
       userId: actor.id,
     })
 

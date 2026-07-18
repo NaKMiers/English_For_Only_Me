@@ -1,3 +1,4 @@
+import { getMyMemoryEmail } from '@/constants/environments'
 import { VOCAB_LOOKUP_TIMEOUT_MS } from '@/modules/vocabulary/constants'
 
 import { asString, isRecord } from './providerUtils'
@@ -25,6 +26,11 @@ function buildUrl(text: string) {
     mt: '1',
     q: trimToProviderLimit(text),
   })
+
+  // A valid email raises MyMemory's free daily quota (per-IP anonymous is small;
+  // email-tracked is ~10x), which bulk enrichment needs. Optional.
+  const email = getMyMemoryEmail()
+  if (email) searchParams.set('de', email)
 
   return `https://api.mymemory.translated.net/get?${searchParams.toString()}`
 }
