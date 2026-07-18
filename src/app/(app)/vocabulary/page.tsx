@@ -5,7 +5,6 @@ import { AuthControl } from '@/components/common/AuthControl'
 import { MangaPageShell } from '@/components/common/MangaPageShell'
 import { VocabularyDashboard } from '@/components/vocabulary/VocabularyDashboard'
 import { hasMongoDbUri } from '@/constants/environments'
-import { auth } from '@/lib/auth/auth'
 
 export const metadata: Metadata = {
   title: 'Vocabulary',
@@ -17,9 +16,6 @@ export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
 export default async function VocabularyPage() {
-  const session = await auth()
-  const isAdmin = session?.user?.role === 'admin'
-
   return (
     <MangaPageShell
       topbar={
@@ -30,10 +26,7 @@ export default async function VocabularyPage() {
         />
       }
     >
-      <VocabularyDashboard
-        isAdmin={isAdmin}
-        mongoConfigured={hasMongoDbUri()}
-      />
+      <VocabularyDashboard mongoConfigured={hasMongoDbUri()} />
     </MangaPageShell>
   )
 }

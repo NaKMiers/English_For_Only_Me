@@ -83,7 +83,7 @@ export default async function DictationPage() {
     ] = await Promise.all([
       listTopicSummaries(),
       countNoTopicVideos(),
-      getGlobalStatsForUser(actorId ?? ''),
+      getGlobalStatsForUser(actorId),
       actorId ? getLatestCompletedVideoForUser(actorId) : Promise.resolve(null),
       actorId
         ? listInProgressVideosForUser(actorId)

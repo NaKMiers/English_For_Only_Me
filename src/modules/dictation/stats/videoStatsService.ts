@@ -10,16 +10,21 @@ export async function getVideoStatsForUser({
   userId,
   videoId,
 }: {
-  userId: string
+  // Null when the viewer has no practice identity yet: segment totals still
+  // render, but no attempts are theirs, so we skip the attempt query entirely
+  // rather than match on an empty/invalid owner.
+  userId: string | null
   videoId: string
 }) {
   const [attempts, segments] = await Promise.all([
-    DictationAttemptModel.find({
-      userId,
-      videoId,
-    })
-      .sort({ createdAt: 1 })
-      .lean(),
+    userId
+      ? DictationAttemptModel.find({
+          userId,
+          videoId,
+        })
+          .sort({ createdAt: 1 })
+          .lean()
+      : Promise.resolve([]),
     DictationSegmentModel.find({
       videoId,
     })

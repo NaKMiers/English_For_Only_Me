@@ -8,6 +8,7 @@ import {
   type Model,
 } from 'mongoose'
 
+import { OWNER_KEY_PATTERN } from '@/lib/auth/ownerKey'
 import type { DictationDebriefStatus } from '@/modules/dictation/types'
 
 const debriefStatuses: DictationDebriefStatus[] = ['failed', 'pending', 'ready']
@@ -41,6 +42,7 @@ const DictationDebriefSchema = new Schema(
       type: String,
       required: true,
       trim: true,
+      match: OWNER_KEY_PATTERN,
       index: true,
     },
     videoId: {

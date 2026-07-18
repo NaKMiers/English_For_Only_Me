@@ -125,16 +125,6 @@ const DictationVideoSchema = new Schema(
       required: true,
       default: 0,
     },
-    completedSessionCount: {
-      type: Number,
-      min: 0,
-      required: true,
-      default: 0,
-    },
-    lastPracticedAt: {
-      type: Date,
-      default: null,
-    },
     tags: {
       type: [String],
       default: [],

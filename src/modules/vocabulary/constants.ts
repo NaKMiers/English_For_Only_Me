@@ -122,6 +122,52 @@ export const NGSL_SEED_SOURCE = {
   url: 'https://www.newgeneralservicelist.com/new-general-service-list',
 }
 
+/**
+ * The NGSL family of frequency word lists (same authors, same CC BY-SA 4.0
+ * license). Seeded in this priority order after NGSL to expand the catalog with
+ * academic, TOEIC, and business vocabulary. `rankOffset` keeps each list's words
+ * sorted after core NGSL (1..~2810) while preserving each list's internal order;
+ * `difficultyLevel` tags the register for learners.
+ */
+export const VOCAB_FAMILY_SEED_SOURCES = [
+  {
+    csvUrl: 'https://www.newgeneralservicelist.com/s/NGSL_12_stats.csv',
+    difficultyLevel: 'core',
+    license: VOCAB_ENTRY_LICENSE,
+    name: 'New General Service List 1.2',
+    provider: 'NGSL',
+    rankOffset: 0,
+    url: 'https://www.newgeneralservicelist.com/new-general-service-list',
+  },
+  {
+    csvUrl: 'https://www.newgeneralservicelist.com/s/NAWL_10_stats.csv',
+    difficultyLevel: 'academic',
+    license: VOCAB_ENTRY_LICENSE,
+    name: 'New Academic Word List 1.0',
+    provider: 'NAWL',
+    rankOffset: 10_000,
+    url: 'https://www.newgeneralservicelist.com/new-academic-word-list',
+  },
+  {
+    csvUrl: 'https://www.newgeneralservicelist.com/s/TSL_12_stats.csv',
+    difficultyLevel: 'toeic',
+    license: VOCAB_ENTRY_LICENSE,
+    name: 'TOEIC Service List 1.2',
+    provider: 'TSL',
+    rankOffset: 20_000,
+    url: 'https://www.newgeneralservicelist.com/toeic-service-list',
+  },
+  {
+    csvUrl: 'https://www.newgeneralservicelist.com/s/BSL_120_stats.csv',
+    difficultyLevel: 'business',
+    license: VOCAB_ENTRY_LICENSE,
+    name: 'Business Service List 1.2',
+    provider: 'BSL',
+    rankOffset: 30_000,
+    url: 'https://www.newgeneralservicelist.com/business-service-list',
+  },
+] as const
+
 export const VOCAB_API_PATHS = {
   adminEnrich: '/api/admin/vocab/enrich',
   dueRecall: '/api/vocab/recall/due',

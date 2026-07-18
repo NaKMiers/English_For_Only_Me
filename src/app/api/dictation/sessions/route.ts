@@ -24,6 +24,16 @@ function jsonError(decision: ApiErrorDecision) {
   return NextResponse.json(decision.body, { status: decision.status })
 }
 
+/** MongoServerError code 11000: a unique/partial-unique index was violated. */
+function isDuplicateKeyError(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    (error as { code?: number }).code === 11000
+  )
+}
+
 function toSessionError(error: unknown): ApiErrorDecision {
   if (
     typeof error === 'object' &&
@@ -104,6 +114,21 @@ export async function POST(request: Request) {
       status: 'active',
       videoId: video._id,
     }).sort({ lastActiveAt: -1 })
+
+    // Invariant: at most one active session per (user, video). Legacy data could
+    // have stacked several; collapse any strays to 'abandoned' so "In Progress"
+    // counts one card per video and the partial-unique index stays satisfiable.
+    if (existingSession)
+      await DictationSessionModel.updateMany(
+        {
+          userId: actor.id,
+          videoId: video._id,
+          status: 'active',
+          _id: { $ne: existingSession._id },
+        },
+        { $set: { status: 'abandoned' } }
+      )
+
     const decision = resolveSessionStart({
       existingSession: existingSession
         ? toDictationSessionRecord(existingSession.toObject())
@@ -122,19 +147,40 @@ export async function POST(request: Request) {
       })
     }
 
-    const session = await DictationSessionModel.create({
-      userId: actor.id,
-      videoId: video._id,
-      transcriptId: activeTranscriptId,
-      status: 'active',
-      currentSegmentId: firstSegment._id,
-      currentSegmentOrder: firstSegment.order,
-      playbackSpeed: 1,
-      showShortcuts: true,
-      isVideoHidden: false,
-      startedAt: now,
-      lastActiveAt: now,
-    })
+    let session
+    try {
+      session = await DictationSessionModel.create({
+        userId: actor.id,
+        videoId: video._id,
+        transcriptId: activeTranscriptId,
+        status: 'active',
+        currentSegmentId: firstSegment._id,
+        currentSegmentOrder: firstSegment.order,
+        playbackSpeed: 1,
+        showShortcuts: true,
+        isVideoHidden: false,
+        startedAt: now,
+        lastActiveAt: now,
+      })
+    } catch (error) {
+      // The partial-unique index rejects a second concurrent start for the same
+      // (user, video). Lost the race - reuse the session the winner created.
+      if (isDuplicateKeyError(error)) {
+        const raced = await DictationSessionModel.findOne({
+          userId: actor.id,
+          status: 'active',
+          videoId: video._id,
+        }).sort({ lastActiveAt: -1 })
+
+        if (raced)
+          return NextResponse.json({
+            mode: 'resume' as const,
+            session: toDictationSessionRecord(raced.toObject()),
+          })
+      }
+
+      throw error
+    }
 
     return NextResponse.json(
       {

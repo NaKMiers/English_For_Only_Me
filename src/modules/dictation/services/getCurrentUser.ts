@@ -2,6 +2,7 @@ import 'server-only'
 
 import { auth } from '@/lib/auth/auth'
 import { getGuestId, getOrCreateGuestId } from '@/lib/auth/guestUser'
+import { assertOwnerKey } from '@/lib/auth/ownerKey'
 import type { UserRole } from '@/lib/auth/roles'
 
 export interface CurrentUser {
@@ -77,9 +78,12 @@ export async function requireUser(): Promise<CurrentUser> {
 export async function requirePracticeActor(): Promise<PracticeActor> {
   const user = await getOptionalUser()
 
-  if (user) return { id: user.id, isGuest: false }
+  // assertOwnerKey is the write-boundary guard: every per-user row created or
+  // updated downstream is scoped to this id, so a null/empty/malformed owner
+  // must never get this far (see ownerKey.ts - the data-isolation contract).
+  if (user) return { id: assertOwnerKey(user.id), isGuest: false }
 
-  return { id: await getOrCreateGuestId(), isGuest: true }
+  return { id: assertOwnerKey(await getOrCreateGuestId()), isGuest: true }
 }
 
 /**

@@ -19,14 +19,12 @@ export function toDictationVideoRecord(video: {
   importWarning?: string | null
   activeTranscriptId?: unknown
   sentenceCount?: number
-  completedSessionCount?: number
   tags?: string[]
   collections?: string[]
   topicId?: unknown
   sectionId?: unknown
   level?: DictationLevel | null
   order?: number
-  lastPracticedAt?: Date | null
   createdAt: Date
   updatedAt: Date
 }): DictationVideoRecord {
@@ -50,14 +48,12 @@ export function toDictationVideoRecord(video: {
       ? String(video.activeTranscriptId)
       : null,
     sentenceCount: video.sentenceCount ?? 0,
-    completedSessionCount: video.completedSessionCount ?? 0,
     tags: video.tags ?? [],
     collections: video.collections ?? [],
     topicId: video.topicId ? String(video.topicId) : null,
     sectionId: video.sectionId ? String(video.sectionId) : null,
     level: video.level ?? null,
     order: video.order ?? 0,
-    lastPracticedAt: video.lastPracticedAt ?? null,
     createdAt: video.createdAt,
     updatedAt: video.updatedAt,
   }

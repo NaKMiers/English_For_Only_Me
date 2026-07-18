@@ -1,5 +1,8 @@
 import 'server-only'
 
+import type { Types } from 'mongoose'
+
+import { DictationAttemptModel } from '@/models/dictation/DictationAttemptModel'
 import { DictationSessionModel } from '@/models/dictation/DictationSessionModel'
 import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
 import { toDictationVideoRecord } from '@/modules/dictation/services/dictationVideoRecords'
@@ -7,6 +10,45 @@ import type {
   DictationVideoApiRecord,
   DictationVideoProgress,
 } from '@/modules/dictation/types'
+
+/**
+ * The active sessions this user has actually *started practicing* - an active
+ * session with at least one attempt (a check/skip/reveal). Opening the practice
+ * page creates an active session immediately, but a video only counts as "in
+ * progress" once the user has typed and submitted at least once (product rule),
+ * so an active session with zero attempts does not qualify. Ordered most
+ * recently active first.
+ */
+async function listStartedActiveSessions(
+  userId: string
+): Promise<{ id: string; videoId: string }[]> {
+  const sessions = await DictationSessionModel.find({
+    userId,
+    status: 'active',
+  })
+    .sort({ lastActiveAt: -1 })
+    .select({ videoId: 1 })
+    .lean<{ _id: Types.ObjectId; videoId: Types.ObjectId }[]>()
+
+  if (sessions.length === 0) return []
+
+  // Which of those sessions have any attempt? distinct keeps this to one query.
+  const startedIds = new Set(
+    (
+      await DictationAttemptModel.distinct('sessionId', {
+        userId,
+        sessionId: { $in: sessions.map(session => session._id) },
+      })
+    ).map(id => String(id))
+  )
+
+  return sessions
+    .filter(session => startedIds.has(String(session._id)))
+    .map(session => ({
+      id: String(session._id),
+      videoId: String(session.videoId),
+    }))
+}
 
 /**
  * How many times each video has been completed, keyed by video id. A
@@ -29,43 +71,35 @@ export async function getCompletionCountsForUser(
 }
 
 /**
- * Video ids that currently have an unfinished (active) session for this user.
- * A video is "in progress" the moment practice starts and stops being so once
- * the session completes. Used to label browse cards "Continue".
+ * Video ids the user has started practicing (an active session with at least
+ * one attempt) and not yet finished. Used to label browse cards "Continue".
+ * Merely opening a video does not qualify - see listStartedActiveSessions.
  */
 export async function getInProgressVideoIdsForUser(
   userId: string
 ): Promise<Set<string>> {
-  const rows = await DictationSessionModel.aggregate<{ _id: unknown }>([
-    { $match: { userId, status: 'active' } },
-    { $group: { _id: '$videoId' } },
-  ])
+  const sessions = await listStartedActiveSessions(userId)
 
-  return new Set(rows.map(row => String(row._id)))
+  return new Set(sessions.map(session => session.videoId))
 }
 
 /**
- * Videos with an unfinished (active) session for this user, most recently
- * practiced first. Powers the "In Progress" resume section on the dictation
- * landing page. Archived videos are dropped.
+ * Videos the user has started practicing (an active session with at least one
+ * attempt) and not yet finished, most recently practiced first. Powers the "In
+ * Progress" resume section on the dictation landing page. A freshly-opened video
+ * with no attempts is excluded. Archived videos are dropped.
  */
 export async function listInProgressVideosForUser(
   userId: string
 ): Promise<DictationVideoApiRecord[]> {
-  const sessions = await DictationSessionModel.find({
-    userId,
-    status: 'active',
-  })
-    .sort({ lastActiveAt: -1 })
-    .select({ videoId: 1 })
-    .lean<{ videoId: unknown }[]>()
+  const sessions = await listStartedActiveSessions(userId)
 
   // One video can have several active sessions; keep the first (most recent).
   const orderedIds: string[] = []
   const seen = new Set<string>()
 
   for (const session of sessions) {
-    const id = String(session.videoId)
+    const id = session.videoId
 
     if (seen.has(id)) continue
 
@@ -102,26 +136,37 @@ export async function getCompletionCountForVideo(
 
 /**
  * This user's tri-state progress on one video, derived from their sessions.
- * An active (unfinished) session wins, so a completed-then-restarted video
- * reads 'inProgress' until the new pass finishes. This is the single per-user
- * "completed" source of truth for the results page and its helpers.
+ * A *started* active session (one with at least one attempt) wins, so a
+ * completed-then-restarted video reads 'inProgress' only once the new pass has a
+ * submitted attempt - opening it again alone keeps the prior 'completed'. This
+ * is the single per-user "completed" source of truth for the results page.
  */
 export async function getVideoProgressForUser({
   userId,
   videoId,
 }: {
-  userId: string
+  userId: string | null
   videoId: string
 }): Promise<DictationVideoProgress> {
   if (!userId) return 'notStarted'
 
-  const activeSession = await DictationSessionModel.exists({
+  const activeSession = await DictationSessionModel.findOne({
     status: 'active',
     userId,
     videoId,
   })
+    .select({ _id: 1 })
+    .lean<{ _id: Types.ObjectId } | null>()
 
-  if (activeSession) return 'inProgress'
+  if (activeSession) {
+    const hasAttempt = await DictationAttemptModel.exists({
+      userId,
+      videoId,
+      sessionId: activeSession._id,
+    })
+
+    if (hasAttempt) return 'inProgress'
+  }
 
   const completedSession = await DictationSessionModel.exists({
     status: 'completed',

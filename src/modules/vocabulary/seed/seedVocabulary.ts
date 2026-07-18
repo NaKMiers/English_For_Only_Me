@@ -4,8 +4,20 @@ import { VocabEntryModel } from '@/models/vocabulary/VocabEntryModel'
 import {
   NGSL_SEED_SOURCE,
   VOCAB_DEFAULT_LANGUAGE,
+  VOCAB_ENTRY_LICENSE,
 } from '@/modules/vocabulary/constants'
 import { normalizeVocabTerm } from '@/modules/vocabulary/normalizeVocabTerm'
+
+/** One frequency list in the NGSL family (see VOCAB_FAMILY_SEED_SOURCES). */
+export interface FamilySeedSource {
+  csvUrl: string
+  difficultyLevel: string
+  license: typeof VOCAB_ENTRY_LICENSE
+  name: string
+  provider: string
+  rankOffset: number
+  url: string
+}
 
 export const NGSL_STATS_CSV_URL =
   'https://www.newgeneralservicelist.com/s/NGSL_12_stats.csv'
@@ -157,6 +169,93 @@ export async function seedVocabularyEntries({
     skipped: words.length - operations.length,
     sourceUrl: NGSL_SEED_SOURCE.url,
   }
+}
+
+/**
+ * Insert only vocabulary terms that are NOT already present, never touching an
+ * existing entry (preserves its rank and any enrichment). `existingTerms` is a
+ * live set of normalized terms already in the catalog; it is mutated to include
+ * the terms inserted here so callers can dedupe across several sources in one
+ * pass. Stops once `remaining` new terms have been queued. Returns how many new
+ * entries were inserted.
+ */
+export async function insertNewVocabularyEntries({
+  existingTerms,
+  language = VOCAB_DEFAULT_LANGUAGE,
+  remaining,
+  source,
+  words,
+}: {
+  existingTerms: Set<string>
+  language?: string
+  remaining: number
+  source: FamilySeedSource
+  words: NgslSeedWord[]
+}): Promise<{ inserted: number }> {
+  if (remaining <= 0) return { inserted: 0 }
+
+  type SeedBulkOperation = Parameters<
+    typeof VocabEntryModel.collection.bulkWrite
+  >[0][number]
+  const now = new Date()
+  const operations: SeedBulkOperation[] = []
+
+  for (const word of words) {
+    if (operations.length >= remaining) break
+
+    const normalized = normalizeVocabTerm(word.term)
+
+    if (!normalized) continue
+    if (existingTerms.has(normalized.normalizedTerm)) continue
+
+    // Reserve the term so later sources in the same run cannot re-add it.
+    existingTerms.add(normalized.normalizedTerm)
+
+    const rank = source.rankOffset + word.rank
+
+    operations.push({
+      updateOne: {
+        filter: { language, normalizedTerm: normalized.normalizedTerm },
+        // Insert-only: everything lives under $setOnInsert, so if the term
+        // somehow already exists this is a harmless no-op.
+        update: {
+          $setOnInsert: {
+            createdAt: now,
+            difficultyLevel: source.difficultyLevel,
+            enrichmentAttempts: 0,
+            enrichmentStatus: 'seeded',
+            entryType: normalized.entryType,
+            frequencyRank: rank,
+            language,
+            license: source.license,
+            normalizedTerm: normalized.normalizedTerm,
+            seedLicense: source.license.name,
+            seedRank: rank,
+            seedSource: source.name,
+            sourceAttributions: [
+              {
+                license: source.license.name,
+                provider: source.provider,
+                retrievedAt: now,
+                url: source.url,
+              },
+            ],
+            term: normalized.term,
+            updatedAt: now,
+          },
+        },
+        upsert: true,
+      },
+    })
+  }
+
+  if (operations.length === 0) return { inserted: 0 }
+
+  const result = await VocabEntryModel.collection.bulkWrite(operations, {
+    ordered: false,
+  })
+
+  return { inserted: result.upsertedCount ?? 0 }
 }
 
 export async function seedVocabularyFromOfficialSource({

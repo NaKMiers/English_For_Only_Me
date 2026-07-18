@@ -4,6 +4,7 @@ import { afterEach, describe, expect, test, vi } from 'vitest'
 import type {
   DictationSegmentApiRecord,
   DictationTranscriptApiRecord,
+  DictationVideoApiRecord,
 } from '@/modules/dictation/types'
 import { setupDom } from '@/test/setupDom'
 
@@ -105,26 +106,28 @@ function transcriptRecord(
   }
 }
 
-function videoRecord() {
+function videoRecord(): DictationVideoApiRecord {
   return {
     activeTranscriptId: null,
     channelTitle: 'TED-Ed',
     collections: [],
-    completedSessionCount: 0,
     createdAt: new Date(),
     defaultLanguage: 'en-US',
     durationSeconds: 300,
     id: videoId,
     importStatus: 'metadataReady',
     importWarning: null,
-    lastPracticedAt: null,
+    level: null,
+    order: 0,
     purpose: 'ielts-listening',
+    sectionId: null,
     sentenceCount: 0,
     sourceType: 'youtube',
     sourceUrl: 'https://www.youtube.com/watch?v=abc123abc12',
     status: 'needsTranscript',
     tags: [],
     thumbnailUrl: null,
+    topicId: null,
     title: 'A listening practice video',
     transcriptStatus: 'manualNeeded',
     updatedAt: new Date(),

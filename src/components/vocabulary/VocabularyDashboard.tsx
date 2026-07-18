@@ -1,19 +1,15 @@
 'use client'
 
-import { Flame, Sparkles } from 'lucide-react'
+import { Flame } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 
 import { MangaPanel } from '@/components/common/MangaPanel'
-import { MangaButton } from '@/components/ui/MangaButton'
-import { PageTag } from '@/components/ui/PageTag'
 import {
-  getDueVocabRecallApi,
-  getExploreVocabApi,
-  getVocabStatsApi,
-  lookupVocabEntryApi,
-  searchVocabApi,
-  setVocabItemStatusApi,
-} from '@/requests/vocabularyApi'
+  SkeletonHero,
+  SkeletonPanel,
+  SkeletonTileRow,
+} from '@/components/common/PageSkeletons'
+import { PageTag } from '@/components/ui/PageTag'
 import {
   VOCAB_EXPLORE_MAX_LIMIT,
   VOCAB_RECALL_LISTENING_TASK_TYPES,
@@ -25,18 +21,25 @@ import type {
   VocabRecallTaskRecord,
   VocabStatsRecord,
 } from '@/modules/vocabulary/types'
+import {
+  getDueVocabRecallApi,
+  getExploreVocabApi,
+  getVocabStatsApi,
+  lookupVocabEntryApi,
+  searchVocabApi,
+  setVocabItemStatusApi,
+} from '@/requests/vocabularyApi'
 
+import { VocabRecallModal } from './VocabRecallModal'
 import {
   VocabularyExplorePanel,
   type ExploreDecision,
 } from './VocabularyExplorePanel'
 import { VocabularyRecallLauncher } from './VocabularyRecallLauncher'
-import { VocabRecallModal } from './VocabRecallModal'
 import { VocabularySearchPanel } from './VocabularySearchPanel'
 import { VocabularyStatsOverview } from './VocabularyStatsOverview'
 
 interface Props {
-  isAdmin: boolean
   mongoConfigured: boolean
 }
 
@@ -136,7 +139,7 @@ function buildOptimisticUserItem({
   }
 }
 
-export function VocabularyDashboard({ isAdmin, mongoConfigured }: Props) {
+export function VocabularyDashboard({ mongoConfigured }: Props) {
   const [stats, setStats] = useState<VocabStatsRecord>(EMPTY_STATS)
   const [query, setQuery] = useState('')
   const [searchResults, setSearchResults] = useState<
@@ -158,6 +161,7 @@ export function VocabularyDashboard({ isAdmin, mongoConfigured }: Props) {
   const [recallModalOpen, setRecallModalOpen] = useState(false)
   const [recallAnsweredCount, setRecallAnsweredCount] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
+  const [isInitialLoad, setIsInitialLoad] = useState(mongoConfigured)
   const [statusMessage, setStatusMessage] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
@@ -198,11 +202,15 @@ export function VocabularyDashboard({ isAdmin, mongoConfigured }: Props) {
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
-      refreshCoreData().catch(error => {
-        setErrorMessage(
-          error instanceof Error ? error.message : 'Could not load vocabulary.'
-        )
-      })
+      refreshCoreData()
+        .catch(error => {
+          setErrorMessage(
+            error instanceof Error
+              ? error.message
+              : 'Could not load vocabulary.'
+          )
+        })
+        .finally(() => setIsInitialLoad(false))
     }, 0)
 
     return () => window.clearTimeout(timeoutId)
@@ -235,10 +243,6 @@ export function VocabularyDashboard({ isAdmin, mongoConfigured }: Props) {
     )
     const reachedEnd = activeExploreIndex >= lastIndex
 
-    // Load the next batch once you have worked through to the end of the deck.
-    // Requiring the final card to be decided guarantees the refetch returns
-    // genuinely new words (decided words are excluded server-side), so it never
-    // loops on the same batch.
     if (!allDecided && !(reachedEnd && lastDecided)) return
 
     const timeoutId = window.setTimeout(() => {
@@ -540,6 +544,16 @@ export function VocabularyDashboard({ isAdmin, mongoConfigured }: Props) {
       </MangaPanel>
     )
 
+  if (isInitialLoad)
+    return (
+      <div className="grid gap-5 p-4 sm:p-6 lg:p-8">
+        <SkeletonHero />
+        <SkeletonTileRow count={5} />
+        <SkeletonPanel lines={3} />
+        <SkeletonPanel lines={2} />
+      </div>
+    )
+
   const activeRecall = recallTasks[0] ?? null
 
   return (
@@ -565,15 +579,6 @@ export function VocabularyDashboard({ isAdmin, mongoConfigured }: Props) {
               words you chose to learn on a seven-touch schedule.
             </p>
           </div>
-          {isAdmin ? (
-            <MangaButton
-              href="/admin/vocab"
-              tone="paper"
-              icon={<Sparkles className="size-4" />}
-            >
-              Admin Enrich
-            </MangaButton>
-          ) : null}
         </div>
 
         <VocabularyStatsOverview stats={stats} />

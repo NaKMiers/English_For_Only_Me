@@ -29,10 +29,26 @@ export async function mergeGuestDataIntoUser(
 
   const set = { $set: { userId } }
 
-  await Promise.all([
+  const [sessions, attempts, reviewItems, debriefs] = await Promise.all([
     DictationSessionModel.updateMany({ userId: guestId }, set),
     DictationAttemptModel.updateMany({ userId: guestId }, set),
     DictationReviewItemModel.updateMany({ userId: guestId }, set),
     DictationDebriefModel.updateMany({ userId: guestId }, set),
   ])
+
+  const moved =
+    sessions.modifiedCount +
+    attempts.modifiedCount +
+    reviewItems.modifiedCount +
+    debriefs.modifiedCount
+
+  // Audit trail: on a shared device this folds one guest's practice into whoever
+  // signs in. Logging the volume makes an unexpected cross-account absorption
+  // visible instead of silent.
+  if (moved > 0)
+    console.info(
+      `Merged guest practice ${guestId} -> user ${userId}: ` +
+        `${sessions.modifiedCount} sessions, ${attempts.modifiedCount} attempts, ` +
+        `${reviewItems.modifiedCount} review items, ${debriefs.modifiedCount} debriefs`
+    )
 }

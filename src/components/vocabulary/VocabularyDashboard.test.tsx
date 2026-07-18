@@ -142,12 +142,7 @@ describe('VocabularyDashboard', () => {
   })
 
   test('advances explore cards before the status API resolves', async () => {
-    render(
-      <VocabularyDashboard
-        isAdmin={false}
-        mongoConfigured
-      />
-    )
+    render(<VocabularyDashboard mongoConfigured />)
 
     await screen.findByText('1/2')
 

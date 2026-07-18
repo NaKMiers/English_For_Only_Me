@@ -8,6 +8,7 @@ import {
   type Model,
 } from 'mongoose'
 
+import { OWNER_KEY_PATTERN } from '@/lib/auth/ownerKey'
 import type { DictationSessionApiRecord } from '@/modules/dictation/types'
 
 const DictationSessionSchema = new Schema(
@@ -16,6 +17,7 @@ const DictationSessionSchema = new Schema(
       type: String,
       required: true,
       trim: true,
+      match: OWNER_KEY_PATTERN,
       index: true,
     },
     videoId: {
@@ -88,6 +90,18 @@ const DictationSessionSchema = new Schema(
 
 DictationSessionSchema.index({ userId: 1, videoId: 1, status: 1 })
 DictationSessionSchema.index({ userId: 1, lastActiveAt: -1 })
+// One in-flight session per user per video. Starting practice reuses the open
+// session (or abandons strays) instead of stacking new ones, so "In Progress"
+// counts real videos, not repeat visits. Partial so completed/abandoned rows
+// (many per pair) are unconstrained. Requires clean data first: the repair
+// migration dedupes pre-existing active sessions before this index builds.
+DictationSessionSchema.index(
+  { userId: 1, videoId: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { status: 'active' },
+  }
+)
 
 export type DictationSessionDocument = InferSchemaType<
   typeof DictationSessionSchema

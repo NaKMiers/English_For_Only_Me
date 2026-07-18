@@ -85,9 +85,13 @@ export async function listDueReviewItemsForUser({
   videoId,
 }: {
   limit?: number
-  userId: string
+  // Null when the viewer has no practice identity yet - they own no review
+  // items, so return nothing instead of querying with an empty owner.
+  userId: string | null
   videoId?: string
 }) {
+  if (!userId) return []
+
   const query = {
     userId,
     ...(videoId ? { videoId } : {}),

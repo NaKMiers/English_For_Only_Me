@@ -15,8 +15,12 @@
     "format:check": "prettier . --check",
     "backfill:content": "node --conditions=react-server --import tsx scripts/backfillContentHierarchy.ts",
     "dictation:migrate-status": "node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/migrateDictationVideoStatus.ts",
+    "dictation:diagnose-users": "node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/diagnoseUserData.ts",
+    "dictation:repair-users": "node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/repairUserDataOwnership.ts",
     "resegment": "node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/resegmentAllTranscripts.ts",
     "vocab:seed": "node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/seedVocabulary.ts",
+    "vocab:seed-family": "node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/seedVocabularyFamily.ts",
+    "vocab:enrich": "node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/enrichVocabularyBatch.ts",
     "vocab:backfill-vi": "node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/backfillVocabularyVietnameseMeanings.ts"
   },
   "dependencies": {

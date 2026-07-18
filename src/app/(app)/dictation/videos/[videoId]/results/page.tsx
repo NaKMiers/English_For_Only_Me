@@ -94,9 +94,10 @@ export default async function Page({ params }: Props) {
       />
     )
 
-  // Results are open to everyone. An empty actor id (a visitor with no practice
-  // history) simply matches no rows and renders the empty "Practice first" state.
-  const actorId = (await getPracticeActorId()) ?? ''
+  // Results are open to everyone. A null actor id (a visitor with no practice
+  // history) owns no rows, so the reads below short-circuit to empty and the
+  // page renders the "Practice first" state - never a query on an empty owner.
+  const actorId = await getPracticeActorId()
 
   await connectDatabase()
 

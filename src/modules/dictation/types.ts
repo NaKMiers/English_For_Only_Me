@@ -105,14 +105,12 @@ export interface DictationVideoApiRecord {
   importWarning: string | null
   activeTranscriptId: string | null
   sentenceCount: number
-  completedSessionCount: number
   tags: string[]
   collections: string[]
   topicId: string | null
   sectionId: string | null
   level: DictationLevel | null
   order: number
-  lastPracticedAt: Date | null
   createdAt: Date
   updatedAt: Date
 }
