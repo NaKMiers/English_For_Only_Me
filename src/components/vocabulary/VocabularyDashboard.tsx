@@ -1,7 +1,7 @@
 'use client'
 
 import { Flame } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { MangaPanel } from '@/components/common/MangaPanel'
 import {
@@ -11,6 +11,7 @@ import {
 } from '@/components/common/PageSkeletons'
 import { PageTag } from '@/components/ui/PageTag'
 import {
+  VOCAB_API_PATHS,
   VOCAB_EXPLORE_MAX_LIMIT,
   VOCAB_RECALL_LISTENING_TASK_TYPES,
   VOCAB_RECALL_MAX_LIMIT,
@@ -28,6 +29,7 @@ import {
   lookupVocabEntryApi,
   searchVocabApi,
   setVocabItemStatusApi,
+  setVocabItemStatusBatchApi,
 } from '@/requests/vocabularyApi'
 
 import { VocabRecallModal } from './VocabRecallModal'
@@ -62,8 +64,22 @@ const EMPTY_STATS: VocabStatsRecord = {
 const LISTENING_SKIP_STORAGE_KEY = 'vocab:recall:listening-skip-until'
 const DAILY_AUTO_OPEN_STORAGE_KEY = 'vocab:recall:auto-open-date'
 
+// Rapid explore decisions are coalesced: presses are queued and sent as one
+// batch after the user pauses, and the heavy stats + due-recall refetch waits
+// until presses settle. This turns a burst of N presses (N item POSTs + N
+// stats + N 80kB due fetches) into ~1 batch write + 1 progress refresh.
+const WRITE_FLUSH_DELAY_MS = 2000
+const PROGRESS_REFRESH_DELAY_MS = 1500
+
 type MarkableSource = 'search' | 'explore' | 'dictionary' | 'manual'
 type MarkableStatus = 'shouldLearn' | 'alreadyKnow'
+
+interface PendingExploreWrite {
+  previousDecision: ExploreDecision | undefined
+  previousUserItem: UserVocabItemApiRecord | null
+  source: MarkableSource
+  status: MarkableStatus
+}
 
 function getTodayStorageLabel() {
   return new Date().toISOString().slice(0, 10)
@@ -165,6 +181,12 @@ export function VocabularyDashboard({ mongoConfigured }: Props) {
   const [statusMessage, setStatusMessage] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
+  // Queued explore writes keyed by entry id (last decision per entry wins),
+  // plus the debounce timers for flushing them and for the progress refresh.
+  const pendingWritesRef = useRef<Map<string, PendingExploreWrite>>(new Map())
+  const writeFlushTimerRef = useRef<number | null>(null)
+  const progressRefreshTimerRef = useRef<number | null>(null)
+
   const refreshProgressData = useCallback(async () => {
     if (!mongoConfigured) return
 
@@ -194,6 +216,168 @@ export function VocabularyDashboard({ mongoConfigured }: Props) {
   const refreshCoreData = useCallback(async () => {
     await Promise.all([refreshProgressData(), refreshExploreData()])
   }, [refreshExploreData, refreshProgressData])
+
+  const setEntryUserItem = useCallback(
+    (entryId: string, userItem: UserVocabItemApiRecord | null) => {
+      const apply = (item: VocabEntryWithUserStateRecord) =>
+        item.entry.id === entryId ? { ...item, userItem } : item
+
+      setSelectedEntry(current =>
+        current?.entry.id === entryId ? { ...current, userItem } : current
+      )
+      setSearchResults(current => current.map(apply))
+      setExploreEntries(current => current.map(apply))
+    },
+    []
+  )
+
+  const rollbackEntry = useCallback(
+    (entryId: string, write: PendingExploreWrite) => {
+      setEntryUserItem(entryId, write.previousUserItem)
+      setExploreDecisions(current => {
+        const next = { ...current }
+
+        if (write.previousDecision) next[entryId] = write.previousDecision
+        else delete next[entryId]
+
+        return next
+      })
+    },
+    [setEntryUserItem]
+  )
+
+  const scheduleProgressRefresh = useCallback(() => {
+    if (progressRefreshTimerRef.current)
+      window.clearTimeout(progressRefreshTimerRef.current)
+
+    progressRefreshTimerRef.current = window.setTimeout(() => {
+      progressRefreshTimerRef.current = null
+      refreshProgressData().catch(error => {
+        setErrorMessage(
+          error instanceof Error
+            ? error.message
+            : 'Could not refresh vocabulary progress.'
+        )
+      })
+    }, PROGRESS_REFRESH_DELAY_MS)
+  }, [refreshProgressData])
+
+  const flushPendingWrites = useCallback(async () => {
+    if (writeFlushTimerRef.current) {
+      window.clearTimeout(writeFlushTimerRef.current)
+      writeFlushTimerRef.current = null
+    }
+
+    const snapshot = [...pendingWritesRef.current.entries()]
+
+    if (snapshot.length === 0) return
+
+    pendingWritesRef.current = new Map()
+
+    const updates = snapshot.map(([vocabEntryId, write]) => ({
+      source: write.source,
+      status: write.status,
+      vocabEntryId,
+    }))
+
+    try {
+      const { results } = await setVocabItemStatusBatchApi({ updates })
+      const resultByEntryId = new Map(
+        results.map(result => [result.vocabEntryId, result])
+      )
+      let firstError: string | null = null
+
+      for (const [entryId, write] of snapshot) {
+        const result = resultByEntryId.get(entryId)
+
+        if (result?.item) setEntryUserItem(entryId, result.item)
+        else {
+          rollbackEntry(entryId, write)
+          if (!firstError)
+            firstError = result?.error ?? 'Could not update this word.'
+        }
+      }
+
+      if (firstError) setErrorMessage(firstError)
+
+      scheduleProgressRefresh()
+    } catch (error) {
+      for (const [entryId, write] of snapshot) rollbackEntry(entryId, write)
+
+      setErrorMessage(
+        error instanceof Error ? error.message : 'Could not update these words.'
+      )
+    } finally {
+      setPendingExploreDecisions(current => {
+        const next = { ...current }
+
+        for (const [entryId] of snapshot) delete next[entryId]
+
+        return next
+      })
+    }
+  }, [rollbackEntry, scheduleProgressRefresh, setEntryUserItem])
+
+  const scheduleWriteFlush = useCallback(() => {
+    if (writeFlushTimerRef.current)
+      window.clearTimeout(writeFlushTimerRef.current)
+
+    writeFlushTimerRef.current = window.setTimeout(() => {
+      writeFlushTimerRef.current = null
+      flushPendingWrites().catch(() => {})
+    }, WRITE_FLUSH_DELAY_MS)
+  }, [flushPendingWrites])
+
+  // Never drop queued decisions when the user navigates away or backgrounds the
+  // tab: flush them with sendBeacon (fire-and-forget) so the writes still land.
+  useEffect(() => {
+    function flushViaBeacon() {
+      if (writeFlushTimerRef.current) {
+        window.clearTimeout(writeFlushTimerRef.current)
+        writeFlushTimerRef.current = null
+      }
+
+      const snapshot = [...pendingWritesRef.current.entries()]
+
+      if (snapshot.length === 0) return
+
+      pendingWritesRef.current = new Map()
+
+      const payload = JSON.stringify({
+        updates: snapshot.map(([vocabEntryId, write]) => ({
+          source: write.source,
+          status: write.status,
+          vocabEntryId,
+        })),
+      })
+
+      if (typeof navigator !== 'undefined' && navigator.sendBeacon)
+        navigator.sendBeacon(
+          VOCAB_API_PATHS.itemsBatch,
+          new Blob([payload], { type: 'application/json' })
+        )
+      else
+        fetch(VOCAB_API_PATHS.itemsBatch, {
+          body: payload,
+          headers: { 'content-type': 'application/json' },
+          keepalive: true,
+          method: 'POST',
+        }).catch(() => {})
+    }
+
+    function handleVisibilityChange() {
+      if (document.visibilityState === 'hidden') flushViaBeacon()
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    window.addEventListener('pagehide', flushViaBeacon)
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      window.removeEventListener('pagehide', flushViaBeacon)
+      flushViaBeacon()
+    }
+  }, [])
 
   const openRecallModal = useCallback(() => {
     setRecallAnsweredCount(0)
@@ -307,14 +491,6 @@ export function VocabularyDashboard({ mongoConfigured }: Props) {
 
       const previousDecision = exploreDecisions[entryId]
       const previousUserItem = entry.userItem
-      const optimisticEntry = {
-        ...entry,
-        userItem: buildOptimisticUserItem({
-          entry,
-          source,
-          status,
-        }),
-      }
 
       setErrorMessage(null)
       setStatusMessage(
@@ -326,18 +502,9 @@ export function VocabularyDashboard({ mongoConfigured }: Props) {
         ...current,
         [entryId]: status,
       }))
-      setSelectedEntry(current =>
-        current?.entry.id === entryId ? optimisticEntry : current
-      )
-      setSearchResults(current =>
-        current.map(item =>
-          item.entry.id === entryId ? optimisticEntry : item
-        )
-      )
-      setExploreEntries(current =>
-        current.map(item =>
-          item.entry.id === entryId ? optimisticEntry : item
-        )
+      setEntryUserItem(
+        entryId,
+        buildOptimisticUserItem({ entry, source, status })
       )
       setExploreDecisions(current => ({
         ...current,
@@ -347,76 +514,18 @@ export function VocabularyDashboard({ mongoConfigured }: Props) {
         Math.min(current + 1, exploreEntries.length - 1)
       )
 
-      setVocabItemStatusApi({
+      // Queue the write instead of firing per press. Keep the earliest captured
+      // previous state so a rollback restores where the entry started, even if
+      // the user toggles it several times before the batch flushes.
+      const existing = pendingWritesRef.current.get(entryId)
+
+      pendingWritesRef.current.set(entryId, {
+        previousDecision: existing ? existing.previousDecision : previousDecision,
+        previousUserItem: existing ? existing.previousUserItem : previousUserItem,
         source,
         status,
-        vocabEntryId: entryId,
       })
-        .then(response => {
-          const nextEntry = {
-            ...entry,
-            userItem: response.item,
-          }
-
-          setSelectedEntry(current =>
-            current?.entry.id === entryId ? nextEntry : current
-          )
-          setSearchResults(current =>
-            current.map(item => (item.entry.id === entryId ? nextEntry : item))
-          )
-          setExploreEntries(current =>
-            current.map(item => (item.entry.id === entryId ? nextEntry : item))
-          )
-          refreshProgressData().catch(error => {
-            setErrorMessage(
-              error instanceof Error
-                ? error.message
-                : 'Could not refresh vocabulary progress.'
-            )
-          })
-        })
-        .catch(error => {
-          const rollbackEntry = {
-            ...entry,
-            userItem: previousUserItem,
-          }
-
-          setSelectedEntry(current =>
-            current?.entry.id === entryId ? rollbackEntry : current
-          )
-          setSearchResults(current =>
-            current.map(item =>
-              item.entry.id === entryId ? rollbackEntry : item
-            )
-          )
-          setExploreEntries(current =>
-            current.map(item =>
-              item.entry.id === entryId ? rollbackEntry : item
-            )
-          )
-          setExploreDecisions(current => {
-            const next = { ...current }
-
-            if (previousDecision) next[entryId] = previousDecision
-            else delete next[entryId]
-
-            return next
-          })
-          setErrorMessage(
-            error instanceof Error
-              ? error.message
-              : 'Could not update this word.'
-          )
-        })
-        .finally(() => {
-          setPendingExploreDecisions(current => {
-            const next = { ...current }
-
-            delete next[entryId]
-
-            return next
-          })
-        })
+      scheduleWriteFlush()
 
       return
     }

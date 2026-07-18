@@ -127,7 +127,7 @@ export async function markReviewItemForUser({
       },
     },
     {
-      new: true,
+      returnDocument: 'after',
     }
   )
 

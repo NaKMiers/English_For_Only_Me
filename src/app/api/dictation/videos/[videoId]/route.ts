@@ -160,7 +160,7 @@ export async function DELETE(_request: Request, { params }: Props) {
         },
       },
       {
-        new: true,
+        returnDocument: 'after',
       }
     ).lean()
 
@@ -240,7 +240,7 @@ export async function PATCH(request: Request, { params }: Props) {
         },
       },
       {
-        new: true,
+        returnDocument: 'after',
       }
     ).lean()
 

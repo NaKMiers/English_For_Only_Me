@@ -6,6 +6,7 @@ import {
   VOCAB_ADMIN_ENRICH_MAX_LIMIT,
   VOCAB_EXPLORE_DEFAULT_LIMIT,
   VOCAB_EXPLORE_MAX_LIMIT,
+  VOCAB_ITEM_STATUS_BATCH_MAX,
   VOCAB_RECALL_DEFAULT_LIMIT,
   VOCAB_RECALL_MAX_LIMIT,
   VOCAB_SEARCH_DEFAULT_LIMIT,
@@ -97,6 +98,12 @@ const itemStatusSchema = z
   })
   .strict()
 
+const itemStatusBatchSchema = z
+  .object({
+    updates: z.array(itemStatusSchema).min(1).max(VOCAB_ITEM_STATUS_BATCH_MAX),
+  })
+  .strict()
+
 const recallDueSchema = z.object({
   excludeListening: z
     .enum(['0', '1', 'false', 'true'])
@@ -134,6 +141,7 @@ export type ParsedLookupEntryRequest = z.infer<typeof lookupEntrySchema>
 export type ParsedSearchRequest = z.infer<typeof searchSchema>
 export type ParsedExploreRequest = z.infer<typeof exploreSchema>
 export type ParsedItemStatusRequest = z.infer<typeof itemStatusSchema>
+export type ParsedItemStatusBatchRequest = z.infer<typeof itemStatusBatchSchema>
 export type ParsedRecallDueRequest = z.infer<typeof recallDueSchema>
 export type ParsedRecallAnswerRequest = z.infer<typeof recallAnswerSchema>
 export type ParsedAdminEnrichRequest = z.infer<typeof adminEnrichSchema>
@@ -201,6 +209,17 @@ export function parseItemStatusRequest(
   const result = itemStatusSchema.safeParse(body)
 
   if (!result.success) return invalid('Vocabulary item payload is invalid.')
+
+  return { data: result.data, ok: true }
+}
+
+export function parseItemStatusBatchRequest(
+  body: unknown
+): VocabRouteDecision<ParsedItemStatusBatchRequest> {
+  const result = itemStatusBatchSchema.safeParse(body)
+
+  if (!result.success)
+    return invalid('Vocabulary item batch payload is invalid.')
 
   return { data: result.data, ok: true }
 }

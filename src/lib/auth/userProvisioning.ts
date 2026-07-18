@@ -32,7 +32,7 @@ export async function provisionUserOnSignIn(profile: GoogleProfileInput) {
       },
       $setOnInsert: { email },
     },
-    { new: true, upsert: true }
+    { returnDocument: 'after', upsert: true }
   ).lean()
 
   return { id: String(user._id) }

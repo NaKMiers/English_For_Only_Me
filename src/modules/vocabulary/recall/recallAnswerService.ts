@@ -106,7 +106,7 @@ export async function submitVocabRecallAnswerForUser({
       $set: patch,
     },
     {
-      new: true,
+      returnDocument: 'after',
     }
   ).lean()
 

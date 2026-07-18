@@ -38,7 +38,7 @@ describe('provisionUserOnSignIn', () => {
       expect.objectContaining({
         $setOnInsert: { email: 'owner@example.com' },
       }),
-      { new: true, upsert: true }
+      { returnDocument: 'after', upsert: true }
     )
   })
 })

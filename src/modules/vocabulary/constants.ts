@@ -18,6 +18,7 @@ export const VOCAB_ADMIN_ENRICH_DEFAULT_LIMIT = 5
 export const VOCAB_ADMIN_ENRICH_MAX_LIMIT = 10
 export const VOCAB_EXPLORE_DEFAULT_LIMIT = 20
 export const VOCAB_EXPLORE_MAX_LIMIT = 50
+export const VOCAB_ITEM_STATUS_BATCH_MAX = 100
 export const VOCAB_RECALL_DEFAULT_LIMIT = 20
 export const VOCAB_RECALL_MAX_LIMIT = 1000
 export const VOCAB_SEARCH_DEFAULT_LIMIT = 12
@@ -173,6 +174,7 @@ export const VOCAB_API_PATHS = {
   dueRecall: '/api/vocab/recall/due',
   explore: '/api/vocab/explore',
   items: '/api/vocab/items',
+  itemsBatch: '/api/vocab/items/batch',
   lookup: '/api/vocab/entries/lookup',
   recallAnswer: '/api/vocab/recall/answer',
   search: '/api/vocab/search',

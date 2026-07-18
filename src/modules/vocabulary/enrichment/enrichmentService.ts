@@ -196,7 +196,7 @@ async function acquireEnrichmentLease({
       },
     },
     {
-      new: true,
+      returnDocument: 'after',
     }
   ).lean<LockedEntry | null>()
 
@@ -216,7 +216,7 @@ async function acquireNextEnrichmentLease({ now }: { now: Date }) {
       },
     },
     {
-      new: true,
+      returnDocument: 'after',
       sort: { frequencyRank: 1, updatedAt: 1 },
     }
   ).lean<LockedEntry | null>()
@@ -358,7 +358,7 @@ async function persistReadyResult({
       enrichmentLockId: lockId,
     },
     update,
-    { new: true }
+    { returnDocument: 'after' }
   ).lean()
 
   return updated ? toVocabEntryRecord(updated) : null
@@ -413,7 +413,7 @@ async function persistFailedResult({
             : null,
       },
     },
-    { new: true }
+    { returnDocument: 'after' }
   ).lean()
 
   return {

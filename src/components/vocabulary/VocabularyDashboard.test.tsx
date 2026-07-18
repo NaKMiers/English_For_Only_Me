@@ -27,6 +27,7 @@ const mocks = vi.hoisted(() => {
     searchVocabApi: vi.fn(),
     setStatusPromise,
     setVocabItemStatusApi: vi.fn(),
+    setVocabItemStatusBatchApi: vi.fn(),
   }
 })
 
@@ -85,35 +86,6 @@ function makeEntry(id: string, term: string) {
   }
 }
 
-function makeUserItem(
-  vocabEntryId: string,
-  status: UserVocabItemApiRecord['status']
-): UserVocabItemApiRecord {
-  const now = new Date('2026-01-01T00:00:00.000Z')
-
-  return {
-    correctCount: 0,
-    createdAt: now,
-    dueAt: status === 'learning' ? now : null,
-    firstSeenAt: now,
-    id: `item-${vocabEntryId}`,
-    knownAt: status === 'alreadyKnow' ? now : null,
-    knownReason: status === 'alreadyKnow' ? 'manual' : null,
-    lastReviewedAt: null,
-    masteredAt: null,
-    masteredReason: null,
-    notes: null,
-    recallStage: 1,
-    reviewCount: 0,
-    source: 'explore',
-    status,
-    updatedAt: now,
-    userId: 'user-1',
-    vocabEntryId,
-    wrongCount: 0,
-  }
-}
-
 describe('VocabularyDashboard', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -139,6 +111,9 @@ describe('VocabularyDashboard', () => {
       },
     })
     mocks.setVocabItemStatusApi.mockReturnValue(mocks.setStatusPromise)
+    // Explore writes are batched + debounced; keep the batch pending so the card
+    // advances optimistically without the write resolving.
+    mocks.setVocabItemStatusBatchApi.mockReturnValue(new Promise(() => {}))
   })
 
   test('advances explore cards before the status API resolves', async () => {
@@ -148,15 +123,31 @@ describe('VocabularyDashboard', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /Should Learn/i }))
 
+    // Card advances immediately (optimistic), before any write is sent.
     await waitFor(() => {
       expect(screen.getByText('2/2')).toBeInTheDocument()
     })
-    expect(mocks.setVocabItemStatusApi).toHaveBeenCalledWith({
-      source: 'explore',
-      status: 'shouldLearn',
-      vocabEntryId: '1',
-    })
+    expect(mocks.setVocabItemStatusApi).not.toHaveBeenCalled()
+  })
 
-    mocks.resolveSetStatus(makeUserItem('1', 'learning'))
+  test('batches explore decisions into one debounced request', async () => {
+    render(<VocabularyDashboard mongoConfigured />)
+
+    await screen.findByText('1/2')
+
+    fireEvent.click(screen.getByRole('button', { name: /Should Learn/i }))
+
+    // The queued decision flushes as a single batch request after the debounce.
+    await waitFor(
+      () => {
+        expect(mocks.setVocabItemStatusBatchApi).toHaveBeenCalledWith({
+          updates: [
+            { source: 'explore', status: 'shouldLearn', vocabEntryId: '1' },
+          ],
+        })
+      },
+      { timeout: 4000 }
+    )
+    expect(mocks.setVocabItemStatusBatchApi).toHaveBeenCalledTimes(1)
   })
 })

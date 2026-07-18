@@ -116,12 +116,64 @@ export async function setUserVocabItemStatus({
       },
     },
     {
-      new: true,
+      returnDocument: 'after',
       upsert: true,
     }
   )
 
   return item ? toUserVocabItemRecord(item.toObject()) : null
+}
+
+export interface VocabItemStatusBatchResult {
+  vocabEntryId: string
+  item: UserVocabItemApiRecord | null
+  error?: string
+}
+
+/**
+ * Apply many status updates in one request. Each update is independent: a single
+ * bad entry (e.g. missing Vietnamese meaning) is reported per-item instead of
+ * failing the whole batch, so the client can reconcile/roll back exactly the
+ * entries that failed. Reuses a single `now` so a burst of presses shares one
+ * timestamp.
+ */
+export async function setUserVocabItemStatusBatch({
+  now = new Date(),
+  updates,
+  userId,
+}: {
+  now?: Date
+  updates: Array<{
+    source: VocabLearningSource
+    status: 'shouldLearn' | 'alreadyKnow'
+    vocabEntryId: string
+  }>
+  userId: string
+}): Promise<VocabItemStatusBatchResult[]> {
+  return Promise.all(
+    updates.map(async update => {
+      try {
+        const item = await setUserVocabItemStatus({
+          now,
+          source: update.source,
+          status: update.status,
+          userId,
+          vocabEntryId: update.vocabEntryId,
+        })
+
+        return { item, vocabEntryId: update.vocabEntryId }
+      } catch (error) {
+        return {
+          error:
+            error instanceof Error
+              ? error.message
+              : 'Could not update this word.',
+          item: null,
+          vocabEntryId: update.vocabEntryId,
+        }
+      }
+    })
+  )
 }
 
 export async function listDueVocabRecallCardsForUser({
@@ -197,7 +249,7 @@ export async function answerVocabRecallForUser({
       $set: patch,
     },
     {
-      new: true,
+      returnDocument: 'after',
     }
   ).lean()
 

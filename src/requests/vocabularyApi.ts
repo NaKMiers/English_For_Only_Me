@@ -19,6 +19,22 @@ export interface VocabItemResponse {
   item: UserVocabItemApiRecord
 }
 
+export interface VocabItemBatchResult {
+  vocabEntryId: string
+  item: UserVocabItemApiRecord | null
+  error?: string
+}
+
+export interface VocabItemBatchResponse {
+  results: VocabItemBatchResult[]
+}
+
+export interface VocabItemStatusUpdate {
+  source: 'search' | 'explore' | 'dictionary' | 'manual'
+  status: 'shouldLearn' | 'alreadyKnow'
+  vocabEntryId: string
+}
+
 export interface VocabRecallCardsResponse {
   cards: VocabRecallCardRecord[]
 }
@@ -178,6 +194,23 @@ export async function setVocabItemStatusApi({
   })
 
   return readJson<VocabItemResponse>(response)
+}
+
+export async function setVocabItemStatusBatchApi({
+  input = VOCAB_API_PATHS.itemsBatch,
+  updates,
+}: {
+  input?: string
+  updates: VocabItemStatusUpdate[]
+}) {
+  const response = await fetch(input, {
+    body: JSON.stringify({ updates }),
+    cache: 'no-store',
+    headers: { 'content-type': 'application/json' },
+    method: 'POST',
+  })
+
+  return readJson<VocabItemBatchResponse>(response)
 }
 
 export async function getDueVocabRecallApi({
