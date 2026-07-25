@@ -42,10 +42,8 @@ import {
   type DictationPracticePreferences,
 } from '@/modules/dictation/preferences/dictationPreferences'
 import { useDictationShortcuts } from '@/modules/dictation/preferences/shortcuts'
-import {
-  resolveCaptionForWindow,
-  type CaptionCue,
-} from '@/modules/dictation/translations/captionOverlap'
+import type { CaptionCue } from '@/modules/dictation/translations/captionOverlap'
+import { resolveSegmentTranslation } from '@/modules/dictation/translations/segmentTranslation'
 import type {
   DictationAttemptAction,
   DictationAttemptApiRecord,
@@ -269,11 +267,11 @@ export function DictationPracticeShell({
     : null
   const translationText =
     isTranslationUnlocked && selectedTrack && translationSegment
-      ? resolveCaptionForWindow(
-          selectedTrack.cues,
-          translationSegment.startMs,
-          translationSegment.endMs
-        )
+      ? resolveSegmentTranslation({
+          cues: selectedTrack.cues,
+          language: selectedTrack.language,
+          segment: translationSegment,
+        })
       : ''
   // Bilingual full-transcript view: every sentence's caption in the selected
   // language, matched by time overlap. Shown regardless of the effort gate since
@@ -284,11 +282,11 @@ export function DictationPracticeShell({
     if (!selectedTrack) return map
 
     for (const segment of segments)
-      map[segment.id] = resolveCaptionForWindow(
-        selectedTrack.cues,
-        segment.startMs,
-        segment.endMs
-      )
+      map[segment.id] = resolveSegmentTranslation({
+        cues: selectedTrack.cues,
+        language: selectedTrack.language,
+        segment,
+      })
 
     return map
   }, [selectedTrack, segments])

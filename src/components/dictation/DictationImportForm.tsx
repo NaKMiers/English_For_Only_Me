@@ -8,6 +8,7 @@ import { MangaPanel } from '@/components/common/MangaPanel'
 import { QueueRow } from '@/components/common/QueueRow'
 import { AdminVideoTranscriptPreview } from '@/components/dictation/AdminVideoTranscriptPreview'
 import { DictationHintEditor } from '@/components/dictation/DictationHintEditor'
+import { DictationTranslationEditor } from '@/components/dictation/DictationTranslationEditor'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { MangaButton } from '@/components/ui/MangaButton'
@@ -339,6 +340,14 @@ export function DictationImportForm({
         <DictationHintEditor
           onSegmentChange={handleSegmentChange}
           segments={segments}
+        />
+      ) : null}
+
+      {video && segments.length > 0 && translationTracks.length > 0 ? (
+        <DictationTranslationEditor
+          onSegmentChange={handleSegmentChange}
+          segments={segments}
+          translationTracks={translationTracks}
         />
       ) : null}
     </div>

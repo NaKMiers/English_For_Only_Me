@@ -191,7 +191,6 @@ export function DictationHintEditor({ onSegmentChange, segments }: Props) {
     <MangaPanel
       eyebrow="Hints"
       title="Practice hints"
-      className="lg:col-span-2"
     >
       <p className="text-manga-ink-soft text-sm leading-6 font-semibold">
         Each sentence starts with the automatically detected hints. Add or

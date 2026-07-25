@@ -1,6 +1,7 @@
 export const ENV_KEYS = {
   ieltsGoal: 'IELTS_GOAL',
   openAiDebriefModel: 'OPENAI_DEBRIEF_MODEL',
+  openAiTranslationModel: 'OPENAI_TRANSLATION_MODEL',
   mongoDbUri: 'MONGODB_URI',
   openAiApiKey: 'OPENAI_API_KEY',
   cloudinaryUrl: 'CLOUDINARY_URL',
@@ -67,6 +68,14 @@ export function getCloudinaryUrl() {
 
 export function getOpenAiDebriefModel() {
   return getOptionalServerEnv(ENV_KEYS.openAiDebriefModel) ?? 'gpt-5.4-nano'
+}
+
+/** Model for AI segment translation. Falls back to the debrief model. */
+export function getOpenAiTranslationModel() {
+  return (
+    getOptionalServerEnv(ENV_KEYS.openAiTranslationModel) ??
+    getOpenAiDebriefModel()
+  )
 }
 
 export function getIeltsGoal() {

@@ -246,7 +246,9 @@ describe('DictationImportForm', () => {
     expect(
       view.getAllByText('Your caption line.').length
     ).toBeGreaterThanOrEqual(1)
-    expect(view.getAllByText('Dong dich tieng Viet.')).toHaveLength(1)
+    expect(
+      view.getAllByText('Dong dich tieng Viet.').length
+    ).toBeGreaterThanOrEqual(1)
     expect(view.getByText('1 sentences')).not.toBeNull()
   })
 
@@ -298,7 +300,9 @@ describe('DictationImportForm', () => {
       view.getAllByText('Another sentence.').length
     ).toBeGreaterThanOrEqual(1)
     expect(view.getByText('Translation')).not.toBeNull()
-    expect(view.getAllByText('Dong dich tieng Viet.')).toHaveLength(1)
+    expect(
+      view.getAllByText('Dong dich tieng Viet.').length
+    ).toBeGreaterThanOrEqual(1)
     expect(view.getByText('2 sentences')).not.toBeNull()
   })
 })

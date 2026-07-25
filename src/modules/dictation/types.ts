@@ -181,6 +181,9 @@ export interface DictationSegmentApiRecord {
   cueIndexes: number[]
   hints: string[]
   hintsOverridden: boolean
+  /** Manual per-language translation overrides, keyed by language code (never the
+   * primary language). Absent/empty means fall back to the uploaded caption. */
+  translations?: Record<string, string>
   qualityFlags: DictationSegmentQualityFlag[]
   warningAccepted: boolean
   attemptStatus: DictationSegmentAttemptStatus

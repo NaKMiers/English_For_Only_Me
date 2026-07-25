@@ -47,7 +47,8 @@ const DictationVideoSchema = new Schema(
       type: String,
       trim: true,
       default: null,
-      index: true,
+      // Indexed via the partial-unique schema.index() below - not here, to avoid
+      // a duplicate-index warning.
     },
     channelTitle: {
       type: String,

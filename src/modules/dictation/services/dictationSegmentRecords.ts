@@ -19,6 +19,24 @@ function isSegmentQualityFlag(
   return segmentQualityFlags.has(value as DictationSegmentQualityFlag)
 }
 
+/** Segment translations come back as a Mongoose Map (toObject) or a plain object
+ * (lean), depending on the read. Normalize both to a plain string record and
+ * drop empty values. */
+function normalizeTranslations(value: unknown): Record<string, string> {
+  if (!value) return {}
+
+  const entries =
+    value instanceof Map
+      ? Array.from(value.entries())
+      : Object.entries(value as Record<string, unknown>)
+  const result: Record<string, string> = {}
+
+  for (const [key, raw] of entries)
+    if (typeof raw === 'string' && raw.trim().length > 0) result[key] = raw
+
+  return result
+}
+
 export function toDictationSegmentRecord(segment: {
   _id: unknown
   attemptCount?: number
@@ -36,6 +54,7 @@ export function toDictationSegmentRecord(segment: {
   text: string
   transcriptId: unknown
   transcriptSourceHash: string
+  translations?: unknown
   updatedAt: Date
   videoId: unknown
   warningAccepted?: boolean
@@ -57,6 +76,7 @@ export function toDictationSegmentRecord(segment: {
     text: segment.text,
     transcriptId: String(segment.transcriptId),
     transcriptSourceHash: segment.transcriptSourceHash,
+    translations: normalizeTranslations(segment.translations),
     updatedAt: segment.updatedAt,
     videoId: String(segment.videoId),
     warningAccepted: segment.warningAccepted ?? false,

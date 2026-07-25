@@ -7,10 +7,8 @@ import { DictationTranslationBar } from '@/components/dictation/DictationTransla
 import { DictationYoutubePlayer } from '@/components/dictation/DictationYoutubePlayer'
 import type { YoutubePlayerStatus } from '@/modules/dictation/player/useYoutubeDictationPlayer'
 import type { VideoSize } from '@/modules/dictation/preferences/dictationPreferences'
-import {
-  resolveCaptionForWindow,
-  type CaptionCue,
-} from '@/modules/dictation/translations/captionOverlap'
+import type { CaptionCue } from '@/modules/dictation/translations/captionOverlap'
+import { resolveSegmentTranslation } from '@/modules/dictation/translations/segmentTranslation'
 import type { DictationSegmentApiRecord } from '@/modules/dictation/types'
 
 interface PlayerController {
@@ -106,11 +104,11 @@ export function AdminVideoTranscriptPreview({
     if (!selectedTrack) return map
 
     for (const segment of segments)
-      map[segment.id] = resolveCaptionForWindow(
-        selectedTrack.cues,
-        segment.startMs,
-        segment.endMs
-      )
+      map[segment.id] = resolveSegmentTranslation({
+        cues: selectedTrack.cues,
+        language: selectedTrack.language,
+        segment,
+      })
 
     return map
   }, [selectedTrack, segments])

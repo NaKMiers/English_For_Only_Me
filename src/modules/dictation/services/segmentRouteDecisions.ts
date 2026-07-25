@@ -33,6 +33,12 @@ const segmentEditSchema = z.discriminatedUnion('action', [
   z.object({
     action: z.literal('resetHints'),
   }),
+  z.object({
+    action: z.literal('setTranslation'),
+    language: z.string().trim().min(2).max(20),
+    // Empty clears the override (falls back to the uploaded caption).
+    text: z.string().max(3000),
+  }),
 ])
 
 export type ParsedSegmentEditRequest = z.infer<typeof segmentEditSchema>

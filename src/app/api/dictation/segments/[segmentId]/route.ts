@@ -15,6 +15,7 @@ import {
 } from '@/modules/dictation/segmenting/editSegments'
 import { filterHintsToSentence } from '@/modules/dictation/correction/hintWords'
 import type { EditableSegment } from '@/modules/dictation/segmenting/types'
+import { normalizeTranslationLanguage } from '@/modules/dictation/translations/languages'
 import { toDictationSegmentRecord } from '@/modules/dictation/services/dictationSegmentRecords'
 import { requireAdmin } from '@/modules/dictation/services/getCurrentUser'
 import {
@@ -180,14 +181,16 @@ export async function PATCH(request: Request, context: RouteContext) {
         },
       })
 
-    // Hint edits do not touch transcript content, so they only need the segment
-    // to belong to the active transcript - NOT the stricter source-hash-freshness
-    // check that content edits (edit/split/merge) require. Blocking hint edits on
-    // a stale source hash is what made every hint save fail on re-saved videos.
-    const isHintAction =
+    // Hint and translation edits do not touch transcript content, so they only
+    // need the segment to belong to the active transcript - NOT the stricter
+    // source-hash-freshness check that content edits (edit/split/merge) require.
+    // Blocking these on a stale source hash is what made every hint save fail on
+    // re-saved videos.
+    const isMetadataAction =
       parsedBody.data.action === 'setHints' ||
-      parsedBody.data.action === 'resetHints'
-    const guardDecision = isHintAction
+      parsedBody.data.action === 'resetHints' ||
+      parsedBody.data.action === 'setTranslation'
+    const guardDecision = isMetadataAction
       ? getSegmentBuildGuardDecision({ transcript, video })
       : getSegmentEditGuardDecision({
           segmentSourceHash: segment.transcriptSourceHash,
@@ -211,6 +214,48 @@ export async function PATCH(request: Request, context: RouteContext) {
       // "already typed" check in the practice input keep working.
       segment.hints = filterHintsToSentence(segment.text, parsedBody.data.hints)
       segment.hintsOverridden = true
+      await segment.save()
+
+      return NextResponse.json({
+        segment: toDictationSegmentRecord(segment.toObject()),
+      })
+    }
+
+    if (parsedBody.data.action === 'setTranslation') {
+      const language = normalizeTranslationLanguage(parsedBody.data.language)
+      const primaryLanguage = normalizeTranslationLanguage(
+        video?.defaultLanguage ?? 'en'
+      )
+
+      if (language === primaryLanguage)
+        return jsonError({
+          status: 400,
+          body: {
+            message: 'The primary dictation language cannot be overridden.',
+          },
+        })
+
+      const text = parsedBody.data.text.trim()
+      // Carry existing overrides (tolerating a legacy Map) into a fresh plain
+      // object, then apply the change. Reassigning + markModified is required for
+      // a Mixed field to persist.
+      const existing = segment.translations
+      const translations: Record<string, string> = {}
+      const entries =
+        existing instanceof Map
+          ? Array.from(existing.entries())
+          : existing && typeof existing === 'object'
+            ? Object.entries(existing as Record<string, unknown>)
+            : []
+
+      for (const [key, raw] of entries)
+        if (typeof raw === 'string') translations[key] = raw
+
+      if (text.length === 0) delete translations[language]
+      else translations[language] = text
+
+      segment.set('translations', translations)
+      segment.markModified('translations')
       await segment.save()
 
       return NextResponse.json({

@@ -90,6 +90,35 @@ describe('segment route decisions', () => {
     })
   })
 
+  test('accepts a setTranslation payload', () => {
+    expect(
+      parseSegmentEditRequest({
+        action: 'setTranslation',
+        language: 'vi',
+        text: 'Xin chào',
+      })
+    ).toMatchObject({
+      ok: true,
+      data: { action: 'setTranslation', language: 'vi', text: 'Xin chào' },
+    })
+  })
+
+  test('accepts an empty setTranslation text (clears the override)', () => {
+    expect(
+      parseSegmentEditRequest({
+        action: 'setTranslation',
+        language: 'vi',
+        text: '',
+      })
+    ).toMatchObject({ ok: true, data: { action: 'setTranslation', text: '' } })
+  })
+
+  test('rejects a setTranslation payload with no language', () => {
+    expect(
+      parseSegmentEditRequest({ action: 'setTranslation', text: 'Xin chào' })
+    ).toMatchObject({ ok: false, status: 400 })
+  })
+
   test('blocks segment building when the transcript is missing', () => {
     expect(
       getSegmentBuildGuardDecision({

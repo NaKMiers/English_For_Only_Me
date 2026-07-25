@@ -86,6 +86,15 @@ const DictationSegmentSchema = new Schema(
       required: true,
       default: false,
     },
+    // Manual per-language translation overrides, keyed by language code (never
+    // the primary/dictation language). When set for a language, practice and the
+    // preview show this text instead of the time-overlapped caption from the
+    // uploaded SRT/VTT. A plain object (not a Map) so it serializes the same way
+    // via toObject() and lean(); function default so each segment gets its own.
+    translations: {
+      type: Schema.Types.Mixed,
+      default: () => ({}) as Record<string, string>,
+    },
     qualityFlags: {
       type: [String],
       enum: segmentQualityFlags,
