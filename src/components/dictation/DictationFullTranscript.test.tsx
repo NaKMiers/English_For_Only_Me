@@ -18,6 +18,8 @@ function makeSegment(
     attemptStatus: 'notStarted',
     createdAt: new Date(),
     cueIndexes: [],
+    hints: [],
+    hintsOverridden: false,
     endMs: (overrides.order + 1) * 1000,
     lastAttemptAt: null,
     normalizedText: '',

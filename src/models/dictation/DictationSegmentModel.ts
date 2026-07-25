@@ -74,6 +74,18 @@ const DictationSegmentSchema = new Schema(
       type: [Number],
       default: [],
     },
+    // Manual hint override. When `hintsOverridden` is false, practice keeps the
+    // automatic (live, in-sentence) hint logic untouched; when true, practice
+    // uses `hints` verbatim (an empty array means "no hints for this sentence").
+    hints: {
+      type: [String],
+      default: [],
+    },
+    hintsOverridden: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
     qualityFlags: {
       type: [String],
       enum: segmentQualityFlags,

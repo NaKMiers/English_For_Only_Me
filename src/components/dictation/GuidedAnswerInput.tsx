@@ -46,6 +46,9 @@ interface Props {
   correction: CharCorrectionResult | null
   disabled?: boolean
   expectedText: string
+  /** Manual per-sentence hint override. When defined (even if empty), these are
+   * used verbatim; when undefined, hints are auto-computed from the sentence. */
+  hintWords?: string[]
   inputRef?: RefObject<HTMLTextAreaElement | null>
   onChange: (value: string) => void
   onCheck: () => void
@@ -182,6 +185,7 @@ export function GuidedAnswerInput({
   correction,
   disabled = false,
   expectedText,
+  hintWords,
   inputRef,
   onChange,
   onCheck,
@@ -202,9 +206,11 @@ export function GuidedAnswerInput({
   // prefix on every keystroke, so a hint reappears the moment the learner
   // deletes its word. The extra presence filter hides a hint the instant it's
   // typed/clicked even if it landed out of its grammatical slot.
+  // A manual override (hintWords defined) wins - even an empty list, which means
+  // "this sentence has no hints". Otherwise fall back to the automatic logic.
   const structuralHints = useMemo(
-    () => computeHints(expectedText, value),
-    [expectedText, value]
+    () => hintWords ?? computeHints(expectedText, value),
+    [hintWords, expectedText, value]
   )
   const visibleHints = useMemo(
     () => structuralHints.filter(hint => !isHintTyped(value, hint)),
@@ -247,16 +253,49 @@ export function GuidedAnswerInput({
     textarea.setSelectionRange(caret, caret)
   }, [correction, status, textareaRef])
 
-  // Shared by Tab and clicking a hint chip: insert the word, then keep focus
-  // and the caret in the textarea so typing continues right after it.
+  // Shared by Tab and clicking a hint chip: insert the word AT THE CURSOR (so a
+  // hint filled while fixing a mistake lands where the learner is working, not at
+  // the end of the line), then drop the caret right after it so typing continues.
   function fillHint(hint: string) {
-    onChange(insertNextHint(value, hint, hasWordsAfterHint(expectedText, hint)))
-
     const textarea = textareaRef.current
+    const caretStart = textarea?.selectionStart ?? value.length
+    const caretEnd = textarea?.selectionEnd ?? value.length
+
+    const before = value.slice(0, caretStart).replace(/\s+$/, '')
+    const after = value.slice(caretEnd).replace(/^\s+/, '')
+    const leadingSpace = before.length > 0 ? ' ' : ''
+
+    let nextValue: string
+    let caretPosition: number
+
+    if (after.length === 0) {
+      // Caret at the end: append, keeping the trailing-space convenience so the
+      // learner can type the next word immediately.
+      nextValue = insertNextHint(
+        value.slice(0, caretStart),
+        hint,
+        hasWordsAfterHint(expectedText, hint)
+      )
+      caretPosition = nextValue.length
+    } else {
+      // Caret mid-line: splice the hint in, caret just after it, one space to the
+      // text that follows.
+      const head = `${before}${leadingSpace}${hint}`
+
+      nextValue = `${head} ${after}`
+      caretPosition = head.length
+    }
+
+    onChange(nextValue)
 
     if (!textarea) return
 
     textarea.focus()
+    requestAnimationFrame(() => {
+      const clamped = Math.min(caretPosition, textarea.value.length)
+
+      textarea.setSelectionRange(clamped, clamped)
+    })
   }
 
   function handleKeyDown(event: React.KeyboardEvent<HTMLTextAreaElement>) {

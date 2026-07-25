@@ -7,6 +7,7 @@ import { useState, type FormEvent } from 'react'
 import { MangaPanel } from '@/components/common/MangaPanel'
 import { QueueRow } from '@/components/common/QueueRow'
 import { AdminVideoTranscriptPreview } from '@/components/dictation/AdminVideoTranscriptPreview'
+import { DictationHintEditor } from '@/components/dictation/DictationHintEditor'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { MangaButton } from '@/components/ui/MangaButton'
@@ -180,6 +181,14 @@ export function DictationImportForm({
 
   const isEditMode = mode === 'edit'
 
+  function handleSegmentChange(updatedSegment: DictationSegmentApiRecord) {
+    setSegments(current =>
+      current.map(segment =>
+        segment.id === updatedSegment.id ? updatedSegment : segment
+      )
+    )
+  }
+
   async function refreshVideoPreview(nextVideo = video) {
     if (!nextVideo) return
 
@@ -323,6 +332,13 @@ export function DictationImportForm({
             void refreshVideoPreview()
           }}
           videoId={video.id}
+        />
+      ) : null}
+
+      {video && segments.length > 0 ? (
+        <DictationHintEditor
+          onSegmentChange={handleSegmentChange}
+          segments={segments}
         />
       ) : null}
     </div>

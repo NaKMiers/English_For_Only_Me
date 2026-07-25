@@ -18,6 +18,8 @@ function createSegment(
     attemptStatus: 'notStarted',
     createdAt: now,
     cueIndexes: [],
+    hints: [],
+    hintsOverridden: false,
     endMs: 2200,
     id: 'segment-one',
     lastAttemptAt: null,

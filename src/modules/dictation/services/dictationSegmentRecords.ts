@@ -26,6 +26,8 @@ export function toDictationSegmentRecord(segment: {
   createdAt: Date
   cueIndexes?: number[]
   endMs?: number | null
+  hints?: string[]
+  hintsOverridden?: boolean
   lastAttemptAt?: Date | null
   normalizedText: string
   order: number
@@ -45,6 +47,8 @@ export function toDictationSegmentRecord(segment: {
     createdAt: segment.createdAt,
     cueIndexes: segment.cueIndexes ?? [],
     endMs: segment.endMs ?? null,
+    hints: segment.hints ?? [],
+    hintsOverridden: segment.hintsOverridden ?? false,
     lastAttemptAt: segment.lastAttemptAt ?? null,
     normalizedText: segment.normalizedText,
     order: segment.order,

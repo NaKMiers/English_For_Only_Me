@@ -56,6 +56,40 @@ describe('segment route decisions', () => {
     })
   })
 
+  test('accepts a setHints payload with a hint array', () => {
+    expect(
+      parseSegmentEditRequest({
+        action: 'setHints',
+        hints: ['London', 'They'],
+      })
+    ).toMatchObject({
+      ok: true,
+      data: { action: 'setHints', hints: ['London', 'They'] },
+    })
+  })
+
+  test('accepts an empty setHints array', () => {
+    expect(
+      parseSegmentEditRequest({ action: 'setHints', hints: [] })
+    ).toMatchObject({
+      ok: true,
+      data: { action: 'setHints', hints: [] },
+    })
+  })
+
+  test('rejects a setHints payload whose hints are not strings', () => {
+    expect(
+      parseSegmentEditRequest({ action: 'setHints', hints: [1, 2] })
+    ).toMatchObject({ ok: false, status: 400 })
+  })
+
+  test('accepts a resetHints payload', () => {
+    expect(parseSegmentEditRequest({ action: 'resetHints' })).toMatchObject({
+      ok: true,
+      data: { action: 'resetHints' },
+    })
+  })
+
   test('blocks segment building when the transcript is missing', () => {
     expect(
       getSegmentBuildGuardDecision({

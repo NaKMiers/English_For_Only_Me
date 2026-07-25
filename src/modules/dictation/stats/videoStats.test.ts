@@ -20,6 +20,8 @@ function makeSegment(
     attemptStatus: 'notStarted',
     createdAt: now,
     cueIndexes: [],
+    hints: [],
+    hintsOverridden: false,
     endMs: null,
     lastAttemptAt: null,
     normalizedText: text.toLowerCase(),

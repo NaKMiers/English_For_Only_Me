@@ -57,6 +57,8 @@ function segmentRecord(
     attemptStatus: 'notStarted',
     createdAt: now,
     cueIndexes: [0],
+    hints: [],
+    hintsOverridden: false,
     endMs: 3000,
     id: 'segment-1',
     lastAttemptAt: null,
@@ -240,7 +242,10 @@ describe('DictationImportForm', () => {
     )
 
     expect(view.getByLabelText('Full transcript')).not.toBeNull()
-    expect(view.getByText('Your caption line.')).not.toBeNull()
+    // The sentence appears in both the transcript preview and the hint editor.
+    expect(
+      view.getAllByText('Your caption line.').length
+    ).toBeGreaterThanOrEqual(1)
     expect(view.getAllByText('Dong dich tieng Viet.')).toHaveLength(1)
     expect(view.getByText('1 sentences')).not.toBeNull()
   })
@@ -285,8 +290,13 @@ describe('DictationImportForm', () => {
     )
 
     expect(view.getByLabelText('Full transcript')).not.toBeNull()
-    expect(view.getByText('Your caption line.')).not.toBeNull()
-    expect(view.getByText('Another sentence.')).not.toBeNull()
+    // Sentences appear in both the transcript preview and the hint editor.
+    expect(
+      view.getAllByText('Your caption line.').length
+    ).toBeGreaterThanOrEqual(1)
+    expect(
+      view.getAllByText('Another sentence.').length
+    ).toBeGreaterThanOrEqual(1)
     expect(view.getByText('Translation')).not.toBeNull()
     expect(view.getAllByText('Dong dich tieng Viet.')).toHaveLength(1)
     expect(view.getByText('2 sentences')).not.toBeNull()

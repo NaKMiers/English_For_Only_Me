@@ -179,6 +179,8 @@ export interface DictationSegmentApiRecord {
   startMs: number | null
   endMs: number | null
   cueIndexes: number[]
+  hints: string[]
+  hintsOverridden: boolean
   qualityFlags: DictationSegmentQualityFlag[]
   warningAccepted: boolean
   attemptStatus: DictationSegmentAttemptStatus

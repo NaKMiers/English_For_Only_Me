@@ -22,6 +22,8 @@ function makeSegment(): DictationSegmentApiRecord {
     attemptStatus: 'notStarted',
     createdAt: now,
     cueIndexes: [],
+    hints: [],
+    hintsOverridden: false,
     endMs: null,
     lastAttemptAt: null,
     normalizedText: 'i want coffee',

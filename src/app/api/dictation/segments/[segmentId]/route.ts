@@ -13,10 +13,12 @@ import {
   mergeSegments,
   splitSegmentAt,
 } from '@/modules/dictation/segmenting/editSegments'
+import { filterHintsToSentence } from '@/modules/dictation/correction/hintWords'
 import type { EditableSegment } from '@/modules/dictation/segmenting/types'
 import { toDictationSegmentRecord } from '@/modules/dictation/services/dictationSegmentRecords'
 import { requireAdmin } from '@/modules/dictation/services/getCurrentUser'
 import {
+  getSegmentBuildGuardDecision,
   getSegmentEditGuardDecision,
   parseSegmentEditRequest,
   parseSegmentIdParam,
@@ -178,16 +180,48 @@ export async function PATCH(request: Request, context: RouteContext) {
         },
       })
 
-    const guardDecision = getSegmentEditGuardDecision({
-      segmentSourceHash: segment.transcriptSourceHash,
-      transcript,
-      video,
-    })
+    // Hint edits do not touch transcript content, so they only need the segment
+    // to belong to the active transcript - NOT the stricter source-hash-freshness
+    // check that content edits (edit/split/merge) require. Blocking hint edits on
+    // a stale source hash is what made every hint save fail on re-saved videos.
+    const isHintAction =
+      parsedBody.data.action === 'setHints' ||
+      parsedBody.data.action === 'resetHints'
+    const guardDecision = isHintAction
+      ? getSegmentBuildGuardDecision({ transcript, video })
+      : getSegmentEditGuardDecision({
+          segmentSourceHash: segment.transcriptSourceHash,
+          transcript,
+          video,
+        })
 
     if (guardDecision) return jsonError(guardDecision)
 
     if (parsedBody.data.action === 'acceptWarning') {
       segment.warningAccepted = true
+      await segment.save()
+
+      return NextResponse.json({
+        segment: toDictationSegmentRecord(segment.toObject()),
+      })
+    }
+
+    if (parsedBody.data.action === 'setHints') {
+      // Keep only words that appear in the sentence, so Tab-fill and the
+      // "already typed" check in the practice input keep working.
+      segment.hints = filterHintsToSentence(segment.text, parsedBody.data.hints)
+      segment.hintsOverridden = true
+      await segment.save()
+
+      return NextResponse.json({
+        segment: toDictationSegmentRecord(segment.toObject()),
+      })
+    }
+
+    if (parsedBody.data.action === 'resetHints') {
+      // Drop the manual override - practice falls back to the automatic hints.
+      segment.hints = []
+      segment.hintsOverridden = false
       await segment.save()
 
       return NextResponse.json({

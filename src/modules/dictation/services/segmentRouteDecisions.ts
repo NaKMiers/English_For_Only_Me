@@ -26,6 +26,13 @@ const segmentEditSchema = z.discriminatedUnion('action', [
     action: z.literal('split'),
     splitAt: z.number().int().min(1),
   }),
+  z.object({
+    action: z.literal('setHints'),
+    hints: z.array(z.string().trim().min(1).max(80)).max(64),
+  }),
+  z.object({
+    action: z.literal('resetHints'),
+  }),
 ])
 
 export type ParsedSegmentEditRequest = z.infer<typeof segmentEditSchema>

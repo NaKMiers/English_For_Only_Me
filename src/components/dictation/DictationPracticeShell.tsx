@@ -1,5 +1,6 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { MangaPanel } from '@/components/common/MangaPanel'
@@ -12,6 +13,14 @@ import {
   GuidedAnswerInput,
   type GuidedStatus,
 } from '@/components/dictation/GuidedAnswerInput'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { MangaButton } from '@/components/ui/MangaButton'
 import { Switch } from '@/components/ui/switch'
@@ -124,6 +133,10 @@ export function DictationPracticeShell({
   translationTracks,
   video,
 }: Props) {
+  const router = useRouter()
+  // When set, a leave-confirmation modal is open for this pending in-app
+  // destination (the learner clicked a link mid-practice).
+  const [pendingLeaveHref, setPendingLeaveHref] = useState<string | null>(null)
   const [session, setSession] = useState(initialSession)
   const [selectedLanguage, setSelectedLanguage] = useState(
     () => translationTracks[0]?.language ?? ''
@@ -143,7 +156,14 @@ export function DictationPracticeShell({
   const [charCorrection, setCharCorrection] =
     useState<CharCorrectionResult | null>(null)
   const [hasStarted, setHasStarted] = useState(false)
-  const [isCompleted, setIsCompleted] = useState(false)
+  // Show the finish screen on load for a video that is already completed and has
+  // no in-progress work to resume: completed before (completions > 0) AND no
+  // active session mid-way (currentSegmentOrder past sentence 1). A finished
+  // video has no 'active' session, so initialSession is null there. This covers
+  // cases 4/5/7/8 (re-entering a done video shows Done, not Restart/Start).
+  const [isCompleted, setIsCompleted] = useState(
+    () => completions > 0 && (initialSession?.currentSegmentOrder ?? 0) === 0
+  )
   const [answerDrafts, setAnswerDrafts] = useState<Record<string, string>>(() =>
     readDictationAnswerDrafts(video.id)
   )
@@ -729,15 +749,33 @@ export function DictationPracticeShell({
 
   const advanceAfterAttempt = useCallback(() => {
     // Keep the resolved answer in the draft so revisiting the segment shows it.
-    if (canGoNext) goToIndex(currentIndex + 1)
-    else {
-      setVocabLookupError(null)
-      setShowAnswerWords(false)
-      setCurrentAttempt(null)
-      setCharCorrection(null)
-      setIsCompleted(true)
+    if (canGoNext) {
+      goToIndex(currentIndex + 1)
+      return
     }
-  }, [canGoNext, currentIndex, goToIndex])
+
+    setVocabLookupError(null)
+    setShowAnswerWords(false)
+    setCurrentAttempt(null)
+    setCharCorrection(null)
+    setIsCompleted(true)
+
+    // Finishing the last segment completes the video. Mark the session completed
+    // explicitly (chained after any pending attempt save) so the completion is
+    // recorded no matter how the last segment resolved - including reveal, which
+    // the server's pass/skip cursor-advance path would otherwise miss. Idempotent:
+    // re-marking a completed session stays a single completed session.
+    const sessionId = session?.id
+
+    if (sessionId)
+      persistQueueRef.current = persistQueueRef.current
+        .catch(() => undefined)
+        .then(() =>
+          updateDictationSessionApi(sessionId, { status: 'completed' })
+        )
+        .then(response => setSession(response.session))
+        .catch(() => undefined)
+  }, [canGoNext, currentIndex, goToIndex, session?.id])
 
   const retryCurrent = useCallback(() => {
     if (currentSegment) {
@@ -821,9 +859,13 @@ export function DictationPracticeShell({
   }, [advanceAfterAttempt, attemptResolved, runAttempt])
 
   const handleEscapeShortcut = useCallback(() => {
-    if (hasCheckedCurrent) retryCurrent()
+    // Retry (clear the draft + replay) ONLY after a live, still-wrong attempt in
+    // this session. A persisted attemptCount from an earlier visit - which now
+    // survives because resuming no longer wipes progress - must NOT make Esc clear
+    // a sentence the learner is freshly typing; there, Esc skips/reveals instead.
+    if (currentAttempt && !currentAttempt.isPassed) retryCurrent()
     else skipSegment()
-  }, [hasCheckedCurrent, retryCurrent, skipSegment])
+  }, [currentAttempt, retryCurrent, skipSegment])
 
   // Ctrl+[ / Ctrl+] use the tab-aware handlers so they move the dictation cursor
   // on the practice tab and scrub captions on the Full Transcript tab.
@@ -849,21 +891,80 @@ export function DictationPracticeShell({
     handlers: shortcutHandlers,
   })
 
-  const hasCompletedBefore = completions > 0
-  const hasSavedPracticeProgress =
-    segments.some(segment => segment.attemptCount > 0) ||
-    Object.values(answerDrafts).some(draft => draft.trim().length > 0) ||
-    (session?.currentSegmentOrder ?? 0) > 0
-  const readyActionLabel = hasCompletedBefore
-    ? 'Restart Dictation'
-    : hasSavedPracticeProgress
-      ? 'Continue Dictation'
-      : 'Start Dictation'
-  const readyActionTitle = hasCompletedBefore
-    ? 'Restart dictation'
-    : hasSavedPracticeProgress
-      ? 'Continue dictation'
-      : 'Start dictation'
+  // While actively practicing an unfinished video, intercept in-app link clicks
+  // (Next soft navigation) and route them through the styled confirm modal below
+  // instead of leaving silently. Hard reload / tab-close is intentionally NOT
+  // guarded: browsers only allow their own un-styleable dialog there, and
+  // progress is saved + resumable, so a reload just picks up where you left off.
+  useEffect(() => {
+    if (!hasStarted || isCompleted) return
+
+    function handleClickCapture(event: MouseEvent) {
+      if (
+        event.defaultPrevented ||
+        event.button !== 0 ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.shiftKey ||
+        event.altKey
+      )
+        return
+
+      const anchor = (event.target as HTMLElement | null)?.closest('a')
+
+      if (!anchor || anchor.target === '_blank') return
+
+      const href = anchor.getAttribute('href')
+
+      if (!href || href.startsWith('#')) return
+
+      let target: string
+
+      try {
+        const destination = new URL(href, window.location.href)
+
+        // Different origin = external link; let the browser handle it.
+        if (destination.origin !== window.location.origin) return
+
+        // Same page (no real navigation) = nothing to guard.
+        if (
+          destination.pathname === window.location.pathname &&
+          destination.search === window.location.search
+        )
+          return
+
+        target = `${destination.pathname}${destination.search}${destination.hash}`
+      } catch {
+        // The base could not be resolved (non-standard location). Treat an
+        // absolute URL as external and guard a relative / in-app href.
+        if (/^[a-z][a-z0-9+.-]*:/i.test(href)) return
+
+        target = href
+      }
+
+      event.preventDefault()
+      event.stopPropagation()
+      setPendingLeaveHref(target)
+    }
+
+    document.addEventListener('click', handleClickCapture, true)
+
+    return () => document.removeEventListener('click', handleClickCapture, true)
+  }, [hasStarted, isCompleted])
+
+  // In-progress work to resume: initialSession is loaded only when status is
+  // 'active', so a currentSegmentOrder past sentence 1 means the learner has
+  // unfinished progress on this attempt (a fully-finished video has no active
+  // session). This is the only state that shows the Continue/Restart ready panel;
+  // an already-completed video with no in-progress work shows the finish screen
+  // instead (see the `isCompleted` initializer above).
+  const hasResumableProgress = (initialSession?.currentSegmentOrder ?? 0) > 0
+  const readyActionLabel = hasResumableProgress
+    ? 'Continue Dictation'
+    : 'Start Dictation'
+  const readyActionTitle = hasResumableProgress
+    ? 'Continue dictation'
+    : 'Start dictation'
 
   if (!currentSegment)
     return (
@@ -880,6 +981,47 @@ export function DictationPracticeShell({
 
   return (
     <div className="mx-auto grid w-full min-w-0 gap-4">
+      <Dialog
+        open={pendingLeaveHref !== null}
+        onOpenChange={open => {
+          if (!open) setPendingLeaveHref(null)
+        }}
+      >
+        <DialogContent className="border-manga-black bg-manga-white rounded-none border-3 shadow-[6px_6px_0_var(--manga-black)]">
+          <DialogHeader>
+            <DialogTitle className="font-sans text-xl leading-tight font-black tracking-normal uppercase">
+              Leave this practice?
+            </DialogTitle>
+            <DialogDescription className="text-manga-ink-soft text-base leading-7 font-semibold">
+              You have not finished this exercise yet. Your progress is saved,
+              so you can pick up right where you left off.
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter className="bg-manga-paper-soft border-manga-black rounded-none border-t-3">
+            <MangaButton
+              type="button"
+              tone="paper"
+              onClick={() => setPendingLeaveHref(null)}
+            >
+              Keep practicing
+            </MangaButton>
+            <MangaButton
+              type="button"
+              onClick={() => {
+                const destination = pendingLeaveHref
+
+                setPendingLeaveHref(null)
+
+                if (destination) router.push(destination)
+              }}
+            >
+              Leave
+            </MangaButton>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <section className="border-manga-black bg-manga-white grid min-w-0 gap-3 border-3 p-3 shadow-[5px_5px_0_var(--manga-black)] sm:p-4">
         <DictationPracticeHeader
           completions={completions}
@@ -1014,32 +1156,28 @@ export function DictationPracticeShell({
                 <MangaPanel
                   eyebrow="Ready"
                   title={readyActionTitle}
-                  className={
-                    hasCompletedBefore
-                      ? 'bg-manga-paper-soft'
-                      : hasSavedPracticeProgress
-                        ? 'bg-cyan-50'
-                        : undefined
-                  }
+                  className={hasResumableProgress ? 'bg-cyan-50' : undefined}
                 >
                   <p className="text-manga-ink-soft text-base leading-7 font-semibold">
-                    {hasCompletedBefore
-                      ? 'Start over from the first sentence. Your completion record stays saved.'
-                      : hasSavedPracticeProgress
-                        ? 'Pick up from your saved sentence and keep going.'
-                        : 'Press start to play the first sentence and begin typing.'}
+                    {hasResumableProgress
+                      ? `Pick up from sentence ${(initialSession?.currentSegmentOrder ?? 0) + 1} of ${segments.length} and keep going.`
+                      : 'Press start to play the first sentence and begin typing.'}
                   </p>
                   <MangaButton
                     type="button"
-                    tone={hasCompletedBefore ? 'paper' : undefined}
-                    onClick={
-                      hasCompletedBefore
-                        ? restartProgress
-                        : () => setHasStarted(true)
-                    }
+                    onClick={() => setHasStarted(true)}
                   >
                     {readyActionLabel}
                   </MangaButton>
+                  {hasResumableProgress ? (
+                    <MangaButton
+                      type="button"
+                      tone="paper"
+                      onClick={restartProgress}
+                    >
+                      Restart from the beginning
+                    </MangaButton>
+                  ) : null}
                 </MangaPanel>
               ) : (
                 <>
@@ -1047,6 +1185,11 @@ export function DictationPracticeShell({
                     answerTextSize={preferences.answerTextSize}
                     correction={charCorrection}
                     expectedText={currentSegment.text}
+                    hintWords={
+                      currentSegment.hintsOverridden
+                        ? currentSegment.hints
+                        : undefined
+                    }
                     inputRef={answerTextareaRef}
                     onChange={answer => {
                       if (

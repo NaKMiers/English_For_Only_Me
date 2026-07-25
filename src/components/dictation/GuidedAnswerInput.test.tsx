@@ -227,6 +227,47 @@ describe('GuidedAnswerInput - keyboard', () => {
     expect(view.getByText('Jiangs')).toBeDefined()
   })
 
+  test('a manual hintWords override replaces the automatic hints', () => {
+    // WALL has no automatic hints; the override forces these words to show.
+    const { view } = renderInput({
+      correction: null,
+      expectedText: WALL,
+      hintWords: ['years', 'wall'],
+      status: 'idle',
+      value: '',
+    })
+
+    expect(view.getByText('years')).toBeDefined()
+    expect(view.getByText('wall')).toBeDefined()
+  })
+
+  test('an empty hintWords override shows no hints even with proper nouns', () => {
+    const meng = "the Mengs and their neighbors, the Jiangs, hadn't yet worry"
+    const { view } = renderInput({
+      correction: null,
+      expectedText: meng,
+      hintWords: [],
+      status: 'idle',
+      value: '',
+    })
+
+    expect(view.queryByText('Mengs')).toBeNull()
+    expect(view.queryByText('Jiangs')).toBeNull()
+  })
+
+  test('undefined hintWords keeps the automatic hints', () => {
+    const meng = "the Mengs and their neighbors, the Jiangs, hadn't yet worry"
+    const { view } = renderInput({
+      correction: null,
+      expectedText: meng,
+      hintWords: undefined,
+      status: 'idle',
+      value: '',
+    })
+
+    expect(view.getByText('Mengs')).toBeDefined()
+  })
+
   test('clicking any hint chip fills that word and hides it immediately, even out of order', () => {
     const meng = "the Mengs and their neighbors, the Jiangs, hadn't yet worry"
     const correction = correctionFor('the', meng)

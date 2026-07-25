@@ -61,6 +61,15 @@ vi.mock('@/components/dictation/DictationYoutubePlayer', async () => {
   }
 })
 
+const routerPushMock = vi.fn()
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: routerPushMock,
+    refresh: vi.fn(),
+  }),
+}))
+
 vi.mock('@/requests/dictationAttemptsApi', () => ({
   submitDictationAttemptApi: vi.fn(async (sessionId: string) => ({
     mode: 'create',
@@ -164,6 +173,8 @@ const segment: DictationSegmentApiRecord = {
   attemptStatus: 'notStarted',
   createdAt: now,
   cueIndexes: [],
+  hints: [],
+  hintsOverridden: false,
   endMs: 2000,
   id: '507f1f77bcf86cd799439013',
   lastAttemptAt: null,
@@ -334,6 +345,28 @@ describe('DictationPracticeShell attempts', () => {
     })
   })
 
+  test('Escape reveals (does not clear) on a resumed segment attempted in an earlier visit', async () => {
+    // Persisted attemptCount from before, but no live attempt this session.
+    const attempted: DictationSegmentApiRecord = {
+      ...segment,
+      attemptCount: 1,
+      attemptStatus: 'correct',
+    }
+    const view = renderPracticeShell(session, attempted, 0, [attempted])
+
+    fireEvent.click(view.getByRole('button', { name: 'Start Dictation' }))
+    const textarea = view.getByLabelText('Type what you hear')
+    typeAnswer(textarea, 'my fresh attempt')
+
+    fireEvent.keyDown(textarea, { key: 'Escape' })
+
+    await waitFor(() => {
+      expect(view.getByRole('status').textContent).toContain('Answer revealed')
+    })
+    // The old bug cleared the draft to '' (retry); it must not anymore.
+    expect((textarea as HTMLTextAreaElement).value).not.toBe('')
+  })
+
   test('Skip reveals the answer and switches to Finish', async () => {
     const view = renderPracticeShell()
 
@@ -344,6 +377,23 @@ describe('DictationPracticeShell attempts', () => {
       expect(view.getByRole('status').textContent).toContain('Answer revealed')
     })
     expect(view.getByRole('button', { name: 'Finish' })).not.toBeNull()
+  })
+
+  test('finishing the last segment marks the session completed', async () => {
+    // Single segment => it is the last segment.
+    const view = renderPracticeShell(null)
+
+    fireEvent.click(view.getByRole('button', { name: 'Start Dictation' }))
+    fireEvent.click(view.getByRole('button', { name: 'Skip' }))
+
+    const finish = await view.findByRole('button', { name: 'Finish' })
+    fireEvent.click(finish)
+
+    await waitFor(() => {
+      expect(updateDictationSessionMock).toHaveBeenCalledWith(session.id, {
+        status: 'completed',
+      })
+    })
   })
 
   test('Restart keeps the completion badge but clears old answers client-side', async () => {
@@ -379,5 +429,138 @@ describe('DictationPracticeShell attempts', () => {
       completedSegment.endMs
     )
     expect(updateDictationSessionMock).not.toHaveBeenCalled()
+  })
+})
+
+describe('DictationPracticeShell entry screen', () => {
+  const twoSegments = [segment, secondSegment]
+  const resumableSession: DictationSessionApiRecord = {
+    ...session,
+    currentSegmentId: secondSegment.id,
+    currentSegmentOrder: 1,
+  }
+  const zeroProgressSession: DictationSessionApiRecord = {
+    ...session,
+    currentSegmentOrder: 0,
+  }
+
+  function expectStartScreen(view: ReturnType<typeof renderPracticeShell>) {
+    expect(view.getByRole('button', { name: 'Start Dictation' })).not.toBeNull()
+    expect(
+      view.queryByRole('button', { name: 'Continue Dictation' })
+    ).toBeNull()
+    expect(
+      view.queryByRole('button', { name: 'Repeat this exercise' })
+    ).toBeNull()
+  }
+
+  function expectContinueScreen(view: ReturnType<typeof renderPracticeShell>) {
+    expect(
+      view.getByRole('button', { name: 'Continue Dictation' })
+    ).not.toBeNull()
+    expect(
+      view.getByRole('button', { name: 'Restart from the beginning' })
+    ).not.toBeNull()
+    expect(
+      view.queryByRole('button', { name: 'Repeat this exercise' })
+    ).toBeNull()
+  }
+
+  function expectFinishScreen(view: ReturnType<typeof renderPracticeShell>) {
+    // Unique markers of the Done panel.
+    expect(
+      view.getByRole('button', { name: 'Repeat this exercise' })
+    ).not.toBeNull()
+    expect(
+      view.getByText('You have completed this exercise, good job!')
+    ).not.toBeNull()
+    // Not the ready panel.
+    expect(view.queryByRole('button', { name: 'Start Dictation' })).toBeNull()
+    expect(
+      view.queryByRole('button', { name: 'Continue Dictation' })
+    ).toBeNull()
+  }
+
+  // Case 1: first practice, no segment completed, reload -> Start.
+  test('case 1: never completed + no progress -> Start', () => {
+    expectStartScreen(
+      renderPracticeShell(zeroProgressSession, segment, 0, twoSegments)
+    )
+  })
+
+  // Case 2: first practice, >=1 segment completed, reload -> Continue/Restart.
+  test('case 2: never completed + in-progress -> Continue', () => {
+    expectContinueScreen(
+      renderPracticeShell(resumableSession, segment, 0, twoSegments)
+    )
+  })
+
+  // Cases 4/7/8: completed all, no active session -> Finish.
+  test('case 4: completed before + no active session -> Finish', () => {
+    expectFinishScreen(renderPracticeShell(null, segment, 1, twoSegments))
+  })
+
+  // Case 5: completed before, new attempt with no segment done -> Finish.
+  test('case 5: completed before + active session with no progress -> Finish', () => {
+    expectFinishScreen(
+      renderPracticeShell(zeroProgressSession, segment, 1, twoSegments)
+    )
+  })
+
+  // Case 6: completed before, >=1 segment this attempt -> Continue/Restart.
+  test('case 6: completed before + in-progress -> Continue', () => {
+    expectContinueScreen(
+      renderPracticeShell(resumableSession, segment, 1, twoSegments)
+    )
+  })
+})
+
+describe('DictationPracticeShell leave guard', () => {
+  test('an in-app link click mid-practice opens the styled modal instead of navigating', async () => {
+    const view = renderPracticeShell()
+
+    fireEvent.click(view.getByRole('button', { name: 'Start Dictation' }))
+
+    const link = document.createElement('a')
+    link.setAttribute('href', '/dictation')
+    link.textContent = 'Go to lab'
+    document.body.appendChild(link)
+
+    fireEvent.click(link)
+
+    await waitFor(() => {
+      expect(view.getByText('Leave this practice?')).not.toBeNull()
+    })
+    // Navigation is held until the learner confirms.
+    expect(routerPushMock).not.toHaveBeenCalled()
+
+    fireEvent.click(view.getByRole('button', { name: 'Leave' }))
+
+    await waitFor(() => {
+      expect(routerPushMock).toHaveBeenCalledWith('/dictation')
+    })
+  })
+
+  test('Keep practicing dismisses the modal without navigating', async () => {
+    const view = renderPracticeShell()
+
+    fireEvent.click(view.getByRole('button', { name: 'Start Dictation' }))
+
+    const link = document.createElement('a')
+    link.setAttribute('href', '/dictation')
+    document.body.appendChild(link)
+
+    fireEvent.click(link)
+
+    await waitFor(() => {
+      expect(view.getByText('Leave this practice?')).not.toBeNull()
+    })
+
+    fireEvent.click(view.getByRole('button', { name: 'Keep practicing' }))
+
+    await waitFor(() => {
+      expect(view.queryByText('Leave this practice?')).toBeNull()
+    })
+    expect(routerPushMock).not.toHaveBeenCalled()
   })
 })
