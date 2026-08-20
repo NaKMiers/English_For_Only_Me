@@ -49,6 +49,7 @@ function isTerminalFailure(message: string) {
  *   bun run grammar:generate zero-article   # one specific slug
  *   bun run grammar:generate --repair   # rewrite points that FAIL validation
  *   bun run grammar:generate --repair 8 # at most 8 of those
+ *   bun run grammar:generate --stale-contrasts  # backfill minimalPairs
  */
 function parseArgs() {
   const args = process.argv.slice(2)
@@ -65,7 +66,26 @@ function parseArgs() {
     limit: limitArg ? Number(limitArg) : Number.POSITIVE_INFINITY,
     repair: args.includes('--repair'),
     slug: slugArg ?? null,
+    staleContrasts: args.includes('--stale-contrasts'),
   }
+}
+
+/**
+ * Points written before `minimalPairs` existed.
+ *
+ * A point with a `contrastsWith` value is where the contrast is most likely to
+ * be one of meaning rather than correctness, and those are exactly the lessons
+ * that had to force "stop to smoke" versus "stop smoking" into a wrong/right
+ * pair - contradicting their own explanation. Selecting on "has a body, has a
+ * contrast, has no minimalPairs" targets that generation gap precisely, instead
+ * of rewriting every point to fix a subset.
+ */
+function hasStaleContrast(point: GrammarContentFile[number]) {
+  if (point.mergedInto) return false
+  if (!point.explanation?.trim()) return false
+  if (!point.contrastsWith?.length) return false
+
+  return !point.minimalPairs?.length
 }
 
 /**
@@ -129,7 +149,7 @@ function byGenerationValue(
 }
 
 async function main() {
-  const { limit, repair, slug } = parseArgs()
+  const { limit, repair, slug, staleContrasts } = parseArgs()
   const points = loadGrammarContent()
   const failuresBySlug = repair
     ? collectFailuresBySlug(points)
@@ -138,6 +158,7 @@ async function main() {
   const selects = (point: GrammarContentFile[number]) => {
     if (slug) return point.slug === slug
     if (repair) return failuresBySlug.has(point.slug)
+    if (staleContrasts) return hasStaleContrast(point)
 
     return needsBody(point)
   }
@@ -153,7 +174,9 @@ async function main() {
         ? `grammar:generate - no point matches slug "${slug}". Nothing written.`
         : repair
           ? 'grammar:generate --repair - nothing to repair, every point passes validation.'
-          : 'grammar:generate - nothing to do, every point has a body.'
+          : staleContrasts
+            ? 'grammar:generate --stale-contrasts - nothing stale, every contrast point has minimalPairs.'
+            : 'grammar:generate - nothing to do, every point has a body.'
     )
     return
   }
@@ -161,7 +184,7 @@ async function main() {
   const capped = targets.slice(0, Number.isFinite(limit) ? limit : undefined)
 
   console.info(
-    `grammar:generate${repair ? ' --repair' : ''} - ${capped.length} of ${targets.length} point(s) to write, in chunks of ${CHUNK_SIZE}.`
+    `grammar:generate${repair ? ' --repair' : ''}${staleContrasts ? ' --stale-contrasts' : ''} - ${capped.length} of ${targets.length} point(s) to write, in chunks of ${CHUNK_SIZE}.`
   )
 
   let written = 0
