@@ -2,6 +2,7 @@ import {
   BookOpen,
   Bot,
   Headphones,
+  Languages,
   NotebookPen,
   SpellCheck,
 } from 'lucide-react'
@@ -48,9 +49,30 @@ const moduleIcons: Record<AppModuleKey, ReactNode> = {
       className="size-6"
     />
   ),
+  grammar: (
+    <Languages
+      aria-hidden="true"
+      className="size-6"
+    />
+  ),
 }
 
-const launcherModules = APP_MODULES.slice(0, 4)
+const LAUNCHER_SLOTS = 4
+
+/**
+ * The study desk shows four cards, and every ACTIVE module is guaranteed one.
+ *
+ * This used to be `APP_MODULES.slice(0, 4)`, which only worked by accident:
+ * declaration order happened to put the two active modules first. Adding a
+ * third active module silently pushed a real, usable module off the desk in
+ * favour of a placeholder with no route. Active modules now take slots first
+ * and placeholders fill whatever is left, so a fourth active module displaces a
+ * planned one instead of disappearing.
+ */
+const launcherModules = [
+  ...APP_MODULES.filter(module => module.status === 'active'),
+  ...APP_MODULES.filter(module => module.status !== 'active'),
+].slice(0, LAUNCHER_SLOTS)
 
 export function HomeModuleLauncher() {
   return (

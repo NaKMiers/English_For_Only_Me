@@ -1,6 +1,8 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, test } from 'vitest'
 
+import { APP_MODULES } from '@/constants/modules'
+
 import { HomeStudyDesk } from './HomeStudyDesk'
 
 describe('HomeStudyDesk', () => {
@@ -10,11 +12,23 @@ describe('HomeStudyDesk', () => {
     expect(html).toContain('English For Only Me')
     expect(html).toContain('English For Only Me logo')
     expect(html).toContain('Your English training desk.')
+    // Every active module is guaranteed a launcher slot; placeholders fill the
+    // rest. Grammar became active, so it displaced AI Coach (a planned module
+    // with no route) rather than being left off the desk.
+    for (const activeModule of APP_MODULES.filter(
+      module => module.status === 'active'
+    ))
+      expect(
+        html,
+        `${activeModule.title} should be on the study desk`
+      ).toContain(activeModule.title)
+
     expect(html).toContain('Dictation Lab')
     expect(html).toContain('Vocabulary')
+    expect(html).toContain('Grammar')
     expect(html).toContain('Writing Notes')
-    expect(html).toContain('AI Coach')
     expect(html).toContain('href="/dictation"')
+    expect(html).toContain('href="/grammar"')
   })
 
   test('renders real dictation global stats when provided', () => {
