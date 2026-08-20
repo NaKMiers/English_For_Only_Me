@@ -1,3 +1,6 @@
+/** Enough for a debrief paragraph. Larger payloads must opt in explicitly. */
+const DEFAULT_MAX_OUTPUT_TOKENS = 1400
+
 interface OpenAiStructuredOutputRequest {
   apiKey: string | null
   fetcher?: typeof fetch
@@ -5,9 +8,21 @@ interface OpenAiStructuredOutputRequest {
     content: string
     role: 'system' | 'user'
   }>
+  /**
+   * Output token ceiling. Reasoning tokens count against this on reasoning
+   * models, so a schema with many required array items needs considerably more
+   * headroom than its visible JSON suggests. Too low is not a soft failure: the
+   * response comes back `incomplete`, unusable, and still billed.
+   */
+  maxOutputTokens?: number
   model: string
   schema: Record<string, unknown>
   schemaName: string
+}
+
+export interface OpenAiUsage {
+  inputTokens: number
+  outputTokens: number
 }
 
 export type OpenAiStructuredOutputResult =
@@ -15,6 +30,7 @@ export type OpenAiStructuredOutputResult =
       ok: true
       rawOutput: unknown
       text: string
+      usage: OpenAiUsage | null
     }
   | {
       message: string
@@ -25,6 +41,9 @@ interface OpenAiResponseBody {
   error?: {
     message?: string
   }
+  incomplete_details?: {
+    reason?: string
+  }
   output?: Array<{
     content?: Array<{
       text?: string
@@ -33,6 +52,10 @@ interface OpenAiResponseBody {
   }>
   output_text?: string
   status?: string
+  usage?: {
+    input_tokens?: number
+    output_tokens?: number
+  }
 }
 
 function extractResponseText(body: OpenAiResponseBody) {
@@ -49,6 +72,7 @@ export async function requestOpenAiStructuredOutput({
   apiKey,
   fetcher = fetch,
   input,
+  maxOutputTokens = DEFAULT_MAX_OUTPUT_TOKENS,
   model,
   schema,
   schemaName,
@@ -68,7 +92,7 @@ export async function requestOpenAiStructuredOutput({
       },
       body: JSON.stringify({
         input,
-        max_output_tokens: 1400,
+        max_output_tokens: maxOutputTokens,
         model,
         text: {
           format: {
@@ -93,7 +117,14 @@ export async function requestOpenAiStructuredOutput({
     if (body.status && body.status !== 'completed')
       return {
         ok: false,
-        message: 'OpenAI debrief response was incomplete.',
+        // Name the reason and the ceiling. The generic message cost a real
+        // (billed) run to diagnose, because "incomplete" reads like a network
+        // problem when it is usually just too small a token budget.
+        message: `OpenAI response was ${body.status}${
+          body.incomplete_details?.reason
+            ? ` (${body.incomplete_details.reason})`
+            : ''
+        }, max_output_tokens=${maxOutputTokens}.`,
       }
 
     const text = extractResponseText(body).trim()
@@ -108,6 +139,12 @@ export async function requestOpenAiStructuredOutput({
       ok: true,
       rawOutput: body,
       text,
+      usage: body.usage
+        ? {
+            inputTokens: body.usage.input_tokens ?? 0,
+            outputTokens: body.usage.output_tokens ?? 0,
+          }
+        : null,
     }
   } catch {
     return {
