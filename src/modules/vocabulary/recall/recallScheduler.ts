@@ -1,106 +1,24 @@
-import {
-  VOCAB_RECALL_STAGE_INTERVAL_DAYS,
-  VOCAB_RECALL_STAGES,
-} from '@/modules/vocabulary/constants'
-import type {
-  UserVocabItemApiRecord,
-  VocabRecallStage,
-} from '@/modules/vocabulary/types'
-
-const DAY_MS = 86_400_000
-
-function addDays(date: Date, days: number) {
-  return new Date(date.getTime() + days * DAY_MS)
-}
-
-function normalizeStage(stage: number | null | undefined): VocabRecallStage {
-  return VOCAB_RECALL_STAGES.includes(stage as VocabRecallStage)
-    ? (stage as VocabRecallStage)
-    : 1
-}
-
-export function getInitialLearningState(now = new Date()) {
-  return {
-    correctCount: 0,
-    dueAt: now,
-    knownAt: null,
-    knownReason: null,
-    masteredAt: null,
-    masteredReason: null,
-    recallStage: 1 as const,
-    reviewCount: 0,
-    status: 'learning' as const,
-    wrongCount: 0,
-  }
-}
-
-export function getAlreadyKnownState(now = new Date()) {
-  return {
-    dueAt: null,
-    knownAt: now,
-    knownReason: 'manual' as const,
-    masteredAt: null,
-    masteredReason: null,
-    recallStage: 1 as const,
-    status: 'alreadyKnow' as const,
-  }
-}
-
-export function applyRecallAnswer({
-  item,
-  isCorrect,
-  now = new Date(),
-}: {
-  item: Pick<
-    UserVocabItemApiRecord,
-    'correctCount' | 'recallStage' | 'reviewCount' | 'wrongCount'
-  >
-  isCorrect: boolean
-  now?: Date
-}) {
-  const reviewCount = item.reviewCount + 1
-
-  if (!isCorrect)
-    return {
-      correctCount: item.correctCount,
-      dueAt: now,
-      lastReviewedAt: now,
-      masteredAt: null,
-      masteredReason: null,
-      recallStage: 1 as const,
-      reviewCount,
-      status: 'learning' as const,
-      wrongCount: item.wrongCount + 1,
-    }
-
-  const currentStage = normalizeStage(item.recallStage)
-
-  if (currentStage >= 7)
-    return {
-      correctCount: item.correctCount + 1,
-      dueAt: null,
-      lastReviewedAt: now,
-      masteredAt: now,
-      masteredReason: 'recallMastery' as const,
-      recallStage: 7 as const,
-      reviewCount,
-      status: 'mastered' as const,
-      wrongCount: item.wrongCount,
-    }
-
-  const intervalStage =
-    currentStage as keyof typeof VOCAB_RECALL_STAGE_INTERVAL_DAYS
-  const nextStage = (currentStage + 1) as VocabRecallStage
-
-  return {
-    correctCount: item.correctCount + 1,
-    dueAt: addDays(now, VOCAB_RECALL_STAGE_INTERVAL_DAYS[intervalStage]),
-    lastReviewedAt: now,
-    masteredAt: null,
-    masteredReason: null,
-    recallStage: nextStage,
-    reviewCount,
-    status: 'learning' as const,
-    wrongCount: item.wrongCount,
-  }
-}
+/**
+ * Vocabulary's recall scheduler now delegates to the shared learning ladder.
+ *
+ * This file used to hold its own copy of the 7-stage logic. Grammar became the
+ * second module needing the same ladder, and an approved 2026-07-12 design
+ * ("Module Learning Spine") had already called for a shared layer and then never
+ * shipped - which is how vocabulary and dictation both ended up computing their
+ * own streaks. Rather than let grammar become a third copy, the logic moved to
+ * `src/modules/learning/recall/recallLadder.ts` and this module re-exports it.
+ *
+ * The swap is behaviour-preserving by construction: the shared ladder's
+ * `difficulty` parameter defaults to `medium`, whose interval multiplier is
+ * exactly 1, so every interval vocabulary schedules is byte-identical to before.
+ * `recallScheduler.test.ts` is unchanged and is the proof.
+ *
+ * Grammar passes a real difficulty (derived from `l1Risk`) to get tighter
+ * spacing on the points a Vietnamese speaker actually keeps failing. Vocabulary
+ * can adopt that later by passing its own signal; it does not have to.
+ */
+export {
+  applyRecallAnswer,
+  getAlreadyKnownState,
+  getInitialRecallState as getInitialLearningState,
+} from '@/modules/learning/recall/recallLadder'
