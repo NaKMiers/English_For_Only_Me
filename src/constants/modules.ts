@@ -1,6 +1,7 @@
 export type AppModuleKey =
   | 'dictation'
   | 'vocabulary'
+  | 'grammar'
   | 'writing-notes'
   | 'ai-coach'
   | 'reading'
@@ -15,7 +16,13 @@ export interface AppModule {
   href: string
   pageTag: string
   skill:
-    'Listening' | 'Vocabulary' | 'Writing' | 'Coaching' | 'Reading' | 'Speaking'
+    | 'Listening'
+    | 'Vocabulary'
+    | 'Grammar'
+    | 'Writing'
+    | 'Coaching'
+    | 'Reading'
+    | 'Speaking'
   status: AppModuleStatus
   description: string
 }
@@ -42,6 +49,17 @@ export const APP_MODULES: AppModule[] = [
     status: 'active',
     description:
       'Personal word bank, spaced recall, collocations, and weak-word drills.',
+  },
+  {
+    key: 'grammar',
+    title: 'Grammar',
+    shortTitle: 'Grammar',
+    href: '/grammar',
+    pageTag: 'Active',
+    skill: 'Grammar',
+    status: 'active',
+    description:
+      'Complete CEFR grammar map by level and difficulty, with drills and spaced recall.',
   },
   {
     key: 'writing-notes',
