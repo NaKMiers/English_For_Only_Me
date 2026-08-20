@@ -1,6 +1,7 @@
 export const ENV_KEYS = {
   ieltsGoal: 'IELTS_GOAL',
   openAiDebriefModel: 'OPENAI_DEBRIEF_MODEL',
+  openAiGrammarModel: 'OPENAI_GRAMMAR_MODEL',
   openAiTranslationModel: 'OPENAI_TRANSLATION_MODEL',
   mongoDbUri: 'MONGODB_URI',
   openAiApiKey: 'OPENAI_API_KEY',
@@ -51,6 +52,24 @@ export function getYoutubeApiKey() {
 
 export function getOpenAiApiKey() {
   return getOptionalServerEnv(ENV_KEYS.openAiApiKey)
+}
+
+/**
+ * Model used to author grammar lesson bodies.
+ *
+ * Deliberately a tier above the app's other AI features, which use nano. This
+ * is the one place where a confidently-worded wrong answer does lasting damage,
+ * because the learner studies from it rather than glancing at it.
+ *
+ * That is not a hypothetical. Generating the definite-article lesson on
+ * gpt-5.4-nano produced ten "common mistakes" of which eight were correct
+ * English marked as errors ("I work in a hospital", "I want to buy a car"), and
+ * drills that listed the very mistake being taught as an accepted answer. The
+ * same prompt on gpt-5.4-mini produced accurate content that passed validation.
+ * The run happens once; the lesson is read many times.
+ */
+export function getOpenAiGrammarModel() {
+  return getOptionalServerEnv(ENV_KEYS.openAiGrammarModel) ?? 'gpt-5.4-mini'
 }
 
 /**
