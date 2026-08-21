@@ -19,6 +19,7 @@ function outcome(
     isCorrect: true,
     l1Risk: 'medium',
     pointSlug: 'present-perfect-simple',
+    reviewStatus: 'reviewed',
     ...overrides,
   }
 }
@@ -156,5 +157,59 @@ describe('summariseDiagnostic', () => {
     ])
 
     expect(summary.weakestLevels).toEqual([])
+  })
+})
+
+/**
+ * The result screen is the module's most persuasive moment and it is built
+ * entirely on lessons no human has read. This number is what keeps the claim
+ * honest, so it is worth the same rigour as the score itself.
+ */
+describe('unverifiedCount', () => {
+  it('is zero when every tested point is reviewed', () => {
+    const summary = summariseDiagnostic([
+      outcome({ pointSlug: 'a', reviewStatus: 'reviewed' }),
+      outcome({ pointSlug: 'b', reviewStatus: 'reviewed' }),
+    ])
+
+    expect(summary.unverifiedCount).toBe(0)
+  })
+
+  it('counts every point when none are reviewed', () => {
+    // The launch state: all 184 lessons are unverified.
+    const summary = summariseDiagnostic([
+      outcome({ pointSlug: 'a', reviewStatus: 'unverified' }),
+      outcome({ pointSlug: 'b', reviewStatus: 'unverified' }),
+      outcome({ pointSlug: 'c', reviewStatus: 'unverified' }),
+    ])
+
+    expect(summary.unverifiedCount).toBe(3)
+    expect(summary.total).toBe(3)
+  })
+
+  it('counts only the unverified half of a mixed set', () => {
+    const summary = summariseDiagnostic([
+      outcome({ pointSlug: 'a', reviewStatus: 'reviewed' }),
+      outcome({ pointSlug: 'b', reviewStatus: 'unverified' }),
+      outcome({ pointSlug: 'c', reviewStatus: 'unverified' }),
+    ])
+
+    expect(summary.unverifiedCount).toBe(2)
+  })
+
+  it('counts rules, not answers', () => {
+    // Two drills from one point is one unverified RULE. Saying "2 of the 2
+    // rules we tested" when only one rule was tested overstates the caveat as
+    // badly as omitting it understates it.
+    const summary = summariseDiagnostic([
+      outcome({ pointSlug: 'zero-article', reviewStatus: 'unverified' }),
+      outcome({ pointSlug: 'zero-article', reviewStatus: 'unverified' }),
+    ])
+
+    expect(summary.unverifiedCount).toBe(1)
+  })
+
+  it('is zero for an empty diagnostic', () => {
+    expect(summariseDiagnostic([]).unverifiedCount).toBe(0)
   })
 })

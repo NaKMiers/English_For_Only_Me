@@ -10,6 +10,7 @@ import type {
   GrammarDrillRecord,
   GrammarFamily,
   GrammarL1Risk,
+  GrammarReviewStatus,
 } from '@/modules/grammar/types'
 
 import {
@@ -38,7 +39,9 @@ export async function buildGrammarDiagnostic({
 }): Promise<DiagnosticItem[]> {
   const [points, items] = await Promise.all([
     GrammarPointModel.find({ drills: { $ne: [] }, mergedInto: null })
-      .select('slug title cefrLevel complexity family l1Risk drills')
+      .select(
+        'slug title cefrLevel complexity family l1Risk l1RiskObserved reviewStatus drills'
+      )
       .lean(),
     actorId
       ? UserGrammarItemModel.find({ actorId }).select('pointSlug').lean()
@@ -52,6 +55,7 @@ export async function buildGrammarDiagnostic({
       drills: point.drills as GrammarDrillRecord[],
       family: point.family as GrammarFamily,
       l1Risk: point.l1Risk as GrammarL1Risk,
+      l1RiskObserved: (point.l1RiskObserved ?? null) as GrammarL1Risk | null,
       slug: point.slug,
       title: point.title,
     })),
@@ -98,7 +102,7 @@ export async function submitGrammarDiagnostic({
     mergedInto: null,
     slug: { $in: slugs },
   })
-    .select('slug cefrLevel l1Risk drills')
+    .select('slug cefrLevel l1Risk reviewStatus drills')
     .lean()
   const pointBySlug = new Map(points.map(point => [point.slug, point]))
 
@@ -122,6 +126,7 @@ export async function submitGrammarDiagnostic({
       isCorrect: grade.isCorrect,
       l1Risk: point.l1Risk as GrammarL1Risk,
       pointSlug: point.slug,
+      reviewStatus: point.reviewStatus as GrammarReviewStatus,
     }
 
     outcomes.push(outcome)

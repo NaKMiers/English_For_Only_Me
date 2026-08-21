@@ -505,3 +505,60 @@ describe('validateGrammarContent', () => {
     })
   })
 })
+
+describe('l1RiskObserved', () => {
+  function issuesFor(overrides: Record<string, unknown>) {
+    return validateGrammarContent({
+      points: [taxonomyRow(overrides as never)],
+    }).issues
+  }
+
+  it('accepts a valid observed risk', () => {
+    expect(issuesFor({ l1RiskObserved: 'high' })).toEqual([])
+  })
+
+  it('accepts an absent observed risk', () => {
+    // The launch state for all 184 rows. An unjudged row is not an error.
+    expect(issuesFor({})).toEqual([])
+  })
+
+  it('accepts an explicit null', () => {
+    expect(issuesFor({ l1RiskObserved: null })).toEqual([])
+  })
+
+  it('rejects a value outside the enum', () => {
+    const issues = issuesFor({ l1RiskObserved: 'brutal' })
+
+    expect(issues).toHaveLength(1)
+    expect(issues[0].rule).toBe('enum')
+    expect(issues[0].message).toContain('l1RiskObserved')
+  })
+
+  /**
+   * The failure this check exists for: nothing else in the validator rejects
+   * unknown fields, so a misspelled key would validate, seed, and be ignored -
+   * losing a judgment pass with no symptom anywhere.
+   */
+  it('rejects a misspelled key', () => {
+    const issues = issuesFor({ l1riskObserved: 'high' })
+
+    expect(issues).toHaveLength(1)
+    expect(issues[0].rule).toBe('field-name')
+    expect(issues[0].message).toContain('l1riskObserved')
+  })
+
+  it('rejects other casings of the same misspelling', () => {
+    for (const key of ['L1RiskObserved', 'l1RISKobserved', 'l1riskobserved']) {
+      const issues = issuesFor({ [key]: 'high' })
+
+      expect(
+        issues.map(issue => issue.rule),
+        key
+      ).toContain('field-name')
+    }
+  })
+
+  it('does not flag unrelated fields', () => {
+    expect(issuesFor({ l1Notes: 'Vietnamese has no articles.' })).toEqual([])
+  })
+})

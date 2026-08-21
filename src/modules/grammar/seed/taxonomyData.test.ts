@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { GRAMMAR_FAMILIES } from '@/modules/grammar/constants'
+import { effectiveL1Risk } from '@/modules/grammar/taxonomy/effectiveL1Risk'
 
 import { loadGrammarContent, loadSeededSlugs } from './loadGrammarContent'
 import { validateGrammarContent } from './validateGrammarContent'
@@ -70,8 +71,15 @@ describe('committed grammar content', () => {
     // These are the documented Vietnamese-to-English transfer problems. If a
     // future edit downgrades one, that is a decision worth making explicitly
     // rather than by accident.
+    //
+    // Asserted against the EFFECTIVE risk, so `l1RiskObserved` cannot route
+    // around this guard. Judging one of these easier than authored is allowed -
+    // it just has to be done here, in a commit, rather than quietly in a data
+    // file. Which is the "explicitly rather than by accident" above.
     const highRisk = new Set(
-      points.filter(point => point.l1Risk === 'high').map(point => point.slug)
+      points
+        .filter(point => effectiveL1Risk(point) === 'high')
+        .map(point => point.slug)
     )
 
     for (const slug of [

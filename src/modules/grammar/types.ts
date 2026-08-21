@@ -139,6 +139,15 @@ export interface GrammarTaxonomyRow {
   ieltsImpactOverride?: GrammarIeltsImpact | null
   l1Risk: GrammarL1Risk
   /**
+   * The builder's own judgment of L1 difficulty, recorded after reading the
+   * point. Absent until judged, which is what makes the 184-row pass resumable.
+   *
+   * Separate from `l1Risk` because `l1Risk` gates content requirements enforced
+   * by `grammar:validate`. See `taxonomy/effectiveL1Risk.ts` for which field
+   * each consumer must read.
+   */
+  l1RiskObserved?: GrammarL1Risk | null
+  /**
    * Set only on a retired point. Published slugs are immutable, so a merge
    * leaves the old slug behind as a stub pointing at the survivor. This is what
    * keeps a learner's ladder position and history from being silently orphaned

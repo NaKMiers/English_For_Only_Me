@@ -1,4 +1,5 @@
 import { GRAMMAR_DIAGNOSTIC_RISK_WEIGHTS } from '@/modules/grammar/constants'
+import { effectiveL1Risk } from '@/modules/grammar/taxonomy/effectiveL1Risk'
 import type {
   GrammarCefrLevel,
   GrammarComplexity,
@@ -13,6 +14,8 @@ export interface DiagnosticCandidate {
   drills: GrammarDrillRecord[]
   family: GrammarFamily
   l1Risk: GrammarL1Risk
+  /** The builder's judgment, when the row has been judged. Weights selection. */
+  l1RiskObserved?: GrammarL1Risk | null
   slug: string
   title: string
 }
@@ -129,8 +132,11 @@ export function selectDiagnosticItems({
     ['medium', []],
   ])
 
+  // Bucketed by the EFFECTIVE risk. The weighting exists to spend questions
+  // where the answer is genuinely uncertain, and the learner's own judgment of
+  // what is hard is a better estimate of that than the authored label.
   for (const candidate of eligible)
-    byRisk.get(candidate.l1Risk)?.push(candidate)
+    byRisk.get(effectiveL1Risk(candidate))?.push(candidate)
 
   for (const [risk, bucket] of byRisk)
     byRisk.set(risk, roundRobinByFamily(bucket))
@@ -166,6 +172,10 @@ export function selectDiagnosticItems({
         complexity: candidate.complexity,
         drillId: drill.id,
         kind: drill.kind,
+        // Deliberately the AUTHORED risk, not the effective one. `l1Risk` on an
+        // outcome seeds the recall ladder in `scoreDiagnostic`, and scheduling
+        // is out of scope here. Selection reads the judgment; scheduling does
+        // not.
         l1Risk: candidate.l1Risk,
         pointSlug: candidate.slug,
         pointTitle: candidate.title,

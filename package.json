@@ -22,6 +22,7 @@
     "grammar:generate": "node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/generateGrammarContent.ts",
     "grammar:seed": "node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/seedGrammar.ts",
     "grammar:export": "node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/exportGrammarContent.ts",
+    "grammar:drop-stale-indexes": "node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/dropStaleGrammarIndexes.ts",
     "vocab:seed": "node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/seedVocabulary.ts",
     "vocab:seed-family": "node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/seedVocabularyFamily.ts",
     "vocab:enrich": "node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/enrichVocabularyBatch.ts",

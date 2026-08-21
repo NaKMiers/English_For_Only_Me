@@ -158,6 +158,14 @@ export function validateGrammarContent({
     if (!has(GRAMMAR_L1_RISKS, point.l1Risk))
       add('enum', slug, `Unknown l1Risk "${point.l1Risk}".`)
 
+    if (
+      point.l1RiskObserved != null &&
+      !has(GRAMMAR_L1_RISKS, point.l1RiskObserved)
+    )
+      add('enum', slug, `Unknown l1RiskObserved "${point.l1RiskObserved}".`)
+
+    validateL1RiskObservedKey({ add, point, slug })
+
     if (typeof point.order !== 'number' || !Number.isFinite(point.order))
       add('required-field', slug, 'Missing numeric order.')
 
@@ -220,6 +228,36 @@ export function validateGrammarContent({
     checkedPoints: points.length,
     issues,
     ok: issues.length === 0,
+  }
+}
+
+/**
+ * Catch a misspelled `l1RiskObserved` key.
+ *
+ * Nothing else here rejects unknown fields, and that is normally fine - an
+ * extra key is inert. This one is not: the whole point of the field is to hold
+ * hours of the builder's judgment over 184 rows, and a row written as
+ * `l1riskObserved` would validate, seed, and be silently ignored by
+ * `effectiveL1Risk`. The judgment would be gone with nothing to notice.
+ */
+function validateL1RiskObservedKey({
+  add,
+  point,
+  slug,
+}: {
+  add: (rule: string, slug: string | null, message: string) => void
+  point: GrammarContentFile[number]
+  slug: string
+}) {
+  for (const key of Object.keys(point)) {
+    if (key === 'l1RiskObserved') continue
+
+    if (key.toLowerCase() === 'l1riskobserved')
+      add(
+        'field-name',
+        slug,
+        `Field "${key}" looks like a misspelling of "l1RiskObserved". Nothing reads it, so the judgment recorded there would be lost.`
+      )
   }
 }
 
@@ -339,7 +377,10 @@ function validateBody({
     const distinctAnswers = answerSet.size
     const normalizedTarget = normalizeAnswerForComparison(drill.target)
 
-    if (has(GRAMMAR_PRODUCTION_DRILL_KINDS, drill.kind) && distinctAnswers === 0)
+    if (
+      has(GRAMMAR_PRODUCTION_DRILL_KINDS, drill.kind) &&
+      distinctAnswers === 0
+    )
       add(
         'accepted-answers',
         slug,
@@ -352,7 +393,11 @@ function validateBody({
      * reveal panel shows them - the worst possible outcome, because it reads as
      * a bug in their own understanding.
      */
-    if (normalizedTarget && distinctAnswers > 0 && !answerSet.has(normalizedTarget))
+    if (
+      normalizedTarget &&
+      distinctAnswers > 0 &&
+      !answerSet.has(normalizedTarget)
+    )
       add(
         'accepted-answers',
         slug,

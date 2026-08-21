@@ -84,6 +84,21 @@ const reviewSchema = z
   })
   .strict()
 
+/**
+ * A judgment about how hard a point really is.
+ *
+ * `l1RiskObserved` accepts null so a judgment can be cleared. `.strict()`
+ * matters more here than elsewhere: this payload writes to a committed source
+ * file, and an unexpected key is a sign the caller means something the server
+ * does not implement.
+ */
+const l1RiskObservedSchema = z
+  .object({
+    l1RiskObserved: z.enum(GRAMMAR_L1_RISKS).nullable(),
+    slug: slugSchema,
+  })
+  .strict()
+
 const acceptAnswerSchema = z
   .object({
     answer: z.string().trim().min(1).max(2000),
@@ -158,6 +173,7 @@ const diagnosticSubmitSchema = z
 export type ParsedGrammarPointsQuery = z.infer<typeof pointsQuerySchema>
 export type ParsedGrammarPointSlug = z.infer<typeof pointSlugSchema>
 export type ParsedGrammarReviewRequest = z.infer<typeof reviewSchema>
+export type ParsedL1RiskObservedRequest = z.infer<typeof l1RiskObservedSchema>
 export type ParsedGrammarAcceptAnswerRequest = z.infer<
   typeof acceptAnswerSchema
 >
@@ -232,6 +248,29 @@ export function parseGrammarReviewRequest(
   if (!result.success) return invalid('Grammar review payload is invalid.')
 
   return { data: result.data, ok: true }
+}
+
+export function parseL1RiskObservedRequest(
+  body: unknown
+): GrammarRouteDecision<ParsedL1RiskObservedRequest> {
+  const result = l1RiskObservedSchema.safeParse(body)
+
+  if (!result.success) return invalid('L1 risk judgment payload is invalid.')
+
+  return { data: result.data, ok: true }
+}
+
+/**
+ * Is the l1Risk review tool available?
+ *
+ * Local checkout only. The tool writes to a committed source file, which a
+ * deployed runtime has no business doing - a serverless filesystem is ephemeral,
+ * so a "successful" write there would silently vanish, and on a long-lived host
+ * it would put untracked edits into a running deployment. Both fail in ways the
+ * builder would only notice by finding their judgment gone.
+ */
+export function isL1RiskToolEnabled() {
+  return process.env.NODE_ENV === 'development'
 }
 
 export function parseGrammarAcceptAnswerRequest(

@@ -64,6 +64,40 @@ export function getGrammarBrowseSort(): [string, SortOrder][] {
   ]
 }
 
+/**
+ * The admin review queue: written but not yet human-reviewed.
+ *
+ * Pure, so the filter is testable without a database.
+ */
+export function buildGrammarReviewQueueFilter() {
+  return {
+    explanation: { $ne: null },
+    mergedInto: null,
+    reviewStatus: 'unverified' as const,
+  }
+}
+
+/**
+ * Load the review queue, hardest-transfer first.
+ *
+ * Deliberately reuses `getGrammarBrowseSort()` rather than declaring its own
+ * order. A hand-rolled copy of that array lived here and drifted to the raw
+ * `l1Risk` enum, which Mongo sorts lexicographically - so the capped queue
+ * showed medium-risk points only and hid every high-risk lesson. Sharing the
+ * helper also makes the queue deterministic within a risk tier, which matters
+ * when the review is done across many sittings.
+ */
+export async function listGrammarReviewQueue(
+  limit: number
+): Promise<GrammarPointApiRecord[]> {
+  const queue = await GrammarPointModel.find(buildGrammarReviewQueueFilter())
+    .sort(getGrammarBrowseSort())
+    .limit(limit)
+    .lean()
+
+  return queue.map(toGrammarPointRecord)
+}
+
 export async function listGrammarPoints(
   query: ParsedGrammarPointsQuery
 ): Promise<GrammarPointListResult> {

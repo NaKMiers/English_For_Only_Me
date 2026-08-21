@@ -1,3 +1,4 @@
+import type { SortOrder } from 'mongoose'
 import { describe, expect, it } from 'vitest'
 
 import { GRAMMAR_L1_RISK_RANK } from '@/modules/grammar/constants'
@@ -5,6 +6,7 @@ import { GRAMMAR_L1_RISK_RANK } from '@/modules/grammar/constants'
 import type { ParsedGrammarPointsQuery } from './grammarRouteDecisions'
 import {
   buildGrammarPointFilter,
+  buildGrammarReviewQueueFilter,
   getGrammarBrowseSort,
 } from './grammarPointListService'
 
@@ -126,5 +128,137 @@ describe('L1 risk rank', () => {
 
     expect(lexicographic[0]).toBe('medium')
     expect(lexicographic).not.toEqual(['high', 'medium', 'low'])
+  })
+})
+
+describe('buildGrammarReviewQueueFilter', () => {
+  it('selects written but unreviewed points, excluding merge stubs', () => {
+    expect(buildGrammarReviewQueueFilter()).toEqual({
+      explanation: { $ne: null },
+      mergedInto: null,
+      reviewStatus: 'unverified',
+    })
+  })
+})
+
+/**
+ * Sort fixture documents the way Mongo would, given a Mongoose sort spec.
+ *
+ * Strings compare lexicographically and numbers numerically - which is the
+ * whole point. Running fixtures through the real spec reproduces the ordering
+ * the database would produce, so a spec naming the wrong field fails here
+ * instead of shipping.
+ */
+function sortLikeMongo<T extends Record<string, unknown>>(
+  docs: T[],
+  spec: [string, SortOrder][]
+): T[] {
+  return [...docs].sort((left, right) => {
+    for (const [field, direction] of spec) {
+      const a = left[field]
+      const b = right[field]
+
+      let comparison = 0
+
+      if (typeof a === 'number' && typeof b === 'number') comparison = a - b
+      else if (typeof a === 'string' && typeof b === 'string')
+        comparison = a < b ? -1 : a > b ? 1 : 0
+
+      if (comparison !== 0)
+        return direction === 'desc' || direction === -1
+          ? -comparison
+          : comparison
+    }
+
+    return 0
+  })
+}
+
+/**
+ * The admin review queue is capped at 30 rows, so its ORDER decides which of
+ * the 184 lessons a human ever sees. It shipped sorting the raw `l1Risk` enum,
+ * which put all 93 medium-risk points ahead of all 67 high-risk ones - the
+ * queue existed to surface the hardest lessons and surfaced none of them.
+ *
+ * These assertions run against sorted RESULTS, not the shape of the sort array.
+ * The comment at `getGrammarBrowseSort` says why: an array-shape assertion
+ * cannot see a lexicographic string comparison.
+ */
+describe('review queue ordering', () => {
+  const fixtures = [
+    {
+      cefrLevel: 'B2',
+      complexity: 5,
+      family: 'passive',
+      l1Risk: 'medium',
+      l1RiskRank: 2,
+      order: 1,
+      slug: 'passive-with-modals',
+    },
+    {
+      cefrLevel: 'A1',
+      complexity: 5,
+      family: 'articles-determiners',
+      l1Risk: 'high',
+      l1RiskRank: 3,
+      order: 2,
+      slug: 'definite-article-the',
+    },
+    {
+      cefrLevel: 'A2',
+      complexity: 1,
+      family: 'pronouns',
+      l1Risk: 'low',
+      l1RiskRank: 1,
+      order: 3,
+      slug: 'subject-pronouns',
+    },
+    {
+      cefrLevel: 'A1',
+      complexity: 3,
+      family: 'nouns-quantifiers',
+      l1Risk: 'high',
+      l1RiskRank: 3,
+      order: 4,
+      slug: 'plural-regular',
+    },
+  ]
+
+  it('puts a high-risk point first', () => {
+    const sorted = sortLikeMongo(fixtures, getGrammarBrowseSort())
+
+    expect(sorted[0].l1Risk).toBe('high')
+  })
+
+  it('surfaces every high-risk point before any lower-risk one', () => {
+    const ranks = sortLikeMongo(fixtures, getGrammarBrowseSort()).map(
+      point => point.l1RiskRank
+    )
+
+    expect(ranks).toEqual([...ranks].sort((a, b) => b - a))
+  })
+
+  it('would have hidden every high-risk point under the old sort', () => {
+    // The shipped bug, reproduced. Kept so the regression above cannot pass
+    // trivially: if `sortLikeMongo` stopped comparing strings the way Mongo
+    // does, this assertion fails too.
+    const sorted = sortLikeMongo(fixtures, [
+      ['l1Risk', 'desc'],
+      ['complexity', 'desc'],
+    ])
+
+    expect(sorted[0].l1Risk).toBe('medium')
+  })
+
+  it('breaks ties deterministically so the queue is stable across sittings', () => {
+    const first = sortLikeMongo(fixtures, getGrammarBrowseSort())
+    const second = sortLikeMongo(
+      [...fixtures].reverse(),
+      getGrammarBrowseSort()
+    )
+
+    expect(second.map(point => point.slug)).toEqual(
+      first.map(point => point.slug)
+    )
   })
 })

@@ -54,7 +54,7 @@ export async function getGrammarDueQueue({
   const points = await GrammarPointModel.find({
     slug: { $in: dueItems.map(item => item.pointSlug) },
   })
-    .select('slug title cefrLevel l1Risk drills mergedInto')
+    .select('slug title cefrLevel l1Risk reviewStatus drills mergedInto')
     .lean()
   const pointBySlug = new Map(points.map(point => [point.slug, point]))
 

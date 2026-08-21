@@ -5,10 +5,11 @@ import { AuthControl } from '@/components/common/AuthControl'
 import { MangaPageShell } from '@/components/common/MangaPageShell'
 import { MangaPanel } from '@/components/common/MangaPanel'
 import { AdminGrammarPanel } from '@/components/grammar/AdminGrammarPanel'
+import { MangaButton } from '@/components/ui/MangaButton'
 import { hasMongoDbUri } from '@/constants/environments'
 import { connectDatabase } from '@/lib/db/connectDatabase'
-import { GrammarPointModel } from '@/models/grammar/GrammarPointModel'
-import { toGrammarPointRecord } from '@/modules/grammar/services/grammarPointRecords'
+import { listGrammarReviewQueue } from '@/modules/grammar/services/grammarPointListService'
+import { isL1RiskToolEnabled } from '@/modules/grammar/services/grammarRouteDecisions'
 import type { GrammarPointApiRecord } from '@/modules/grammar/types'
 
 export const metadata: Metadata = { title: 'Admin Grammar' }
@@ -23,21 +24,10 @@ export default async function AdminGrammarPage() {
   if (hasMongoDbUri()) {
     await connectDatabase()
 
-    // Written but unreviewed, hardest-transfer first. Served by the
-    // { reviewStatus, l1Risk } index.
-    const queue = await GrammarPointModel.find({
-      explanation: { $ne: null },
-      mergedInto: null,
-      reviewStatus: 'unverified',
-    })
-      .sort([
-        ['l1Risk', 'desc'],
-        ['complexity', 'desc'],
-      ])
-      .limit(REVIEW_QUEUE_LIMIT)
-      .lean()
-
-    points = queue.map(toGrammarPointRecord)
+    // Written but unreviewed, genuinely hardest-transfer first: the order comes
+    // from `getGrammarBrowseSort()`, which sorts the numeric `l1RiskRank`.
+    // Served by the { reviewStatus, l1RiskRank, complexity } index.
+    points = await listGrammarReviewQueue(REVIEW_QUEUE_LIMIT)
   }
 
   return (
@@ -51,6 +41,12 @@ export default async function AdminGrammarPage() {
       }
     >
       <section className="grid gap-5 p-4 sm:p-6 lg:p-8">
+        {isL1RiskToolEnabled() ? (
+          <MangaButton href="/admin/grammar/l1-risk">
+            Judge l1Risk (local only)
+          </MangaButton>
+        ) : null}
+
         {hasMongoDbUri() ? (
           <AdminGrammarPanel points={points} />
         ) : (

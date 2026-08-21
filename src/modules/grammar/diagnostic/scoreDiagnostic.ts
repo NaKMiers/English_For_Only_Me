@@ -1,5 +1,9 @@
 import { GRAMMAR_DIAGNOSTIC_CORRECT_STAGE } from '@/modules/grammar/constants'
-import type { GrammarCefrLevel, GrammarL1Risk } from '@/modules/grammar/types'
+import type {
+  GrammarCefrLevel,
+  GrammarL1Risk,
+  GrammarReviewStatus,
+} from '@/modules/grammar/types'
 import {
   getRecallIntervalDays,
   type RecallDifficulty,
@@ -13,6 +17,7 @@ export interface DiagnosticOutcome {
   isCorrect: boolean
   l1Risk: GrammarL1Risk
   pointSlug: string
+  reviewStatus: GrammarReviewStatus
 }
 
 export interface DiagnosticSeed {
@@ -78,6 +83,15 @@ export interface DiagnosticSummary {
   weakestLevels: GrammarCefrLevel[]
   weakestRisks: GrammarL1Risk[]
   total: number
+  /**
+   * How many of the tested rules have a lesson no human has read.
+   *
+   * Counted by point, not by answer: the result screen states a number of
+   * RULES. This is here rather than at the call site because the result screen
+   * makes confident claims about the learner on the strength of generated
+   * content, and the honest version of that claim needs this number next to it.
+   */
+  unverifiedCount: number
 }
 
 /**
@@ -92,8 +106,12 @@ export function summariseDiagnostic(
 ): DiagnosticSummary {
   const levels = new Map<GrammarCefrLevel, { correct: number; total: number }>()
   const risks = new Map<GrammarL1Risk, { correct: number; total: number }>()
+  const unverifiedSlugs = new Set<string>()
 
   for (const outcome of outcomes) {
+    if (outcome.reviewStatus !== 'reviewed')
+      unverifiedSlugs.add(outcome.pointSlug)
+
     const level = levels.get(outcome.cefrLevel) ?? { correct: 0, total: 0 }
     const risk = risks.get(outcome.l1Risk) ?? { correct: 0, total: 0 }
 
@@ -123,6 +141,7 @@ export function summariseDiagnostic(
     weakestLevels: byLevel
       .filter(entry => entry.total > 0 && entry.correct / entry.total < 0.5)
       .map(entry => entry.cefrLevel),
+    unverifiedCount: unverifiedSlugs.size,
     weakestRisks: byRisk
       .filter(entry => entry.total > 0 && entry.correct / entry.total < 0.5)
       .map(entry => entry.l1Risk),

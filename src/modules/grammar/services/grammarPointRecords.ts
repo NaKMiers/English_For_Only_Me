@@ -58,6 +58,7 @@ export function toGrammarPointRecord(
       null) as GrammarIeltsImpact | null,
     l1Notes: point.l1Notes ?? null,
     l1Risk: point.l1Risk as GrammarL1Risk,
+    l1RiskObserved: (point.l1RiskObserved ?? null) as GrammarL1Risk | null,
     mergedInto: point.mergedInto ?? null,
     order: point.order,
     prerequisites: point.prerequisites ?? [],

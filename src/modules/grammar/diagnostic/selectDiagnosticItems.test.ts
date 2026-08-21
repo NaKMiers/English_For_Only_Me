@@ -223,3 +223,46 @@ describe('selectDiagnosticItems', () => {
     expect(slugs.size).toBe(items.length)
   })
 })
+
+describe('observed L1 risk weighting', () => {
+  /**
+   * The diagnostic spends most of its questions on high-risk points. Once the
+   * builder has judged a point brutal, it should be treated as brutal here even
+   * though `l1Risk` cannot be promoted without 12 drills and a Vietnamese
+   * explanation behind it.
+   */
+  it('weights selection by the observed judgment', () => {
+    const candidates = [
+      ...Array.from({ length: 6 }, (_, index) =>
+        candidate({
+          family: 'modals',
+          l1Risk: 'low',
+          slug: `easy-${index}`,
+        })
+      ),
+      candidate({
+        family: 'articles-determiners',
+        l1Risk: 'low',
+        l1RiskObserved: 'high',
+        slug: 'secretly-brutal',
+      }),
+    ]
+
+    const picked = selectDiagnosticItems({ candidates, limit: 2 })
+
+    expect(picked.map(item => item.pointSlug)).toContain('secretly-brutal')
+  })
+
+  it('reports the authored risk on the item, not the judgment', () => {
+    // `l1Risk` on an outcome seeds the recall ladder. Selection may read the
+    // judgment; the scheduler must keep seeing what the content supports.
+    const picked = selectDiagnosticItems({
+      candidates: [
+        candidate({ l1Risk: 'low', l1RiskObserved: 'high', slug: 'only' }),
+      ],
+      limit: 1,
+    })
+
+    expect(picked[0].l1Risk).toBe('low')
+  })
+})

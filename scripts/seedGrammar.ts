@@ -2,16 +2,14 @@ import { disconnect } from 'mongoose'
 
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { GrammarPointModel } from '@/models/grammar/GrammarPointModel'
-import {
-  GRAMMAR_L1_RISK_RANK,
-  GRAMMAR_SEED_SOURCE,
-} from '@/modules/grammar/constants'
+import { GRAMMAR_SEED_SOURCE } from '@/modules/grammar/constants'
 import {
   loadGrammarContent,
   loadSeededSlugs,
   saveSeededSlugs,
 } from '@/modules/grammar/seed/loadGrammarContent'
 import { validateGrammarContent } from '@/modules/grammar/seed/validateGrammarContent'
+import { resolveL1RiskRank } from '@/modules/grammar/taxonomy/effectiveL1Risk'
 
 /**
  * Load the validated content file into MongoDB.
@@ -75,9 +73,12 @@ async function main() {
     const update = {
       ...point,
       drills,
-      // Sortable rank derived from the enum. Mongo cannot order the string
-      // enum semantically, so the browse sort depends on this being written.
-      l1RiskRank: GRAMMAR_L1_RISK_RANK[point.l1Risk] ?? 2,
+      // Sortable rank derived from the EFFECTIVE risk. Mongo cannot order the
+      // string enum semantically, so the browse sort depends on this being
+      // written - and seeding it from `effectiveL1Risk` is the one line that
+      // carries the builder's judgment into browse order, the admin review
+      // queue, and every index that already sorts on the rank.
+      l1RiskRank: resolveL1RiskRank(point),
       seedSource: GRAMMAR_SEED_SOURCE,
       // A human review survives regeneration.
       ...(prior?.reviewStatus === 'reviewed'

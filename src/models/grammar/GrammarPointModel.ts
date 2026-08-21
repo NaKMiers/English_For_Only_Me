@@ -205,11 +205,30 @@ const GrammarPointSchema = new Schema(
       required: true,
     },
     /**
-     * Sortable form of `l1Risk` (low 1, medium 2, high 3), written at seed time.
+     * The builder's lived judgment of difficulty. Optional: null means this row
+     * has not been judged yet.
      *
-     * Mongo sorts strings lexicographically, so a descending sort on `l1Risk`
-     * itself returns medium > low > high and buries the highest-risk points.
-     * Verified against the real database, not assumed.
+     * Deliberately NOT read by the content-requirement functions - only by
+     * ranking and presentation, through `effectiveL1Risk`. Raising `l1Risk`
+     * itself demands 12 drills and a Vietnamese explanation, so it cannot carry
+     * an opinion about content that already shipped.
+     */
+    l1RiskObserved: {
+      type: String,
+      enum: [...GRAMMAR_L1_RISKS, null],
+      default: null,
+    },
+    /**
+     * Sortable form of the *effective* risk (low 1, medium 2, high 3), written
+     * at seed time from `l1RiskObserved ?? l1Risk`.
+     *
+     * Two separate reasons this field exists. First, Mongo sorts strings
+     * lexicographically, so a descending sort on `l1Risk` itself returns
+     * medium > low > high and buries the highest-risk points - verified against
+     * the real database, not assumed. Second, it is the single place the
+     * builder's observed judgment enters the query layer: everything that sorts
+     * or ranks by risk reads this field, so overriding one taxonomy row moves
+     * browse order and the review queue with no code change.
      */
     l1RiskRank: {
       type: Number,
@@ -334,8 +353,12 @@ GrammarPointSchema.index({ l1RiskRank: -1, complexity: -1, cefrLevel: 1 })
 // reverse with an array query. Without this index that is a collection scan on
 // every lesson load.
 GrammarPointSchema.index({ contrastsWith: 1 })
-// Admin review queue: unreviewed points, hardest-transfer first.
-GrammarPointSchema.index({ reviewStatus: 1, l1Risk: 1 })
+// Admin review queue: unreviewed points, hardest-transfer first. Must cover the
+// same keys the queue actually sorts on, which is the numeric rank - the earlier
+// { reviewStatus, l1Risk } index covered a sort that returned medium risk first.
+// Mongoose creates indexes but never drops them, so the superseded index has to
+// be removed explicitly: `bun run grammar:drop-stale-indexes`.
+GrammarPointSchema.index({ reviewStatus: 1, l1RiskRank: -1, complexity: -1 })
 GrammarPointSchema.index({ title: 'text', summary: 'text' })
 
 export type GrammarPointDocument = InferSchemaType<typeof GrammarPointSchema>

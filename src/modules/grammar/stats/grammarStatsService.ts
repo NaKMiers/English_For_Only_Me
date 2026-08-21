@@ -17,7 +17,7 @@ const DAY_MS = 86_400_000
 /**
  * Everything the grammar dashboard needs, in a bounded number of queries.
  *
- * Deliberately does NOT loop per point. The taxonomy is 162 rows and the
+ * Deliberately does NOT loop per point. The taxonomy is 184 rows and the
  * learner's item set is at most that, so both are single finds. Attempt history
  * is capped to the trend window rather than read wholesale.
  */
@@ -35,7 +35,13 @@ export async function getGrammarStatsForActor({
 
   const [points, items, attempts] = await Promise.all([
     GrammarPointModel.find({ mergedInto: null })
-      .select('slug cefrLevel complexity')
+      // `reviewStatus`, `family` and both risk fields are here for the map: a
+      // cell has to know whether the lesson behind it has been read by a human
+      // and how hard the learner judged it. This read already covers all 184
+      // points, so these are projection fields, not a second query.
+      .select(
+        'slug cefrLevel complexity family l1Risk l1RiskObserved reviewStatus'
+      )
       .lean(),
     actorId
       ? UserGrammarItemModel.find({ actorId })
