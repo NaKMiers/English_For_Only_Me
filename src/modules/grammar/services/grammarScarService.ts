@@ -35,26 +35,44 @@ const SCAR_ATTEMPT_LIMIT = 200
  * with authored copy behind it; a lesson page that 500s because a history read
  * failed is not.
  */
+export interface PointHistory {
+  /**
+   * The verdict on the most recent attempt at this point.
+   *
+   * Returned alongside the scar because it comes off the same read, and because
+   * the sensei needs it: without it, "It came back. They always come back."
+   * fires forever after a single historical relapse, even once the learner has
+   * recovered. What makes that line true is a relapse that has not been
+   * answered since.
+   */
+  latestVerdict: 'correct' | 'wrong' | 'revealed' | null
+  scar: ScarRecord | null
+}
+
 export async function getPointScar({
   actorId,
   pointSlug,
 }: {
   actorId: string | null
   pointSlug: string
-}): Promise<ScarRecord | null> {
-  if (!actorId) return null
+}): Promise<PointHistory> {
+  const empty: PointHistory = { latestVerdict: null, scar: null }
+
+  if (!actorId) return empty
 
   try {
     const [attempts, point] = await Promise.all([
       GrammarDrillAttemptModel.find({ actorId, pointSlug })
         .sort({ at: -1 })
         .limit(SCAR_ATTEMPT_LIMIT)
-        .select('at drillId matchedAnswer stageAfter stageBefore userAnswer verdict')
+        .select(
+          'at drillId matchedAnswer stageAfter stageBefore userAnswer verdict'
+        )
         .lean(),
       GrammarPointModel.findOne({ slug: pointSlug }).select('drills').lean(),
     ])
 
-    if (attempts.length === 0) return null
+    if (attempts.length === 0) return empty
 
     // Prompts only. Deliberately not a map of drills: see the note above.
     const promptByDrillId = new Map(
@@ -64,8 +82,17 @@ export async function getPointScar({
       ])
     )
 
-    return buildScarRecord({ attempts, promptByDrillId })
+    // Sorted newest first by the query above.
+    const latest = attempts[0]?.verdict
+
+    return {
+      latestVerdict:
+        latest === 'correct' || latest === 'wrong' || latest === 'revealed'
+          ? latest
+          : null,
+      scar: buildScarRecord({ attempts, promptByDrillId }),
+    }
   } catch {
-    return null
+    return empty
   }
 }

@@ -196,3 +196,36 @@ describe('selectSenseiLine', () => {
       expect(selection.line, selection.rung).not.toContain('!')
   })
 })
+
+/**
+ * The regression rung reads `recentOutcome`, and that field was a hardcoded
+ * null for a while - which meant the line fired forever after a single
+ * historical relapse, on a learner who had long since recovered. These pin the
+ * behaviour once the real verdict is threaded in.
+ */
+describe('regression needs an UNANSWERED relapse', () => {
+  it('fires when the last answer was wrong and the point has regressed', () => {
+    expect(pick({ recentOutcome: 'wrong', revivalCount: 1 }).rung).toBe(
+      'regression'
+    )
+  })
+
+  it('fires when the last answer was revealed and the point has regressed', () => {
+    // Looking at the answer is not recovering from the relapse.
+    expect(pick({ recentOutcome: 'revealed', revivalCount: 1 }).rung).toBe(
+      'regression'
+    )
+  })
+
+  it('stops firing once the learner answers correctly again', () => {
+    expect(pick({ recentOutcome: 'correct', revivalCount: 3 }).rung).not.toBe(
+      'regression'
+    )
+  })
+
+  it('never fires on a point that has never regressed', () => {
+    expect(pick({ recentOutcome: 'wrong', revivalCount: 0 }).rung).not.toBe(
+      'regression'
+    )
+  })
+})

@@ -43,18 +43,21 @@ export async function getLearnerPresentationState({
 
   if (!actorId) return base
 
-  const [correctAnswerStreak, scar] = await Promise.all([
+  const [correctAnswerStreak, history] = await Promise.all([
     getCorrectAnswerStreak(actorId),
-    pointSlug ? getPointScar({ actorId, pointSlug }) : null,
+    pointSlug
+      ? getPointScar({ actorId, pointSlug })
+      : { latestVerdict: null, scar: null },
   ])
 
   return {
     ...base,
     correctAnswerStreak,
+    recentOutcome: history.latestVerdict,
     // Duplicated onto the top level on purpose: the sensei's regression rung
     // must not depend on an optional beat's data being present.
-    revivalCount: scar?.revivals ?? 0,
-    scar,
+    revivalCount: history.scar?.revivals ?? 0,
+    scar: history.scar,
   }
 }
 
