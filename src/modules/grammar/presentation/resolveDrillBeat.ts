@@ -6,6 +6,12 @@ export type DrillVerdict = 'correct' | 'wrong' | 'revealed'
 export interface DrillBeat {
   /** What `CreatureMotion` should play. Null when nothing should move. */
   creatureOutcome: 'correct' | 'wrong' | 'revive' | null
+  /**
+   * Chosen, but nothing draws it today: the sensei's bust was removed from every
+   * surface and only his LINES remain. Kept because the choice is the cheap part
+   * and a rendered portrait would need it back - see
+   * `docs/grammar-character-prompts.md`.
+   */
   expression: SenseiExpression
   /** True where the ladder went backwards on this submission. */
   isRegression: boolean

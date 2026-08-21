@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { AuthControl } from '@/components/common/AuthControl'
 import { MangaPageShell } from '@/components/common/MangaPageShell'
-import { Sensei } from '@/components/grammar/cast/Sensei'
+import { SenseiPortrait } from '@/components/grammar/cast/SenseiPortrait'
 import { ComicPanel } from '@/components/grammar/comic/ComicPanel'
 import { SpeechBubble } from '@/components/grammar/comic/SpeechBubble'
 import { MangaButton } from '@/components/ui/MangaButton'
@@ -74,12 +74,11 @@ export default async function GrammarArchivePage({
   return (
     <ArchiveShell>
       <ComicPanel
-        edge="a"
         halftone
         tone="ink"
       >
         <div className="flex items-start gap-3">
-          <Sensei expression="unimpressed" />
+          <SenseiPortrait expression="unimpressed" />
           <div className="grid min-w-0 gap-3">
             <h1 className="font-sans text-3xl leading-none font-black uppercase sm:text-4xl">
               Your English
@@ -106,9 +105,9 @@ export default async function GrammarArchivePage({
         </ComicPanel>
       ) : (
         <ol className="grid gap-3">
-          {rows.map((row, index) => (
+          {rows.map(row => (
             <li key={row.pointSlug}>
-              <ComicPanel edge={index % 2 === 0 ? 'b' : 'c'}>
+              <ComicPanel>
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <Link
                     className="font-sans text-xl leading-none font-black uppercase underline-offset-4 hover:underline"

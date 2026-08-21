@@ -4,7 +4,7 @@ import { AppTopbar } from '@/components/common/AppTopbar'
 import { AuthControl } from '@/components/common/AuthControl'
 import { MangaPageShell } from '@/components/common/MangaPageShell'
 import { MangaPanel } from '@/components/common/MangaPanel'
-import { Sensei } from '@/components/grammar/cast/Sensei'
+import { SenseiPortrait } from '@/components/grammar/cast/SenseiPortrait'
 import { ComicPanel } from '@/components/grammar/comic/ComicPanel'
 import { SpeechBubble } from '@/components/grammar/comic/SpeechBubble'
 import { GrammarDiagnosticLauncher } from '@/components/grammar/GrammarDiagnosticLauncher'
@@ -93,12 +93,11 @@ export default async function GrammarPage() {
     >
       <section className="grid gap-4 p-4 sm:p-6 lg:p-8">
         <ComicPanel
-          edge="a"
           halftone
           tone="ink"
         >
           <div className="flex items-start gap-3">
-            <Sensei expression="severe" />
+            <SenseiPortrait expression="severe" />
             <div className="grid min-w-0 gap-3">
               <h1 className="font-sans text-3xl leading-none font-black uppercase sm:text-4xl">
                 {total} rules

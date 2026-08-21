@@ -575,25 +575,21 @@ textarea:focus-visible,
   mask-image: radial-gradient(circle at 50% 50%, transparent 24%, black 68%);
 }
 
-/* Torn panel edges. Three variants so a page of panels does not look stamped
-   from one die - the whole point of a comic page is that the frames differ. */
-.comic-edge-a {
-  clip-path: polygon(0 1%, 99.6% 0, 100% 98.5%, 0.5% 100%);
-}
+/* Torn panel edges are GONE. Three clip-path polygons sheared each panel by a
+   fraction of a percent, which on a wide panel is several pixels: the 3px border
+   came out visible on one side and shaved to nothing on the other, and the
+   offset shadow vanished, because a clip-path clips the shadow with the box.
+   Comic panels now carry the app's frame - 3px ink, hard offset shadow. */
 
-.comic-edge-b {
-  clip-path: polygon(0.4% 0, 100% 1.2%, 99.5% 100%, 0 98.8%);
-}
+/* The danger mark on a high-interference creature. A token, not a hex, which is
+   what makes "no hardcoded colour" and "red danger" compatible.
 
-.comic-edge-c {
-  clip-path: polygon(0 0.6%, 100% 0.4%, 99.3% 99.4%, 0.6% 100%);
-}
-
-/* The danger aura on a high-interference creature. A token, not a hex, which is
-   what makes "no hardcoded colour" and "red aura" compatible. */
+   Was two stacked drop-shadows. A `filter` promotes the element to its own
+   compositing layer and repaints it on every scroll and theme flip, which is
+   affordable for the one creature on a lesson page and not for a grid of them.
+   An inset ring buys the same "this one is hot" read for no layer. */
 .comic-aura {
-  filter: drop-shadow(0 0 6px var(--comic-danger))
-    drop-shadow(0 0 18px var(--comic-danger));
+  box-shadow: inset 0 0 0 3px var(--comic-danger);
 }
 
 /* Unverified content. Translucent AND dashed AND labelled: the state has to be
@@ -615,55 +611,11 @@ textarea:focus-visible,
   transform-origin: top center;
 }
 
-@keyframes comic-breathe {
-  0%,
-  100% {
-    transform: scaleY(1);
-  }
-  50% {
-    transform: scaleY(1.035);
-  }
-}
-
-@keyframes comic-blink {
-  0%,
-  92%,
-  100% {
-    transform: scaleY(1);
-  }
-  95% {
-    transform: scaleY(0.08);
-  }
-}
-
-@keyframes comic-float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-4px);
-  }
-}
-
-/* Idle life. Ambient, so CSS - and every one of them stops under
-   prefers-reduced-motion. */
-.comic-idle .comic-part--body {
-  animation: comic-breathe 4.5s ease-in-out infinite;
-}
-
-.comic-idle .comic-part--eye {
-  animation: comic-blink 6s ease-in-out infinite;
-}
-
-.comic-idle.comic-ghost {
-  animation: comic-float 5s ease-in-out infinite;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .comic-idle .comic-part--body,
-  .comic-idle .comic-part--eye,
-  .comic-idle.comic-ghost {
-    animation: none;
-  }
-}
+/* Idle life is GONE, on purpose.
+   `comic-breathe`, `comic-blink`, and `comic-float` ran forever on the body,
+   the eyes, and every ghost of every creature on screen. Each one is a live
+   timeline animating a transform inside an SVG, so a page holding a grid of
+   creatures held a hundred of them and never went idle - the browser
+   re-rastered the whole comic layer for a 3.5% scaleY nobody was looking at.
+   Movement in the comic layer is now EARNED: `CreatureMotion` fires a WAAPI
+   sequence when the learner answers, and nothing moves the rest of the time. */

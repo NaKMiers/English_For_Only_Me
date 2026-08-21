@@ -3,7 +3,7 @@
 import { useCallback, useState } from 'react'
 
 import { MangaPanel } from '@/components/common/MangaPanel'
-import { Sensei } from '@/components/grammar/cast/Sensei'
+import { SenseiPortrait } from '@/components/grammar/cast/SenseiPortrait'
 import { ComicPanel } from '@/components/grammar/comic/ComicPanel'
 import { ImpactStamp } from '@/components/grammar/comic/ImpactStamp'
 import { SpeechBubble } from '@/components/grammar/comic/SpeechBubble'
@@ -42,13 +42,12 @@ function Summary({
   return (
     <div className="grid gap-4">
       <ComicPanel
-        edge="a"
         halftone
         speedLines
         tone="ink"
       >
         <div className="flex items-start gap-3">
-          <Sensei expression={share >= 70 ? 'neutral' : 'severe'} />
+          <SenseiPortrait expression={share >= 70 ? 'neutral' : 'severe'} />
           <div className="grid min-w-0 gap-2">
             <div className="flex flex-wrap py-1.5">
               <ImpactStamp tone={share >= 70 ? 'ink' : 'danger'}>

@@ -11,10 +11,11 @@ import type { CreatureSpec, MenaceTier } from './types'
 /**
  * One species per grammar family.
  *
- * A species is a drawing contract, not decoration: the learner should recognise
+ * A species is a naming contract, not decoration: the learner should recognise
  * "another one of those" across the bestiary, which is what makes 184 points
- * feel like a world rather than a list. The names map to part-rig variants in
- * `components/grammar/cast/creatures`.
+ * feel like a world rather than a list. Nothing draws a species any more - the
+ * plates carry a family MARK (`components/grammar/cast/sigils.tsx`) and the
+ * species name as text - so these are the words on the plate.
  */
 export const CREATURE_SPECIES: Record<GrammarFamily, string> = {
   'adjectives-adverbs': 'shifter',

@@ -12,14 +12,17 @@ export type CreatureOutcome = 'correct' | 'wrong' | 'revealed' | 'revive' | null
 /**
  * The only client component in the comic tree.
  *
- * It receives the creature as `children`, never as an import. A client component
+ * It receives the plate as `children`, never as an import. A client component
  * cannot import a server component, but a server component passed as `children`
  * is not pulled into the client module graph at all - so the SVG stays
  * server-rendered while this drives it. Confirmed in the local Next docs
  * (`01-app/01-getting-started/05-server-and-client-components.md:178`).
  *
- * It animates by querying part-rig selectors inside its own subtree: it reads the
- * SVG's DOM, and knows nothing about which species it is holding.
+ * It animates by querying part-rig selectors inside its own subtree, so it knows
+ * nothing about what it is holding. Since the drawn cast was removed the only
+ * part still present is `crest` (the family mark), so the whole-host sequences
+ * land and the per-limb ones quietly find nothing. That is the intended
+ * degradation: a selector that matches no element animates no element.
  */
 export function CreatureMotion({
   children,

@@ -15,6 +15,10 @@ export type BubbleTail = 'left' | 'right' | 'none'
  * voice survives greyscale, colour blindness and the night theme. Loudness
  * carried only by red would be invisible to a chunk of readers and would fight
  * the danger token for meaning.
+ *
+ * `speaker` is read out but not printed: a portrait sits beside the bubbles that
+ * have a speaker, so a name plate as well would caption a picture that already
+ * says who is talking. Screen readers get the name either way.
  */
 export function SpeechBubble({
   children,

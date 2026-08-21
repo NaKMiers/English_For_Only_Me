@@ -5,9 +5,10 @@ import { AuthControl } from '@/components/common/AuthControl'
 import { MangaPageShell } from '@/components/common/MangaPageShell'
 import { MangaPanel } from '@/components/common/MangaPanel'
 import { GrammarPointFilters } from '@/components/grammar/GrammarPointFilters'
-import { GrammarPointList } from '@/components/grammar/GrammarPointList'
+import { GrammarPointMap } from '@/components/grammar/GrammarPointMap'
 import { MangaButton } from '@/components/ui/MangaButton'
 import { hasMongoDbUri } from '@/constants/environments'
+import { GRAMMAR_POINTS_MAX_LIMIT } from '@/modules/grammar/constants'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { listGrammarPoints } from '@/modules/grammar/services/grammarPointListService'
 import { parseGrammarPointsQuery } from '@/modules/grammar/services/grammarRouteDecisions'
@@ -90,7 +91,16 @@ export default async function GrammarPointsPage({
 
   await connectDatabase()
 
-  const result = await listGrammarPoints(parsed.data)
+  // The map draws every rule the filters match, so it asks for all of them.
+  // Paging a map defeats the point of drawing one: the shape of the curriculum
+  // is the information, and a shape cut into five pages is five shapes. The
+  // taxonomy is 184 rules against a 200 ceiling, so one query still covers it -
+  // and `limit` is capped by the schema, so this cannot become an unbounded read.
+  const result = await listGrammarPoints({
+    ...parsed.data,
+    limit: GRAMMAR_POINTS_MAX_LIMIT,
+    page: 1,
+  })
 
   return (
     <MangaPageShell
@@ -104,7 +114,7 @@ export default async function GrammarPointsPage({
     >
       <section className="grid gap-5 p-4 sm:p-6 lg:p-8">
         <GrammarPointFilters query={parsed.data} />
-        <GrammarPointList result={result} />
+        <GrammarPointMap result={result} />
       </section>
     </MangaPageShell>
   )

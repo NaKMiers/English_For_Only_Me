@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 
-import { Sensei } from '@/components/grammar/cast/Sensei'
+import { SenseiPortrait } from '@/components/grammar/cast/SenseiPortrait'
 import { ComicPanel } from '@/components/grammar/comic/ComicPanel'
 import { SpeechBubble } from '@/components/grammar/comic/SpeechBubble'
 import { MangaButton } from '@/components/ui/MangaButton'
@@ -60,15 +60,12 @@ export function GrammarDiagnosticLauncher({
     )
 
   // Light framing only: the sensei sets the test up and reads out the result,
-  // and says nothing between questions. A character commenting on every answer
+  // and says nothing between questions. A voice commenting on every answer
   // would be exhausting and would leak how you are doing mid-test.
   return (
-    <ComicPanel
-      caption="Placement"
-      edge="b"
-    >
+    <ComicPanel caption="Placement">
       <div className="flex items-start gap-3">
-        <Sensei expression="wary" />
+        <SenseiPortrait expression="wary" />
         <div className="grid min-w-0 gap-2">
           <h2 className="font-sans text-2xl leading-none font-black uppercase">
             Find out what you are wrong about

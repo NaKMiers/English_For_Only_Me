@@ -1,8 +1,8 @@
 import Link from 'next/link'
 
 import { CreatureMotion } from '@/components/grammar/cast/CreatureMotion'
-import { CreatureSlot } from '@/components/grammar/cast/CreatureSlot'
-import { Sensei } from '@/components/grammar/cast/Sensei'
+import { CreatureSigil } from '@/components/grammar/cast/CreatureSigil'
+import { SenseiPortrait } from '@/components/grammar/cast/SenseiPortrait'
 import { ComicPanel } from '@/components/grammar/comic/ComicPanel'
 import { PanelScriptRenderer } from '@/components/grammar/comic/PanelScriptRenderer'
 import { SpeechBubble } from '@/components/grammar/comic/SpeechBubble'
@@ -28,10 +28,10 @@ type LessonProps = GrammarPointApiRecord & {
  * Replaces the nine titled panels that made the old page read like a spec sheet.
  * The layout is not decided here: `compilePanelScript` decides which beats exist
  * and in what order, `PanelScriptRenderer` decides how each one looks, and this
- * component only assembles the two and puts the creature beside them.
+ * component only assembles the two and puts the plate beside them.
  *
  * A server component, top to bottom. The single client island is
- * `CreatureMotion`, which receives the server-rendered creature as `children`.
+ * `CreatureMotion`, which receives the server-rendered plate as `children`.
  */
 export function GrammarComicLesson({
   learnerState,
@@ -72,15 +72,12 @@ export function GrammarComicLesson({
         the page.
       */}
       {lesson.explanation && lesson.reviewStatus === 'unverified' ? (
-        <ComicPanel
-          edge="b"
-          tone="danger"
-        >
+        <ComicPanel tone="danger">
           <div
             className="flex items-center gap-3"
             role="status"
           >
-            <Sensei
+            <SenseiPortrait
               expression="wary"
               size="sm"
             />
@@ -101,7 +98,8 @@ export function GrammarComicLesson({
         </div>
 
         <CreatureMotion outcome={null}>
-          <CreatureSlot
+          <CreatureSigil
+            size="plate"
             spec={creature}
             state={creatureState}
           />
@@ -119,11 +117,11 @@ export function GrammarComicLesson({
       ) : null}
 
       {/*
-        Rivals, drawn as creatures rather than listed as links. Contrast is the
-        relation that makes a rule mean anything - present perfect only makes
-        sense against past simple - so a rival gets the same treatment as the
-        point itself: species, menace tier, and ghost state if nobody has read
-        its lesson either.
+        Rivals, plated rather than listed as links. Contrast is the relation
+        that makes a rule mean anything - present perfect only makes sense
+        against past simple - so a rival gets the same treatment as the point
+        itself: family mark, menace tier, and ghost state if nobody has read its
+        lesson either.
       */}
       {lesson.contrasts.length > 0 ? (
         <ComicPanel caption="Rivals">
@@ -137,8 +135,7 @@ export function GrammarComicLesson({
                   className="grid gap-2 transition-transform hover:-translate-y-0.5"
                   href={`/grammar/points/${contrast.slug}`}
                 >
-                  <CreatureSlot
-                    className="max-w-32"
+                  <CreatureSigil
                     spec={creatureFromPoint({
                       point: contrast,
                       recallStage: null,

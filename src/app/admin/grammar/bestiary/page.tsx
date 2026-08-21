@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation'
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { AuthControl } from '@/components/common/AuthControl'
 import { MangaPageShell } from '@/components/common/MangaPageShell'
-import { CreatureSlot } from '@/components/grammar/cast/CreatureSlot'
+import { CreatureSigil } from '@/components/grammar/cast/CreatureSigil'
 import {
   GRAMMAR_FAMILIES,
   GRAMMAR_FAMILY_LABELS,
@@ -23,10 +23,10 @@ export const runtime = 'nodejs'
 const TIERS: MenaceTier[] = [1, 2, 3, 4, 5]
 
 /**
- * Every creature, every tier, every state, on one page.
+ * Every family mark, every tier, every state, on one page.
  *
- * Development only, and not a learner surface: this is the contact sheet for
- * drawing the cast. Seventeen species across five tiers and ten creature states
+ * Development only, and not a learner surface: this is the contact sheet for the
+ * bestiary plates. Seventeen families across five tiers and ten creature states
  * is a lot of combinations, and the ones that look wrong are only findable by
  * looking. Gated behind the same check as the l1Risk tool.
  */
@@ -46,7 +46,7 @@ export default async function BestiarySheetPage() {
       <section className="grid gap-8 p-4 sm:p-6 lg:p-8">
         <div className="grid gap-4">
           <h2 className="font-sans text-2xl font-black uppercase">
-            Every species, tiers 1 to 5
+            Every family mark, tiers 1 to 5
           </h2>
           {GRAMMAR_FAMILIES.map(family => (
             <div
@@ -58,9 +58,9 @@ export default async function BestiarySheetPage() {
               </h3>
               <div className="flex flex-wrap gap-2">
                 {TIERS.map(menace => (
-                  <CreatureSlot
-                    className="max-w-32"
+                  <CreatureSigil
                     key={menace}
+                    size="plate"
                     spec={{
                       ...creatureFromPoint({
                         point: {
@@ -98,9 +98,9 @@ export default async function BestiarySheetPage() {
               </h3>
               <div className="flex flex-wrap gap-2">
                 {[null, ...GRAMMAR_USER_ITEM_STATUSES].map(status => (
-                  <CreatureSlot
-                    className="max-w-32"
+                  <CreatureSigil
                     key={status ?? 'none'}
+                    size="plate"
                     spec={creatureFromPoint({
                       point: {
                         complexity: 5,

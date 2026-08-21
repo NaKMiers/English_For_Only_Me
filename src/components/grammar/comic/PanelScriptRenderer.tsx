@@ -1,17 +1,16 @@
-import { Sensei, type SenseiExpression } from '@/components/grammar/cast/Sensei'
+import { SenseiPortrait } from '@/components/grammar/cast/SenseiPortrait'
 import {
   senseiHookLine,
   SENSEI_LINES,
 } from '@/modules/grammar/presentation/senseiLines'
+import type { SenseiExpression } from '@/modules/grammar/presentation/senseiExpressions'
 import type { Beat } from '@/modules/grammar/presentation/types'
 import { MangaButton } from '@/components/ui/MangaButton'
 
-import { ComicPanel, type PanelEdge, type PanelWidth } from './ComicPanel'
+import { ComicPanel, type PanelWidth } from './ComicPanel'
 import { ImpactStamp } from './ImpactStamp'
 import { MangaPage } from './MangaPage'
 import { SpeechBubble } from './SpeechBubble'
-
-const EDGES: PanelEdge[] = ['a', 'b', 'c']
 
 /**
  * Beats that read well side by side: both are short lists of sentences, and
@@ -64,7 +63,6 @@ export function PanelScriptRenderer({ beats }: { beats: Beat[] }) {
       {beats.map((beat, index) => (
         <BeatPanel
           beat={beat}
-          edge={EDGES[index % EDGES.length]}
           key={`${beat.kind}-${index}`}
           width={widths[index]}
         />
@@ -86,34 +84,25 @@ const BEAT_EXPRESSION: Record<Beat['kind'], SenseiExpression> = {
   verdict: 'unimpressed',
 }
 
-function BeatPanel({
-  beat,
-  edge,
-  width,
-}: {
-  beat: Beat
-  edge: PanelEdge
-  width: PanelWidth
-}) {
+function BeatPanel({ beat, width }: { beat: Beat; width: PanelWidth }) {
   switch (beat.kind) {
     case 'hook':
       return (
         <ComicPanel
-          edge={edge}
           halftone
           speedLines
           tone="ink"
         >
           <div className="flex items-start gap-3">
-            <Sensei expression={BEAT_EXPRESSION.hook} />
+            <SenseiPortrait expression={BEAT_EXPRESSION.hook} />
             <div className="grid min-w-0 gap-2">
               {/*
-                The stamp needs a flex row of its own. As a direct grid child it
-                stretched to the column width, so the rotation turned a compact
-                slab into a page-wide red wedge lying across the title. The
-                vertical padding is the room the rotation needs; `leading-none`
-                on the heading leaves none of its own.
-              */}
+              The stamp needs a flex row of its own. As a direct grid child it
+              stretched to the column width, so the rotation turned a compact
+              slab into a page-wide red wedge lying across the title. The
+              vertical padding is the room the rotation needs; `leading-none`
+              on the heading leaves none of its own.
+            */}
               <div className="flex flex-wrap pt-1 pb-3">
                 <ImpactStamp tone={beat.l1Risk === 'high' ? 'danger' : 'ink'}>
                   {senseiHookLine(beat)}
@@ -140,11 +129,10 @@ function BeatPanel({
       return (
         <ComicPanel
           caption="Why you specifically"
-          edge={edge}
           halftone
         >
           <div className="flex items-start gap-3">
-            <Sensei
+            <SenseiPortrait
               expression={BEAT_EXPRESSION.interference}
               size="sm"
             />
@@ -167,10 +155,7 @@ function BeatPanel({
 
     case 'rule':
       return (
-        <ComicPanel
-          caption="The rule"
-          edge={edge}
-        >
+        <ComicPanel caption="The rule">
           <p className="text-base leading-7 font-semibold whitespace-pre-line">
             {beat.explanation}
           </p>
@@ -193,7 +178,6 @@ function BeatPanel({
       return (
         <ComicPanel
           caption="It working"
-          edge={edge}
           width={width}
         >
           <ul className="grid gap-2">
@@ -226,7 +210,6 @@ function BeatPanel({
       return (
         <ComicPanel
           caption="Both correct"
-          edge={edge}
           width={width}
         >
           <p className="text-manga-ink-soft text-sm leading-6 font-semibold">
@@ -251,11 +234,10 @@ function BeatPanel({
       return (
         <ComicPanel
           caption="The trap"
-          edge={edge}
           halftone
         >
           <div className="flex items-start gap-3">
-            <Sensei
+            <SenseiPortrait
               expression={BEAT_EXPRESSION.trap}
               size="sm"
             />
@@ -283,12 +265,9 @@ function BeatPanel({
 
     case 'scar':
       return (
-        <ComicPanel
-          caption="Your record"
-          edge={edge}
-        >
+        <ComicPanel caption="Your record">
           <div className="flex items-start gap-3">
-            <Sensei
+            <SenseiPortrait
               expression={BEAT_EXPRESSION.scar}
               size="sm"
             />
@@ -327,7 +306,6 @@ function BeatPanel({
       return (
         <ComicPanel
           caption="Prove it"
-          edge={edge}
           speedLines
           tone="ink"
         >
@@ -354,12 +332,9 @@ function BeatPanel({
 
     case 'verdict':
       return (
-        <ComicPanel
-          edge={edge}
-          tone="paper"
-        >
+        <ComicPanel tone="paper">
           <div className="flex items-end gap-3">
-            <Sensei expression={BEAT_EXPRESSION.verdict} />
+            <SenseiPortrait expression={BEAT_EXPRESSION.verdict} />
             <SpeechBubble
               className="flex-1"
               speaker="Sensei"

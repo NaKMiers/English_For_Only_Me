@@ -4,8 +4,8 @@ import { useCallback, useEffect, useState } from 'react'
 
 import { MangaPanel } from '@/components/common/MangaPanel'
 import { CreatureMotion } from '@/components/grammar/cast/CreatureMotion'
-import { CreatureSlot } from '@/components/grammar/cast/CreatureSlot'
-import { Sensei } from '@/components/grammar/cast/Sensei'
+import { CreatureSigil } from '@/components/grammar/cast/CreatureSigil'
+import { SenseiPortrait } from '@/components/grammar/cast/SenseiPortrait'
 import { ImpactStamp } from '@/components/grammar/comic/ImpactStamp'
 import { SpeechBubble } from '@/components/grammar/comic/SpeechBubble'
 import { MangaButton } from '@/components/ui/MangaButton'
@@ -262,8 +262,9 @@ export function GrammarRecallModal({
     >
       <div className="flex items-start gap-3">
         <CreatureMotion outcome={beat?.creatureOutcome ?? null}>
-          <CreatureSlot
-            className="max-w-24"
+          <CreatureSigil
+            className="max-w-32"
+            size="plate"
             spec={creatureFromPoint({
               point: { ...task, title: task.pointTitle },
               recallStage: task.recallStage,
@@ -331,7 +332,7 @@ export function GrammarRecallModal({
       {result && beat ? (
         <div className="grid gap-3">
           <div className="flex items-start gap-3">
-            <Sensei
+            <SenseiPortrait
               expression={beat.expression}
               size="sm"
             />

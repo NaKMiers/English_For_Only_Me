@@ -48,10 +48,7 @@ export function GrammarDungeonMap({
   )
 
   return (
-    <ComicPanel
-      caption="The dungeon"
-      edge="c"
-    >
+    <ComicPanel caption="The dungeon">
       <h2 className="font-sans text-2xl leading-none font-black uppercase">
         Level against difficulty
       </h2>
@@ -64,8 +61,19 @@ export function GrammarDungeonMap({
       </p>
 
       <DungeonReveal>
-        <div className="overflow-x-auto">
-          <table className="border-comic-ink w-full min-w-136 border-collapse border-2">
+        {/* Right and bottom padding is room for the offset shadow. Inside a
+            scroll container a box shadow does not extend the scrollable area, so
+            without it the app's signature ledge gets clipped off the table. */}
+        <div className="overflow-x-auto pr-1.5 pb-1.5">
+          {/*
+            Border weights follow the app, not the table's own logic: 3px on the
+            frame like every card and panel, 2px on the interior grid like every
+            chip and badge, and a 3px rule under the header row the same way a
+            section heading is underlined. `border-collapse` resolves each shared
+            edge in favour of the WIDER border, which is what makes one table
+            border and one cell border produce that hierarchy without a wrapper.
+          */}
+          <table className="border-comic-ink w-full min-w-136 border-collapse border-3 shadow-[4px_4px_0_var(--manga-offset)]">
             <caption className="sr-only">
               Grammar coverage by CEFR level and difficulty. Each cell reports
               how many rules it holds, how many you have started and mastered,
@@ -75,14 +83,14 @@ export function GrammarDungeonMap({
             <thead>
               <tr>
                 <th
-                  className="border-comic-ink bg-manga-paper-soft border-2 p-2 font-sans text-xs font-black uppercase"
+                  className="border-comic-ink bg-manga-paper-soft border-2 border-b-3 p-2 font-sans text-xs font-black uppercase"
                   scope="col"
                 >
                   Difficulty
                 </th>
                 {GRAMMAR_CEFR_LEVELS.map(level => (
                   <th
-                    className="border-comic-ink bg-manga-paper-soft border-2 p-2 font-sans text-xs font-black uppercase"
+                    className="border-comic-ink bg-manga-paper-soft border-2 border-b-3 p-2 font-sans text-xs font-black uppercase"
                     key={level}
                     scope="col"
                   >
@@ -120,9 +128,17 @@ export function GrammarDungeonMap({
                         className={cn(
                           'border-comic-ink relative border-2 p-1 text-center align-middle',
                           KIND_TONE[cell.kind],
-                          // The cursed corner gets a heavier frame, not just a
+                          // The cursed corner gets a red ring, not just a
                           // colour: it has to be findable at a glance.
-                          cell.isCursed && 'outline-comic-danger outline-3',
+                          //
+                          // An INSET shadow rather than an outline. An outline
+                          // paints outside the border box, so it sat on top of
+                          // the neighbouring cells' borders and read as a
+                          // rendering fault - and a permanent 3px outline is
+                          // also exactly this app's focus ring, which made a
+                          // static cell look keyboard-focused.
+                          cell.isCursed &&
+                            'shadow-[inset_0_0_0_3px_var(--comic-danger)]',
                           cell.isDangerous && 'font-black'
                         )}
                         key={`${level}-${complexity}`}
