@@ -6,6 +6,8 @@ import { countCorrectAnswerStreak } from '@/modules/grammar/presentation/countCo
 import type { LearnerPresentationState } from '@/modules/grammar/presentation/types'
 import type { UserGrammarItemApiRecord } from '@/modules/grammar/types'
 
+import { getPointScar } from './grammarScarService'
+
 /**
  * Assemble what the comic layer knows about the learner.
  *
@@ -18,9 +20,12 @@ import type { UserGrammarItemApiRecord } from '@/modules/grammar/types'
 export async function getLearnerPresentationState({
   actorId,
   item,
+  pointSlug,
 }: {
   actorId: string | null
   item: UserGrammarItemApiRecord | null
+  /** Omit to skip the archive read - surfaces that show many points at once. */
+  pointSlug?: string
 }): Promise<LearnerPresentationState> {
   const base: LearnerPresentationState = {
     actorId,
@@ -38,9 +43,18 @@ export async function getLearnerPresentationState({
 
   if (!actorId) return base
 
+  const [correctAnswerStreak, scar] = await Promise.all([
+    getCorrectAnswerStreak(actorId),
+    pointSlug ? getPointScar({ actorId, pointSlug }) : null,
+  ])
+
   return {
     ...base,
-    correctAnswerStreak: await getCorrectAnswerStreak(actorId),
+    correctAnswerStreak,
+    // Duplicated onto the top level on purpose: the sensei's regression rung
+    // must not depend on an optional beat's data being present.
+    revivalCount: scar?.revivals ?? 0,
+    scar,
   }
 }
 

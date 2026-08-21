@@ -380,9 +380,10 @@ function ScarRow({
   empty: string
   label: string
   quote: {
+    matchedAnswer?: string | null
     occurrences?: number
-    userAnswer: string
     prompt: string | null
+    userAnswer: string
   } | null
 }) {
   return (
@@ -402,6 +403,11 @@ function ScarRow({
             <span className="text-comic-danger text-base leading-7 font-black">
               &ldquo;{quote.userAnswer}&rdquo;
             </span>
+            {quote.matchedAnswer ? (
+              <span className="text-base leading-7 font-black">
+                {quote.matchedAnswer}
+              </span>
+            ) : null}
             {quote.occurrences != null ? (
               <span className="text-manga-ink-soft font-sans text-xs font-black uppercase">
                 {quote.occurrences} times

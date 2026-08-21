@@ -87,6 +87,7 @@ export default async function GrammarPointPage({
   const learnerState = await getLearnerPresentationState({
     actorId: actorId || null,
     item,
+    pointSlug: lesson.slug,
   })
 
   return (
