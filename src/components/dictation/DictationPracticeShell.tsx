@@ -1,5 +1,6 @@
 'use client'
 
+import { Headphones, ScrollText } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
@@ -122,7 +123,7 @@ const VIDEO_GRID_CLASS_NAME: Record<string, string> = {
 }
 
 const PRACTICE_TAB_TRIGGER_CLASS_NAME =
-  'border-manga-black text-manga-ink-soft bg-manga-white shadow-[2px_2px_0_var(--manga-black)] hover:bg-manga-paper-soft focus-visible:ring-manga-red/35 data-active:bg-manga-red! data-active:text-manga-white! data-active:shadow-[5px_5px_0_var(--manga-black)]! data-active:-translate-x-[2px] data-active:-translate-y-[2px] !h-auto min-h-11 flex-1 rounded-none border-3 px-3 py-2 font-sans text-sm font-black transition-all after:hidden sm:flex-none'
+  'border-manga-black text-manga-ink-soft bg-manga-white shadow-[2px_2px_0_var(--manga-black)] hover:bg-manga-paper-soft focus-visible:ring-manga-red/35 data-active:bg-manga-red! data-active:text-manga-white! data-active:shadow-[4px_4px_0_var(--manga-black)]! data-active:-translate-x-[2px] data-active:-translate-y-[2px] !h-auto min-h-8 flex-1 rounded-none border-2 px-2.5 py-1 font-sans text-xs font-black transition-all after:hidden sm:flex-none'
 
 export function DictationPracticeShell({
   completions,
@@ -977,8 +978,13 @@ export function DictationPracticeShell({
       </MangaPanel>
     )
 
+  // `max` stacks the video above the tabs, so the whole body scrolls as one
+  // column there. Every other size keeps the two-column split on lg, where the
+  // video and the practice/transcript pane each own their scrollbar.
+  const isVideoStacked = preferences.videoSize === 'max'
+
   return (
-    <div className="mx-auto grid w-full min-w-0 gap-4">
+    <div className="mx-auto flex h-full min-h-0 w-full min-w-0 flex-col">
       <Dialog
         open={pendingLeaveHref !== null}
         onOpenChange={open => {
@@ -1020,389 +1026,435 @@ export function DictationPracticeShell({
         </DialogContent>
       </Dialog>
 
-      <section className="border-manga-black bg-manga-white grid min-w-0 gap-3 border-3 p-3 shadow-[5px_5px_0_var(--manga-black)] sm:p-4">
-        <DictationPracticeHeader
-          completions={completions}
-          eyebrow={sessionMode === 'resume' ? 'Resume dictation' : 'Dictation'}
-          level={video.level}
-          title={video.title}
-          translationLanguages={translationTracks.map(track => track.language)}
-          translationLanguage={selectedLanguage}
-          onTranslationLanguageChange={setSelectedLanguage}
-          videoId={video.id}
-        />
-
-        <DictationControls
-          answerTextSize={preferences.answerTextSize}
-          canGoNext={canGoToNextCaption}
-          canGoPrevious={canGoToPreviousCaption}
-          canReplay={playerController.canReplay}
-          currentIndex={displayIndex}
-          isVideoHidden={preferences.isVideoHidden}
-          onAnswerTextSizeChange={answerTextSize =>
-            setPreferences(currentPreferences => ({
-              ...currentPreferences,
-              answerTextSize,
-            }))
-          }
-          onGoNext={handleControlsGoNext}
-          onGoPrevious={handleControlsGoPrevious}
-          onGoToFirstSegment={goToFirstSegment}
-          onReplay={replayCurrentSegment}
-          onRestart={restartProgress}
-          onSpeedChange={changeSpeed}
-          onToggleVideo={toggleVideo}
-          playbackSpeed={preferences.playbackSpeed}
-          totalSegments={segments.length}
-        />
-
-        <div
-          className={cn(
-            'grid min-w-0 items-start gap-3',
-            VIDEO_GRID_CLASS_NAME[preferences.videoSize]
-          )}
-        >
-          <DictationYoutubePlayer
-            className="self-start lg:sticky lg:top-4"
-            hidden={preferences.isVideoHidden}
-            onControllerChange={handleControllerChange}
-            onHiddenChange={hidden => {
-              setPreferences(currentPreferences => ({
-                ...currentPreferences,
-                isVideoHidden: hidden,
-              }))
-              patchSession({ isVideoHidden: hidden })
-            }}
-            onVideoSizeChange={videoSize =>
-              setPreferences(currentPreferences => ({
-                ...currentPreferences,
-                videoSize,
-              }))
-            }
-            playbackSpeed={preferences.playbackSpeed}
-            timing={{
-              endMs: currentSegment.endMs,
-              startMs: currentSegment.startMs,
-            }}
+      <section className="border-manga-black bg-manga-white flex h-full min-h-0 min-w-0 flex-col gap-2 border-3 p-2 shadow-[5px_5px_0_var(--manga-black)] sm:p-3">
+        {/* Header, toolbar, and footer are fixed chrome: they keep their
+            natural height and the video/practice area absorbs the rest. */}
+        <div className="shrink-0">
+          <DictationPracticeHeader
+            completions={completions}
+            isResuming={sessionMode === 'resume'}
+            level={video.level}
             title={video.title}
-            videoSize={preferences.videoSize}
-            youtubeVideoId={video.youtubeVideoId}
+            translationLanguages={translationTracks.map(
+              track => track.language
+            )}
+            translationLanguage={selectedLanguage}
+            onTranslationLanguageChange={setSelectedLanguage}
+            videoId={video.id}
           />
+        </div>
 
-          <Tabs
-            value={activeView}
-            onValueChange={value =>
-              setActiveView(value as 'practice' | 'transcript')
-            }
-            className="min-w-0 gap-3"
-          >
+        {/* Tabs wrap the toolbar row AND the panes below it, so the triggers
+            can sit at the right end of the toolbar while their panels stay in
+            the right-hand column. */}
+        <Tabs
+          value={activeView}
+          onValueChange={value =>
+            setActiveView(value as 'practice' | 'transcript')
+          }
+          className="flex min-h-0 min-w-0 flex-1 flex-col gap-2"
+        >
+          <div className="flex min-w-0 shrink-0 flex-wrap items-center gap-2">
+            <DictationControls
+              answerTextSize={preferences.answerTextSize}
+              canGoNext={canGoToNextCaption}
+              canGoPrevious={canGoToPreviousCaption}
+              canReplay={playerController.canReplay}
+              currentIndex={displayIndex}
+              isVideoHidden={preferences.isVideoHidden}
+              onAnswerTextSizeChange={answerTextSize =>
+                setPreferences(currentPreferences => ({
+                  ...currentPreferences,
+                  answerTextSize,
+                }))
+              }
+              onGoNext={handleControlsGoNext}
+              onGoPrevious={handleControlsGoPrevious}
+              onGoToFirstSegment={goToFirstSegment}
+              onReplay={replayCurrentSegment}
+              onRestart={restartProgress}
+              onSpeedChange={changeSpeed}
+              onToggleVideo={toggleVideo}
+              onVideoSizeChange={videoSize =>
+                setPreferences(currentPreferences => ({
+                  ...currentPreferences,
+                  videoSize,
+                }))
+              }
+              playbackSpeed={preferences.playbackSpeed}
+              totalSegments={segments.length}
+              videoSize={preferences.videoSize}
+            />
+
             <TabsList
               variant="line"
               aria-label="Practice views"
-              className="flex h-auto! w-full min-w-0 flex-wrap justify-start gap-2 rounded-none p-0"
+              className="ml-auto flex h-auto! w-auto min-w-0 shrink-0 flex-wrap justify-end gap-2 rounded-none p-0"
             >
+              {/* Icon plus label, and below sm the label goes sr-only so the
+                  triggers shrink to icons without losing their names. */}
               <TabsTrigger
                 value="practice"
                 className={PRACTICE_TAB_TRIGGER_CLASS_NAME}
               >
-                Listen &amp; Type
+                <Headphones
+                  aria-hidden="true"
+                  className="size-4"
+                />
+                <span className="max-sm:sr-only">Listen &amp; Type</span>
               </TabsTrigger>
               <TabsTrigger
                 value="transcript"
                 className={PRACTICE_TAB_TRIGGER_CLASS_NAME}
               >
-                Full Transcript
+                <ScrollText
+                  aria-hidden="true"
+                  className="size-4"
+                />
+                <span className="max-sm:sr-only">Full Transcript</span>
               </TabsTrigger>
             </TabsList>
+          </div>
 
-            <TabsContent
-              value="practice"
-              className="grid min-w-0 content-start gap-3"
+          <div
+            className={cn(
+              'grid min-h-0 min-w-0 flex-1 items-start gap-2 overflow-y-auto',
+              !isVideoStacked && 'lg:overflow-hidden',
+              VIDEO_GRID_CLASS_NAME[preferences.videoSize]
+            )}
+          >
+            <div
+              className={cn(
+                'min-w-0 self-start',
+                !isVideoStacked &&
+                  'lg:h-full lg:min-h-0 lg:self-stretch lg:overflow-y-auto lg:pr-1'
+              )}
             >
-              {isCompleted ? (
-                <MangaPanel
-                  eyebrow="Done"
-                  title="You have completed this exercise, good job!"
-                >
-                  <div className="flex flex-wrap gap-2">
-                    <MangaButton href={`/dictation/videos/${video.id}/results`}>
-                      View Results
-                    </MangaButton>
+              <DictationYoutubePlayer
+                hidden={preferences.isVideoHidden}
+                onControllerChange={handleControllerChange}
+                onHiddenChange={hidden => {
+                  setPreferences(currentPreferences => ({
+                    ...currentPreferences,
+                    isVideoHidden: hidden,
+                  }))
+                  patchSession({ isVideoHidden: hidden })
+                }}
+                playbackSpeed={preferences.playbackSpeed}
+                timing={{
+                  endMs: currentSegment.endMs,
+                  startMs: currentSegment.startMs,
+                }}
+                title={video.title}
+                videoSize={preferences.videoSize}
+                youtubeVideoId={video.youtubeVideoId}
+              />
+            </div>
+
+            <div
+              className={cn(
+                'flex min-w-0 flex-col',
+                !isVideoStacked && 'lg:h-full lg:min-h-0'
+              )}
+            >
+              <TabsContent
+                value="practice"
+                className={cn(
+                  'grid min-w-0 content-start gap-2',
+                  !isVideoStacked && 'lg:min-h-0 lg:overflow-y-auto lg:pr-1'
+                )}
+              >
+                {isCompleted ? (
+                  <MangaPanel
+                    eyebrow="Done"
+                    title="You have completed this exercise, good job!"
+                  >
+                    <div className="flex flex-wrap gap-2">
+                      <MangaButton
+                        href={`/dictation/videos/${video.id}/results`}
+                      >
+                        View Results
+                      </MangaButton>
+                      <MangaButton
+                        href="/dictation"
+                        tone="paper"
+                        icon={undefined}
+                      >
+                        Next Exercise
+                      </MangaButton>
+                      <MangaButton
+                        type="button"
+                        tone="paper"
+                        onClick={restartProgress}
+                      >
+                        Repeat this exercise
+                      </MangaButton>
+                    </div>
                     <MangaButton
                       href="/dictation"
                       tone="paper"
-                      icon={undefined}
                     >
-                      Next Exercise
+                      View all exercises
                     </MangaButton>
+                  </MangaPanel>
+                ) : !hasStarted ? (
+                  <MangaPanel
+                    eyebrow="Ready"
+                    title={readyActionTitle}
+                    className={hasResumableProgress ? 'bg-cyan-50' : undefined}
+                  >
+                    <p className="text-manga-ink-soft text-base leading-7 font-semibold">
+                      {hasResumableProgress
+                        ? `Pick up from sentence ${(initialSession?.currentSegmentOrder ?? 0) + 1} of ${segments.length} and keep going.`
+                        : 'Press start to play the first sentence and begin typing.'}
+                    </p>
                     <MangaButton
                       type="button"
-                      tone="paper"
-                      onClick={restartProgress}
+                      onClick={() => setHasStarted(true)}
                     >
-                      Repeat this exercise
+                      {readyActionLabel}
                     </MangaButton>
-                  </div>
-                  <MangaButton
-                    href="/dictation"
-                    tone="paper"
-                  >
-                    View all exercises
-                  </MangaButton>
-                </MangaPanel>
-              ) : !hasStarted ? (
-                <MangaPanel
-                  eyebrow="Ready"
-                  title={readyActionTitle}
-                  className={hasResumableProgress ? 'bg-cyan-50' : undefined}
-                >
-                  <p className="text-manga-ink-soft text-base leading-7 font-semibold">
-                    {hasResumableProgress
-                      ? `Pick up from sentence ${(initialSession?.currentSegmentOrder ?? 0) + 1} of ${segments.length} and keep going.`
-                      : 'Press start to play the first sentence and begin typing.'}
-                  </p>
-                  <MangaButton
-                    type="button"
-                    onClick={() => setHasStarted(true)}
-                  >
-                    {readyActionLabel}
-                  </MangaButton>
-                  {hasResumableProgress ? (
-                    <MangaButton
-                      type="button"
-                      tone="paper"
-                      onClick={restartProgress}
-                    >
-                      Restart from the beginning
-                    </MangaButton>
-                  ) : null}
-                </MangaPanel>
-              ) : (
-                <>
-                  <GuidedAnswerInput
-                    answerTextSize={preferences.answerTextSize}
-                    correction={charCorrection}
-                    expectedText={currentSegment.text}
-                    hintWords={
-                      currentSegment.hintsOverridden
-                        ? currentSegment.hints
-                        : undefined
-                    }
-                    inputRef={answerTextareaRef}
-                    onChange={answer => {
-                      if (
-                        currentAttempt?.isPassed &&
-                        answer !== currentSegment.text
-                      ) {
-                        setCurrentAttempt(null)
-                        setCharCorrection(null)
-                      }
-
-                      updateAnswerDrafts(currentDrafts => ({
-                        ...currentDrafts,
-                        [currentSegment.id]: answer,
-                      }))
-                    }}
-                    onCheck={checkDraft}
-                    onReveal={handleEscapeShortcut}
-                    renderCorrectionWord={({ children, className, term }) => (
-                      <QuickVocabWordButton
-                        attemptId={currentAttempt?.id ?? null}
-                        className={className}
-                        contextSentence={currentSegment.text}
-                        onError={setVocabLookupError}
-                        segmentId={currentSegment.id}
-                        term={term}
-                        videoId={video.id}
+                    {hasResumableProgress ? (
+                      <MangaButton
+                        type="button"
+                        tone="paper"
+                        onClick={restartProgress}
                       >
-                        {children}
-                      </QuickVocabWordButton>
-                    )}
-                    revealAnswerWords={showAnswerWords}
-                    showAnswerImmediately={preferences.showAnswerImmediately}
-                    showFullAnswer={preferences.showFullAnswer}
-                    status={guidedStatus}
-                    statusAction={
-                      <>
-                        {attemptResolved ? (
-                          <>
-                            {guidedStatus === 'correct' && !showAnswerWords ? (
+                        Restart from the beginning
+                      </MangaButton>
+                    ) : null}
+                  </MangaPanel>
+                ) : (
+                  <>
+                    <GuidedAnswerInput
+                      answerTextSize={preferences.answerTextSize}
+                      correction={charCorrection}
+                      expectedText={currentSegment.text}
+                      hintWords={
+                        currentSegment.hintsOverridden
+                          ? currentSegment.hints
+                          : undefined
+                      }
+                      inputRef={answerTextareaRef}
+                      onChange={answer => {
+                        if (
+                          currentAttempt?.isPassed &&
+                          answer !== currentSegment.text
+                        ) {
+                          setCurrentAttempt(null)
+                          setCharCorrection(null)
+                        }
+
+                        updateAnswerDrafts(currentDrafts => ({
+                          ...currentDrafts,
+                          [currentSegment.id]: answer,
+                        }))
+                      }}
+                      onCheck={checkDraft}
+                      onReveal={handleEscapeShortcut}
+                      renderCorrectionWord={({ children, className, term }) => (
+                        <QuickVocabWordButton
+                          attemptId={currentAttempt?.id ?? null}
+                          className={className}
+                          contextSentence={currentSegment.text}
+                          onError={setVocabLookupError}
+                          segmentId={currentSegment.id}
+                          term={term}
+                          videoId={video.id}
+                        >
+                          {children}
+                        </QuickVocabWordButton>
+                      )}
+                      revealAnswerWords={showAnswerWords}
+                      showAnswerImmediately={preferences.showAnswerImmediately}
+                      showFullAnswer={preferences.showFullAnswer}
+                      status={guidedStatus}
+                      statusAction={
+                        <>
+                          {attemptResolved ? (
+                            <>
+                              {guidedStatus === 'correct' &&
+                              !showAnswerWords ? (
+                                <MangaButton
+                                  type="button"
+                                  tone="paper"
+                                  className="min-h-9 px-3 py-1 text-sm"
+                                  onClick={() => setShowAnswerWords(true)}
+                                >
+                                  Show answer words
+                                </MangaButton>
+                              ) : null}
+                              <MangaButton
+                                type="button"
+                                className="min-h-9 px-3 py-1 text-sm"
+                                onClick={advanceAfterAttempt}
+                              >
+                                {canGoNext ? 'Next' : 'Finish'}
+                              </MangaButton>
+                            </>
+                          ) : (
+                            <>
+                              <MangaButton
+                                type="button"
+                                className="min-h-9 px-3 py-1 text-sm"
+                                onClick={checkDraft}
+                              >
+                                Check
+                              </MangaButton>
                               <MangaButton
                                 type="button"
                                 tone="paper"
-                                className="text-base"
-                                onClick={() => setShowAnswerWords(true)}
+                                className="min-h-9 px-3 py-1 text-sm"
+                                onClick={skipSegment}
                               >
-                                Show answer words
+                                Skip
                               </MangaButton>
-                            ) : null}
-                            <MangaButton
-                              type="button"
-                              className="text-base"
-                              onClick={advanceAfterAttempt}
-                            >
-                              {canGoNext ? 'Next' : 'Finish'}
-                            </MangaButton>
-                          </>
-                        ) : (
-                          <>
-                            <MangaButton
-                              type="button"
-                              className="text-base"
-                              onClick={checkDraft}
-                            >
-                              Check
-                            </MangaButton>
+                            </>
+                          )}
+                          {hasCheckedCurrent ? (
                             <MangaButton
                               type="button"
                               tone="paper"
-                              className="text-base"
-                              onClick={skipSegment}
+                              className="min-h-9 px-3 py-1 text-sm"
+                              onClick={retryCurrent}
                             >
-                              Skip
+                              Retry
                             </MangaButton>
-                          </>
-                        )}
-                        {hasCheckedCurrent ? (
-                          <MangaButton
-                            type="button"
-                            tone="paper"
-                            className="text-base"
-                            onClick={retryCurrent}
-                          >
-                            Retry
-                          </MangaButton>
-                        ) : null}
-                      </>
-                    }
-                    value={currentAnswer}
-                  />
-
-                  {vocabLookupError ? (
-                    <div
-                      role="status"
-                      className="border-manga-black bg-manga-pale-red text-manga-red border-2 p-3 text-sm font-black shadow-[2px_2px_0_var(--manga-black)]"
-                    >
-                      {vocabLookupError}
-                    </div>
-                  ) : null}
-
-                  {translationTracks.length > 0 && selectedLanguage ? (
-                    <DictationTranslation
-                      isUnlocked={isTranslationUnlocked}
-                      language={selectedLanguage}
-                      text={translationText}
-                      textSize={preferences.answerTextSize}
+                          ) : null}
+                        </>
+                      }
+                      value={currentAnswer}
                     />
-                  ) : null}
 
-                  <div className="flex flex-col gap-2">
-                    <Label className="flex items-center gap-2 text-base font-black">
-                      <Switch
-                        size="lg"
-                        checked={preferences.showAnswerImmediately}
-                        onCheckedChange={checked =>
-                          setPreferences(currentPreferences => ({
-                            ...currentPreferences,
-                            showAnswerImmediately: checked,
-                          }))
-                        }
+                    {vocabLookupError ? (
+                      <div
+                        role="status"
+                        className="border-manga-black bg-manga-pale-red text-manga-red border-2 p-3 text-sm font-black shadow-[2px_2px_0_var(--manga-black)]"
+                      >
+                        {vocabLookupError}
+                      </div>
+                    ) : null}
+
+                    {translationTracks.length > 0 && selectedLanguage ? (
+                      <DictationTranslation
+                        isUnlocked={isTranslationUnlocked}
+                        language={selectedLanguage}
+                        text={translationText}
+                        textSize={preferences.answerTextSize}
                       />
-                      Show answer immediately
-                    </Label>
-                    <Label className="flex items-center gap-2 text-base font-black">
-                      <Switch
-                        size="lg"
-                        checked={preferences.showFullAnswer}
-                        onCheckedChange={checked =>
-                          setPreferences(currentPreferences => ({
-                            ...currentPreferences,
-                            showFullAnswer: checked,
-                          }))
-                        }
-                      />
-                      Show full answer
-                    </Label>
-                  </div>
-                </>
-              )}
-            </TabsContent>
+                    ) : null}
 
-            <TabsContent
-              value="transcript"
-              className="min-w-0"
-            >
-              <DictationFullTranscript
-                autoScroll={autoScrollTranscript}
-                canRepeat={
-                  activeCaptionSegment?.startMs != null &&
-                  activeCaptionSegment?.endMs != null
-                }
-                currentSegmentId={currentSegment.id}
-                isActive={activeView === 'transcript'}
-                isRepeating={isRepeatingCaption}
-                onSelectSegment={segment => {
-                  const index = segments.findIndex(
-                    item => item.id === segment.id
-                  )
+                    {/* Reveal preferences share one wrapping row - two stacked
+                      full-width switches cost more height than they earn. */}
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
+                      <Label className="flex items-center gap-2 text-xs font-black">
+                        <Switch
+                          size="default"
+                          checked={preferences.showAnswerImmediately}
+                          onCheckedChange={checked =>
+                            setPreferences(currentPreferences => ({
+                              ...currentPreferences,
+                              showAnswerImmediately: checked,
+                            }))
+                          }
+                        />
+                        Show answer immediately
+                      </Label>
+                      <Label className="flex items-center gap-2 text-xs font-black">
+                        <Switch
+                          size="default"
+                          checked={preferences.showFullAnswer}
+                          onCheckedChange={checked =>
+                            setPreferences(currentPreferences => ({
+                              ...currentPreferences,
+                              showFullAnswer: checked,
+                            }))
+                          }
+                        />
+                        Show full answer
+                      </Label>
+                    </div>
+                  </>
+                )}
+              </TabsContent>
 
-                  if (index >= 0) goToCaption(index)
-                }}
-                onToggleAutoScroll={() =>
-                  setAutoScrollTranscript(previous => !previous)
-                }
-                onToggleRepeat={toggleRepeatCaption}
-                playingSegmentId={activeCaptionSegment?.id ?? null}
-                segments={segments}
-                translations={transcriptTranslations}
-              />
-            </TabsContent>
-          </Tabs>
-        </div>
+              <TabsContent
+                value="transcript"
+                className={cn(
+                  'grid min-w-0',
+                  !isVideoStacked && 'lg:min-h-0 lg:overflow-hidden'
+                )}
+              >
+                <DictationFullTranscript
+                  autoScroll={autoScrollTranscript}
+                  canRepeat={
+                    activeCaptionSegment?.startMs != null &&
+                    activeCaptionSegment?.endMs != null
+                  }
+                  currentSegmentId={currentSegment.id}
+                  isActive={activeView === 'transcript'}
+                  isRepeating={isRepeatingCaption}
+                  onSelectSegment={segment => {
+                    const index = segments.findIndex(
+                      item => item.id === segment.id
+                    )
+
+                    if (index >= 0) goToCaption(index)
+                  }}
+                  onToggleAutoScroll={() =>
+                    setAutoScrollTranscript(previous => !previous)
+                  }
+                  onToggleRepeat={toggleRepeatCaption}
+                  playingSegmentId={activeCaptionSegment?.id ?? null}
+                  segments={segments}
+                  translations={transcriptTranslations}
+                />
+              </TabsContent>
+            </div>
+          </div>
+        </Tabs>
 
         {draftNotice ? (
           <div
             role="status"
-            className="border-manga-black bg-manga-paper-soft border-2 p-3 text-sm leading-6 font-black shadow-[3px_3px_0_var(--manga-black)]"
+            className="border-manga-black bg-manga-paper-soft shrink-0 border-2 p-2 text-xs leading-5 font-black shadow-[3px_3px_0_var(--manga-black)]"
           >
             {draftNotice}
           </div>
         ) : null}
 
-        <footer className="grid gap-2">
-          <p className="text-manga-ink-soft min-w-0 text-sm leading-6 font-semibold">
+        {/* Status line, shortcut legend, and the legend toggle share one row so
+            the frame's bottom edge costs a single line. */}
+        <footer className="flex shrink-0 flex-wrap items-center justify-between gap-x-4 gap-y-1">
+          <p className="text-manga-ink-soft min-w-0 flex-1 text-xs leading-5 font-semibold">
             {sessionError ??
               (currentSegment.startMs === null || currentSegment.endMs === null
                 ? 'Untimed segment. Use the normal player controls, then type.'
                 : `Sentence ${currentIndex + 1} of ${segments.length}. Replay uses this segment's timestamp window.`)}
           </p>
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            {preferences.showShortcuts ? (
-              <div className="text-manga-ink-soft flex flex-wrap gap-x-3 gap-y-1 text-xs font-black">
-                <span>Command / Alt · replay</span>
-                <span>Enter · check</span>
-                <span>Ctrl + [ ] · move</span>
-              </div>
-            ) : (
-              <span />
-            )}
-            <Label className="flex items-center gap-2 text-sm font-black">
-              <Switch
-                size="default"
-                checked={preferences.showShortcuts}
-                onCheckedChange={checked => {
-                  const showShortcuts = checked
+          {preferences.showShortcuts ? (
+            <div className="text-manga-ink-soft hidden flex-wrap gap-x-3 gap-y-1 text-xs font-black md:flex">
+              <span>Command / Alt · replay</span>
+              <span>Enter · check</span>
+              <span>Ctrl + [ ] · move</span>
+            </div>
+          ) : null}
+          <Label className="flex shrink-0 items-center gap-2 text-xs font-black">
+            <Switch
+              size="default"
+              checked={preferences.showShortcuts}
+              onCheckedChange={checked => {
+                const showShortcuts = checked
 
-                  setPreferences(currentPreferences => ({
-                    ...currentPreferences,
-                    showShortcuts,
-                  }))
-                  patchSession({ showShortcuts })
-                }}
-              />
-              Show shortcut hints
-            </Label>
-          </div>
+                setPreferences(currentPreferences => ({
+                  ...currentPreferences,
+                  showShortcuts,
+                }))
+                patchSession({ showShortcuts })
+              }}
+            />
+            Shortcut hints
+          </Label>
         </footer>
       </section>
     </div>

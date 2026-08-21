@@ -85,10 +85,10 @@ export function DictationFullTranscript({
   return (
     <section
       aria-label="Full transcript"
-      className="border-manga-black bg-manga-white grid min-w-0 gap-3 border-2 p-3 shadow-[3px_3px_0_var(--manga-black)]"
+      className="border-manga-black bg-manga-white grid min-h-0 min-w-0 grid-rows-[auto_minmax(0,1fr)] gap-2 border-2 p-2 shadow-[3px_3px_0_var(--manga-black)]"
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="font-sans text-lg leading-tight font-black tracking-normal">
+        <h2 className="font-sans text-sm leading-tight font-black tracking-normal uppercase">
           Full transcript
         </h2>
         <div className="flex flex-wrap items-center gap-2">
@@ -133,7 +133,9 @@ export function DictationFullTranscript({
         </div>
       </div>
 
-      <ol className="grid max-h-128 min-w-0 gap-2 overflow-y-auto pr-1">
+      {/* Fills whatever the parent frame leaves it and scrolls there; the
+          max-height floor keeps it usable when the parent is unconstrained. */}
+      <ol className="grid max-h-128 min-h-0 min-w-0 auto-rows-max gap-1 overflow-y-auto pr-1 lg:max-h-none">
         {segments.map((segment, index) => {
           const isHighlighted = segment.id === highlightedId
           const statusMeta = STATUS_META[segment.attemptStatus]
@@ -148,45 +150,46 @@ export function DictationFullTranscript({
                 onClick={() => onSelectSegment(segment)}
                 aria-current={isHighlighted ? 'true' : undefined}
                 className={cn(
-                  'border-manga-black grid w-full min-w-0 grid-cols-[auto_minmax(0,1fr)] items-start gap-3 border-2 p-2 text-left shadow-[2px_2px_0_var(--manga-black)] transition-colors',
+                  'border-manga-black grid w-full min-w-0 grid-cols-[auto_minmax(0,1fr)] items-start gap-2 border-2 p-1.5 text-left shadow-[2px_2px_0_var(--manga-black)] transition-colors',
                   isHighlighted
                     ? 'bg-manga-pale-red'
                     : 'bg-manga-white hover:bg-manga-paper-soft'
                 )}
               >
-                <span className="border-manga-black bg-manga-white text-manga-black grid size-7 place-items-center border-2 text-xs font-black">
+                <span className="border-manga-black bg-manga-white text-manga-black mt-0.5 grid size-6 place-items-center border-2 text-xs font-black">
                   {isHighlighted ? (
                     <Play
                       aria-hidden="true"
-                      className="text-manga-red size-3.5"
+                      className="text-manga-red size-3"
                     />
                   ) : (
                     index + 1
                   )}
                 </span>
-                <span className="grid min-w-0 gap-1">
-                  <span className="flex flex-wrap items-center gap-2">
+                {/* Timestamp and status ride inline with the sentence instead of
+                    owning a meta line above it: at 56 captions that line was
+                    costing a third of the list's height for two short chips. */}
+                <span className="grid min-w-0 gap-0.5">
+                  <span className="text-manga-black min-w-0 text-base leading-6 font-semibold wrap-break-word">
                     {timestamp ? (
-                      <span className="text-manga-ink-soft text-xs font-black tabular-nums">
+                      <span className="text-manga-ink-soft mr-1.5 text-[0.65rem] font-black tabular-nums">
                         {timestamp}
                       </span>
                     ) : null}
                     {statusMeta ? (
                       <span
                         className={cn(
-                          'rounded-none border-2 px-1.5 py-0.5 text-[0.65rem] font-black uppercase',
+                          'mr-1.5 inline-block rounded-none border px-1 text-[0.6rem] leading-4 font-black uppercase',
                           statusMeta.className
                         )}
                       >
                         {statusMeta.label}
                       </span>
                     ) : null}
-                  </span>
-                  <span className="text-manga-black min-w-0 text-base leading-6 font-semibold wrap-break-word">
                     {segment.text}
                   </span>
                   {translation ? (
-                    <span className="text-manga-red border-manga-black/30 min-w-0 border-l-2 pl-2 text-sm leading-6 font-semibold wrap-break-word italic">
+                    <span className="text-manga-red border-manga-black/30 min-w-0 border-l-2 pl-1.5 text-sm leading-5 font-semibold wrap-break-word italic">
                       {translation}
                     </span>
                   ) : null}

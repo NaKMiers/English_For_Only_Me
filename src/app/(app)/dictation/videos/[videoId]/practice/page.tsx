@@ -164,15 +164,10 @@ export default async function Page({ params }: Props) {
   }))
 
   return (
-    <MangaPageShell
-      topbar={
-        <AppTopbar
-          activeHref="/dictation"
-          subtitle="Dictation Lab listening module"
-        />
-      }
-    >
-      <section className="p-4 sm:p-6 lg:p-8">
+    // No topbar: practice is a focus screen, and the exercise header carries
+    // the logo home link in place of the app nav.
+    <MangaPageShell fullHeight>
+      <section className="h-full min-h-0 p-2 sm:p-3">
         <DictationPracticeShell
           completions={completions}
           initialSession={session ? toDictationSessionRecord(session) : null}

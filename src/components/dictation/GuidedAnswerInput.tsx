@@ -357,10 +357,10 @@ export function GuidedAnswerInput({
   return (
     <section
       aria-label="Dictation answer"
-      className="border-manga-black bg-manga-white grid min-w-0 gap-3 border-2 p-3 shadow-[3px_3px_0_var(--manga-black)]"
+      className="border-manga-black bg-manga-white grid min-w-0 gap-2 border-2 p-2 shadow-[3px_3px_0_var(--manga-black)]"
     >
       {visibleHints.length > 0 && status !== 'correct' ? (
-        <p className="flex flex-wrap items-center gap-2 text-base font-black">
+        <p className="flex flex-wrap items-center gap-1.5 text-sm font-black">
           <Lightbulb
             aria-hidden="true"
             className="size-5 shrink-0 text-amber-600"
@@ -427,17 +427,19 @@ export function GuidedAnswerInput({
           placeholder="Type what you hear..."
           style={inputTextStyle}
           className={cn(
-            'placeholder:text-manga-ink-soft relative z-10 block field-sizing-content min-h-40 w-full resize-y overflow-hidden border-0 bg-transparent px-2.5 py-2 font-semibold wrap-break-word whitespace-pre-wrap outline-none',
+            // field-sizing-content grows the box with the answer, so the floor
+            // only has to fit a short sentence - not reserve six empty lines.
+            'placeholder:text-manga-ink-soft relative z-10 block field-sizing-content min-h-20 w-full resize-y overflow-hidden border-0 bg-transparent px-2.5 py-2 font-semibold wrap-break-word whitespace-pre-wrap outline-none',
             status === 'correct' ? 'text-emerald-700' : 'text-manga-black'
           )}
         />
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <p
           aria-live="polite"
           className={cn(
-            'flex items-center gap-2 text-base font-black',
+            'flex items-center gap-1.5 text-sm font-black',
             status === 'correct' && 'text-emerald-700',
             status === 'incorrect' && 'text-amber-600'
           )}
@@ -471,7 +473,7 @@ export function GuidedAnswerInput({
       {showCorrection ? (
         <p
           style={inputTextStyle}
-          className="border-manga-black bg-manga-paper-soft border-2 p-3 font-semibold wrap-break-word shadow-[2px_2px_0_var(--manga-black)]"
+          className="border-manga-black bg-manga-paper-soft border-2 p-2 font-semibold wrap-break-word shadow-[2px_2px_0_var(--manga-black)]"
           data-testid="answer-line"
         >
           {displayCorrection.segments.map((segment, index) => (

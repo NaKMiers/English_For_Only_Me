@@ -197,6 +197,79 @@ describe('production drills', () => {
       ).toBe(true)
   })
 
+  /*
+   * Every one of these failed before the expected side was trimmed too. The
+   * existing cases above all happen to use targets with no full stop, which is
+   * exactly why the bug survived: with one, NO input could pass - the final
+   * token was always "cousin" against "cousin." and scored a spelling variant.
+   */
+  describe('terminal punctuation on the target', () => {
+    const withPeriod = drill({
+      kind: 'build',
+      target: 'The girl sitting next to me is my cousin.',
+    })
+
+    it('accepts the target typed back verbatim', () => {
+      const result = resolveGrammarAnswer({
+        answer: 'The girl sitting next to me is my cousin.',
+        drill: withPeriod,
+      })
+
+      expect(result.isCorrect).toBe(true)
+      expect(result.score).toBe(0)
+    })
+
+    it('accepts it without the full stop, and lowercased', () => {
+      for (const answer of [
+        'The girl sitting next to me is my cousin',
+        'the girl sitting next to me is my cousin.',
+        'the girl sitting next to me is my cousin',
+      ])
+        expect(
+          resolveGrammarAnswer({ answer, drill: withPeriod }).isCorrect,
+          `${answer} should be accepted`
+        ).toBe(true)
+    })
+
+    it('reads the sentence back with its punctuation intact', () => {
+      const result = resolveGrammarAnswer({
+        answer: 'The girl sitting next to me is my cousin',
+        drill: withPeriod,
+      })
+
+      expect(result.matchedAnswer).toBe(
+        'The girl sitting next to me is my cousin.'
+      )
+    })
+
+    it('accepts a question target regardless of the mark', () => {
+      const asked = drill({ kind: 'transform', target: 'Where do you live?' })
+
+      expect(
+        resolveGrammarAnswer({ answer: 'Where do you live', drill: asked })
+          .isCorrect
+      ).toBe(true)
+      expect(
+        resolveGrammarAnswer({ answer: 'where do you live?', drill: asked })
+          .isCorrect
+      ).toBe(true)
+    })
+
+    it('still fails an answer that moves internal commas', () => {
+      // Not pedantry: the comma is the whole difference between a defining and
+      // a non-defining relative clause, so it has to keep counting.
+      const result = resolveGrammarAnswer({
+        answer: 'My brother who lives in Hue called.',
+        drill: drill({
+          kind: 'build',
+          target: 'My brother, who lives in Hue, called.',
+        }),
+      })
+
+      expect(result.isCorrect).toBe(false)
+    })
+  })
+
   it('returns a token diff against the closest variant on a near miss', () => {
     const result = resolveGrammarAnswer({
       answer: 'He has live here for five years',

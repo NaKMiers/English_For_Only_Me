@@ -15,6 +15,9 @@ import {
   type VideoSize,
 } from '@/modules/dictation/preferences/dictationPreferences'
 
+const SIZE_BUTTON_CLASS_NAME =
+  'border-manga-black inline-flex min-h-7 items-center border-2 px-1.5 font-sans text-[0.7rem] font-black shadow-[2px_2px_0_var(--manga-black)]'
+
 const VIDEO_SIZE_LABEL: Record<VideoSize, string> = {
   small: 'Small',
   normal: 'Normal',
@@ -85,7 +88,11 @@ interface Props {
   mockPlayer?: YoutubeDictationPlayerAdapter
   onControllerChange?: (controller: PlayerController) => void
   onHiddenChange: (hidden: boolean) => void
-  onVideoSizeChange: (size: VideoSize) => void
+  /**
+   * Omit to drop the size picker row entirely. Practice does that - size moved
+   * into the toolbar settings menu - while admin preview still picks it here.
+   */
+  onVideoSizeChange?: (size: VideoSize) => void
   playbackSpeed: number
   timing: SegmentTiming
   title: string
@@ -269,22 +276,10 @@ export function DictationYoutubePlayer({
     <section
       aria-label="Segment video player"
       className={cn(
-        'border-manga-black bg-manga-white grid min-w-0 gap-3 border-2 p-3 shadow-[3px_3px_0_var(--manga-black)]',
+        'border-manga-black bg-manga-white grid min-w-0 gap-2 border-2 p-2 shadow-[3px_3px_0_var(--manga-black)]',
         className
       )}
     >
-      <div className="flex min-w-0 items-center justify-between gap-3">
-        <span className="text-manga-ink-soft text-xs font-black uppercase">
-          Video
-        </span>
-        <button
-          type="button"
-          onClick={toggleHidden}
-          className="text-manga-ink-soft text-sm font-black underline underline-offset-4"
-        >
-          {hidden ? 'Show video' : 'Hide video'}
-        </button>
-      </div>
       {/* The player element stays mounted while hidden so replay keeps working;
           a same-size placeholder covers it instead of collapsing the layout. */}
       <div className="border-manga-black bg-manga-white relative grid aspect-video overflow-hidden border-2">
@@ -292,17 +287,17 @@ export function DictationYoutubePlayer({
           <div
             id={playerElementId}
             title={title}
-            className="h-full min-h-56 w-full"
+            className="h-full w-full"
           />
         ) : (
-          <div className="grid min-h-56 place-items-center p-6 text-center font-black">
+          <div className="grid min-h-40 place-items-center p-4 text-center text-sm font-black">
             YouTube metadata is missing for this video.
           </div>
         )}
         {hidden ? (
           <div
             aria-hidden="true"
-            className="bg-manga-paper-soft text-manga-ink-soft absolute inset-0 grid place-items-center p-6 text-center text-sm leading-6 font-black"
+            className="bg-manga-paper-soft text-manga-ink-soft absolute inset-0 grid place-items-center p-4 text-center text-sm leading-6 font-black"
           >
             Video hidden - listen and type. Replay still works for timed
             segments.
@@ -310,50 +305,63 @@ export function DictationYoutubePlayer({
         ) : null}
       </div>
 
-      {/* Horizontal collapsible so the four presets stay out of the way until
-          the learner opens the size picker. */}
-      <div className="flex min-w-0 flex-wrap items-center gap-1">
-        <button
-          type="button"
-          aria-expanded={isSizeMenuOpen}
-          onClick={() => setIsSizeMenuOpen(open => !open)}
-          className="border-manga-black bg-manga-white text-manga-black hover:bg-manga-paper-soft inline-flex min-h-8 items-center gap-1 border-2 px-2 font-sans text-xs font-black shadow-[2px_2px_0_var(--manga-black)]"
-        >
-          <Ratio
-            aria-hidden="true"
-            className="size-4"
-          />
-          Size: {VIDEO_SIZE_LABEL[videoSize]}
-          <ChevronRight
-            aria-hidden="true"
+      {/* Only rendered when the caller owns size here (admin preview). Practice
+          drops this row: size lives in the toolbar settings menu and hiding the
+          video is a toolbar button, so the frame ends at the video. */}
+      {onVideoSizeChange ? (
+        <div className="flex min-w-0 flex-wrap items-center gap-1">
+          <button
+            type="button"
+            aria-expanded={isSizeMenuOpen}
+            onClick={() => setIsSizeMenuOpen(open => !open)}
             className={cn(
-              'size-4 transition-transform',
-              isSizeMenuOpen && 'rotate-90'
+              SIZE_BUTTON_CLASS_NAME,
+              'bg-manga-white text-manga-black hover:bg-manga-paper-soft gap-1'
             )}
-          />
-        </button>
-        {isSizeMenuOpen
-          ? VIDEO_SIZE_OPTIONS.map(size => (
-              <button
-                key={size}
-                type="button"
-                aria-pressed={videoSize === size}
-                onClick={() => {
-                  onVideoSizeChange(size)
-                  setIsSizeMenuOpen(false)
-                }}
-                className={cn(
-                  'border-manga-black inline-flex min-h-8 items-center border-2 px-2 font-sans text-xs font-black shadow-[2px_2px_0_var(--manga-black)]',
-                  videoSize === size
-                    ? 'bg-manga-black text-manga-white'
-                    : 'bg-manga-white text-manga-black hover:bg-manga-paper-soft'
-                )}
-              >
-                {VIDEO_SIZE_LABEL[size]}
-              </button>
-            ))
-          : null}
-      </div>
+          >
+            <Ratio
+              aria-hidden="true"
+              className="size-3.5"
+            />
+            {VIDEO_SIZE_LABEL[videoSize]}
+            <ChevronRight
+              aria-hidden="true"
+              className={cn(
+                'size-3.5 transition-transform',
+                isSizeMenuOpen && 'rotate-90'
+              )}
+            />
+          </button>
+          {isSizeMenuOpen
+            ? VIDEO_SIZE_OPTIONS.map(size => (
+                <button
+                  key={size}
+                  type="button"
+                  aria-pressed={videoSize === size}
+                  onClick={() => {
+                    onVideoSizeChange(size)
+                    setIsSizeMenuOpen(false)
+                  }}
+                  className={cn(
+                    SIZE_BUTTON_CLASS_NAME,
+                    videoSize === size
+                      ? 'bg-manga-black text-manga-white'
+                      : 'bg-manga-white text-manga-black hover:bg-manga-paper-soft'
+                  )}
+                >
+                  {VIDEO_SIZE_LABEL[size]}
+                </button>
+              ))
+            : null}
+          <button
+            type="button"
+            onClick={toggleHidden}
+            className="text-manga-ink-soft ml-auto text-xs font-black underline underline-offset-4"
+          >
+            {hidden ? 'Show video' : 'Hide video'}
+          </button>
+        </div>
+      ) : null}
     </section>
   )
 }

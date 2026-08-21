@@ -37,8 +37,11 @@ export const GRAMMAR_CORRECTION_OPTIONS: CorrectionOptions = {
  *
  * Terminal punctuation carries essentially no grammatical information - word
  * order already distinguishes a question from a statement - so it is trimmed
- * from both sides. Internal apostrophes and commas are untouched, which is the
- * whole point.
+ * from BOTH sides. Both sides is not a detail: trimming only the learner's
+ * answer is worse than trimming neither, because then a target ending in a
+ * period can never be matched by any input at all. Internal apostrophes and
+ * commas are untouched, which is the whole point - "the man, who left, waved"
+ * and "the man who left waved" are different grammar, not different typing.
  */
 export function trimTerminalPunctuation(value: string) {
   return value.trim().replace(/[.!?;:,]+$/u, '')
@@ -162,7 +165,15 @@ export function resolveGrammarAnswer({
   for (const candidate of candidates) {
     const correction = buildDictationCorrection({
       action: 'check',
-      expectedText: candidate,
+      // Trimmed, like `submitted` above. The learner's answer was already
+      // stripped of its full stop, so leaving the candidate's on made the final
+      // token "cousin" against "cousin." - graded a spelling variant, scored 1,
+      // and every production drill whose target ends in punctuation became
+      // impossible to pass by any input, including the target itself.
+      //
+      // The UNTRIMMED candidate is still what `matchedAnswer` returns, so the
+      // sentence read back to the learner keeps its punctuation.
+      expectedText: trimTerminalPunctuation(candidate),
       options: GRAMMAR_CORRECTION_OPTIONS,
       typedAnswer: submitted,
     })

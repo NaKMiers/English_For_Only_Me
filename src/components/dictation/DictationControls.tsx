@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 
+import { DictationSettingsMenu } from '@/components/dictation/DictationSettingsMenu'
 import { IconButton } from '@/components/ui/IconButton'
 import { MangaButton } from '@/components/ui/MangaButton'
 import {
@@ -21,12 +22,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { cn } from '@/lib/utils'
-import {
-  ANSWER_TEXT_SIZE_LABEL,
-  ANSWER_TEXT_SIZE_OPTIONS,
-  PLAYBACK_SPEED_OPTIONS,
-  type AnswerTextSize,
+import type {
+  AnswerTextSize,
+  VideoSize,
 } from '@/modules/dictation/preferences/dictationPreferences'
 
 interface Props {
@@ -44,9 +42,14 @@ interface Props {
   onRestart: () => void
   onSpeedChange: (speed: number) => void
   onToggleVideo: () => void
+  onVideoSizeChange: (size: VideoSize) => void
   playbackSpeed: number
   totalSegments: number
+  videoSize: VideoSize
 }
+
+const ICON_BUTTON_CLASS_NAME =
+  'size-9 border-2 shadow-[2px_2px_0_var(--manga-black)]'
 
 export function DictationControls({
   answerTextSize,
@@ -63,49 +66,55 @@ export function DictationControls({
   onRestart,
   onSpeedChange,
   onToggleVideo,
+  onVideoSizeChange,
   playbackSpeed,
   totalSegments,
+  videoSize,
 }: Props) {
   const [isRestartConfirmOpen, setIsRestartConfirmOpen] = useState(false)
 
   return (
-    <div className="border-manga-black bg-manga-white flex min-w-0 flex-wrap items-center gap-2 border-2 p-2 shadow-[3px_3px_0_var(--manga-black)]">
-      <div className="flex min-w-0 items-center gap-2">
+    // One dense strip, everything flush left: transport first, then the session
+    // actions. It shares its row with the view tabs (pushed right by the
+    // caller), and speed / answer text / video size live behind the settings
+    // menu so the strip never wraps to a second line.
+    <div className="border-manga-black bg-manga-white flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1.5 border-2 px-2 py-1.5 shadow-[3px_3px_0_var(--manga-black)]">
+      <div className="flex min-w-0 items-center gap-1">
         <IconButton
           label="Replay current sentence"
           disabled={!canReplay}
           onClick={onReplay}
-          className="size-10 border-2 shadow-[2px_2px_0_var(--manga-black)]"
+          className={ICON_BUTTON_CLASS_NAME}
         >
           <RotateCcw
             aria-hidden="true"
-            className="size-5"
+            className="size-4"
           />
         </IconButton>
         <IconButton
           label="Rewind to first segment"
           onClick={onGoToFirstSegment}
-          className="size-10 border-2 shadow-[2px_2px_0_var(--manga-black)]"
+          className={ICON_BUTTON_CLASS_NAME}
         >
           <SkipBack
             aria-hidden="true"
-            className="size-5"
+            className="size-4"
           />
         </IconButton>
         <IconButton
           label="Previous segment"
           disabled={!canGoPrevious}
           onClick={onGoPrevious}
-          className="size-10 border-2 shadow-[2px_2px_0_var(--manga-black)]"
+          className={ICON_BUTTON_CLASS_NAME}
         >
           <ChevronLeft
             aria-hidden="true"
-            className="size-5"
+            className="size-4"
           />
         </IconButton>
         <span
           aria-label="Current segment"
-          className="border-manga-black bg-manga-paper-soft inline-flex min-h-10 items-center border-2 px-3 font-sans text-sm font-black shadow-[2px_2px_0_var(--manga-black)]"
+          className="border-manga-black bg-manga-paper-soft inline-flex min-h-8 items-center border-2 px-2 font-sans text-xs font-black tabular-nums shadow-[2px_2px_0_var(--manga-black)]"
         >
           {currentIndex + 1} / {totalSegments}
         </span>
@@ -113,90 +122,51 @@ export function DictationControls({
           label="Next segment"
           disabled={!canGoNext}
           onClick={onGoNext}
-          className="size-10 border-2 shadow-[2px_2px_0_var(--manga-black)]"
+          className={ICON_BUTTON_CLASS_NAME}
         >
           <ChevronRight
             aria-hidden="true"
-            className="size-5"
+            className="size-4"
           />
         </IconButton>
       </div>
 
-      <div className="flex min-w-0 flex-wrap items-center gap-1">
-        <span className="text-manga-ink-soft text-xs font-black uppercase">
-          Speed
-        </span>
-        {PLAYBACK_SPEED_OPTIONS.map(speed => (
-          <button
-            key={speed}
-            type="button"
-            aria-pressed={playbackSpeed === speed}
-            onClick={() => onSpeedChange(speed)}
-            className={cn(
-              'border-manga-black min-h-9 border-2 px-3 font-sans text-xs font-black shadow-[2px_2px_0_var(--manga-black)]',
-              playbackSpeed === speed
-                ? 'bg-manga-black text-manga-white'
-                : 'bg-manga-white text-manga-black hover:bg-manga-paper-soft'
-            )}
-          >
-            {speed}x
-          </button>
-        ))}
-      </div>
-
-      <div className="flex min-w-0 flex-wrap items-center gap-1">
-        <span className="text-manga-ink-soft text-xs font-black uppercase">
-          Text
-        </span>
-        {ANSWER_TEXT_SIZE_OPTIONS.map(size => (
-          <button
-            key={size}
-            type="button"
-            aria-pressed={answerTextSize === size}
-            onClick={() => onAnswerTextSizeChange(size)}
-            className={cn(
-              'border-manga-black min-h-9 border-2 px-3 font-sans text-xs font-black shadow-[2px_2px_0_var(--manga-black)]',
-              answerTextSize === size
-                ? 'bg-manga-black text-manga-white'
-                : 'bg-manga-white text-manga-black hover:bg-manga-paper-soft'
-            )}
-          >
-            {ANSWER_TEXT_SIZE_LABEL[size]}
-          </button>
-        ))}
-      </div>
-
-      <div className="ml-auto flex items-center gap-2">
+      <div className="flex items-center gap-1">
+        <DictationSettingsMenu
+          answerTextSize={answerTextSize}
+          onAnswerTextSizeChange={onAnswerTextSizeChange}
+          onPlaybackSpeedChange={onSpeedChange}
+          onVideoSizeChange={onVideoSizeChange}
+          playbackSpeed={playbackSpeed}
+          videoSize={videoSize}
+        />
         <IconButton
           label="Restart progress"
           onClick={() => setIsRestartConfirmOpen(true)}
-          className="size-10 border-2 shadow-[2px_2px_0_var(--manga-black)]"
+          className={ICON_BUTTON_CLASS_NAME}
         >
           <RefreshCw
             aria-hidden="true"
-            className="size-5"
+            className="size-4"
           />
         </IconButton>
-        <MangaButton
-          type="button"
-          tone="paper"
+        <IconButton
+          label={isVideoHidden ? 'Show video' : 'Hide video'}
           onClick={onToggleVideo}
-          icon={
-            isVideoHidden ? (
-              <Eye
-                aria-hidden="true"
-                className="size-5"
-              />
-            ) : (
-              <EyeOff
-                aria-hidden="true"
-                className="size-5"
-              />
-            )
-          }
+          className={ICON_BUTTON_CLASS_NAME}
         >
-          {isVideoHidden ? 'Show Video' : 'Hide Video'}
-        </MangaButton>
+          {isVideoHidden ? (
+            <Eye
+              aria-hidden="true"
+              className="size-4"
+            />
+          ) : (
+            <EyeOff
+              aria-hidden="true"
+              className="size-4"
+            />
+          )}
+        </IconButton>
       </div>
 
       <Dialog

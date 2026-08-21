@@ -9,10 +9,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { cn } from '@/lib/utils'
 import { getLanguageLabel } from '@/modules/dictation/translations/languages'
 
 interface Props {
   className?: string
+  /**
+   * Drop the "Translation" caption and tighten the padding. The icon plus the
+   * language value still say what the control is, and the select keeps its
+   * aria-label, so nothing is lost for screen readers - only width.
+   */
+  compact?: boolean
   languages: string[]
   onChange: (language: string) => void
   // '' means no translation ("None").
@@ -21,6 +28,7 @@ interface Props {
 
 export function DictationTranslationBar({
   className,
+  compact = false,
   languages,
   onChange,
   value,
@@ -29,18 +37,21 @@ export function DictationTranslationBar({
 
   return (
     <div
-      className={
-        'border-manga-black bg-manga-white flex flex-wrap items-center gap-2 border-2 px-3 py-2 text-sm font-black shadow-[2px_2px_0_var(--manga-black)]' +
-        (className ? ` ${className}` : '')
-      }
+      className={cn(
+        'border-manga-black bg-manga-white flex flex-wrap items-center gap-2 border-2 text-sm font-black shadow-[2px_2px_0_var(--manga-black)]',
+        compact ? 'gap-1 px-1.5 py-1' : 'px-3 py-2',
+        className
+      )}
     >
       <Languages
         aria-hidden="true"
         className="text-manga-red size-4 shrink-0"
       />
-      <span className="font-sans text-xs tracking-normal uppercase">
-        Translation
-      </span>
+      {compact ? null : (
+        <span className="font-sans text-xs tracking-normal uppercase">
+          Translation
+        </span>
+      )}
       <Select
         value={value}
         onValueChange={next => onChange(next ?? '')}

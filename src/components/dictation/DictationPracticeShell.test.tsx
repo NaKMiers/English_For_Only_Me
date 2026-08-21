@@ -23,6 +23,18 @@ import { DictationPracticeShell } from './DictationPracticeShell'
 
 const playSegmentMock = vi.fn()
 
+// next/image resolves the src against the document URL, which JSDOM leaves as
+// about:blank here. The practice header renders the home logo, so stub the
+// component down to the plain element the DOM assertions care about.
+vi.mock('next/image', () => ({
+  default: ({ alt }: { alt: string }) => (
+    <span
+      role="img"
+      aria-label={alt}
+    />
+  ),
+}))
+
 vi.mock('@/components/dictation/DictationYoutubePlayer', async () => {
   const React = await import('react')
 

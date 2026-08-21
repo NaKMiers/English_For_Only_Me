@@ -2,8 +2,6 @@
 
 import { Languages } from 'lucide-react'
 
-import { MangaPanel } from '@/components/common/MangaPanel'
-import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import {
   ANSWER_TEXT_STYLE,
@@ -33,36 +31,32 @@ export function DictationTranslation({
 
   const hasText = text.trim().length > 0
 
+  // A single strip rather than a titled panel: the language marker sits inline
+  // with the text so the reveal costs one row on the height-locked practice
+  // screen instead of an eyebrow, a heading, and a body block. The text follows
+  // the answer text size so it reads at the same scale as the sentence above.
   return (
-    <MangaPanel
-      eyebrow="After effort"
-      title="Translation"
-      className={className}
-      action={
-        <Badge
-          className="border-manga-black bg-manga-pale-red text-manga-black rounded-none border-2 font-black"
-          variant="outline"
-        >
-          {getLanguageLabel(language)}
-        </Badge>
-      }
+    <div
+      role="status"
+      className={cn(
+        'border-manga-black bg-manga-paper-soft flex min-w-0 items-start gap-2 border-2 p-2 shadow-[3px_3px_0_var(--manga-black)]',
+        hasText && 'bg-white',
+        className
+      )}
     >
-      <div
-        role="status"
+      {/* Icon only - the language name stays in the DOM for screen readers,
+          since the glyph alone does not say WHICH language this is. */}
+      <Languages
+        aria-hidden="true"
+        className="text-manga-red mt-1 size-5 shrink-0"
+      />
+      <span className="sr-only">{getLanguageLabel(language)}</span>
+      <span
         style={hasText ? ANSWER_TEXT_STYLE[textSize] : undefined}
-        className={cn(
-          'border-manga-black bg-manga-paper-soft flex items-start gap-3 border-2 p-3 text-base leading-7 font-semibold shadow-[3px_3px_0_var(--manga-black)]',
-          hasText && 'bg-white'
-        )}
+        className="min-w-0 text-base leading-7 font-semibold wrap-break-word"
       >
-        <Languages
-          aria-hidden="true"
-          className="text-manga-red mt-1 size-5 shrink-0"
-        />
-        <span className="min-w-0 wrap-break-word">
-          {hasText ? text : NO_CAPTION_MESSAGE}
-        </span>
-      </div>
-    </MangaPanel>
+        {hasText ? text : NO_CAPTION_MESSAGE}
+      </span>
+    </div>
   )
 }

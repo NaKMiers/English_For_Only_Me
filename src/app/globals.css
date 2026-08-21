@@ -299,6 +299,10 @@ body {
     .bg-manga-white\/92,
     .bg-manga-paper-soft,
     .bg-manga-pale-red,
+    /* --comic-paper IS --manga-white, so comic surfaces are just as light and
+       need the same reset: without it a card's uncoloured text (the grammar
+       dojo tallies) inherits the shell's cream and washes out. */
+    .bg-comic-paper,
     .page-hero
   ) {
   color: var(--manga-black);
