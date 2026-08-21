@@ -2,7 +2,7 @@ import { cn } from '@/lib/utils'
 import type { CreatureState } from '@/modules/grammar/presentation/resolveCreatureState'
 import type { CreatureSpec } from '@/modules/grammar/presentation/types'
 
-import { Gatekeeper } from './creatures/Gatekeeper'
+import { CREATURE_COMPONENTS } from './creatures'
 
 const RECALL_RUNGS = 7
 
@@ -117,48 +117,7 @@ function HealthBar({ stage }: { stage: number }) {
 }
 
 function renderSpecies(spec: CreatureSpec) {
-  switch (spec.species) {
-    case 'gatekeeper':
-      return <Gatekeeper menace={spec.menace} />
-    default:
-      // The other 16 species land after the gate. Until then a point outside
-      // articles renders the frame and its accessible name, which is honest -
-      // rather than a placeholder pretending to be a creature.
-      return <UndrawnSpecies menace={spec.menace} />
-  }
-}
+  const Species = CREATURE_COMPONENTS[spec.family]
 
-function UndrawnSpecies({ menace }: { menace: number }) {
-  return (
-    <svg
-      aria-hidden="true"
-      className="h-full w-full"
-      fill="none"
-      role="presentation"
-      stroke="currentColor"
-      strokeWidth={3}
-      viewBox="0 0 120 140"
-    >
-      <rect
-        height={104}
-        opacity={0.35}
-        strokeDasharray="7 6"
-        width={84}
-        x={18}
-        y={22}
-      />
-      <text
-        fill="currentColor"
-        fontSize={30}
-        fontWeight={900}
-        opacity={0.5}
-        stroke="none"
-        textAnchor="middle"
-        x={60}
-        y={86}
-      >
-        {menace}
-      </text>
-    </svg>
-  )
+  return <Species menace={spec.menace} />
 }
