@@ -1,7 +1,14 @@
 import 'server-only'
 
 import { GrammarPointModel } from '@/models/grammar/GrammarPointModel'
-import type { GrammarContrastRecord } from '@/modules/grammar/types'
+import type {
+  GrammarCefrLevel,
+  GrammarComplexity,
+  GrammarContrastRecord,
+  GrammarFamily,
+  GrammarL1Risk,
+  GrammarReviewStatus,
+} from '@/modules/grammar/types'
 
 /**
  * Merge a point's own `contrastsWith` list with every point that names it.
@@ -59,12 +66,20 @@ export async function resolveContrastsWith({
     mergedInto: null,
     slug: { $in: slugs },
   })
-    .select('slug title summary cefrLevel')
+    // Wide enough to draw the rival as a creature, not just link to it.
+    .select(
+      'slug title summary cefrLevel complexity family l1Risk l1RiskObserved reviewStatus'
+    )
     .lean()
 
   return points
     .map(point => ({
-      cefrLevel: point.cefrLevel,
+      cefrLevel: point.cefrLevel as GrammarCefrLevel,
+      complexity: point.complexity as GrammarComplexity,
+      family: point.family as GrammarFamily,
+      l1Risk: point.l1Risk as GrammarL1Risk,
+      l1RiskObserved: (point.l1RiskObserved ?? null) as GrammarL1Risk | null,
+      reviewStatus: point.reviewStatus as GrammarReviewStatus,
       slug: point.slug,
       summary: point.summary,
       title: point.title,

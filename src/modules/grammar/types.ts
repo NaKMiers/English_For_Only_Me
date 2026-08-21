@@ -32,19 +32,30 @@ export interface UserGrammarItemApiRecord {
   wrongCount: number
 }
 
-/** A drill served to the client, with the answer stripped out. */
+/**
+ * A drill served to the client, with the answer stripped out.
+ *
+ * Carries `family`, `complexity` and the observed risk so the drill can be
+ * framed as a fight with the point's own creature rather than as a form. All
+ * three are already on the document this is built from; none of them says
+ * anything about the answer.
+ */
 export interface GrammarRecallTaskRecord {
   cefrLevel: GrammarCefrLevel
   choices: string[] | null
+  complexity: GrammarComplexity
   drillId: string
+  family: GrammarFamily
   /** Minted server-side per served drill; the client echoes it back on submit. */
   idempotencyKey: string
   kind: GrammarDrillKind
   l1Risk: GrammarL1Risk
+  l1RiskObserved: GrammarL1Risk | null
   pointSlug: string
   pointTitle: string
   prompt: string
   recallStage: number
+  reviewStatus: GrammarReviewStatus
 }
 
 export interface GrammarRecallAnswerResult {
@@ -76,9 +87,21 @@ export interface GrammarStatsRecord {
     averageStage: number | null
     cefrLevel: GrammarCefrLevel
     complexity: GrammarComplexity
+    /**
+     * Points in this cell whose EFFECTIVE risk is high. Drives the danger
+     * marking on the dungeon map, so the cell that actually hurts is visible
+     * before the learner has touched anything in it.
+     */
+    dangerous: number
     mastered: number
     total: number
     touched: number
+    /**
+     * Points in this cell whose lesson no human has read. Drives the ghost
+     * marking: a cell can be fully mastered and still be built on unchecked
+     * content, and the map should not hide that.
+     */
+    unverified: number
   }[]
   untouchedCount: number
 }
@@ -215,8 +238,21 @@ export interface GrammarLessonApiRecord extends GrammarPointApiRecord {
   contrasts: GrammarContrastRecord[]
 }
 
+/**
+ * A rival point, as shown on a lesson page.
+ *
+ * Carries enough to DRAW the rival, not just to link to it: species comes from
+ * `family`, menace from `complexity` plus the effective risk, and ghost state
+ * from `reviewStatus`. The join that produces this already existed, so these
+ * are projection fields rather than a new query.
+ */
 export interface GrammarContrastRecord {
   cefrLevel: GrammarCefrLevel
+  complexity: GrammarComplexity
+  family: GrammarFamily
+  l1Risk: GrammarL1Risk
+  l1RiskObserved: GrammarL1Risk | null
+  reviewStatus: GrammarReviewStatus
   slug: string
   summary: string
   title: string

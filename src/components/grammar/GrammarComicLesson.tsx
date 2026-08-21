@@ -1,3 +1,5 @@
+import Link from 'next/link'
+
 import { CreatureMotion } from '@/components/grammar/cast/CreatureMotion'
 import { CreatureSlot } from '@/components/grammar/cast/CreatureSlot'
 import { Sensei } from '@/components/grammar/cast/Sensei'
@@ -116,22 +118,43 @@ export function GrammarComicLesson({
         </ComicPanel>
       ) : null}
 
+      {/*
+        Rivals, drawn as creatures rather than listed as links. Contrast is the
+        relation that makes a rule mean anything - present perfect only makes
+        sense against past simple - so a rival gets the same treatment as the
+        point itself: species, menace tier, and ghost state if nobody has read
+        its lesson either.
+      */}
       {lesson.contrasts.length > 0 ? (
         <ComicPanel caption="Rivals">
-          <ul className="grid gap-2 sm:grid-cols-2">
+          <ul className="flex flex-wrap gap-3">
             {lesson.contrasts.map(contrast => (
-              <li key={contrast.slug}>
-                <a
-                  className="border-comic-ink hover:bg-manga-pale-red grid gap-1 border-2 p-3"
+              <li
+                className="min-w-0 flex-1 basis-56"
+                key={contrast.slug}
+              >
+                <Link
+                  className="grid gap-2 transition-transform hover:-translate-y-0.5"
                   href={`/grammar/points/${contrast.slug}`}
                 >
+                  <CreatureSlot
+                    className="max-w-32"
+                    spec={creatureFromPoint({
+                      point: contrast,
+                      recallStage: null,
+                    })}
+                    state={resolveCreatureState({
+                      reviewStatus: contrast.reviewStatus,
+                      status: null,
+                    })}
+                  />
                   <span className="font-sans text-sm font-black uppercase">
                     {contrast.title} ({contrast.cefrLevel})
                   </span>
                   <span className="text-manga-ink-soft text-sm leading-6 font-semibold">
                     {contrast.summary}
                   </span>
-                </a>
+                </Link>
               </li>
             ))}
           </ul>

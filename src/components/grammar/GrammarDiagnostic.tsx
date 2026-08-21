@@ -3,9 +3,13 @@
 import { useCallback, useState } from 'react'
 
 import { MangaPanel } from '@/components/common/MangaPanel'
+import { Sensei } from '@/components/grammar/cast/Sensei'
+import { ComicPanel } from '@/components/grammar/comic/ComicPanel'
+import { ImpactStamp } from '@/components/grammar/comic/ImpactStamp'
+import { SpeechBubble } from '@/components/grammar/comic/SpeechBubble'
 import { MangaButton } from '@/components/ui/MangaButton'
-import type { DiagnosticItem } from '@/modules/grammar/diagnostic/selectDiagnosticItems'
 import type { DiagnosticResult } from '@/modules/grammar/diagnostic/diagnosticService'
+import type { DiagnosticItem } from '@/modules/grammar/diagnostic/selectDiagnosticItems'
 
 import { L1RiskTag } from './GrammarRiskBadges'
 
@@ -13,6 +17,19 @@ function newSessionKey() {
   return `diag-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
 }
 
+/**
+ * The result screen.
+ *
+ * The one moment in the module worth screenshotting, so it gets the full comic
+ * treatment while the questions themselves stay plain - a placement test with a
+ * character commenting on every answer would be exhausting and would also leak
+ * information about how you are doing mid-test.
+ *
+ * The unverified count is not a disclaimer in small print. This screen makes
+ * confident claims about a learner on the strength of lessons nobody has read,
+ * and the honest version of that claim states the number in the sensei's own
+ * voice.
+ */
 function Summary({
   onClose,
   result,
@@ -20,59 +37,92 @@ function Summary({
   onClose: () => void
   result: DiagnosticResult
 }) {
+  const share = Math.round((result.correct / Math.max(1, result.total)) * 100)
+
   return (
-    <MangaPanel
-      eyebrow="Placement result"
-      title={`${result.correct} of ${result.total} correct`}
-    >
-      <p className="text-manga-ink-soft text-base leading-7 font-semibold">
-        {result.seededCount} point
-        {result.seededCount === 1 ? '' : 's'} placed on the review ladder. A
-        correct answer starts a point mid-ladder rather than marking it known,
-        so it comes back in a few days to be confirmed.
-      </p>
-
-      {result.weakestLevels.length > 0 || result.weakestRisks.length > 0 ? (
-        <div className="border-manga-black bg-manga-pale-red grid gap-2 border-3 p-3">
-          <p className="font-sans text-xs font-black uppercase">
-            Where to spend your time
-          </p>
-          {result.weakestLevels.length > 0 ? (
-            <p className="text-sm leading-6 font-semibold">
-              Below half at: {result.weakestLevels.join(', ')}
-            </p>
-          ) : null}
-          {result.weakestRisks.length > 0 ? (
-            <p className="text-sm leading-6 font-semibold">
-              Weak on {result.weakestRisks.join(', ')}-interference points - the
-              ones Vietnamese fights hardest.
-            </p>
-          ) : null}
-        </div>
-      ) : (
-        <p className="text-manga-ink-soft text-sm leading-6 font-semibold">
-          No area fell below half. Nothing stands out as a weak spot yet.
-        </p>
-      )}
-
-      <div className="grid gap-2">
-        {result.byLevel.map(level => (
-          <div
-            className="border-manga-black bg-manga-white flex items-center justify-between border-2 px-3 py-1"
-            key={level.cefrLevel}
-          >
-            <span className="font-sans text-xs font-black uppercase">
-              {level.cefrLevel}
-            </span>
-            <span className="font-mono text-sm font-black">
-              {level.correct}/{level.total}
-            </span>
+    <div className="grid gap-4">
+      <ComicPanel
+        edge="a"
+        halftone
+        speedLines
+        tone="ink"
+      >
+        <div className="flex items-start gap-3">
+          <Sensei expression={share >= 70 ? 'neutral' : 'severe'} />
+          <div className="grid min-w-0 gap-2">
+            <div className="flex flex-wrap py-1.5">
+              <ImpactStamp tone={share >= 70 ? 'ink' : 'danger'}>
+                {`${result.correct} of ${result.total}`}
+              </ImpactStamp>
+            </div>
+            <h2 className="font-sans text-3xl leading-none font-black uppercase sm:text-4xl">
+              You are wrong about {result.total - result.correct} of these
+            </h2>
+            <SpeechBubble speaker="Sensei">
+              {result.unverifiedCount > 0
+                ? `I tested you on ${result.total} rules and I have not read the lessons for ${result.unverifiedCount} of them. Neither has anyone else. Take the score, doubt the explanations.`
+                : `I tested you on ${result.total} rules. Every lesson behind them has been read by a human. The score is what it is.`}
+            </SpeechBubble>
           </div>
-        ))}
-      </div>
+        </div>
+      </ComicPanel>
 
-      <MangaButton onClick={onClose}>Done</MangaButton>
-    </MangaPanel>
+      <MangaPanel
+        eyebrow="Placement result"
+        title="Where you stand"
+      >
+        <p className="text-manga-ink-soft text-base leading-7 font-semibold">
+          {result.seededCount} point
+          {result.seededCount === 1 ? '' : 's'} placed on the review ladder. A
+          correct answer starts a point mid-ladder rather than marking it known,
+          so it comes back in a few days to be confirmed.
+        </p>
+
+        {result.weakestLevels.length > 0 || result.weakestRisks.length > 0 ? (
+          <div className="border-manga-black bg-manga-pale-red grid gap-2 border-3 p-3">
+            <p className="font-sans text-xs font-black uppercase">
+              Where to spend your time
+            </p>
+            {result.weakestLevels.length > 0 ? (
+              <p className="text-sm leading-6 font-semibold">
+                Below half at: {result.weakestLevels.join(', ')}
+              </p>
+            ) : null}
+            {result.weakestRisks.length > 0 ? (
+              <p className="text-sm leading-6 font-semibold">
+                Weak on {result.weakestRisks.join(', ')}-interference points -
+                the ones Vietnamese fights hardest.
+              </p>
+            ) : null}
+          </div>
+        ) : (
+          <p className="text-manga-ink-soft text-sm leading-6 font-semibold">
+            No area fell below half. Nothing stands out as a weak spot yet.
+          </p>
+        )}
+
+        <div className="grid gap-2">
+          {result.byLevel.map(level => (
+            <div
+              className="border-manga-black bg-manga-white flex items-center justify-between border-2 px-3 py-1"
+              key={level.cefrLevel}
+            >
+              <span className="font-sans text-xs font-black uppercase">
+                {level.cefrLevel}
+              </span>
+              <span className="font-mono text-sm font-black">
+                {level.correct}/{level.total}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          <MangaButton onClick={onClose}>Done</MangaButton>
+          <MangaButton href="/grammar/archive">Your English</MangaButton>
+        </div>
+      </MangaPanel>
+    </div>
   )
 }
 

@@ -6,9 +6,12 @@ import { GrammarPointModel } from '@/models/grammar/GrammarPointModel'
 import { UserGrammarItemModel } from '@/models/grammar/UserGrammarItemModel'
 import type {
   GrammarCefrLevel,
+  GrammarComplexity,
   GrammarDrillRecord,
+  GrammarFamily,
   GrammarL1Risk,
   GrammarRecallTaskRecord,
+  GrammarReviewStatus,
 } from '@/modules/grammar/types'
 
 import { selectDrillForStage } from './selectDrillForStage'
@@ -54,7 +57,9 @@ export async function getGrammarDueQueue({
   const points = await GrammarPointModel.find({
     slug: { $in: dueItems.map(item => item.pointSlug) },
   })
-    .select('slug title cefrLevel l1Risk reviewStatus drills mergedInto')
+    .select(
+      'slug title cefrLevel complexity family l1Risk l1RiskObserved reviewStatus drills mergedInto'
+    )
     .lean()
   const pointBySlug = new Map(points.map(point => [point.slug, point]))
 
@@ -76,14 +81,18 @@ export async function getGrammarDueQueue({
       {
         cefrLevel: point.cefrLevel as GrammarCefrLevel,
         choices: drill.choices ?? null,
+        complexity: point.complexity as GrammarComplexity,
         drillId: drill.id,
+        family: point.family as GrammarFamily,
         idempotencyKey: randomUUID(),
         kind: drill.kind,
         l1Risk: point.l1Risk as GrammarL1Risk,
+        l1RiskObserved: (point.l1RiskObserved ?? null) as GrammarL1Risk | null,
         pointSlug: point.slug,
         pointTitle: point.title,
         prompt: drill.prompt,
         recallStage: item.recallStage,
+        reviewStatus: point.reviewStatus as GrammarReviewStatus,
       } satisfies GrammarRecallTaskRecord,
     ]
   })

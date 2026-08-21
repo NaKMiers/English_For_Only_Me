@@ -51,7 +51,11 @@ export function ComicPanel({
     <section
       className={cn(
         'border-comic-ink relative overflow-hidden border-3 p-4 shadow-[5px_5px_0_var(--manga-offset)]',
-        width === 'full' && 'sm:col-span-2',
+        // `col-span-full` spans the columns that EXIST. `col-span-2` would
+        // create an implicit second column wherever this panel sits in a
+        // single-column grid, and every sibling would then be squeezed into
+        // half the page - which is exactly what happened on the dojo.
+        width === 'full' && 'sm:col-span-full',
         tone === 'paper' && 'bg-comic-paper text-manga-black',
         tone === 'ink' && 'bg-manga-black text-manga-white',
         tone === 'danger' && 'bg-comic-danger text-manga-white',

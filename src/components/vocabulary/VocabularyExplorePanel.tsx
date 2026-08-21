@@ -75,7 +75,7 @@ function getExploreStackCardClassName({
   visible: boolean
 }) {
   return cn(
-    'border-manga-black absolute top-0 left-1/2 grid h-full min-h-96 w-[min(74vw,760px)] gap-4 border-3 p-4 shadow-[5px_5px_0_var(--manga-black)] transition-[opacity,transform] duration-300 ease-out sm:w-[min(78vw,760px)]',
+    'border-manga-black absolute top-0 left-1/2 flex h-full min-h-96 w-[min(74vw,760px)] flex-col gap-4 border-3 p-4 shadow-[5px_5px_0_var(--manga-black)] transition-[opacity,transform] duration-300 ease-out sm:w-[min(78vw,760px)]',
     decision === 'shouldLearn' && 'bg-manga-paper-soft',
     decision === 'alreadyKnow' && 'bg-emerald-50',
     !decision && 'bg-manga-white',
@@ -175,7 +175,7 @@ export function VocabularyExplorePanel({
                   }}
                   tabIndex={active || !visible ? undefined : 0}
                 >
-                  <div className="grid gap-2">
+                  <div className="grid min-h-0 flex-1 auto-rows-min gap-2 overflow-y-auto">
                     <div className="flex flex-wrap items-start justify-between gap-2">
                       <div className="grid min-w-0 flex-1 gap-1">
                         <VocabTermHeader
@@ -198,7 +198,7 @@ export function VocabularyExplorePanel({
                     </p>
                   </div>
                   {distance === 0 ? (
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid shrink-0 grid-cols-2 gap-2">
                       <MangaButton
                         className="min-w-0 px-2 text-xs sm:px-4 sm:text-sm [&>span:last-child]:whitespace-nowrap"
                         disabled={isPending || decision === 'shouldLearn'}

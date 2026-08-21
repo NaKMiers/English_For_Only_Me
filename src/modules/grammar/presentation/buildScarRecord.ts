@@ -50,8 +50,7 @@ export function buildScarRecord({
   promptByDrillId: Map<string, string>
 }): ScarRecord {
   const chronological = [...attempts].sort(
-    (left, right) =>
-      new Date(left.at).getTime() - new Date(right.at).getTime()
+    (left, right) => new Date(left.at).getTime() - new Date(right.at).getTime()
   )
   const wrongs = chronological.filter(attempt => attempt.verdict === 'wrong')
 

@@ -219,16 +219,15 @@ describe('buildScarRecord', () => {
       // A regression is a ladder movement, not a verdict. It can accompany a
       // wrong answer or a revealed one.
       expect(
-        build([
-          attempt({ stageAfter: 1, stageBefore: 6, verdict: 'revealed' }),
-        ]).revivals
+        build([attempt({ stageAfter: 1, stageBefore: 6, verdict: 'revealed' })])
+          .revivals
       ).toBe(1)
     })
 
     it('is zero for a learner who has only ever moved forward', () => {
-      expect(
-        build([attempt({ stageAfter: 3, stageBefore: 2 })]).revivals
-      ).toBe(0)
+      expect(build([attempt({ stageAfter: 3, stageBefore: 2 })]).revivals).toBe(
+        0
+      )
     })
   })
 

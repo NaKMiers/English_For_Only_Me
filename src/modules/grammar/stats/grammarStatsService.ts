@@ -4,9 +4,11 @@ import { GrammarDrillAttemptModel } from '@/models/grammar/GrammarDrillAttemptMo
 import { GrammarPointModel } from '@/models/grammar/GrammarPointModel'
 import { UserGrammarItemModel } from '@/models/grammar/UserGrammarItemModel'
 import { GRAMMAR_STATS_TREND_DAYS } from '@/modules/grammar/constants'
+import { effectiveL1Risk } from '@/modules/grammar/taxonomy/effectiveL1Risk'
 import type {
   GrammarCefrLevel,
   GrammarComplexity,
+  GrammarL1Risk,
   GrammarStatsRecord,
 } from '@/modules/grammar/types'
 
@@ -80,6 +82,13 @@ export async function getGrammarStatsForActor({
       points: points.map(point => ({
         cefrLevel: point.cefrLevel as GrammarCefrLevel,
         complexity: point.complexity as GrammarComplexity,
+        isDangerous:
+          effectiveL1Risk({
+            l1Risk: point.l1Risk as GrammarL1Risk,
+            l1RiskObserved: (point.l1RiskObserved ??
+              null) as GrammarL1Risk | null,
+          }) === 'high',
+        isUnverified: point.reviewStatus !== 'reviewed',
         slug: point.slug,
       })),
       stageBySlug,

@@ -1,16 +1,18 @@
 import { cn } from '@/lib/utils'
+import type { SenseiExpression } from '@/modules/grammar/presentation/senseiExpressions'
 
 import { partClass } from './partRig'
 
 /**
- * The six expressions. Anything the sensei can feel, he feels one of these.
+ * Six expressions and not more, deliberately: the character is defined by how
+ * little his face moves. A sensei with a dozen expressions is a mascot, and a
+ * mascot cannot deliver "you have answered this wrong eleven times" and be
+ * believed.
  *
- * Six and not more, deliberately: the character is defined by how little his
- * face moves. A sensei with a dozen expressions is a mascot, and a mascot cannot
- * deliver "you have answered this wrong eleven times" and be believed.
+ * The type lives in `presentation/senseiExpressions` so pure modules can choose
+ * an expression without importing a component.
  */
-export type SenseiExpression =
-  'neutral' | 'unimpressed' | 'severe' | 'approving' | 'weary' | 'wary'
+export type { SenseiExpression }
 
 /**
  * Expression is a geometry swap, not a colour or an emoji. Every one has to work

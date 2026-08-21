@@ -2,7 +2,9 @@
 
 import { useState } from 'react'
 
-import { MangaPanel } from '@/components/common/MangaPanel'
+import { Sensei } from '@/components/grammar/cast/Sensei'
+import { ComicPanel } from '@/components/grammar/comic/ComicPanel'
+import { SpeechBubble } from '@/components/grammar/comic/SpeechBubble'
 import { MangaButton } from '@/components/ui/MangaButton'
 import type { DiagnosticItem } from '@/modules/grammar/diagnostic/selectDiagnosticItems'
 
@@ -57,30 +59,49 @@ export function GrammarDiagnosticLauncher({
       />
     )
 
+  // Light framing only: the sensei sets the test up and reads out the result,
+  // and says nothing between questions. A character commenting on every answer
+  // would be exhausting and would leak how you are doing mid-test.
   return (
-    <MangaPanel
-      eyebrow="Placement"
-      title="Find your weak spots"
+    <ComicPanel
+      caption="Placement"
+      edge="b"
     >
-      <p className="text-manga-ink-soft text-base leading-7 font-semibold">
-        Rather than working through 162 points from A1, take a short placement
-        test. It weights its questions toward the grammar Vietnamese interferes
-        with most, so it spends them where the answer is genuinely uncertain
-        instead of confirming things you already know. Each answer places that
-        point on the review ladder.
-      </p>
-      {message ? (
-        <p className="text-manga-ink-soft text-sm leading-6 font-semibold">
-          {message}
-        </p>
-      ) : null}
-      <MangaButton
-        disabled={pending || untouchedCount === 0}
-        onClick={() => void start()}
-        type="button"
-      >
-        {pending ? 'Building...' : 'Take Placement Test'}
-      </MangaButton>
-    </MangaPanel>
+      <div className="flex items-start gap-3">
+        <Sensei expression="wary" />
+        <div className="grid min-w-0 gap-2">
+          <h2 className="font-sans text-2xl leading-none font-black uppercase">
+            Find out what you are wrong about
+          </h2>
+          <SpeechBubble speaker="Sensei">
+            {untouchedCount} rules I have never seen you attempt. Sit the test.
+            I will spend the questions where your first language fights hardest,
+            not on things you already know.
+          </SpeechBubble>
+          <p className="text-manga-ink-soft text-sm leading-6 font-semibold">
+            Each answer places that rule on the review ladder. A correct one
+            starts it mid-ladder rather than marking it known, so it comes back
+            to be confirmed.
+          </p>
+          {message ? (
+            <p
+              className="text-manga-ink-soft text-sm leading-6 font-semibold"
+              role="status"
+            >
+              {message}
+            </p>
+          ) : null}
+          <div className="flex">
+            <MangaButton
+              disabled={pending || untouchedCount === 0}
+              onClick={() => void start()}
+              type="button"
+            >
+              {pending ? 'Building...' : 'Take Placement Test'}
+            </MangaButton>
+          </div>
+        </div>
+      </div>
+    </ComicPanel>
   )
 }

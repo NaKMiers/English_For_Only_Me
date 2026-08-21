@@ -210,3 +210,89 @@ describe('buildProgressCells', () => {
     expect(cells.reduce((sum, cell) => sum + cell.total, 0)).toBe(points.length)
   })
 })
+
+describe('dungeon map cell markings', () => {
+  function cellAt(
+    cells: ReturnType<typeof buildProgressCells>,
+    cefrLevel: string,
+    complexity: number
+  ) {
+    return cells.find(
+      cell => cell.cefrLevel === cefrLevel && cell.complexity === complexity
+    )
+  }
+
+  it('counts the dangerous points in a cell', () => {
+    const cells = buildProgressCells({
+      masteredSlugs: new Set(),
+      points: [
+        { cefrLevel: 'A1', complexity: 5, isDangerous: true, slug: 'a' },
+        { cefrLevel: 'A1', complexity: 5, isDangerous: true, slug: 'b' },
+        { cefrLevel: 'A1', complexity: 5, isDangerous: false, slug: 'c' },
+      ],
+      touchedSlugs: new Set(),
+    })
+
+    expect(cellAt(cells, 'A1', 5)).toMatchObject({ dangerous: 2, total: 3 })
+  })
+
+  it('counts the unverified points in a cell', () => {
+    const cells = buildProgressCells({
+      masteredSlugs: new Set(),
+      points: [
+        { cefrLevel: 'B1', complexity: 3, isUnverified: true, slug: 'a' },
+        { cefrLevel: 'B1', complexity: 3, isUnverified: false, slug: 'b' },
+      ],
+      touchedSlugs: new Set(),
+    })
+
+    expect(cellAt(cells, 'B1', 3)).toMatchObject({ total: 2, unverified: 1 })
+  })
+
+  /**
+   * The launch state, and the reason the ghost marking exists: every one of the
+   * 184 lessons is unverified, so a fully-mastered cell is still built entirely
+   * on content nobody has checked. The map must be able to say so.
+   */
+  it('marks a fully mastered cell as fully unverified when it is', () => {
+    const cells = buildProgressCells({
+      masteredSlugs: new Set(['a', 'b']),
+      points: [
+        { cefrLevel: 'A2', complexity: 2, isUnverified: true, slug: 'a' },
+        { cefrLevel: 'A2', complexity: 2, isUnverified: true, slug: 'b' },
+      ],
+      touchedSlugs: new Set(['a', 'b']),
+    })
+
+    expect(cellAt(cells, 'A2', 2)).toMatchObject({
+      mastered: 2,
+      total: 2,
+      unverified: 2,
+    })
+  })
+
+  it('reports zero for both when the flags are absent', () => {
+    // The flags are optional on the input, so an older caller keeps working.
+    const cells = buildProgressCells({
+      masteredSlugs: new Set(),
+      points: [{ cefrLevel: 'C1', complexity: 1, slug: 'a' }],
+      touchedSlugs: new Set(),
+    })
+
+    expect(cellAt(cells, 'C1', 1)).toMatchObject({
+      dangerous: 0,
+      unverified: 0,
+    })
+  })
+
+  it('still returns a cell for every level and difficulty pair', () => {
+    // 6 CEFR levels x 5 difficulties. The grid is fixed; only the counts vary.
+    expect(
+      buildProgressCells({
+        masteredSlugs: new Set(),
+        points: [],
+        touchedSlugs: new Set(),
+      })
+    ).toHaveLength(30)
+  })
+})

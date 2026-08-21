@@ -54,6 +54,10 @@ export function computeStreakDays({
 interface PointCell {
   cefrLevel: GrammarCefrLevel
   complexity: GrammarComplexity
+  /** Effective risk is high. Resolved by the caller via `effectiveL1Risk`. */
+  isDangerous?: boolean
+  /** No human has read this lesson. */
+  isUnverified?: boolean
   slug: string
 }
 
@@ -103,16 +107,25 @@ export function buildProgressCells({
 }): GrammarStatsRecord['progressCells'] {
   const byCell = new Map<
     string,
-    { mastered: number; stages: number[]; total: number; touched: number }
+    {
+      dangerous: number
+      mastered: number
+      stages: number[]
+      total: number
+      touched: number
+      unverified: number
+    }
   >()
 
   for (const level of GRAMMAR_CEFR_LEVELS)
     for (const complexity of GRAMMAR_COMPLEXITY_LEVELS)
       byCell.set(`${level}:${complexity}`, {
+        dangerous: 0,
         mastered: 0,
         stages: [],
         total: 0,
         touched: 0,
+        unverified: 0,
       })
 
   for (const point of points) {
@@ -124,6 +137,11 @@ export function buildProgressCells({
     cell.total += 1
     if (touchedSlugs.has(point.slug)) cell.touched += 1
     if (masteredSlugs.has(point.slug)) cell.mastered += 1
+    // Both read the EFFECTIVE risk and the review status, which the caller
+    // resolves. Counted here rather than derived later so the map needs no
+    // second pass over 184 points.
+    if (point.isDangerous) cell.dangerous += 1
+    if (point.isUnverified) cell.unverified += 1
 
     const stage = stageBySlug.get(point.slug)
 
@@ -137,9 +155,11 @@ export function buildProgressCells({
       averageStage: averageStage(cell.stages),
       cefrLevel: cefrLevel as GrammarCefrLevel,
       complexity: Number(complexity) as GrammarComplexity,
+      dangerous: cell.dangerous,
       mastered: cell.mastered,
       total: cell.total,
       touched: cell.touched,
+      unverified: cell.unverified,
     }
   })
 }
