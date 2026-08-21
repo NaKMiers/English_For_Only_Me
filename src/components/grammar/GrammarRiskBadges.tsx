@@ -31,11 +31,14 @@ export function GrammarAxes({
       </span>
       <L1RiskTag l1Risk={l1Risk} />
       {ieltsImpact ? (
-        <span
-          className="border-manga-black text-manga-black border-2 border-dashed px-2 py-0.5 font-sans text-xs font-black uppercase"
-          title="Derived from difficulty and family, not hand-assigned"
-        >
+        <span className="border-manga-black text-manga-black border-2 border-dashed px-2 py-0.5 font-sans text-xs font-black uppercase">
           IELTS {ieltsImpact}
+          {/* Was a `title=` tooltip, which is unreachable by keyboard and by
+              touch - so the explanation was invisible to most of the people who
+              needed it. */}
+          <span className="sr-only">
+            , derived from difficulty and family rather than hand-assigned
+          </span>
         </span>
       ) : null}
     </div>
@@ -61,9 +64,12 @@ export function L1RiskTag({ l1Risk }: { l1Risk: GrammarL1Risk }) {
   return (
     <span
       className={`border-manga-black border-2 px-2 py-0.5 font-sans text-xs font-black uppercase ${emphasis}`}
-      title="How much Vietnamese as a first language interferes with this point"
     >
       {L1_RISK_LABEL[l1Risk]}
+      <span className="sr-only">
+        {' '}
+        - how much Vietnamese as a first language interferes with this point
+      </span>
     </span>
   )
 }

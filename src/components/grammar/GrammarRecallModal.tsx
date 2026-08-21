@@ -9,6 +9,8 @@ import { Sensei } from '@/components/grammar/cast/Sensei'
 import { ImpactStamp } from '@/components/grammar/comic/ImpactStamp'
 import { SpeechBubble } from '@/components/grammar/comic/SpeechBubble'
 import { MangaButton } from '@/components/ui/MangaButton'
+import { useGrammarSfx } from '@/lib/audio/useGrammarSfx'
+import { useReducedMotion } from '@/lib/motion/useReducedMotion'
 import { creatureFromPoint } from '@/modules/grammar/presentation/creatureFromPoint'
 import { resolveCreatureState } from '@/modules/grammar/presentation/resolveCreatureState'
 import { resolveDrillBeat } from '@/modules/grammar/presentation/resolveDrillBeat'
@@ -134,6 +136,9 @@ export function GrammarRecallModal({
     }
   }, [answer, task])
 
+  const { enabled: soundOn, play, toggle: toggleSound } = useGrammarSfx()
+  const { reduced: motionOff, toggle: toggleMotion } = useReducedMotion()
+
   const submit = useCallback(
     async (revealed: boolean) => {
       if (!task || pending || result) return
@@ -168,11 +173,25 @@ export function GrammarRecallModal({
 
         setResult(graded)
         if (graded.isCorrect) setCorrect(previous => previous + 1)
+
+        // Driven off the same beat the visuals use, so the four outcomes cannot
+        // disagree with each other. `play` is a no-op while sound is off, and
+        // the context was created by the toggle click - never here, after an
+        // await, where autoplay policy would block it.
+        const sting = resolveDrillBeat({
+          stageAfter: graded.item.recallStage,
+          stageBefore: task.recallStage,
+          verdict: graded.verdict,
+        })
+
+        if (sting.isRegression) play('revive')
+        else if (graded.verdict === 'correct') play('correct')
+        else if (graded.verdict === 'wrong') play('wrong')
       } finally {
         setPending(false)
       }
     },
-    [answer, pending, result, task]
+    [answer, pending, play, result, task]
   )
 
   const next = useCallback(() => {
@@ -181,7 +200,8 @@ export function GrammarRecallModal({
     setMessage(null)
     setAccepted(false)
     setIndex(previous => previous + 1)
-  }, [])
+    play('pageTurn')
+  }, [play])
 
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
@@ -219,6 +239,24 @@ export function GrammarRecallModal({
 
   return (
     <MangaPanel
+      action={
+        <div className="flex flex-wrap gap-2">
+          <SettingToggle
+            label="Sound"
+            on={soundOn}
+            onToggle={toggleSound}
+          />
+          {/* Both settings get a real button rather than living only behind an
+              OS preference: the keyboard path to every control is part of the
+              accessibility contract, and a learner may want motion off here
+              without changing it system-wide. */}
+          <SettingToggle
+            label="Motion"
+            on={!motionOff}
+            onToggle={toggleMotion}
+          />
+        </div>
+      }
       eyebrow={`Recall ${index + 1} of ${tasks.length}`}
       title={task.pointTitle}
     >
@@ -379,5 +417,26 @@ export function GrammarRecallModal({
         </div>
       )}
     </MangaPanel>
+  )
+}
+
+function SettingToggle({
+  label,
+  on,
+  onToggle,
+}: {
+  label: string
+  on: boolean
+  onToggle: () => void
+}) {
+  return (
+    <button
+      aria-pressed={on}
+      className="border-manga-black bg-manga-white text-manga-black min-h-11 border-3 px-3 font-sans text-xs font-black uppercase"
+      onClick={onToggle}
+      type="button"
+    >
+      {label} {on ? 'on' : 'off'}
+    </button>
   )
 }

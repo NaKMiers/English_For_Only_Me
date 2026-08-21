@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, type ReactNode } from 'react'
 
+import { shouldReduceMotion } from '@/lib/motion/useReducedMotion'
+
 /**
  * One reveal sweep over the map on first load.
  *
@@ -24,7 +26,7 @@ export function DungeonReveal({ children }: { children: ReactNode }) {
 
     if (!host) return
 
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    if (shouldReduceMotion()) return
 
     const cells = [...host.querySelectorAll<HTMLElement>('td')]
 

@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, type ReactNode } from 'react'
 
+import { shouldReduceMotion } from '@/lib/motion/useReducedMotion'
+
 import { partSelector } from './partRig'
 
 /** What just happened to the learner. Drives which sequence plays. */
@@ -36,8 +38,9 @@ export function CreatureMotion({
     if (!host) return
 
     // Checked BEFORE starting, not by cancelling afterwards. A learner who asked
-    // for no motion should never see the first frame of a sequence.
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    // for no motion should never see the first frame of a sequence. Reads the
+    // in-page override as well as the OS setting.
+    if (shouldReduceMotion()) return
 
     if (typeof host.animate !== 'function') return
 
