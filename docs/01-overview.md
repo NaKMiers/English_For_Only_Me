@@ -80,23 +80,23 @@ shape the intended product surface.
 
 ## Core domain vocabulary
 
-| Term             | Meaning                                                                       |
-| ---------------- | ----------------------------------------------------------------------------- |
-| Topic            | Top-level content grouping (has a slug, thumbnail, ordered sections).         |
-| Section          | A group of videos inside a topic.                                             |
-| Video            | A YouTube source with metadata, one active transcript, and segments.          |
-| Transcript       | Raw text/cues for a video, normalized and quality-graded; one is active.      |
-| Segment          | A single practiceable sentence/line derived from a transcript.                |
-| Session          | A user's practice run over a video's segments.                                |
-| Attempt          | One graded submission (check/reveal/skip) against a segment.                  |
-| Review item      | A weak spot (word/segment/pattern) scheduled for spaced review.               |
-| Debrief          | An AI-generated post-session summary and coaching output.                     |
-| Favorite         | A user's bookmark on a video.                                                 |
-| Vocab entry      | A global dictionary-cache row keyed by language and normalized term.          |
-| User vocab item  | A per-user word-learning state: learning, already know, mastered, or ignored. |
-| Vocab occurrence | A trail of where a user encountered or looked up a word.                      |
-| Vocab recall attempt | One graded touch in the seven-touch recall schedule (task type, stage, verdict). |
-| Recall task     | A single generated recall exercise (listen/definition/example), signed into a short-lived token. |
+| Term                 | Meaning                                                                                          |
+| -------------------- | ------------------------------------------------------------------------------------------------ |
+| Topic                | Top-level content grouping (has a slug, thumbnail, ordered sections).                            |
+| Section              | A group of videos inside a topic.                                                                |
+| Video                | A YouTube source with metadata, one active transcript, and segments.                             |
+| Transcript           | Raw text/cues for a video, normalized and quality-graded; one is active.                         |
+| Segment              | A single practiceable sentence/line derived from a transcript.                                   |
+| Session              | A user's practice run over a video's segments.                                                   |
+| Attempt              | One graded submission (check/reveal/skip) against a segment.                                     |
+| Review item          | A weak spot (word/segment/pattern) scheduled for spaced review.                                  |
+| Debrief              | An AI-generated post-session summary and coaching output.                                        |
+| Favorite             | A user's bookmark on a video.                                                                    |
+| Vocab entry          | A global dictionary-cache row keyed by language and normalized term.                             |
+| User vocab item      | A per-user word-learning state: learning, already know, mastered, or ignored.                    |
+| Vocab occurrence     | A trail of where a user encountered or looked up a word.                                         |
+| Vocab recall attempt | One graded touch in the seven-touch recall schedule (task type, stage, verdict).                 |
+| Recall task          | A single generated recall exercise (listen/definition/example), signed into a short-lived token. |
 
 The full field-level model is in [docs/03-data-model.md](./03-data-model.md).
 
