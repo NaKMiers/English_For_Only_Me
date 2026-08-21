@@ -5,12 +5,13 @@ import { AppTopbar } from '@/components/common/AppTopbar'
 import { AuthControl } from '@/components/common/AuthControl'
 import { MangaPageShell } from '@/components/common/MangaPageShell'
 import { MangaPanel } from '@/components/common/MangaPanel'
-import { GrammarLesson } from '@/components/grammar/GrammarLesson'
+import { GrammarComicLesson } from '@/components/grammar/GrammarComicLesson'
 import { GrammarPointActions } from '@/components/grammar/GrammarPointActions'
 import { MangaButton } from '@/components/ui/MangaButton'
 import { hasMongoDbUri } from '@/constants/environments'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { getPracticeActorId } from '@/modules/dictation/services/getCurrentUser'
+import { getLearnerPresentationState } from '@/modules/grammar/services/grammarPresentationService'
 import { getGrammarLesson } from '@/modules/grammar/services/grammarPointListService'
 import { parseGrammarPointSlug } from '@/modules/grammar/services/grammarRouteDecisions'
 import { getGrammarItemsForActor } from '@/modules/grammar/services/userGrammarItemService'
@@ -80,6 +81,13 @@ export default async function GrammarPointPage({
     actorId,
     pointSlugs: [lesson.slug],
   })
+  const item = items.get(lesson.slug) ?? null
+  // `actorId` is '' for a signed-out visitor, and the comic layer distinguishes
+  // that from a real actor: no verdict line, no scar, no wrong count.
+  const learnerState = await getLearnerPresentationState({
+    actorId: actorId || null,
+    item,
+  })
 
   return (
     <MangaPageShell
@@ -94,10 +102,13 @@ export default async function GrammarPointPage({
       <section className="grid gap-5 p-4 sm:p-6 lg:p-8">
         <MangaButton href="/grammar/points">Back To Grammar Map</MangaButton>
         <GrammarPointActions
-          initialItem={items.get(lesson.slug) ?? null}
+          initialItem={item}
           slug={lesson.slug}
         />
-        <GrammarLesson lesson={lesson} />
+        <GrammarComicLesson
+          learnerState={learnerState}
+          lesson={lesson}
+        />
       </section>
     </MangaPageShell>
   )

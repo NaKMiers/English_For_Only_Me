@@ -9,6 +9,7 @@ import {
 } from 'mongoose'
 
 import {
+  GRAMMAR_ATTEMPT_ORIGINS,
   GRAMMAR_DRILL_KINDS,
   GRAMMAR_DRILL_VERDICTS,
 } from '@/modules/grammar/constants'
@@ -100,6 +101,26 @@ const GrammarDrillAttemptSchema = new Schema(
       type: Date,
       required: true,
       default: Date.now,
+    },
+    /**
+     * Which flow produced this attempt.
+     *
+     * The diagnostic and the recall loop both write rows here and nothing used
+     * to distinguish them, which matters for the correct-answer streak: the
+     * diagnostic is a 40-question assessment seeded from `stageBefore: 1`, so a
+     * lucky placement run would manufacture a ten-in-a-row compliment out of
+     * questions the learner never studied for.
+     *
+     * Additive with a default, so nothing needs backfilling. But a Mongoose
+     * default applies ON WRITE ONLY - it does not touch existing documents - so
+     * every consumer must EXCLUDE 'diagnostic' rather than include 'recall',
+     * or every pre-v2 attempt silently disappears from the count.
+     */
+    origin: {
+      type: String,
+      enum: GRAMMAR_ATTEMPT_ORIGINS,
+      required: false,
+      default: 'recall',
     },
   },
   { timestamps: true }

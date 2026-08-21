@@ -97,6 +97,26 @@ export const GRAMMAR_USER_ITEM_STATUSES = [
 
 export const GRAMMAR_DRILL_VERDICTS = ['correct', 'wrong', 'revealed'] as const
 
+/**
+ * Which flow produced a drill attempt.
+ *
+ * Exists so the correct-answer streak can exclude the placement diagnostic: 40
+ * assessment questions answered from a cold start are not a ten-answer run of
+ * mastery, and counting them would hand out the module's only compliment for
+ * guessing well once.
+ */
+export const GRAMMAR_ATTEMPT_ORIGINS = ['recall', 'diagnostic'] as const
+
+/**
+ * How far back the correct-answer streak looks.
+ *
+ * Bounded rather than unbounded: the streak is a motivational number, and any
+ * run longer than this is already past every threshold that reads it. Also the
+ * reason this is a separate query from the stats trend read, which projects only
+ * `at` inside a 14-day window and so cannot see verdicts or older streaks.
+ */
+export const GRAMMAR_STREAK_LOOKBACK_ATTEMPTS = 50
+
 export const GRAMMAR_RECALL_DEFAULT_LIMIT = 12
 export const GRAMMAR_RECALL_MAX_LIMIT = 60
 

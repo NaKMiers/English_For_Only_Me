@@ -152,6 +152,9 @@ export async function submitGrammarDiagnostic({
         idempotencyKey,
         kind: drill.kind,
         matchedAnswer: grade.matchedAnswer,
+        // Marks these rows out from recall answers, so the correct-answer
+        // streak can exclude a placement run.
+        origin: 'diagnostic',
         pointSlug: point.slug,
         score: grade.score,
         stageAfter: seed.recallStage,
