@@ -80,6 +80,42 @@ const GrammarDrillSchema = new Schema(
       required: true,
       default: 1,
     },
+    /**
+     * Whether internal punctuation is part of the answer.
+     *
+     * Absent (the state of every drill authored before this field) means the
+     * grader ignores commas, hyphens, quotes and brackets - apostrophes always
+     * survive, because "he's" versus "he is" is a tense distinction this module
+     * teaches. True means compare as written, which is correct only where the
+     * mark carries the meaning: non-defining relative clauses, comma splices,
+     * tag questions, direct speech.
+     *
+     * `grammar:generate --punctuation-flags` backfills the existing drills that
+     * need it. See `grading/resolveGrammarAnswer.ts`.
+     */
+    punctuationSensitive: {
+      type: Boolean,
+      required: false,
+      default: undefined,
+    },
+    /**
+     * AI-authored by the on-demand test, not reviewed by a human.
+     *
+     * Three readers must respect this or the generated pool silently becomes
+     * the curriculum: `selectDrillForStage` keeps these out of the daily recall
+     * queue, `validateGrammarContent` keeps them out of the 8/12-drill quality
+     * floors, and the append path caps them at
+     * `GRAMMAR_MAX_GENERATED_DRILLS` per point (FIFO) so a subdocument sized
+     * for 8-12 entries is not asked to hold one per test forever.
+     *
+     * `grammar:export` promotes a survivor into committed content, which keeps
+     * promotion a human act rather than a side effect of taking a test.
+     */
+    generated: {
+      type: Boolean,
+      required: false,
+      default: undefined,
+    },
   },
   { _id: false }
 )

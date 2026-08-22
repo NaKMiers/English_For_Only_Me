@@ -4,6 +4,7 @@ import type { GrammarDrillRecord } from '@/modules/grammar/types'
 
 import {
   getCandidateAnswers,
+  getGrammarCorrectionOptions,
   GRAMMAR_CORRECTION_OPTIONS,
   resolveGrammarAnswer,
   trimTerminalPunctuation,
@@ -255,18 +256,36 @@ describe('production drills', () => {
       ).toBe(true)
     })
 
-    it('still fails an answer that moves internal commas', () => {
+    it('still fails an answer that moves internal commas, when the drill says commas count', () => {
       // Not pedantry: the comma is the whole difference between a defining and
       // a non-defining relative clause, so it has to keep counting.
-      const result = resolveGrammarAnswer({
-        answer: 'My brother who lives in Hue called.',
-        drill: drill({
-          kind: 'build',
-          target: 'My brother, who lives in Hue, called.',
-        }),
+      //
+      // What changed is WHERE that decision is made. It used to be
+      // unconditional, which meant every drill in the taxonomy demanded exact
+      // punctuation - including the ~170 points where a comma teaches nothing
+      // and a forgotten one just failed a correct answer. The drill now opts in
+      // with `punctuationSensitive`, and this is the case it exists for.
+      const sensitive = drill({
+        kind: 'build',
+        punctuationSensitive: true,
+        target: 'My brother, who lives in Hue, called.',
       })
 
-      expect(result.isCorrect).toBe(false)
+      expect(
+        resolveGrammarAnswer({
+          answer: 'My brother who lives in Hue called.',
+          drill: sensitive,
+        }).isCorrect
+      ).toBe(false)
+
+      // And the tolerant default really is the other way round, so this test
+      // is pinning the flag rather than the old blanket rule.
+      expect(
+        resolveGrammarAnswer({
+          answer: 'My brother who lives in Hue called.',
+          drill: { ...sensitive, punctuationSensitive: false },
+        }).isCorrect
+      ).toBe(true)
     })
   })
 
@@ -352,5 +371,245 @@ describe('production drills', () => {
 
     expect(result.isCorrect).toBe(false)
     expect(result.matchedAnswer).toBeNull()
+  })
+})
+
+describe('punctuation tolerance (default)', () => {
+  it('accepts a missing comma and missing quotes on direct speech', () => {
+    const result = resolveGrammarAnswer({
+      answer: 'he said i will go',
+      drill: drill({ target: 'He said, "I will go."' }),
+    })
+
+    expect(result.isCorrect).toBe(true)
+    // The sentence read back to the learner keeps its punctuation even though
+    // the comparison ignored it.
+    expect(result.matchedAnswer).toBe('He said, "I will go."')
+  })
+
+  it('accepts a hyphenated compound typed as two words', () => {
+    const result = resolveGrammarAnswer({
+      answer: 'well known authors in fact disagree',
+      drill: drill({ target: 'Well-known authors, in fact, disagree.' }),
+    })
+
+    expect(result.isCorrect).toBe(true)
+  })
+
+  it('accepts a possessive typed without its trailing apostrophe', () => {
+    const result = resolveGrammarAnswer({
+      answer: 'the students books were left behind',
+      drill: drill({ target: "The students' books were left behind" }),
+    })
+
+    expect(result.isCorrect).toBe(true)
+  })
+
+  it('accepts a semicolon typed as nothing', () => {
+    const result = resolveGrammarAnswer({
+      answer: 'she left early he stayed',
+      drill: drill({ target: 'She left early; he stayed' }),
+    })
+
+    expect(result.isCorrect).toBe(true)
+  })
+
+  /**
+   * The apostrophe is the line. Tolerance stops here on purpose: "its" and
+   * "it's" are a possessive and a contraction, "dont" is not a word, and both
+   * are things this module exists to teach. Dropping the apostrophe would make
+   * the grader accept the exact errors the lessons target.
+   */
+  it('still rejects a contraction typed without its apostrophe', () => {
+    const result = resolveGrammarAnswer({
+      answer: 'I dont know the answer',
+      drill: drill({ target: "I don't know the answer" }),
+    })
+
+    expect(result.isCorrect).toBe(false)
+  })
+
+  it('still rejects "its" for "it\'s"', () => {
+    const result = resolveGrammarAnswer({
+      answer: 'its mine',
+      drill: drill({ target: "It's mine" }),
+    })
+
+    expect(result.isCorrect).toBe(false)
+  })
+
+  it('is case insensitive', () => {
+    const result = resolveGrammarAnswer({
+      answer: 'HE HAS LIVED HERE FOR FIVE YEARS',
+      drill: drill(),
+    })
+
+    expect(result.isCorrect).toBe(true)
+  })
+
+  it('collapses runs of whitespace', () => {
+    const result = resolveGrammarAnswer({
+      answer: '  He   has  lived here \n for five  years  ',
+      drill: drill(),
+    })
+
+    expect(result.isCorrect).toBe(true)
+  })
+
+  it('applies to objective kinds too', () => {
+    const result = resolveGrammarAnswer({
+      answer: 'the man who left waved',
+      drill: drill({
+        kind: 'fillBlank',
+        target: 'The man, who left, waved',
+      }),
+    })
+
+    expect(result.isCorrect).toBe(true)
+  })
+})
+
+/**
+ * REGRESSION GUARD - DO NOT DELETE.
+ *
+ * `normalizeAnswer` expands symbolic variants BEFORE it handles punctuation:
+ * "50%" becomes "50 percent" and "$50" becomes "50 dollar", on both sides, so
+ * either spelling matches. Punctuation tolerance had to be inserted AFTER that
+ * expansion for exactly this reason.
+ *
+ * An earlier design stripped punctuation as a pre-pass. That deletes the "%"
+ * and the "$" before the expansion can see them, so the target collapses to
+ * "50" while the learner's "50 percent" stays two tokens - and a drill that
+ * passes today starts failing. These four cases fail loudly if anyone moves the
+ * strip back to the front of the pipeline.
+ */
+describe('symbolic variants survive punctuation tolerance (regression guard)', () => {
+  it('still matches "50%" against "50 percent"', () => {
+    const result = resolveGrammarAnswer({
+      answer: 'about 50 percent of them agreed',
+      drill: drill({ target: 'About 50% of them agreed' }),
+    })
+
+    expect(result.isCorrect).toBe(true)
+  })
+
+  it('still matches "50 percent" against "50%"', () => {
+    const result = resolveGrammarAnswer({
+      answer: 'about 50% of them agreed',
+      drill: drill({ target: 'About 50 percent of them agreed' }),
+    })
+
+    expect(result.isCorrect).toBe(true)
+  })
+
+  it('still matches "$50" against "50 dollar"', () => {
+    const result = resolveGrammarAnswer({
+      answer: 'it cost 50 dollar',
+      drill: drill({ target: 'It cost $50' }),
+    })
+
+    expect(result.isCorrect).toBe(true)
+  })
+
+  it('still matches a temperature written with a degree sign', () => {
+    const result = resolveGrammarAnswer({
+      answer: 'water boils at 100 celsius',
+      drill: drill({ target: 'Water boils at 100°C' }),
+    })
+
+    expect(result.isCorrect).toBe(true)
+  })
+})
+
+describe('punctuationSensitive drills', () => {
+  /**
+   * The whole reason the flag exists. Both sentences are grammatical English;
+   * they mean different things. A grader that accepts either has nothing left
+   * to teach about non-defining relative clauses.
+   */
+  it('rejects a non-defining relative clause with its commas removed', () => {
+    const result = resolveGrammarAnswer({
+      answer: 'the man who left waved',
+      drill: drill({
+        punctuationSensitive: true,
+        target: 'The man, who left, waved',
+      }),
+    })
+
+    expect(result.isCorrect).toBe(false)
+  })
+
+  it('accepts the same clause when the commas are present', () => {
+    const result = resolveGrammarAnswer({
+      answer: 'the man, who left, waved',
+      drill: drill({
+        punctuationSensitive: true,
+        target: 'The man, who left, waved',
+      }),
+    })
+
+    expect(result.isCorrect).toBe(true)
+  })
+
+  it('still forgives a missing full stop on a sensitive drill', () => {
+    const result = resolveGrammarAnswer({
+      answer: 'the man, who left, waved',
+      drill: drill({
+        punctuationSensitive: true,
+        target: 'The man, who left, waved.',
+      }),
+    })
+
+    expect(result.isCorrect).toBe(true)
+  })
+
+  it('is still case insensitive when sensitive', () => {
+    const result = resolveGrammarAnswer({
+      answer: 'THE MAN, WHO LEFT, WAVED',
+      drill: drill({
+        punctuationSensitive: true,
+        target: 'The man, who left, waved',
+      }),
+    })
+
+    expect(result.isCorrect).toBe(true)
+  })
+
+  it('treats an explicit false exactly like an absent flag', () => {
+    const result = resolveGrammarAnswer({
+      answer: 'the man who left waved',
+      drill: drill({
+        punctuationSensitive: false,
+        target: 'The man, who left, waved',
+      }),
+    })
+
+    expect(result.isCorrect).toBe(true)
+  })
+})
+
+describe('getGrammarCorrectionOptions', () => {
+  it('never expands contractions and never uses the blunt punctuation strip', () => {
+    for (const punctuationSensitive of [true, false, undefined]) {
+      const options = getGrammarCorrectionOptions({ punctuationSensitive })
+
+      expect(options.expandContractions).toBe(false)
+      expect(options.ignorePunctuation).toBe(false)
+    }
+  })
+
+  it('turns tolerance on unless the drill opts out', () => {
+    expect(
+      getGrammarCorrectionOptions({ punctuationSensitive: undefined })
+        .ignoreStructuralPunctuation
+    ).toBe(true)
+    expect(
+      getGrammarCorrectionOptions({ punctuationSensitive: false })
+        .ignoreStructuralPunctuation
+    ).toBe(true)
+    expect(
+      getGrammarCorrectionOptions({ punctuationSensitive: true })
+        .ignoreStructuralPunctuation
+    ).toBe(false)
   })
 })

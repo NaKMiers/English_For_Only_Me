@@ -369,6 +369,36 @@ function removePunctuation(value: string) {
   return value.replace(/[^\p{L}\p{N}\s]/gu, ' ')
 }
 
+/**
+ * Drop the marks that carry no grammar; keep the ones that do.
+ *
+ * Two passes, and the order matters:
+ *
+ *   1. Everything that is not a letter, digit, space, or apostrophe becomes a
+ *      space. Commas, hyphens, quotes, brackets, semicolons - gone.
+ *   2. Apostrophes that are NOT inside a word become spaces too. So "don't"
+ *      keeps its apostrophe, while 'quoted' loses both of its own and
+ *      "students'" loses its trailing one.
+ *
+ * The apostrophe is the whole reason this exists rather than reusing
+ * `removePunctuation`. "he's" is present perfect OR present simple depending
+ * on the verb that follows, "he'd" is past perfect OR conditional, and both are
+ * core taxonomy points. Tokenising them as ["he", "s"] does not make grading
+ * lenient, it makes it meaningless.
+ *
+ * Called AFTER `expandSymbolicVariants` in `normalizeAnswer`, never before. A
+ * pre-pass would delete the "%" in "50%" before the expansion could turn it
+ * into "50 percent", so a target of "50%" would stop matching a typed
+ * "50 percent" - trading a comma bug for a symbol bug.
+ */
+export function stripStructuralPunctuation(value: string) {
+  return value
+    .replace(/[^\p{L}\p{N}\s']/gu, ' ')
+    .replace(/(?<!\p{L})'|'(?!\p{L})/gu, ' ')
+    .replace(/\s+/gu, ' ')
+    .trim()
+}
+
 function readUnderOneHundred(tokens: string[], startIndex: number) {
   const first = tokens[startIndex]
 
@@ -521,9 +551,13 @@ export function normalizeAnswer(
   const expanded = options.expandContractions
     ? expandContractions(symbolicExpanded)
     : symbolicExpanded
+  // `ignorePunctuation` first: it is the blunter instrument, and a caller that
+  // asked for it has already accepted losing contractions.
   const withoutPunctuation = options.ignorePunctuation
     ? removePunctuation(expanded)
-    : expanded
+    : options.ignoreStructuralPunctuation
+      ? stripStructuralPunctuation(expanded)
+      : expanded
   const originalTokens = withoutPunctuation
     .replace(/\s+/g, ' ')
     .trim()

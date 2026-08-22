@@ -84,7 +84,7 @@
         "explanation": "He is third person singular, so the verb needs -es: goes.",
         "id": "d4",
         "kind": "fillBlank",
-        "prompt": "He ___ to work by bus.",
+        "prompt": "He ___ (go) to work by bus.",
         "target": "goes"
       },
       {
@@ -270,7 +270,7 @@
         "explanation": "Use am/is/are + verb-ing to describe an action happening now.",
         "id": "d1",
         "kind": "fillBlank",
-        "prompt": "I ___ a book at the moment.",
+        "prompt": "I ___ (read) a book at the moment.",
         "target": "am reading"
       },
       {
@@ -282,7 +282,7 @@
         "explanation": "He takes is because the subject is he, and cooking shows an action in progress.",
         "id": "d2",
         "kind": "fillBlank",
-        "prompt": "She ___ dinner right now.",
+        "prompt": "She ___ (cook) dinner right now.",
         "target": "is cooking"
       },
       {
@@ -294,7 +294,7 @@
         "explanation": "Use are with they, and the -ing form shows the action is happening now.",
         "id": "d3",
         "kind": "fillBlank",
-        "prompt": "They ___ football in the park now.",
+        "prompt": "They ___ (play) football in the park now.",
         "target": "are playing"
       },
       {
@@ -452,7 +452,7 @@
         "explanation": "Played is the regular past simple form of play. It is used for a finished action in the past.",
         "id": "d1",
         "kind": "fillBlank",
-        "prompt": "I ___ football yesterday.",
+        "prompt": "I ___ (play) football yesterday.",
         "target": "played"
       },
       {
@@ -464,7 +464,7 @@
         "explanation": "Worked is the past simple form of work. The sentence talks about a finished time in the past.",
         "id": "d2",
         "kind": "fillBlank",
-        "prompt": "She ___ in a shop last year.",
+        "prompt": "She ___ (work) in a shop last year.",
         "target": "worked"
       },
       {
@@ -476,7 +476,7 @@
         "explanation": "Watched is the regular past form of watch. It matches the past time expression last night.",
         "id": "d3",
         "kind": "fillBlank",
-        "prompt": "We ___ a film last night.",
+        "prompt": "We ___ (watch) a film last night.",
         "target": "watched"
       },
       {
@@ -488,7 +488,7 @@
         "explanation": "Lived is the correct past simple form of live. The action is finished, so the verb needs the -ed form.",
         "id": "d4",
         "kind": "fillBlank",
-        "prompt": "He ___ in Hanoi when he was a child.",
+        "prompt": "He ___ (live) in Hanoi when he was a child.",
         "target": "lived"
       },
       {
@@ -500,7 +500,7 @@
         "explanation": "Studied is the regular past form of study. After a finished past time, English changes the verb to past simple.",
         "id": "d5",
         "kind": "fillBlank",
-        "prompt": "They ___ English at school last year.",
+        "prompt": "They ___ (study) English at school last year.",
         "target": "studied"
       },
       {
@@ -512,7 +512,7 @@
         "explanation": "Cleaned is the regular past simple form of clean. It shows a completed action in the past.",
         "id": "d6",
         "kind": "fillBlank",
-        "prompt": "I ___ my room on Sunday.",
+        "prompt": "I ___ (clean) my room on Sunday.",
         "target": "cleaned"
       },
       {
@@ -588,7 +588,7 @@
         "explanation": "Studied is the regular past form of study. When a verb ends in consonant + y, we usually change y to i and add -ed.",
         "id": "d11",
         "kind": "fillBlank",
-        "prompt": "He ___ hard for the exam last week.",
+        "prompt": "He ___ (study) hard for the exam last week.",
         "target": "studied"
       },
       {
@@ -600,7 +600,7 @@
         "explanation": "Stopped is the correct past simple form of stop. For many one-syllable verbs ending consonant-vowel-consonant, we double the final consonant before -ed.",
         "id": "d12",
         "kind": "fillBlank",
-        "prompt": "The bus ___ outside my house five minutes ago.",
+        "prompt": "The bus ___ (stop) outside my house five minutes ago.",
         "target": "stopped"
       },
       {
@@ -709,7 +709,7 @@
         "explanation": "The past simple form of go is went. It is irregular, so it does not end in -ed.",
         "id": "d1",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: I ____ to school yesterday.",
+        "prompt": "Complete the sentence: I ____ (go) to school yesterday.",
         "target": "went"
       },
       {
@@ -761,7 +761,7 @@
         "explanation": "The past simple form of see is saw. It is irregular and must be memorised.",
         "id": "d5",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: They ____ a film on Saturday.",
+        "prompt": "Complete the sentence: They ____ (see) a film on Saturday.",
         "target": "saw"
       },
       {
@@ -789,7 +789,7 @@
         "explanation": "The past simple form of make is made. It does not become maked.",
         "id": "d7",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: I ____ dinner at 7 p.m.",
+        "prompt": "Complete the sentence: I ____ (make) dinner at 7 p.m.",
         "target": "made"
       },
       {
@@ -813,7 +813,7 @@
         "explanation": "The past simple form of find is found. It is irregular, so we do not add -ed.",
         "id": "d9",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: She ____ her keys in her bag.",
+        "prompt": "Complete the sentence: She ____ (find) her keys in her bag.",
         "target": "found"
       },
       {
@@ -841,7 +841,7 @@
         "explanation": "The past simple form of buy is bought. It is irregular and must be memorised.",
         "id": "d11",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: He ____ a new phone last week.",
+        "prompt": "Complete the sentence: He ____ (buy) a new phone last week.",
         "target": "bought"
       },
       {
@@ -911,7 +911,7 @@
         "explanation": "Use was/were + verb-ing to show an action in progress in the past.",
         "id": "d1",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: I ____ a book when you called.",
+        "prompt": "Complete the sentence: I ____ (read) a book when you called.",
         "target": "was reading"
       },
       {
@@ -923,7 +923,7 @@
         "explanation": "With they, use were + verb-ing for an action in progress in the past.",
         "id": "d2",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: They ____ in the park at 6 o'clock.",
+        "prompt": "Complete the sentence: They ____ (play) in the park at 6 o'clock.",
         "target": "were playing"
       },
       {
@@ -935,7 +935,7 @@
         "explanation": "The sentence needs the past continuous because the action was already in progress at that past time.",
         "id": "d3",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: My baby ____ when the guests arrived.",
+        "prompt": "Complete the sentence: My baby ____ (sleep) when the guests arrived.",
         "target": "was sleeping"
       },
       {
@@ -1007,7 +1007,7 @@
         "explanation": "Use were + verb-ing with we to show an action in progress in the past.",
         "id": "d8",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: We ____ TV when the guests arrived.",
+        "prompt": "Complete the sentence: We ____ (watch) TV when the guests arrived.",
         "target": "were watching"
       },
       {
@@ -1335,7 +1335,7 @@
         "explanation": "Use has/have been + verb-ing to show an action that started earlier and is still happening now.",
         "id": "d1",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: It ___ all morning.",
+        "prompt": "Complete the sentence: It ___ (rain) all morning.",
         "target": "has been raining"
       },
       {
@@ -1347,7 +1347,7 @@
         "explanation": "This form shows an activity continuing up to the present, with focus on duration.",
         "id": "d2",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: We ___ for the IELTS test for six months.",
+        "prompt": "Complete the sentence: We ___ (study) for the IELTS test for six months.",
         "target": "have been studying"
       },
       {
@@ -1359,7 +1359,7 @@
         "explanation": "The present perfect continuous is used because the waiting started in the past and continues now.",
         "id": "d3",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: They ___ for more than an hour.",
+        "prompt": "Complete the sentence: They ___ (wait) for more than an hour.",
         "target": "have been waiting"
       },
       {
@@ -1371,7 +1371,7 @@
         "explanation": "This form is natural when an action or situation has continued from the past until now.",
         "id": "d4",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: She ___ in Da Nang since 2020.",
+        "prompt": "Complete the sentence: She ___ (live) in Da Nang since 2020.",
         "target": "has been living"
       },
       {
@@ -1605,7 +1605,7 @@
         "explanation": "The action was completed before another past event, so use had + past participle.",
         "id": "d2",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: I ____ my work before the manager came.",
+        "prompt": "Complete the sentence: I ____ (finish) my work before the manager came.",
         "target": "had finished"
       },
       {
@@ -1641,7 +1641,7 @@
         "explanation": "Use had + past participle for an action completed before another past action.",
         "id": "d5",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: She ____ the film before it was released on TV.",
+        "prompt": "Complete the sentence: She ____ (see) the film before it was released on TV.",
         "target": "had seen"
       },
       {
@@ -1681,7 +1681,7 @@
         "explanation": "The negative form is had not + past participle. It shows the action was not completed before the past time.",
         "id": "d8",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: He ____ breakfast before he went out.",
+        "prompt": "Complete the sentence: He ____ (eat) breakfast before he went out.",
         "target": "had not eaten"
       },
       {
@@ -1717,7 +1717,7 @@
         "explanation": "This action was completed before another past action, so the form is had returned.",
         "id": "d11",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: The train ____ before we reached the station.",
+        "prompt": "Complete the sentence: The train ____ (return) before we reached the station.",
         "target": "had returned"
       },
       {
@@ -1757,7 +1757,7 @@
         "explanation": "The action started before another past action, so had started is correct.",
         "id": "d14",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: The lesson ____ before the students came in.",
+        "prompt": "Complete the sentence: The lesson ____ (start) before the students came in.",
         "target": "had started"
       }
     ],
@@ -1818,7 +1818,7 @@
         "explanation": "Use had been + verb-ing for an action that continued for a period before another past event.",
         "id": "d1",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: By the time the teacher came in, I ___ for the test for an hour.",
+        "prompt": "Complete the sentence: By the time the teacher came in, I ___ (study) for the test for an hour.",
         "target": "had been studying"
       },
       {
@@ -1830,7 +1830,7 @@
         "explanation": "The action was in progress for some time before the later past event.",
         "id": "d2",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: It ___ all night before the streets got wet.",
+        "prompt": "Complete the sentence: It ___ (rain) all night before the streets got wet.",
         "target": "had been raining"
       },
       {
@@ -1842,7 +1842,7 @@
         "explanation": "This form shows an activity that was already happening before a past moment and had duration.",
         "id": "d3",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: She ___ at the company for five years before she got promoted.",
+        "prompt": "Complete the sentence: She ___ (work) at the company for five years before she got promoted.",
         "target": "had been working"
       },
       {
@@ -1964,7 +1964,7 @@
         "explanation": "Living is the ongoing action that continued for a period before the later past point.",
         "id": "d12",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: Before she moved to Canada, she ___ in Hanoi for many years.",
+        "prompt": "Complete the sentence: Before she moved to Canada, she ___ (live) in Hanoi for many years.",
         "target": "had been living"
       }
     ],
@@ -2182,7 +2182,7 @@
         "explanation": "Use am going to with I to talk about a future plan or intention.",
         "id": "d1",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: I ___ study English tonight.",
+        "prompt": "Complete the sentence: I ___ (go) study English tonight.",
         "target": "am going to"
       },
       {
@@ -2234,7 +2234,7 @@
         "explanation": "Use are going to with we, you, and they.",
         "id": "d5",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: We ___ move to a bigger house next year.",
+        "prompt": "Complete the sentence: We ___ (go) move to a bigger house next year.",
         "target": "are going to"
       },
       {
@@ -2533,7 +2533,7 @@
         "explanation": "Use the present simple for a fixed future timetable. The sentence already says 'tomorrow', so 'leaves' is the correct form.",
         "id": "d1",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: The train _____ at 7:30 tomorrow morning.",
+        "prompt": "Complete the sentence: The train _____ (leav) at 7:30 tomorrow morning.",
         "target": "leaves"
       },
       {
@@ -2545,7 +2545,7 @@
         "explanation": "A scheduled class time is normally expressed with the present simple.",
         "id": "d2",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: Our class _____ at 9 a.m. next Monday.",
+        "prompt": "Complete the sentence: Our class _____ (start) at 9 a.m. next Monday.",
         "target": "starts"
       },
       {
@@ -2735,7 +2735,7 @@
         "explanation": "Use the present continuous here because the trip is arranged for the future.",
         "id": "d4",
         "kind": "fillBlank",
-        "prompt": "My cousin ____ to Hanoi next Saturday.",
+        "prompt": "My cousin ____ (come) to Hanoi next Saturday.",
         "target": "is coming"
       },
       {
@@ -2787,7 +2787,7 @@
         "explanation": "Use the present continuous to describe an arranged future stay. The sentence needs the verb form 'is staying'.",
         "id": "d8",
         "kind": "fillBlank",
-        "prompt": "Her brother ____ with us for two weeks in July.",
+        "prompt": "Her brother ____ (stay) with us for two weeks in July.",
         "target": "is staying"
       },
       {
@@ -2862,7 +2862,7 @@
         "explanation": "Future continuous is formed with will be + verb-ing. It shows an action in progress at a specific future time.",
         "id": "d1",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: By 9 p.m. tonight, I ___ for my exam.",
+        "prompt": "Complete the sentence: By 9 p.m. tonight, I ___ (study) for my exam.",
         "target": "will be studying"
       },
       {
@@ -2890,7 +2890,7 @@
         "explanation": "The future continuous shows an action continuing at a future moment. Here, waiting is the ongoing action.",
         "id": "d3",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: At 6 o'clock, they ___ outside the cinema.",
+        "prompt": "Complete the sentence: At 6 o'clock, they ___ (wait) outside the cinema.",
         "target": "will be waiting"
       },
       {
@@ -2926,7 +2926,7 @@
         "explanation": "Use will be + verb-ing to describe an activity in progress during a future period.",
         "id": "d6",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: Next week at this time, I ___ to Da Nang.",
+        "prompt": "Complete the sentence: Next week at this time, I ___ (travel) to Da Nang.",
         "target": "will be travelling"
       },
       {
@@ -2966,7 +2966,7 @@
         "explanation": "The verb after will be must use -ing to form the future continuous.",
         "id": "d9",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: This afternoon, my brother ___ to the airport.",
+        "prompt": "Complete the sentence: This afternoon, my brother ___ (drive) to the airport.",
         "target": "will be driving"
       }
     ],
@@ -3023,7 +3023,7 @@
         "explanation": "Use will have + past participle to show completion before a future time.",
         "id": "d1",
         "kind": "fillBlank",
-        "prompt": "By 8 o'clock, she ____ her report.",
+        "prompt": "By 8 o'clock, she ____ (finish) her report.",
         "target": "will have finished"
       },
       {
@@ -3035,7 +3035,7 @@
         "explanation": "The verb must show that the leaving is completed before a future point.",
         "id": "d2",
         "kind": "fillBlank",
-        "prompt": "By the time the train arrives, they ____ the station.",
+        "prompt": "By the time the train arrives, they ____ (leave) the station.",
         "target": "will have left"
       },
       {
@@ -3127,7 +3127,7 @@
         "explanation": "The opening is completed before the future time mentioned.",
         "id": "d9",
         "kind": "fillBlank",
-        "prompt": "By 9 a.m., the office ____.",
+        "prompt": "By 9 a.m., the office ____ (open).",
         "target": "will have opened"
       }
     ],
@@ -3184,7 +3184,7 @@
         "explanation": "Use will have been + verb-ing to show an action continuing up to a future point.",
         "id": "d1",
         "kind": "fillBlank",
-        "prompt": "By next month, I ____ at this company for five years.",
+        "prompt": "By next month, I ____ (work) at this company for five years.",
         "target": "will have been working"
       },
       {
@@ -3236,7 +3236,7 @@
         "explanation": "The action continues until a future point, so the continuous form is needed.",
         "id": "d5",
         "kind": "fillBlank",
-        "prompt": "By the time the train arrives, they ____ for over an hour.",
+        "prompt": "By the time the train arrives, they ____ (wait) for over an hour.",
         "target": "will have been waiting"
       },
       {
@@ -3687,7 +3687,7 @@
         "explanation": "Know describes a state of knowledge, so the simple present is correct.",
         "id": "d2",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: She ___ the answer.",
+        "prompt": "Complete the sentence: She ___ (know) the answer.",
         "target": "knows"
       },
       {
@@ -3727,7 +3727,7 @@
         "explanation": "Think can be stative when it means hold an opinion, but here it means use your mind at this moment, so the continuous form is natural.",
         "id": "d5",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: I ___ about the problem right now.",
+        "prompt": "Complete the sentence: I ___ (think) about the problem right now.",
         "target": "am thinking"
       },
       {
@@ -3767,7 +3767,7 @@
         "explanation": "Feel can be stative when it means have an opinion or experience a state, so the simple present is correct here.",
         "id": "d8",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: This room ___ cold to me.",
+        "prompt": "Complete the sentence: This room ___ (feel) cold to me.",
         "target": "feels"
       },
       {
@@ -3932,7 +3932,7 @@
         "explanation": "Use past continuous for an action in progress at a past moment.",
         "id": "d1",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: At 7 p.m. last night, I ___ dinner.",
+        "prompt": "Complete the sentence: At 7 p.m. last night, I ___ (cook) dinner.",
         "target": "was cooking"
       },
       {
@@ -3944,7 +3944,7 @@
         "explanation": "Use past perfect for the action that happened earlier than another past event.",
         "id": "d2",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: By the time we arrived, the bus ___ already ___.",
+        "prompt": "Complete the sentence: By the time we arrived, the bus ___ (leave) already ___.",
         "target": "had left"
       },
       {
@@ -4004,7 +4004,7 @@
         "explanation": "The word already often appears with past perfect to show something happened before another past event.",
         "id": "d7",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: When I called, she ___ ____ ___.",
+        "prompt": "Complete the sentence: When I called, she ___ (leave) ____ ___.",
         "target": "had already left"
       },
       {
@@ -4045,7 +4045,7 @@
         "explanation": "Past perfect is needed because the seeing happened before the later past event.",
         "id": "d10",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: By the time I called her, she ___ the message.",
+        "prompt": "Complete the sentence: By the time I called her, she ___ (see) the message.",
         "target": "had seen"
       }
     ],
@@ -4104,7 +4104,7 @@
         "explanation": "Use was going to + verb to show a future intention or plan seen from a past time.",
         "id": "d1",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: She said she ____ visit us the next day.",
+        "prompt": "Complete the sentence: She said she ____ (go) visit us the next day.",
         "target": "was going to"
       },
       {
@@ -4128,7 +4128,7 @@
         "explanation": "The past continuous can show a future arrangement or scheduled event from a past perspective.",
         "id": "d3",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: We knew the bus ____ at 8:30.",
+        "prompt": "Complete the sentence: We knew the bus ____ (leav) at 8:30.",
         "target": "was leaving"
       },
       {
@@ -6667,7 +6667,7 @@
         "explanation": "After would rather with a different subject, the verb is often in the past form.",
         "id": "d4",
         "kind": "fillBlank",
-        "prompt": "She would rather I _____ early.",
+        "prompt": "She would rather I _____ (leave) early.",
         "target": "left"
       },
       {
@@ -7160,7 +7160,7 @@
         "explanation": "For a general truth, the verb after if stays in the present simple.",
         "id": "d3",
         "kind": "fillBlank",
-        "prompt": "If water reaches 100°C, it _____.",
+        "prompt": "If water reaches 100°C, it _____ (boil).",
         "target": "boils"
       },
       {
@@ -7344,7 +7344,7 @@
         "explanation": "After if, use the present simple form in the third person singular.",
         "id": "d4",
         "kind": "fillBlank",
-        "prompt": "If he ____ the test, he will be happy.",
+        "prompt": "If he ____ (pass) the test, he will be happy.",
         "target": "passes"
       },
       {
@@ -7680,7 +7680,7 @@
         "explanation": "In the if-clause of the third conditional, we use had + past participle.",
         "id": "d3",
         "kind": "fillBlank",
-        "prompt": "If they ______ the bus, they would have arrived on time.",
+        "prompt": "If they ______ (take) the bus, they would have arrived on time.",
         "target": "had taken"
       },
       {
@@ -7692,7 +7692,7 @@
         "explanation": "The result clause of the third conditional uses would have + past participle.",
         "id": "d4",
         "kind": "fillBlank",
-        "prompt": "If he had asked me, I ______ him.",
+        "prompt": "If he had asked me, I ______ (help) him.",
         "target": "would have helped"
       },
       {
@@ -7756,7 +7756,7 @@
         "explanation": "After if + had + past participle, the result clause often uses would have + past participle.",
         "id": "d9",
         "kind": "fillBlank",
-        "prompt": "If we had seen the warning, we ______ away from the area.",
+        "prompt": "If we had seen the warning, we ______ (stay) away from the area.",
         "target": "would have stayed"
       },
       {
@@ -7868,7 +7868,7 @@
         "explanation": "After If in a past-unreal condition, we use past perfect: had studied.",
         "id": "d3",
         "kind": "fillBlank",
-        "prompt": "If I ___ harder, I would have passed the exam.",
+        "prompt": "If I ___ (study) harder, I would have passed the exam.",
         "target": "had studied"
       },
       {
@@ -7880,7 +7880,7 @@
         "explanation": "In a past condition with a present result, the main clause often uses would have plus past participle when the result is in the past; here the blank asks for the auxiliary phrase that completes the sentence.",
         "id": "d4",
         "kind": "fillBlank",
-        "prompt": "If they had had enough money, they ___ the house last year.",
+        "prompt": "If they had had enough money, they ___ (buy) the house last year.",
         "target": "would have bought"
       },
       {
@@ -8028,7 +8028,7 @@
         "explanation": "Provided that introduces a condition meaning ‘only if’.",
         "id": "d2",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence with two words: You may enter the lab ______ you wear safety glasses.",
+        "prompt": "Complete the sentence with two words: You may enter the lab ______ (provide) you wear safety glasses.",
         "target": "provided that"
       },
       {
@@ -8239,7 +8239,7 @@
         "explanation": "She wants the present situation to be different, so we use a past form after wish.",
         "id": "d2",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: She wishes she ___ near her office.",
+        "prompt": "Complete the sentence: She wishes she ___ (live) near her office.",
         "target": "lived"
       },
       {
@@ -8263,7 +8263,7 @@
         "explanation": "This is regret about a past event, so we use wish + past perfect.",
         "id": "d4",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: I wish I ___ earlier.",
+        "prompt": "Complete the sentence: I wish I ___ (leave) earlier.",
         "target": "had left"
       },
       {
@@ -8637,7 +8637,7 @@
         "explanation": "With he/she/it, the present simple passive uses is + past participle.",
         "id": "d3",
         "kind": "fillBlank",
-        "prompt": "The soup ___ in the kitchen every morning.",
+        "prompt": "The soup ___ (make) in the kitchen every morning.",
         "target": "is made"
       },
       {
@@ -8677,7 +8677,7 @@
         "explanation": "With a plural subject, the passive verb is are sold.",
         "id": "d6",
         "kind": "fillBlank",
-        "prompt": "The tickets ___ at the station.",
+        "prompt": "The tickets ___ (sell) at the station.",
         "target": "are sold"
       },
       {
@@ -8717,7 +8717,7 @@
         "explanation": "The passive pattern is is + past participle.",
         "id": "d9",
         "kind": "fillBlank",
-        "prompt": "Tea ___ in this factory.",
+        "prompt": "Tea ___ (produce) in this factory.",
         "target": "is produced"
       },
       {
@@ -8753,7 +8753,7 @@
         "explanation": "For a singular subject, the passive form is is kept.",
         "id": "d12",
         "kind": "fillBlank",
-        "prompt": "The key ___ in a drawer.",
+        "prompt": "The key ___ (keep) in a drawer.",
         "target": "is kept"
       },
       {
@@ -8840,7 +8840,7 @@
         "explanation": "Use was + past participle for a singular subject in the past passive.",
         "id": "d1",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: The car ___ yesterday.",
+        "prompt": "Complete the sentence: The car ___ (repair) yesterday.",
         "target": "was repaired"
       },
       {
@@ -8852,7 +8852,7 @@
         "explanation": "Use were + past participle for a plural subject in the past passive.",
         "id": "d2",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: The photos ___ last week.",
+        "prompt": "Complete the sentence: The photos ___ (take) last week.",
         "target": "were taken"
       },
       {
@@ -9219,7 +9219,7 @@
     "drills": [
       {
         "acceptedAnswers": [
-          "has been repaired"
+          "has been"
         ],
         "choices": null,
         "difficulty": 1,
@@ -9227,11 +9227,11 @@
         "id": "d1",
         "kind": "fillBlank",
         "prompt": "Complete the sentence: The car ____ repaired.",
-        "target": "has been repaired"
+        "target": "has been"
       },
       {
         "acceptedAnswers": [
-          "have been invited"
+          "have been"
         ],
         "choices": null,
         "difficulty": 1,
@@ -9239,7 +9239,7 @@
         "id": "d2",
         "kind": "fillBlank",
         "prompt": "Complete the sentence: We ____ invited to the meeting.",
-        "target": "have been invited"
+        "target": "have been"
       },
       {
         "acceptedAnswers": [
@@ -9283,7 +9283,7 @@
       },
       {
         "acceptedAnswers": [
-          "have been sent"
+          "have been"
         ],
         "choices": null,
         "difficulty": 1,
@@ -9291,7 +9291,7 @@
         "id": "d6",
         "kind": "fillBlank",
         "prompt": "Complete the sentence: The letters ____ sent today.",
-        "target": "have been sent"
+        "target": "have been"
       },
       {
         "acceptedAnswers": [
@@ -9323,7 +9323,7 @@
       },
       {
         "acceptedAnswers": [
-          "has been opened"
+          "has been"
         ],
         "choices": null,
         "difficulty": 1,
@@ -9331,7 +9331,7 @@
         "id": "d9",
         "kind": "fillBlank",
         "prompt": "Complete the sentence: The shop ____ opened.",
-        "target": "has been opened"
+        "target": "has been"
       },
       {
         "acceptedAnswers": [
@@ -9359,7 +9359,7 @@
       },
       {
         "acceptedAnswers": [
-          "have been chosen"
+          "have been"
         ],
         "choices": null,
         "difficulty": 2,
@@ -9367,7 +9367,7 @@
         "id": "d12",
         "kind": "fillBlank",
         "prompt": "Complete the sentence: The winners ____ chosen.",
-        "target": "have been chosen"
+        "target": "have been"
       },
       {
         "acceptedAnswers": [
@@ -9440,7 +9440,7 @@
         "explanation": "After a modal verb, passive voice uses be + past participle.",
         "id": "d1",
         "kind": "fillBlank",
-        "prompt": "Complete the phrase: The report ______ by Friday.",
+        "prompt": "Complete the phrase: The report ______ (finish) by Friday.",
         "target": "must be finished"
       },
       {
@@ -9480,7 +9480,7 @@
         "explanation": "This is the passive form after a modal verb.",
         "id": "d4",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: The bike ______ before tomorrow.",
+        "prompt": "Complete the sentence: The bike ______ (repair) before tomorrow.",
         "target": "must be repaired"
       },
       {
@@ -9520,7 +9520,7 @@
         "explanation": "Use be before the past participle in the passive.",
         "id": "d7",
         "kind": "fillBlank",
-        "prompt": "Complete the phrase: The music ______ from the next room.",
+        "prompt": "Complete the phrase: The music ______ (hear) from the next room.",
         "target": "can be heard"
       },
       {
@@ -9560,7 +9560,7 @@
         "explanation": "In modal passive, may is followed by be and the past participle.",
         "id": "d10",
         "kind": "fillBlank",
-        "prompt": "Complete the phrase: The package ______ later today.",
+        "prompt": "Complete the phrase: The package ______ (open) later today.",
         "target": "may be opened"
       }
     ],
@@ -9799,7 +9799,7 @@
         "explanation": "After a verb like need, we often use the passive infinitive when the thing receives the action.",
         "id": "d1",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: The car needs ___ before the trip.",
+        "prompt": "Complete the sentence: The car needs ___ (repair) before the trip.",
         "target": "to be repaired"
       },
       {
@@ -9811,7 +9811,7 @@
         "explanation": "The perfect passive infinitive shows that the approval happened before now or before another past point.",
         "id": "d2",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: The proposal appears ___ by the manager already.",
+        "prompt": "Complete the sentence: The proposal appears ___ (approve) by the manager already.",
         "target": "to have been approved"
       },
       {
@@ -9851,7 +9851,7 @@
         "explanation": "This structure is common after adjectives like important or necessary, especially in formal English.",
         "id": "d5",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: It is important for the evidence ___ carefully.",
+        "prompt": "Complete the sentence: It is important for the evidence ___ (consider) carefully.",
         "target": "to be considered"
       },
       {
@@ -9903,7 +9903,7 @@
         "explanation": "After have something done, we use the passive infinitive when something must receive the action.",
         "id": "d9",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: We have the windows ___ every month.",
+        "prompt": "Complete the sentence: We have the windows ___ (clean) every month.",
         "target": "to be cleaned"
       },
       {
@@ -9973,7 +9973,7 @@
         "explanation": "In the causative, have is followed by an object and a past participle. This means someone else repaired the laptop for me.",
         "id": "d1",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: I ______ yesterday.",
+        "prompt": "Complete the sentence: I ______ (laptop / repair) yesterday.",
         "target": "had my laptop repaired"
       },
       {
@@ -9985,7 +9985,7 @@
         "explanation": "Get + object + past participle is a common causative pattern. It means she arranged for someone to fix the watch.",
         "id": "d2",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: She ______ last week.",
+        "prompt": "Complete the sentence: She ______ (fix / watch) last week.",
         "target": "got her watch fixed"
       },
       {
@@ -9997,7 +9997,7 @@
         "explanation": "This is the causative have structure. The windows are not doing the cleaning; someone else is.",
         "id": "d3",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: They ______ this morning.",
+        "prompt": "Complete the sentence: They ______ (clean / window) this morning.",
         "target": "had the windows cleaned"
       },
       {
@@ -10009,7 +10009,7 @@
         "explanation": "This sentence uses get in the causative form. It means I arranged for another person to repair the bike.",
         "id": "d4",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: I ______ after the accident.",
+        "prompt": "Complete the sentence: I ______ (bike / repair) after the accident.",
         "target": "got my bike repaired"
       },
       {
@@ -10904,7 +10904,7 @@
         "explanation": "Use no article for a generic plural noun. The word apples here means apples in general, not a specific group.",
         "id": "d1",
         "kind": "fillBlank",
-        "prompt": "I like ____ .",
+        "prompt": "I like ____ (appl) .",
         "target": "apples"
       },
       {
@@ -11188,7 +11188,7 @@
         "explanation": "Advice is uncountable, so we use some or no article. We do not say an advice.",
         "id": "d1",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: I need _____ before the meeting.",
+        "prompt": "Complete the sentence: I need _____ (advice) before the meeting.",
         "target": "some advice"
       },
       {
@@ -11200,7 +11200,7 @@
         "explanation": "Information is uncountable in English, so some information is correct here.",
         "id": "d2",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: Can you give me _____ about the hotel?",
+        "prompt": "Complete the sentence: Can you give me _____ (information) about the hotel?",
         "target": "some information"
       },
       {
@@ -11212,7 +11212,7 @@
         "explanation": "Furniture is uncountable, so we use some furniture, not a furniture or furnitures.",
         "id": "d3",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: We need to buy _____ for the new office.",
+        "prompt": "Complete the sentence: We need to buy _____ (furniture) for the new office.",
         "target": "some furniture"
       },
       {
@@ -11224,7 +11224,7 @@
         "explanation": "When we want to count advice, we use a piece of advice. Advice itself is not countable.",
         "id": "d4",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: My teacher gave me _____ .",
+        "prompt": "Complete the sentence: My teacher gave me _____ (advice / piece) .",
         "target": "a piece of advice"
       },
       {
@@ -11236,7 +11236,7 @@
         "explanation": "Information is uncountable, so we count it with a piece of information.",
         "id": "d5",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: I found _____ on the website.",
+        "prompt": "Complete the sentence: I found _____ (information / piece) on the website.",
         "target": "a piece of information"
       },
       {
@@ -11452,7 +11452,7 @@
       },
       {
         "acceptedAnswers": [
-          "the oldest"
+          "the"
         ],
         "choices": null,
         "difficulty": 1,
@@ -11460,7 +11460,7 @@
         "id": "d4",
         "kind": "fillBlank",
         "prompt": "Complete the sentence: She is ___ oldest child in the family.",
-        "target": "the oldest"
+        "target": "the"
       },
       {
         "acceptedAnswers": [
@@ -11608,7 +11608,7 @@
         "explanation": "Names of oceans take the.",
         "id": "d3",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: They sailed across ___.",
+        "prompt": "Complete the sentence: They sailed across ___ (ocean / pacific).",
         "target": "the Pacific Ocean"
       },
       {
@@ -11620,7 +11620,7 @@
         "explanation": "Some countries with plural-form names take the.",
         "id": "d4",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: My cousin lives in ___.",
+        "prompt": "Complete the sentence: My cousin lives in ___ (netherland).",
         "target": "the Netherlands"
       },
       {
@@ -11664,7 +11664,7 @@
         "explanation": "Country names with a descriptive phrase often take the.",
         "id": "d7",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: He was born in ___.",
+        "prompt": "Complete the sentence: He was born in ___ (kingdom / unite).",
         "target": "the United Kingdom"
       },
       {
@@ -12825,7 +12825,7 @@
         "explanation": "The plural of ‘foot’ is ‘feet’, not ‘foots’.",
         "id": "d2",
         "kind": "fillBlank",
-        "prompt": "Complete the plural form: foot → ____",
+        "prompt": "Complete the plural form: foot → ____ (foot)",
         "target": "feet"
       },
       {
@@ -12837,7 +12837,7 @@
         "explanation": "The plural of ‘person’ is ‘people’.",
         "id": "d3",
         "kind": "fillBlank",
-        "prompt": "Complete the plural form: person → ____",
+        "prompt": "Complete the plural form: person → ____ (person)",
         "target": "people"
       },
       {
@@ -12913,7 +12913,7 @@
         "explanation": "The plural of ‘tooth’ is ‘teeth’.",
         "id": "d9",
         "kind": "fillBlank",
-        "prompt": "Complete the plural form: tooth → ____",
+        "prompt": "Complete the plural form: tooth → ____ (tooth)",
         "target": "teeth"
       },
       {
@@ -13043,7 +13043,7 @@
         "explanation": "‘Apples’ is a countable plural noun, so it can follow ‘some’ in the sentence.",
         "id": "d3",
         "kind": "fillBlank",
-        "prompt": "I bought some ______ yesterday.",
+        "prompt": "I bought some ______ (appl) yesterday.",
         "target": "apples"
       },
       {
@@ -13099,7 +13099,7 @@
         "explanation": "This is a measure expression. ‘Water’ is uncountable, so we use a container phrase such as ‘a bottle of water’.",
         "id": "d7",
         "kind": "fillBlank",
-        "prompt": "I need ______ for the trip.",
+        "prompt": "I need ______ (bottle / water) for the trip.",
         "target": "a bottle of water"
       },
       {
@@ -13976,7 +13976,7 @@
         "explanation": "Toothbrush is a compound noun. The first part stays singular, and the plural ending goes on the last word.",
         "id": "d1",
         "kind": "fillBlank",
-        "prompt": "I bought two ______ yesterday.",
+        "prompt": "I bought two ______ (toothbrush) yesterday.",
         "target": "toothbrushes"
       },
       {
@@ -14016,7 +14016,7 @@
         "explanation": "When a compound noun works as an adjective before another noun, it is usually hyphenated.",
         "id": "d4",
         "kind": "fillBlank",
-        "prompt": "We rented a ______ apartment.",
+        "prompt": "We rented a ______ (bedroom / three) apartment.",
         "target": "three-bedroom"
       },
       {
@@ -14304,7 +14304,7 @@
         "explanation": "Piece of is a common partitive used with uncountable nouns such as advice, information, and furniture.",
         "id": "d1",
         "kind": "fillBlank",
-        "prompt": "Complete the phrase: a ___ of advice",
+        "prompt": "Complete the phrase: a ___ (piece) of advice",
         "target": "a piece of"
       },
       {
@@ -14316,7 +14316,7 @@
         "explanation": "Slice of is used for a part of food such as cake, bread, or pizza.",
         "id": "d2",
         "kind": "fillBlank",
-        "prompt": "Complete the phrase: a ___ of cake",
+        "prompt": "Complete the phrase: a ___ (slice) of cake",
         "target": "a slice of"
       },
       {
@@ -14328,7 +14328,7 @@
         "explanation": "A bit of is a common partitive for a small amount of an uncountable noun.",
         "id": "d3",
         "kind": "fillBlank",
-        "prompt": "Complete the phrase: a ___ of water",
+        "prompt": "Complete the phrase: a ___ (bit) of water",
         "target": "a bit of"
       },
       {
@@ -14397,7 +14397,7 @@
         "explanation": "Both piece of and bit of can work with some uncountable nouns, depending on meaning. The exact noun and context decide which partitive sounds natural.",
         "id": "d8",
         "kind": "fillBlank",
-        "prompt": "Complete the phrase: a ___ of news",
+        "prompt": "Complete the phrase: a ___ (piece) of news",
         "target": "a piece of"
       },
       {
@@ -14557,7 +14557,7 @@
         "explanation": "Sports can be plural in some established noun modifiers, but many noun modifiers are singular. This item tests a common fixed phrase where sports is the accepted form.",
         "id": "d8",
         "kind": "fillBlank",
-        "prompt": "Complete the phrase: ____ day at school",
+        "prompt": "Complete the phrase: ____ (sport) day at school",
         "target": "sports"
       },
       {
@@ -15316,7 +15316,7 @@
         "explanation": "Opinion usually comes before size, and material comes later. The adjectives are ordered to sound natural in English.",
         "id": "d1",
         "kind": "fillBlank",
-        "prompt": "Complete the noun phrase: ___",
+        "prompt": "Complete the noun phrase: ___ (beautiful / small / table / wooden)",
         "target": "a beautiful small wooden table"
       },
       {
@@ -15368,7 +15368,7 @@
         "explanation": "Size comes before shape, and material comes after colour or shape in the normal order.",
         "id": "d5",
         "kind": "fillBlank",
-        "prompt": "Complete the noun phrase: ___",
+        "prompt": "Complete the noun phrase: ___ (box / round / silver / small)",
         "target": "a small round silver box"
       },
       {
@@ -15408,7 +15408,7 @@
         "explanation": "Opinion comes first, then size, then age, then origin.",
         "id": "d8",
         "kind": "fillBlank",
-        "prompt": "Complete the noun phrase: ___",
+        "prompt": "Complete the noun phrase: ___ (bike / italian / lovely / old)",
         "target": "a lovely little old Italian bike"
       },
       {
@@ -15481,7 +15481,7 @@
         "explanation": "boring describes something that causes boredom. Here it describes the movie.",
         "id": "d1",
         "kind": "fillBlank",
-        "prompt": "The movie was very ____.",
+        "prompt": "The movie was very ____ (bore).",
         "target": "boring"
       },
       {
@@ -15493,7 +15493,7 @@
         "explanation": "bored describes how a person feels. Here it describes the students.",
         "id": "d2",
         "kind": "fillBlank",
-        "prompt": "The students felt ____ after the long lecture.",
+        "prompt": "The students felt ____ (bore) after the long lecture.",
         "target": "bored"
       },
       {
@@ -15505,7 +15505,7 @@
         "explanation": "interesting describes something that makes other people interested. The story causes interest.",
         "id": "d3",
         "kind": "fillBlank",
-        "prompt": "That story was very ____.",
+        "prompt": "That story was very ____ (interest).",
         "target": "interesting"
       },
       {
@@ -15517,7 +15517,7 @@
         "explanation": "interested describes how a person feels. The learner feels interest.",
         "id": "d4",
         "kind": "fillBlank",
-        "prompt": "I am ____ in history.",
+        "prompt": "I am ____ (interest) in history.",
         "target": "interested"
       },
       {
@@ -15712,7 +15712,7 @@
     "drills": [
       {
         "acceptedAnswers": [
-          "very cold"
+          "very"
         ],
         "choices": null,
         "difficulty": 1,
@@ -15720,11 +15720,11 @@
         "id": "d1",
         "kind": "fillBlank",
         "prompt": "Complete the phrase: The water is ____ cold.",
-        "target": "very cold"
+        "target": "very"
       },
       {
         "acceptedAnswers": [
-          "absolutely freezing"
+          "absolutely"
         ],
         "choices": null,
         "difficulty": 2,
@@ -15732,11 +15732,11 @@
         "id": "d2",
         "kind": "fillBlank",
         "prompt": "Complete the phrase: It is ____ freezing outside.",
-        "target": "absolutely freezing"
+        "target": "absolutely"
       },
       {
         "acceptedAnswers": [
-          "extremely tired"
+          "extremely"
         ],
         "choices": null,
         "difficulty": 2,
@@ -15744,11 +15744,11 @@
         "id": "d3",
         "kind": "fillBlank",
         "prompt": "Complete the phrase: She looked ____ tired after the exam.",
-        "target": "extremely tired"
+        "target": "extremely"
       },
       {
         "acceptedAnswers": [
-          "completely impossible"
+          "completely"
         ],
         "choices": null,
         "difficulty": 2,
@@ -15756,7 +15756,7 @@
         "id": "d4",
         "kind": "fillBlank",
         "prompt": "Complete the phrase: The task was ____ impossible.",
-        "target": "completely impossible"
+        "target": "completely"
       },
       {
         "acceptedAnswers": [
@@ -17063,7 +17063,7 @@
         "explanation": "Use the superlative form to show one person or thing is above all others in the group.",
         "id": "d1",
         "kind": "fillBlank",
-        "prompt": "My brother is ______ in the family.",
+        "prompt": "My brother is ______ (tallest) in the family.",
         "target": "the tallest"
       },
       {
@@ -17127,7 +17127,7 @@
         "explanation": "Most interesting is the superlative form. It shows one thing stands above the rest in a group.",
         "id": "d6",
         "kind": "fillBlank",
-        "prompt": "This is ______ part of the lesson.",
+        "prompt": "This is ______ (interest) part of the lesson.",
         "target": "the most interesting"
       },
       {
@@ -17425,7 +17425,7 @@
         "explanation": "A bit can go before a comparative adjective to mean 'a little'.",
         "id": "d4",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: Her new job is _____ more stressful than her old one.",
+        "prompt": "Complete the sentence: Her new job is _____ (bit) more stressful than her old one.",
         "target": "a bit"
       },
       {
@@ -19800,7 +19800,7 @@
         "explanation": "In addition to is a fixed prepositional phrase meaning “as well as.” It is followed by a noun phrase.",
         "id": "d1",
         "kind": "fillBlank",
-        "prompt": "Complete the phrase: ______ his main job",
+        "prompt": "Complete the phrase: ______ (addition) his main job",
         "target": "in addition to"
       },
       {
@@ -19812,7 +19812,7 @@
         "explanation": "On behalf of means “for someone else” or “as a representative of someone else.”",
         "id": "d2",
         "kind": "fillBlank",
-        "prompt": "Complete the phrase: ______ the company",
+        "prompt": "Complete the phrase: ______ (behalf) the company",
         "target": "on behalf of"
       },
       {
@@ -19824,7 +19824,7 @@
         "explanation": "In front of is the correct fixed phrase for a position at the front side of something.",
         "id": "d3",
         "kind": "fillBlank",
-        "prompt": "Complete the phrase: ______ the station",
+        "prompt": "Complete the phrase: ______ (front) the station",
         "target": "in front of"
       },
       {
@@ -20303,7 +20303,8 @@
         "id": "d1",
         "kind": "choice",
         "prompt": "Choose the correct sentence.",
-        "target": "The Amazon River, which is in South America, is very long."
+        "target": "The Amazon River, which is in South America, is very long.",
+        "punctuationSensitive": true
       },
       {
         "acceptedAnswers": [
@@ -20315,7 +20316,8 @@
         "id": "d2",
         "kind": "build",
         "prompt": "Write a sentence about your sister who lives in Can Tho and studies medicine. Use a non-defining relative clause.",
-        "target": "My sister, who lives in Can Tho, is studying medicine."
+        "target": "My sister, who lives in Can Tho, is studying medicine.",
+        "punctuationSensitive": true
       },
       {
         "acceptedAnswers": [
@@ -20327,7 +20329,8 @@
         "id": "d3",
         "kind": "transform",
         "prompt": "Rewrite the sentence using a non-defining relative clause: The hotel was built in 1920. It has been renovated.",
-        "target": "The hotel, which was built in 1920, has been renovated."
+        "target": "The hotel, which was built in 1920, has been renovated.",
+        "punctuationSensitive": true
       },
       {
         "acceptedAnswers": [
@@ -20351,7 +20354,8 @@
         "id": "d5",
         "kind": "correct",
         "prompt": "Correct the sentence: The man who was wearing a blue jacket asked for directions.",
-        "target": "The man, who was wearing a blue jacket, asked for directions."
+        "target": "The man, who was wearing a blue jacket, asked for directions.",
+        "punctuationSensitive": true
       },
       {
         "acceptedAnswers": [
@@ -20367,7 +20371,8 @@
         "id": "d6",
         "kind": "choice",
         "prompt": "Choose the correct sentence.",
-        "target": "My car, which is five years old, still runs well."
+        "target": "My car, which is five years old, still runs well.",
+        "punctuationSensitive": true
       },
       {
         "acceptedAnswers": [
@@ -20391,7 +20396,8 @@
         "id": "d8",
         "kind": "build",
         "prompt": "Write a sentence about a painting your uncle gave you. Say that it is hanging in the living room. Use a non-defining relative clause.",
-        "target": "The painting, which my uncle gave me, is hanging in the living room."
+        "target": "The painting, which my uncle gave me, is hanging in the living room.",
+        "punctuationSensitive": true
       },
       {
         "acceptedAnswers": [
@@ -20403,7 +20409,8 @@
         "id": "d9",
         "kind": "transform",
         "prompt": "Rewrite the sentence using a non-defining relative clause: We first met in the classroom. It is on the second floor.",
-        "target": "The classroom, where we first met, is on the second floor."
+        "target": "The classroom, where we first met, is on the second floor.",
+        "punctuationSensitive": true
       },
       {
         "acceptedAnswers": [
@@ -21145,7 +21152,7 @@
     "drills": [
       {
         "acceptedAnswers": [
-          "many of whom"
+          "of whom"
         ],
         "choices": null,
         "difficulty": 1,
@@ -21153,7 +21160,7 @@
         "id": "d1",
         "kind": "fillBlank",
         "prompt": "The class included twelve international students, many ___ were preparing for IELTS.",
-        "target": "many of whom"
+        "target": "of whom"
       },
       {
         "acceptedAnswers": [
@@ -21193,11 +21200,12 @@
         "id": "d4",
         "kind": "build",
         "prompt": "Build one correct sentence from these words: We / reviewed / four contracts / two of which / were expired.",
-        "target": "We reviewed four contracts, two of which were expired."
+        "target": "We reviewed four contracts, two of which were expired.",
+        "punctuationSensitive": true
       },
       {
         "acceptedAnswers": [
-          "one of whom"
+          "of whom"
         ],
         "choices": null,
         "difficulty": 1,
@@ -21205,7 +21213,7 @@
         "id": "d5",
         "kind": "fillBlank",
         "prompt": "The committee interviewed three candidates, one ___ had already worked abroad.",
-        "target": "one of whom"
+        "target": "of whom"
       },
       {
         "acceptedAnswers": [
@@ -21233,11 +21241,12 @@
         "id": "d7",
         "kind": "correct",
         "prompt": "Correct the sentence.\nThe research included six studies, all which supported the conclusion.",
-        "target": "The research included six studies, all of which supported the conclusion."
+        "target": "The research included six studies, all of which supported the conclusion.",
+        "punctuationSensitive": true
       },
       {
         "acceptedAnswers": [
-          "many of whom"
+          "of whom"
         ],
         "choices": null,
         "difficulty": 2,
@@ -21245,7 +21254,7 @@
         "id": "d8",
         "kind": "fillBlank",
         "prompt": "Several employees left the company, many ___ had worked there for more than ten years.",
-        "target": "many of whom"
+        "target": "of whom"
       },
       {
         "acceptedAnswers": [
@@ -21257,7 +21266,8 @@
         "id": "d9",
         "kind": "build",
         "prompt": "Build one correct sentence from these words: There were / five applicants / none of whom / met the required standard.",
-        "target": "There were five applicants, none of whom met the required standard."
+        "target": "There were five applicants, none of whom met the required standard.",
+        "punctuationSensitive": true
       }
     ],
     "examples": [
@@ -21390,7 +21400,7 @@
         "explanation": "Tell is used before an object: told me, told us, told him.",
         "id": "d5",
         "kind": "fillBlank",
-        "prompt": "She ___ me the news yesterday.",
+        "prompt": "She ___ (tell) me the news yesterday.",
         "target": "told"
       },
       {
@@ -21402,7 +21412,7 @@
         "explanation": "Say is used for reporting a statement. It does not need a direct object here.",
         "id": "d6",
         "kind": "fillBlank",
-        "prompt": "He ___ that he was sorry.",
+        "prompt": "He ___ (say) that he was sorry.",
         "target": "said"
       },
       {
@@ -21414,7 +21424,7 @@
         "explanation": "The structure tell someone to do something is correct. Say cannot be followed by an object and to-infinitive in this way.",
         "id": "d7",
         "kind": "fillBlank",
-        "prompt": "The manager ___ us to wait outside.",
+        "prompt": "The manager ___ (tell) us to wait outside.",
         "target": "told"
       },
       {
@@ -21789,7 +21799,7 @@
         "explanation": "A reported question uses statement word order. The verb comes after the subject, not before it.",
         "id": "d1",
         "kind": "fillBlank",
-        "prompt": "Complete the reported question: She asked ______.",
+        "prompt": "Complete the reported question: She asked ______ (live).",
         "target": "where he lived"
       },
       {
@@ -21801,7 +21811,7 @@
         "explanation": "Yes/no questions are often reported with if or whether. The word order changes to a statement form.",
         "id": "d2",
         "kind": "fillBlank",
-        "prompt": "Complete the reported question: He asked ______.",
+        "prompt": "Complete the reported question: He asked ______ (ready).",
         "target": "if they were ready"
       },
       {
@@ -21813,7 +21823,7 @@
         "explanation": "In reported questions, we keep the question word but use statement order. We do not use auxiliary inversion.",
         "id": "d3",
         "kind": "fillBlank",
-        "prompt": "Complete the reported question: She asked ______.",
+        "prompt": "Complete the reported question: She asked ______ (meet / start / time).",
         "target": "what time the meeting started"
       },
       {
@@ -21825,7 +21835,7 @@
         "explanation": "Whether is correct in reported yes/no questions. The tense usually moves back one step in reported speech.",
         "id": "d4",
         "kind": "fillBlank",
-        "prompt": "Complete the reported question: My mother asked ______.",
+        "prompt": "Complete the reported question: My mother asked ______ (finish / homework).",
         "target": "whether I had finished my homework"
       },
       {
@@ -22187,7 +22197,7 @@
         "explanation": "In reported speech, yesterday usually changes to the day before or the previous day.",
         "id": "d1",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: She said she had met him ____.",
+        "prompt": "Complete the sentence: She said she had met him ____ (day).",
         "target": "the day before"
       },
       {
@@ -22199,7 +22209,7 @@
         "explanation": "In reported speech, tomorrow usually changes to the next day or the following day.",
         "id": "d2",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: He said he would phone me ____.",
+        "prompt": "Complete the sentence: He said he would phone me ____ (day / next).",
         "target": "the next day"
       },
       {
@@ -22299,7 +22309,7 @@
         "explanation": "In reported speech, next week often becomes the following week or the week after.",
         "id": "d9",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: She said she would visit us ____.",
+        "prompt": "Complete the sentence: She said she would visit us ____ (follow / week).",
         "target": "the following week"
       },
       {
@@ -22311,7 +22321,7 @@
         "explanation": "In reported speech, last month often becomes the previous month or the month before.",
         "id": "d10",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: He said he had moved house ____.",
+        "prompt": "Complete the sentence: He said he had moved house ____ (month / previous).",
         "target": "the previous month"
       },
       {
@@ -22439,7 +22449,7 @@
         "explanation": "Use the present simple because the fact is still true.",
         "id": "d2",
         "kind": "fillBlank",
-        "prompt": "She said that the earth ____ around the sun.",
+        "prompt": "She said that the earth ____ (go) around the sun.",
         "target": "goes"
       },
       {
@@ -22479,7 +22489,7 @@
         "explanation": "Use the present simple because the schedule is still current.",
         "id": "d5",
         "kind": "fillBlank",
-        "prompt": "The teacher said that the meeting ____ at 9 a.m.",
+        "prompt": "The teacher said that the meeting ____ (start) at 9 a.m.",
         "target": "starts"
       },
       {
@@ -23894,7 +23904,8 @@
         "id": "d3",
         "kind": "transform",
         "prompt": "Add the correct question tag: She likes tea.",
-        "target": "She likes tea, doesn't she?"
+        "target": "She likes tea, doesn't she?",
+        "punctuationSensitive": true
       },
       {
         "acceptedAnswers": [
@@ -23906,7 +23917,8 @@
         "id": "d4",
         "kind": "transform",
         "prompt": "Add the correct question tag: We haven't met before.",
-        "target": "We haven't met before, have we?"
+        "target": "We haven't met before, have we?",
+        "punctuationSensitive": true
       },
       {
         "acceptedAnswers": [
@@ -23918,7 +23930,8 @@
         "id": "d5",
         "kind": "transform",
         "prompt": "Add the correct question tag: She is your sister.",
-        "target": "She is your sister, isn't she?"
+        "target": "She is your sister, isn't she?",
+        "punctuationSensitive": true
       },
       {
         "acceptedAnswers": [
@@ -24019,7 +24032,8 @@
         "id": "d13",
         "kind": "transform",
         "prompt": "Add the correct question tag: She can swim.",
-        "target": "She can swim, can't she?"
+        "target": "She can swim, can't she?",
+        "punctuationSensitive": true
       },
       {
         "acceptedAnswers": [
@@ -24031,7 +24045,8 @@
         "id": "d14",
         "kind": "transform",
         "prompt": "Add the correct question tag: He doesn't speak French.",
-        "target": "He doesn't speak French, does he?"
+        "target": "He doesn't speak French, does he?",
+        "punctuationSensitive": true
       },
       {
         "acceptedAnswers": [
@@ -24055,7 +24070,8 @@
         "id": "d16",
         "kind": "transform",
         "prompt": "Add the correct question tag: You finished early.",
-        "target": "You finished early, didn't you?"
+        "target": "You finished early, didn't you?",
+        "punctuationSensitive": true
       }
     ],
     "examples": [],
@@ -24115,7 +24131,7 @@
         "explanation": "An indirect question keeps statement word order: subject + verb. Here, the correct order is where the library is.",
         "id": "d1",
         "kind": "fillBlank",
-        "prompt": "Complete the indirect question: Could you tell me __________?",
+        "prompt": "Complete the indirect question: Could you tell me __________ (library)?",
         "target": "where the library is"
       },
       {
@@ -25047,7 +25063,7 @@
         "explanation": "After enjoy, we use a gerund. The verb is in -ing form.",
         "id": "d1",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: I enjoy ____ after dinner.",
+        "prompt": "Complete the sentence: I enjoy ____ (read) after dinner.",
         "target": "reading"
       },
       {
@@ -25087,7 +25103,7 @@
         "explanation": "After the preposition of, we use a gerund. Avoiding fits the structure of the sentence.",
         "id": "d4",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: He is afraid of ____ public speaking.",
+        "prompt": "Complete the sentence: He is afraid of ____ (avoid) public speaking.",
         "target": "avoiding"
       },
       {
@@ -25127,7 +25143,7 @@
         "explanation": "Enjoy is followed by a gerund. Swimming is the correct form after enjoy.",
         "id": "d7",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: My brother enjoys ____ in the sea.",
+        "prompt": "Complete the sentence: My brother enjoys ____ (swim) in the sea.",
         "target": "swimming"
       },
       {
@@ -25467,7 +25483,7 @@
         "explanation": "After remember, to-infinitive means the action was something you did not forget to do.",
         "id": "d13",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: She remembered ___ the window before she left.",
+        "prompt": "Complete the sentence: She remembered ___ (open) the window before she left.",
         "target": "to open"
       },
       {
@@ -25479,7 +25495,7 @@
         "explanation": "After remember, a gerund shows a memory of the action that happened in the past.",
         "id": "d14",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: She remembers ___ the window before she left.",
+        "prompt": "Complete the sentence: She remembers ___ (open) the window before she left.",
         "target": "opening"
       },
       {
@@ -25491,7 +25507,7 @@
         "explanation": "After stop, to-infinitive shows a pause in order to do another action.",
         "id": "d15",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: He stopped ___ the phone to look at the screen.",
+        "prompt": "Complete the sentence: He stopped ___ (answer) the phone to look at the screen.",
         "target": "to answer"
       },
       {
@@ -25503,7 +25519,7 @@
         "explanation": "After stop, a gerund shows that the activity ended completely.",
         "id": "d16",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: He stopped ___ the phone because he was tired.",
+        "prompt": "Complete the sentence: He stopped ___ (answer) the phone because he was tired.",
         "target": "answering"
       }
     ],
@@ -25581,7 +25597,7 @@
         "explanation": "To express purpose, English uses to + base verb.",
         "id": "d1",
         "kind": "fillBlank",
-        "prompt": "I went to the library ___ for my exam.",
+        "prompt": "I went to the library ___ (study) for my exam.",
         "target": "to study"
       },
       {
@@ -25593,7 +25609,7 @@
         "explanation": "The infinitive shows the reason for leaving early.",
         "id": "d2",
         "kind": "fillBlank",
-        "prompt": "He left early ___.",
+        "prompt": "He left early ___ (bus / catch).",
         "target": "to catch the bus"
       },
       {
@@ -25617,7 +25633,7 @@
         "explanation": "To + base verb is the normal form for purpose.",
         "id": "d4",
         "kind": "fillBlank",
-        "prompt": "She saved money ___ a laptop.",
+        "prompt": "She saved money ___ (buy) a laptop.",
         "target": "to buy"
       },
       {
@@ -25641,7 +25657,7 @@
         "explanation": "After to, use the base form of the verb.",
         "id": "d6",
         "kind": "fillBlank",
-        "prompt": "They turned on the heater ___ the room.",
+        "prompt": "They turned on the heater ___ (warm) the room.",
         "target": "to warm"
       },
       {
@@ -25835,7 +25851,7 @@
         "explanation": "Learning a new language is the subject of the sentence, so the verb is singular: takes.",
         "id": "d8",
         "kind": "fillBlank",
-        "prompt": "Learning a new language ____ time.",
+        "prompt": "Learning a new language ____ (tak) time.",
         "target": "takes"
       },
       {
@@ -25909,7 +25925,7 @@
         "explanation": "After a preposition, English uses a gerund (-ing form). 'In' is a preposition, so the verb after it becomes 'learning'.",
         "id": "d1",
         "kind": "fillBlank",
-        "prompt": "Complete the phrase: interested ____ English",
+        "prompt": "Complete the phrase: interested ____ (learn) English",
         "target": "in learning"
       },
       {
@@ -25962,7 +25978,7 @@
         "explanation": "This drill checks the pattern after a preposition, but the target answer is the gerund form 'using'.",
         "id": "d5",
         "kind": "fillBlank",
-        "prompt": "Complete the phrase: ____ a calculator",
+        "prompt": "Complete the phrase: ____ (use) a calculator",
         "target": "without using"
       },
       {
@@ -25998,7 +26014,7 @@
         "explanation": "After the preposition 'before', use a gerund.",
         "id": "d8",
         "kind": "fillBlank",
-        "prompt": "Complete the phrase: ____ dinner",
+        "prompt": "Complete the phrase: ____ (eat) dinner",
         "target": "before eating"
       },
       {
@@ -26333,7 +26349,7 @@
         "explanation": "To have finished is the perfect infinitive. It shows the finishing happened before another time or feeling.",
         "id": "d3",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: He was pleased ______ the job before the deadline.",
+        "prompt": "Complete the sentence: He was pleased ______ (finish) the job before the deadline.",
         "target": "to have finished"
       },
       {
@@ -26345,7 +26361,7 @@
         "explanation": "To have seen is used because the seeing happened before the main verb's past meaning.",
         "id": "d4",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: She claimed ______ the witness on the train.",
+        "prompt": "Complete the sentence: She claimed ______ (see) the witness on the train.",
         "target": "to have seen"
       },
       {
@@ -26640,7 +26656,7 @@
         "explanation": "Being interviewed is the passive gerund. It means that the person receives the action of the interview.",
         "id": "d2",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: She dislikes ____ by reporters.",
+        "prompt": "Complete the sentence: She dislikes ____ (interview) by reporters.",
         "target": "being interviewed"
       },
       {
@@ -26688,7 +26704,7 @@
         "explanation": "Being told is the passive gerund. It fits after mind and shows that the subject receives the telling.",
         "id": "d6",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: I don't mind ____ the truth.",
+        "prompt": "Complete the sentence: I don't mind ____ (tell) the truth.",
         "target": "being told"
       },
       {
@@ -27724,7 +27740,7 @@
         "explanation": "In the pattern such was + noun phrase, the verb comes before the subject in formal style. Here the missing words complete the inverted opening.",
         "id": "d1",
         "kind": "fillBlank",
-        "prompt": "Complete the phrase: Such ___ that we arrived late.",
+        "prompt": "Complete the phrase: Such ___ (traffic) that we arrived late.",
         "target": "was the traffic"
       },
       {
@@ -29140,7 +29156,7 @@
         "explanation": "In addition is a common linker used to add another point.",
         "id": "d1",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence with the best linker: The course is useful. __________, it is affordable.",
+        "prompt": "Complete the sentence with the best linker: The course is useful. __________ (addition), it is affordable.",
         "target": "In addition"
       },
       {
@@ -29342,7 +29358,7 @@
         "explanation": "On the other hand introduces a contrasting point in a separate sentence.",
         "id": "d3",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: The job pays less. _____, it offers a much better work-life balance.",
+        "prompt": "Complete the sentence: The job pays less. _____ (hand), it offers a much better work-life balance.",
         "target": "On the other hand"
       },
       {
@@ -29821,7 +29837,7 @@
         "explanation": "Break down is an intransitive phrasal verb here. It means 'stopped working' and does not take an object.",
         "id": "d1",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: My car ______ on the way home.",
+        "prompt": "Complete the sentence: My car ______ (broke) on the way home.",
         "target": "broke down"
       },
       {
@@ -29833,7 +29849,7 @@
         "explanation": "Take off can be used without an object when a plane leaves the ground.",
         "id": "d2",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: The plane will ______ at 6:30.",
+        "prompt": "Complete the sentence: The plane will ______ (take) at 6:30.",
         "target": "take off"
       },
       {
@@ -29845,7 +29861,7 @@
         "explanation": "Come back is intransitive here. It means 'returned' and does not need an object.",
         "id": "d3",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: She ______ from the shop after 10 minutes.",
+        "prompt": "Complete the sentence: She ______ (back / come) from the shop after 10 minutes.",
         "target": "came back"
       },
       {
@@ -29857,7 +29873,7 @@
         "explanation": "Run out is intransitive in this sentence. It means 'finished' or 'became empty' and does not take a direct object.",
         "id": "d4",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: We ______ of milk yesterday.",
+        "prompt": "Complete the sentence: We ______ (run) of milk yesterday.",
         "target": "ran out"
       },
       {
@@ -30176,7 +30192,7 @@
       },
       {
         "acceptedAnswers": [
-          "get off"
+          "off"
         ],
         "choices": null,
         "difficulty": 2,
@@ -30184,11 +30200,11 @@
         "id": "d9",
         "kind": "fillBlank",
         "prompt": "Complete the sentence: We get ___ the bus at the next stop.",
-        "target": "get off"
+        "target": "off"
       },
       {
         "acceptedAnswers": [
-          "get by"
+          "by"
         ],
         "choices": null,
         "difficulty": 2,
@@ -30196,7 +30212,7 @@
         "id": "d10",
         "kind": "fillBlank",
         "prompt": "Complete the sentence: My salary is small, but I can get ___.",
-        "target": "get by"
+        "target": "by"
       },
       {
         "acceptedAnswers": [
@@ -30219,7 +30235,7 @@
         "explanation": "Get together means to meet or gather. The sentence needs that meaning of meeting friends.",
         "id": "d12",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: Let's get ___ on Saturday evening.",
+        "prompt": "Complete the sentence: Let's get ___ (together) on Saturday evening.",
         "target": "get together"
       },
       {
@@ -30236,7 +30252,7 @@
       },
       {
         "acceptedAnswers": [
-          "get along with"
+          "along with"
         ],
         "choices": null,
         "difficulty": 3,
@@ -30244,7 +30260,7 @@
         "id": "d14",
         "kind": "fillBlank",
         "prompt": "Complete the sentence: I don't get ___ my new neighbor very well.",
-        "target": "get along with"
+        "target": "along with"
       },
       {
         "acceptedAnswers": [
@@ -30338,7 +30354,7 @@
     "drills": [
       {
         "acceptedAnswers": [
-          "turn it off"
+          "it"
         ],
         "choices": null,
         "difficulty": 1,
@@ -30346,11 +30362,11 @@
         "id": "d1",
         "kind": "fillBlank",
         "prompt": "Complete the sentence: Please turn ______ off.",
-        "target": "turn it off"
+        "target": "it"
       },
       {
         "acceptedAnswers": [
-          "pick it up"
+          "it"
         ],
         "choices": null,
         "difficulty": 1,
@@ -30358,11 +30374,11 @@
         "id": "d2",
         "kind": "fillBlank",
         "prompt": "Complete the sentence: Can you pick ______ up from school?",
-        "target": "pick it up"
+        "target": "it"
       },
       {
         "acceptedAnswers": [
-          "look it up"
+          "it up"
         ],
         "choices": null,
         "difficulty": 2,
@@ -30370,11 +30386,11 @@
         "id": "d3",
         "kind": "fillBlank",
         "prompt": "Complete the sentence: If you do not know the word, look ______ in a dictionary.",
-        "target": "look it up"
+        "target": "it up"
       },
       {
         "acceptedAnswers": [
-          "put it on"
+          "it"
         ],
         "choices": null,
         "difficulty": 2,
@@ -30382,7 +30398,7 @@
         "id": "d4",
         "kind": "fillBlank",
         "prompt": "Complete the sentence: It is cold, so put ______ on.",
-        "target": "put it on"
+        "target": "it"
       },
       {
         "acceptedAnswers": [
@@ -30804,7 +30820,7 @@
         "explanation": "Take up means to start doing a new hobby, activity, or subject.",
         "id": "d1",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: She decided to ______ yoga after work.",
+        "prompt": "Complete the sentence: She decided to ______ (take) yoga after work.",
         "target": "Take up"
       },
       {
@@ -30816,7 +30832,7 @@
         "explanation": "Take on means to accept a job, task, or responsibility.",
         "id": "d2",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: The manager will ______ two new assistants.",
+        "prompt": "Complete the sentence: The manager will ______ (take) two new assistants.",
         "target": "take on"
       },
       {
@@ -30828,7 +30844,7 @@
         "explanation": "Take after means to resemble a parent or another family member.",
         "id": "d3",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: My son really ______ his grandfather.",
+        "prompt": "Complete the sentence: My son really ______ (take) his grandfather.",
         "target": "take after"
       },
       {
@@ -30892,7 +30908,7 @@
         "explanation": "Take on means to accept responsibility for something difficult or new.",
         "id": "d8",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: I cannot ______ another project this week.",
+        "prompt": "Complete the sentence: I cannot ______ (take) another project this week.",
         "target": "take on"
       },
       {
@@ -30932,7 +30948,7 @@
         "explanation": "Take after is used for resemblance to a family member, not for age or order.",
         "id": "d11",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: Although she is young, she really ______ her aunt.",
+        "prompt": "Complete the sentence: Although she is young, she really ______ (take) her aunt.",
         "target": "take after"
       },
       {
@@ -31018,7 +31034,7 @@
         "explanation": "Put up with is the fixed three-part phrasal verb for tolerating something unpleasant.",
         "id": "d1",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence with the correct phrasal verb: I cannot ______ the noise from the construction site.",
+        "prompt": "Complete the sentence with the correct phrasal verb: I cannot ______ (put) the noise from the construction site.",
         "target": "put up with"
       },
       {
@@ -31030,7 +31046,7 @@
         "explanation": "Look forward to is a fixed expression. The whole unit is needed before a noun or gerund phrase.",
         "id": "d2",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence with the correct phrasal verb: We are ______ the holiday.",
+        "prompt": "Complete the sentence with the correct phrasal verb: We are ______ (forward / look) the holiday.",
         "target": "look forward to"
       },
       {
@@ -31042,7 +31058,7 @@
         "explanation": "Go on with means continue doing something. The preposition with is part of the phrasal verb.",
         "id": "d3",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence with the correct phrasal verb: Please ______ your work while I answer the phone.",
+        "prompt": "Complete the sentence with the correct phrasal verb: Please ______ (go) your work while I answer the phone.",
         "target": "go on with"
       },
       {
@@ -31247,7 +31263,7 @@
         "explanation": "Follow-up can be a noun when it comes before another noun, as in 'follow-up meeting' or 'follow-up investigation'.",
         "id": "d3",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence with the noun form: The doctor arranged a ______ appointment for next week.",
+        "prompt": "Complete the sentence with the noun form: The doctor arranged a ______ (follow) appointment for next week.",
         "target": "follow-up"
       },
       {
@@ -32591,7 +32607,7 @@
         "explanation": "Use one after an adjective to replace a singular countable noun that was mentioned before.",
         "id": "d1",
         "kind": "fillBlank",
-        "prompt": "I like the blue shirt, but I want _____ .",
+        "prompt": "I like the blue shirt, but I want _____ (red) .",
         "target": "the red one"
       },
       {
@@ -32603,7 +32619,7 @@
         "explanation": "Use ones after an adjective to replace a plural countable noun.",
         "id": "d2",
         "kind": "fillBlank",
-        "prompt": "These shoes are too big. I need _____ .",
+        "prompt": "These shoes are too big. I need _____ (one / small) .",
         "target": "the small ones"
       },
       {
@@ -33220,7 +33236,7 @@
         "explanation": "After be, use able to. This is the form needed with many tenses where can is impossible.",
         "id": "d3",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: I am ____ speak to the manager now.",
+        "prompt": "Complete the sentence: I am ____ (able) speak to the manager now.",
         "target": "able to"
       },
       {
@@ -34022,7 +34038,7 @@
         "explanation": "Use all + day to mean the full length of the day. In this structure, you usually do not add the article the.",
         "id": "d1",
         "kind": "fillBlank",
-        "prompt": "Complete the phrase: I worked from morning to night; I worked ______.",
+        "prompt": "Complete the phrase: I worked from morning to night; I worked ______ (day).",
         "target": "all day"
       },
       {
@@ -34034,7 +34050,7 @@
         "explanation": "Use the whole + singular noun when you mean the complete day. The article the comes before whole.",
         "id": "d2",
         "kind": "fillBlank",
-        "prompt": "Complete the phrase: I spent ______ waiting for the result.",
+        "prompt": "Complete the phrase: I spent ______ (day / whole) waiting for the result.",
         "target": "the whole day"
       },
       {
@@ -34086,7 +34102,7 @@
         "explanation": "Use the whole + singular noun to mean the complete class as one group. The article the goes before whole.",
         "id": "d6",
         "kind": "fillBlank",
-        "prompt": "Complete the phrase: ______ was listening carefully.",
+        "prompt": "Complete the phrase: ______ (class / whole) was listening carefully.",
         "target": "the whole class"
       },
       {
@@ -34220,7 +34236,7 @@
         "explanation": "Others is a pronoun meaning other people or things, and it can stand alone.",
         "id": "d3",
         "kind": "fillBlank",
-        "prompt": "Some students finished early. ______ stayed to do the extra exercise.",
+        "prompt": "Some students finished early. ______ (other) stayed to do the extra exercise.",
         "target": "others"
       },
       {
@@ -34232,7 +34248,7 @@
         "explanation": "Another means one more of the same kind, so it is followed by a singular countable noun.",
         "id": "d4",
         "kind": "fillBlank",
-        "prompt": "Please give me ______ . I am still hungry.",
+        "prompt": "Please give me ______ (apple) . I am still hungry.",
         "target": "another apple"
       },
       {
@@ -34256,7 +34272,7 @@
         "explanation": "The others means the rest of a known group, so the article the is needed.",
         "id": "d6",
         "kind": "fillBlank",
-        "prompt": "Five people joined the meeting. Two left early, and ______ stayed until the end.",
+        "prompt": "Five people joined the meeting. Two left early, and ______ (other) stayed until the end.",
         "target": "the others"
       },
       {
@@ -34638,7 +34654,7 @@
         "explanation": "Expect can take an object followed by to + infinitive. The object is them, and the verb after it must be to arrive.",
         "id": "d4",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: We expected them ___ on time.",
+        "prompt": "Complete the sentence: We expected them ___ (arrive) on time.",
         "target": "to arrive"
       },
       {
@@ -34651,7 +34667,7 @@
         "explanation": "The pattern is want + object + to-infinitive. Here, her is the object and to explain is the verb phrase.",
         "id": "d5",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: I want her ___ the problem.",
+        "prompt": "Complete the sentence: I want her ___ (explain) the problem.",
         "target": "to explain"
       },
       {
@@ -34740,7 +34756,7 @@
         "explanation": "This sentence has only verb + infinitive: wants to leave. There is no object before the infinitive, so it contrasts with want you to leave.",
         "id": "d12",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: She wants ___ early.",
+        "prompt": "Complete the sentence: She wants ___ (leave) early.",
         "target": "to leave"
       },
       {
@@ -34856,7 +34872,7 @@
         "explanation": "As soon as means immediately after. The time clause takes the present simple, even with future meaning.",
         "id": "d3",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: I will email you ___ I finish the report.",
+        "prompt": "Complete the sentence: I will email you ___ (soon) I finish the report.",
         "target": "as soon as"
       },
       {
@@ -35085,7 +35101,7 @@
         "explanation": "In order that is a formal purpose connector followed by a clause.",
         "id": "d2",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: The speaker paused _____ the audience could take notes.",
+        "prompt": "Complete the sentence: The speaker paused _____ (order) the audience could take notes.",
         "target": "in order that"
       },
       {
@@ -35260,15 +35276,15 @@
       },
       {
         "acceptedAnswers": [
-          "that the meeting start at 9 a.m."
+          "that the meeting start"
         ],
         "choices": null,
         "difficulty": 1,
         "explanation": "After recommend in this structure, the verb stays in the base form: start. The word that introduces the clause, and the verb does not take -s.",
         "id": "d2",
         "kind": "fillBlank",
-        "prompt": "Complete the sentence: We recommend ______ at 9 a.m.",
-        "target": "that the meeting start at 9 a.m."
+        "prompt": "Complete the sentence: We recommend ______ (meet / start) at 9 a.m.",
+        "target": "that the meeting start"
       },
       {
         "acceptedAnswers": [
@@ -35833,7 +35849,7 @@
       },
       {
         "acceptedAnswers": [
-          "Neither did he."
+          "Neither did"
         ],
         "choices": null,
         "difficulty": 2,
@@ -35841,7 +35857,7 @@
         "id": "d12",
         "kind": "fillBlank",
         "prompt": "Complete the sentence: She did not call, and ______ he.",
-        "target": "Neither did he."
+        "target": "Neither did"
       },
       {
         "acceptedAnswers": [

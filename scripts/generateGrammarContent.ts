@@ -4,6 +4,18 @@ import {
   loadSeededSlugs,
   saveGrammarContent,
 } from '@/modules/grammar/seed/loadGrammarContent'
+import {
+  applyFillBlankCues,
+  proposeFillBlankCues,
+} from '@/modules/grammar/seed/cueFillBlankPrompts'
+import {
+  applyPunctuationFlags,
+  proposePunctuationFlags,
+} from '@/modules/grammar/seed/resolvePunctuationFlags'
+import {
+  applyBlankTargetTrims,
+  proposeBlankTargetTrims,
+} from '@/modules/grammar/seed/trimBlankTargets'
 import { validateGrammarContent } from '@/modules/grammar/seed/validateGrammarContent'
 import type { GrammarContentFile } from '@/modules/grammar/types'
 
@@ -50,6 +62,12 @@ function isTerminalFailure(message: string) {
  *   bun run grammar:generate --repair   # rewrite points that FAIL validation
  *   bun run grammar:generate --repair 8 # at most 8 of those
  *   bun run grammar:generate --stale-contrasts  # backfill minimalPairs
+ *   bun run grammar:generate --punctuation-flags       # dry run, prints flips
+ *   bun run grammar:generate --punctuation-flags --write  # writes them
+ *   bun run grammar:generate --cue-blanks              # dry run, prints cues
+ *   bun run grammar:generate --cue-blanks --write      # writes them
+ *   bun run grammar:generate --trim-blanks             # dry run, prints trims
+ *   bun run grammar:generate --trim-blanks --write     # writes them
  */
 function parseArgs() {
   const args = process.argv.slice(2)
@@ -63,11 +81,115 @@ function parseArgs() {
   )
 
   return {
+    cueBlanks: args.includes('--cue-blanks'),
+    trimBlanks: args.includes('--trim-blanks'),
     limit: limitArg ? Number(limitArg) : Number.POSITIVE_INFINITY,
+    punctuationFlags: args.includes('--punctuation-flags'),
     repair: args.includes('--repair'),
     slug: slugArg ?? null,
     staleContrasts: args.includes('--stale-contrasts'),
+    write: args.includes('--write'),
   }
+}
+
+/**
+ * Give unanswerable fill-blank drills the cue they are missing.
+ *
+ * A blank whose answer is a function word is a grammar question:
+ * "She ___ not drink tea" has one answer. A blank whose answer is a verb or
+ * noun the sentence never mentions is a guessing game: "I ___ football
+ * yesterday" is equally "played", "watched" or "missed", and only the author
+ * knows. This appends the target's dictionary form, which is the format every
+ * coursebook uses and the difference between a hard question and an impossible
+ * one.
+ *
+ * Local, deterministic, no API key. DRY RUN BY DEFAULT, because it rewrites
+ * committed prompts and the lemma of an inflected word is worth a human's eye
+ * before it lands.
+ */
+function runCueBlanks({ write }: { write: boolean }) {
+  const points = loadGrammarContent()
+  const { proposals, skipped } = proposeFillBlankCues(points)
+
+  if (proposals.length === 0 && skipped.length === 0) {
+    console.info(
+      'grammar:generate --cue-blanks - nothing to cue. Every fill-blank is answerable from its own prompt.'
+    )
+    return
+  }
+
+  console.info(
+    `grammar:generate --cue-blanks - ${proposals.length} unanswerable fill-blank(s) would get a cue:\n`
+  )
+
+  for (const proposal of proposals)
+    console.info(
+      `  ${proposal.slug} / ${proposal.drillId}   [${proposal.target}]\n    - ${proposal.prompt}\n    + ${proposal.nextPrompt}`
+    )
+
+  if (skipped.length > 0) {
+    console.info(
+      `\n${skipped.length} drill(s) NEEDED a cue but could not be given one safely. A wrong cue is worse than none, so these want a human:\n`
+    )
+
+    for (const entry of skipped)
+      console.info(
+        `  ${entry.slug} / ${entry.drillId}   [${entry.target}]\n    ${entry.prompt}\n    why: ${entry.reason}`
+      )
+  }
+
+  if (!write) {
+    console.info(
+      '\nDry run. Re-run with --write to apply, after reading the list above.'
+    )
+    return
+  }
+
+  saveGrammarContent(applyFillBlankCues(points, proposals))
+  console.info(`\nWrote ${proposals.length} cue(s) to the content file.`)
+}
+
+/**
+ * One-time backfill of `punctuationSensitive` on existing drills.
+ *
+ * Lives in this script rather than its own because it is the same job - making
+ * committed content correct - and it needs no API key, so it runs instantly and
+ * offline.
+ *
+ * DRY RUN BY DEFAULT. This changes how ~1800 drills are graded, and the
+ * derivation it uses (family plus lesson text plus target shape) is a heuristic
+ * that a human should read before it lands. `--write` is the second step, after
+ * you have looked at the list.
+ */
+function runPunctuationFlags({ write }: { write: boolean }) {
+  const points = loadGrammarContent()
+  const proposals = proposePunctuationFlags(points)
+
+  if (proposals.length === 0) {
+    console.info(
+      'grammar:generate --punctuation-flags - nothing to flag. Every drill that teaches a mark already has an explicit decision.'
+    )
+    return
+  }
+
+  console.info(
+    `grammar:generate --punctuation-flags - ${proposals.length} drill(s) would be graded punctuation-strictly:\n`
+  )
+
+  for (const proposal of proposals)
+    console.info(
+      `  ${proposal.slug} / ${proposal.drillId}  (${proposal.reason})\n    ${proposal.target}`
+    )
+
+  if (!write) {
+    console.info(
+      '\nDry run. Re-run with --write to apply, after reading the list above.'
+    )
+    return
+  }
+
+  saveGrammarContent(applyPunctuationFlags(points, proposals))
+  console.info(`\nWrote ${proposals.length} flag(s) to the content file.`)
 }
 
 /**
@@ -148,8 +270,88 @@ function byGenerationValue(
   return left.cefrLevel.localeCompare(right.cefrLevel)
 }
 
+/**
+ * Make fill-blank targets the size of their own blank.
+ *
+ * "The car ____ repaired." with target "has been repaired" is ungradeable: the
+ * learner writes "has been", which is the only thing the gap can hold, and the
+ * grader compares it against a string carrying the participle a second time.
+ * The prompt states exactly which words are already on the page, so the trim is
+ * mechanical.
+ *
+ * DRY RUN BY DEFAULT - it changes what counts as a correct answer.
+ */
+function runTrimBlanks({ write }: { write: boolean }) {
+  const points = loadGrammarContent()
+  const { proposals, skipped } = proposeBlankTargetTrims(points)
+
+  if (proposals.length === 0 && skipped.length === 0) {
+    console.info(
+      'grammar:generate --trim-blanks - nothing to trim. Every fill-blank target is the size of its blank.'
+    )
+    return
+  }
+
+  console.info(
+    `grammar:generate --trim-blanks - ${proposals.length} target(s) are bigger than their blank:\n`
+  )
+
+  for (const proposal of proposals)
+    console.info(
+      `  ${proposal.slug} / ${proposal.drillId}\n    ${proposal.prompt}\n    - ${proposal.target}\n    + ${proposal.nextTarget}`
+    )
+
+  if (skipped.length > 0) {
+    console.info(
+      `\n${skipped.length} drill(s) need a human - the prompt repeats the answer rather than framing it:\n`
+    )
+
+    for (const entry of skipped)
+      console.info(
+        `  ${entry.slug} / ${entry.drillId}\n    ${entry.prompt}   -> ${entry.target}\n    why: ${entry.reason}`
+      )
+  }
+
+  if (!write) {
+    console.info(
+      '\nDry run. Re-run with --write to apply, after reading the list above.'
+    )
+    return
+  }
+
+  saveGrammarContent(applyBlankTargetTrims(points, proposals))
+  console.info(`\nTrimmed ${proposals.length} target(s).`)
+}
+
 async function main() {
-  const { limit, repair, slug, staleContrasts } = parseArgs()
+  const {
+    cueBlanks,
+    trimBlanks,
+    limit,
+    punctuationFlags,
+    repair,
+    slug,
+    staleContrasts,
+    write,
+  } = parseArgs()
+
+  // Local transforms, no API key, no network. These return before anything
+  // below touches a provider.
+  if (punctuationFlags) {
+    runPunctuationFlags({ write })
+    return
+  }
+
+  if (cueBlanks) {
+    runCueBlanks({ write })
+    return
+  }
+
+  if (trimBlanks) {
+    runTrimBlanks({ write })
+    return
+  }
+
   const points = loadGrammarContent()
   const failuresBySlug = repair
     ? collectFailuresBySlug(points)

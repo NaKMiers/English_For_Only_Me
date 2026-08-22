@@ -235,6 +235,118 @@ describe('validateGrammarContent', () => {
       expect(result.ok).toBe(true)
     })
 
+    /**
+     * REGRESSION GUARD - DO NOT DELETE.
+     *
+     * The drill minimum is not decorative: 8 (12 on high L1 risk) is one more
+     * than the ladder has rungs, which is what stops recall repeating an item
+     * before the learner has mastered the rule. If AI-generated drills counted
+     * toward it, a point could satisfy its quality floor entirely on machine
+     * output nobody has read - inverting what the floor is for.
+     */
+    describe('generated drills and the quality floor (regression guard)', () => {
+      function generatedBody(count: number) {
+        return bodyWith(count).map(entry => ({
+          ...entry,
+          generated: true,
+          id: `gen-${entry.id}`,
+        }))
+      }
+
+      it('does not let generated drills satisfy the minimum', () => {
+        const result = validateGrammarContent({
+          points: [
+            taxonomyRow({
+              drills: [...bodyWith(3), ...generatedBody(6)],
+              explanation: 'Use have/has plus past participle.',
+              reviewStatus: 'unverified',
+            }),
+          ],
+        })
+
+        const issue = result.issues.find(
+          candidate => candidate.rule === 'drill-minimum'
+        )
+
+        expect(issue?.message).toContain('at least 8 reviewed drills')
+        expect(issue?.message).toContain('has 3')
+        expect(issue?.message).toContain('+6 generated, not counted')
+      })
+
+      it('accepts a point whose reviewed drills already meet the floor', () => {
+        const result = validateGrammarContent({
+          points: [
+            taxonomyRow({
+              drills: [...bodyWith(8), ...generatedBody(4)],
+              explanation: 'Use have/has plus past participle.',
+              reviewStatus: 'unverified',
+            }),
+          ],
+        })
+
+        expect(result.ok).toBe(true)
+      })
+
+      it('does not let generated drills satisfy the kind-variety rule', () => {
+        const result = validateGrammarContent({
+          points: [
+            taxonomyRow({
+              drills: [...bodyWith(8, ['transform']), ...generatedBody(4)],
+              explanation: 'Use have/has plus past participle.',
+              reviewStatus: 'unverified',
+            }),
+          ],
+        })
+
+        expect(
+          result.issues.some(
+            candidate => candidate.rule === 'drill-kind-variety'
+          )
+        ).toBe(true)
+      })
+
+      it('flags a point that blew past the generated cap', () => {
+        const result = validateGrammarContent({
+          points: [
+            taxonomyRow({
+              drills: [...bodyWith(8), ...generatedBody(9)],
+              explanation: 'Use have/has plus past participle.',
+              reviewStatus: 'unverified',
+            }),
+          ],
+        })
+
+        const issue = result.issues.find(
+          candidate => candidate.rule === 'drill-generated-cap'
+        )
+
+        expect(issue?.message).toContain('9 generated drills')
+      })
+
+      it('still holds generated drills to structural rules', () => {
+        const result = validateGrammarContent({
+          points: [
+            taxonomyRow({
+              drills: [
+                ...bodyWith(8),
+                {
+                  ...drill({ generated: true, id: 'gen-bad' }),
+                  // Target absent from its own accepted answers: the one rule
+                  // fabrication cannot satisfy. Unreviewed is allowed;
+                  // malformed is not.
+                  acceptedAnswers: ['something else entirely'],
+                },
+              ],
+              explanation: 'Use have/has plus past participle.',
+              reviewStatus: 'unverified',
+            }),
+          ],
+        })
+
+        expect(result.ok).toBe(false)
+      })
+    })
+
     it('enforces 12 drills on a high-l1Risk point', () => {
       const result = validateGrammarContent({
         points: [

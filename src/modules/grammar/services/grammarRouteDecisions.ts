@@ -3,8 +3,7 @@ import { z } from 'zod'
 import { hasMongoDbUri } from '@/constants/environments'
 import {
   GRAMMAR_CEFR_LEVELS,
-  GRAMMAR_DIAGNOSTIC_DEFAULT_LIMIT,
-  GRAMMAR_DIAGNOSTIC_MAX_LIMIT,
+  GRAMMAR_COMPLEXITY_LEVELS,
   GRAMMAR_FAMILIES,
   GRAMMAR_L1_RISKS,
   GRAMMAR_POINTS_DEFAULT_LIMIT,
@@ -12,6 +11,9 @@ import {
   GRAMMAR_RECALL_DEFAULT_LIMIT,
   GRAMMAR_RECALL_MAX_LIMIT,
   GRAMMAR_REVIEW_STATUSES,
+  GRAMMAR_TEST_DEFAULT_QUESTIONS,
+  GRAMMAR_TEST_MAX_QUESTIONS,
+  GRAMMAR_TEST_SCOPES,
   GRAMMAR_USER_ITEM_STATUSES,
 } from '@/modules/grammar/constants'
 
@@ -139,34 +141,65 @@ const itemStatusSchema = z
   })
   .strict()
 
-const diagnosticBuildSchema = z.object({
-  limit: z.coerce
-    .number()
-    .int()
-    .min(1)
-    .max(GRAMMAR_DIAGNOSTIC_MAX_LIMIT)
-    .default(GRAMMAR_DIAGNOSTIC_DEFAULT_LIMIT),
-})
+/**
+ * What the learner asked to be tested on.
+ *
+ * Every filter array defaults to empty, and empty means "no constraint on this
+ * axis" rather than "match nothing". That is the difference between a learner
+ * who picked two families and one who picked none, and getting it backwards
+ * turns the default test into an empty one.
+ *
+ * `scope` is the only field with a real default, because it is the only one
+ * where "no opinion" has a sensible answer: draw from everything.
+ */
+const testStartSchema = z
+  .object({
+    cefrLevels: z.array(z.enum(GRAMMAR_CEFR_LEVELS)).max(6).default([]),
+    complexities: z
+      .array(z.union(GRAMMAR_COMPLEXITY_LEVELS.map(level => z.literal(level))))
+      .max(5)
+      .default([]),
+    families: z.array(z.enum(GRAMMAR_FAMILIES)).max(17).default([]),
+    l1Risks: z.array(z.enum(GRAMMAR_L1_RISKS)).max(3).default([]),
+    questionCount: z.coerce
+      .number()
+      .int()
+      .min(1)
+      .max(GRAMMAR_TEST_MAX_QUESTIONS)
+      .default(GRAMMAR_TEST_DEFAULT_QUESTIONS),
+    scope: z.enum(GRAMMAR_TEST_SCOPES).default('all'),
+  })
+  .strict()
 
 /**
- * Diagnostic answers carry no verdicts. `sessionKey` makes the whole submission
- * idempotent, so a retried or double-clicked submit cannot seed the ladder twice.
+ * A whole test, submitted once.
+ *
+ * No verdicts and no targets: the client sends what was typed or chosen, keyed
+ * by the question id it was served. Everything needed to grade is re-read from
+ * the session document server-side, which is what stops a stale page or a
+ * tampered payload from writing its own score into the ladder.
+ *
+ * `sessionId` carries the idempotency. The submit route claims the session
+ * atomically, so a double-tapped Submit replays the first result rather than
+ * resetting the same points twice.
  */
-const diagnosticSubmitSchema = z
+const testSubmitSchema = z
   .object({
     answers: z
       .array(
         z
           .object({
             answer: z.string().max(4000).default(''),
-            drillId: z.string().trim().min(1).max(80),
-            pointSlug: slugSchema,
+            questionId: z.string().trim().min(1).max(80),
           })
           .strict()
       )
       .min(1)
-      .max(GRAMMAR_DIAGNOSTIC_MAX_LIMIT),
-    sessionKey: z.string().trim().min(8).max(160),
+      .max(GRAMMAR_TEST_MAX_QUESTIONS),
+    sessionId: z
+      .string()
+      .trim()
+      .regex(/^[a-f0-9]{24}$/, 'Expected a session id.'),
   })
   .strict()
 
@@ -182,12 +215,8 @@ export type ParsedGrammarRecallAnswerRequest = z.infer<
   typeof recallAnswerSchema
 >
 export type ParsedGrammarItemStatusRequest = z.infer<typeof itemStatusSchema>
-export type ParsedGrammarDiagnosticBuildRequest = z.infer<
-  typeof diagnosticBuildSchema
->
-export type ParsedGrammarDiagnosticSubmitRequest = z.infer<
-  typeof diagnosticSubmitSchema
->
+export type ParsedGrammarTestStartRequest = z.infer<typeof testStartSchema>
+export type ParsedGrammarTestSubmitRequest = z.infer<typeof testSubmitSchema>
 
 export type GrammarRouteDecision<T> =
   { data: T; ok: true } | (GrammarApiErrorDecision & { ok: false })
@@ -316,24 +345,22 @@ export function parseGrammarItemStatusRequest(
   return { data: result.data, ok: true }
 }
 
-export function parseGrammarDiagnosticBuildRequest(
-  searchParams: URLSearchParams
-): GrammarRouteDecision<ParsedGrammarDiagnosticBuildRequest> {
-  const result = diagnosticBuildSchema.safeParse({
-    limit: searchParams.get('limit') ?? undefined,
-  })
+export function parseGrammarTestStartRequest(
+  body: unknown
+): GrammarRouteDecision<ParsedGrammarTestStartRequest> {
+  const result = testStartSchema.safeParse(body ?? {})
 
-  if (!result.success) return invalid('Grammar diagnostic query is invalid.')
+  if (!result.success) return invalid('Grammar test configuration is invalid.')
 
   return { data: result.data, ok: true }
 }
 
-export function parseGrammarDiagnosticSubmitRequest(
+export function parseGrammarTestSubmitRequest(
   body: unknown
-): GrammarRouteDecision<ParsedGrammarDiagnosticSubmitRequest> {
-  const result = diagnosticSubmitSchema.safeParse(body)
+): GrammarRouteDecision<ParsedGrammarTestSubmitRequest> {
+  const result = testSubmitSchema.safeParse(body)
 
-  if (!result.success) return invalid('Grammar diagnostic payload is invalid.')
+  if (!result.success) return invalid('Grammar test submission is invalid.')
 
   return { data: result.data, ok: true }
 }

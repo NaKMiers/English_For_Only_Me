@@ -100,12 +100,18 @@ export const GRAMMAR_DRILL_VERDICTS = ['correct', 'wrong', 'revealed'] as const
 /**
  * Which flow produced a drill attempt.
  *
- * Exists so the correct-answer streak can exclude the placement diagnostic: 40
- * assessment questions answered from a cold start are not a ten-answer run of
- * mastery, and counting them would hand out the module's only compliment for
- * guessing well once.
+ * Exists so the correct-answer streak can exclude assessment runs: 40 questions
+ * answered from a cold start are not a ten-answer run of mastery, and counting
+ * them would hand out the module's only compliment for guessing well once.
+ *
+ * `'diagnostic'` is RETIRED - the placement test it belonged to was removed
+ * with the on-demand test. The member stays because real attempt rows in Mongo
+ * carry it, and dropping an enum member that exists in stored data turns every
+ * historical read into a validation error. Nothing writes it any more.
+ *
+ * `'test'` is its successor: the learner-initiated test, launchable any time.
  */
-export const GRAMMAR_ATTEMPT_ORIGINS = ['recall', 'diagnostic'] as const
+export const GRAMMAR_ATTEMPT_ORIGINS = ['recall', 'diagnostic', 'test'] as const
 
 /**
  * How far back the correct-answer streak looks.
@@ -120,36 +126,81 @@ export const GRAMMAR_STREAK_LOOKBACK_ATTEMPTS = 50
 export const GRAMMAR_RECALL_DEFAULT_LIMIT = 12
 export const GRAMMAR_RECALL_MAX_LIMIT = 60
 
-export const GRAMMAR_DIAGNOSTIC_DEFAULT_LIMIT = 40
-export const GRAMMAR_DIAGNOSTIC_MAX_LIMIT = 80
+/**
+ * How many questions an on-demand test may ask.
+ *
+ * The ceiling is not arbitrary. Generation is chunked into
+ * `GRAMMAR_TEST_GENERATION_CHUNK`-sized OpenAI calls, so 40 is four concurrent
+ * requests - enough to be worth chunking, few enough that a slow provider does
+ * not leave the learner staring at a spinner.
+ */
+export const GRAMMAR_TEST_QUESTION_COUNTS = [5, 10, 20, 40] as const
+export const GRAMMAR_TEST_DEFAULT_QUESTIONS = 10
+export const GRAMMAR_TEST_MAX_QUESTIONS = 40
 
 /**
- * How the placement diagnostic spends its questions across L1-transfer risk.
+ * Which points a test is allowed to draw from.
  *
- * A generic placement test spreads evenly across CEFR levels, which burns most
- * of its questions confirming things a Vietnamese speaker was never likely to
- * get wrong. Weighting toward high `l1Risk` spends them where the answer is
- * genuinely uncertain, so the same question count yields more information.
+ * `learning` and `due` are the study scopes; `untouched` is what absorbed the
+ * removed placement diagnostic; `mastered` is the one that makes the test
+ * falsifiable - it lets the learner check a claim the ladder has already
+ * accepted. `ignored` is deliberately NOT a scope and is excluded from all of
+ * them: it means "stop showing me this", and a test answer must not override an
+ * instruction.
  */
-export const GRAMMAR_DIAGNOSTIC_RISK_WEIGHTS: Record<
-  'high' | 'medium' | 'low',
-  number
-> = {
-  high: 0.5,
-  low: 0.15,
-  medium: 0.35,
-}
+export const GRAMMAR_TEST_SCOPES = [
+  'all',
+  'learning',
+  'due',
+  'untouched',
+  'mastered',
+] as const
 
 /**
- * Ladder stage seeded by a CORRECT diagnostic answer.
+ * Points per OpenAI call.
  *
- * Deliberately mid-ladder rather than "already known". One right answer is
- * evidence, not proof - it could be a lucky guess on a multiple choice. Seeding
- * at stage 3 means the point comes back in a few days instead of tomorrow, and
- * getting it wrong then drops it straight back to stage 1. A binary
- * known/unknown verdict would throw that nuance away.
+ * One request for 40 questions runs straight into the failure named at
+ * `lib/ai/openAiClientCore.ts:11` - reasoning tokens count against
+ * `max_output_tokens`, and an under-budgeted response comes back `incomplete`,
+ * unusable, AND billed. Chunking converts one all-or-nothing request into
+ * several independent ones: a failed chunk costs ten generated questions,
+ * backfilled from stored drills, instead of the whole test.
  */
-export const GRAMMAR_DIAGNOSTIC_CORRECT_STAGE = 3
+export const GRAMMAR_TEST_GENERATION_CHUNK = 10
+
+/** Output-token budget per generated question, with reasoning headroom. */
+export const GRAMMAR_TEST_TOKENS_PER_QUESTION = 320
+
+/**
+ * Cost guards on a route that spends money per call.
+ *
+ * The cooldown does double duty: it stops a runaway retry loop from billing all
+ * night, and it makes a double-clicked Start return the session it already
+ * created rather than generating a second one.
+ */
+export const GRAMMAR_TEST_COOLDOWN_MS = 60_000
+export const GRAMMAR_TEST_DAILY_LIMIT = 20
+
+/**
+ * How long an unsubmitted test survives.
+ *
+ * Long enough that a test abandoned before a meeting is still there afterwards;
+ * short enough that the collection does not accumulate every session the
+ * learner ever walked away from.
+ */
+export const GRAMMAR_TEST_SESSION_TTL_SECONDS = 86_400
+
+/**
+ * Generated drills kept per point, newest first.
+ *
+ * The drill subdocument was sized for 8-12 entries at roughly 15KB per point
+ * (see `GrammarPointModel.ts`). A test appends one generated drill per point it
+ * touches, so without a cap a favourite family accumulates one per test
+ * forever. Eight matches `GRAMMAR_MIN_DRILLS_PER_POINT`: enough that the export
+ * pass has real material to promote, bounded enough that the document stays the
+ * size it was designed to be.
+ */
+export const GRAMMAR_MAX_GENERATED_DRILLS = 8
 
 /** Days of history the streak and activity chart look back over. */
 export const GRAMMAR_STATS_TREND_DAYS = 14

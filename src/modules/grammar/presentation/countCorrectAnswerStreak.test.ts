@@ -106,4 +106,58 @@ describe('countCorrectAnswerStreak', () => {
       ).toBe(3)
     })
   })
+
+  /**
+   * REGRESSION GUARD - DO NOT DELETE.
+   *
+   * The learner can start a 40-question test whenever they want. If test
+   * attempts counted, the streak would be farmable in a single sitting, and the
+   * module's only compliment would mean nothing. If they BROKE the run, three
+   * wrong answers in a voluntary test would destroy an eleven-day streak earned
+   * on the daily queue - which teaches the learner not to take tests.
+   *
+   * Skipped, therefore. Same treatment as the retired diagnostic, for a reason
+   * that is stronger now than it was then.
+   */
+  describe("origin 'test' (regression guard)", () => {
+    const test = (verdict = 'correct') => ({ origin: 'test', verdict })
+
+    it('does not build a streak', () => {
+      expect(countCorrectAnswerStreak([test(), test(), test()])).toBe(0)
+    })
+
+    it('does not break a streak earned on the daily queue', () => {
+      expect(
+        countCorrectAnswerStreak([
+          test('wrong'),
+          test('wrong'),
+          correct(),
+          correct(),
+          correct(),
+        ])
+      ).toBe(3)
+    })
+
+    it('is invisible between recall answers', () => {
+      expect(
+        countCorrectAnswerStreak([
+          correct(),
+          test('revealed'),
+          test('wrong'),
+          correct(),
+        ])
+      ).toBe(2)
+    })
+
+    it('still lets a real recall miss break the run', () => {
+      expect(
+        countCorrectAnswerStreak([
+          correct(),
+          test('correct'),
+          { origin: 'recall', verdict: 'wrong' },
+          correct(),
+        ])
+      ).toBe(1)
+    })
+  })
 })

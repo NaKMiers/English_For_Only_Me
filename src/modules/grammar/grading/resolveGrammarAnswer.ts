@@ -20,14 +20,46 @@ import type { GrammarDrillRecord } from '@/modules/grammar/types'
  *
  * `ignorePunctuation` must also be false, for a mechanical reason: that option
  * replaces every non-alphanumeric character with a space, so "he's" tokenises
- * as ["he", "s"]. It destroys contractions outright.
+ * as ["he", "s"]. It destroys contractions outright. Punctuation tolerance
+ * comes from `ignoreStructuralPunctuation` instead, which spares the
+ * apostrophe - see `getGrammarCorrectionOptions` below.
  *
  * Contraction variants therefore live in `acceptedAnswers`, decided by the
  * content author rather than guessed by a lookup table.
+ *
+ * Exported as the punctuation-SENSITIVE baseline. Grading goes through
+ * `getGrammarCorrectionOptions(drill)`, which adds tolerance per drill.
  */
 export const GRAMMAR_CORRECTION_OPTIONS: CorrectionOptions = {
   expandContractions: false,
   ignorePunctuation: false,
+}
+
+/**
+ * The options for grading ONE drill.
+ *
+ * Everything in `GRAMMAR_CORRECTION_OPTIONS` still holds. The one thing that
+ * varies per drill is whether internal punctuation counts, and it varies
+ * because for most drills it carries nothing and for a few it IS the rule.
+ *
+ *   the man who left waved        <- defining, no commas
+ *   the man, who left, waved      <- non-defining, commas mandatory
+ *
+ * Those are different sentences with different meanings, and a grader that
+ * accepts either has nothing left to teach on `relative-clauses`. But demanding
+ * a comma on a drill about the past simple just fails learners over typing.
+ *
+ * So the default is tolerant and `punctuationSensitive` is the opt-out, set by
+ * the content author (or the test generator) on the drills where the mark is
+ * the point. Absent means tolerant: 1800 existing drills predate the field.
+ */
+export function getGrammarCorrectionOptions(
+  drill: Pick<GrammarDrillRecord, 'punctuationSensitive'>
+): CorrectionOptions {
+  return {
+    ...GRAMMAR_CORRECTION_OPTIONS,
+    ignoreStructuralPunctuation: drill.punctuationSensitive !== true,
+  }
 }
 
 /**
@@ -37,21 +69,25 @@ export const GRAMMAR_CORRECTION_OPTIONS: CorrectionOptions = {
  *
  * Terminal punctuation carries essentially no grammatical information - word
  * order already distinguishes a question from a statement - so it is trimmed
- * from BOTH sides. Both sides is not a detail: trimming only the learner's
- * answer is worse than trimming neither, because then a target ending in a
- * period can never be matched by any input at all. Internal apostrophes and
- * commas are untouched, which is the whole point - "the man, who left, waved"
- * and "the man who left waved" are different grammar, not different typing.
+ * from BOTH sides, on every drill, sensitive or not. Both sides is not a
+ * detail: trimming only the learner's answer is worse than trimming neither,
+ * because then a target ending in a period can never be matched by any input at
+ * all.
+ *
+ * INTERNAL punctuation is a separate question, and no longer answered here. It
+ * used to be kept unconditionally, on the grounds that "the man, who left,
+ * waved" and "the man who left waved" are different grammar rather than
+ * different typing. True - on the handful of points where the comma IS the
+ * rule. On the other ~170 it just failed learners over a comma they forgot. So
+ * that call now lives per drill, in `getGrammarCorrectionOptions`, keyed off
+ * `punctuationSensitive`.
  */
 export function trimTerminalPunctuation(value: string) {
   return value.trim().replace(/[.!?;:,]+$/u, '')
 }
 
-function normalizeForCompare(value: string) {
-  return normalizeAnswer(
-    trimTerminalPunctuation(value),
-    GRAMMAR_CORRECTION_OPTIONS
-  ).normalizedText
+function normalizeForCompare(value: string, options: CorrectionOptions) {
+  return normalizeAnswer(trimTerminalPunctuation(value), options).normalizedText
 }
 
 /**
@@ -63,13 +99,14 @@ function normalizeForCompare(value: string) {
 export function getCandidateAnswers(drill: GrammarDrillRecord) {
   const seen = new Set<string>()
   const candidates: string[] = []
+  const options = getGrammarCorrectionOptions(drill)
 
   for (const candidate of [drill.target, ...(drill.acceptedAnswers ?? [])]) {
     const trimmed = candidate?.trim()
 
     if (!trimmed) continue
 
-    const key = normalizeForCompare(trimmed)
+    const key = normalizeForCompare(trimmed, options)
 
     if (seen.has(key)) continue
 
@@ -140,11 +177,13 @@ export function resolveGrammarAnswer({
 
   const candidates = getCandidateAnswers(drill)
   const submitted = trimTerminalPunctuation(answer)
+  const options = getGrammarCorrectionOptions(drill)
 
   if (!isProductionDrill(drill.kind)) {
-    const normalizedSubmitted = normalizeForCompare(submitted)
+    const normalizedSubmitted = normalizeForCompare(submitted, options)
     const matched = candidates.find(
-      candidate => normalizeForCompare(candidate) === normalizedSubmitted
+      candidate =>
+        normalizeForCompare(candidate, options) === normalizedSubmitted
     )
 
     return {
@@ -174,7 +213,7 @@ export function resolveGrammarAnswer({
       // The UNTRIMMED candidate is still what `matchedAnswer` returns, so the
       // sentence read back to the learner keeps its punctuation.
       expectedText: trimTerminalPunctuation(candidate),
-      options: GRAMMAR_CORRECTION_OPTIONS,
+      options,
       typedAnswer: submitted,
     })
 

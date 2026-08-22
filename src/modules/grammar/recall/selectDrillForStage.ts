@@ -21,6 +21,16 @@ import type { GrammarDrillRecord } from '@/modules/grammar/types'
  * route re-resolves the drill server-side.
  *
  * Pure and separated from any query so it is testable without a database.
+ *
+ * GENERATED DRILLS ARE EXCLUDED HERE. The on-demand test appends AI-authored
+ * drills to the same array this reads, which would put unreviewed machine
+ * output into the learner's daily review the moment they took a test. That is
+ * the one place it must never appear: `constants.ts` already records what
+ * generated content did to `acceptedAnswers` when it was trusted by default -
+ * it listed "Please close door." as a correct answer on a drill about the
+ * definite article. Recall is the surface where a bad drill teaches a wrong
+ * form for weeks before anyone notices, so promotion into it stays a human act
+ * via `grammar:export`.
  */
 export function selectDrillForStage({
   drills,
@@ -31,9 +41,11 @@ export function selectDrillForStage({
   pointSlug: string
   stage: number
 }): GrammarDrillRecord | null {
-  if (drills.length === 0) return null
+  const reviewed = drills.filter(candidate => !candidate.generated)
 
-  const ordered = [...drills].sort((left, right) => {
+  if (reviewed.length === 0) return null
+
+  const ordered = [...reviewed].sort((left, right) => {
     if (left.difficulty !== right.difficulty)
       return left.difficulty - right.difficulty
 

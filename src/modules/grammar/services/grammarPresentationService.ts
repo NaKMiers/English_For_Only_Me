@@ -72,16 +72,22 @@ export async function getLearnerPresentationState({
  *
  * Served by the existing `{actorId, at: -1}` index.
  *
- * The filter EXCLUDES diagnostics rather than including recalls. `origin` was
- * added with a Mongoose default, and a default applies on write only: matching
- * `origin: 'recall'` would drop every attempt written before the field existed
- * and report zero on real history.
+ * The filter EXCLUDES assessment origins rather than including recalls.
+ * `origin` was added with a Mongoose default, and a default applies on write
+ * only: matching `origin: 'recall'` would drop every attempt written before the
+ * field existed and report zero on real history. `$nin` keeps absent-origin rows
+ * in, which is the point.
+ *
+ * Excluding in the QUERY and not only in `countCorrectAnswerStreak` matters
+ * because of the `limit`. The pure function skips these rows, but they would
+ * still occupy the 50-row window on the way in: one 40-question test would
+ * leave ten slots for real recall history and silently truncate a longer run.
  */
 export async function getCorrectAnswerStreak(actorId: string): Promise<number> {
   try {
     const attempts = await GrammarDrillAttemptModel.find({
       actorId,
-      origin: { $ne: 'diagnostic' },
+      origin: { $nin: ['diagnostic', 'test'] },
     })
       .sort({ at: -1 })
       .limit(GRAMMAR_STREAK_LOOKBACK_ATTEMPTS)

@@ -115,4 +115,78 @@ describe('selectDrillForStage', () => {
       selectDrillForStage({ drills: drills(8), pointSlug: 'x', stage: 0 })
     ).not.toBeNull()
   })
+
+  /**
+   * REGRESSION GUARD - DO NOT DELETE.
+   *
+   * The on-demand test appends AI-authored drills to the same array this reads.
+   * If they were served here, unreviewed machine output would enter the
+   * learner's daily review the moment they took a test - and recall is the
+   * worst possible surface for a bad drill, because it repeats for weeks before
+   * anyone notices. `constants.ts` records what happened the last time
+   * generated content was trusted by default: "Please close door." shipped as an
+   * accepted answer on a drill teaching the definite article.
+   *
+   * Promotion into recall goes through `grammar:export` and a human.
+   */
+  describe('generated drills (regression guard)', () => {
+    function generated(count: number): GrammarDrillRecord[] {
+      return drills(count).map(drill => ({
+        ...drill,
+        generated: true,
+        id: `gen-${drill.id}`,
+      }))
+    }
+
+    it('never serves a generated drill', () => {
+      const pool = [...drills(8), ...generated(8)]
+
+      for (let stage = 1; stage <= 7; stage += 1) {
+        const picked = selectDrillForStage({
+          drills: pool,
+          pointSlug: 'present-perfect',
+          stage,
+        })
+
+        expect(picked?.generated).toBeUndefined()
+      }
+    })
+
+    it('returns null when every drill on the point is generated', () => {
+      expect(
+        selectDrillForStage({
+          drills: generated(12),
+          pointSlug: 'present-perfect',
+          stage: 1,
+        })
+      ).toBeNull()
+    })
+
+    it('picks the same drill whether or not generated drills are present', () => {
+      const reviewed = drills(8)
+
+      for (let stage = 1; stage <= 7; stage += 1)
+        expect(
+          selectDrillForStage({
+            drills: [...reviewed, ...generated(5)],
+            pointSlug: 'articles',
+            stage,
+          })?.id
+        ).toBe(
+          selectDrillForStage({
+            drills: reviewed,
+            pointSlug: 'articles',
+            stage,
+          })?.id
+        )
+    })
+
+    it('treats generated: false as reviewed', () => {
+      const pool = drills(3).map(drill => ({ ...drill, generated: false }))
+
+      expect(
+        selectDrillForStage({ drills: pool, pointSlug: 'x', stage: 1 })
+      ).not.toBeNull()
+    })
+  })
 })

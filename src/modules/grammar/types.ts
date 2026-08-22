@@ -117,9 +117,42 @@ export interface GrammarDrillRecord {
   choices: string[] | null
   difficulty: 1 | 2 | 3
   explanation: string
+  /**
+   * Written by the on-demand test generator, never by `grammar:generate`.
+   *
+   * Marks a drill as AI-authored and unreviewed, which three readers must
+   * respect or the generated pool quietly becomes the curriculum:
+   *
+   *   selectDrillForStage      - excludes these, so the daily recall queue
+   *                              only ever serves reviewed content
+   *   validateGrammarContent   - excludes these from the 8/12-drill floors,
+   *                              so a point cannot meet its quality minimum
+   *                              on machine output
+   *   the drill array itself   - capped at GRAMMAR_MAX_GENERATED_DRILLS per
+   *                              point, FIFO, because a subdocument budgeted
+   *                              at 8-12 entries cannot absorb one per test
+   *                              forever
+   *
+   * `grammar:export` is what promotes a survivor into committed content, which
+   * makes promotion a human act rather than a side effect of taking a test.
+   */
+  generated?: boolean
   id: string
   kind: GrammarDrillKind
   prompt: string
+  /**
+   * Whether internal punctuation is part of the answer.
+   *
+   * Absent or false means the grader ignores commas, hyphens, quotes and
+   * brackets (apostrophes always survive). True means compare as written,
+   * which is right only where the mark carries the meaning being taught:
+   * non-defining relative clauses, comma splices, tag questions, direct
+   * speech.
+   *
+   * Absent on all 1800 pre-existing drills; `grammar:generate
+   * --punctuation-flags` backfills the ones that need it.
+   */
+  punctuationSensitive?: boolean
   target: string
 }
 

@@ -7,9 +7,9 @@ import { MangaPanel } from '@/components/common/MangaPanel'
 import { SenseiPortrait } from '@/components/grammar/cast/SenseiPortrait'
 import { ComicPanel } from '@/components/grammar/comic/ComicPanel'
 import { SpeechBubble } from '@/components/grammar/comic/SpeechBubble'
-import { GrammarDiagnosticLauncher } from '@/components/grammar/GrammarDiagnosticLauncher'
 import { GrammarDungeonMap } from '@/components/grammar/GrammarDungeonMap'
 import { GrammarRecallLauncher } from '@/components/grammar/GrammarRecallLauncher'
+import { GrammarTestLauncher } from '@/components/grammar/GrammarTestLauncher'
 import { MangaButton } from '@/components/ui/MangaButton'
 import { hasMongoDbUri } from '@/constants/environments'
 import { connectDatabase } from '@/lib/db/connectDatabase'
@@ -120,9 +120,12 @@ export default async function GrammarPage() {
 
         <GrammarRecallLauncher dueCount={stats.dueCount} />
 
-        {stats.learningCount === 0 && stats.untouchedCount > 0 ? (
-          <GrammarDiagnosticLauncher untouchedCount={stats.untouchedCount} />
-        ) : null}
+        {/* Unconditional, unlike the placement test this replaced. That one
+            rendered only while `learningCount === 0 && untouchedCount > 0`, so a
+            single answered drill anywhere in the module removed it forever - and
+            a test you get exactly one shot at, before you have learned anything,
+            is the least useful moment to be tested. */}
+        <GrammarTestLauncher untouchedCount={stats.untouchedCount} />
 
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <DojoTally

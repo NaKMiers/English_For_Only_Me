@@ -85,16 +85,34 @@ const GrammarDrillAttemptSchema = new Schema(
       default: null,
       min: 0,
     },
+    /**
+     * Ladder rung before and after this answer.
+     *
+     * `min` is 0, not 1, and 0 is a real value meaning THE POINT HAD NO LADDER
+     * ROW. The on-demand test can ask about a rule the learner has never
+     * touched, and under the wrong-answers-only rule a correct answer there
+     * creates no `UserGrammarItem` at all - so there is no rung to record.
+     * Writing 1/1 instead would assert a ladder position that never existed and
+     * make those rows indistinguishable from real stage-1 answers.
+     *
+     *   correct + untouched   -> 0 / 0   (nothing created)
+     *   wrong   + untouched   -> 0 / 1   (seeded onto the ladder)
+     *   correct + at stage 4  -> 4 / 4   (test never promotes)
+     *   wrong   + at stage 4  -> 4 / 1
+     *
+     * No backfill was needed: every row written before this change is 1 or
+     * higher, so relaxing the floor cannot invalidate existing data.
+     */
     stageBefore: {
       type: Number,
       required: true,
-      min: 1,
+      min: 0,
       max: 7,
     },
     stageAfter: {
       type: Number,
       required: true,
-      min: 1,
+      min: 0,
       max: 7,
     },
     at: {

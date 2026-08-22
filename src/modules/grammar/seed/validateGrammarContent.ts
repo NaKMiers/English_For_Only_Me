@@ -5,6 +5,7 @@ import {
   GRAMMAR_FAMILIES,
   GRAMMAR_IELTS_IMPACTS,
   GRAMMAR_L1_RISKS,
+  GRAMMAR_MAX_GENERATED_DRILLS,
   GRAMMAR_MIN_DISTINCT_DRILL_KINDS,
   GRAMMAR_MIN_DRILLS_HIGH_L1_RISK,
   GRAMMAR_MIN_DRILLS_PER_POINT,
@@ -324,21 +325,48 @@ function validateBody({
 
   const drills = point.drills ?? []
   const required = getRequiredDrillCount(point.l1Risk as string)
+  /**
+   * The QUOTAS below count reviewed drills only.
+   *
+   * A generated drill is AI output nobody has read. Letting it count toward
+   * "at least 8 drills, 12 for high L1 risk" means a point can satisfy its
+   * quality floor with machine text, which inverts what the floor is for - and
+   * the floor is not decorative: it is what stops the ladder repeating an item
+   * before the learner has mastered the rule.
+   *
+   * The STRUCTURAL checks below (ids, targets, distractors) still run over
+   * every drill, generated included. A generated drill is allowed to be
+   * unreviewed; it is not allowed to be malformed.
+   */
+  const reviewedDrills = drills.filter(drill => !drill.generated)
+  const generatedCount = drills.length - reviewedDrills.length
 
-  if (drills.length < required)
+  if (reviewedDrills.length < required)
     add(
       'drill-minimum',
       slug,
-      `Needs at least ${required} drills (l1Risk ${point.l1Risk}), has ${drills.length}.`
+      `Needs at least ${required} reviewed drills (l1Risk ${point.l1Risk}), has ${reviewedDrills.length}${
+        generatedCount > 0 ? ` (+${generatedCount} generated, not counted)` : ''
+      }.`
     )
 
-  const kinds = new Set(drills.map(drill => drill.kind))
+  const kinds = new Set(reviewedDrills.map(drill => drill.kind))
 
-  if (drills.length > 0 && kinds.size < GRAMMAR_MIN_DISTINCT_DRILL_KINDS)
+  if (
+    reviewedDrills.length > 0 &&
+    kinds.size < GRAMMAR_MIN_DISTINCT_DRILL_KINDS
+  )
     add(
       'drill-kind-variety',
       slug,
       `Needs at least ${GRAMMAR_MIN_DISTINCT_DRILL_KINDS} distinct drill kinds, has ${kinds.size}.`
+    )
+
+  if (generatedCount > GRAMMAR_MAX_GENERATED_DRILLS)
+    add(
+      'drill-generated-cap',
+      slug,
+      `Has ${generatedCount} generated drills, over the cap of ${GRAMMAR_MAX_GENERATED_DRILLS}. The append path should have evicted the oldest.`
     )
 
   const drillIds = new Set<string>()

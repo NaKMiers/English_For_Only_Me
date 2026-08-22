@@ -139,8 +139,25 @@ export function GrammarRecallModal({
   const { enabled: soundOn, play, toggle: toggleSound } = useGrammarSfx()
   const { reduced: motionOff, toggle: toggleMotion } = useReducedMotion()
 
+  /**
+   * Submit one answer.
+   *
+   * `value` is a PARAMETER, not read from `answer` state, and that is the whole
+   * point. It used to read the state, and the choice buttons called
+   * `setAnswer(choice)` immediately followed by `submit(false)` in the same
+   * handler - so `submit` ran with the `answer` from the render that created it,
+   * which is `''` on a fresh drill. Every multiple-choice drill in the recall
+   * loop posted an empty string, was graded wrong, and then displayed the target
+   * as "Expected" - showing the learner the exact sentence they had just clicked,
+   * labelled wrong.
+   *
+   * Passing the value in removes the dependency on when React flushes state, so
+   * the answer that was clicked is the answer that is graded. It also drops
+   * `answer` from the dependency list, so there is one less stale closure to
+   * reason about.
+   */
   const submit = useCallback(
-    async (revealed: boolean) => {
+    async ({ revealed, value }: { revealed: boolean; value: string }) => {
       if (!task || pending || result) return
 
       setPending(true)
@@ -149,7 +166,7 @@ export function GrammarRecallModal({
       try {
         const response = await fetch('/api/grammar/recall/answer', {
           body: JSON.stringify({
-            answer,
+            answer: value,
             drillId: task.drillId,
             idempotencyKey: task.idempotencyKey,
             revealed,
@@ -191,7 +208,7 @@ export function GrammarRecallModal({
         setPending(false)
       }
     },
-    [answer, pending, play, result, task]
+    [pending, play, result, task]
   )
 
   const next = useCallback(() => {
@@ -309,8 +326,11 @@ export function GrammarRecallModal({
               disabled={pending || Boolean(result)}
               key={choice}
               onClick={() => {
+                // `setAnswer` is for the selected-tone highlight and the
+                // accept-my-answer flow. The graded value is passed straight
+                // through, because state is not readable yet in this tick.
                 setAnswer(choice)
-                void submit(false)
+                void submit({ revealed: false, value: choice })
               }}
               tone={answer === choice ? 'ink' : 'paper'}
               type="button"
@@ -400,7 +420,7 @@ export function GrammarRecallModal({
           {task.choices?.length ? null : (
             <MangaButton
               disabled={pending || !answer.trim()}
-              onClick={() => void submit(false)}
+              onClick={() => void submit({ revealed: false, value: answer })}
               tone="ink"
               type="button"
             >
@@ -409,7 +429,7 @@ export function GrammarRecallModal({
           )}
           <MangaButton
             disabled={pending}
-            onClick={() => void submit(true)}
+            onClick={() => void submit({ revealed: true, value: answer })}
             type="button"
           >
             Reveal

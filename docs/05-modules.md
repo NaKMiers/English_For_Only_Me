@@ -82,8 +82,22 @@ with `tokens`). Pipeline, in order:
 3. `expandContractions` (optional): whole-word replace using the `CONTRACTION_EXPANSIONS`
    table (`it's` -> `it is`, `won't` -> `will not`, etc.). Note this can change word
    count, which is the source of a known char-level limitation (below).
-4. `removePunctuation` (optional): replace anything that is not a letter/number/space
-   with a space.
+4. Punctuation, one of three ways, checked in this order:
+   - `ignorePunctuation` (optional): replace anything that is not a
+     letter/number/space with a space. The blunt instrument - it tokenizes
+     `he's` as `["he", "s"]`, which is correct for transcription and fatal for a
+     tense drill.
+   - `ignoreStructuralPunctuation` (optional): `stripStructuralPunctuation`
+     drops commas, hyphens, quotes, brackets and semicolons but KEEPS an
+     apostrophe that sits inside a word, so `don't` survives while `'quoted'`
+     does not become a token. Used by the grammar module, per drill.
+   - neither: punctuation is left alone.
+
+   Position matters: this step runs AFTER `expandSymbolicVariants`, so `50%`
+   has already become `50 percent` by the time the `%` would be stripped.
+   Stripping punctuation before step 2 would collapse `50%` to `50` and break
+   every drill containing `%`, `$` or a degree sign.
+
 5. Tokenize on whitespace, then `canonicalizeTokenList`.
 
 `canonicalizeTokenList` walks tokens and can collapse multi-word phrases:
@@ -809,16 +823,16 @@ shells enriched by providers), `UserVocabItem` (per-user learning state and reca
 schedule for one entry), and `VocabRecallAttempt` (an append-only, idempotent answer log).
 `VocabOccurrence` records where a user met a word.
 
-| Subdir           | Files                                                                                     | Responsibility                                                                 |
-| ---------------- | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| (root)           | `types.ts`, `constants.ts`, `normalizeVocabTerm.ts`, `vietnameseMeaning.ts`               | Shared records/unions, limits + policy, term normalization, VI-meaning gate    |
-| `seed/`          | `seedVocabulary.ts`                                                                        | Download + parse NGSL, upsert the top 1000 word shells                         |
-| `providers/`     | `index.ts`, `types.ts`, `providerUtils.ts`, `dictionaryApiDev.ts`, `freeDictionaryApi.ts`, `myMemoryTranslate.ts` | Normalize free dictionary APIs + a Vietnamese translation API behind one adapter contract |
-| `enrichment/`    | `enrichmentService.ts`                                                                     | Leased, fallback provider pipeline that fills entries and the admin batch/queue |
-| `explore/`       | `exploreService.ts`                                                                        | Frequency-ranked unclassified words via an in-DB anti-join                     |
-| `recall/`        | `recallScheduler.ts`, `recallTaskService.ts`, `recallTaskToken.ts`, `recallAnswerService.ts` | Spaced-repetition scheduler, signed task builder, HMAC token, trusted answer path |
-| `stats/`         | `vocabStats.ts`, `vocabStatsService.ts`                                                    | Pure and aggregation-backed vocabulary analytics                               |
-| `services/`      | `vocabEntryService.ts`, `userVocabItemService.ts`, `vocabWordListService.ts`, `vocabularyRouteDecisions.ts`, `vocab*Records.ts`, `vocabApiErrors.ts` | Entry/item/word-list business logic, route decisions, record mappers, error mapping |
+| Subdir        | Files                                                                                                                                                | Responsibility                                                                            |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| (root)        | `types.ts`, `constants.ts`, `normalizeVocabTerm.ts`, `vietnameseMeaning.ts`                                                                          | Shared records/unions, limits + policy, term normalization, VI-meaning gate               |
+| `seed/`       | `seedVocabulary.ts`                                                                                                                                  | Download + parse NGSL, upsert the top 1000 word shells                                    |
+| `providers/`  | `index.ts`, `types.ts`, `providerUtils.ts`, `dictionaryApiDev.ts`, `freeDictionaryApi.ts`, `myMemoryTranslate.ts`                                    | Normalize free dictionary APIs + a Vietnamese translation API behind one adapter contract |
+| `enrichment/` | `enrichmentService.ts`                                                                                                                               | Leased, fallback provider pipeline that fills entries and the admin batch/queue           |
+| `explore/`    | `exploreService.ts`                                                                                                                                  | Frequency-ranked unclassified words via an in-DB anti-join                                |
+| `recall/`     | `recallScheduler.ts`, `recallTaskService.ts`, `recallTaskToken.ts`, `recallAnswerService.ts`                                                         | Spaced-repetition scheduler, signed task builder, HMAC token, trusted answer path         |
+| `stats/`      | `vocabStats.ts`, `vocabStatsService.ts`                                                                                                              | Pure and aggregation-backed vocabulary analytics                                          |
+| `services/`   | `vocabEntryService.ts`, `userVocabItemService.ts`, `vocabWordListService.ts`, `vocabularyRouteDecisions.ts`, `vocab*Records.ts`, `vocabApiErrors.ts` | Entry/item/word-list business logic, route decisions, record mappers, error mapping       |
 
 ### Core contracts (`types.ts`, `constants.ts`)
 
@@ -983,15 +997,15 @@ memory. Seed shells (not yet `ready` or missing a VI meaning) never appear here.
 word at stage 1, due now, status `learning`. `applyRecallAnswer({ item, isCorrect, now })`
 returns the patch:
 
-| From stage | On correct  | Next `dueAt` (days from answer) |
-| ---------- | ----------- | ------------------------------- |
-| 1          | stage 2     | +1                              |
-| 2          | stage 3     | +1                              |
-| 3          | stage 4     | +4                              |
-| 4          | stage 5     | +7                              |
-| 5          | stage 6     | +14                             |
-| 6          | stage 7     | +17                             |
-| 7          | `mastered`  | none (`dueAt: null`, `masteredReason: 'recallMastery'`) |
+| From stage | On correct | Next `dueAt` (days from answer)                         |
+| ---------- | ---------- | ------------------------------------------------------- |
+| 1          | stage 2    | +1                                                      |
+| 2          | stage 3    | +1                                                      |
+| 3          | stage 4    | +4                                                      |
+| 4          | stage 5    | +7                                                      |
+| 5          | stage 6    | +14                                                     |
+| 6          | stage 7    | +17                                                     |
+| 7          | `mastered` | none (`dueAt: null`, `masteredReason: 'recallMastery'`) |
 
 Any wrong answer, from any stage, resets to stage 1 due now and `$inc`s `wrongCount`. The
 correct-answer intervals sum to 44 days, so a perfectly-spaced word reaches `mastered`
@@ -1016,13 +1030,13 @@ flowchart LR
 limited), their VI-gated entries, and a pool of `ready` VI-gated distractor entries
 (top by `frequencyRank`). A shuffled task-type deck assigns each item one of five modes:
 
-| Mode                     | Prompt -> answer                | Options                     | Correct option           |
-| ------------------------ | ------------------------------- | --------------------------- | ------------------------ |
-| `listenChooseWord`       | audio -> pick the word          | 4 word options              | `word:<entryId>`         |
-| `listenChooseDefinition` | audio -> pick the definition    | 4 definition options        | `definition:<entryId>`   |
-| `definitionChooseWord`   | definition -> pick the word     | 4 word options              | `word:<entryId>`         |
-| `wordChooseDefinition`   | word -> pick the definition     | 4 definition options        | `definition:<entryId>`   |
-| `exampleRemember`        | example-sentence self-check     | none                        | (self-report `remember`) |
+| Mode                     | Prompt -> answer             | Options              | Correct option           |
+| ------------------------ | ---------------------------- | -------------------- | ------------------------ |
+| `listenChooseWord`       | audio -> pick the word       | 4 word options       | `word:<entryId>`         |
+| `listenChooseDefinition` | audio -> pick the definition | 4 definition options | `definition:<entryId>`   |
+| `definitionChooseWord`   | definition -> pick the word  | 4 word options       | `word:<entryId>`         |
+| `wordChooseDefinition`   | word -> pick the definition  | 4 definition options | `definition:<entryId>`   |
+| `exampleRemember`        | example-sentence self-check  | none                 | (self-report `remember`) |
 
 Options are deterministically ordered by a per-task `seed` (so a re-issued task is stable).
 When `excludeListening` is set (a short client-side "cannot listen now" window), the two

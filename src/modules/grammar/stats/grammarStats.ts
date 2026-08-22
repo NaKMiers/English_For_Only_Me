@@ -67,8 +67,8 @@ interface PointCell {
  *
  * This is what turns the completion grid into a COMPETENCE grid. "3 of 8
  * mastered" says how far through you are; an average stage of 2.1 says the
- * points you have started here are still weak. After a placement diagnostic the
- * whole grid is touched at once, so this becomes the primary signal and
+ * points you have started here are still weak. A broad on-demand test can touch
+ * a whole row of the grid in one sitting, so this becomes the primary signal and
  * mastered-count becomes the secondary one.
  */
 function averageStage(stages: number[]) {
