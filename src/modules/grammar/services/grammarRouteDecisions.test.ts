@@ -43,6 +43,7 @@ describe('parseGrammarPointsQuery', () => {
       page: '3',
       q: 'perfect',
       reviewStatus: 'unverified',
+      studyStatus: 'learning',
     })
 
     expect(result.ok).toBe(true)
@@ -57,6 +58,37 @@ describe('parseGrammarPointsQuery', () => {
       page: 3,
       q: 'perfect',
       reviewStatus: 'unverified',
+      studyStatus: 'learning',
+    })
+  })
+
+  describe('studyStatus', () => {
+    it.each(['notStarted', 'learning', 'due', 'mastered', 'alreadyKnow', 'ignored'])(
+      'accepts %s',
+      status => {
+        const result = query({ studyStatus: status })
+
+        expect(result.ok).toBe(true)
+        if (!result.ok) return
+
+        expect(result.data.studyStatus).toBe(status)
+      }
+    )
+
+    it('is absent by default', () => {
+      const result = query({})
+
+      expect(result.ok).toBe(true)
+      if (!result.ok) return
+
+      expect(result.data.studyStatus).toBeNull()
+    })
+
+    it('rejects a status that is not one of the browse intents', () => {
+      // "notStarted" and "due" are not item statuses, and "learning" is - the
+      // two enums are deliberately separate, so a raw item status that is not
+      // also a browse intent must not slip through.
+      expect(query({ studyStatus: 'somethingElse' }).ok).toBe(false)
     })
   })
 

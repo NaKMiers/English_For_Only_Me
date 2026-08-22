@@ -300,10 +300,26 @@ export interface GrammarPointFilters {
   q: string | null
 }
 
+/**
+ * A point's row in the learner's own ladder, or null when they have never
+ * touched it.
+ *
+ * Attached by `listGrammarPoints` rather than living on the point, because it is
+ * per-learner and the point document is shared. Optional so every existing
+ * consumer of `GrammarPointApiRecord` compiles unchanged.
+ */
+export interface GrammarPointLearnerState {
+  dueAt: string | null
+  recallStage: number
+  status: GrammarUserItemStatus
+}
+
 export interface GrammarPointListResult {
   page: number
   pageCount: number
-  points: GrammarPointApiRecord[]
+  points: (GrammarPointApiRecord & {
+    learner?: GrammarPointLearnerState | null
+  })[]
   total: number
 }
 

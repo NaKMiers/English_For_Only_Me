@@ -8,6 +8,7 @@ import {
   buildGrammarPointFilter,
   buildGrammarReviewQueueFilter,
   getGrammarBrowseSort,
+  resolveStudySlugFilter,
 } from './grammarPointListService'
 
 function query(
@@ -22,9 +23,50 @@ function query(
     page: 1,
     q: null,
     reviewStatus: null,
+    studyStatus: null,
     ...overrides,
   }
 }
+
+describe('resolveStudySlugFilter', () => {
+  /**
+   * The learner's progress lives in another collection, so the filter has to be
+   * resolved to a slug set before Mongo sees it. These tests pin the SHAPE of
+   * that constraint, which is what keeps `countDocuments` and the page it
+   * belongs to agreeing.
+   */
+  it('constrains nothing when no status is asked for', async () => {
+    expect(
+      await resolveStudySlugFilter({ actorId: 'a1', studyStatus: null })
+    ).toBeNull()
+  })
+
+  describe('without an actor', () => {
+    it('leaves "not started" unconstrained, because everything is', async () => {
+      expect(
+        await resolveStudySlugFilter({
+          actorId: null,
+          studyStatus: 'notStarted',
+        })
+      ).toBeNull()
+    })
+
+    it('matches nothing for every other status', async () => {
+      // Silently ignoring the filter would show the learner a full map and let
+      // them believe it was filtered.
+      for (const studyStatus of [
+        'learning',
+        'due',
+        'mastered',
+        'alreadyKnow',
+        'ignored',
+      ] as const)
+        expect(
+          await resolveStudySlugFilter({ actorId: null, studyStatus })
+        ).toEqual({ slug: { $in: [] } })
+    })
+  })
+})
 
 describe('buildGrammarPointFilter', () => {
   // Merge stubs exist only to redirect learner progress. They must never show

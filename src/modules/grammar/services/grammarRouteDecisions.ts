@@ -11,6 +11,7 @@ import {
   GRAMMAR_RECALL_DEFAULT_LIMIT,
   GRAMMAR_RECALL_MAX_LIMIT,
   GRAMMAR_REVIEW_STATUSES,
+  GRAMMAR_STUDY_FILTERS,
   GRAMMAR_TEST_DEFAULT_QUESTIONS,
   GRAMMAR_TEST_MAX_QUESTIONS,
   GRAMMAR_TEST_SCOPES,
@@ -74,6 +75,9 @@ const pointsQuerySchema = z.object({
       z.string().trim().min(1).max(120).optional()
     )
     .transform(value => value ?? null),
+  // The learner's own progress, resolved against their items rather than the
+  // point document - see `resolveStudySlugFilter`.
+  studyStatus: optionalEnum(GRAMMAR_STUDY_FILTERS),
   reviewStatus: optionalEnum(GRAMMAR_REVIEW_STATUSES),
 })
 
@@ -252,6 +256,7 @@ export function parseGrammarPointsQuery(
     page: searchParams.get('page') ?? undefined,
     q: searchParams.get('q') ?? undefined,
     reviewStatus: searchParams.get('reviewStatus') ?? undefined,
+    studyStatus: searchParams.get('studyStatus') ?? undefined,
   })
 
   if (!result.success) return invalid('Grammar point query is invalid.')

@@ -107,6 +107,12 @@
   --comic-ink: var(--manga-black);
   --comic-paper: var(--manga-white);
   --comic-danger: var(--manga-logo-red);
+  /* A rule the learner has declared they already know. The only literal on
+     this layer that is not ink, paper, or red, and it earns the exception:
+     "already known" is the one state the learner ASSERTS instead of earning,
+     so it must not be confusable with mastery (ink) or a due review (danger).
+     Dark enough to carry white text if it ever needs to. */
+  --comic-known: #12703a;
   --comic-halftone: rgba(5, 5, 5, 0.22);
   --comic-fog: rgba(5, 5, 5, 0.1);
 }
@@ -165,6 +171,10 @@
      wash over lit paper reads as grime rather than as pattern. */
   --comic-halftone: rgba(27, 18, 6, 0.26);
   --comic-fog: rgba(27, 18, 6, 0.14);
+  /* Warmer and a shade lighter, for the same reason every other colour shifts
+     here: the day green was mixed against white, and against lit paper it goes
+     muddy. */
+  --comic-known: #2c7333;
 }
 
 @theme inline {
@@ -180,6 +190,7 @@
   --color-comic-ink: var(--comic-ink);
   --color-comic-paper: var(--comic-paper);
   --color-comic-danger: var(--comic-danger);
+  --color-comic-known: var(--comic-known);
   --color-comic-halftone: var(--comic-halftone);
   --color-comic-fog: var(--comic-fog);
   --color-background: var(--background);

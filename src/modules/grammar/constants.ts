@@ -269,4 +269,33 @@ export const GRAMMAR_VI_EXPLANATION_MIN_COMPLEXITY = 4
 export const GRAMMAR_POINTS_DEFAULT_LIMIT = 40
 export const GRAMMAR_POINTS_MAX_LIMIT = 200
 
+/**
+ * How the grammar map can be narrowed by the learner's own progress.
+ *
+ * Distinct from `GRAMMAR_USER_ITEM_STATUSES`, which is what a point's row can
+ * hold. These are browse intents, and two of them are not statuses at all:
+ * `notStarted` means the absence of a row, and `due` is a status plus a date.
+ * Collapsing the two enums would make "show me what is waiting" unexpressible.
+ */
+export const GRAMMAR_STUDY_FILTERS = [
+  'notStarted',
+  'learning',
+  'due',
+  'mastered',
+  'alreadyKnow',
+  'ignored',
+] as const
+
+export const GRAMMAR_STUDY_FILTER_LABELS: Record<
+  (typeof GRAMMAR_STUDY_FILTERS)[number],
+  string
+> = {
+  alreadyKnow: 'Already known',
+  due: 'Due now',
+  ignored: 'Skipped',
+  learning: 'Learning',
+  mastered: 'Mastered',
+  notStarted: 'Not started',
+}
+
 export const GRAMMAR_SEED_SOURCE = 'taxonomy.json'

@@ -7,12 +7,20 @@ import {
   GRAMMAR_FAMILY_LABELS,
 } from '@/modules/grammar/constants'
 import { CREATURE_SPECIES } from '@/modules/grammar/presentation/creatureFromPoint'
+import {
+  describeStudySummary,
+  resolveStudyStatus,
+  summariseStudyStatuses,
+} from '@/modules/grammar/presentation/resolveStudyStatus'
 import { effectiveL1Risk } from '@/modules/grammar/taxonomy/effectiveL1Risk'
 import type {
   GrammarFamily,
-  GrammarPointApiRecord,
   GrammarPointListResult,
 } from '@/modules/grammar/types'
+
+import { GrammarStudyPips } from './GrammarStudyPips'
+
+type MapPoint = GrammarPointListResult['points'][number]
 
 /**
  * The trunk, and one branch's elbow.
@@ -63,7 +71,7 @@ export function GrammarPointMap({
       </ComicPanel>
     )
 
-  const byFamily = new Map<GrammarFamily, GrammarPointApiRecord[]>()
+  const byFamily = new Map<GrammarFamily, MapPoint[]>()
 
   for (const point of result.points) {
     const bucket = byFamily.get(point.family) ?? []
@@ -71,6 +79,15 @@ export function GrammarPointMap({
     bucket.push(point)
     byFamily.set(point.family, bucket)
   }
+
+  // One clock for the whole render, so two leaves cannot disagree about whether
+  // the same moment counts as due.
+  const now = new Date()
+  const summary = summariseStudyStatuses(
+    result.points.map(point =>
+      resolveStudyStatus({ item: point.learner ?? null, now })
+    )
+  )
 
   // Canonical family order, so the map does not reshuffle its own branches as
   // filters change.
@@ -86,8 +103,20 @@ export function GrammarPointMap({
         <p className="text-manga-ink-soft text-sm leading-6 font-semibold">
           Rules on one branch fail for the same underlying reason, which is why
           they hang together. Inside a branch the order is Vietnamese
-          interference first, so what costs you marks sits at the front. A red
-          edge is high interference; a hollow dot is a lesson no human has read.
+          interference first, so what costs you marks sits at the front. A
+          hollow dot is a lesson no human has read.
+        </p>
+        <p className="font-sans text-sm leading-6 font-black">
+          {describeStudySummary(summary)}
+        </p>
+        {/* A legend, because the strip carries no text of its own. Stated once
+            here rather than repeated 184 times on the leaves. */}
+        <p className="text-manga-ink-soft text-xs leading-5 font-semibold">
+          The bar under each rule is your place on the seven-step review ladder:
+          hollow means you have never answered it, filled means you have climbed
+          that far, red means it is due now, all seven means you beat it. Green
+          is a rule you told us you already know. A dashed line means you
+          skipped it.
         </p>
       </div>
 
@@ -129,7 +158,10 @@ export function GrammarPointMap({
                   <ul className="flex min-w-0 flex-wrap gap-2">
                     {points.map(point => (
                       <li key={point.slug}>
-                        <PointLeaf point={point} />
+                        <PointLeaf
+                          now={now}
+                          point={point}
+                        />
                       </li>
                     ))}
                   </ul>
@@ -146,44 +178,61 @@ export function GrammarPointMap({
 /**
  * One rule, as a leaf.
  *
- * Carries the two axes this taxonomy exists to separate and nothing else: the
- * level where you meet the rule, and whether your first language fights it. Risk
- * is a red EDGE rather than a badge, because a badge on every leaf is 184 badges
- * and the eye stops seeing them, while an edge still scans across a block at a
- * glance. The summary and the drill count live on the lesson page, which has
- * room for them.
+ * Two visible channels, on different axes so they can be read independently:
+ *
+ *   dot fill        a human has read the lesson     (about the content)
+ *   bottom edge     where YOU are with it           (about the learner)
+ *
+ * Neither is a badge. That was settled when risk was added - "a badge on every
+ * leaf is 184 badges and the eye stops seeing them" - and study status is drawn
+ * the same way for the same reason.
+ *
+ * Vietnamese interference has no mark of its own. It used to thicken the left
+ * border in red, and that edge lost its meaning as soon as the strip started
+ * carrying red too: two different reds on one small card, saying unrelated
+ * things. Risk already decides the order inside a branch, so the leading leaves
+ * ARE the high-risk ones - and it still reaches screen readers below.
+ *
+ * The words for both channels go to screen readers through the one `sr-only`
+ * block, so nothing is colour-only.
  */
-function PointLeaf({ point }: { point: GrammarPointApiRecord }) {
+function PointLeaf({ now, point }: { now: Date; point: MapPoint }) {
   const risk = effectiveL1Risk(point)
   const isGhost = point.reviewStatus === 'unverified'
+  const study = resolveStudyStatus({ item: point.learner ?? null, now })
 
   return (
+    // No bottom padding, and the padding lives on the content row instead of
+    // the card: that is what lets the strip below run edge to edge and read as
+    // a border rather than as one more element in a padded box.
     <Link
-      className={`border-comic-ink text-manga-black hover:bg-manga-pale-red flex items-center gap-2 border-2 px-2.5 py-1.5 transition-transform hover:-translate-y-0.5 ${
-        risk === 'high' ? 'border-l-comic-danger border-l-6' : ''
-      }`}
+      className="border-comic-ink text-manga-black hover:bg-manga-pale-red grid gap-1.5 border-2 pt-1.5 transition-transform hover:-translate-y-0.5"
       href={`/grammar/points/${point.slug}`}
     >
-      {/* Filled means a human has read the lesson, hollow means nobody has. An
-          outline rather than a colour, so the state survives greyscale. */}
-      <span
-        aria-hidden="true"
-        className={`border-comic-ink size-2.5 shrink-0 rounded-full border-2 ${
-          isGhost ? 'bg-transparent' : 'bg-comic-ink'
-        }`}
-      />
-      <span className="sr-only">
-        {isGhost ? 'Lesson not verified by a human. ' : ''}
-        {risk} Vietnamese interference.{' '}
+      <span className="flex items-center gap-2 px-2.5">
+        {/* Filled means a human has read the lesson, hollow means nobody has.
+            An outline rather than a colour, so the state survives greyscale. */}
+        <span
+          aria-hidden="true"
+          className={`border-comic-ink size-2.5 shrink-0 rounded-full border-2 ${
+            isGhost ? 'bg-transparent' : 'bg-comic-ink'
+          }`}
+        />
+        <span className="sr-only">
+          {isGhost ? 'Lesson not verified by a human. ' : ''}
+          {risk} Vietnamese interference. {study.label}.{' '}
+        </span>
+
+        <span className="font-sans text-sm leading-tight font-black uppercase">
+          {point.title}
+        </span>
+
+        <span className="text-manga-ink-soft font-mono text-xs leading-none font-black">
+          {point.cefrLevel}
+        </span>
       </span>
 
-      <span className="font-sans text-sm leading-tight font-black uppercase">
-        {point.title}
-      </span>
-
-      <span className="text-manga-ink-soft font-mono text-xs leading-none font-black">
-        {point.cefrLevel}
-      </span>
+      <GrammarStudyPips status={study} />
     </Link>
   )
 }

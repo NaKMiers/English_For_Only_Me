@@ -5,6 +5,8 @@ import {
   GRAMMAR_FAMILIES,
   GRAMMAR_FAMILY_LABELS,
   GRAMMAR_L1_RISKS,
+  GRAMMAR_STUDY_FILTER_LABELS,
+  GRAMMAR_STUDY_FILTERS,
 } from '@/modules/grammar/constants'
 import type { ParsedGrammarPointsQuery } from '@/modules/grammar/services/grammarRouteDecisions'
 
@@ -99,6 +101,30 @@ export function GrammarPointFilters({
               value={family}
             >
               {GRAMMAR_FAMILY_LABELS[family]}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      {/* Resolved against the learner's own items rather than the point
+          document, which is why it sits beside the content filters rather than
+          among them. */}
+      <label className="grid gap-1">
+        <span className="font-sans text-xs font-black uppercase">
+          Your status
+        </span>
+        <select
+          className={SELECT_CLASS}
+          defaultValue={query.studyStatus ?? ''}
+          name="studyStatus"
+        >
+          <option value="">Any</option>
+          {GRAMMAR_STUDY_FILTERS.map(status => (
+            <option
+              key={status}
+              value={status}
+            >
+              {GRAMMAR_STUDY_FILTER_LABELS[status]}
             </option>
           ))}
         </select>

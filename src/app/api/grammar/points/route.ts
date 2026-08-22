@@ -26,11 +26,11 @@ export async function GET(request: Request) {
   if (!parsed.ok) return jsonError(parsed)
 
   try {
-    await requirePracticeActor()
+    const actor = await requirePracticeActor()
 
     await connectDatabase()
 
-    return NextResponse.json(await listGrammarPoints(parsed.data))
+    return NextResponse.json(await listGrammarPoints(parsed.data, actor.id))
   } catch (error) {
     return jsonError(toGrammarApiError(error))
   }
