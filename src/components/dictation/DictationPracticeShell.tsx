@@ -1392,6 +1392,7 @@ export function DictationPracticeShell({
                     activeCaptionSegment?.endMs != null
                   }
                   currentSegmentId={currentSegment.id}
+                  fillAvailableHeight={!isVideoStacked}
                   isActive={activeView === 'transcript'}
                   isRepeating={isRepeatingCaption}
                   onSelectSegment={segment => {

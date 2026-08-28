@@ -14,6 +14,9 @@ interface Props {
   autoScroll: boolean
   canRepeat: boolean
   currentSegmentId: string | null
+  // Lets a height-bound ancestor (the practice shell's side-by-side layout)
+  // stretch the list to fill it instead of capping at max-h-128.
+  fillAvailableHeight?: boolean
   isActive: boolean
   isRepeating: boolean
   onSelectSegment: (segment: DictationSegmentApiRecord) => void
@@ -62,6 +65,7 @@ export function DictationFullTranscript({
   autoScroll,
   canRepeat,
   currentSegmentId,
+  fillAvailableHeight = false,
   isActive,
   isRepeating,
   onSelectSegment,
@@ -133,9 +137,14 @@ export function DictationFullTranscript({
         </div>
       </div>
 
-      {/* Fills whatever the parent frame leaves it and scrolls there; the
-          max-height floor keeps it usable when the parent is unconstrained. */}
-      <ol className="grid max-h-128 min-h-0 min-w-0 auto-rows-max gap-1 overflow-y-auto pr-1 lg:max-h-none">
+      {/* Bounded by default so the list scrolls within itself; fillAvailableHeight
+          opts into stretching to a height-bound ancestor instead (practice shell). */}
+      <ol
+        className={cn(
+          'grid max-h-128 min-h-0 min-w-0 auto-rows-max snap-y snap-proximity gap-1 overflow-y-auto pr-1',
+          fillAvailableHeight && 'lg:max-h-none'
+        )}
+      >
         {segments.map((segment, index) => {
           const isHighlighted = segment.id === highlightedId
           const statusMeta = STATUS_META[segment.attemptStatus]
@@ -143,7 +152,10 @@ export function DictationFullTranscript({
           const translation = translations?.[segment.id]?.trim()
 
           return (
-            <li key={segment.id}>
+            <li
+              key={segment.id}
+              className="snap-start"
+            >
               <button
                 ref={isHighlighted ? activeItemRef : null}
                 type="button"

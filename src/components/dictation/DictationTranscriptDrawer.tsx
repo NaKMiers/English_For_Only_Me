@@ -37,13 +37,13 @@ function TranscriptSegmentList({
   segments: DictationSegmentApiRecord[]
 }) {
   return (
-    <div className="grid gap-3 overflow-y-auto p-4">
+    <div className="grid snap-y snap-proximity gap-3 overflow-y-auto p-4">
       {segments.map(segment => (
         <article
           key={segment.id}
           aria-current={segment.id === currentSegmentId ? 'step' : undefined}
           className={cn(
-            'border-manga-black bg-manga-white grid gap-2 border-2 p-3 shadow-[3px_3px_0_var(--manga-black)]',
+            'border-manga-black bg-manga-white grid snap-start gap-2 border-2 p-3 shadow-[3px_3px_0_var(--manga-black)]',
             segment.id === currentSegmentId && 'bg-manga-paper-soft'
           )}
         >
