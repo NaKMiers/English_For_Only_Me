@@ -78,7 +78,7 @@ export function DictationControls({
     // actions. It shares its row with the view tabs (pushed right by the
     // caller), and speed / answer text / video size live behind the settings
     // menu so the strip never wraps to a second line.
-    <div className="border-manga-black bg-manga-white rounded-control flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1.5 border-2 px-2 py-1.5 shadow-[3px_3px_0_var(--manga-black)]">
+    <div className="border-manga-black bg-manga-white rounded-control flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1.5 border-2 px-2 py-1.5 shadow-[3px_3px_0_var(--manga-black)] max-sm:border-0 max-sm:bg-transparent max-sm:p-0 max-sm:shadow-none!">
       <div className="flex min-w-0 items-center gap-1">
         <IconButton
           label="Replay current sentence"

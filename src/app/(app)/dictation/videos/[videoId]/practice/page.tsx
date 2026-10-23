@@ -166,7 +166,11 @@ export default async function Page({ params }: Props) {
   return (
     // No topbar: practice is a focus screen, and the exercise header carries
     // the logo home link in place of the app nav.
-    <MangaPageShell fullHeight>
+    <MangaPageShell
+      fullHeight
+      // The dashed inner frame would run under the flattened practice layout.
+      className="max-sm:after:hidden"
+    >
       <section className="h-full min-h-0 p-2 sm:p-3">
         <DictationPracticeShell
           completions={completions}

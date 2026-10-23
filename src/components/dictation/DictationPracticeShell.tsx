@@ -1026,7 +1026,11 @@ export function DictationPracticeShell({
         </DialogContent>
       </Dialog>
 
-      <section className="border-manga-black bg-manga-white rounded-panel flex h-full min-h-0 min-w-0 flex-col gap-2 border-3 p-2 shadow-[5px_5px_0_var(--manga-black)] sm:p-3">
+      {/* Below sm this frame, the toolbar strip and the video card go flat: on a
+          phone they stacked four ink frames inside the page shell. The
+          shadow-none needs `!` because the light-up shadow retints in
+          globals.css are unlayered and would otherwise put the ledge back. */}
+      <section className="border-manga-black bg-manga-white rounded-panel flex h-full min-h-0 min-w-0 flex-col gap-2 border-3 p-2 shadow-[5px_5px_0_var(--manga-black)] max-sm:border-0 max-sm:bg-transparent max-sm:p-0 max-sm:shadow-none! sm:p-3">
         {/* Header, toolbar, and footer are fixed chrome: they keep their
             natural height and the video/practice area absorbs the rest. */}
         <div className="shrink-0">
@@ -1145,6 +1149,7 @@ export function DictationPracticeShell({
                   endMs: currentSegment.endMs,
                   startMs: currentSegment.startMs,
                 }}
+                className="max-sm:border-0 max-sm:bg-transparent max-sm:p-0 max-sm:shadow-none!"
                 title={video.title}
                 videoSize={preferences.videoSize}
                 youtubeVideoId={video.youtubeVideoId}

@@ -132,6 +132,8 @@ export function DictationPracticeHeader({
           </IconButton>
         ) : null}
         <DictationTranslationBar
+          // Flat below sm: the select inside already has its own ink frame.
+          className="max-sm:border-0 max-sm:bg-transparent max-sm:px-0 max-sm:shadow-none!"
           compact
           languages={translationLanguages}
           onChange={onTranslationLanguageChange}
