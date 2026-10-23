@@ -32,8 +32,8 @@ export function SenseiPortrait({
   return (
     <span
       className={cn(
-        'border-comic-ink relative block shrink-0 border-3 shadow-[3px_3px_0_var(--manga-offset)]',
-        size === 'sm' ? 'w-12' : 'w-20 sm:w-24',
+        'border-comic-ink relative block shrink-0 overflow-hidden border-3 shadow-[3px_3px_0_var(--manga-offset)]',
+        size === 'sm' ? 'rounded-tag w-12' : 'rounded-control w-20 sm:w-24',
         className
       )}
     >

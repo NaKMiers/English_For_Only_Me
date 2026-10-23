@@ -51,7 +51,7 @@ export function UserMenu({
   return (
     <>
       <DropdownMenu>
-        <DropdownMenuTrigger className="border-manga-black bg-manga-white hover:bg-manga-paper-soft flex min-h-11 min-w-0 items-center gap-2 border-3 px-2 shadow-[3px_3px_0_var(--manga-black)] transition-colors">
+        <DropdownMenuTrigger className="border-manga-black bg-manga-white hover:bg-manga-paper-soft rounded-control flex min-h-11 min-w-0 items-center gap-2 border-3 px-2 shadow-[3px_3px_0_var(--manga-black)] transition-colors">
           {avatarUrl ? (
             <Image
               src={avatarUrl}
@@ -61,7 +61,7 @@ export function UserMenu({
               height={28}
               unoptimized
               referrerPolicy="no-referrer"
-              className="border-manga-black bg-manga-white size-7 shrink-0 border-2 object-cover"
+              className="border-manga-black bg-manga-white rounded-tag size-7 shrink-0 border-2 object-cover"
             />
           ) : (
             <span
@@ -112,7 +112,7 @@ export function UserMenu({
         open={confirmOpen}
         onOpenChange={setConfirmOpen}
       >
-        <DialogContent className="border-manga-black bg-manga-white rounded-none border-3 shadow-[6px_6px_0_var(--manga-black)]">
+        <DialogContent className="border-manga-black bg-manga-white border-3 shadow-[6px_6px_0_var(--manga-black)]">
           <DialogHeader>
             <DialogTitle className="font-sans text-xl leading-tight font-black tracking-normal uppercase">
               Sign out?
@@ -121,7 +121,7 @@ export function UserMenu({
               You will be signed out of English For Only Me.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="bg-manga-paper-soft border-manga-black rounded-none border-t-3">
+          <DialogFooter className="bg-manga-paper-soft border-manga-black border-t-3">
             <DialogClose
               render={
                 <MangaButton

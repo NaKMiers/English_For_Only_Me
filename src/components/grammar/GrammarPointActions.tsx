@@ -63,7 +63,7 @@ export function GrammarPointActions({
   }
 
   return (
-    <div className="border-manga-black bg-manga-paper-soft grid gap-3 border-3 p-3 shadow-[4px_4px_0_var(--manga-black)]">
+    <div className="border-manga-black bg-manga-paper-soft rounded-panel grid gap-3 border-3 p-3 shadow-[4px_4px_0_var(--manga-black)]">
       {item ? (
         <p className="font-sans text-xs font-black uppercase">
           {item.status === 'learning'
@@ -83,7 +83,7 @@ export function GrammarPointActions({
       )}
 
       {message ? (
-        <p className="border-manga-black bg-manga-red text-manga-white border-2 p-2 text-xs font-black uppercase">
+        <p className="border-manga-black bg-manga-red text-manga-white rounded-control border-2 p-2 text-xs font-black uppercase">
           {message}
         </p>
       ) : null}

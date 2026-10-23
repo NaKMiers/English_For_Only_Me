@@ -46,7 +46,7 @@ export function ComicPanel({
   return (
     <section
       className={cn(
-        'border-comic-ink relative overflow-hidden border-3 p-4 shadow-[4px_4px_0_var(--manga-offset)]',
+        'border-comic-ink rounded-panel relative overflow-hidden border-3 p-4 shadow-[4px_4px_0_var(--manga-offset)]',
         // `col-span-full` spans the columns that EXIST. `col-span-2` would
         // create an implicit second column wherever this panel sits in a
         // single-column grid, and every sibling would then be squeezed into

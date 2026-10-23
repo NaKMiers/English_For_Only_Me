@@ -39,7 +39,7 @@ function VideoCard({
   return (
     <li
       className={cn(
-        'border-manga-black bg-manga-white relative grid min-w-0 gap-2 border-2 p-2',
+        'border-manga-black bg-manga-white rounded-panel relative grid min-w-0 gap-2 border-2 p-2',
         video.practiceHref &&
           'hover:bg-manga-paper-soft focus-within:bg-manga-paper-soft cursor-pointer'
       )}
@@ -85,7 +85,7 @@ function VideoCard({
           <span
             aria-hidden="true"
             className={cn(
-              'border-manga-black hover:bg-manga-pale-red inline-flex min-h-9 w-full items-center justify-center border-2 px-3 font-sans text-sm font-black shadow-[2px_2px_0_var(--manga-black)]',
+              'border-manga-black hover:bg-manga-pale-red rounded-control inline-flex min-h-9 w-full items-center justify-center border-2 px-3 font-sans text-sm font-black shadow-[2px_2px_0_var(--manga-black)]',
               video.inProgress
                 ? 'bg-cyan-200'
                 : video.completions > 0
@@ -163,7 +163,7 @@ function SectionPanel({
   const doneCount = group.videos.filter(video => video.completions > 0).length
 
   return (
-    <div className="border-manga-black bg-manga-white border-3 shadow-[4px_4px_0_var(--manga-black)]">
+    <div className="border-manga-black bg-manga-white rounded-panel border-3 shadow-[4px_4px_0_var(--manga-black)]">
       <button
         type="button"
         aria-expanded={open}
@@ -206,7 +206,7 @@ export function SectionAccordion({
 }) {
   if (groups.length === 0)
     return (
-      <div className="border-manga-black bg-manga-white border-3 p-6 text-center shadow-[4px_4px_0_var(--manga-black)]">
+      <div className="border-manga-black bg-manga-white rounded-panel border-3 p-6 text-center shadow-[4px_4px_0_var(--manga-black)]">
         <p className="font-sans text-lg font-black">Nothing here yet</p>
         <p className="text-manga-ink-soft mt-1 text-sm">
           This topic has no lessons yet.

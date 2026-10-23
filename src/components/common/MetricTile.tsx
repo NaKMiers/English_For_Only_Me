@@ -31,9 +31,9 @@ export function MetricTile({
   value,
 }: Props) {
   const classNames = cn(
-    'border-manga-black grid min-h-36 min-w-0 gap-3 border-3 p-4 shadow-[4px_4px_0_var(--manga-black)]',
+    'border-manga-black grid min-h-36 min-w-0 gap-3 rounded-panel border-3 p-4 shadow-[4px_4px_0_var(--manga-black)]',
     href &&
-      'transition-[background,box-shadow,transform] hover:bg-manga-pale-red active:translate-x-[3px] active:translate-y-[3px] active:shadow-none',
+      'sticker-press hover:bg-manga-pale-red active:translate-x-1 active:translate-y-1 active:shadow-none',
     toneClassName[tone],
     className
   )

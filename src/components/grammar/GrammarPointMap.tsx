@@ -121,7 +121,7 @@ export function GrammarPointMap({
       </div>
 
       <div>
-        <p className="border-comic-ink bg-comic-ink text-comic-paper mb-1 inline-block border-3 px-3 py-2 font-sans text-sm leading-none font-black tracking-[0.1em] uppercase shadow-[4px_4px_0_var(--manga-offset)]">
+        <p className="border-comic-ink bg-comic-ink text-comic-paper rounded-tag mb-1 inline-block border-3 px-3 py-2 font-sans text-sm leading-none font-black tracking-[0.1em] uppercase shadow-[4px_4px_0_var(--manga-offset)]">
           {result.total} rules
         </p>
 
@@ -139,7 +139,7 @@ export function GrammarPointMap({
                     would read as seventeen separate lists, not one tree. */}
                 <div className="flex flex-wrap items-start gap-x-3 gap-y-2 lg:flex-nowrap">
                   <Link
-                    className="border-comic-ink bg-manga-paper-soft text-manga-black flex w-full shrink-0 items-center gap-2 border-3 px-3 py-2 shadow-[3px_3px_0_var(--manga-offset)] transition-transform hover:-translate-y-0.5 sm:w-72"
+                    className="border-comic-ink bg-manga-paper-soft text-manga-black rounded-control flex w-full shrink-0 items-center gap-2 border-3 px-3 py-2 shadow-[3px_3px_0_var(--manga-offset)] transition-transform hover:-translate-y-0.5 sm:w-72"
                     href={`/grammar/points?family=${family}`}
                   >
                     <span className="text-comic-ink block size-8 shrink-0">
@@ -206,7 +206,7 @@ function PointLeaf({ now, point }: { now: Date; point: MapPoint }) {
     // the card: that is what lets the strip below run edge to edge and read as
     // a border rather than as one more element in a padded box.
     <Link
-      className="border-comic-ink text-manga-black hover:bg-manga-pale-red grid gap-1.5 border-2 pt-1.5 transition-transform hover:-translate-y-0.5"
+      className="border-comic-ink text-manga-black hover:bg-manga-pale-red rounded-control grid gap-1.5 overflow-hidden border-2 pt-1.5 transition-transform hover:-translate-y-0.5"
       href={`/grammar/points/${point.slug}`}
     >
       <span className="flex items-center gap-2 px-2.5">

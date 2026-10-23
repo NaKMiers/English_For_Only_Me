@@ -86,8 +86,8 @@ function StatusMessage({
       role="status"
       className={
         tone === 'red'
-          ? 'border-manga-black bg-manga-paper-soft border-2 p-3 text-sm leading-6 font-black shadow-[3px_3px_0_var(--manga-black)]'
-          : 'border-manga-black bg-manga-white border-2 p-3 text-sm leading-6 font-semibold shadow-[3px_3px_0_var(--manga-black)]'
+          ? 'border-manga-black bg-manga-paper-soft rounded-control border-2 p-3 text-sm leading-6 font-black shadow-[3px_3px_0_var(--manga-black)]'
+          : 'border-manga-black bg-manga-white rounded-control border-2 p-3 text-sm leading-6 font-semibold shadow-[3px_3px_0_var(--manga-black)]'
       }
     >
       {message}
@@ -116,7 +116,7 @@ function SavedVideoPreview({
           youtubeVideoId={video.youtubeVideoId}
         />
       ) : video.youtubeVideoId ? (
-        <div className="border-manga-black bg-manga-paper-soft relative aspect-video w-full max-w-xl overflow-hidden border-2 shadow-[3px_3px_0_var(--manga-black)]">
+        <div className="border-manga-black bg-manga-paper-soft rounded-control relative aspect-video w-full max-w-xl overflow-hidden border-2 shadow-[3px_3px_0_var(--manga-black)]">
           <iframe
             src={`https://www.youtube.com/embed/${video.youtubeVideoId}`}
             title={video.title}
@@ -284,7 +284,7 @@ export function DictationImportForm({
                   value={youtubeUrl}
                   onChange={event => setYoutubeUrl(event.target.value)}
                   placeholder="https://www.youtube.com/watch?v=..."
-                  className="border-manga-black bg-manga-white min-h-12 rounded-none border-3 font-semibold shadow-[3px_3px_0_var(--manga-black)]"
+                  className="border-manga-black bg-manga-white rounded-control min-h-12 border-3 font-semibold shadow-[3px_3px_0_var(--manga-black)]"
                 />
               </div>
 

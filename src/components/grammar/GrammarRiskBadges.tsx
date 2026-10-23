@@ -26,12 +26,12 @@ export function GrammarAxes({
   return (
     <div className="flex flex-wrap items-center gap-2">
       <PageTag tone="pale">{cefrLevel}</PageTag>
-      <span className="border-manga-black bg-manga-white text-manga-black border-2 px-2 py-0.5 font-sans text-xs font-black uppercase">
+      <span className="border-manga-black bg-manga-white text-manga-black rounded-tag border-2 px-2 py-0.5 font-sans text-xs font-black uppercase">
         Difficulty {complexity}/5
       </span>
       <L1RiskTag l1Risk={l1Risk} />
       {ieltsImpact ? (
-        <span className="border-manga-black text-manga-black border-2 border-dashed px-2 py-0.5 font-sans text-xs font-black uppercase">
+        <span className="border-manga-black text-manga-black rounded-tag border-2 border-dashed px-2 py-0.5 font-sans text-xs font-black uppercase">
           IELTS {ieltsImpact}
           {/* Was a `title=` tooltip, which is unreachable by keyboard and by
               touch - so the explanation was invisible to most of the people who
@@ -63,7 +63,7 @@ export function L1RiskTag({ l1Risk }: { l1Risk: GrammarL1Risk }) {
 
   return (
     <span
-      className={`border-manga-black border-2 px-2 py-0.5 font-sans text-xs font-black uppercase ${emphasis}`}
+      className={`border-manga-black rounded-tag border-2 px-2 py-0.5 font-sans text-xs font-black uppercase ${emphasis}`}
     >
       {L1_RISK_LABEL[l1Risk]}
       <span className="sr-only">

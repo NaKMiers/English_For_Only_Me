@@ -59,8 +59,8 @@ export function CreatureSigil({
       className={cn(
         'border-comic-ink bg-comic-paper text-comic-ink relative grid shrink-0 border-3',
         isPlate
-          ? 'w-full max-w-56 gap-2 p-2 shadow-[4px_4px_0_var(--manga-offset)]'
-          : 'w-16 gap-1 p-1.5 shadow-[3px_3px_0_var(--manga-offset)]',
+          ? 'rounded-panel w-full max-w-56 gap-2 p-2 shadow-[4px_4px_0_var(--manga-offset)]'
+          : 'rounded-control w-16 gap-1 p-1.5 shadow-[3px_3px_0_var(--manga-offset)]',
         spec.isDangerous && !isGhost && 'border-comic-danger',
         className
       )}
@@ -68,6 +68,8 @@ export function CreatureSigil({
       <div
         className={cn(
           'relative grid aspect-square place-items-center',
+          isPlate ? 'rounded-control' : 'rounded-tag',
+          portrait && 'overflow-hidden',
           // The ghost stays translucent AND dashed AND labelled. Faintness on
           // its own reads as a rendering bug rather than as "nobody checked
           // this lesson".

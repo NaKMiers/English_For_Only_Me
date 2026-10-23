@@ -24,13 +24,13 @@ export function DictationReviewScene() {
             title="Drill"
             className="shadow-[3px_3px_0_var(--manga-black)]"
           >
-            <div className="border-manga-black bg-manga-pale-red border-2 p-3 text-base leading-7 font-black">
+            <div className="border-manga-black bg-manga-pale-red rounded-control border-2 p-3 text-base leading-7 font-black">
               {DICTATION_REVIEW.sentence}
             </div>
             <Textarea
               aria-label="Weak sentence answer"
               defaultValue={DICTATION_REVIEW.answer}
-              className="border-manga-black bg-manga-white min-h-28 rounded-none border-3 text-base leading-7 font-semibold shadow-[3px_3px_0_var(--manga-black)]"
+              className="border-manga-black bg-manga-white rounded-control min-h-28 border-3 text-base leading-7 font-semibold shadow-[3px_3px_0_var(--manga-black)]"
             />
             <div className="flex flex-wrap gap-3">
               <MangaButton

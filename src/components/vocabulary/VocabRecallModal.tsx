@@ -293,7 +293,7 @@ export function VocabRecallModal({
       open={open}
       onOpenChange={handleOpenChange}
     >
-      <DialogContent className="border-manga-black bg-manga-black text-manga-white h-auto max-h-[88vh] w-[min(1080px,92vw)] max-w-none overflow-y-auto rounded-none border-3 p-0 shadow-[6px_6px_0_var(--manga-red)] sm:max-w-none">
+      <DialogContent className="border-manga-black bg-manga-black text-manga-white h-auto max-h-[88vh] w-[min(1080px,92vw)] max-w-none overflow-y-auto border-3 p-0 shadow-[6px_6px_0_var(--manga-red)] sm:max-w-none">
         {task ? (
           <div className="grid min-h-full grid-rows-[auto_1fr_auto]">
             <DialogHeader className="border-manga-white/20 border-b-2 p-3 sm:p-4">
@@ -318,7 +318,7 @@ export function VocabRecallModal({
                 <div className="grid place-items-center gap-4 py-5">
                   <button
                     aria-label={`Play ${task.entry.term}`}
-                    className="text-manga-black border-manga-black grid size-24 place-items-center rounded-full border-3 bg-cyan-300 shadow-[4px_4px_0_var(--manga-white)] transition-transform active:translate-x-[4px] active:translate-y-[4px] active:shadow-none sm:size-32"
+                    className="text-manga-black border-manga-black sticker-press grid size-24 place-items-center rounded-full border-3 bg-cyan-300 shadow-[4px_4px_0_var(--manga-white)] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none sm:size-32"
                     onClick={() => speakTerm(task.entry.term)}
                     type="button"
                   >
@@ -326,7 +326,7 @@ export function VocabRecallModal({
                   </button>
                 </div>
               ) : (
-                <div className="border-manga-white/20 bg-manga-white/10 border-2 p-4 text-center shadow-[4px_4px_0_rgba(255,255,255,0.22)] sm:p-5">
+                <div className="border-manga-white/20 bg-manga-white/10 rounded-control border-2 p-4 text-center shadow-[4px_4px_0_rgba(255,255,255,0.22)] sm:p-5">
                   {task.type === 'wordChooseDefinition' ? (
                     <VocabTermHeader
                       buttonClassName="border-manga-white bg-cyan-300 text-manga-black hover:bg-cyan-200 shadow-[3px_3px_0_var(--manga-white)]"
@@ -385,7 +385,7 @@ export function VocabRecallModal({
                     <button
                       key={option.id}
                       className={cn(
-                        'border-manga-white bg-manga-white/15 text-manga-white grid min-h-20 grid-cols-[auto_1fr] items-center gap-3 border-2 p-4 text-left font-sans text-base leading-6 font-black shadow-[3px_3px_0_rgba(255,255,255,0.22)] transition-[background,transform,box-shadow] sm:min-h-24 sm:text-lg lg:min-h-28',
+                        'border-manga-white bg-manga-white/15 text-manga-white rounded-control grid min-h-20 grid-cols-[auto_1fr] items-center gap-3 border-2 p-4 text-left font-sans text-base leading-6 font-black shadow-[3px_3px_0_rgba(255,255,255,0.22)] transition-[background,transform,box-shadow] sm:min-h-24 sm:text-lg lg:min-h-28',
                         wrongFeedback &&
                           option.id === wrongFeedback.selectedOptionId &&
                           'border-manga-red bg-manga-pale-red text-manga-red',
@@ -417,7 +417,7 @@ export function VocabRecallModal({
                 </div>
               ) : null}
               {wrongFeedback ? (
-                <div className="border-manga-red bg-manga-pale-red text-manga-black grid gap-3 border-3 p-4 shadow-[4px_4px_0_var(--manga-red)]">
+                <div className="border-manga-red bg-manga-pale-red text-manga-black rounded-control grid gap-3 border-3 p-4 shadow-[4px_4px_0_var(--manga-red)]">
                   <p className="text-manga-red text-sm font-black uppercase">
                     Correct answer: {getCorrectAnswerText(task)}
                   </p>
@@ -425,10 +425,10 @@ export function VocabRecallModal({
                     entry={task.entry}
                     size="lg"
                   />
-                  <div className="border-manga-black bg-manga-paper-soft border-2 p-3 text-right text-sm leading-6 font-black sm:text-base">
+                  <div className="border-manga-black bg-manga-paper-soft rounded-tag border-2 p-3 text-right text-sm leading-6 font-black sm:text-base">
                     {getRequiredVietnameseMeaning(task.entry)}
                   </div>
-                  <div className="border-manga-black bg-manga-white border-2 p-3 text-sm leading-6 font-semibold sm:text-base">
+                  <div className="border-manga-black bg-manga-white rounded-tag border-2 p-3 text-sm leading-6 font-semibold sm:text-base">
                     {getDefinition(task)}
                   </div>
                   <p className="text-manga-ink-soft text-sm leading-6 font-semibold">

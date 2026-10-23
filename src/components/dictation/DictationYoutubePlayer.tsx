@@ -16,7 +16,7 @@ import {
 } from '@/modules/dictation/preferences/dictationPreferences'
 
 const SIZE_BUTTON_CLASS_NAME =
-  'border-manga-black inline-flex min-h-7 items-center border-2 px-1.5 font-sans text-[0.7rem] font-black shadow-[2px_2px_0_var(--manga-black)]'
+  'border-manga-black inline-flex min-h-7 items-center rounded-control border-2 px-1.5 font-sans text-[0.7rem] font-black shadow-[2px_2px_0_var(--manga-black)]'
 
 const VIDEO_SIZE_LABEL: Record<VideoSize, string> = {
   small: 'Small',
@@ -276,13 +276,13 @@ export function DictationYoutubePlayer({
     <section
       aria-label="Segment video player"
       className={cn(
-        'border-manga-black bg-manga-white grid min-w-0 gap-2 border-2 p-2 shadow-[3px_3px_0_var(--manga-black)]',
+        'border-manga-black bg-manga-white rounded-panel grid min-w-0 gap-2 border-2 p-2 shadow-[3px_3px_0_var(--manga-black)]',
         className
       )}
     >
       {/* The player element stays mounted while hidden so replay keeps working;
           a same-size placeholder covers it instead of collapsing the layout. */}
-      <div className="border-manga-black bg-manga-white relative grid aspect-video overflow-hidden border-2">
+      <div className="border-manga-black bg-manga-white rounded-control relative grid aspect-video overflow-hidden border-2">
         {youtubeVideoId ? (
           <div
             id={playerElementId}

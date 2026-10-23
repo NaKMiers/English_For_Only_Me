@@ -88,7 +88,7 @@ export function ReorderHandle({
         event.dataTransfer.setData(mime, id)
         event.dataTransfer.effectAllowed = 'move'
       }}
-      className="border-manga-black bg-manga-white grid size-8 shrink-0 cursor-grab place-items-center border-2 active:cursor-grabbing"
+      className="border-manga-black bg-manga-white rounded-tag grid size-8 shrink-0 cursor-grab place-items-center border-2 active:cursor-grabbing"
     >
       <GripVertical
         aria-hidden="true"

@@ -520,8 +520,12 @@ export function VocabularyDashboard({ mongoConfigured }: Props) {
       const existing = pendingWritesRef.current.get(entryId)
 
       pendingWritesRef.current.set(entryId, {
-        previousDecision: existing ? existing.previousDecision : previousDecision,
-        previousUserItem: existing ? existing.previousUserItem : previousUserItem,
+        previousDecision: existing
+          ? existing.previousDecision
+          : previousDecision,
+        previousUserItem: existing
+          ? existing.previousUserItem
+          : previousUserItem,
         source,
         status,
       })
@@ -675,7 +679,7 @@ export function VocabularyDashboard({ mongoConfigured }: Props) {
               <h1 className="font-sans text-[clamp(1.9rem,5vw,3.8rem)] leading-none font-black wrap-break-word uppercase">
                 Vocab Spine
               </h1>
-              <div className="border-manga-black bg-manga-black text-manga-white ml-auto flex items-center gap-2 border-3 px-3 py-2 shadow-[4px_4px_0_var(--manga-red)]">
+              <div className="border-manga-black bg-manga-black text-manga-white rounded-control ml-auto flex items-center gap-2 border-3 px-3 py-2 shadow-[4px_4px_0_var(--manga-red)]">
                 <Flame className="text-manga-red size-7 fill-current" />
                 <span className="text-xs font-black uppercase">Streak</span>
                 <strong className="font-sans text-2xl leading-none font-black">
@@ -705,12 +709,12 @@ export function VocabularyDashboard({ mongoConfigured }: Props) {
       </section>
 
       {errorMessage ? (
-        <div className="border-manga-black bg-manga-pale-red border-3 p-3 text-sm font-black">
+        <div className="border-manga-black bg-manga-pale-red rounded-control border-3 p-3 text-sm font-black">
           {errorMessage}
         </div>
       ) : null}
       {statusMessage ? (
-        <div className="border-manga-black bg-manga-white border-3 p-3 text-sm font-black shadow-[3px_3px_0_var(--manga-black)]">
+        <div className="border-manga-black bg-manga-white rounded-control border-3 p-3 text-sm font-black shadow-[3px_3px_0_var(--manga-black)]">
           {statusMessage}
         </div>
       ) : null}

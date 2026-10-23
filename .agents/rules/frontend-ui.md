@@ -15,6 +15,33 @@ clear actions, responsive by default, and reusable component primitives.
   improves rhythm.
 - Avoid broad redesigns while fixing behavior.
 
+## Sticker Corners (manga blocks)
+
+Every ink-bordered block is a rounded "sticker": same 3px ink border, same hard
+offset shadow, corner by ROLE. Never hand-type a radius.
+
+| Role    | Utility           | Size                    | Use for                                                 |
+| ------- | ----------------- | ----------------------- | ------------------------------------------------------- |
+| shell   | `rounded-shell`   | 20px (14px under 640px) | `MangaPageShell` only                                   |
+| panel   | `rounded-panel`   | 14px                    | cards, panels, dialogs, popups, comic panels, big tiles |
+| control | `rounded-control` | 10px                    | buttons, inputs, tabs, rows, a card inside a card       |
+| tag     | `rounded-tag`     | 6px                     | tags, badges, chips, checkboxes, tooltips, menu items   |
+
+- Never use `rounded-none` (`src/lib/styleGuards.test.ts` fails on it). A
+  borderless override gets the role by size, not a bare deletion.
+- A child's radius is never larger than its parent's. A flush child (touching
+  the parent's border) gets no radius and is clipped by the parent's
+  `overflow-hidden`.
+- Edge-attached sheets stay square; `rounded-full` circles and speech bubbles
+  keep their shapes.
+- Pressable controls use `sticker-press` for their transition (never
+  `transition-all` / `duration-*` for the press), and their
+  `active:translate-*` must equal their shadow offset. On anything built from
+  `buttonVariants`, also add `active:not-aria-[haspopup]:translate-y-[Npx]`, or
+  the base 1px nudge wins.
+- Tune softness with the `--sticker-*` knobs in `src/app/globals.css`. Adding a
+  role means adding it there AND to `extendTailwindMerge` in `src/lib/utils.ts`.
+
 ## Components
 
 - Shared components live in `src/components`.

@@ -98,7 +98,7 @@ export function VocabTermHeader({
       <Button
         aria-label={`Speak ${displayTerm}`}
         className={cn(
-          'border-manga-black bg-manga-white text-manga-black hover:bg-manga-paper-soft size-10 shrink-0 rounded-none border-2 shadow-[2px_2px_0_var(--manga-black)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none',
+          'border-manga-black bg-manga-white text-manga-black hover:bg-manga-paper-soft rounded-control sticker-press size-10 shrink-0 border-2 shadow-[2px_2px_0_var(--manga-black)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none active:not-aria-[haspopup]:translate-y-[2px]',
           buttonClassName
         )}
         onClick={() =>

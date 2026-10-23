@@ -28,7 +28,7 @@ function DebriefList({ items, title }: { items: string[]; title: string }) {
         {items.map(item => (
           <li
             key={item}
-            className="border-manga-black bg-manga-paper-soft border-2 p-2 text-sm leading-6 font-semibold wrap-break-word"
+            className="border-manga-black bg-manga-paper-soft rounded-control border-2 p-2 text-sm leading-6 font-semibold wrap-break-word"
           >
             {item}
           </li>
@@ -123,12 +123,12 @@ export function DictationDebriefPanel({
           value={notes}
           onChange={event => setNotes(event.target.value)}
           placeholder="Optional: what felt hard, what IELTS target you care about, or what to focus on next."
-          className="border-manga-black bg-manga-white min-h-24 rounded-none border-2 text-base shadow-[3px_3px_0_var(--manga-black)]"
+          className="border-manga-black bg-manga-white rounded-control min-h-24 border-2 text-base shadow-[3px_3px_0_var(--manga-black)]"
         />
       </Label>
 
       {!canGenerate ? (
-        <div className="border-manga-black bg-manga-paper-soft border-2 p-3 text-sm leading-6 font-black shadow-[3px_3px_0_var(--manga-black)]">
+        <div className="border-manga-black bg-manga-paper-soft rounded-control border-2 p-3 text-sm leading-6 font-black shadow-[3px_3px_0_var(--manga-black)]">
           Complete this video before asking the AI coach for a debrief.
         </div>
       ) : null}
@@ -136,7 +136,7 @@ export function DictationDebriefPanel({
       {error ? (
         <div
           role="alert"
-          className="border-manga-red bg-manga-pale-red border-2 p-3 text-sm leading-6 font-black shadow-[3px_3px_0_var(--manga-red)]"
+          className="border-manga-red bg-manga-pale-red rounded-control border-2 p-3 text-sm leading-6 font-black shadow-[3px_3px_0_var(--manga-red)]"
         >
           {error} Your stats are still saved; retry when the provider is ready.
         </div>
@@ -146,7 +146,7 @@ export function DictationDebriefPanel({
         <div className="grid gap-4">
           <div
             className={cn(
-              'border-manga-black bg-manga-paper-soft border-2 p-3 text-base leading-7 font-semibold shadow-[3px_3px_0_var(--manga-black)]'
+              'border-manga-black bg-manga-paper-soft rounded-control border-2 p-3 text-base leading-7 font-semibold shadow-[3px_3px_0_var(--manga-black)]'
             )}
           >
             {debrief.contentSummary}
@@ -159,7 +159,7 @@ export function DictationDebriefPanel({
                 {debrief.keyVocabulary.map(item => (
                   <div
                     key={item.term}
-                    className="border-manga-black border-2 p-3 text-sm leading-6 shadow-[3px_3px_0_var(--manga-black)]"
+                    className="border-manga-black rounded-control border-2 p-3 text-sm leading-6 shadow-[3px_3px_0_var(--manga-black)]"
                   >
                     <p className="font-black">{item.term}</p>
                     <p className="font-semibold">{item.meaning}</p>

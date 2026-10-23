@@ -161,7 +161,7 @@ export function QuickVocabWordButton({
         open={open}
         onOpenChange={setOpen}
       >
-        <DialogContent className="border-manga-black bg-manga-white rounded-none border-3 shadow-[6px_6px_0_var(--manga-black)]">
+        <DialogContent className="border-manga-black bg-manga-white border-3 shadow-[6px_6px_0_var(--manga-black)]">
           {entry ? (
             <>
               <DialogHeader>
@@ -174,10 +174,10 @@ export function QuickVocabWordButton({
               </DialogHeader>
               <div className="grid gap-3">
                 <VocabTermHeader entry={entry.entry} />
-                <div className="border-manga-black bg-manga-paper-soft border-2 p-3 text-right text-base leading-7 font-black">
+                <div className="border-manga-black bg-manga-paper-soft rounded-control border-2 p-3 text-right text-base leading-7 font-black">
                   {getVietnamese(entry)}
                 </div>
-                <div className="border-manga-black bg-manga-white border-2 p-3 text-base leading-7 font-semibold">
+                <div className="border-manga-black bg-manga-white rounded-control border-2 p-3 text-base leading-7 font-semibold">
                   {getDefinition(entry)}
                 </div>
                 <div className="grid grid-cols-2 gap-2">
@@ -300,7 +300,7 @@ export function QuickVocabLookup({
         {tokens.map(token => (
           <Button
             key={`${token.term}-${token.index}`}
-            className="border-manga-black bg-manga-white hover:bg-manga-paper-soft h-auto rounded-none border-2 px-2 py-1 text-sm font-black shadow-[2px_2px_0_var(--manga-black)]"
+            className="border-manga-black bg-manga-white hover:bg-manga-paper-soft rounded-control h-auto border-2 px-2 py-1 text-sm font-black shadow-[2px_2px_0_var(--manga-black)]"
             disabled={busyTerm === token.term}
             onClick={() => lookup(token.term)}
             type="button"
@@ -318,7 +318,7 @@ export function QuickVocabLookup({
         open={open}
         onOpenChange={setOpen}
       >
-        <DialogContent className="border-manga-black bg-manga-white rounded-none border-3 shadow-[6px_6px_0_var(--manga-black)]">
+        <DialogContent className="border-manga-black bg-manga-white border-3 shadow-[6px_6px_0_var(--manga-black)]">
           {entry ? (
             <>
               <DialogHeader>
@@ -331,10 +331,10 @@ export function QuickVocabLookup({
               </DialogHeader>
               <div className="grid gap-3">
                 <VocabTermHeader entry={entry.entry} />
-                <div className="border-manga-black bg-manga-paper-soft border-2 p-3 text-right text-base leading-7 font-black">
+                <div className="border-manga-black bg-manga-paper-soft rounded-control border-2 p-3 text-right text-base leading-7 font-black">
                   {getVietnamese(entry)}
                 </div>
-                <div className="border-manga-black bg-manga-white border-2 p-3 text-base leading-7 font-semibold">
+                <div className="border-manga-black bg-manga-white rounded-control border-2 p-3 text-base leading-7 font-semibold">
                   {getDefinition(entry)}
                 </div>
                 <div className="grid grid-cols-2 gap-2">

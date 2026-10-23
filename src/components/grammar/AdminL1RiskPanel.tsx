@@ -140,7 +140,7 @@ export function AdminL1RiskPanel({ entries }: { entries: L1RiskQueueEntry[] }) {
     <div className="grid gap-4">
       {message ? (
         <p
-          className="border-manga-black bg-manga-red text-manga-white border-3 p-3 text-sm font-black uppercase"
+          className="border-manga-black bg-manga-red text-manga-white rounded-control border-3 p-3 text-sm font-black uppercase"
           role="alert"
         >
           {message}
@@ -162,15 +162,15 @@ export function AdminL1RiskPanel({ entries }: { entries: L1RiskQueueEntry[] }) {
         title={current.title}
       >
         <div className="flex flex-wrap items-center gap-2">
-          <span className="border-manga-black border-2 px-2 py-0.5 font-sans text-xs font-black uppercase">
+          <span className="border-manga-black rounded-tag border-2 px-2 py-0.5 font-sans text-xs font-black uppercase">
             {current.cefrLevel} - difficulty {current.complexity}/5
           </span>
-          <span className="border-manga-black border-2 border-dashed px-2 py-0.5 font-sans text-xs font-black uppercase">
+          <span className="border-manga-black rounded-tag border-2 border-dashed px-2 py-0.5 font-sans text-xs font-black uppercase">
             authored {current.l1Risk}
           </span>
           {observed ? <L1RiskTag l1Risk={observed} /> : null}
           {!current.hasLesson ? (
-            <span className="border-manga-black border-2 px-2 py-0.5 font-sans text-xs font-black uppercase">
+            <span className="border-manga-black rounded-tag border-2 px-2 py-0.5 font-sans text-xs font-black uppercase">
               No lesson yet
             </span>
           ) : null}
@@ -184,7 +184,7 @@ export function AdminL1RiskPanel({ entries }: { entries: L1RiskQueueEntry[] }) {
           <ul className="grid gap-2">
             {current.examples.slice(0, 4).map(example => (
               <li
-                className="border-manga-black bg-manga-white border-2 p-2"
+                className="border-manga-black bg-manga-white rounded-control border-2 p-2"
                 key={example.en}
               >
                 <p className="text-manga-black text-sm leading-6 font-black">

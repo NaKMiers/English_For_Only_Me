@@ -38,7 +38,7 @@ export function DictationTranslationBar({
   return (
     <div
       className={cn(
-        'border-manga-black bg-manga-white flex flex-wrap items-center gap-2 border-2 text-sm font-black shadow-[2px_2px_0_var(--manga-black)]',
+        'border-manga-black bg-manga-white rounded-control flex flex-wrap items-center gap-2 border-2 text-sm font-black shadow-[2px_2px_0_var(--manga-black)]',
         compact ? 'gap-1 px-1.5 py-1' : 'px-3 py-2',
         className
       )}

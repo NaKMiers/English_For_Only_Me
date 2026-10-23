@@ -66,9 +66,9 @@ export interface AdminTopicData {
 }
 
 const input =
-  'border-manga-black min-h-11 rounded-none border-3 bg-manga-white px-3 py-2 font-sans text-base font-black'
+  'border-manga-black min-h-11 rounded-control border-3 bg-manga-white px-3 py-2 font-sans text-base font-black'
 const menuButton =
-  'flex min-h-11 w-full items-center gap-2 px-3 font-sans text-sm font-black whitespace-nowrap transition-colors'
+  'flex min-h-11 w-full items-center gap-2 rounded-tag px-3 font-sans text-sm font-black whitespace-nowrap transition-colors'
 const menuDangerButton = `${menuButton} text-manga-red hover:bg-manga-red hover:text-manga-white focus:bg-manga-red focus:text-manga-white`
 
 function AdminCardActionsMenu({
@@ -83,7 +83,7 @@ function AdminCardActionsMenu({
       <DropdownMenuTrigger
         aria-label={label}
         title="Actions"
-        className="border-manga-black bg-manga-white hover:bg-manga-paper-soft grid size-9 shrink-0 place-items-center border-2 shadow-[2px_2px_0_var(--manga-black)] transition-colors"
+        className="border-manga-black bg-manga-white hover:bg-manga-paper-soft rounded-control grid size-9 shrink-0 place-items-center border-2 shadow-[2px_2px_0_var(--manga-black)] transition-colors"
       >
         <EllipsisVertical
           aria-hidden="true"
@@ -170,7 +170,7 @@ function SectionBlock({
         accept={MIME_VIDEO}
         onDrop={videoId => onDropVideo(videoId, section.id)}
         onEnter={() => setOpen(true)}
-        className="border-manga-black bg-manga-paper-soft min-w-0 border-2"
+        className="border-manga-black bg-manga-paper-soft rounded-control min-w-0 border-2"
       >
         <div className="flex items-center justify-between gap-2 px-3 py-2">
           <div className="flex min-w-0 flex-1 items-center gap-2">
@@ -455,7 +455,7 @@ export function AdminTopicCard({ topic }: { topic: AdminTopicData }) {
         if (!expanded && event.dataTransfer.types.includes(MIME_VIDEO))
           setExpanded(true)
       }}
-      className="border-manga-black bg-manga-white grid min-w-0 gap-3 border-3 p-4 shadow-[4px_4px_0_var(--manga-black)]"
+      className="border-manga-black bg-manga-white rounded-panel grid min-w-0 gap-3 border-3 p-4 shadow-[4px_4px_0_var(--manga-black)]"
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
@@ -471,7 +471,7 @@ export function AdminTopicCard({ topic }: { topic: AdminTopicData }) {
             onClick={() => setExpanded(v => !v)}
             className="flex min-w-0 flex-1 flex-wrap items-center gap-2 self-stretch text-left"
           >
-            <span className="border-manga-black bg-manga-white grid size-8 shrink-0 place-items-center border-2">
+            <span className="border-manga-black bg-manga-white rounded-tag grid size-8 shrink-0 place-items-center border-2">
               <ChevronDown
                 aria-hidden="true"
                 className={cn(
@@ -527,7 +527,7 @@ export function AdminTopicCard({ topic }: { topic: AdminTopicData }) {
             setEditing(false)
           }}
           encType="multipart/form-data"
-          className="border-manga-black bg-manga-paper-soft grid gap-3 border-2 p-3"
+          className="border-manga-black bg-manga-paper-soft rounded-control grid gap-3 border-2 p-3"
         >
           <input
             type="hidden"
@@ -604,7 +604,7 @@ export function AdminTopicCard({ topic }: { topic: AdminTopicData }) {
               <DropZone
                 accept={MIME_VIDEO}
                 onDrop={videoId => moveVideo(videoId, null)}
-                className="border-manga-black bg-manga-paper-soft border-2 p-2"
+                className="border-manga-black bg-manga-paper-soft rounded-control border-2 p-2"
               >
                 <p className="mb-2 font-sans text-sm font-black">
                   Ungrouped in this topic ({topic.ungrouped.length})

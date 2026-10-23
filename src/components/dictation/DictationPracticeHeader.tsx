@@ -74,12 +74,12 @@ export function DictationPracticeHeader({
                 width={58}
                 height={58}
                 priority
-                className="border-manga-black bg-manga-white size-9 border-2 object-contain shadow-[2px_2px_0_var(--manga-black)]"
+                className="border-manga-black bg-manga-white rounded-control size-9 border-2 object-contain shadow-[2px_2px_0_var(--manga-black)]"
               />
             </TooltipTrigger>
             <TooltipContent
               side="bottom"
-              className="rounded-none font-sans font-black uppercase"
+              className="rounded-tag font-sans font-black uppercase"
             >
               English For Only Me
             </TooltipContent>

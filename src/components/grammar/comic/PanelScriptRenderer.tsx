@@ -163,7 +163,7 @@ function BeatPanel({ beat, width }: { beat: Beat; width: PanelWidth }) {
             <ul className="grid gap-2">
               {beat.formPatterns.map(pattern => (
                 <li
-                  className="border-comic-ink bg-manga-paper-soft border-2 p-2 font-mono text-sm font-semibold"
+                  className="border-comic-ink bg-manga-paper-soft rounded-control border-2 p-2 font-mono text-sm font-semibold"
                   key={pattern}
                 >
                   {pattern}

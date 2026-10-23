@@ -14,7 +14,7 @@ function StudyDeskSketch() {
   return (
     <div
       aria-label="Pencil sketch of the English For Only Me study desk"
-      className="border-manga-black bg-manga-pale-red relative min-h-[270px] overflow-hidden border-3 shadow-[inset_0_0_0_9px_rgba(255,255,255,0.38),4px_4px_0_var(--manga-black)] sm:min-h-[390px]"
+      className="border-manga-black bg-manga-pale-red rounded-panel relative min-h-[270px] overflow-hidden border-3 shadow-[inset_0_0_0_9px_rgba(255,255,255,0.38),4px_4px_0_var(--manga-black)] sm:min-h-[390px]"
     >
       <svg
         role="img"
@@ -152,7 +152,7 @@ function HomeVocabularySnapshot({
         {cards.map(card => (
           <div
             key={`${card.label}-${card.detail}`}
-            className="border-manga-black bg-manga-paper-soft grid gap-1 border-2 p-3 shadow-[3px_3px_0_var(--manga-black)]"
+            className="border-manga-black bg-manga-paper-soft rounded-control grid gap-1 border-2 p-3 shadow-[3px_3px_0_var(--manga-black)]"
           >
             <span className="text-xs font-black uppercase">{card.label}</span>
             <strong className="font-sans text-2xl leading-none font-black">
@@ -197,7 +197,7 @@ export function HomeStudyDesk({
       <div className="grid gap-5 p-3 sm:p-5 xl:grid-cols-[minmax(0,1.12fr)_minmax(360px,0.88fr)]">
         <section
           aria-labelledby="home-title"
-          className="border-manga-black bg-manga-white/90 grid min-w-0 overflow-hidden border-3 shadow-[6px_6px_0_var(--manga-black)]"
+          className="border-manga-black bg-manga-white/90 rounded-panel grid min-w-0 overflow-hidden border-3 shadow-[6px_6px_0_var(--manga-black)]"
         >
           <div className="border-manga-black bg-manga-white/90 flex min-w-0 flex-wrap items-start justify-between gap-4 border-b-3 p-4 sm:p-5">
             <div className="grid min-w-0 gap-3">
@@ -225,7 +225,7 @@ export function HomeStudyDesk({
 
         <aside
           aria-labelledby="side-title"
-          className="border-manga-black bg-manga-white/90 grid min-w-0 content-start gap-4 overflow-hidden border-3 p-4 shadow-[6px_6px_0_var(--manga-black)] sm:p-5"
+          className="border-manga-black bg-manga-white/90 rounded-panel grid min-w-0 content-start gap-4 overflow-hidden border-3 p-4 shadow-[6px_6px_0_var(--manga-black)] sm:p-5"
         >
           <div className="border-manga-black bg-manga-white/90 -mx-4 -mt-4 flex min-w-0 flex-wrap items-start justify-between gap-4 border-b-3 p-4 sm:-mx-5 sm:-mt-5 sm:p-5">
             <div className="grid min-w-0 gap-2">

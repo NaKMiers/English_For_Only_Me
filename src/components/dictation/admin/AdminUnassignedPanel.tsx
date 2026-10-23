@@ -35,7 +35,7 @@ export function AdminUnassignedPanel({
   }
 
   return (
-    <div className="border-manga-black bg-manga-white grid gap-3 border-3 p-4 shadow-[4px_4px_0_var(--manga-black)]">
+    <div className="border-manga-black bg-manga-white rounded-panel grid gap-3 border-3 p-4 shadow-[4px_4px_0_var(--manga-black)]">
       <button
         type="button"
         aria-expanded={open}

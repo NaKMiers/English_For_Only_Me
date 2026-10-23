@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sticker Manga Sketch</title>
+<!-- Sketch for the "sticker / chibi" restyle. Colours, border weights and
+     offset shadows are copied from src/app/globals.css and the primitives;
+     only the corner radius and press easing change between the two columns. -->
+<style>
+  :root {
+    --ink: #050505; --red: #e03020; --pale: #fff0ef; --paper: #fff8f6;
+    --paper-soft: #ffe7e4; --white: #fff; --ink-soft: #343434;
+    /* The four role radii proposed in the design doc. Sliders drive these. */
+    --r-shell: 20px; --r-panel: 14px; --r-control: 10px; --r-tag: 6px;
+    --press: 180ms cubic-bezier(.34,1.56,.64,1);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: linear-gradient(135deg, var(--paper), #fff 52%, var(--pale));
+    font-family: system-ui, sans-serif; color: var(--ink); padding: 16px; }
+  h1 { font-weight: 900; text-transform: uppercase; margin: 0 0 4px; font-size: 22px; }
+  .sub { margin: 0 0 14px; color: var(--ink-soft); font-size: 14px; }
+  .knobs { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 16px; font-size: 13px; font-weight: 700; }
+  .knobs label { display: grid; gap: 2px; }
+  .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; }
+  .col-title { font-weight: 900; text-transform: uppercase; font-size: 13px; letter-spacing: .12em; margin-bottom: 8px; }
+
+  /* shell = MangaPageShell */
+  .shell { border: 3px solid var(--ink); background: var(--paper); padding: 16px;
+    box-shadow: 8px 8px 0 var(--ink), 18px 18px 0 rgba(5,5,5,.18); display: grid; gap: 16px; overflow: hidden; }
+  /* card = ModuleCard / MangaPanel */
+  .card { border: 3px solid var(--ink); background: var(--white); padding: 16px;
+    box-shadow: 4px 4px 0 var(--ink); display: grid; gap: 12px; }
+  .card h2 { margin: 0; font-weight: 900; text-transform: uppercase; font-size: 20px; line-height: 1; }
+  .card p { margin: 0; font-size: 14px; color: var(--ink-soft); }
+  .foot { border-top: 2px dashed rgba(5,5,5,.45); padding-top: 10px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  /* tag = PageTag */
+  .tag { display: inline-block; border: 2px solid var(--ink); background: var(--red); color: #fff;
+    font-size: 11px; font-weight: 900; text-transform: uppercase; padding: 2px 6px; letter-spacing: .08em; }
+  .tag.pale { background: var(--pale); color: var(--ink); }
+  /* button = MangaButton */
+  .btn { border: 3px solid var(--ink); background: var(--paper-soft); font-weight: 900; font-size: 14px;
+    padding: 9px 16px; box-shadow: 3px 3px 0 var(--ink); cursor: pointer; font-family: inherit;
+    transition: transform 150ms, box-shadow 150ms, background 150ms; }
+  .btn.ink { background: var(--ink); color: #fff; }
+  .btn:hover { background: var(--pale); color: var(--ink); }
+  .btn:active { transform: translate(3px,3px); box-shadow: none; }
+  .input { border: 3px solid var(--ink); background: #fff; padding: 9px 12px; font-size: 14px; width: 100%;
+    box-shadow: 2px 2px 0 var(--ink); font-family: inherit; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  /* comic = ComicPanel + SpeechBubble */
+  .comic { border: 3px solid var(--ink); background: #fff; padding: 14px; box-shadow: 4px 4px 0 var(--ink);
+    position: relative; overflow: hidden;
+    background-image: radial-gradient(rgba(5,5,5,.12) 1px, transparent 1.4px); background-size: 7px 7px; }
+  .cap { font-size: 10px; font-weight: 900; letter-spacing: .14em; text-transform: uppercase; opacity: .7; margin-bottom: 8px; }
+  .bubble { background: #fff; border: 3px solid var(--ink); padding: 8px 12px; font-weight: 700; font-size: 14px;
+    display: inline-block; border-radius: 1.6rem; position: relative; }
+  .shout { background: var(--red); color: #fff; padding: 10px 16px; font-weight: 900; text-transform: uppercase;
+    display: inline-block; margin-top: 8px;
+    clip-path: polygon(0 6%,4% 0,52% 5%,96% 0,100% 7%,97% 50%,100% 93%,54% 100%,6% 95%,0 100%,3% 50%); }
+  /* dialog = UserMenu DialogContent */
+  .dialog { border: 3px solid var(--ink); background: #fff; box-shadow: 6px 6px 0 var(--ink); overflow: hidden; }
+  .dialog .body { padding: 14px; font-size: 14px; }
+  .dialog .dfoot { background: var(--paper-soft); border-top: 3px solid var(--ink); padding: 10px 14px; display: flex; justify-content: flex-end; gap: 8px; }
+
+  /* AFTER column: role radii applied. Nested children are smaller than their
+     parent so inner corners do not pinch (premise 3). */
+  .after .shell { border-radius: var(--r-shell); }
+  .after .card, .after .comic, .after .dialog { border-radius: var(--r-panel); }
+  .after .btn, .after .input { border-radius: var(--r-control); }
+  .after .tag { border-radius: var(--r-tag); }
+  .after .btn { transition: transform var(--press), box-shadow var(--press), background 150ms; }
+  @media (prefers-reduced-motion: reduce) { .after .btn { transition: background 150ms; } }
+</style>
+</head>
+<body>
+  <h1>Sticker manga: before / after</h1>
+  <p class="sub">Same ink, same hard shadows, same palette. Only corners and press easing change. Drag the sliders; press the buttons.</p>
+  <div class="knobs">
+    <label>Shell <span id="v-shell">20px</span><input type="range" min="0" max="32" value="20" data-var="--r-shell"></label>
+    <label>Panel / card <span id="v-panel">14px</span><input type="range" min="0" max="28" value="14" data-var="--r-panel"></label>
+    <label>Control <span id="v-control">10px</span><input type="range" min="0" max="22" value="10" data-var="--r-control"></label>
+    <label>Tag <span id="v-tag">6px</span><input type="range" min="0" max="14" value="6" data-var="--r-tag"></label>
+  </div>
+
+  <div class="cols">
+    <template id="tpl">
+      <div class="shell">
+        <div class="card">
+          <div class="row"><span class="tag">Dictation</span><span class="tag pale">Active</span></div>
+          <h2>Listen &amp; Type</h2>
+          <p>Shadow a real clip sentence by sentence. Mistakes become flashcards.</p>
+          <div class="foot"><span class="tag pale">12 due</span><button class="btn">Open</button></div>
+        </div>
+        <div class="row">
+          <input class="input" placeholder="Look up a word…" style="flex:1;min-width:160px">
+          <button class="btn ink">Search</button>
+        </div>
+        <div class="comic">
+          <div class="cap">Panel 2 · the sensei</div>
+          <span class="bubble">"I have went" — feel that wobble?</span><br>
+          <span class="shout">Have gone!</span>
+        </div>
+        <div class="dialog">
+          <div class="body"><strong>Sign out?</strong><br>Your streak is saved.</div>
+          <div class="dfoot"><button class="btn">Cancel</button><button class="btn ink">Sign out</button></div>
+        </div>
+      </div>
+    </template>
+    <section class="before"><div class="col-title">Before (today)</div></section>
+    <section class="after"><div class="col-title">After (sticker)</div></section>
+  </div>
+
+<script>
+  const tpl = document.getElementById('tpl');
+  for (const col of document.querySelectorAll('.before, .after')) col.append(tpl.content.cloneNode(true));
+  for (const input of document.querySelectorAll('input[type=range]')) {
+    input.addEventListener('input', () => {
+      document.documentElement.style.setProperty(input.dataset.var, input.value + 'px');
+      document.getElementById('v-' + input.dataset.var.slice(4)).textContent = input.value + 'px';
+    });
+  }
+</script>
+</body>
+</html>

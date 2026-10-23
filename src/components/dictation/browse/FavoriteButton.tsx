@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils'
 import { toggleFavoriteAction } from '@/modules/dictation/content/favoriteActions'
 
 const base =
-  'grid size-9 shrink-0 place-items-center border-2 border-manga-black bg-manga-white shadow-[2px_2px_0_var(--manga-black)]'
+  'grid size-9 shrink-0 place-items-center rounded-control border-2 border-manga-black bg-manga-white shadow-[2px_2px_0_var(--manga-black)]'
 
 export function FavoriteButton({
   videoId,

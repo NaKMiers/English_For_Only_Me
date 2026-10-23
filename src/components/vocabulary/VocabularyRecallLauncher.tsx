@@ -49,7 +49,7 @@ export function VocabularyRecallLauncher({ onOpenRecall, tasks }: Props) {
             {tasks.slice(0, 4).map(task => (
               <div
                 key={task.taskId}
-                className="border-manga-white/25 bg-manga-white/10 border-2 p-3"
+                className="border-manga-white/25 bg-manga-white/10 rounded-control border-2 p-3"
               >
                 <VocabTermHeader
                   entry={task.entry}

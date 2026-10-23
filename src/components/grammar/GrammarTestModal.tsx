@@ -142,7 +142,7 @@ export function GrammarTestModal({
   return (
     <MangaPanel
       action={
-        <span className="border-manga-black bg-manga-white border-2 px-2 py-0.5 font-sans text-xs font-black uppercase">
+        <span className="border-manga-black bg-manga-white rounded-tag border-2 px-2 py-0.5 font-sans text-xs font-black uppercase">
           {answered}/{questions.length} answered
         </span>
       }
@@ -151,11 +151,11 @@ export function GrammarTestModal({
     >
       <div className="flex flex-wrap items-center gap-2">
         <L1RiskTag l1Risk={question.l1Risk} />
-        <span className="border-manga-black border-2 px-2 py-0.5 font-sans text-xs font-black uppercase">
+        <span className="border-manga-black rounded-tag border-2 px-2 py-0.5 font-sans text-xs font-black uppercase">
           {question.cefrLevel}
         </span>
         {question.generated ? (
-          <span className="border-manga-black bg-manga-pale-red border-2 px-2 py-0.5 font-sans text-xs font-black uppercase">
+          <span className="border-manga-black bg-manga-pale-red rounded-tag border-2 px-2 py-0.5 font-sans text-xs font-black uppercase">
             Written for you
           </span>
         ) : null}
@@ -180,7 +180,7 @@ export function GrammarTestModal({
         </div>
       ) : (
         <textarea
-          className="border-manga-black bg-manga-white text-manga-black min-h-24 border-3 p-3 font-mono text-sm font-semibold"
+          className="border-manga-black bg-manga-white text-manga-black rounded-control min-h-24 border-3 p-3 font-mono text-sm font-semibold"
           onChange={event =>
             setAnswers(previous => ({
               ...previous,
@@ -193,7 +193,7 @@ export function GrammarTestModal({
       )}
 
       {message ? (
-        <p className="border-manga-black bg-manga-red text-manga-white border-3 p-3 text-sm font-black uppercase">
+        <p className="border-manga-black bg-manga-red text-manga-white rounded-control border-3 p-3 text-sm font-black uppercase">
           {message}
         </p>
       ) : null}

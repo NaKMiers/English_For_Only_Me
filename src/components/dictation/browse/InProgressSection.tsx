@@ -27,7 +27,7 @@ export function InProgressSection({
   const panelId = 'dictation-in-progress'
 
   return (
-    <div className="border-manga-black bg-manga-white border-3 shadow-[4px_4px_0_var(--manga-black)]">
+    <div className="border-manga-black bg-manga-white rounded-panel border-3 shadow-[4px_4px_0_var(--manga-black)]">
       <button
         type="button"
         aria-expanded={open}

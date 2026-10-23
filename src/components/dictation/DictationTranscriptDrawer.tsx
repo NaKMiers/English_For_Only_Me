@@ -43,15 +43,15 @@ function TranscriptSegmentList({
           key={segment.id}
           aria-current={segment.id === currentSegmentId ? 'step' : undefined}
           className={cn(
-            'border-manga-black bg-manga-white grid snap-start gap-2 border-2 p-3 shadow-[3px_3px_0_var(--manga-black)]',
+            'border-manga-black bg-manga-white rounded-control grid snap-start gap-2 border-2 p-3 shadow-[3px_3px_0_var(--manga-black)]',
             segment.id === currentSegmentId && 'bg-manga-paper-soft'
           )}
         >
           <div className="flex flex-wrap items-center gap-2">
-            <Badge className="border-manga-black bg-manga-white text-manga-black rounded-none border-2 font-black">
+            <Badge className="border-manga-black bg-manga-white text-manga-black rounded-tag border-2 font-black">
               #{segment.order + 1}
             </Badge>
-            <Badge className="border-manga-black bg-manga-pale-red text-manga-black rounded-none border-2 font-black">
+            <Badge className="border-manga-black bg-manga-pale-red text-manga-black rounded-tag border-2 font-black">
               {formatTiming(segment)}
             </Badge>
           </div>
@@ -69,7 +69,7 @@ export function DictationTranscriptDrawer({
 }: Props) {
   if (defaultOpen)
     return (
-      <div className="border-manga-black bg-manga-paper border-3">
+      <div className="border-manga-black bg-manga-paper rounded-panel overflow-hidden border-3">
         <TranscriptSegmentList
           currentSegmentId={currentSegmentId}
           segments={segments}

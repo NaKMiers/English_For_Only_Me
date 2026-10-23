@@ -49,7 +49,7 @@ export default async function DictationImportPage() {
       <div className="grid gap-5 p-3 sm:p-5">
         <section
           aria-labelledby="dictation-import-title"
-          className="border-manga-black bg-manga-white/92 grid min-w-0 overflow-hidden border-3 shadow-[6px_6px_0_var(--manga-black)]"
+          className="border-manga-black bg-manga-white/92 rounded-panel grid min-w-0 overflow-hidden border-3 shadow-[6px_6px_0_var(--manga-black)]"
         >
           <div className="border-manga-black bg-manga-white/90 flex min-w-0 flex-wrap items-start justify-between gap-4 border-b-3 p-4 sm:p-5">
             <div className="grid min-w-0 gap-3">

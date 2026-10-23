@@ -106,7 +106,7 @@ function Chip({
   return (
     <button
       aria-pressed={active}
-      className={`border-manga-black min-h-11 border-3 px-3 font-sans text-xs leading-tight font-black uppercase transition-shadow ${
+      className={`border-manga-black rounded-control min-h-11 border-3 px-3 font-sans text-xs leading-tight font-black uppercase transition-shadow ${
         active
           ? 'bg-manga-black text-manga-white shadow-none'
           : 'bg-manga-white text-manga-black shadow-[3px_3px_0_var(--manga-black)]'
@@ -320,7 +320,7 @@ export function GrammarTestConfigModal({
 
       {message ? (
         <p
-          className="border-manga-black bg-manga-pale-red text-manga-black border-3 p-3 text-sm leading-6 font-semibold"
+          className="border-manga-black bg-manga-pale-red text-manga-black rounded-control border-3 p-3 text-sm leading-6 font-semibold"
           role="status"
         >
           {message}

@@ -62,7 +62,7 @@ export function HomeFutureModuleMap() {
           meta={module.meta}
           status={module.status}
           action={
-            <span className="border-manga-black bg-manga-white grid size-8 shrink-0 place-items-center border-2">
+            <span className="border-manga-black bg-manga-white rounded-tag grid size-8 shrink-0 place-items-center border-2">
               {module.icon}
             </span>
           }

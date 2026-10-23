@@ -45,7 +45,7 @@ interface Props {
 }
 
 const controlClass =
-  'border-manga-black min-h-9 rounded-none border-2 bg-manga-white px-2 py-1 text-sm font-black'
+  'border-manga-black min-h-9 rounded-control border-2 bg-manga-white px-2 py-1 text-sm font-black'
 const VIDEO_ORDER_MIME = 'application/x-efom-admin-video-order'
 
 export function VideoAssignTable({ videos, topics, sections }: Props) {
@@ -160,7 +160,7 @@ export function VideoAssignTable({ videos, topics, sections }: Props) {
 
   return (
     <div className="grid gap-3">
-      <div className="border-manga-black bg-manga-paper-soft flex flex-wrap items-center gap-2 border-3 p-3">
+      <div className="border-manga-black bg-manga-paper-soft rounded-panel flex flex-wrap items-center gap-2 border-3 p-3">
         <span className="font-sans text-sm font-black">
           {selected.size} selected →
         </span>
@@ -325,7 +325,7 @@ export function VideoAssignTable({ videos, topics, sections }: Props) {
                     confirmTitle="Delete video?"
                     confirmMessage={`Delete "${video.title}"? This archives the video and removes it from admin and app lists.`}
                     confirmLabel="Delete video"
-                    className="focus:bg-manga-red focus:text-manga-white text-manga-red hover:bg-manga-red hover:text-manga-white flex min-h-11 w-full items-center gap-2 px-3 font-sans text-sm font-black whitespace-nowrap transition-colors"
+                    className="focus:bg-manga-red focus:text-manga-white text-manga-red hover:bg-manga-red hover:text-manga-white rounded-tag flex min-h-11 w-full items-center gap-2 px-3 font-sans text-sm font-black whitespace-nowrap transition-colors"
                   >
                     <Trash2
                       aria-hidden="true"

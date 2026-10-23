@@ -43,7 +43,10 @@ export function MangaButton(props: Props) {
     // the hover background is pale red for every tone, so `ink` (white text on
     // black) hovered into white-on-pale-pink and the label disappeared. Same
     // pairing the admin confirm button already used by hand.
-    'inline-flex min-h-11 max-w-full items-center justify-center gap-2 border-3 border-manga-black px-4 py-2 font-sans text-sm leading-tight font-black tracking-normal shadow-[3px_3px_0_var(--manga-black)] transition-[background,box-shadow,transform,color] duration-150 hover:bg-manga-pale-red hover:text-manga-black active:translate-x-[3px] active:translate-y-[3px] active:shadow-none disabled:opacity-55',
+    // `active:not-aria-[haspopup]:translate-y-[3px]` replaces buttonVariants'
+    // 1px nudge, which out-specifies a plain `active:translate-y-*` and left the
+    // press landing 2px short of the shadow.
+    'inline-flex min-h-11 max-w-full items-center justify-center gap-2 border-3 border-manga-black px-4 py-2 font-sans text-sm leading-tight font-black tracking-normal shadow-[3px_3px_0_var(--manga-black)] sticker-press hover:bg-manga-pale-red hover:text-manga-black active:translate-x-[3px] active:translate-y-[3px] active:not-aria-[haspopup]:translate-y-[3px] active:shadow-none disabled:opacity-55',
     toneClassName[tone],
     className
   )

@@ -229,7 +229,7 @@ function Legend({
 }) {
   return (
     <div className="flex items-center gap-2">
-      <dt className="border-comic-ink flex h-6 w-6 shrink-0 items-center justify-center border-2">
+      <dt className="border-comic-ink rounded-tag flex h-6 w-6 shrink-0 items-center justify-center border-2">
         <StateDial
           fill={fill}
           kind={kind}

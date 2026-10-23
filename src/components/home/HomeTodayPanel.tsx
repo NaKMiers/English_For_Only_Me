@@ -51,7 +51,7 @@ export function HomeTodayPanel({ dictationStats = null }: Props) {
               key={task.order}
               className="border-manga-black grid min-h-12 grid-cols-[38px_1fr_auto] items-center gap-2 border-b-2 py-2 max-[520px]:grid-cols-1 max-[520px]:items-start"
             >
-              <span className="border-manga-black bg-manga-white grid size-8 place-items-center border-2 font-black">
+              <span className="border-manga-black bg-manga-white rounded-tag grid size-8 place-items-center border-2 font-black">
                 {task.order}
               </span>
               <strong className="font-sans text-base leading-tight font-black wrap-break-word uppercase">

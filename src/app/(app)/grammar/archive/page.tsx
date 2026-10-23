@@ -122,17 +122,17 @@ export default async function GrammarArchivePage({
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2 font-sans text-xs font-black uppercase">
-                  <span className="border-comic-ink border-2 px-2 py-0.5">
+                  <span className="border-comic-ink rounded-tag border-2 px-2 py-0.5">
                     {row.cefrLevel}
                   </span>
-                  <span className="border-comic-ink border-2 px-2 py-0.5">
+                  <span className="border-comic-ink rounded-tag border-2 px-2 py-0.5">
                     {GRAMMAR_FAMILY_LABELS[row.family as GrammarFamily]}
                   </span>
-                  <span className="border-comic-ink border-2 px-2 py-0.5">
+                  <span className="border-comic-ink rounded-tag border-2 px-2 py-0.5">
                     stage {row.recallStage}/7
                   </span>
                   {row.isUnverified ? (
-                    <span className="border-comic-ink border-2 border-dashed px-2 py-0.5">
+                    <span className="border-comic-ink rounded-tag border-2 border-dashed px-2 py-0.5">
                       ghost - lesson unread
                     </span>
                   ) : null}

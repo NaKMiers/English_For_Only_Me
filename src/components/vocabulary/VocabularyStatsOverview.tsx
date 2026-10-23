@@ -55,7 +55,7 @@ export function VocabularyStatsOverview({ stats }: Props) {
         >
           <Progress
             value={progress}
-            className="border-manga-black bg-manga-paper-soft h-4 rounded-none border-2"
+            className="border-manga-black bg-manga-paper-soft rounded-tag h-4 border-2"
           />
           <div className="grid min-h-32 grid-cols-7 items-end gap-2 sm:grid-cols-14">
             {stats.dailyGrowth.map(point => (
@@ -64,7 +64,7 @@ export function VocabularyStatsOverview({ stats }: Props) {
                 className="grid min-w-0 gap-1"
               >
                 <div
-                  className="border-manga-black bg-manga-red min-h-2 border-2"
+                  className="border-manga-black bg-manga-red rounded-tag min-h-2 border-2"
                   style={{
                     height: `${Math.max(8, (point.count / maxGrowth) * 96)}px`,
                   }}
@@ -87,7 +87,7 @@ export function VocabularyStatsOverview({ stats }: Props) {
               {stats.hardestWords.map(word => (
                 <div
                   key={word.vocabEntryId}
-                  className="border-manga-black bg-manga-paper-soft grid gap-2 border-2 p-3"
+                  className="border-manga-black bg-manga-paper-soft rounded-control grid gap-2 border-2 p-3"
                 >
                   <VocabTermHeader
                     headingClassName="text-xl"

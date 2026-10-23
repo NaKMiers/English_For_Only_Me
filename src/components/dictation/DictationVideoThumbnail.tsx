@@ -53,7 +53,7 @@ export function DictationVideoThumbnail({
   return (
     <div
       className={cn(
-        'border-manga-black bg-manga-paper-soft relative aspect-video w-full overflow-hidden border-2 shadow-[3px_3px_0_var(--manga-black)]',
+        'border-manga-black bg-manga-paper-soft rounded-control relative aspect-video w-full overflow-hidden border-2 shadow-[3px_3px_0_var(--manga-black)]',
         className
       )}
     >

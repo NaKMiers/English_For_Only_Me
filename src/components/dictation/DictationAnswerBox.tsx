@@ -29,7 +29,7 @@ export function DictationAnswerBox({
   return (
     <section
       aria-label="Dictation answer"
-      className="border-manga-black bg-manga-white grid min-w-0 gap-3 border-2 p-3 shadow-[3px_3px_0_var(--manga-black)]"
+      className="border-manga-black bg-manga-white rounded-panel grid min-w-0 gap-3 border-2 p-3 shadow-[3px_3px_0_var(--manga-black)]"
     >
       <div className="flex items-center justify-between gap-3">
         <h2 className="font-sans text-lg leading-tight font-black tracking-normal">
@@ -48,7 +48,7 @@ export function DictationAnswerBox({
         value={answer}
         onChange={event => onAnswerChange(event.target.value)}
         placeholder="Type what you hear..."
-        className="border-manga-black bg-manga-white min-h-36 rounded-none border-2 text-xl leading-8 font-semibold shadow-[2px_2px_0_var(--manga-black)]"
+        className="border-manga-black bg-manga-white rounded-control min-h-36 border-2 text-xl leading-8 font-semibold shadow-[2px_2px_0_var(--manga-black)]"
       />
       <div className="flex flex-wrap gap-2">
         <MangaButton
@@ -94,7 +94,7 @@ export function DictationAnswerBox({
         </MangaButton>
       </div>
       {revealed ? (
-        <div className="border-manga-black bg-manga-paper-soft border-2 p-3 text-base leading-7 font-semibold shadow-[2px_2px_0_var(--manga-black)]">
+        <div className="border-manga-black bg-manga-paper-soft rounded-control border-2 p-3 text-base leading-7 font-semibold shadow-[2px_2px_0_var(--manga-black)]">
           {segmentText}
         </div>
       ) : null}

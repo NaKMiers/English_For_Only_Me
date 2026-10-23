@@ -62,7 +62,7 @@ export function AdminGrammarPanel({
   return (
     <div className="grid gap-4">
       {message ? (
-        <p className="border-manga-black bg-manga-red text-manga-white border-3 p-3 text-sm font-black uppercase">
+        <p className="border-manga-black bg-manga-red text-manga-white rounded-control border-3 p-3 text-sm font-black uppercase">
           {message}
         </p>
       ) : null}
@@ -80,7 +80,7 @@ export function AdminGrammarPanel({
         >
           <div className="flex flex-wrap items-center gap-2">
             <L1RiskTag l1Risk={point.l1Risk} />
-            <span className="border-manga-black border-2 px-2 py-0.5 font-sans text-xs font-black uppercase">
+            <span className="border-manga-black rounded-tag border-2 px-2 py-0.5 font-sans text-xs font-black uppercase">
               {point.cefrLevel} - difficulty {point.complexity}/5
             </span>
           </div>
@@ -100,7 +100,7 @@ export function AdminGrammarPanel({
               Open Lesson
             </MangaButton>
             {done.has(point.slug) ? (
-              <span className="border-manga-black bg-manga-white inline-flex min-h-11 items-center border-3 px-4 font-sans text-sm font-black uppercase">
+              <span className="border-manga-black bg-manga-white rounded-control inline-flex min-h-11 items-center border-3 px-4 font-sans text-sm font-black uppercase">
                 Marked reviewed
               </span>
             ) : (

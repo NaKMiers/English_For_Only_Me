@@ -115,6 +115,32 @@
   --comic-known: #12703a;
   --comic-halftone: rgba(5, 5, 5, 0.22);
   --comic-fog: rgba(5, 5, 5, 0.1);
+
+  /* ----------------------------------------------------------
+     STICKER CORNERS - the one knob for how soft the app feels.
+     Every block is a die-cut sticker: same 3px ink, same hard
+     offset shadow, rounded by ROLE so radius encodes nesting
+     (shell > panel > control > tag). Mapped into `@theme inline`
+     below as `rounded-shell/panel/control/tag`; CSS rules read
+     the same vars. Set all four to 0 to get the square app back.
+     Theme-independent, so light-up inherits them untouched.
+     ---------------------------------------------------------- */
+  --sticker-shell: 20px;
+  --sticker-panel: 14px;
+  --sticker-control: 10px;
+  --sticker-tag: 6px;
+  /* Press = a small squish (overshoot); release = no overshoot, so the
+     1000th tap does not wobble. See `.sticker-press`. */
+  --sticker-ease: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --sticker-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* On a phone the shell sits 12px from an already-curved screen edge, so its
+   corner drops to the panel size. Only the shell changes. */
+@media (max-width: 639px) {
+  :root {
+    --sticker-shell: 14px;
+  }
 }
 
 /* ============================================================
@@ -226,6 +252,10 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  --radius-shell: var(--sticker-shell);
+  --radius-panel: var(--sticker-panel);
+  --radius-control: var(--sticker-control);
+  --radius-tag: var(--sticker-tag);
   --font-sans: var(--font-montserrat);
   --font-body: var(--font-source-sans);
   --spacing-21: 21px;
@@ -326,6 +356,7 @@ body {
 :root[data-theme='lightup'] .page-hero {
   background-color: var(--manga-white);
   border: 3px solid var(--manga-black);
+  border-radius: var(--sticker-panel);
   box-shadow: 4px 4px 0 var(--manga-black);
   padding: 1rem 1.25rem;
 }
@@ -484,6 +515,49 @@ body {
   box-shadow:
     8px 8px 0 var(--manga-offset),
     18px 18px 0 rgba(0, 0, 0, 0.35);
+}
+
+/* The sticker press. Unlayered on purpose: it has to beat the `transition-all`
+   that MangaButton/IconButton inherit from `buttonVariants`, which tailwind-merge
+   cannot strip because it does not know this class is a transition.
+   - `translate` is listed explicitly: Tailwind v4 `translate-*` utilities set
+     the standalone `translate` property, not `transform`, so a transition on
+     `transform` alone lets the press snap.
+   - The transition on the state being ENTERED is the one that runs, so
+     `:active` carries the squish (press) and the base carries the plain
+     ease-out (release). */
+.sticker-press {
+  transition:
+    translate 180ms var(--sticker-ease-out),
+    transform 180ms var(--sticker-ease-out),
+    box-shadow 180ms var(--sticker-ease-out),
+    background-color 150ms linear,
+    color 150ms linear;
+}
+.sticker-press:active {
+  transition:
+    translate 180ms var(--sticker-ease),
+    transform 180ms var(--sticker-ease),
+    box-shadow 180ms var(--sticker-ease),
+    background-color 150ms linear,
+    color 150ms linear;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sticker-press,
+  .sticker-press:active {
+    transition:
+      background-color 150ms linear,
+      color 150ms linear;
+  }
+}
+
+/* The retints above are unlayered, so they also beat the layered
+   `active:shadow-none`: in light-up a pressed button slid with its ledge and
+   never flattened. `:active` puts this one point above the retints (0,4,0 vs
+   0,3,0); keep it after them anyway so a later edit to either never has to
+   reason about the tie. */
+:root[data-theme='lightup'] .sticker-press:active {
+  box-shadow: none;
 }
 
 /* Warm sepia borders in light-up: the black ink border vanished against the

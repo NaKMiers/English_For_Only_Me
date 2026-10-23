@@ -51,7 +51,7 @@ export function AppTopbar({
           width={58}
           height={58}
           priority
-          className="border-manga-black bg-manga-white size-14 border-3 object-contain shadow-[4px_4px_0_var(--manga-black)]"
+          className="border-manga-black bg-manga-white rounded-control size-14 border-3 object-contain shadow-[4px_4px_0_var(--manga-black)]"
         />
         <span className="grid min-w-0 gap-1">
           <strong className="font-sans text-[clamp(1.05rem,3.5vw,1.5rem)] leading-tight font-black tracking-normal text-balance uppercase sm:text-[clamp(1.1rem,1.8vw,1.6rem)]">
@@ -73,7 +73,7 @@ export function AppTopbar({
               key={item.href}
               aria-disabled="true"
               title="Coming soon"
-              className="border-manga-black bg-manga-white/70 text-manga-ink-soft inline-flex min-h-11 shrink-0 cursor-not-allowed items-center border-3 px-3 font-sans text-sm font-black whitespace-nowrap opacity-70 shadow-[3px_3px_0_var(--manga-black)] snap-start"
+              className="border-manga-black bg-manga-white/70 text-manga-ink-soft rounded-control inline-flex min-h-11 shrink-0 cursor-not-allowed snap-start items-center border-3 px-3 font-sans text-sm font-black whitespace-nowrap opacity-70 shadow-[3px_3px_0_var(--manga-black)]"
             >
               {item.label}
             </span>
@@ -82,7 +82,7 @@ export function AppTopbar({
               key={item.href}
               href={item.href}
               aria-current={item.href === activeHref ? 'page' : undefined}
-              className="border-manga-black bg-manga-white hover:bg-manga-paper-soft aria-[current=page]:bg-manga-paper-soft inline-flex min-h-11 shrink-0 items-center border-3 px-3 font-sans text-sm font-black whitespace-nowrap shadow-[3px_3px_0_var(--manga-black)] transition-colors snap-start"
+              className="border-manga-black bg-manga-white hover:bg-manga-paper-soft aria-[current=page]:bg-manga-paper-soft rounded-control inline-flex min-h-11 shrink-0 snap-start items-center border-3 px-3 font-sans text-sm font-black whitespace-nowrap shadow-[3px_3px_0_var(--manga-black)] transition-colors"
             >
               {item.label}
             </Link>

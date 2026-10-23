@@ -300,8 +300,8 @@ export function DictationCaptionManager({
         <Badge
           className={
             isReady
-              ? 'border-manga-black bg-manga-white text-manga-black rounded-none border-2 font-black'
-              : 'border-manga-black bg-manga-pale-red text-manga-black rounded-none border-2 font-black'
+              ? 'border-manga-black bg-manga-white text-manga-black rounded-tag border-2 font-black'
+              : 'border-manga-black bg-manga-pale-red text-manga-black rounded-tag border-2 font-black'
           }
         >
           {isReady ? (
@@ -376,7 +376,7 @@ export function DictationCaptionManager({
         </div>
       ) : null}
 
-      <div className="border-manga-black bg-manga-paper-soft grid gap-3 border-2 p-3 shadow-[3px_3px_0_var(--manga-black)]">
+      <div className="border-manga-black bg-manga-paper-soft rounded-control grid gap-3 border-2 p-3 shadow-[3px_3px_0_var(--manga-black)]">
         <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
           <div className="grid gap-2">
             <span className="font-sans text-xs font-black tracking-normal uppercase">
@@ -429,13 +429,13 @@ export function DictationCaptionManager({
                 if (isValidTranslationLanguage(event.target.value))
                   selectLanguage(event.target.value)
               }}
-              className="border-manga-black bg-manga-white min-h-11 rounded-none border-3 font-semibold shadow-[3px_3px_0_var(--manga-black)]"
+              className="border-manga-black bg-manga-white rounded-control min-h-11 border-3 font-semibold shadow-[3px_3px_0_var(--manga-black)]"
             />
           </div>
         </div>
 
         {languageCode.trim() ? (
-          <Badge className="border-manga-black bg-manga-white text-manga-black w-fit rounded-none border-2 font-black">
+          <Badge className="border-manga-black bg-manga-white text-manga-black rounded-tag w-fit border-2 font-black">
             {getLanguageLabel(languageCode)}
             {normalizeTranslationLanguage(languageCode) === primaryLanguage
               ? ' - dictation source'
@@ -464,7 +464,7 @@ export function DictationCaptionManager({
           >
             Choose File
           </MangaButton>
-          <div className="border-manga-black bg-manga-white min-w-0 border-2 px-3 py-2 text-sm leading-6 font-black shadow-[2px_2px_0_var(--manga-black)]">
+          <div className="border-manga-black bg-manga-white rounded-control min-w-0 border-2 px-3 py-2 text-sm leading-6 font-black shadow-[2px_2px_0_var(--manga-black)]">
             {fileName ?? 'No caption file selected'}
           </div>
         </div>
@@ -487,7 +487,7 @@ export function DictationCaptionManager({
               setFileName(null)
               if (fileInputRef.current) fileInputRef.current.value = ''
             }}
-            className="border-manga-black bg-manga-white max-h-96 min-h-40 overflow-y-auto rounded-none border-3 text-base leading-6 font-semibold shadow-[3px_3px_0_var(--manga-black)]"
+            className="border-manga-black bg-manga-white rounded-control max-h-96 min-h-40 overflow-y-auto border-3 text-base leading-6 font-semibold shadow-[3px_3px_0_var(--manga-black)]"
           />
           <p className="text-manga-ink-soft text-xs leading-5 font-semibold">
             Timed (SRT/VTT) captions align to sentences during practice. Plain
@@ -518,7 +518,7 @@ export function DictationCaptionManager({
       {errorMessage ? (
         <div
           role="status"
-          className="border-manga-black bg-manga-pale-red border-2 p-3 text-sm leading-6 font-black shadow-[3px_3px_0_var(--manga-black)]"
+          className="border-manga-black bg-manga-pale-red rounded-control border-2 p-3 text-sm leading-6 font-black shadow-[3px_3px_0_var(--manga-black)]"
         >
           {errorMessage}
         </div>
@@ -526,7 +526,7 @@ export function DictationCaptionManager({
       {message ? (
         <div
           role="status"
-          className="border-manga-black bg-manga-white border-2 p-3 text-sm leading-6 font-black shadow-[3px_3px_0_var(--manga-black)]"
+          className="border-manga-black bg-manga-white rounded-control border-2 p-3 text-sm leading-6 font-black shadow-[3px_3px_0_var(--manga-black)]"
         >
           {message}
         </div>

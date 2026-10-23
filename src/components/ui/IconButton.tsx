@@ -34,7 +34,7 @@ export function IconButton(props: Props) {
   const { children, className, label, title = label } = props
   const sharedClassName = cn(
     buttonVariants({ variant: 'outline', size: 'icon-lg' }),
-    'inline-grid size-11 shrink-0 place-items-center border-3 border-manga-black bg-manga-white text-manga-black shadow-[3px_3px_0_var(--manga-black)] transition-[background,box-shadow,transform] duration-150 hover:bg-manga-paper-soft active:translate-x-[3px] active:translate-y-[3px] active:shadow-none disabled:opacity-55',
+    'inline-grid size-11 shrink-0 place-items-center border-3 border-manga-black bg-manga-white text-manga-black shadow-[3px_3px_0_var(--manga-black)] sticker-press hover:bg-manga-paper-soft active:translate-x-[3px] active:translate-y-[3px] active:not-aria-[haspopup]:translate-y-[3px] active:shadow-none disabled:opacity-55',
     className
   )
 

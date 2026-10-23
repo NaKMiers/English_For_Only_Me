@@ -194,7 +194,7 @@ function DojoTally({
   value: string
 }) {
   return (
-    <div className="border-comic-ink bg-comic-paper grid gap-1 border-3 p-3 shadow-[4px_4px_0_var(--manga-offset)]">
+    <div className="border-comic-ink bg-comic-paper rounded-panel grid gap-1 border-3 p-3 shadow-[4px_4px_0_var(--manga-offset)]">
       <span className="text-manga-ink-soft font-sans text-[0.65rem] leading-none font-black tracking-[0.12em] uppercase">
         {label}
       </span>

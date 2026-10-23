@@ -59,10 +59,10 @@ const tokenClassName = {
 
 function PracticePlayerSketch() {
   return (
-    <div className="border-manga-black bg-manga-pale-red grid min-w-0 gap-3 border-3 p-3 shadow-[4px_4px_0_var(--manga-black)]">
+    <div className="border-manga-black bg-manga-pale-red rounded-panel grid min-w-0 gap-3 border-3 p-3 shadow-[4px_4px_0_var(--manga-black)]">
       <div
         aria-label="Video practice player"
-        className="border-manga-black bg-manga-white min-h-56 overflow-hidden border-3"
+        className="border-manga-black bg-manga-white rounded-control min-h-56 overflow-hidden border-3"
       >
         <svg
           role="img"
@@ -137,7 +137,7 @@ function PracticePlayerSketch() {
           aria-label="Sentence playback progress"
           className="min-w-32 flex-1"
         />
-        <span className="border-manga-black bg-manga-white min-h-10 border-2 px-3 py-2 text-sm font-black shadow-[2px_2px_0_var(--manga-black)]">
+        <span className="border-manga-black bg-manga-white rounded-control min-h-10 border-2 px-3 py-2 text-sm font-black shadow-[2px_2px_0_var(--manga-black)]">
           07 / 18
         </span>
       </div>
@@ -178,7 +178,7 @@ export function DictationPracticeScene() {
                 <span
                   key={token.id}
                   className={cn(
-                    'border-manga-black inline-flex min-h-9 items-center border-2 px-3 py-1 text-base font-black shadow-[2px_2px_0_var(--manga-black)]',
+                    'border-manga-black rounded-tag inline-flex min-h-9 items-center border-2 px-3 py-1 text-base font-black shadow-[2px_2px_0_var(--manga-black)]',
                     tokenClassName[token.state]
                   )}
                 >
@@ -186,7 +186,7 @@ export function DictationPracticeScene() {
                 </span>
               ))}
             </div>
-            <div className="border-manga-black bg-manga-pale-red grid gap-2 border-2 p-3">
+            <div className="border-manga-black bg-manga-pale-red rounded-control grid gap-2 border-2 p-3">
               <strong className="font-sans text-sm font-black uppercase">
                 Translation after effort
               </strong>
@@ -202,7 +202,7 @@ export function DictationPracticeScene() {
           title="Sentence typing"
           className="shadow-[3px_3px_0_var(--manga-black)]"
         >
-          <div className="border-manga-black bg-manga-pale-red border-2 p-3 text-base leading-7 font-black">
+          <div className="border-manga-black bg-manga-pale-red rounded-control border-2 p-3 text-base leading-7 font-black">
             {DICTATION_PRACTICE.currentSentence}
           </div>
           <Textarea
@@ -212,7 +212,7 @@ export function DictationPracticeScene() {
             autoCapitalize="off"
             value={answer}
             onChange={event => setAnswer(event.target.value)}
-            className="border-manga-black bg-manga-white min-h-28 rounded-none border-3 text-base leading-7 font-semibold shadow-[3px_3px_0_var(--manga-black)]"
+            className="border-manga-black bg-manga-white rounded-control min-h-28 border-3 text-base leading-7 font-semibold shadow-[3px_3px_0_var(--manga-black)]"
           />
           <div className="flex flex-wrap gap-3">
             <MangaButton

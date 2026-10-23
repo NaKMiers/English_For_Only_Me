@@ -38,7 +38,7 @@ export function ModuleCard({
 }: Props) {
   const content = (
     <>
-      <CardHeader className="!grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-start gap-3 rounded-none p-0">
+      <CardHeader className="!grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-start gap-3 p-0">
         <div className="min-w-0">
           {pageTag ? (
             <PageTag tone={statusTone[status]}>{pageTag}</PageTag>
@@ -58,7 +58,7 @@ export function ModuleCard({
           {description}
         </p>
       </CardContent>
-      <CardFooter className="border-manga-black/45 mt-auto flex min-w-0 flex-wrap items-center justify-between gap-3 rounded-none border-t-2 border-dashed bg-transparent p-0 pt-3">
+      <CardFooter className="border-manga-black/45 mt-auto flex min-w-0 flex-wrap items-center justify-between gap-3 border-t-2 border-dashed bg-transparent p-0 pt-3">
         {skill ? (
           <span className="text-xs font-black tracking-normal uppercase">
             {skill}
@@ -70,7 +70,7 @@ export function ModuleCard({
   )
 
   const cardClassName = cn(
-    'grid min-h-56 gap-4 rounded-none border-3 border-manga-black bg-manga-white p-4 py-4 text-manga-black shadow-[4px_4px_0_var(--manga-black)] ring-0 transition-[background,box-shadow,transform] duration-150',
+    'grid min-h-56 gap-4 rounded-panel border-3 border-manga-black bg-manga-white p-4 py-4 text-manga-black shadow-[4px_4px_0_var(--manga-black)] ring-0 sticker-press',
     href &&
       'hover:bg-manga-paper-soft active:translate-x-1 active:translate-y-1 active:shadow-none',
     className

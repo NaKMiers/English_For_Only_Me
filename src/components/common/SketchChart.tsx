@@ -28,7 +28,7 @@ export function SketchChart({ className, label, points = [] }: Props) {
   return (
     <figure
       className={cn(
-        'border-manga-black bg-manga-white grid min-h-44 min-w-0 gap-3 border-3 p-4 shadow-[4px_4px_0_var(--manga-black)]',
+        'border-manga-black bg-manga-white rounded-panel grid min-h-44 min-w-0 gap-3 border-3 p-4 shadow-[4px_4px_0_var(--manga-black)]',
         className
       )}
     >

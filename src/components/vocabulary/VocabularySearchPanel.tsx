@@ -54,7 +54,7 @@ export function VocabularySearchPanel({
       >
         <Input
           aria-label="Search vocabulary term"
-          className="border-manga-black bg-manga-white h-14 rounded-none border-3 px-4 font-sans text-lg font-black shadow-[4px_4px_0_var(--manga-black)]"
+          className="border-manga-black bg-manga-white rounded-control h-14 border-3 px-4 font-sans text-lg font-black shadow-[4px_4px_0_var(--manga-black)]"
           onChange={event => onQueryChange(event.target.value)}
           placeholder="Search any word..."
           type="search"
@@ -71,7 +71,7 @@ export function VocabularySearchPanel({
       </form>
 
       {selectedEntry ? (
-        <div className="border-manga-black bg-manga-white grid gap-3 border-3 p-4 shadow-[3px_3px_0_var(--manga-black)]">
+        <div className="border-manga-black bg-manga-white rounded-control grid gap-3 border-3 p-4 shadow-[3px_3px_0_var(--manga-black)]">
           <VocabTermHeader
             entry={selectedEntry.entry}
             speakTerm={speakTerm}
@@ -83,7 +83,7 @@ export function VocabularySearchPanel({
               : ''}
           </p>
 
-          <div className="border-manga-black bg-manga-paper-soft border-3 p-3 text-right">
+          <div className="border-manga-black bg-manga-paper-soft rounded-tag border-3 p-3 text-right">
             <p className="text-xs font-black uppercase">Vietnamese meaning</p>
             <p className="mt-1 text-base leading-7 font-black">
               {getRequiredVietnameseMeaning(selectedEntry.entry)}
@@ -94,7 +94,7 @@ export function VocabularySearchPanel({
             {selectedEntry.entry.definitions.slice(0, 3).map(definition => (
               <div
                 key={`${definition.partOfSpeech}:${definition.definition}`}
-                className="border-manga-black bg-manga-white border-2 p-3"
+                className="border-manga-black bg-manga-white rounded-tag border-2 p-3"
               >
                 <p className="text-manga-ink-soft text-xs font-black uppercase">
                   English definition
@@ -167,7 +167,7 @@ export function VocabularySearchPanel({
           {searchResults.map(result => (
             <div
               key={result.entry.id}
-              className="border-manga-black bg-manga-white grid gap-2 border-2 p-3 shadow-[2px_2px_0_var(--manga-black)]"
+              className="border-manga-black bg-manga-white rounded-control grid gap-2 border-2 p-3 shadow-[2px_2px_0_var(--manga-black)]"
             >
               <VocabTermHeader
                 entry={result.entry}

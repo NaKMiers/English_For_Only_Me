@@ -153,3 +153,21 @@ better later, not because they should be revisited now.
   fixed beat order with absent beats collapsed. Reordering by learner state (lead with
   `scar` when `wrongCount` is high, lead with `hook` when untouched) needs a feel for the
   pacing first. S/S.
+
+## Deferred After Sticker Manga Design Review (2026-10-23)
+
+### Write A DESIGN.md
+
+- **What:** Run `/design-consultation` to produce a root `DESIGN.md` covering the manga
+  palette, Montserrat/Source Sans type, ink borders, hard offset shadows, and the sticker
+  role radii (`--sticker-shell/panel/control/tag`) plus `sticker-press`.
+- **Why:** The design system lives across `src/app/globals.css`,
+  `.agents/rules/frontend-ui.md`, and `docs/06-frontend.md`. Every gstack design skill
+  calibrates against `DESIGN.md` and flags its absence on each run.
+- **Pros:** One canonical source for future design reviews and new screens.
+- **Cons:** A separate ~30 min CC session; covers more than corners (type, colour, spacing).
+- **Context:** The sticker restyle (`docs/designs/sticker-manga-corners.md`, design review
+  5.1) chose to record its vocabulary in the agent rules file instead of creating a
+  DESIGN.md, to keep the restyle small.
+- **Depends on / blocked by:** Best after the sticker restyle ships, so the tokens it
+  documents are real.

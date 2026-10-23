@@ -48,7 +48,7 @@ const GROUP_LABEL_CLASS_NAME =
   'text-manga-ink-soft px-3 pt-1 font-sans text-[0.65rem] font-black uppercase'
 
 const RADIO_ITEM_CLASS_NAME =
-  'focus:bg-manga-paper-soft data-checked:bg-manga-paper-soft min-h-9 rounded-none py-1 pr-8 pl-3 font-sans text-xs font-black'
+  'focus:bg-manga-paper-soft data-checked:bg-manga-paper-soft min-h-9 rounded-tag py-1 pr-8 pl-3 font-sans text-xs font-black'
 
 /**
  * Playback speed, answer text size, and video size behind one popover.
@@ -72,7 +72,7 @@ export function DictationSettingsMenu({
       <DropdownMenuTrigger
         aria-label="Playback and display settings"
         title="Playback and display settings"
-        className="border-manga-black bg-manga-white text-manga-black hover:bg-manga-paper-soft inline-flex min-h-9 shrink-0 items-center gap-1 border-2 px-2 font-sans text-xs font-black shadow-[2px_2px_0_var(--manga-black)] transition-colors"
+        className="border-manga-black bg-manga-white text-manga-black hover:bg-manga-paper-soft rounded-control inline-flex min-h-9 shrink-0 items-center gap-1 border-2 px-2 font-sans text-xs font-black shadow-[2px_2px_0_var(--manga-black)] transition-colors"
       >
         <SlidersHorizontal
           aria-hidden="true"

@@ -105,7 +105,7 @@ export function AdminVocabPanel({ initialQueue, mongoConfigured }: Props) {
         </div>
         <button
           aria-label="Refresh vocabulary queue"
-          className="border-manga-black bg-manga-white hover:bg-manga-paper-soft inline-grid size-11 shrink-0 place-items-center border-3 shadow-[3px_3px_0_var(--manga-black)] transition-[background,box-shadow,transform] duration-150 active:translate-x-[3px] active:translate-y-[3px] active:shadow-none disabled:opacity-55"
+          className="border-manga-black bg-manga-white hover:bg-manga-paper-soft rounded-control sticker-press inline-grid size-11 shrink-0 place-items-center border-3 shadow-[3px_3px_0_var(--manga-black)] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none disabled:opacity-55"
           disabled={isLoading}
           onClick={() => refreshQueue()}
           title="Refresh vocabulary queue"
@@ -148,7 +148,7 @@ export function AdminVocabPanel({ initialQueue, mongoConfigured }: Props) {
         <div className="grid gap-3 sm:grid-cols-[180px_minmax(0,1fr)]">
           <Input
             aria-label="Vocabulary enrich limit"
-            className="border-manga-black bg-manga-white h-12 rounded-none border-3 px-3 font-sans font-black shadow-[3px_3px_0_var(--manga-black)]"
+            className="border-manga-black bg-manga-white rounded-control h-12 border-3 px-3 font-sans font-black shadow-[3px_3px_0_var(--manga-black)]"
             max={10}
             min={1}
             onChange={event => setLimit(Number(event.target.value))}
@@ -171,12 +171,12 @@ export function AdminVocabPanel({ initialQueue, mongoConfigured }: Props) {
         </p>
 
         {message ? (
-          <div className="border-manga-black bg-manga-paper-soft border-3 p-3 text-sm font-black">
+          <div className="border-manga-black bg-manga-paper-soft rounded-control border-3 p-3 text-sm font-black">
             {message}
           </div>
         ) : null}
         {error ? (
-          <div className="border-manga-black bg-manga-pale-red border-3 p-3 text-sm font-black">
+          <div className="border-manga-black bg-manga-pale-red rounded-control border-3 p-3 text-sm font-black">
             {error}
           </div>
         ) : null}

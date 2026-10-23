@@ -123,7 +123,7 @@ const VIDEO_GRID_CLASS_NAME: Record<string, string> = {
 }
 
 const PRACTICE_TAB_TRIGGER_CLASS_NAME =
-  'border-manga-black text-manga-ink-soft bg-manga-white shadow-[2px_2px_0_var(--manga-black)] hover:bg-manga-paper-soft focus-visible:ring-manga-red/35 data-active:bg-manga-red! data-active:text-manga-white! data-active:shadow-[4px_4px_0_var(--manga-black)]! data-active:-translate-x-[2px] data-active:-translate-y-[2px] !h-auto min-h-8 flex-1 rounded-none border-2 px-2.5 py-1 font-sans text-xs font-black transition-all after:hidden sm:flex-none'
+  'border-manga-black text-manga-ink-soft bg-manga-white shadow-[2px_2px_0_var(--manga-black)] hover:bg-manga-paper-soft focus-visible:ring-manga-red/35 data-active:bg-manga-red! data-active:text-manga-white! data-active:shadow-[4px_4px_0_var(--manga-black)]! data-active:-translate-x-[2px] data-active:-translate-y-[2px] !h-auto min-h-8 flex-1 rounded-control border-2 px-2.5 py-1 font-sans text-xs font-black transition-all after:hidden sm:flex-none'
 
 export function DictationPracticeShell({
   completions,
@@ -991,7 +991,7 @@ export function DictationPracticeShell({
           if (!open) setPendingLeaveHref(null)
         }}
       >
-        <DialogContent className="border-manga-black bg-manga-white rounded-none border-3 shadow-[6px_6px_0_var(--manga-black)]">
+        <DialogContent className="border-manga-black bg-manga-white rounded-panel border-3 shadow-[6px_6px_0_var(--manga-black)]">
           <DialogHeader>
             <DialogTitle className="font-sans text-xl leading-tight font-black tracking-normal uppercase">
               Leave this practice?
@@ -1002,7 +1002,7 @@ export function DictationPracticeShell({
             </DialogDescription>
           </DialogHeader>
 
-          <DialogFooter className="bg-manga-paper-soft border-manga-black rounded-none border-t-3">
+          <DialogFooter className="bg-manga-paper-soft border-manga-black border-t-3">
             <MangaButton
               type="button"
               tone="paper"
@@ -1026,7 +1026,7 @@ export function DictationPracticeShell({
         </DialogContent>
       </Dialog>
 
-      <section className="border-manga-black bg-manga-white flex h-full min-h-0 min-w-0 flex-col gap-2 border-3 p-2 shadow-[5px_5px_0_var(--manga-black)] sm:p-3">
+      <section className="border-manga-black bg-manga-white rounded-panel flex h-full min-h-0 min-w-0 flex-col gap-2 border-3 p-2 shadow-[5px_5px_0_var(--manga-black)] sm:p-3">
         {/* Header, toolbar, and footer are fixed chrome: they keep their
             natural height and the video/practice area absorbs the rest. */}
         <div className="shrink-0">
@@ -1089,7 +1089,7 @@ export function DictationPracticeShell({
             <TabsList
               variant="line"
               aria-label="Practice views"
-              className="ml-auto flex h-auto! w-auto min-w-0 shrink-0 flex-wrap justify-end gap-2 rounded-none p-0"
+              className="rounded-control ml-auto flex h-auto! w-auto min-w-0 shrink-0 flex-wrap justify-end gap-2 p-0"
             >
               {/* Icon plus label, and below sm the label goes sr-only so the
                   triggers shrink to icons without losing their names. */}
@@ -1329,7 +1329,7 @@ export function DictationPracticeShell({
                     {vocabLookupError ? (
                       <div
                         role="status"
-                        className="border-manga-black bg-manga-pale-red text-manga-red border-2 p-3 text-sm font-black shadow-[2px_2px_0_var(--manga-black)]"
+                        className="border-manga-black bg-manga-pale-red text-manga-red rounded-control border-2 p-3 text-sm font-black shadow-[2px_2px_0_var(--manga-black)]"
                       >
                         {vocabLookupError}
                       </div>
@@ -1418,7 +1418,7 @@ export function DictationPracticeShell({
         {draftNotice ? (
           <div
             role="status"
-            className="border-manga-black bg-manga-paper-soft shrink-0 border-2 p-2 text-xs leading-5 font-black shadow-[3px_3px_0_var(--manga-black)]"
+            className="border-manga-black bg-manga-paper-soft rounded-control shrink-0 border-2 p-2 text-xs leading-5 font-black shadow-[3px_3px_0_var(--manga-black)]"
           >
             {draftNotice}
           </div>

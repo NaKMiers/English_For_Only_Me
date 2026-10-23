@@ -357,7 +357,7 @@ export function GuidedAnswerInput({
   return (
     <section
       aria-label="Dictation answer"
-      className="border-manga-black bg-manga-white grid min-w-0 gap-2 border-2 p-2 shadow-[3px_3px_0_var(--manga-black)]"
+      className="border-manga-black bg-manga-white rounded-panel grid min-w-0 gap-2 border-2 p-2 shadow-[3px_3px_0_var(--manga-black)]"
     >
       {visibleHints.length > 0 && status !== 'correct' ? (
         <p className="flex flex-wrap items-center gap-1.5 text-sm font-black">
@@ -371,7 +371,7 @@ export function GuidedAnswerInput({
               key={hint}
               type="button"
               onClick={() => fillHint(hint)}
-              className="border border-amber-600 bg-amber-100 px-2 py-0.5 text-amber-900 hover:bg-amber-200"
+              className="rounded-tag border border-amber-600 bg-amber-100 px-2 py-0.5 text-amber-900 hover:bg-amber-200"
             >
               {hint}
             </button>
@@ -380,7 +380,7 @@ export function GuidedAnswerInput({
         </p>
       ) : null}
 
-      <div className="border-manga-black bg-manga-white relative border-2 shadow-[2px_2px_0_var(--manga-black)]">
+      <div className="border-manga-black bg-manga-white rounded-control relative border-2 shadow-[2px_2px_0_var(--manga-black)]">
         <div
           aria-hidden="true"
           style={inputTextStyle}
@@ -473,7 +473,7 @@ export function GuidedAnswerInput({
       {showCorrection ? (
         <p
           style={inputTextStyle}
-          className="border-manga-black bg-manga-paper-soft border-2 p-2 font-semibold wrap-break-word shadow-[2px_2px_0_var(--manga-black)]"
+          className="border-manga-black bg-manga-paper-soft rounded-control border-2 p-2 font-semibold wrap-break-word shadow-[2px_2px_0_var(--manga-black)]"
           data-testid="answer-line"
         >
           {displayCorrection.segments.map((segment, index) => (

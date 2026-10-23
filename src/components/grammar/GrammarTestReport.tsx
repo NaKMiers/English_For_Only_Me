@@ -36,7 +36,7 @@ function CorrectionDiff({
     <div className="flex flex-wrap gap-1">
       {correction.tokens.map((token, index) => (
         <span
-          className={`border-manga-black border-2 px-2 py-0.5 font-mono text-xs font-semibold ${
+          className={`border-manga-black rounded-tag border-2 px-2 py-0.5 font-mono text-xs font-semibold ${
             TOKEN_CLASS[token.status] ?? TOKEN_CLASS.correct
           }`}
           key={`${token.status}-${index}`}
@@ -126,7 +126,7 @@ export function GrammarTestReport({
       </div>
 
       {report.notice ? (
-        <p className="text-manga-ink-soft border-manga-black bg-manga-white border-2 p-2 text-xs leading-5 font-semibold">
+        <p className="text-manga-ink-soft border-manga-black bg-manga-white rounded-control border-2 p-2 text-xs leading-5 font-semibold">
           {report.notice}
         </p>
       ) : null}
@@ -138,7 +138,7 @@ export function GrammarTestReport({
           </h3>
           {wrong.map(outcome => (
             <div
-              className="border-manga-black bg-manga-white grid gap-2 border-3 p-3"
+              className="border-manga-black bg-manga-white rounded-control grid gap-2 border-3 p-3"
               key={outcome.questionId}
             >
               <div className="flex flex-wrap items-center gap-2">
@@ -146,7 +146,7 @@ export function GrammarTestReport({
                   {outcome.pointTitle}
                 </span>
                 {outcome.knockedBack ? (
-                  <span className="border-manga-black bg-manga-pale-red border-2 px-2 py-0.5 font-sans text-[0.65rem] font-black uppercase">
+                  <span className="border-manga-black bg-manga-pale-red rounded-tag border-2 px-2 py-0.5 font-sans text-[0.65rem] font-black uppercase">
                     back to stage 1
                   </span>
                 ) : null}

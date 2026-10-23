@@ -7,32 +7,40 @@ import { cn } from '@/lib/utils'
 
 /*
  * Shared building blocks for route `loading.tsx` skeletons. They reuse the real
- * shell (MangaPageShell + AppTopbar) and mirror the manga aesthetic: hard
+ * shell (MangaPageShell + AppTopbar) and mirror the manga aesthetic: sticker
  * corners, thick ink borders, pulsing `--muted` (pale red) fills. Compose these
- * so each skeleton mirrors the structure of the page it stands in for.
+ * so each skeleton mirrors the structure of the page it stands in for, down to
+ * the corner role: a skeleton whose radius differs from the block it replaces
+ * visibly snaps shape when the content lands.
  */
 
 /** Borderless pulsing bar, for text/line placeholders. */
 export function SkeletonLine({ className }: { className?: string }) {
-  return <Skeleton className={cn('h-4 rounded-none', className)} />
+  return <Skeleton className={cn('rounded-tag h-4', className)} />
 }
 
 /** Bordered pulsing box, the default manga skeleton surface. */
 export function SkeletonBlock({ className }: { className?: string }) {
   return (
     <Skeleton
-      className={cn('border-manga-black rounded-none border-3', className)}
+      className={cn('border-manga-black rounded-panel border-3', className)}
     />
   )
 }
 
 /** Small chip mirroring PageTag. */
 export function SkeletonTag({ className }: { className?: string }) {
-  return <SkeletonBlock className={cn('h-8 w-24 border-2', className)} />
+  return (
+    <SkeletonBlock className={cn('rounded-tag h-8 w-24 border-2', className)} />
+  )
 }
 
 /** Page hero: eyebrow chip + big title line + a couple of subtitle lines. */
-export function SkeletonHero({ withEyebrow = true }: { withEyebrow?: boolean }) {
+export function SkeletonHero({
+  withEyebrow = true,
+}: {
+  withEyebrow?: boolean
+}) {
   return (
     <header className="page-hero grid gap-3">
       {withEyebrow ? <SkeletonTag /> : null}
@@ -58,7 +66,7 @@ export function SkeletonPanel({
   return (
     <div
       className={cn(
-        'border-manga-black bg-manga-white grid gap-4 border-3 p-4 shadow-[4px_4px_0_var(--manga-black)] sm:p-5',
+        'border-manga-black bg-manga-white rounded-panel grid gap-4 border-3 p-4 shadow-[4px_4px_0_var(--manga-black)] sm:p-5',
         className
       )}
     >
@@ -89,9 +97,7 @@ export function SkeletonTileRow({
   className?: string
 }) {
   return (
-    <div
-      className={cn('grid gap-3 sm:grid-cols-2 lg:grid-cols-5', className)}
-    >
+    <div className={cn('grid gap-3 sm:grid-cols-2 lg:grid-cols-5', className)}>
       {Array.from({ length: count }).map((_, index) => (
         <SkeletonBlock
           key={index}
@@ -105,15 +111,15 @@ export function SkeletonTileRow({
 /** Single browse video card (thumbnail + tags + title + action). */
 export function SkeletonVideoCard() {
   return (
-    <div className="border-manga-black bg-manga-white grid gap-2 border-2 p-2">
-      <Skeleton className="aspect-video w-full rounded-none" />
+    <div className="border-manga-black bg-manga-white rounded-panel grid gap-2 border-2 p-2">
+      <Skeleton className="rounded-control aspect-video w-full" />
       <div className="flex gap-1.5">
-        <Skeleton className="h-6 w-14 rounded-none" />
-        <Skeleton className="h-6 w-16 rounded-none" />
+        <Skeleton className="rounded-tag h-6 w-14" />
+        <Skeleton className="rounded-tag h-6 w-16" />
       </div>
-      <Skeleton className="h-5 w-full rounded-none" />
-      <Skeleton className="h-5 w-2/3 rounded-none" />
-      <Skeleton className="border-manga-black h-9 w-full rounded-none border-2" />
+      <Skeleton className="rounded-tag h-5 w-full" />
+      <Skeleton className="rounded-tag h-5 w-2/3" />
+      <Skeleton className="border-manga-black rounded-control h-9 w-full border-2" />
     </div>
   )
 }

@@ -231,7 +231,7 @@ export function DictationTranslationEditor({
               return (
                 <li
                   key={segment.id}
-                  className="border-manga-black bg-manga-white grid gap-2 border-2 p-3 shadow-[3px_3px_0_var(--manga-black)]"
+                  className="border-manga-black bg-manga-white rounded-control grid gap-2 border-2 p-3 shadow-[3px_3px_0_var(--manga-black)]"
                 >
                   <div className="flex items-baseline justify-between gap-2">
                     <div className="flex min-w-0 items-baseline gap-2">
@@ -253,7 +253,7 @@ export function DictationTranslationEditor({
                     disabled={isBusy}
                     onChange={event => setDraft(segment.id, event.target.value)}
                     rows={2}
-                    className="border-manga-black bg-manga-white rounded-none border-2 font-semibold shadow-[2px_2px_0_var(--manga-black)]"
+                    className="border-manga-black bg-manga-white rounded-control border-2 font-semibold shadow-[2px_2px_0_var(--manga-black)]"
                   />
 
                   <div className="flex flex-wrap items-center gap-2">

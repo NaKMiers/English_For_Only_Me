@@ -46,7 +46,7 @@ function CorrectionDiff({
       <div className="flex flex-wrap gap-1">
         {correction.tokens.map((token, index) => (
           <span
-            className={`border-manga-black border-2 px-2 py-0.5 font-mono text-sm font-semibold ${
+            className={`border-manga-black rounded-tag border-2 px-2 py-0.5 font-mono text-sm font-semibold ${
               TOKEN_CLASS[token.status] ?? TOKEN_CLASS.correct
             }`}
             key={`${token.status}-${index}`}
@@ -296,7 +296,7 @@ export function GrammarRecallModal({
         <div className="grid min-w-0 flex-1 gap-2">
           <div className="flex flex-wrap items-center gap-2">
             <L1RiskTag l1Risk={task.l1Risk} />
-            <span className="border-manga-black border-2 px-2 py-0.5 font-sans text-xs font-black uppercase">
+            <span className="border-manga-black rounded-tag border-2 px-2 py-0.5 font-sans text-xs font-black uppercase">
               {task.cefrLevel} - stage {task.recallStage}/7
             </span>
           </div>
@@ -314,7 +314,7 @@ export function GrammarRecallModal({
       <p className="text-base leading-7 font-semibold">{task.prompt}</p>
 
       {message ? (
-        <p className="border-manga-black bg-manga-red text-manga-white border-3 p-3 text-sm font-black uppercase">
+        <p className="border-manga-black bg-manga-red text-manga-white rounded-control border-3 p-3 text-sm font-black uppercase">
           {message}
         </p>
       ) : null}
@@ -341,7 +341,7 @@ export function GrammarRecallModal({
         </div>
       ) : (
         <textarea
-          className="border-manga-black bg-manga-white text-manga-black min-h-24 border-3 p-3 font-mono text-sm font-semibold"
+          className="border-manga-black bg-manga-white text-manga-black rounded-control min-h-24 border-3 p-3 font-mono text-sm font-semibold"
           disabled={pending || Boolean(result)}
           onChange={event => setAnswer(event.target.value)}
           placeholder="Type your answer"
@@ -395,7 +395,7 @@ export function GrammarRecallModal({
                 >
                   {SENSEI_LINES.graderOverridden}
                 </SpeechBubble>
-                <p className="border-manga-black bg-manga-white border-2 p-2 text-xs font-black uppercase">
+                <p className="border-manga-black bg-manga-white rounded-control border-2 p-2 text-xs font-black uppercase">
                   Added to the accepted answers for this drill. Run
                   grammar:export to keep it.
                 </p>
@@ -453,7 +453,7 @@ function SettingToggle({
   return (
     <button
       aria-pressed={on}
-      className="border-manga-black bg-manga-white text-manga-black min-h-11 border-3 px-3 font-sans text-xs font-black uppercase"
+      className="border-manga-black bg-manga-white text-manga-black rounded-control min-h-11 border-3 px-3 font-sans text-xs font-black uppercase"
       onClick={onToggle}
       type="button"
     >

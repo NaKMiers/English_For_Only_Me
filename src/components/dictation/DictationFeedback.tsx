@@ -48,7 +48,7 @@ export function DictationFeedback({ attempt, className }: Props) {
       className={className}
       action={
         <Badge
-          className="border-manga-black bg-manga-white text-manga-black rounded-none border-2 font-black"
+          className="border-manga-black bg-manga-white text-manga-black rounded-tag border-2 font-black"
           variant="outline"
         >
           {attempt.stats.accuracy}%
@@ -58,7 +58,7 @@ export function DictationFeedback({ attempt, className }: Props) {
       <div
         role="status"
         className={cn(
-          'border-manga-black flex items-start gap-3 border-2 p-3 text-sm leading-6 font-black shadow-[3px_3px_0_var(--manga-black)]',
+          'border-manga-black rounded-control flex items-start gap-3 border-2 p-3 text-sm leading-6 font-black shadow-[3px_3px_0_var(--manga-black)]',
           attempt.isPassed ? 'bg-emerald-50' : 'bg-manga-paper-soft'
         )}
       >
@@ -89,7 +89,7 @@ export function DictationFeedback({ attempt, className }: Props) {
           <span
             key={`${token.status}-${index}-${token.expected}-${token.actual}`}
             className={cn(
-              'rounded-none border-2 px-2 py-1 text-sm font-black wrap-break-word',
+              'rounded-tag border-2 px-2 py-1 text-sm font-black wrap-break-word',
               statusClassNames[token.status]
             )}
             title={token.status}

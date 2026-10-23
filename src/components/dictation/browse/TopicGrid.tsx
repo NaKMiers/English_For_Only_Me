@@ -44,7 +44,7 @@ function ThumbTile({
     <div
       aria-hidden="true"
       className={cn(
-        'border-manga-black grid size-16 shrink-0 place-items-center overflow-hidden border-3 bg-cover bg-center font-sans text-2xl font-black shadow-[3px_3px_0_var(--manga-black)] sm:size-20',
+        'border-manga-black rounded-control grid size-16 shrink-0 place-items-center overflow-hidden border-3 bg-cover bg-center font-sans text-2xl font-black shadow-[3px_3px_0_var(--manga-black)] sm:size-20',
         muted
           ? 'bg-manga-paper-soft text-manga-ink-soft'
           : 'bg-manga-pale-red text-manga-black'
@@ -79,7 +79,7 @@ function TopicCard({
     <Link
       href={href}
       className={cn(
-        'border-manga-black hover:bg-manga-pale-red grid grid-cols-[auto_1fr] items-center gap-3 border-3 p-3 shadow-[4px_4px_0_var(--manga-black)] transition-colors',
+        'border-manga-black hover:bg-manga-pale-red rounded-panel grid grid-cols-[auto_1fr] items-center gap-3 border-3 p-3 shadow-[4px_4px_0_var(--manga-black)] transition-colors',
         muted ? 'bg-manga-paper-soft' : 'bg-manga-white'
       )}
     >
@@ -116,7 +116,7 @@ interface Props {
 export function TopicGrid({ topics, noTopicCount }: Props) {
   if (topics.length === 0 && noTopicCount === 0)
     return (
-      <div className="border-manga-black bg-manga-white border-3 p-6 text-center shadow-[4px_4px_0_var(--manga-black)]">
+      <div className="border-manga-black bg-manga-white rounded-panel border-3 p-6 text-center shadow-[4px_4px_0_var(--manga-black)]">
         <p className="font-sans text-lg font-black">No lessons yet</p>
         <p className="text-manga-ink-soft mt-1 text-sm">
           Once an admin adds topics and videos, they show up here to browse and

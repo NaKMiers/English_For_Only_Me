@@ -89,7 +89,7 @@ export function DictationFullTranscript({
   return (
     <section
       aria-label="Full transcript"
-      className="border-manga-black bg-manga-white grid min-h-0 min-w-0 grid-rows-[auto_minmax(0,1fr)] gap-2 border-2 p-2 shadow-[3px_3px_0_var(--manga-black)]"
+      className="border-manga-black bg-manga-white rounded-panel grid min-h-0 min-w-0 grid-rows-[auto_minmax(0,1fr)] gap-2 border-2 p-2 shadow-[3px_3px_0_var(--manga-black)]"
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="font-sans text-sm leading-tight font-black tracking-normal uppercase">
@@ -102,7 +102,7 @@ export function DictationFullTranscript({
             disabled={!canRepeat}
             onClick={onToggleRepeat}
             className={cn(
-              'border-manga-black inline-flex min-h-8 items-center gap-1.5 border-2 px-2 font-sans text-xs font-black shadow-[2px_2px_0_var(--manga-black)] disabled:cursor-not-allowed disabled:opacity-50',
+              'border-manga-black rounded-control inline-flex min-h-8 items-center gap-1.5 border-2 px-2 font-sans text-xs font-black shadow-[2px_2px_0_var(--manga-black)] disabled:cursor-not-allowed disabled:opacity-50',
               isRepeating
                 ? 'bg-manga-black text-manga-white'
                 : 'bg-manga-white text-manga-black hover:bg-manga-paper-soft'
@@ -119,7 +119,7 @@ export function DictationFullTranscript({
             aria-pressed={autoScroll}
             onClick={onToggleAutoScroll}
             className={cn(
-              'border-manga-black inline-flex min-h-8 items-center gap-1.5 border-2 px-2 font-sans text-xs font-black shadow-[2px_2px_0_var(--manga-black)]',
+              'border-manga-black rounded-control inline-flex min-h-8 items-center gap-1.5 border-2 px-2 font-sans text-xs font-black shadow-[2px_2px_0_var(--manga-black)]',
               autoScroll
                 ? 'bg-manga-black text-manga-white'
                 : 'bg-manga-white text-manga-black hover:bg-manga-paper-soft'
@@ -141,7 +141,7 @@ export function DictationFullTranscript({
           opts into stretching to a height-bound ancestor instead (practice shell). */}
       <ol
         className={cn(
-          'grid max-h-128 min-h-0 min-w-0 auto-rows-max snap-y snap-proximity gap-1 overflow-y-auto pr-1',
+          'grid max-h-128 min-h-0 min-w-0 snap-y snap-proximity auto-rows-max gap-1 overflow-y-auto pr-1',
           fillAvailableHeight && 'lg:max-h-none'
         )}
       >
@@ -162,13 +162,13 @@ export function DictationFullTranscript({
                 onClick={() => onSelectSegment(segment)}
                 aria-current={isHighlighted ? 'true' : undefined}
                 className={cn(
-                  'border-manga-black grid w-full min-w-0 grid-cols-[auto_minmax(0,1fr)] items-start gap-2 border-2 p-1.5 text-left shadow-[2px_2px_0_var(--manga-black)] transition-colors',
+                  'border-manga-black rounded-control grid w-full min-w-0 grid-cols-[auto_minmax(0,1fr)] items-start gap-2 border-2 p-1.5 text-left shadow-[2px_2px_0_var(--manga-black)] transition-colors',
                   isHighlighted
                     ? 'bg-manga-pale-red'
                     : 'bg-manga-white hover:bg-manga-paper-soft'
                 )}
               >
-                <span className="border-manga-black bg-manga-white text-manga-black mt-0.5 grid size-6 place-items-center border-2 text-xs font-black">
+                <span className="border-manga-black bg-manga-white text-manga-black rounded-tag mt-0.5 grid size-6 place-items-center border-2 text-xs font-black">
                   {isHighlighted ? (
                     <Play
                       aria-hidden="true"
@@ -191,7 +191,7 @@ export function DictationFullTranscript({
                     {statusMeta ? (
                       <span
                         className={cn(
-                          'mr-1.5 inline-block rounded-none border px-1 text-[0.6rem] leading-4 font-black uppercase',
+                          'rounded-tag mr-1.5 inline-block border px-1 text-[0.6rem] leading-4 font-black uppercase',
                           statusMeta.className
                         )}
                       >

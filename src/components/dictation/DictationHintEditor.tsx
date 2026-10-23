@@ -213,7 +213,7 @@ export function DictationHintEditor({ onSegmentChange, segments }: Props) {
               return (
                 <li
                   key={segment.id}
-                  className="border-manga-black bg-manga-white grid gap-2 border-2 p-3 shadow-[3px_3px_0_var(--manga-black)]"
+                  className="border-manga-black bg-manga-white rounded-control grid gap-2 border-2 p-3 shadow-[3px_3px_0_var(--manga-black)]"
                 >
                   <div className="flex items-baseline justify-between gap-2">
                     <div className="flex min-w-0 items-baseline gap-2">
@@ -252,7 +252,7 @@ export function DictationHintEditor({ onSegmentChange, segments }: Props) {
                             setDrag(null)
                           }}
                           onDragEnd={() => setDrag(null)}
-                          className="border-manga-black bg-manga-paper-soft inline-flex cursor-move items-center gap-1 border-2 px-2 py-1 text-xs font-black shadow-[2px_2px_0_var(--manga-black)]"
+                          className="border-manga-black bg-manga-paper-soft rounded-tag inline-flex cursor-move items-center gap-1 border-2 px-2 py-1 text-xs font-black shadow-[2px_2px_0_var(--manga-black)]"
                         >
                           <GripVertical
                             aria-hidden="true"
@@ -264,7 +264,7 @@ export function DictationHintEditor({ onSegmentChange, segments }: Props) {
                             disabled={isSaving}
                             draggable={false}
                             onClick={() => handleRemoveHint(segment, hint)}
-                            className="size-5 border-2 shadow-none"
+                            className="rounded-tag size-5 border-2 shadow-none"
                           >
                             <X
                               aria-hidden="true"
@@ -294,7 +294,7 @@ export function DictationHintEditor({ onSegmentChange, segments }: Props) {
                         }
                       }}
                       placeholder="Add a word from this sentence"
-                      className="border-manga-black bg-manga-white h-10 max-w-xs rounded-none border-2 font-semibold shadow-[2px_2px_0_var(--manga-black)]"
+                      className="border-manga-black bg-manga-white rounded-control h-10 max-w-xs border-2 font-semibold shadow-[2px_2px_0_var(--manga-black)]"
                     />
                     <MangaButton
                       type="button"

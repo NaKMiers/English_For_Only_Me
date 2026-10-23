@@ -58,7 +58,7 @@ export function GrammarComicLesson({
   return (
     <div className="grid gap-4">
       {lesson.redirectedFrom ? (
-        <p className="border-comic-ink bg-manga-paper-soft border-2 border-dashed p-3 text-sm leading-6 font-semibold">
+        <p className="border-comic-ink bg-manga-paper-soft rounded-control border-2 border-dashed p-3 text-sm leading-6 font-semibold">
           <code>{lesson.redirectedFrom}</code> was merged into this point. Your
           progress followed the redirect.
         </p>

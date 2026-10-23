@@ -69,7 +69,7 @@ export function AdminTopicThumbnailFields({ defaultUrl = null, title }: Props) {
         aria-label={`Upload thumbnail for ${title}`}
         onClick={() => inputRef.current?.click()}
         className={cn(
-          'border-manga-black bg-manga-white group focus-visible:outline-manga-red relative grid size-28 shrink-0 place-items-center overflow-hidden border-3 shadow-[4px_4px_0_var(--manga-black)] transition-transform hover:-translate-y-0.5 focus-visible:outline-3 focus-visible:outline-offset-2',
+          'border-manga-black bg-manga-white group focus-visible:outline-manga-red rounded-control relative grid size-28 shrink-0 place-items-center overflow-hidden border-3 shadow-[4px_4px_0_var(--manga-black)] transition-transform hover:-translate-y-0.5 focus-visible:outline-3 focus-visible:outline-offset-2',
           isPending && 'pointer-events-none opacity-70'
         )}
       >

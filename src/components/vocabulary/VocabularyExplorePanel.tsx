@@ -57,7 +57,7 @@ function getExploreMapClassName({
   decision: ExploreDecision | undefined
 }) {
   return cn(
-    'size-5 border-2 border-manga-black shadow-[2px_2px_0_var(--manga-black)] transition-transform hover:-translate-y-0.5',
+    'size-5 rounded-tag border-2 border-manga-black shadow-[2px_2px_0_var(--manga-black)] transition-transform hover:-translate-y-0.5',
     decision === 'shouldLearn' && 'bg-manga-paper-soft hover:bg-manga-pale-red',
     decision === 'alreadyKnow' && 'bg-emerald-300 hover:bg-emerald-200',
     !decision && 'bg-manga-white hover:bg-cyan-100',
@@ -75,7 +75,7 @@ function getExploreStackCardClassName({
   visible: boolean
 }) {
   return cn(
-    'border-manga-black absolute top-0 left-1/2 flex h-full min-h-96 w-[min(74vw,760px)] flex-col gap-4 border-3 p-4 shadow-[5px_5px_0_var(--manga-black)] transition-[opacity,transform] duration-300 ease-out sm:w-[min(78vw,760px)]',
+    'border-manga-black absolute top-0 left-1/2 flex h-full min-h-96 w-[min(74vw,760px)] flex-col gap-4 rounded-control border-3 p-4 shadow-[5px_5px_0_var(--manga-black)] transition-[opacity,transform] duration-300 ease-out sm:w-[min(78vw,760px)]',
     decision === 'shouldLearn' && 'bg-manga-paper-soft',
     decision === 'alreadyKnow' && 'bg-emerald-50',
     !decision && 'bg-manga-white',
@@ -103,7 +103,7 @@ export function VocabularyExplorePanel({
           <div className="flex items-center justify-between gap-3">
             <Button
               aria-label="Previous explore word"
-              className="border-manga-black bg-manga-white hover:bg-manga-paper-soft size-11 rounded-none border-3 shadow-[3px_3px_0_var(--manga-black)] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none disabled:opacity-35"
+              className="border-manga-black bg-manga-white hover:bg-manga-paper-soft rounded-control sticker-press size-11 border-3 shadow-[3px_3px_0_var(--manga-black)] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none active:not-aria-[haspopup]:translate-y-[3px] disabled:opacity-35"
               disabled={activeIndex === 0}
               onClick={() => moveExplore(-1)}
               size="icon"
@@ -120,7 +120,7 @@ export function VocabularyExplorePanel({
             </span>
             <Button
               aria-label="Next explore word"
-              className="border-manga-black bg-manga-white hover:bg-manga-paper-soft size-11 rounded-none border-3 shadow-[3px_3px_0_var(--manga-black)] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none disabled:opacity-35"
+              className="border-manga-black bg-manga-white hover:bg-manga-paper-soft rounded-control sticker-press size-11 border-3 shadow-[3px_3px_0_var(--manga-black)] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none active:not-aria-[haspopup]:translate-y-[3px] disabled:opacity-35"
               disabled={activeIndex >= entries.length - 1}
               onClick={() => moveExplore(1)}
               size="icon"
@@ -235,7 +235,7 @@ export function VocabularyExplorePanel({
             })}
           </div>
 
-          <div className="border-manga-black bg-manga-paper-soft grid gap-3 border-3 p-3">
+          <div className="border-manga-black bg-manga-paper-soft rounded-control grid gap-3 border-3 p-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="text-manga-ink-soft text-xs font-black uppercase">
                 Explore map
@@ -246,19 +246,19 @@ export function VocabularyExplorePanel({
               >
                 <span
                   aria-label="White means unpicked"
-                  className="border-manga-black bg-manga-white size-5 border-2 shadow-[2px_2px_0_var(--manga-black)]"
+                  className="border-manga-black bg-manga-white rounded-tag size-5 border-2 shadow-[2px_2px_0_var(--manga-black)]"
                   role="img"
                   title="Unpicked"
                 />
                 <span
                   aria-label="Pink means should learn"
-                  className="border-manga-black bg-manga-paper-soft size-5 border-2 shadow-[2px_2px_0_var(--manga-black)]"
+                  className="border-manga-black bg-manga-paper-soft rounded-tag size-5 border-2 shadow-[2px_2px_0_var(--manga-black)]"
                   role="img"
                   title="Should learn"
                 />
                 <span
                   aria-label="Green means already know"
-                  className="border-manga-black size-5 border-2 bg-emerald-300 shadow-[2px_2px_0_var(--manga-black)]"
+                  className="border-manga-black rounded-tag size-5 border-2 bg-emerald-300 shadow-[2px_2px_0_var(--manga-black)]"
                   role="img"
                   title="Already know"
                 />

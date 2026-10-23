@@ -63,7 +63,7 @@ function AdminVideoLevelBadge({
           size="sm"
           onKeyDown={event => event.stopPropagation()}
           className={cn(
-            'min-h-6 gap-1 border-2 px-2 py-0 text-xs font-black shadow-none',
+            'rounded-tag min-h-6 gap-1 border-2 px-2 py-0 text-xs font-black shadow-none',
             level
               ? 'bg-sky-100 text-sky-950'
               : 'bg-manga-white text-manga-ink-soft'
@@ -110,7 +110,7 @@ function AdminVideoActionsMenu({
         title="Actions"
         onClick={event => event.stopPropagation()}
         onKeyDown={event => event.stopPropagation()}
-        className="border-manga-black bg-manga-white hover:bg-manga-paper-soft grid size-9 shrink-0 place-items-center border-2 shadow-[2px_2px_0_var(--manga-black)] transition-colors"
+        className="border-manga-black bg-manga-white hover:bg-manga-paper-soft rounded-control grid size-9 shrink-0 place-items-center border-2 shadow-[2px_2px_0_var(--manga-black)] transition-colors"
       >
         <EllipsisVertical
           aria-hidden="true"
@@ -225,7 +225,7 @@ export function AdminVideoRow({
         // min-w-0: this row is a grid item; without it the truncated (nowrap)
         // title forces the row's min-content to the full title width, overflowing
         // the viewport on narrow screens instead of truncating.
-        'border-manga-black bg-manga-white flex min-w-0 cursor-grab flex-wrap items-center gap-2 border-2 p-2 active:cursor-grabbing',
+        'border-manga-black bg-manga-white rounded-control flex min-w-0 cursor-grab flex-wrap items-center gap-2 border-2 p-2 active:cursor-grabbing',
         selectable && 'hover:bg-manga-paper-soft'
       )}
     >
@@ -236,7 +236,7 @@ export function AdminVideoRow({
         onClick={event => event.stopPropagation()}
         onKeyDown={event => event.stopPropagation()}
         onDragStart={startDrag}
-        className="border-manga-black bg-manga-white grid size-8 shrink-0 cursor-grab place-items-center border-2 active:cursor-grabbing"
+        className="border-manga-black bg-manga-white rounded-tag grid size-8 shrink-0 cursor-grab place-items-center border-2 active:cursor-grabbing"
       >
         <GripVertical
           aria-hidden="true"
@@ -246,7 +246,7 @@ export function AdminVideoRow({
       {selectable && (
         <span
           aria-hidden="true"
-          className="border-manga-black bg-manga-white grid size-5 shrink-0 place-items-center border-2"
+          className="border-manga-black bg-manga-white rounded-tag grid size-5 shrink-0 place-items-center border-2"
         >
           {selected && <span className="bg-manga-red size-2.5" />}
         </span>
@@ -256,7 +256,7 @@ export function AdminVideoRow({
         thumbnailUrl={video.thumbnailUrl}
         youtubeVideoId={video.youtubeVideoId}
         sizes="96px"
-        className="w-20 shrink-0 sm:w-24"
+        className="rounded-tag w-20 shrink-0 sm:w-24"
       />
       <span className="min-w-0 flex-1 truncate font-sans text-sm font-black">
         {video.title}

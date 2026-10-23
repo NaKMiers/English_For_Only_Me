@@ -22,7 +22,7 @@ export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
 const actionLink =
-  'border-manga-black bg-manga-paper-soft hover:bg-manga-pale-red inline-flex min-h-10 items-center border-3 px-4 font-sans text-sm font-black shadow-[3px_3px_0_var(--manga-black)]'
+  'border-manga-black bg-manga-paper-soft hover:bg-manga-pale-red inline-flex min-h-10 items-center rounded-control border-3 px-4 font-sans text-sm font-black shadow-[3px_3px_0_var(--manga-black)]'
 
 export default async function AdminVideosPage() {
   let rows: AdminVideoRow[] = []

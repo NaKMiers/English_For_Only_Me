@@ -11,7 +11,7 @@ import {
 import type { ParsedGrammarPointsQuery } from '@/modules/grammar/services/grammarRouteDecisions'
 
 const SELECT_CLASS =
-  'border-manga-black bg-manga-white text-manga-black min-h-10 border-2 px-2 font-sans text-xs font-black uppercase'
+  'border-manga-black bg-manga-white text-manga-black min-h-10 rounded-control border-2 px-2 font-sans text-xs font-black uppercase'
 
 /**
  * Plain GET form so filters are shareable URLs and the page stays a server
@@ -25,7 +25,7 @@ export function GrammarPointFilters({
   return (
     <form
       action="/grammar/points"
-      className="border-manga-black bg-manga-paper-soft flex flex-wrap items-end gap-2 border-3 p-3 shadow-[4px_4px_0_var(--manga-black)]"
+      className="border-manga-black bg-manga-paper-soft rounded-panel flex flex-wrap items-end gap-2 border-3 p-3 shadow-[4px_4px_0_var(--manga-black)]"
       method="get"
     >
       <label className="grid gap-1">

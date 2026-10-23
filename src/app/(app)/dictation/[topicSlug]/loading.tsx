@@ -12,7 +12,7 @@ export default function Loading() {
       subtitle="Browse dictation topics"
     >
       <SkeletonHero />
-      <SkeletonBlock className="h-14" />
+      <SkeletonBlock className="rounded-control h-14" />
       <SkeletonRows
         count={4}
         rowClassName="h-14"

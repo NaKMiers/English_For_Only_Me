@@ -47,7 +47,7 @@ export function QueueRow({
   )
 
   const rowClassName = cn(
-    'flex min-w-0 items-center justify-between gap-3 border-2 border-manga-black bg-manga-white p-3 shadow-[3px_3px_0_var(--manga-black)]',
+    'flex min-w-0 items-center justify-between gap-3 rounded-control border-2 border-manga-black bg-manga-white p-3 shadow-[3px_3px_0_var(--manga-black)]',
     (href || onClick) && 'transition-colors hover:bg-manga-paper-soft',
     className
   )

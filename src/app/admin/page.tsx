@@ -83,7 +83,7 @@ export default async function AdminDashboard() {
             <Link
               key={link.href}
               href={link.href}
-              className="border-manga-black bg-manga-white hover:bg-manga-paper-soft grid gap-1 border-3 p-4 shadow-[4px_4px_0_var(--manga-black)]"
+              className="border-manga-black bg-manga-white hover:bg-manga-paper-soft rounded-panel grid gap-1 border-3 p-4 shadow-[4px_4px_0_var(--manga-black)]"
             >
               <span className="font-sans text-lg font-black">{link.title}</span>
               <span className="text-manga-ink-soft text-sm">{link.desc}</span>

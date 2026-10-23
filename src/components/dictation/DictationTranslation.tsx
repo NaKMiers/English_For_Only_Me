@@ -39,7 +39,7 @@ export function DictationTranslation({
     <div
       role="status"
       className={cn(
-        'border-manga-black bg-manga-paper-soft flex min-w-0 items-start gap-2 border-2 p-2 shadow-[3px_3px_0_var(--manga-black)]',
+        'border-manga-black bg-manga-paper-soft rounded-control flex min-w-0 items-start gap-2 border-2 p-2 shadow-[3px_3px_0_var(--manga-black)]',
         hasText && 'bg-white',
         className
       )}

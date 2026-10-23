@@ -20,7 +20,7 @@ export function ImpactStamp({
   return (
     <span
       className={cn(
-        'border-comic-ink relative inline-flex -rotate-6 items-center border-3 px-3 py-1 font-sans text-xl leading-none font-black tracking-tight uppercase shadow-[4px_4px_0_var(--manga-offset)]',
+        'border-comic-ink rounded-tag relative inline-flex -rotate-6 items-center border-3 px-3 py-1 font-sans text-xl leading-none font-black tracking-tight uppercase shadow-[4px_4px_0_var(--manga-offset)]',
         tone === 'ink' && 'bg-manga-black text-manga-white',
         tone === 'danger' && 'bg-comic-danger text-manga-white',
         className

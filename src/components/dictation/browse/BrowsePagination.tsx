@@ -7,7 +7,7 @@ import type {
 } from '@/modules/dictation/content/browseQuery'
 
 const linkClass =
-  'border-manga-black bg-manga-white inline-flex min-h-9 items-center border-2 px-3 font-sans text-sm font-black shadow-[2px_2px_0_var(--manga-black)]'
+  'border-manga-black bg-manga-white inline-flex min-h-9 items-center rounded-control border-2 px-3 font-sans text-sm font-black shadow-[2px_2px_0_var(--manga-black)]'
 
 /** Prev/next pager (Link-based, URL-driven) preserving the active query. */
 export function BrowsePagination({

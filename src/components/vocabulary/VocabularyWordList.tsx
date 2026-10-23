@@ -246,10 +246,10 @@ export function VocabularyWordList({ activeView, words }: Props) {
           <Link
             key={tab.view}
             className={cn(
-              'border-manga-black text-manga-black! relative px-3 py-2 text-sm font-black shadow-[3px_3px_0_var(--manga-black)] transition-[background,color,box-shadow,transform] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none',
+              'border-manga-black text-manga-black! rounded-control sticker-press relative px-3 py-2 text-sm font-black shadow-[3px_3px_0_var(--manga-black)] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none',
               VIEW_TAB_CLASS_NAMES[tab.view],
               tab.view === activeView &&
-                'translate-x-[3px] translate-y-[3px] shadow-none after:bg-manga-black after:absolute after:-bottom-2 after:left-2 after:right-2 after:h-1'
+                'after:bg-manga-black translate-x-[3px] translate-y-[3px] shadow-none after:absolute after:right-2 after:-bottom-2 after:left-2 after:h-1'
             )}
             href={tab.href}
             aria-current={tab.view === activeView ? 'page' : undefined}
@@ -259,7 +259,7 @@ export function VocabularyWordList({ activeView, words }: Props) {
         ))}
       </nav>
 
-      <div className="border-manga-black bg-manga-white grid gap-3 border-3 p-3 shadow-[3px_3px_0_var(--manga-black)] md:grid-cols-[1fr_auto] md:items-end">
+      <div className="border-manga-black bg-manga-white rounded-panel grid gap-3 border-3 p-3 shadow-[3px_3px_0_var(--manga-black)] md:grid-cols-[1fr_auto] md:items-end">
         <div className="grid gap-2 sm:grid-cols-[minmax(160px,220px)_minmax(120px,160px)]">
           <div className="grid gap-1">
             <span className="text-xs font-black uppercase">Per page</span>
@@ -295,7 +295,7 @@ export function VocabularyWordList({ activeView, words }: Props) {
             <span className="text-xs font-black uppercase">Custom</span>
             <Input
               aria-label="Custom words per page"
-              className="border-manga-black bg-manga-white h-11 rounded-none border-3 px-3 font-sans font-black shadow-[3px_3px_0_var(--manga-black)]"
+              className="border-manga-black bg-manga-white rounded-control h-11 border-3 px-3 font-sans font-black shadow-[3px_3px_0_var(--manga-black)]"
               min={1}
               onBlur={() => updatePageSize(Number(customPageSize) || 1)}
               onChange={event => setCustomPageSize(event.target.value)}
@@ -335,12 +335,12 @@ export function VocabularyWordList({ activeView, words }: Props) {
       </div>
 
       {message ? (
-        <div className="border-manga-black bg-manga-white border-3 p-3 text-sm font-black shadow-[3px_3px_0_var(--manga-black)]">
+        <div className="border-manga-black bg-manga-white rounded-control border-3 p-3 text-sm font-black shadow-[3px_3px_0_var(--manga-black)]">
           {message}
         </div>
       ) : null}
       {error ? (
-        <div className="border-manga-black bg-manga-pale-red border-3 p-3 text-sm font-black">
+        <div className="border-manga-black bg-manga-pale-red rounded-control border-3 p-3 text-sm font-black">
           {error}
         </div>
       ) : null}
@@ -350,7 +350,7 @@ export function VocabularyWordList({ activeView, words }: Props) {
           {visibleWords.map(word => (
             <article
               key={word.item.id}
-              className="border-manga-black bg-manga-white grid min-w-0 gap-3 border-3 p-4 shadow-[4px_4px_0_var(--manga-black)]"
+              className="border-manga-black bg-manga-white rounded-panel grid min-w-0 gap-3 border-3 p-4 shadow-[4px_4px_0_var(--manga-black)]"
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="grid min-w-0 flex-1 gap-1">
@@ -376,7 +376,7 @@ export function VocabularyWordList({ activeView, words }: Props) {
               </div>
 
               <div className="flex flex-wrap items-center gap-2 text-xs font-black uppercase">
-                <span className="border-manga-black bg-manga-paper-soft grid size-8 place-items-center border-2">
+                <span className="border-manga-black bg-manga-paper-soft rounded-tag grid size-8 place-items-center border-2">
                   {getStatusIcon(word)}
                 </span>
                 <span>{word.item.source}</span>
@@ -385,7 +385,7 @@ export function VocabularyWordList({ activeView, words }: Props) {
 
               {word.sourceVideo ? (
                 <a
-                  className="border-manga-black bg-manga-paper-soft hover:bg-manga-pale-red text-manga-black flex min-w-0 items-center gap-2 border-2 px-3 py-2 text-xs font-black uppercase shadow-[3px_3px_0_var(--manga-black)] transition-[background,box-shadow,transform] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none"
+                  className="border-manga-black bg-manga-paper-soft hover:bg-manga-pale-red text-manga-black rounded-control sticker-press flex min-w-0 items-center gap-2 border-2 px-3 py-2 text-xs font-black uppercase shadow-[3px_3px_0_var(--manga-black)] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none"
                   href={`/dictation/videos/${word.sourceVideo.id}/practice`}
                   rel="noopener noreferrer"
                   target="_blank"

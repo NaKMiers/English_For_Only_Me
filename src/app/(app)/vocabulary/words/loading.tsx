@@ -15,7 +15,7 @@ export default function Loading() {
         {Array.from({ length: 5 }).map((_, index) => (
           <SkeletonBlock
             key={index}
-            className="h-10 w-28 border-2"
+            className="rounded-control h-10 w-28 border-2"
           />
         ))}
       </div>
