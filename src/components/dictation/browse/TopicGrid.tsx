@@ -41,7 +41,7 @@ function ThumbTile({
     >
       {tileImageUrl ? (
         // A plain lazy img: res.cloudinary.com is not in images.remotePatterns,
-        // and the URL already carries a Cloudinary resize transform.
+        // and the account's Strict Transformations rule out a resize URL.
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={tileImageUrl}

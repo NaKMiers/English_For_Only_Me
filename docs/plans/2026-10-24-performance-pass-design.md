@@ -258,7 +258,9 @@ benchmarks never write.
   ref in `runAttempt`.
 - YouTube: preconnect, and create the player on idle or Start.
 - Thumbnails: `mqdefault`, `fetchPriority` on the first row, and Cloudinary
-  `f_auto,q_auto,w_160` for topic tiles.
+  `f_auto,q_auto,w_160` for topic tiles. (Reverted after deploy: the
+  Cloudinary account has Strict Transformations on, so unsigned transform
+  URLs answer 401 and the tiles showed broken images.)
 - Vocabulary: fetch initial stats, due and explore data in the server page
   and pass them as props.
 - Practice payload: send only the selected language's translations.

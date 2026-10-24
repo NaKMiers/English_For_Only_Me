@@ -73,8 +73,36 @@ route                                                      total_first_ms total_
 /grammar/points/adjective-order                                  18        9       29     117.3
 ```
 
-The live numbers after deploy are still to be taken: run the script below
-against the deployed site and compare with the first table.
+## Live site after the pass (2026-10-25)
+
+Response header `x-vercel-id: hkg1::hkg1::...`: functions now run in Hong
+Kong, next to Atlas. Medians are 2.5x to 11x faster than the first table.
+The max column is mostly cold starts.
+
+```
+route                                                      total_first_ms total_med_ms total_max_ms   html_kb
+/                                                               348      483      504     114.4
+/dictation                                                      636      390     1427     127.0
+/dictation/ted                                                  695      316      598     135.7
+/dictation/videos/6a55223b6c2397cc339c7db0/practice             322      540     1117     177.4
+/vocabulary                                                     275      286     1373     155.7
+/vocabulary/words                                               304      291     1335      92.6
+/grammar                                                        293      296      358     136.3
+/grammar/points                                                 456      356      587     717.5
+/grammar/points/adjective-order                                 707      305      678     118.3
+```
+
+| route | median before | median after |
+|---|---|---|
+| `/` | 1193 ms | 483 ms |
+| `/dictation` | 2473 ms | 390 ms |
+| `/dictation/ted` | 2314 ms | 316 ms |
+| practice page | 2968 ms | 540 ms |
+| `/vocabulary` | 1522 ms | 286 ms |
+| `/vocabulary/words` | 2222 ms | 291 ms |
+| `/grammar` | 2385 ms | 296 ms |
+| `/grammar/points` | 3820 ms | 356 ms |
+| `/grammar/points/adjective-order` | 3272 ms | 305 ms |
 
 ## Script
 

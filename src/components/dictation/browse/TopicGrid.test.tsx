@@ -19,7 +19,7 @@ describe('TopicGrid', () => {
     expect(html).not.toContain('bg-manga-paper ')
   })
 
-  test('renders topic tiles as lazy, Cloudinary-resized images', () => {
+  test('renders topic tiles as lazy images at the stored upload URL', () => {
     const now = new Date()
     const html = renderToStaticMarkup(
       <TopicGrid
@@ -45,7 +45,7 @@ describe('TopicGrid', () => {
     )
 
     expect(html).toContain(
-      'src="https://res.cloudinary.com/demo/image/upload/f_auto,q_auto,c_fill,w_160,h_160/v1/topic.jpg"'
+      'src="https://res.cloudinary.com/demo/image/upload/v1/topic.jpg"'
     )
     expect(html).toContain('loading="lazy"')
     expect(html).not.toContain('background-image')
