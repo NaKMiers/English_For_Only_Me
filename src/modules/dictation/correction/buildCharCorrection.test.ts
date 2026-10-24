@@ -171,6 +171,102 @@ describe('buildCharCorrection - reveal + mask model', () => {
   })
 })
 
+describe('buildCharCorrection - skipped word is missing, not wrong', () => {
+  const CONTAGION = 'No contagion, because there is nothing to catch.'
+
+  test('reports the skipped word as missing and leaves the right word unmarked', () => {
+    const typed = 'No contagion, there is nothing to catch.'
+    const result = check(typed, CONTAGION)
+
+    // "there" is correct - nothing is underlined; the gap before it is marked.
+    expect(result.boundary).toEqual({
+      end: typed.indexOf('there'),
+      kind: 'missing',
+      start: typed.indexOf('there'),
+      wrongOffsets: [],
+    })
+    expect(result.caretOffset).toBe(typed.indexOf('there'))
+    expect(result.caretValue).toBe('No contagion, ')
+    // "because" is revealed as never typed: every char missing, none wrong.
+    expect(result.segments[2]).toMatchObject({
+      expected: 'because',
+      kind: 'boundaryReveal',
+      typed: null,
+    })
+    expect(
+      result.segments[2].chars.every(cell => cell.status === 'missing')
+    ).toBe(true)
+    expect(masked(typed, CONTAGION)).toBe(
+      'No contagion, because ***** ** ******* ** ******'
+    )
+  })
+
+  test('on Check the draft opens a slot so the missing word types straight in', () => {
+    const corrected = autoCorrectAnswer(
+      CONTAGION,
+      'no contagion there is nothing to catch.'
+    )
+    const result = check(corrected, CONTAGION)
+
+    expect(corrected).toBe('No contagion,  there is nothing to catch.')
+    // Caret sits between the two spaces, so typing "because" needs no space.
+    expect(corrected.slice(0, result.caretOffset)).toBe('No contagion, ')
+    expect(result.boundary?.kind).toBe('missing')
+    // Re-checking without typing is a no-op (no extra space per Check).
+    expect(autoCorrectAnswer(CONTAGION, corrected)).toBe(corrected)
+
+    const fixed = `${corrected.slice(0, result.caretOffset)}because${corrected.slice(result.caretOffset)}`
+
+    expect(check(fixed, CONTAGION).isPassed).toBe(true)
+  })
+
+  test('a skipped first word puts the caret at the start', () => {
+    const corrected = autoCorrectAnswer('So I went home.', 'I went home.')
+    const result = check(corrected, 'So I went home.')
+
+    expect(corrected).toBe(' I went home.')
+    expect(result.boundary).toMatchObject({ kind: 'missing', start: 0 })
+    expect(result.segments[0]).toMatchObject({ expected: 'So', typed: null })
+  })
+
+  test('several skipped words reveal the first one', () => {
+    const result = check('No contagion, is nothing to catch.', CONTAGION)
+
+    expect(result.boundary?.kind).toBe('missing')
+    expect(result.segments[result.boundaryIndex].expected).toBe('because')
+  })
+
+  test('a skip followed by a single typed word is still missing', () => {
+    const result = check(
+      'No contagion, because there is nothing catch.',
+      CONTAGION
+    )
+
+    expect(result.boundary?.kind).toBe('missing')
+    expect(result.segments[result.boundaryIndex].expected).toBe('to')
+  })
+
+  const LIKE = 'I like this one more than that one.'
+
+  test.each([
+    ['a typo', 'As years passed and', 'As yers passed and'],
+    ['a substituted word', 'I want a car and a house', 'I want the car'],
+    ['a wrong word form', 'I go to school', 'I goes to school'],
+    ['an extra word', 'I go to school', 'I really go to school'],
+    ['an unfinished word', 'He ordered many men', 'He ord'],
+    // An unfinished draft: the untyped tail must not make a later match look
+    // like a skip ("that" is a wrong "this", not "this one more than" missing).
+    ['a wrong word ending a draft', LIKE, 'I like that'],
+    ['a wrong word mid-draft', LIKE, 'I like that one'],
+    ['a wrong word close to a later one', 'he said yes to me', 'he said he'],
+  ])('%s still reports the typed word as wrong', (_, expected, typed) => {
+    const result = check(typed, expected)
+
+    expect(result.boundary?.kind).toBe('wrong')
+    expect(autoCorrectAnswer(expected, typed)).not.toMatch(/\s{2}/)
+  })
+})
+
 describe('autoCorrectAnswer', () => {
   const KAIJU =
     'There are Kaijus with biological armour, who spit acid, shoot living harpoons, and eat their victims alive – and yet you have probably never heard of any of them: The Unhinged Super Predators of the Microworld'

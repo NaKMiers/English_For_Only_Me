@@ -174,6 +174,40 @@ describe('GuidedAnswerInput - boundary underline', () => {
     expect(redChar).toBeDefined()
   })
 
+  test('a skipped word marks the gap and underlines nothing typed', () => {
+    const expected = 'No contagion, because there is nothing to catch.'
+    const typed = 'No contagion,  there is nothing to catch.'
+    const { view } = renderInput({
+      correction: correctionFor(typed, expected),
+      expectedText: expected,
+      status: 'incorrect',
+      value: typed,
+    })
+    const textarea = view.getByLabelText(
+      'Type what you hear'
+    ) as HTMLTextAreaElement
+
+    const mirror = view
+      .getByTestId('missing-word-mark')
+      .closest('[aria-hidden="true"]')
+
+    // "there" is right, so no word or character is underlined in the mirror.
+    expect(mirror?.textContent).toBe(typed)
+    expect(mirror?.querySelector('[class*="underline"]')).toBeNull()
+    // The answer line shows "because" in the dotted-amber "missing" style.
+    const answerLine = view.getByTestId('answer-line')
+    const missingChars = [
+      ...answerLine.querySelectorAll('[class*="decoration-dotted"]'),
+    ]
+
+    expect(missingChars.map(node => node.textContent).join('')).toBe('because')
+    expect(view.getByRole('status').textContent).toBe(
+      'Incorrect - a word is missing'
+    )
+    // Caret parked in the gap, ready for the missing word.
+    expect(textarea.selectionStart).toBe('No contagion, '.length)
+  })
+
   test('drops the underline once the draft is edited away from the checked value', () => {
     const typed = 'the prxbably'
     const correction = correctionFor(typed, 'the probably')

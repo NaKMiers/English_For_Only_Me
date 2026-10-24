@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils'
 import {
   buildCharCorrection,
   computeHints,
+  type CharBoundary,
   type CharCell,
   type CharCorrectionResult,
   type WordSegment,
@@ -33,6 +34,10 @@ import {
  *
  *   wrong char   → solid red underline   (substitution the learner typed)
  *   missing char → dotted amber underline (expected char not yet typed)
+ *
+ * In the draft itself, a wrong word is underlined in place, while a skipped word
+ * gets an amber insertion wedge (‸) in the gap where it belongs - the correct
+ * words around it stay unmarked.
  *
  * Keyboard (design review D2): Enter checks, Esc reveals, Tab fills the next
  * proper-noun hint WHILE hints remain (else Tab releases focus normally), and
@@ -172,12 +177,63 @@ export function answerLineCells(
   })
 }
 
-function statusMessage(status: GuidedStatus): string {
+function statusMessage(status: GuidedStatus, isMissingWord: boolean): string {
   if (status === 'correct') return 'You are correct!'
-  if (status === 'incorrect') return 'Incorrect'
+  if (status === 'incorrect')
+    return isMissingWord ? 'Incorrect - a word is missing' : 'Incorrect'
   if (status === 'revealed') return 'Answer revealed'
 
   return ''
+}
+
+/** The transparent mirror behind the textarea: the draft verbatim, with the
+ * checked boundary marked in place. A wrong word gets an amber underline (red
+ * under its exact wrong characters); a skipped word gets an amber wedge in the
+ * gap before the word that follows it. */
+function renderBoundaryMirror(
+  value: string,
+  boundary: CharBoundary | null
+): ReactNode {
+  if (!boundary) return value
+
+  if (boundary.kind === 'missing')
+    return (
+      <>
+        {value.slice(0, boundary.start)}
+        {/* Empty inline anchor + absolute wedge: zero layout width, so the
+            mirrored text stays aligned with the textarea. */}
+        <span className="relative">
+          <span
+            data-testid="missing-word-mark"
+            className="absolute bottom-0 left-0 size-0 -translate-x-1/2 border-x-[0.22em] border-b-[0.32em] border-x-transparent border-b-amber-600"
+          />
+        </span>
+        {value.slice(boundary.start)}
+      </>
+    )
+
+  return (
+    <>
+      {value.slice(0, boundary.start)}
+      <span className="underline decoration-amber-600 decoration-solid decoration-[3px] underline-offset-2">
+        {[...value.slice(boundary.start, boundary.end)].map((char, index) => {
+          const offset = boundary.start + index
+
+          return boundary.wrongOffsets.includes(offset) ? (
+            <span
+              key={offset}
+              className="underline decoration-red-700 decoration-solid decoration-[3px] underline-offset-2"
+            >
+              {char}
+            </span>
+          ) : (
+            char
+          )
+        })}
+      </span>
+      {value.slice(boundary.end)}
+    </>
+  )
 }
 
 export function GuidedAnswerInput({
@@ -227,15 +283,16 @@ export function GuidedAnswerInput({
     })
   }, [correction, expectedText, revealAnswerWords, status])
 
-  // The boundary word (the first mistake) underlined IN PLACE inside the draft:
-  // amber under the whole wrong word, red under the exact wrong characters. Only
-  // while the draft still equals what was checked - editing it hides the marks
-  // until the next Check. A transparent mirror layer draws the underline so the
-  // real text, caret, and IME stay native.
+  // The boundary word (the first mistake) marked IN PLACE inside the draft:
+  // amber under the whole wrong word, red under the exact wrong characters, or
+  // a wedge where a skipped word belongs. Only while the draft still equals what
+  // was checked - editing it hides the marks until the next Check. A transparent
+  // mirror layer draws the marks so the real text, caret, and IME stay native.
   const boundary =
     correction && status === 'incorrect' && value === correction.typedValue
       ? correction.boundary
       : null
+  const isMissingWord = correction?.boundary?.kind === 'missing'
 
   // After a wrong Check, drop the caret just past the boundary word ONCE so the
   // learner fixes the mistake without losing the text they typed after it. Keyed
@@ -386,32 +443,7 @@ export function GuidedAnswerInput({
           style={inputTextStyle}
           className="pointer-events-none absolute inset-0 px-2.5 py-2 font-semibold wrap-break-word whitespace-pre-wrap text-transparent"
         >
-          {boundary ? (
-            <>
-              {value.slice(0, boundary.start)}
-              <span className="underline decoration-amber-600 decoration-solid decoration-[3px] underline-offset-2">
-                {[...value.slice(boundary.start, boundary.end)].map(
-                  (char, index) => {
-                    const offset = boundary.start + index
-
-                    return boundary.wrongOffsets.includes(offset) ? (
-                      <span
-                        key={offset}
-                        className="underline decoration-red-700 decoration-solid decoration-[3px] underline-offset-2"
-                      >
-                        {char}
-                      </span>
-                    ) : (
-                      char
-                    )
-                  }
-                )}
-              </span>
-              {value.slice(boundary.end)}
-            </>
-          ) : (
-            value
-          )}
+          {renderBoundaryMirror(value, boundary)}
         </div>
         <textarea
           ref={textareaRef}
@@ -461,7 +493,7 @@ export function GuidedAnswerInput({
               className="size-5 shrink-0"
             />
           ) : null}
-          {statusMessage(status)}
+          {statusMessage(status, isMissingWord)}
         </p>
         {statusAction ? (
           <div className="flex flex-wrap items-center gap-2">

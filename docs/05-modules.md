@@ -176,6 +176,24 @@ the raw draft and lists `wrongOffsets` so the guided input can underline in plac
 park the caret just past the boundary (`caretOffset`) without discarding text typed
 after the mistake.
 
+A skipped word is reported as missing, not wrong. When the typed word at the boundary
+belongs to a later expected word (expected "No contagion, because there is", typed
+"No contagion, there is"), `isSkippedWord` runs a suffix alignment from the boundary
+with the same word costs as `compareAnswer` (`getSubstitutionCost`; skipping a word
+costs 1). Expected words after the last typed word are free there, because a draft may
+stop mid-sentence and those words are not typed yet. It returns true only when dropping
+the expected word is strictly cheaper than reading the typed word as a substitution, and
+no costlier than reading it as an extra word (a tie means the typed word is exactly the
+next expected word). Typos, substitutions (also in an unfinished draft such as "I like
+that" for "I like this one more than that one."), extra words, and an unfinished last
+word keep the `wrong` boundary. A missing
+boundary has `kind: 'missing'`, `start === end` at the insertion point, and no
+`wrongOffsets`; the boundary segment is `boundaryReveal` with `typed: null` (every char
+`missing`). `autoCorrectAnswer` uses the same check to open one extra space at the gap,
+so the caret lands between two spaces and the learner types the word straight in. The
+guided input draws an amber wedge at that point instead of underlining the correct word,
+and the status reads "Incorrect - a word is missing".
+
 Additional outputs:
 
 - `computeHints` / `collectHints` surface proper-noun hint words (mid-sentence capitals

@@ -5,6 +5,7 @@ export {
   computeHints,
   renderAnswerLine,
   type CharBoundary,
+  type CharBoundaryKind,
   type CharCell,
   type CharCellStatus,
   type CharCorrectionResult,

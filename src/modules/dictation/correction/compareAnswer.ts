@@ -76,8 +76,14 @@ function getTokenStatus(
 ): DictationCorrectionTokenStatus {
   if (expectedToken === actualToken) return 'correct'
 
-  const editDistance = getEditDistance(expectedToken, actualToken)
   const nearMissLimit = expectedToken.length <= 4 ? 1 : 2
+
+  // The edit distance is at least the length gap, so a wide gap is never a
+  // near miss - skip building the distance matrix.
+  if (Math.abs(expectedToken.length - actualToken.length) > nearMissLimit)
+    return 'wrong'
+
+  const editDistance = getEditDistance(expectedToken, actualToken)
 
   if (editDistance > 0 && editDistance <= nearMissLimit)
     return 'spellingVariant'
@@ -85,7 +91,10 @@ function getTokenStatus(
   return 'wrong'
 }
 
-function getSubstitutionCost(expectedToken: string, actualToken: string) {
+export function getSubstitutionCost(
+  expectedToken: string,
+  actualToken: string
+) {
   const status = getTokenStatus(expectedToken, actualToken)
 
   if (status === 'correct') return 0

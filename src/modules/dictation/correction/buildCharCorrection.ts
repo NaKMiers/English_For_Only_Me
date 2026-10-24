@@ -4,7 +4,7 @@ import type {
   DictationCorrectionTokenRecord,
 } from '@/modules/dictation/types'
 
-import { buildDictationCorrection } from './compareAnswer'
+import { buildDictationCorrection, getSubstitutionCost } from './compareAnswer'
 import {
   canonicalizeCorrectionToken,
   expandSymbolicVariants,
@@ -27,12 +27,17 @@ import { DEFAULT_CORRECTION_OPTIONS, type CorrectionOptions } from './types'
  *   As years passed  ...   [nothing typed]  → reveal    ...   masked when
  *   (shown in green)       [clean prefix]   → partial+■        showFullAnswer
  *                          [wrong / typed-past] → reveal        is OFF
+ *                          [skipped word]   → reveal
  *
  * The "remaining vs matched" split is a WORD-PREFIX: matching stops at the first
  * word that is not fully correct. Words the learner typed correctly *after* an
  * earlier mistake are still masked, because the learner must fix the boundary
  * first. Character-level detail (red = wrong char, yellow = missing char) is
  * computed only for the boundary word.
+ *
+ * A skipped word is told apart from a wrong one: expected "No contagion, because
+ * there is" typed "No contagion, there is" reports "because" as MISSING before
+ * "there" instead of flagging the correct "there" as wrong (isSkippedWord).
  *
  * Analytics (feedbackTokens + stats) are delegated to `buildDictationCorrection`
  * so persistence, videoStats, reviewScheduler, and the AI debrief keep the exact
@@ -72,12 +77,22 @@ export interface WordSegment {
   chars: CharCell[]
 }
 
+/** How the learner got the boundary word wrong: typed a wrong word in its slot,
+ * or skipped it and typed the word that comes after it. */
+export type CharBoundaryKind = 'missing' | 'wrong'
+
 /** The first not-fully-correct word located inside the RAW typed answer, so the
- * guided input can underline it in place without rewriting the draft. `start`/
- * `end` are code-unit offsets into `typedValue`; `wrongOffsets` are the absolute
- * offsets of the substituted/extra characters the learner typed (red), while the
- * whole [start, end) span is the wrong word (amber). */
+ * guided input can mark it in place without rewriting the draft. `start`/`end`
+ * are code-unit offsets into `typedValue`.
+ *
+ * - `wrong`: `wrongOffsets` are the absolute offsets of the substituted/extra
+ *   characters the learner typed (red), while the whole [start, end) span is
+ *   the wrong word (amber).
+ * - `missing`: `start === end` is the insertion point in the gap before the
+ *   typed word that belongs after the skipped one, and `wrongOffsets` is empty -
+ *   nothing the learner typed there is wrong. */
 export interface CharBoundary {
+  kind: CharBoundaryKind
   start: number
   end: number
   wrongOffsets: number[]
@@ -142,19 +157,40 @@ function tokenRanges(text: string): Array<[number, number]> {
   return ranges
 }
 
+/** Where a skipped word goes in front of the typed word starting at `wordStart`:
+ * past one separator space, when the gap is wide enough to keep another before
+ * that word (autoCorrectAnswer opens one), else right at the word. */
+function getInsertionOffset(typedAnswer: string, wordStart: number) {
+  const gapLength =
+    /\s*$/.exec(typedAnswer.slice(0, wordStart))?.[0].length ?? 0
+  const gapStart = wordStart - gapLength
+  const afterSeparator = gapStart > 0 ? gapStart + 1 : gapStart
+
+  return afterSeparator < wordStart ? afterSeparator : wordStart
+}
+
 /** Locate the boundary word inside the raw typed answer and flag the characters
  * the learner actually got wrong (substituted or typed past the expected word).
- * Character comparison is case-insensitive, matching buildCharCells. */
+ * Character comparison is case-insensitive, matching buildCharCells. A skipped
+ * word flags nothing: it marks the insertion point in the gap instead. */
 function locateBoundary(
   typedAnswer: string,
   expectedWord: string,
-  boundaryIndex: number
+  boundaryIndex: number,
+  kind: CharBoundaryKind
 ): CharBoundary | null {
   const range = tokenRanges(typedAnswer)[boundaryIndex]
 
   if (!range) return null
 
   const [start, end] = range
+
+  if (kind === 'missing') {
+    const offset = getInsertionOffset(typedAnswer, start)
+
+    return { end: offset, kind, start: offset, wrongOffsets: [] }
+  }
+
   const typedWord = typedAnswer.slice(start, end)
   const wrongOffsets: number[] = []
 
@@ -169,7 +205,7 @@ function locateBoundary(
       wrongOffsets.push(start + position)
   }
 
-  return { end, start, wrongOffsets }
+  return { end, kind, start, wrongOffsets }
 }
 
 /** Lowercase + strip surrounding/embedded punctuation for comparison, mirroring
@@ -324,7 +360,9 @@ function consumeRedundantExpandedTokens({
  * word, then leaves a trailing space if more words are still to come - so the
  * caret is parked right where the next word goes. A genuinely wrong word stops
  * all of that; everything from there on is kept as typed (whitespace-collapsed)
- * so the learner can fix the boundary. Pure - exported for tests. */
+ * so the learner can fix the boundary. A skipped word likewise keeps the rest
+ * as typed, with one extra space opened where the missing word goes. Pure -
+ * exported for tests. */
 export function autoCorrectAnswer(
   expectedText: string,
   typedAnswer: string,
@@ -386,9 +424,21 @@ export function autoCorrectAnswer(
   }
 
   // A wrong/extra word (or an empty draft): keep whatever the learner typed from
-  // the boundary on, without volunteering the upcoming answer.
-  if (!matchedCleanly || typedIndex === 0)
-    return [...canonical, ...typedUnits.slice(typedIndex)].join(' ')
+  // the boundary on, without volunteering the upcoming answer. A skipped word
+  // gets an empty slot (an extra space) where it belongs, so the caret parked
+  // there takes the word as typed - no space to add by hand.
+  if (!matchedCleanly || typedIndex === 0) {
+    const rest = typedUnits.slice(typedIndex)
+    const skippedSlot = isSkippedWord({
+      expectedUnits: expectedUnits.slice(expectedIndex),
+      options,
+      typedUnits: rest,
+    })
+      ? ['']
+      : []
+
+    return [...canonical, ...skippedSlot, ...rest].join(' ')
+  }
 
   // Clean prefix: fill the punctuation that follows the last matched word...
   while (
@@ -411,6 +461,73 @@ function isCleanPrefix(expectedNorm: string, typedNorm: string) {
     typedNorm.length < expectedNorm.length &&
     expectedNorm.startsWith(typedNorm)
   )
+}
+
+/** `costs[row][column]` is the cheapest alignment of expected[row..] with
+ * typed[column..], using the same word costs as the analytics alignment in
+ * compareAnswer (skipping a word costs 1, a substitution getSubstitutionCost).
+ * Expected words left over after the last typed word are free: the draft may
+ * stop mid-sentence, and those words are not typed YET rather than skipped. */
+function getSuffixAlignmentCosts(
+  expectedTokens: string[],
+  typedTokens: string[]
+) {
+  const costs = Array.from({ length: expectedTokens.length + 1 }, () =>
+    Array.from({ length: typedTokens.length + 1 }, () => 0)
+  )
+
+  for (let row = expectedTokens.length; row >= 0; row -= 1)
+    for (let column = typedTokens.length; column >= 0; column -= 1)
+      if (row === expectedTokens.length)
+        costs[row][column] = typedTokens.length - column
+      else if (column === typedTokens.length) costs[row][column] = 0
+      else
+        costs[row][column] = Math.min(
+          costs[row + 1][column] + 1,
+          costs[row][column + 1] + 1,
+          costs[row + 1][column + 1] +
+            getSubstitutionCost(expectedTokens[row], typedTokens[column])
+        )
+
+  return costs
+}
+
+/** True when the learner SKIPPED the boundary word (`expectedUnits[0]`) instead
+ * of mistyping it, so the word they typed there (`typedUnits[0]`) belongs after
+ * it. Both lists start at the boundary. Only when dropping the expected word
+ * explains the rest of the answer strictly better than reading the typed word
+ * as a wrong attempt at it, and no worse than reading it as an extra word (a
+ * tie there means the typed word is exactly the next expected one) - a typo, a
+ * substitution, or a word still being typed reports `wrong` exactly as before.
+ * Shared by autoCorrectAnswer and buildCharCorrection so both agree. */
+function isSkippedWord({
+  expectedUnits,
+  options,
+  typedUnits,
+}: {
+  expectedUnits: string[]
+  options: Required<CorrectionOptions>
+  typedUnits: string[]
+}) {
+  if (expectedUnits.length === 0 || typedUnits.length === 0) return false
+
+  const expectedTokens = expectedUnits.map(unit => normalizeUnit(unit, options))
+  const typedTokens = typedUnits.map(unit => normalizeUnit(unit, options))
+
+  // The last thing typed is a clean start of the expected word: in progress.
+  if (
+    typedTokens.length === 1 &&
+    isCleanPrefix(expectedTokens[0], typedTokens[0])
+  )
+    return false
+
+  const costs = getSuffixAlignmentCosts(expectedTokens, typedTokens)
+  const skipExpected = costs[1][0] + 1
+  const skipTyped = costs[0][1] + 1
+  const substitute =
+    costs[1][1] + getSubstitutionCost(expectedTokens[0], typedTokens[0])
+
+  return skipExpected < substitute && skipExpected <= skipTyped
 }
 
 function collectHints(expectedUnits: string[], fromIndex: number): string[] {
@@ -451,7 +568,12 @@ function buildSegments({
   fullyMatched: number
   options: Required<CorrectionOptions>
   typedUnits: string[]
-}): { segments: WordSegment[]; boundaryIndex: number; caretValue: string } {
+}): {
+  boundaryIndex: number
+  caretValue: string
+  isMissingWord: boolean
+  segments: WordSegment[]
+} {
   const segments: WordSegment[] = []
 
   for (let index = 0; index < fullyMatched; index += 1)
@@ -469,6 +591,7 @@ function buildSegments({
     return {
       boundaryIndex,
       caretValue: matchedCaret,
+      isMissingWord: false,
       segments,
     }
 
@@ -482,12 +605,18 @@ function buildSegments({
       normalizeUnit(boundaryExpected, options),
       normalizeUnit(boundaryTyped, options)
     )
+  const isMissingWord = isSkippedWord({
+    expectedUnits: expectedUnits.slice(boundaryIndex),
+    options,
+    typedUnits: typedUnits.slice(boundaryIndex),
+  })
 
   let caretValue = matchedCaret
 
-  if (boundaryTyped === null) {
-    // Typed nothing here yet: reveal the next word as a hint, caret sits at the
-    // start of the boundary (after the matched words + a joining space).
+  if (boundaryTyped === null || isMissingWord) {
+    // Typed nothing here yet, or skipped this word and typed what follows it:
+    // reveal the next word as a hint, caret sits at the start of the boundary
+    // (after the matched words + a joining space).
     segments.push({
       kind: 'boundaryReveal',
       expected: boundaryExpected,
@@ -523,7 +652,7 @@ function buildSegments({
       chars: buildCharCells(expectedUnits[index], null),
     })
 
-  return { boundaryIndex, caretValue, segments }
+  return { boundaryIndex, caretValue, isMissingWord, segments }
 }
 
 /** Render the answer line the way the learner sees it. `showFullAnswer` off
@@ -587,7 +716,7 @@ export function buildCharCorrection({
   }
 
   const fullyMatched = countFullyMatched(expectedUnits, typedUnits, options)
-  const { boundaryIndex, caretValue, segments } = buildSegments({
+  const { boundaryIndex, caretValue, isMissingWord, segments } = buildSegments({
     expectedUnits,
     fullyMatched,
     options,
@@ -595,11 +724,13 @@ export function buildCharCorrection({
   })
   // Anchor the boundary word inside the raw draft so the guided input can
   // underline it and drop the caret just past it - keeping everything the
-  // learner typed after the mistake instead of truncating to the prefix.
+  // learner typed after the mistake instead of truncating to the prefix. A
+  // skipped word anchors the caret in the gap where it belongs instead.
   const boundary = locateBoundary(
     typedAnswer,
     expectedUnits[boundaryIndex] ?? '',
-    boundaryIndex
+    boundaryIndex,
+    isMissingWord ? 'missing' : 'wrong'
   )
 
   return {
