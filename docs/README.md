@@ -35,6 +35,16 @@ so you can jump from a doc statement to the exact file that backs it.
   -> MongoDB. Pure, unit-tested decision functions are kept separate from
   database record I/O throughout.
 
+## Plans
+
+Design docs, test plans and measurements for larger changes live in
+[plans/](./plans/). They record why a change was made and what was decided;
+the numbered docs above describe the code as it is now.
+
+- [2026-10-24 performance pass](./plans/2026-10-24-performance-pass-design.md)
+  ([test plan](./plans/2026-10-24-performance-pass-test-plan.md),
+  [measurements](./plans/2026-10-24-performance-pass-measurements.md))
+
 ## How these docs stay current
 
 These docs are maintained by the project-local `documentlization` skill. Its

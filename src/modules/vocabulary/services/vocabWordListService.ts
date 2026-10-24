@@ -1,6 +1,6 @@
 import 'server-only'
 
-import type { QueryFilter, SortOrder, Types } from 'mongoose'
+import type { PipelineStage, QueryFilter, Types } from 'mongoose'
 
 import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
 import {
@@ -9,9 +9,10 @@ import {
 } from '@/models/vocabulary/UserVocabItemModel'
 import { VocabEntryModel } from '@/models/vocabulary/VocabEntryModel'
 import { VocabOccurrenceModel } from '@/models/vocabulary/VocabOccurrenceModel'
+import { VOCAB_WORD_LIST_DEFAULT_PAGE_SIZE } from '@/modules/vocabulary/constants'
 import type {
   VocabUserItemStatus,
-  VocabWordListRecord,
+  VocabWordListPageRecord,
   VocabWordListView,
   VocabWordSourceVideoRecord,
 } from '@/modules/vocabulary/types'
@@ -68,23 +69,16 @@ function getStatusFilter(
   return { status: view }
 }
 
-function getSortForView(view: VocabWordListView): [string, SortOrder][] {
+type SortSpec = Record<string, 1 | -1>
+
+function getSortForView(view: VocabWordListView): SortSpec {
   if (view === 'dueToday' || view === 'learning')
-    return [
-      ['dueAt', 'asc'],
-      ['updatedAt', 'desc'],
-    ]
+    return { dueAt: 1, updatedAt: -1 }
 
   if (view === 'knownTotal' || view === 'alreadyKnow')
-    return [
-      ['knownAt', 'desc'],
-      ['updatedAt', 'desc'],
-    ]
+    return { knownAt: -1, updatedAt: -1 }
 
-  return [
-    ['masteredAt', 'desc'],
-    ['updatedAt', 'desc'],
-  ]
+  return { masteredAt: -1, updatedAt: -1 }
 }
 
 /**
@@ -92,7 +86,8 @@ function getSortForView(view: VocabWordListView): [string, SortOrder][] {
  * occurrence that carries a videoId. The word is looked up (recording an
  * occurrence with the current videoId) right before it is saved via
  * "Should Learn", so the latest video-bearing occurrence is the video the word
- * was learned from. Returns a map keyed by stringified vocabEntryId.
+ * was learned from. Grouped in MongoDB so only one row per entry comes back,
+ * not every occurrence. Returns a map keyed by stringified vocabEntryId.
  */
 async function getSourceVideosByEntryId({
   entryIds,
@@ -103,29 +98,25 @@ async function getSourceVideosByEntryId({
 }): Promise<Map<string, VocabWordSourceVideoRecord>> {
   if (entryIds.length === 0) return new Map()
 
-  const occurrences = await VocabOccurrenceModel.find({
-    userId,
-    vocabEntryId: { $in: entryIds },
-    videoId: { $ne: null },
-  })
-    .sort({ createdAt: -1 })
-    .select('vocabEntryId videoId')
-    .lean()
+  const latest = await VocabOccurrenceModel.aggregate<{
+    _id: Types.ObjectId
+    videoId: Types.ObjectId
+  }>([
+    {
+      $match: {
+        userId,
+        videoId: { $ne: null },
+        vocabEntryId: { $in: entryIds },
+      },
+    },
+    { $sort: { createdAt: -1 } },
+    { $group: { _id: '$vocabEntryId', videoId: { $first: '$videoId' } } },
+  ])
 
-  // First occurrence per entry wins (sorted newest first).
-  const videoIdByEntryId = new Map<string, string>()
-
-  for (const occurrence of occurrences) {
-    const entryKey = String(occurrence.vocabEntryId)
-
-    if (!videoIdByEntryId.has(entryKey))
-      videoIdByEntryId.set(entryKey, String(occurrence.videoId))
-  }
-
-  if (videoIdByEntryId.size === 0) return new Map()
+  if (latest.length === 0) return new Map()
 
   const videos = await DictationVideoModel.find({
-    _id: { $in: [...new Set(videoIdByEntryId.values())] },
+    _id: { $in: [...new Set(latest.map(row => String(row.videoId)))] },
   })
     .select('title youtubeUrl')
     .lean()
@@ -142,55 +133,141 @@ async function getSourceVideosByEntryId({
 
   const sourceVideoByEntryId = new Map<string, VocabWordSourceVideoRecord>()
 
-  for (const [entryKey, videoId] of videoIdByEntryId) {
-    const video = videoById.get(videoId)
+  for (const row of latest) {
+    const video = videoById.get(String(row.videoId))
 
-    if (video) sourceVideoByEntryId.set(entryKey, video)
+    if (video) sourceVideoByEntryId.set(String(row._id), video)
   }
 
   return sourceVideoByEntryId
 }
 
+// Only what a word card renders: term + pronunciation, the Vietnamese meaning,
+// the first English definition, rank and enrichment status. Aggregation form,
+// so the definition slice is an expression.
+const WORD_LIST_ENTRY_PROJECTION = {
+  createdAt: 1,
+  definitions: { $slice: ['$definitions', 1] },
+  enrichmentStatus: 1,
+  frequencyRank: 1,
+  localizedMeanings: 1,
+  normalizedTerm: 1,
+  phonetics: 1,
+  term: 1,
+  updatedAt: 1,
+}
+
+export function getVocabWordListSkip({
+  page,
+  perPage,
+}: {
+  page: number
+  perPage: number
+}) {
+  return (Math.max(page, 1) - 1) * perPage
+}
+
+/**
+ * One round trip for a page of the word list and its total. The entry join and
+ * the Vietnamese-meaning filter run BEFORE skip/limit, so an item whose entry
+ * has no meaning yet is neither counted nor leaves a hole in the page (paging
+ * first and dropping rows afterwards gave short pages, a total that counted
+ * hidden words and an empty last page).
+ */
+export function buildVocabWordListPipeline({
+  entryCollection,
+  filter,
+  page,
+  perPage,
+  view,
+}: {
+  entryCollection: string
+  filter: Record<string, unknown>
+  page: number
+  perPage: number
+  view: VocabWordListView
+}): PipelineStage[] {
+  return [
+    { $match: filter },
+    { $sort: { ...getSortForView(view), _id: 1 } },
+    {
+      $lookup: {
+        from: entryCollection,
+        localField: 'vocabEntryId',
+        foreignField: '_id',
+        pipeline: [
+          { $match: VOCAB_REQUIRES_VI_MEANING_FILTER },
+          { $project: WORD_LIST_ENTRY_PROJECTION },
+        ],
+        as: 'entry',
+      },
+    },
+    // Drops items whose entry is missing or fails the meaning filter.
+    { $unwind: '$entry' },
+    {
+      $facet: {
+        total: [{ $count: 'count' }],
+        rows: [
+          { $skip: getVocabWordListSkip({ page, perPage }) },
+          { $limit: perPage },
+        ],
+      },
+    },
+  ]
+}
+
+type WordListRow = UserVocabItemDocument & {
+  _id: Types.ObjectId
+  createdAt: Date
+  entry: Parameters<typeof toVocabEntryRecord>[0]
+  updatedAt: Date
+}
+
 export async function listVocabWordsForUser({
   now = new Date(),
+  page = 1,
+  perPage = VOCAB_WORD_LIST_DEFAULT_PAGE_SIZE,
   userId,
   view,
 }: {
   now?: Date
+  page?: number
+  perPage?: number
   userId: string
   view: VocabWordListView
-}): Promise<VocabWordListRecord[]> {
-  if (!userId) return []
+}): Promise<VocabWordListPageRecord> {
+  const empty = { page, perPage, total: 0, words: [] }
 
-  const items = await UserVocabItemModel.find({
+  if (!userId) return empty
+
+  const filter = { userId, ...getStatusFilter(view, now) }
+  const [result] = await UserVocabItemModel.aggregate<{
+    rows: WordListRow[]
+    total: { count: number }[]
+  }>(
+    buildVocabWordListPipeline({
+      entryCollection: VocabEntryModel.collection.collectionName,
+      filter,
+      page,
+      perPage,
+      view,
+    })
+  )
+  const rows = result?.rows ?? []
+  const total = result?.total[0]?.count ?? 0
+
+  if (rows.length === 0) return { ...empty, total }
+
+  const sourceVideoByEntryId = await getSourceVideosByEntryId({
+    entryIds: rows.map(row => row.vocabEntryId),
     userId,
-    ...getStatusFilter(view, now),
   })
-    .sort(getSortForView(view))
-    .lean()
 
-  if (items.length === 0) return []
+  const words = rows.map(({ entry, ...item }) => ({
+    entry: toVocabEntryRecord(entry),
+    item: toUserVocabItemRecord(item),
+    sourceVideo: sourceVideoByEntryId.get(String(item.vocabEntryId)) ?? null,
+  }))
 
-  const entryIds = items.map(item => item.vocabEntryId)
-  const [entries, sourceVideoByEntryId] = await Promise.all([
-    VocabEntryModel.find({
-      _id: { $in: entryIds },
-      ...VOCAB_REQUIRES_VI_MEANING_FILTER,
-    }).lean(),
-    getSourceVideosByEntryId({ entryIds, userId }),
-  ])
-  const entryById = new Map(entries.map(entry => [String(entry._id), entry]))
-
-  return items.flatMap(item => {
-    const entry = entryById.get(String(item.vocabEntryId))
-    if (!entry) return []
-
-    return [
-      {
-        entry: toVocabEntryRecord(entry),
-        item: toUserVocabItemRecord(item),
-        sourceVideo: sourceVideoByEntryId.get(String(item.vocabEntryId)) ?? null,
-      },
-    ]
-  })
+  return { page, perPage, total, words }
 }

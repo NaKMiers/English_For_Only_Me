@@ -22,32 +22,36 @@ import type {
 async function listStartedActiveSessions(
   userId: string
 ): Promise<{ id: string; videoId: string }[]> {
-  const sessions = await DictationSessionModel.find({
-    userId,
-    status: 'active',
-  })
-    .sort({ lastActiveAt: -1 })
-    .select({ videoId: 1 })
-    .lean<{ _id: Types.ObjectId; videoId: Types.ObjectId }[]>()
+  // One round trip: each active session looks up a single attempt of its own
+  // (served by the {userId, sessionId, idempotencyKey} index) and sessions
+  // without one drop out.
+  const sessions = await DictationSessionModel.aggregate<{
+    _id: Types.ObjectId
+    videoId: Types.ObjectId
+  }>([
+    { $match: { userId, status: 'active' } },
+    { $sort: { lastActiveAt: -1 } },
+    {
+      $lookup: {
+        as: 'firstAttempt',
+        foreignField: 'sessionId',
+        from: DictationAttemptModel.collection.collectionName,
+        localField: '_id',
+        pipeline: [
+          { $match: { userId } },
+          { $limit: 1 },
+          { $project: { _id: 1 } },
+        ],
+      },
+    },
+    { $match: { 'firstAttempt.0': { $exists: true } } },
+    { $project: { videoId: 1 } },
+  ])
 
-  if (sessions.length === 0) return []
-
-  // Which of those sessions have any attempt? distinct keeps this to one query.
-  const startedIds = new Set(
-    (
-      await DictationAttemptModel.distinct('sessionId', {
-        userId,
-        sessionId: { $in: sessions.map(session => session._id) },
-      })
-    ).map(id => String(id))
-  )
-
-  return sessions
-    .filter(session => startedIds.has(String(session._id)))
-    .map(session => ({
-      id: String(session._id),
-      videoId: String(session.videoId),
-    }))
+  return sessions.map(session => ({
+    id: String(session._id),
+    videoId: String(session.videoId),
+  }))
 }
 
 /**

@@ -1,6 +1,8 @@
 'use client'
 
-import { useCallback, useState } from 'react'
+import dynamic from 'next/dynamic'
+import { useRouter } from 'next/navigation'
+import { useCallback, useEffect, useState } from 'react'
 
 import { MangaButton } from '@/components/ui/MangaButton'
 import type {
@@ -11,8 +13,21 @@ import type {
 import { SenseiPortrait } from './cast/SenseiPortrait'
 import { ComicPanel } from './comic/ComicPanel'
 import { SpeechBubble } from './comic/SpeechBubble'
-import { GrammarTestConfigModal } from './GrammarTestConfigModal'
-import { GrammarTestModal } from './GrammarTestModal'
+
+const loadConfigModal = () =>
+  import('./GrammarTestConfigModal').then(mod => mod.GrammarTestConfigModal)
+const loadTestModal = () =>
+  import('./GrammarTestModal').then(mod => mod.GrammarTestModal)
+
+// Both modals only mount after a click, so they stay out of the dashboard
+// bundle. Hovering or focusing Test Me warms the config chunk, and opening the
+// config warms the test chunk while the learner picks options.
+const GrammarTestConfigModal = dynamic(loadConfigModal, { ssr: false })
+const GrammarTestModal = dynamic(loadTestModal, { ssr: false })
+
+function preloadConfigModal() {
+  void loadConfigModal()
+}
 
 /**
  * The way into a test.
@@ -33,6 +48,7 @@ export function GrammarTestLauncher({
 }: {
   untouchedCount: number
 }) {
+  const router = useRouter()
   const [phase, setPhase] = useState<'config' | 'idle' | 'running'>('idle')
   const [started, setStarted] = useState<GrammarTestStartResult | null>(null)
   const [pending, setPending] = useState(false)
@@ -70,10 +86,18 @@ export function GrammarTestLauncher({
   }, [])
 
   const close = useCallback(() => {
+    // A submitted test sends every point it caught out back to due now. The
+    // recall panel's due count is server data, so re-read it.
+    if (started) router.refresh()
+
     setStarted(null)
     setMessage(null)
     setPhase('idle')
-  }, [])
+  }, [router, started])
+
+  useEffect(() => {
+    if (phase === 'config') void loadTestModal()
+  }, [phase])
 
   if (phase === 'config')
     return (
@@ -117,6 +141,8 @@ export function GrammarTestLauncher({
           <div className="flex">
             <MangaButton
               onClick={() => setPhase('config')}
+              onFocus={preloadConfigModal}
+              onPointerEnter={preloadConfigModal}
               tone="ink"
               type="button"
             >

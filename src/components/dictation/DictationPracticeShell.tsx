@@ -5,6 +5,10 @@ import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { MangaPanel } from '@/components/common/MangaPanel'
+import {
+  useClientOutbox,
+  useOutboxOwnerKey,
+} from '@/components/common/OutboxOwnerProvider'
 import { DictationControls } from '@/components/dictation/DictationControls'
 import { DictationFullTranscript } from '@/components/dictation/DictationFullTranscript'
 import { DictationPracticeHeader } from '@/components/dictation/DictationPracticeHeader'
@@ -27,6 +31,8 @@ import { MangaButton } from '@/components/ui/MangaButton'
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { QuickVocabWordButton } from '@/components/vocabulary/QuickVocabLookup'
+import { ensureGuestIdentity } from '@/lib/sync/clientOutbox'
+import type { OutboxEnqueueInput } from '@/lib/sync/outbox'
 import { cn } from '@/lib/utils'
 import {
   autoCorrectAnswer,
@@ -37,25 +43,42 @@ import {
 } from '@/modules/dictation/correction'
 import type { YoutubePlayerStatus } from '@/modules/dictation/player/useYoutubeDictationPlayer'
 import {
+  buildAttemptWrite,
+  buildCompletionWrite,
+  buildCursorWrite,
+  buildPreferencesWrite,
+  readAttemptWriteResult,
+  readSessionFromWriteResult,
+} from '@/modules/dictation/practice/practiceSync'
+import {
+  applyAttemptToProgress,
+  type SegmentProgress,
+} from '@/modules/dictation/practice/segmentProgress'
+import {
+  getSessionStartRetryDelayMs,
+  isRetryableSessionStartError,
+} from '@/modules/dictation/practice/sessionStartRetry'
+import type {
+  DictationPracticeSegment,
+  PracticeTranslationTrack,
+} from '@/modules/dictation/practice/types'
+import {
   readDictationAnswerDrafts,
   useDictationPreferences,
   writeDictationAnswerDrafts,
   type DictationPracticePreferences,
 } from '@/modules/dictation/preferences/dictationPreferences'
 import { useDictationShortcuts } from '@/modules/dictation/preferences/shortcuts'
-import type { CaptionCue } from '@/modules/dictation/translations/captionOverlap'
 import { resolveSegmentTranslation } from '@/modules/dictation/translations/segmentTranslation'
 import type {
   DictationAttemptAction,
   DictationAttemptApiRecord,
-  DictationSegmentApiRecord,
   DictationSessionApiRecord,
   DictationVideoApiRecord,
 } from '@/modules/dictation/types'
-import { submitDictationAttemptApi } from '@/requests/dictationAttemptsApi'
 import {
+  getDictationTranslationTrackApi,
   startOrResumeDictationSessionApi,
-  updateDictationSessionApi,
 } from '@/requests/dictationSessionsApi'
 
 interface PlayerController {
@@ -74,18 +97,48 @@ interface PlayerController {
   status: YoutubePlayerStatus
 }
 
-interface TranslationTrack {
-  cues: CaptionCue[]
-  language: string
-}
+type PracticeVideo = Pick<
+  DictationVideoApiRecord,
+  'id' | 'level' | 'title' | 'youtubeVideoId'
+>
 
 interface Props {
   completions: number
   initialSession: DictationSessionApiRecord | null
-  segments: DictationSegmentApiRecord[]
-  translationTracks: TranslationTrack[]
-  video: DictationVideoApiRecord
+  /** The opening translation language; others load when picked. */
+  initialTranslationTrack: PracticeTranslationTrack | null
+  segments: DictationPracticeSegment[]
+  translationLanguages: string[]
+  video: PracticeVideo
 }
+
+type SessionWriteKind = 'attempt' | 'completion' | 'cursor' | 'preferences'
+
+/**
+ * One pass through the video. Repeat (or Rewind after Finish) starts a new
+ * run; writes queued for the old run keep resolving against the old run's
+ * session, so its completion never waits on the new run's session start.
+ */
+interface PracticeRun {
+  // The previous run's completion. This run's session start waits on it, or
+  // the server would resume the session that completion is about to close.
+  gate: Promise<void>
+  request: Promise<DictationSessionApiRecord> | null
+  session: DictationSessionApiRecord | null
+}
+
+interface FailedSessionWrite {
+  kind: SessionWriteKind
+  retry: () => void
+  run: PracticeRun
+  status: number
+}
+
+// Drafts are written to localStorage at most this often while typing.
+const DRAFT_WRITE_DEBOUNCE_MS = 300
+// Results waits for queued writes, but never strands the learner on a dead
+// connection: past this the outbox keeps delivering in the background.
+const RESULTS_SAVE_TIMEOUT_MS = 8_000
 
 function clampIndex(index: number, total: number) {
   if (total <= 0) return 0
@@ -103,6 +156,42 @@ function getInitialPreferences(
     playbackSpeed: session.playbackSpeed,
     showShortcuts: session.showShortcuts,
   }
+}
+
+function toProgressMap(
+  segments: DictationPracticeSegment[]
+): Record<string, SegmentProgress> {
+  return Object.fromEntries(
+    segments.map(segment => [
+      segment.id,
+      {
+        attemptCount: segment.attemptCount,
+        attemptStatus: segment.attemptStatus,
+        lastAttemptAt: segment.lastAttemptAt,
+      },
+    ])
+  )
+}
+
+function resolveTrackTranslation(
+  track: PracticeTranslationTrack,
+  segment: Pick<DictationPracticeSegment, 'endMs' | 'id' | 'startMs'>
+) {
+  const override = track.overrides[segment.id]
+
+  return resolveSegmentTranslation({
+    cues: track.cues,
+    language: track.language,
+    segment: {
+      endMs: segment.endMs,
+      startMs: segment.startMs,
+      translations: override ? { [track.language]: override } : undefined,
+    },
+  })
+}
+
+function toErrorMessage(error: unknown, fallback: string) {
+  return error instanceof Error && error.message ? error.message : fallback
 }
 
 function createIdempotencyKey() {
@@ -128,22 +217,52 @@ const PRACTICE_TAB_TRIGGER_CLASS_NAME =
 export function DictationPracticeShell({
   completions,
   initialSession,
+  initialTranslationTrack,
   segments,
-  translationTracks,
+  translationLanguages,
   video,
 }: Props) {
   const router = useRouter()
+  const outbox = useClientOutbox()
+  const ownerKey = useOutboxOwnerKey()
   // When set, a leave-confirmation modal is open for this pending in-app
   // destination (the learner clicked a link mid-practice).
   const [pendingLeaveHref, setPendingLeaveHref] = useState<string | null>(null)
   const [session, setSession] = useState(initialSession)
+  // The current run, read by queued writes, which run after a render or two.
+  const runRef = useRef<PracticeRun>({
+    gate: Promise.resolve(),
+    request: null,
+    session: initialSession,
+  })
   const [selectedLanguage, setSelectedLanguage] = useState(
-    () => translationTracks[0]?.language ?? ''
+    () => initialTranslationTrack?.language ?? translationLanguages[0] ?? ''
   )
+  const [translationTracks, setTranslationTracks] = useState<
+    Record<string, PracticeTranslationTrack>
+  >(() =>
+    initialTranslationTrack
+      ? { [initialTranslationTrack.language]: initialTranslationTrack }
+      : {}
+  )
+  const [translationError, setTranslationError] = useState<string | null>(null)
+  // The picked language, for fetches that settle after the learner moved on.
+  const selectedLanguageRef = useRef(selectedLanguage)
+  const translationRequestsRef = useRef(new Set<string>())
   const [sessionMode, setSessionMode] = useState<'resume' | 'start' | null>(
     initialSession ? 'resume' : null
   )
   const [sessionError, setSessionError] = useState<string | null>(null)
+  // The session start is retrying after a network failure; queued writes wait.
+  const [isSessionStartRetrying, setIsSessionStartRetrying] = useState(false)
+  // Writes the server refused (4xx) or that never got a session, kept so the
+  // learner can retry them instead of losing them silently.
+  const failedWritesRef = useRef(new Map<string, FailedSessionWrite>())
+  const [failedWriteCount, setFailedWriteCount] = useState(0)
+  const [isSavingResults, setIsSavingResults] = useState(false)
+  // Bumped by each Results open and by Repeat / Rewind, so a save wait that
+  // outlives the learner moving on does not navigate them away.
+  const resultsRequestIdRef = useRef(0)
   const [draftNotice, setDraftNotice] = useState<string | null>(null)
   const [vocabLookupError, setVocabLookupError] = useState<string | null>(null)
   const [showAnswerWords, setShowAnswerWords] = useState(false)
@@ -164,7 +283,7 @@ export function DictationPracticeShell({
     () => completions > 0 && (initialSession?.currentSegmentOrder ?? 0) === 0
   )
   const [answerDrafts, setAnswerDrafts] = useState<Record<string, string>>(() =>
-    readDictationAnswerDrafts(video.id)
+    readDictationAnswerDrafts(video.id, ownerKey)
   )
   const answerDraftsRef = useRef(answerDrafts)
   const [activeView, setActiveView] = useState<'practice' | 'transcript'>(
@@ -184,14 +303,32 @@ export function DictationPracticeShell({
   const [locallyResetSegmentIds, setLocallyResetSegmentIds] = useState<
     Set<string>
   >(() => new Set())
+  // The learner's own per-segment progress (status pill in the transcript).
+  // Starts from the server overlay, moves optimistically on each attempt, and
+  // settles to the server's numbers once a segment has nothing in flight.
+  const [segmentProgress, setSegmentProgress] = useState(() =>
+    toProgressMap(segments)
+  )
+  const confirmedProgressRef = useRef(segmentProgress)
+  const pendingAttemptsRef = useRef<Record<string, number>>({})
   const replayCountRef = useRef<Record<string, number>>({})
   const segmentStartedAtRef = useRef(0)
   const autoPlayedSegmentIdRef = useRef<string | null>(null)
   const answerTextareaRef = useRef<HTMLTextAreaElement>(null)
-  const persistQueueRef = useRef<Promise<unknown>>(Promise.resolve())
-  const sessionRequestRef = useRef<Promise<DictationSessionApiRecord> | null>(
-    null
-  )
+  // Every session write chains on this, so writes queued before the session
+  // exists still reach the outbox in the order they were made.
+  const writeChainRef = useRef<Promise<unknown>>(Promise.resolve())
+  // Settles once this run's queued completion write does. It is set as soon as
+  // the completion is queued, so Repeat starts a fresh session even while the
+  // completion PATCH has not round-tripped yet.
+  const completionRef = useRef<Promise<void> | null>(null)
+  // Sessions the learner moved away from: late write results for them must
+  // not be adopted as the current session again.
+  const retiredSessionIdsRef = useRef(new Set<string>())
+  // Set once the learner acts. Until then a freshly started session may move
+  // the cursor to where the server says; after, the local cursor wins.
+  const localCursorTouchedRef = useRef(false)
+  const currentAnswerRef = useRef('')
   const isMountedRef = useRef(false)
   const [currentIndex, setCurrentIndex] = useState(() =>
     clampIndex(initialSession?.currentSegmentOrder ?? 0, segments.length)
@@ -261,18 +398,13 @@ export function DictationPracticeShell({
     ((passedAttempt || skippedAttempt) && currentAttempt?.segmentId) ||
     (passedCurrentSegment && currentSegment?.id)
   )
-  const selectedTrack =
-    translationTracks.find(track => track.language === selectedLanguage) ?? null
+  const selectedTrack = translationTracks[selectedLanguage] ?? null
   const translationSegment = translationSegmentId
     ? (segments.find(segment => segment.id === translationSegmentId) ?? null)
     : null
   const translationText =
     isTranslationUnlocked && selectedTrack && translationSegment
-      ? resolveSegmentTranslation({
-          cues: selectedTrack.cues,
-          language: selectedTrack.language,
-          segment: translationSegment,
-        })
+      ? resolveTrackTranslation(selectedTrack, translationSegment)
       : ''
   // Bilingual full-transcript view: every sentence's caption in the selected
   // language, matched by time overlap. Shown regardless of the effort gate since
@@ -283,14 +415,25 @@ export function DictationPracticeShell({
     if (!selectedTrack) return map
 
     for (const segment of segments)
-      map[segment.id] = resolveSegmentTranslation({
-        cues: selectedTrack.cues,
-        language: selectedTrack.language,
-        segment,
-      })
+      map[segment.id] = resolveTrackTranslation(selectedTrack, segment)
 
     return map
   }, [selectedTrack, segments])
+  // The transcript's status pills read the live progress, not the props.
+  const transcriptSegments = useMemo(
+    () =>
+      segments.map(segment => ({
+        ...segment,
+        ...(segmentProgress[segment.id] ?? {}),
+      })),
+    [segmentProgress, segments]
+  )
+
+  // runAttempt reads the answer through a ref, so it (and the Check handler
+  // built on it) stays stable while the learner types.
+  useEffect(() => {
+    currentAnswerRef.current = currentAnswer
+  }, [currentAnswer])
   const canGoPrevious = currentIndex > 0
   const canGoNext = currentIndex < segments.length - 1
   const shouldContinuePlayback =
@@ -369,9 +512,42 @@ export function DictationPracticeShell({
     return () => window.clearInterval(intervalId)
   }, [playerController, segments])
 
+  // Drafts are saved on a short debounce instead of on every keystroke, and
+  // flushed when the tab hides or the page goes away so nothing typed is lost.
+  const draftWriteTimerRef = useRef<number | null>(null)
+  const flushAnswerDrafts = useCallback(() => {
+    if (draftWriteTimerRef.current !== null) {
+      window.clearTimeout(draftWriteTimerRef.current)
+      draftWriteTimerRef.current = null
+    }
+
+    writeDictationAnswerDrafts(video.id, answerDraftsRef.current, ownerKey)
+  }, [ownerKey, video.id])
+
   useEffect(() => {
-    writeDictationAnswerDrafts(video.id, answerDrafts)
-  }, [answerDrafts, video.id])
+    if (draftWriteTimerRef.current !== null)
+      window.clearTimeout(draftWriteTimerRef.current)
+
+    draftWriteTimerRef.current = window.setTimeout(
+      flushAnswerDrafts,
+      DRAFT_WRITE_DEBOUNCE_MS
+    )
+  }, [answerDrafts, flushAnswerDrafts])
+
+  useEffect(() => {
+    function handleVisibilityChange() {
+      if (document.visibilityState === 'hidden') flushAnswerDrafts()
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    window.addEventListener('pagehide', flushAnswerDrafts)
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      window.removeEventListener('pagehide', flushAnswerDrafts)
+      flushAnswerDrafts()
+    }
+  }, [flushAnswerDrafts])
 
   const updateAnswerDrafts = useCallback(
     (
@@ -398,65 +574,256 @@ export function DictationPracticeShell({
     }
   }, [])
 
-  const patchSession = useCallback(
-    (payload: Parameters<typeof updateDictationSessionApi>[1]) => {
-      if (!session) return
+  // A delivered write's session becomes its run's session. Only the current
+  // run's session is the one on screen.
+  const adoptSession = useCallback(
+    (run: PracticeRun, nextSession: DictationSessionApiRecord) => {
+      if (retiredSessionIdsRef.current.has(nextSession.id)) return
 
-      void updateDictationSessionApi(session.id, payload)
-        .then(response => setSession(response.session))
-        .catch(error =>
-          setSessionError(
-            error instanceof Error
-              ? error.message
-              : 'Could not save the practice cursor.'
-          )
-        )
+      run.session = nextSession
+
+      if (run === runRef.current && isMountedRef.current)
+        setSession(nextSession)
     },
-    [session]
+    []
   )
 
-  const ensurePracticeSession = useCallback(async () => {
-    if (session) return session
-    if (segments.length === 0) return null
+  // Drop a run's session so its next write starts or resumes one.
+  const retireSession = useCallback((run: PracticeRun) => {
+    if (run.session) retiredSessionIdsRef.current.add(run.session.id)
 
-    if (!sessionRequestRef.current) {
-      setSessionError(null)
-      sessionRequestRef.current = startOrResumeDictationSessionApi({
-        videoId: video.id,
-      })
-        .then(response => {
-          if (isMountedRef.current) {
-            setSession(response.session)
-            setSessionMode(response.mode ?? 'start')
-            setCurrentIndex(
-              clampIndex(response.session.currentSegmentOrder, segments.length)
-            )
+    run.session = null
+    run.request = null
+
+    if (run === runRef.current) setSession(null)
+  }, [])
+
+  // Start or resume the session, retrying with backoff while the network is
+  // down (the request stays pending, so queued writes wait instead of failing).
+  // A refusal is final and rejects.
+  const requestSession = useCallback(
+    async (run: PracticeRun) => {
+      await run.gate
+
+      for (let failures = 1; ; failures += 1)
+        try {
+          // A first-time visitor has no guest cookie yet. Mint it once, before
+          // the session start, so the session and every queued write share
+          // one owner.
+          if (!ownerKey) await ensureGuestIdentity()
+
+          const response = await startOrResumeDictationSessionApi({
+            videoId: video.id,
+          })
+
+          if (isMountedRef.current) setIsSessionStartRetrying(false)
+
+          return response
+        } catch (error) {
+          if (!isMountedRef.current || !isRetryableSessionStartError(error)) {
+            if (isMountedRef.current) setIsSessionStartRetrying(false)
+
+            throw error
           }
 
-          return response.session
-        })
-        .catch(error => {
-          sessionRequestRef.current = null
+          if (run === runRef.current) setIsSessionStartRetrying(true)
 
-          if (isMountedRef.current)
-            setSessionError(
-              error instanceof Error
-                ? error.message
-                : 'Could not start this practice session.'
-            )
+          await new Promise(resolve =>
+            window.setTimeout(resolve, getSessionStartRetryDelayMs(failures))
+          )
+        }
+    },
+    [ownerKey, video.id]
+  )
 
-          throw error
-        })
-    }
+  const ensurePracticeSession = useCallback(
+    async (run: PracticeRun) => {
+      if (run.session) return run.session
+      if (segments.length === 0) return null
 
-    return sessionRequestRef.current
-  }, [segments.length, session, video.id])
+      if (!run.request) {
+        if (run === runRef.current) setSessionError(null)
+
+        const request: Promise<DictationSessionApiRecord> = requestSession(run)
+          .then(response => {
+            // The session was retired while this request was in flight.
+            if (run.request !== request) return response.session
+
+            run.session = response.session
+
+            // A repeat run replaced this one while the request was in flight:
+            // the old run's writes use it, the screen does not.
+            if (run !== runRef.current) return response.session
+
+            retiredSessionIdsRef.current.delete(response.session.id)
+
+            if (isMountedRef.current) {
+              setSession(response.session)
+              setSessionMode(response.mode ?? 'start')
+
+              if (!localCursorTouchedRef.current)
+                setCurrentIndex(
+                  clampIndex(
+                    response.session.currentSegmentOrder,
+                    segments.length
+                  )
+                )
+            }
+
+            return response.session
+          })
+          .catch(error => {
+            if (run.request === request) {
+              run.request = null
+
+              if (run === runRef.current && isMountedRef.current)
+                setSessionError(
+                  toErrorMessage(
+                    error,
+                    'Could not start this practice session.'
+                  )
+                )
+            }
+
+            throw error
+          })
+
+        run.request = request
+      }
+
+      return run.request
+    },
+    [requestSession, segments.length]
+  )
 
   useEffect(() => {
     if (session || segments.length === 0) return
 
-    void ensurePracticeSession().catch(() => undefined)
+    void ensurePracticeSession(runRef.current).catch(() => undefined)
   }, [ensurePracticeSession, segments.length, session])
+
+  const recordFailedWrite = useCallback(
+    (writeId: string, failure: FailedSessionWrite, message: string) => {
+      failedWritesRef.current.set(writeId, failure)
+
+      if (!isMountedRef.current) return
+
+      setFailedWriteCount(failedWritesRef.current.size)
+      setSessionError(message)
+    },
+    []
+  )
+
+  const clearFailedWrite = useCallback((writeId: string) => {
+    if (!failedWritesRef.current.delete(writeId)) return
+    if (!isMountedRef.current) return
+
+    setFailedWriteCount(failedWritesRef.current.size)
+
+    if (failedWritesRef.current.size === 0) setSessionError(null)
+  }, [])
+
+  /**
+   * Queue one session write through the shared outbox. Grading never waits
+   * for this: the write chains on the session promise of the run it was made
+   * in (so a write made before the session exists still lands, in order) and
+   * the outbox delivers it in the session's lane with retries. A refusal is
+   * kept for a manual retry.
+   */
+  const queueSessionWrite = useCallback(
+    ({
+      build,
+      kind,
+      onSettled,
+    }: {
+      build: (activeSession: DictationSessionApiRecord) => OutboxEnqueueInput
+      kind: SessionWriteKind
+      onSettled?: (result: { data: unknown; ok: boolean }) => void
+    }) => {
+      const writeId = createIdempotencyKey()
+      const run = runRef.current
+
+      const send = () => {
+        const ready = writeChainRef.current
+          .catch(() => undefined)
+          .then(() => ensurePracticeSession(run))
+
+        writeChainRef.current = ready
+
+        void ready.then(
+          activeSession => {
+            if (!activeSession) return
+
+            return outbox.enqueue(build(activeSession)).then(result => {
+              if (result.ok) {
+                clearFailedWrite(writeId)
+
+                const nextSession = readSessionFromWriteResult(result.data)
+
+                if (nextSession) adoptSession(run, nextSession)
+                onSettled?.({ data: result.data, ok: true })
+                return
+              }
+
+              // A cursor move only SETS where the learner is, and a 409 means
+              // the server will never take this one (the segment is not in
+              // the session's transcript, or the write names another
+              // learner). Re-sending cannot help and the next move sets it
+              // anyway, so it is dropped instead of asking for a retry.
+              if (kind === 'cursor' && result.status === 409) {
+                clearFailedWrite(writeId)
+                onSettled?.({ data: null, ok: false })
+                return
+              }
+
+              recordFailedWrite(
+                writeId,
+                { kind, retry: send, run, status: result.status },
+                result.error
+              )
+              onSettled?.({ data: null, ok: false })
+            })
+          },
+          error => {
+            recordFailedWrite(
+              writeId,
+              { kind, retry: send, run, status: 0 },
+              toErrorMessage(error, 'Could not start this practice session.')
+            )
+            onSettled?.({ data: null, ok: false })
+          }
+        )
+      }
+
+      send()
+    },
+    [
+      adoptSession,
+      clearFailedWrite,
+      ensurePracticeSession,
+      outbox,
+      recordFailedWrite,
+    ]
+  )
+
+  const syncCursor = useCallback(
+    (segment: { id: string; order: number }) =>
+      queueSessionWrite({
+        build: activeSession => buildCursorWrite(activeSession.id, segment),
+        kind: 'cursor',
+      }),
+    [queueSessionWrite]
+  )
+
+  const syncSessionPreferences = useCallback(
+    (nextPreferences: DictationPracticePreferences) =>
+      queueSessionWrite({
+        build: activeSession =>
+          buildPreferencesWrite(activeSession.id, nextPreferences),
+        kind: 'preferences',
+      }),
+    [queueSessionWrite]
+  )
 
   const goToIndex = useCallback(
     (nextIndex: number) => {
@@ -465,18 +832,16 @@ export function DictationPracticeShell({
 
       if (!segment) return
 
+      localCursorTouchedRef.current = true
       setCurrentIndex(safeIndex)
       setDraftNotice(null)
       setVocabLookupError(null)
       setShowAnswerWords(false)
       setCurrentAttempt(null)
       setCharCorrection(null)
-      patchSession({
-        currentSegmentId: segment.id,
-        currentSegmentOrder: segment.order,
-      })
+      syncCursor(segment)
     },
-    [patchSession, segments]
+    [segments, syncCursor]
   )
 
   const goNext = useCallback(() => {
@@ -540,178 +905,246 @@ export function DictationPracticeShell({
     return () => playerControllerRef.current.pause()
   }, [activeCaptionEndMs, activeCaptionStartMs, activeView, isRepeatingCaption])
 
-  const toggleVideo = useCallback(() => {
-    const nextValue = !preferences.isVideoHidden
+  // Session-scoped preferences apply locally at once and sync the whole
+  // desired state, so a merged-away PATCH never loses a field.
+  const updateSessionPreferences = useCallback(
+    (patch: Partial<DictationPracticePreferences>) =>
+      syncSessionPreferences(
+        setPreferences(currentPreferences => ({
+          ...currentPreferences,
+          ...patch,
+        }))
+      ),
+    [setPreferences, syncSessionPreferences]
+  )
 
-    setPreferences(currentPreferences => ({
-      ...currentPreferences,
-      isVideoHidden: nextValue,
-    }))
-    patchSession({ isVideoHidden: nextValue })
-  }, [patchSession, preferences.isVideoHidden, setPreferences])
+  const toggleVideo = useCallback(
+    () =>
+      updateSessionPreferences({ isVideoHidden: !preferences.isVideoHidden }),
+    [preferences.isVideoHidden, updateSessionPreferences]
+  )
 
   const changeSpeed = useCallback(
-    (playbackSpeed: number) => {
-      setPreferences(currentPreferences => ({
-        ...currentPreferences,
-        playbackSpeed,
-      }))
-      patchSession({ playbackSpeed })
+    (playbackSpeed: number) => updateSessionPreferences({ playbackSpeed }),
+    [updateSessionPreferences]
+  )
+
+  const changeTranslationLanguage = useCallback(
+    (language: string) => {
+      selectedLanguageRef.current = language
+      setSelectedLanguage(language)
+      setTranslationError(null)
+
+      // '' is "None": nothing to fetch.
+      if (!language || translationTracks[language]) return
+      if (translationRequestsRef.current.has(language)) return
+
+      translationRequestsRef.current.add(language)
+      getDictationTranslationTrackApi({ language, videoId: video.id })
+        .then(track => {
+          if (isMountedRef.current)
+            setTranslationTracks(currentTracks => ({
+              ...currentTracks,
+              [language]: track,
+            }))
+        })
+        .catch(error => {
+          // A language the learner already moved away from fails quietly;
+          // picking it again refetches.
+          if (isMountedRef.current && selectedLanguageRef.current === language)
+            setTranslationError(
+              toErrorMessage(error, 'Could not load this translation.')
+            )
+        })
+        .finally(() => translationRequestsRef.current.delete(language))
     },
-    [patchSession, setPreferences]
+    [translationTracks, video.id]
+  )
+
+  // Settle a segment's progress once it has no attempt in flight: the server's
+  // numbers on success, or the last confirmed ones if the write was refused.
+  const settleSegmentProgress = useCallback(
+    (segmentId: string, serverProgress: SegmentProgress | null) => {
+      const pending = Math.max(
+        0,
+        (pendingAttemptsRef.current[segmentId] ?? 1) - 1
+      )
+
+      pendingAttemptsRef.current[segmentId] = pending
+
+      if (serverProgress)
+        confirmedProgressRef.current = {
+          ...confirmedProgressRef.current,
+          [segmentId]: serverProgress,
+        }
+
+      if (pending > 0 || !isMountedRef.current) return
+
+      const settled = confirmedProgressRef.current[segmentId]
+
+      if (settled)
+        setSegmentProgress(currentProgress => ({
+          ...currentProgress,
+          [segmentId]: settled,
+        }))
+    },
+    []
   )
 
   const runAttempt = useCallback(
     (action: DictationAttemptAction) => {
       if (!currentSegment) return
 
-      void (async () => {
-        const activeSession = await ensurePracticeSession().catch(error => {
-          setSessionError(
-            error instanceof Error
-              ? error.message
-              : 'Could not start this practice session.'
-          )
+      // Grade first, synchronously: the verdict never waits on the session
+      // start or the network. The write is queued behind them instead.
+      const activeSession = runRef.current.session
+      const idempotencyKey = createIdempotencyKey()
+      const replayCountDelta = replayCountRef.current[currentSegment.id] ?? 0
+      const timeSpentMs = Math.max(0, Date.now() - segmentStartedAtRef.current)
+      const typedAnswer =
+        answerDraftsRef.current[currentSegment.id] ??
+        answerTextareaRef.current?.value ??
+        currentAnswerRef.current
+      // Check also auto-corrects: rewrite the words the learner got right to the
+      // canonical case/punctuation/spacing, while genuinely wrong words are kept
+      // for them to fix. The char display then renders THIS corrected draft.
+      const displayAnswer =
+        action === 'check'
+          ? autoCorrectAnswer(currentSegment.text, typedAnswer)
+          : typedAnswer
+      // Word-level result feeds analytics/persistence and scores the ORIGINAL
+      // typing; the char-level result drives the guided display of the corrected
+      // draft. Same expected text, two representations (F1).
+      const correction = buildDictationCorrection({
+        action,
+        expectedText: currentSegment.text,
+        typedAnswer,
+      })
+      const charResult = buildCharCorrection({
+        action,
+        expectedText: currentSegment.text,
+        typedAnswer: displayAnswer,
+      })
+      const localAttempt = createLocalDictationAttempt({
+        correction,
+        expectedText: currentSegment.text,
+        idempotencyKey,
+        userId: activeSession?.userId ?? ownerKey ?? '',
+        replayCountDelta,
+        segmentId: currentSegment.id,
+        sessionId: activeSession?.id ?? '',
+        timeSpentMs,
+        transcriptId: currentSegment.transcriptId,
+        typedAnswer,
+        videoId: currentSegment.videoId,
+      })
+      const segmentId = currentSegment.id
 
-          return null
+      localCursorTouchedRef.current = true
+
+      // Score on the client for instant feedback; the server recomputes the
+      // identical correction when it persists the attempt in the background.
+      setDraftNotice(null)
+      setVocabLookupError(null)
+      setShowAnswerWords(false)
+
+      // Resolved (correct / reveal / skip): fill the full canonical answer into
+      // the textarea like DailyDictation, and keep it so revisiting the segment
+      // shows the answer again. A wrong Check swaps in the auto-corrected draft:
+      // matched words become canonical, the boundary word is underlined in place,
+      // and the caret drops just after it so nothing typed past it is lost.
+      if (correction.isPassed || action === 'reveal' || action === 'skip')
+        updateAnswerDrafts(currentDrafts => ({
+          ...currentDrafts,
+          [segmentId]: currentSegment.text,
+        }))
+      else if (action === 'check')
+        updateAnswerDrafts(currentDrafts => ({
+          ...currentDrafts,
+          [segmentId]: displayAnswer,
+        }))
+
+      replayCountRef.current[segmentId] = 0
+      segmentStartedAtRef.current = Date.now()
+
+      // A fresh pass re-unlocks the translation for a previously retried segment.
+      if (correction.isPassed) {
+        setCorrectSegmentIds(currentIds => {
+          if (currentIds.has(segmentId)) return currentIds
+
+          const nextIds = new Set(currentIds)
+
+          nextIds.add(segmentId)
+
+          return nextIds
         })
+        setLocallyResetSegmentIds(currentIds => {
+          if (!currentIds.has(segmentId)) return currentIds
 
-        if (!activeSession) return
+          const nextIds = new Set(currentIds)
 
-        const idempotencyKey = createIdempotencyKey()
-        const replayCountDelta = replayCountRef.current[currentSegment.id] ?? 0
-        const timeSpentMs = Math.max(
-          0,
-          Date.now() - segmentStartedAtRef.current
-        )
-        const typedAnswer =
-          answerDraftsRef.current[currentSegment.id] ??
-          answerTextareaRef.current?.value ??
-          currentAnswer
-        // Check also auto-corrects: rewrite the words the learner got right to the
-        // canonical case/punctuation/spacing, while genuinely wrong words are kept
-        // for them to fix. The char display then renders THIS corrected draft.
-        const displayAnswer =
-          action === 'check'
-            ? autoCorrectAnswer(currentSegment.text, typedAnswer)
-            : typedAnswer
-        // Word-level result feeds analytics/persistence and scores the ORIGINAL
-        // typing; the char-level result drives the guided display of the corrected
-        // draft. Same expected text, two representations (F1).
-        const correction = buildDictationCorrection({
-          action,
-          expectedText: currentSegment.text,
-          typedAnswer,
+          nextIds.delete(segmentId)
+
+          return nextIds
         })
-        const charResult = buildCharCorrection({
-          action,
-          expectedText: currentSegment.text,
-          typedAnswer: displayAnswer,
+        setRetriedSegmentIds(currentIds => {
+          if (!currentIds.has(segmentId)) return currentIds
+
+          const nextIds = new Set(currentIds)
+
+          nextIds.delete(segmentId)
+
+          return nextIds
         })
-        const localAttempt = createLocalDictationAttempt({
-          correction,
-          expectedText: currentSegment.text,
-          idempotencyKey,
-          userId: activeSession.userId,
-          replayCountDelta,
-          segmentId: currentSegment.id,
-          sessionId: activeSession.id,
-          timeSpentMs,
-          transcriptId: currentSegment.transcriptId,
-          typedAnswer,
-          videoId: currentSegment.videoId,
-        })
+      }
 
-        // Score on the client for instant feedback; the server recomputes the
-        // identical correction when it persists the attempt in the background.
-        setDraftNotice(null)
-        setSessionError(null)
-        setVocabLookupError(null)
-        setShowAnswerWords(false)
+      // Feedback is shown in place; the learner advances with Next / Enter.
+      setCurrentAttempt(localAttempt)
+      setCharCorrection(charResult)
+      pendingAttemptsRef.current[segmentId] =
+        (pendingAttemptsRef.current[segmentId] ?? 0) + 1
+      setSegmentProgress(currentProgress => ({
+        ...currentProgress,
+        [segmentId]: applyAttemptToProgress(
+          currentProgress[segmentId],
+          localAttempt
+        ),
+      }))
 
-        // Resolved (correct / reveal / skip): fill the full canonical answer into
-        // the textarea like DailyDictation, and keep it so revisiting the segment
-        // shows the answer again. A wrong Check swaps in the auto-corrected draft:
-        // matched words become canonical, the boundary word is underlined in place,
-        // and the caret drops just after it so nothing typed past it is lost.
-        if (correction.isPassed || action === 'reveal' || action === 'skip')
-          updateAnswerDrafts(currentDrafts => ({
-            ...currentDrafts,
-            [currentSegment.id]: currentSegment.text,
-          }))
-        else if (action === 'check')
-          updateAnswerDrafts(currentDrafts => ({
-            ...currentDrafts,
-            [currentSegment.id]: displayAnswer,
-          }))
+      queueSessionWrite({
+        build: queuedSession =>
+          buildAttemptWrite(queuedSession.id, {
+            action,
+            idempotencyKey,
+            replayCountDelta,
+            segmentId,
+            timeSpentMs,
+            typedAnswer,
+          }),
+        kind: 'attempt',
+        onSettled: ({ data, ok }) => {
+          const { attempt, progress } = readAttemptWriteResult(data)
 
-        replayCountRef.current[currentSegment.id] = 0
-        segmentStartedAtRef.current = Date.now()
+          settleSegmentProgress(segmentId, ok ? progress : null)
 
-        // A fresh pass re-unlocks the translation for a previously retried segment.
-        if (correction.isPassed) {
-          setCorrectSegmentIds(currentIds => {
-            if (currentIds.has(currentSegment.id)) return currentIds
-
-            const nextIds = new Set(currentIds)
-
-            nextIds.add(currentSegment.id)
-
-            return nextIds
-          })
-          setLocallyResetSegmentIds(currentIds => {
-            if (!currentIds.has(currentSegment.id)) return currentIds
-
-            const nextIds = new Set(currentIds)
-
-            nextIds.delete(currentSegment.id)
-
-            return nextIds
-          })
-          setRetriedSegmentIds(currentIds => {
-            if (!currentIds.has(currentSegment.id)) return currentIds
-
-            const nextIds = new Set(currentIds)
-
-            nextIds.delete(currentSegment.id)
-
-            return nextIds
-          })
-        }
-
-        // Feedback is shown in place; the learner advances with Next / Enter.
-        setCurrentAttempt(localAttempt)
-        setCharCorrection(charResult)
-
-        const segmentId = currentSegment.id
-
-        // Serialize persistence so the server's segment-cursor guard sees attempts
-        // in the same order the learner made them.
-        persistQueueRef.current = persistQueueRef.current
-          .catch(() => undefined)
-          .then(() =>
-            submitDictationAttemptApi(activeSession.id, {
-              action,
-              idempotencyKey,
-              replayCountDelta,
-              segmentId,
-              timeSpentMs,
-              typedAnswer,
-            })
-          )
-          .then(response => {
-            setSession(response.session)
-          })
-          .catch(error => {
-            setSessionError(
-              error instanceof Error
-                ? error.message
-                : 'Could not save this dictation attempt.'
+          // The server's record wins (real id for vocab lookups, its verdict
+          // if it ever disagreed), as long as this is still the shown attempt.
+          if (attempt && isMountedRef.current)
+            setCurrentAttempt(shownAttempt =>
+              shownAttempt?.idempotencyKey === idempotencyKey
+                ? attempt
+                : shownAttempt
             )
-          })
-      })()
+        },
+      })
     },
-    [currentAnswer, currentSegment, ensurePracticeSession, updateAnswerDrafts]
+    [
+      currentSegment,
+      ownerKey,
+      queueSessionWrite,
+      settleSegmentProgress,
+      updateAnswerDrafts,
+    ]
   )
 
   // A resolved attempt (passed, revealed, or skipped) shows the answer and waits
@@ -760,21 +1193,19 @@ export function DictationPracticeShell({
     setIsCompleted(true)
 
     // Finishing the last segment completes the video. Mark the session completed
-    // explicitly (chained after any pending attempt save) so the completion is
-    // recorded no matter how the last segment resolved - including reveal, which
-    // the server's pass/skip cursor-advance path would otherwise miss. Idempotent:
-    // re-marking a completed session stays a single completed session.
-    const sessionId = session?.id
-
-    if (sessionId)
-      persistQueueRef.current = persistQueueRef.current
-        .catch(() => undefined)
-        .then(() =>
-          updateDictationSessionApi(sessionId, { status: 'completed' })
-        )
-        .then(response => setSession(response.session))
-        .catch(() => undefined)
-  }, [canGoNext, currentIndex, goToIndex, session?.id])
+    // explicitly (queued in the same lane after any pending attempt) so the
+    // completion is recorded no matter how the last segment resolved -
+    // including reveal, which the server's pass/skip cursor-advance path would
+    // otherwise miss. Idempotent: re-marking a completed session stays a single
+    // completed session.
+    completionRef.current = new Promise<void>(resolve =>
+      queueSessionWrite({
+        build: activeSession => buildCompletionWrite(activeSession.id),
+        kind: 'completion',
+        onSettled: () => resolve(),
+      })
+    )
+  }, [canGoNext, currentIndex, goToIndex, queueSessionWrite])
 
   const retryCurrent = useCallback(() => {
     if (currentSegment) {
@@ -807,21 +1238,51 @@ export function DictationPracticeShell({
     replayCurrentSegment()
   }, [currentSegment, replayCurrentSegment, updateAnswerDrafts])
 
+  // Repeat and Rewind move the learner on: a Results open still waiting on the
+  // save no longer navigates, and a finished run hands over to a new one. A
+  // finished session takes no more attempts, cursor moves or completions, so
+  // the new run starts a fresh session once the old run's completion lands.
+  // The local completion flag counts too: the completion PATCH may still be
+  // queued, so the session can read 'active' here for a moment yet.
+  const beginNextRun = useCallback(() => {
+    resultsRequestIdRef.current += 1
+    setIsSavingResults(false)
+
+    const run = runRef.current
+    const completion = completionRef.current
+
+    if (!completion && (!run.session || run.session.status === 'active')) return
+
+    // The old run keeps its session, so its queued writes still land there.
+    if (run.session) retiredSessionIdsRef.current.add(run.session.id)
+
+    completionRef.current = null
+    runRef.current = {
+      gate: completion ?? Promise.resolve(),
+      request: null,
+      session: null,
+    }
+    setSession(null)
+  }, [])
+
   // Rewind: just navigate back to the first segment, keep drafts and stats.
   const goToFirstSegment = useCallback(() => {
+    beginNextRun()
     setIsCompleted(false)
     setVocabLookupError(null)
     setShowAnswerWords(false)
     setCurrentAttempt(null)
     setCharCorrection(null)
     goToIndex(0)
-  }, [goToIndex])
+  }, [beginNextRun, goToIndex])
 
   // Restart: clear this session's local progress and replay from segment one.
   // Saved attempts, completions, badges, and server cursor stay untouched.
   const restartProgress = useCallback(() => {
     const firstSegment = segments[0]
 
+    beginNextRun()
+    localCursorTouchedRef.current = true
     updateAnswerDrafts({})
     setCurrentIndex(0)
     setActivePlaybackIndex(0)
@@ -843,7 +1304,85 @@ export function DictationPracticeShell({
         firstSegment.startMs,
         firstSegment.endMs
       )
-  }, [segments, updateAnswerDrafts])
+  }, [beginNextRun, segments, updateAnswerDrafts])
+
+  // Retry everything the server refused. A session-level refusal (gone or no
+  // longer usable) re-resolves the session first; cursor and preference
+  // writes are not replayed as they were but re-sent from the current state.
+  const retryFailedWrites = useCallback(() => {
+    const failures = [...failedWritesRef.current.values()]
+
+    failedWritesRef.current.clear()
+    setFailedWriteCount(0)
+    setSessionError(null)
+
+    for (const failure of failures)
+      if (failure.status === 404 || failure.status === 409)
+        retireSession(failure.run)
+
+    for (const failure of failures)
+      if (failure.kind === 'attempt' || failure.kind === 'completion')
+        failure.retry()
+
+    if (failures.some(failure => failure.kind === 'preferences'))
+      syncSessionPreferences(preferences)
+
+    const cursorSegment = segments[currentIndex]
+
+    if (cursorSegment) syncCursor(cursorSegment)
+  }, [
+    currentIndex,
+    preferences,
+    retireSession,
+    segments,
+    syncCursor,
+    syncSessionPreferences,
+  ])
+
+  // Results reads what the server has, so wait for this page's queued writes
+  // to land first (bounded, so a dead connection cannot strand the learner).
+  const resultsHref = `/dictation/videos/${video.id}/results`
+  const openResults = useCallback(async () => {
+    const requestId = resultsRequestIdRef.current + 1
+
+    resultsRequestIdRef.current = requestId
+    setIsSavingResults(true)
+
+    const deadline = Date.now() + RESULTS_SAVE_TIMEOUT_MS
+    let timeoutId: number | undefined
+
+    // The write chain only waits on the session start; the outbox wait after
+    // it shares the same deadline. Either running out just means the outbox
+    // keeps delivering in the background while Results opens.
+    const isChainReady = await Promise.race([
+      writeChainRef.current.catch(() => undefined).then(() => true),
+      new Promise<false>(resolve => {
+        timeoutId = window.setTimeout(
+          () => resolve(false),
+          RESULTS_SAVE_TIMEOUT_MS
+        )
+      }),
+    ])
+
+    window.clearTimeout(timeoutId)
+
+    if (isChainReady)
+      await outbox.whenIdle({
+        timeoutMs: Math.max(0, deadline - Date.now()),
+      })
+
+    // Unmounted, or Repeat / Rewind moved the learner on during the wait.
+    if (!isMountedRef.current || resultsRequestIdRef.current !== requestId)
+      return
+
+    setIsSavingResults(false)
+
+    // A refused write stays on screen with its Retry instead of being left
+    // behind by the navigation.
+    if (failedWritesRef.current.size > 0) return
+
+    router.push(resultsHref)
+  }, [outbox, resultsHref, router])
 
   // Check / Enter: grade the draft, or advance once the answer is resolved.
   const checkDraft = useCallback(() => {
@@ -1039,11 +1578,9 @@ export function DictationPracticeShell({
             isResuming={sessionMode === 'resume'}
             level={video.level}
             title={video.title}
-            translationLanguages={translationTracks.map(
-              track => track.language
-            )}
+            translationLanguages={translationLanguages}
             translationLanguage={selectedLanguage}
-            onTranslationLanguageChange={setSelectedLanguage}
+            onTranslationLanguageChange={changeTranslationLanguage}
             videoId={video.id}
           />
         </div>
@@ -1137,13 +1674,9 @@ export function DictationPracticeShell({
               <DictationYoutubePlayer
                 hidden={preferences.isVideoHidden}
                 onControllerChange={handleControllerChange}
-                onHiddenChange={hidden => {
-                  setPreferences(currentPreferences => ({
-                    ...currentPreferences,
-                    isVideoHidden: hidden,
-                  }))
-                  patchSession({ isVideoHidden: hidden })
-                }}
+                onHiddenChange={hidden =>
+                  updateSessionPreferences({ isVideoHidden: hidden })
+                }
                 playbackSpeed={preferences.playbackSpeed}
                 timing={{
                   endMs: currentSegment.endMs,
@@ -1176,9 +1709,25 @@ export function DictationPracticeShell({
                   >
                     <div className="flex flex-wrap gap-2">
                       <MangaButton
-                        href={`/dictation/videos/${video.id}/results`}
+                        href={resultsHref}
+                        aria-busy={isSavingResults || undefined}
+                        onClick={event => {
+                          // Let new-tab / modified clicks through untouched.
+                          if (
+                            event.metaKey ||
+                            event.ctrlKey ||
+                            event.shiftKey ||
+                            event.altKey ||
+                            event.button !== 0
+                          )
+                            return
+
+                          event.preventDefault()
+
+                          if (!isSavingResults) void openResults()
+                        }}
                       >
-                        View Results
+                        {isSavingResults ? 'Saving...' : 'View Results'}
                       </MangaButton>
                       <MangaButton
                         href="/dictation"
@@ -1340,8 +1889,9 @@ export function DictationPracticeShell({
                       </div>
                     ) : null}
 
-                    {translationTracks.length > 0 && selectedLanguage ? (
+                    {translationLanguages.length > 0 && selectedLanguage ? (
                       <DictationTranslation
+                        isLoading={!selectedTrack && !translationError}
                         isUnlocked={isTranslationUnlocked}
                         language={selectedLanguage}
                         text={translationText}
@@ -1412,7 +1962,7 @@ export function DictationPracticeShell({
                   }
                   onToggleRepeat={toggleRepeatCaption}
                   playingSegmentId={activeCaptionSegment?.id ?? null}
-                  segments={segments}
+                  segments={transcriptSegments}
                   translations={transcriptTranslations}
                 />
               </TabsContent>
@@ -1432,11 +1982,30 @@ export function DictationPracticeShell({
         {/* Status line, shortcut legend, and the legend toggle share one row so
             the frame's bottom edge costs a single line. */}
         <footer className="flex shrink-0 flex-wrap items-center justify-between gap-x-4 gap-y-1">
-          <p className="text-manga-ink-soft min-w-0 flex-1 text-xs leading-5 font-semibold">
+          <p
+            role={sessionError ? 'alert' : undefined}
+            className={cn(
+              'text-manga-ink-soft min-w-0 flex-1 text-xs leading-5 font-semibold',
+              sessionError && 'text-manga-red font-black'
+            )}
+          >
             {sessionError ??
+              (isSessionStartRetrying
+                ? 'Could not reach the server. Retrying - your answers will save once it connects.'
+                : null) ??
+              translationError ??
               (currentSegment.startMs === null || currentSegment.endMs === null
                 ? 'Untimed segment. Use the normal player controls, then type.'
                 : `Sentence ${currentIndex + 1} of ${segments.length}. Replay uses this segment's timestamp window.`)}
+            {sessionError && failedWriteCount > 0 ? (
+              <button
+                type="button"
+                onClick={retryFailedWrites}
+                className="text-manga-black decoration-manga-red ml-2 font-black underline underline-offset-2"
+              >
+                Retry saving
+              </button>
+            ) : null}
           </p>
           {preferences.showShortcuts ? (
             <div className="text-manga-ink-soft hidden flex-wrap gap-x-3 gap-y-1 text-xs font-black md:flex">
@@ -1449,15 +2018,9 @@ export function DictationPracticeShell({
             <Switch
               size="default"
               checked={preferences.showShortcuts}
-              onCheckedChange={checked => {
-                const showShortcuts = checked
-
-                setPreferences(currentPreferences => ({
-                  ...currentPreferences,
-                  showShortcuts,
-                }))
-                patchSession({ showShortcuts })
-              }}
+              onCheckedChange={checked =>
+                updateSessionPreferences({ showShortcuts: checked })
+              }
             />
             Shortcut hints
           </Label>

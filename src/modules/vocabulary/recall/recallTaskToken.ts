@@ -4,19 +4,9 @@ import { createHmac, timingSafeEqual } from 'crypto'
 
 import { ENV_KEYS, getOptionalServerEnv } from '@/constants/environments'
 import { VOCAB_RECALL_TASK_TOKEN_TTL_MS } from '@/modules/vocabulary/constants'
-import type { VocabRecallTaskType } from '@/modules/vocabulary/types'
+import type { VocabRecallTaskTokenPayload } from '@/modules/vocabulary/recall/recallTaskPayload'
 
-export interface VocabRecallTaskTokenPayload {
-  correctAnswer: string
-  correctOptionId: string | null
-  entryId: string
-  expiresAt: number
-  itemId: string
-  recallStage: number
-  taskId: string
-  type: VocabRecallTaskType
-  userId: string
-}
+export type { VocabRecallTaskTokenPayload }
 
 function getSigningSecret() {
   return (
@@ -34,14 +24,19 @@ function fromBase64Url(value: string) {
   return Buffer.from(value, 'base64url').toString('utf8')
 }
 
-function signPayload(encodedPayload: string) {
+/**
+ * The owner is bound in the signature, not written into the readable payload,
+ * so a token only verifies for the user it was minted for.
+ */
+function signPayload(encodedPayload: string, userId: string) {
   return createHmac('sha256', getSigningSecret())
-    .update(encodedPayload)
+    .update(`${userId}.${encodedPayload}`)
     .digest('base64url')
 }
 
 export function createVocabRecallTaskToken(
   payload: Omit<VocabRecallTaskTokenPayload, 'expiresAt'>,
+  userId: string,
   now = new Date()
 ) {
   const fullPayload: VocabRecallTaskTokenPayload = {
@@ -49,7 +44,7 @@ export function createVocabRecallTaskToken(
     expiresAt: now.getTime() + VOCAB_RECALL_TASK_TOKEN_TTL_MS,
   }
   const encodedPayload = toBase64Url(JSON.stringify(fullPayload))
-  const signature = signPayload(encodedPayload)
+  const signature = signPayload(encodedPayload, userId)
 
   return `${encodedPayload}.${signature}`
 }
@@ -67,7 +62,7 @@ export function verifyVocabRecallTaskToken({
 
   if (!encodedPayload || !signature) return null
 
-  const expected = signPayload(encodedPayload)
+  const expected = signPayload(encodedPayload, userId)
   const signatureBuffer = Buffer.from(signature)
   const expectedBuffer = Buffer.from(expected)
 
@@ -82,7 +77,6 @@ export function verifyVocabRecallTaskToken({
       fromBase64Url(encodedPayload)
     ) as VocabRecallTaskTokenPayload
 
-    if (payload.userId !== userId) return null
     if (payload.expiresAt < now.getTime()) return null
 
     return payload

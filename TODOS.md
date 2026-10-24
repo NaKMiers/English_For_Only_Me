@@ -171,3 +171,41 @@ better later, not because they should be revisited now.
   DESIGN.md, to keep the restyle small.
 - **Depends on / blocked by:** Best after the sticker restyle ships, so the tokens it
   documents are real.
+
+## Deferred After The Performance Pass (2026-10-24)
+
+### Cache Components Migration
+
+- **What:** Turn on `cacheComponents` in `next.config.ts`, remove the 21 `export const dynamic = 'force-dynamic'` configs, and split each page into a prerendered static shell plus `<Suspense>`-streamed per-user data. Shared catalog reads move from `unstable_cache` to `'use cache'` + `cacheTag`.
+- **Why:** The shell would come from the CDN and paint instantly even when the function is cold. Today every page is rendered per request, and a cold function on the live site took 10-31 s before the region pin.
+- **Pros:** The fastest possible first paint. Removes the per-route rendering config entirely (`node_modules/next/dist/docs/01-app/02-guides/migrating-to-cache-components.md`).
+- **Cons:** Touches every page, and runtime data outside `<Suspense>` becomes a build error, so it is a large, cross-cutting diff. `loading.tsx` skeletons already make navigation feel instant, so the extra win is mostly cold first loads.
+- **Context:** Deliberately left out of the 2026-10-24 performance pass (Approach C in `docs/plans/2026-10-24-performance-pass-design.md`). Judge it against the re-measured numbers in `docs/plans/2026-10-24-performance-pass-measurements.md`, which also holds the benchmark script.
+- **Depends on / blocked by:** The performance pass being deployed and re-measured.
+
+### Reset The Leaked Segment Progress In Production
+
+- **What:** Run `bun run dictation:reset-segment-progress` (dry run), then `bun run dictation:reset-segment-progress -- --apply`.
+- **Why:** Practice used to write one learner's `attemptStatus`, `attemptCount` and `lastAttemptAt` onto the shared `DictationSegment`, so other learners saw that progress. The performance pass derives progress per user from attempts and stops reading or writing those fields, but the stale cross-user values are still stored in the content collection.
+- **Pros:** Removes the last trace of the leak. Idempotent and dry-run by default.
+- **Cons:** It writes to Production, so only you should run it, and only after the per-user progress change is deployed (old code would stamp the fields again).
+- **Context:** Script: `scripts/resetSharedSegmentProgress.ts`. Nothing in the app reads these fields after the change, so this is hygiene, not a fix.
+- **Depends on / blocked by:** The per-user segment progress change deployed.
+
+### Build The New Indexes In Production
+
+- **What:** Run `bun run db:sync-indexes` against Production to see what is missing (a dry run, it builds nothing), then `bun run db:sync-indexes --apply` to build it. Do the same for every NEW database (a preview, staging or restored copy): with `autoIndex` off it starts with no unique indexes at all, and the routes that treat a duplicate-key error as "already saved" then quietly accept duplicates.
+- **Why:** Production now connects with `autoIndex: false` so cold starts stop issuing about 80 `createIndex` calls. New index declarations (for example `{ userId: 1, createdAt: 1 }` on `DictationAttempt`) are therefore only built by this script.
+- **Pros:** Additive only (`createIndexes`, never drops). Nothing depends on the new indexes for correctness: the speed ones only make queries faster, and the one unique index (`active_review_item_unique` on `DictationReviewItem`) only stops a rare race from inserting a duplicate review item, which the code already tolerates.
+- **Before `--apply`:** if Production already has more than one active (`due` or `scheduled`) review item for the same user, segment, kind and reason, the unique build fails and the script names it and exits 1. Dismiss the extras first, keeping the oldest in each group (nothing is deleted):
+  ```js
+  db.dictationreviewitems.aggregate([
+    { $match: { status: { $in: ['due', 'scheduled'] } } },
+    { $sort: { createdAt: 1 } },
+    { $group: { _id: { u: '$userId', s: '$segmentId', k: '$kind', r: '$reason' }, ids: { $push: '$_id' }, n: { $sum: 1 } } },
+    { $match: { n: { $gt: 1 } } },
+  ]).forEach(g => db.dictationreviewitems.updateMany({ _id: { $in: g.ids.slice(1) } }, { $set: { status: 'dismissed' } }))
+  ```
+- **Cons:** Index builds put load on the cluster for a few seconds.
+- **Context:** Run it after each deploy that adds an index declaration. `bun run grammar:drop-stale-indexes` (listed above) is the separate tool for dropping superseded ones.
+- **Depends on / blocked by:** The performance pass deployed.

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { reconcileSections } from './AdminTopicCard'
+import { orderSectionsByIds, reconcileSections } from './AdminTopicCard'
 import type { AdminSectionData } from './AdminTopicCard'
 
 function video(id: string) {
@@ -62,5 +62,21 @@ describe('reconcileSections', () => {
 
     expect(result[0].videos.map(v => v.id)).toEqual(['b', 'a'])
     expect(result[0].videos.map(v => v.title)).toEqual(['fresh-b', 'fresh-a'])
+  })
+})
+
+describe('orderSectionsByIds', () => {
+  it('applies a dragged section order and keeps unlisted sections last', () => {
+    const sections = [section('a', []), section('b', []), section('c', [])]
+
+    expect(
+      orderSectionsByIds(sections, ['c', 'a']).map(item => item.id)
+    ).toEqual(['c', 'a', 'b'])
+  })
+
+  it('skips ids that are no longer on the card', () => {
+    expect(
+      orderSectionsByIds([section('a', [])], ['gone', 'a']).map(item => item.id)
+    ).toEqual(['a'])
   })
 })

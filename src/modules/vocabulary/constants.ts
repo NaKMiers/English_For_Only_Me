@@ -18,12 +18,22 @@ export const VOCAB_ADMIN_ENRICH_DEFAULT_LIMIT = 5
 export const VOCAB_ADMIN_ENRICH_MAX_LIMIT = 10
 export const VOCAB_EXPLORE_DEFAULT_LIMIT = 20
 export const VOCAB_EXPLORE_MAX_LIMIT = 50
+// Explore cards rendered into the landing page HTML. Each entry carries its
+// full dictionary record, so 50 of them made the page ~500 KB; the rest of the
+// deck is fetched right after hydration.
+export const VOCAB_EXPLORE_INITIAL_LIMIT = 8
 export const VOCAB_ITEM_STATUS_BATCH_MAX = 100
+// The due queue is paged: the page loads the first 20 tasks and the client
+// fetches the next 20 when 5 remain, so tokens (30 min TTL) stay fresh and a
+// big backlog never ships 1000 tasks up front.
 export const VOCAB_RECALL_DEFAULT_LIMIT = 20
-export const VOCAB_RECALL_MAX_LIMIT = 1000
+export const VOCAB_RECALL_MAX_LIMIT = 50
+export const VOCAB_RECALL_PREFETCH_REMAINING = 5
 export const VOCAB_SEARCH_DEFAULT_LIMIT = 12
 export const VOCAB_SEARCH_MAX_LIMIT = 25
 export const VOCAB_STATS_TREND_DAYS = 14
+export const VOCAB_WORD_LIST_DEFAULT_PAGE_SIZE = 50
+export const VOCAB_WORD_LIST_MAX_PAGE_SIZE = 200
 
 export const VOCAB_ENTRY_TYPES: VocabEntryType[] = ['word', 'phrase']
 
@@ -176,6 +186,7 @@ export const VOCAB_API_PATHS = {
   items: '/api/vocab/items',
   itemsBatch: '/api/vocab/items/batch',
   lookup: '/api/vocab/entries/lookup',
+  occurrences: '/api/vocab/occurrences',
   recallAnswer: '/api/vocab/recall/answer',
   search: '/api/vocab/search',
   stats: '/api/vocab/stats',

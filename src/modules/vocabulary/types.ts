@@ -186,6 +186,11 @@ export interface VocabRecallTaskRecord {
   type: VocabRecallTaskType
 }
 
+export interface VocabRecallDuePageRecord {
+  nextCursor: string | null
+  tasks: VocabRecallTaskRecord[]
+}
+
 export interface VocabWordSourceVideoRecord {
   id: string
   title: string
@@ -228,6 +233,19 @@ export interface VocabStatsRecord {
   reviewsTodayCount: number
   totalKnownCount: number
   totalStartedCount: number
+}
+
+export interface VocabularyDashboardInitialData {
+  due: VocabRecallDuePageRecord
+  exploreEntries: VocabEntryWithUserStateRecord[]
+  stats: VocabStatsRecord
+}
+
+export interface VocabWordListPageRecord {
+  page: number
+  perPage: number
+  total: number
+  words: VocabWordListRecord[]
 }
 
 export interface VocabAdminQueueSummaryRecord {

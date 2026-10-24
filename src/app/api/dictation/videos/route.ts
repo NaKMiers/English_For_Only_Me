@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 
 import { MissingEnvironmentError } from '@/constants/environments'
 import { connectDatabase } from '@/lib/db/connectDatabase'
+import { revalidateDictationCatalog } from '@/lib/db/revalidateCatalog'
 import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
 import { toDictationVideoRecord } from '@/modules/dictation/services/dictationVideoRecords'
 import { requireAdmin } from '@/modules/dictation/services/getCurrentUser'
@@ -24,7 +25,7 @@ function authErrorDecision(error: unknown): ApiErrorDecision | null {
     typeof error === 'object' &&
     error !== null &&
     'status' in error &&
-    (error.status === 401 || error.status === 403)
+    (error.status === 401 || error.status === 403 || error.status === 409)
   )
     return {
       status: error.status,
@@ -135,6 +136,8 @@ export async function POST(request: Request) {
       status: { $ne: 'archived' },
     })
     const video = await DictationVideoModel.create({ ...parsed.data, order })
+
+    revalidateDictationCatalog()
 
     return NextResponse.json(
       {

@@ -8,7 +8,10 @@ import {
   Trophy,
 } from 'lucide-react'
 import Link from 'next/link'
-import { useMemo, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { useRef, useState } from 'react'
+
+import { useClientOutbox } from '@/components/common/OutboxOwnerProvider'
 
 import { MangaPanel } from '@/components/common/MangaPanel'
 import { Input } from '@/components/ui/input'
@@ -30,12 +33,26 @@ import {
   getEnglishDefinition,
   getRequiredVietnameseMeaning,
 } from '@/modules/vocabulary/vietnameseMeaning'
-import { setVocabItemStatusApi } from '@/requests/vocabularyApi'
 
 import { VocabTermHeader } from './VocabTermHeader'
+import {
+  buildOptimisticUserItem,
+  createEntryWriteTracker,
+  enqueueVocabItemStatus,
+  type VocabMarkStatus,
+} from './vocabItemWrites'
+import {
+  buildVocabWordListHref,
+  replaceWordListRow,
+  restoreWordListRow,
+  wordMatchesView,
+} from './vocabWordListRows'
 
 interface Props {
   activeView: VocabWordListView
+  page: number
+  perPage: number
+  total: number
   words: VocabWordListRecord[]
 }
 
@@ -88,7 +105,10 @@ const VIEW_LABELS: Record<VocabWordListView, string> = {
 }
 
 const PER_PAGE_OPTIONS = [5, 10, 20, 30, 50, 100, 200] as const
-const DEFAULT_PER_PAGE = 50
+
+// Offline, or while a lane keeps retrying, the outbox never drains. A page
+// refill that waits on it goes ahead after this long.
+const REFILL_IDLE_TIMEOUT_MS = 8000
 
 function getVietnamesePreview(word: VocabWordListRecord) {
   return getRequiredVietnameseMeaning(word.entry)
@@ -131,93 +151,163 @@ function getStatusIcon(word: VocabWordListRecord) {
   return <CalendarClock className="size-4" />
 }
 
-function clampPage(value: number, pageCount: number) {
-  return Math.min(Math.max(value, 1), Math.max(pageCount, 1))
+interface PendingRow {
+  index: number
+  word: VocabWordListRecord
 }
 
-function wordMatchesView(word: VocabWordListRecord, view: VocabWordListView) {
-  if (view === 'dueToday')
-    return (
-      word.item.status === 'learning' &&
-      Boolean(word.item.dueAt && new Date(word.item.dueAt) <= new Date())
-    )
-
-  if (view === 'knownTotal')
-    return word.item.status === 'alreadyKnow' || word.item.status === 'mastered'
-
-  return word.item.status === view
-}
-
-export function VocabularyWordList({ activeView, words }: Props) {
+export function VocabularyWordList({
+  activeView,
+  page,
+  perPage,
+  total,
+  words,
+}: Props) {
+  const router = useRouter()
+  const outbox = useClientOutbox()
   const [wordItems, setWordItems] = useState(words)
-  const [currentPage, setCurrentPage] = useState(1)
-  const [pageSize, setPageSize] = useState(DEFAULT_PER_PAGE)
-  const [customPageSize, setCustomPageSize] = useState(String(DEFAULT_PER_PAGE))
-  const [busyWordId, setBusyWordId] = useState<string | null>(null)
+  // The server rows `wordItems` started from. A refresh brings a new list
+  // (same page, rows already shifted up), which replaces the local one.
+  const [serverWords, setServerWords] = useState(words)
+  const [customPageSize, setCustomPageSize] = useState(String(perPage))
   const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const trackerRef = useRef(createEntryWriteTracker<PendingRow>())
+  const refillScheduledRef = useRef(false)
 
-  const pageCount = Math.max(1, Math.ceil(wordItems.length / pageSize))
-  const safePage = clampPage(currentPage, pageCount)
-  const visibleWords = useMemo(() => {
-    const start = (safePage - 1) * pageSize
+  if (serverWords !== words) {
+    setServerWords(words)
+    setWordItems(words)
+  }
 
-    return wordItems.slice(start, start + pageSize)
-  }, [pageSize, safePage, wordItems])
-  const firstItem = wordItems.length === 0 ? 0 : (safePage - 1) * pageSize + 1
-  const lastItem = Math.min(wordItems.length, safePage * pageSize)
+  // Rows moved out of this view by a status change leave the page right away,
+  // so the count follows them instead of waiting for a reload.
+  const removedCount = Math.max(0, words.length - wordItems.length)
+  const visibleTotal = Math.max(0, total - removedCount)
+  const pageCount = Math.max(1, Math.ceil(total / perPage))
+  const offset = (page - 1) * perPage
+  const firstItem = wordItems.length === 0 ? 0 : offset + 1
+  const lastItem = offset + wordItems.length
+
+  function goTo(nextPage: number, nextPerPage = perPage) {
+    router.push(
+      buildVocabWordListHref({
+        page: Math.min(Math.max(nextPage, 1), Math.max(pageCount, 1)),
+        perPage: nextPerPage,
+        view: activeView,
+      })
+    )
+  }
 
   function updatePageSize(value: number) {
-    const nextPageSize = Math.max(1, Math.floor(value))
+    const nextPageSize = Math.min(
+      Math.max(1, Math.floor(value)),
+      PER_PAGE_OPTIONS[PER_PAGE_OPTIONS.length - 1]
+    )
 
-    setPageSize(nextPageSize)
     setCustomPageSize(String(nextPageSize))
-    setCurrentPage(1)
+    if (nextPageSize !== perPage)
+      router.push(
+        buildVocabWordListHref({
+          page: 1,
+          perPage: nextPageSize,
+          view: activeView,
+        })
+      )
+  }
+
+  /**
+   * Rows that left this view shift every later word up the server's list, so
+   * page N+1 of the new list would skip as many words as left. Once the
+   * writes land, re-read this page: it refills with the shifted-up words and
+   * Next then continues from the right place.
+   */
+  function scheduleRefill() {
+    if (refillScheduledRef.current) return
+
+    refillScheduledRef.current = true
+    void outbox.whenIdle({ timeoutMs: REFILL_IDLE_TIMEOUT_MS }).then(() => {
+      refillScheduledRef.current = false
+      router.refresh()
+    })
   }
 
   async function updateWordStatus(
     word: VocabWordListRecord,
-    status: 'shouldLearn' | 'alreadyKnow'
+    status: VocabMarkStatus
   ) {
-    setBusyWordId(word.item.id)
-    setError(null)
-    setMessage(null)
-
-    try {
-      const response = await setVocabItemStatusApi({
+    const entryId = word.entry.id
+    const optimisticWord = {
+      ...word,
+      item: buildOptimisticUserItem({
+        entry: { entry: word.entry, userItem: word.item },
         source: 'manual',
         status,
-        vocabEntryId: word.entry.id,
-      })
-      const nextWord = {
-        ...word,
-        item: response.item,
-      }
+      }),
+    }
+    // Kept for every state this press records, so a later rollback to a
+    // saved state still lands the row where it was on screen.
+    const index = wordItems.findIndex(row => row.entry.id === entryId)
+    const ticket = trackerRef.current.begin(entryId, { index, word })
 
-      setWordItems(current =>
-        current.flatMap(item => {
-          if (item.item.id !== word.item.id) return [item]
+    setError(null)
+    setWordItems(rows =>
+      replaceWordListRow({ next: optimisticWord, rows, view: activeView })
+    )
+    setMessage(
+      status === 'shouldLearn'
+        ? `"${word.entry.term}" moved to Learning.`
+        : `"${word.entry.term}" marked as Already Know.`
+    )
 
-          return wordMatchesView(nextWord, activeView) ? [nextWord] : []
+    const outcome = await enqueueVocabItemStatus(outbox, {
+      source: 'manual',
+      status,
+      vocabEntryId: entryId,
+    })
+    const settled = trackerRef.current.settle(
+      entryId,
+      ticket,
+      outcome.kind === 'saved'
+        ? {
+            kind: 'saved',
+            state: { index, word: { ...word, item: outcome.item } },
+          }
+        : outcome
+    )
+
+    if (settled.kind === 'apply')
+      setWordItems(rows =>
+        // Only reconcile a row that is still on screen; one that moved out
+        // of this view stays out.
+        rows.some(row => row.entry.id === entryId)
+          ? replaceWordListRow({
+              next: settled.state.word,
+              rows,
+              view: activeView,
+            })
+          : rows
+      )
+
+    if (!wordMatchesView(optimisticWord, activeView)) scheduleRefill()
+
+    if (settled.kind === 'rollback' && outcome.kind === 'failed') {
+      const { index: previousIndex, word: previousWord } = settled.state
+
+      setWordItems(rows =>
+        restoreWordListRow({
+          index: previousIndex,
+          rows,
+          view: activeView,
+          word: previousWord,
         })
       )
-      setMessage(
-        status === 'shouldLearn'
-          ? `"${word.entry.term}" moved to Learning.`
-          : `"${word.entry.term}" marked as Already Know.`
-      )
-    } catch (currentError) {
-      setError(
-        currentError instanceof Error
-          ? currentError.message
-          : 'Could not update this word.'
-      )
-    } finally {
-      setBusyWordId(null)
+      setMessage(null)
+      setError(outcome.error)
     }
   }
 
-  const hasPresetPageSize = PER_PAGE_OPTIONS.some(option => option === pageSize)
+  const hasPresetPageSize = PER_PAGE_OPTIONS.some(option => option === perPage)
 
   return (
     <div className="grid gap-5">
@@ -234,7 +324,7 @@ export function VocabularyWordList({ activeView, words }: Props) {
         }
       >
         <p className="text-manga-ink-soft text-sm leading-6 font-semibold">
-          {wordItems.length} words in this view.
+          {visibleTotal} words in this view.
         </p>
       </MangaPanel>
 
@@ -264,7 +354,7 @@ export function VocabularyWordList({ activeView, words }: Props) {
           <div className="grid gap-1">
             <span className="text-xs font-black uppercase">Per page</span>
             <Select
-              value={String(pageSize)}
+              value={String(perPage)}
               onValueChange={value => {
                 if (!value) return
                 updatePageSize(Number(value))
@@ -278,7 +368,7 @@ export function VocabularyWordList({ activeView, words }: Props) {
               </SelectTrigger>
               <SelectContent>
                 {hasPresetPageSize ? null : (
-                  <SelectItem value={String(pageSize)}>{pageSize}</SelectItem>
+                  <SelectItem value={String(perPage)}>{perPage}</SelectItem>
                 )}
                 {PER_PAGE_OPTIONS.map(option => (
                   <SelectItem
@@ -311,22 +401,18 @@ export function VocabularyWordList({ activeView, words }: Props) {
 
         <div className="flex flex-wrap items-center gap-2 md:justify-end">
           <MangaButton
-            disabled={safePage === 1}
-            onClick={() =>
-              setCurrentPage(page => clampPage(page - 1, pageCount))
-            }
+            disabled={page <= 1}
+            onClick={() => goTo(page - 1)}
             tone="paper"
           >
             Prev
           </MangaButton>
           <span className="text-sm font-black uppercase">
-            {firstItem}-{lastItem} / {wordItems.length}
+            {firstItem}-{lastItem} / {visibleTotal}
           </span>
           <MangaButton
-            disabled={safePage >= pageCount}
-            onClick={() =>
-              setCurrentPage(page => clampPage(page + 1, pageCount))
-            }
+            disabled={page >= pageCount}
+            onClick={() => goTo(page + 1)}
             tone="paper"
           >
             Next
@@ -347,7 +433,7 @@ export function VocabularyWordList({ activeView, words }: Props) {
 
       {wordItems.length > 0 ? (
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {visibleWords.map(word => (
+          {wordItems.map(word => (
             <article
               key={word.item.id}
               className="border-manga-black bg-manga-white rounded-panel grid min-w-0 gap-3 border-3 p-4 shadow-[4px_4px_0_var(--manga-black)]"
@@ -401,10 +487,7 @@ export function VocabularyWordList({ activeView, words }: Props) {
               <div className="grid grid-cols-2 gap-2">
                 <MangaButton
                   className="min-w-0 px-2 text-xs sm:px-4 sm:text-sm [&>span:last-child]:whitespace-nowrap"
-                  disabled={
-                    busyWordId === word.item.id ||
-                    word.item.status === 'learning'
-                  }
+                  disabled={word.item.status === 'learning'}
                   icon={<BookOpen className="size-4" />}
                   onClick={() => updateWordStatus(word, 'shouldLearn')}
                 >
@@ -412,10 +495,7 @@ export function VocabularyWordList({ activeView, words }: Props) {
                 </MangaButton>
                 <MangaButton
                   className="min-w-0 px-2 text-xs sm:px-4 sm:text-sm [&>span:last-child]:whitespace-nowrap"
-                  disabled={
-                    busyWordId === word.item.id ||
-                    word.item.status === 'alreadyKnow'
-                  }
+                  disabled={word.item.status === 'alreadyKnow'}
                   icon={<Check className="size-4" />}
                   onClick={() => updateWordStatus(word, 'alreadyKnow')}
                   tone="paper"

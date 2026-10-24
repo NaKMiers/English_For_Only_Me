@@ -6,7 +6,34 @@ import { countCorrectAnswerStreak } from '@/modules/grammar/presentation/countCo
 import type { LearnerPresentationState } from '@/modules/grammar/presentation/types'
 import type { UserGrammarItemApiRecord } from '@/modules/grammar/types'
 
-import { getPointScar } from './grammarScarService'
+import { getPointScar, type PointHistory } from './grammarScarService'
+
+export interface LearnerHistory extends PointHistory {
+  correctAnswerStreak: number
+}
+
+/**
+ * The reads behind the sensei's lines that do NOT depend on the learner's item
+ * row, split out so a page can run them in parallel with that row's lookup.
+ */
+export async function getLearnerHistory({
+  actorId,
+  pointSlug,
+}: {
+  actorId: string | null
+  pointSlug?: string
+}): Promise<LearnerHistory | null> {
+  if (!actorId) return null
+
+  const [correctAnswerStreak, history] = await Promise.all([
+    getCorrectAnswerStreak(actorId),
+    pointSlug
+      ? getPointScar({ actorId, pointSlug })
+      : { latestVerdict: null, scar: null },
+  ])
+
+  return { correctAnswerStreak, ...history }
+}
 
 /**
  * Assemble what the comic layer knows about the learner.
@@ -16,17 +43,18 @@ import { getPointScar } from './grammarScarService'
  *
  * Degrades rather than throws. A failed read here should cost the page its
  * sensei line, not its content - the lesson is the thing the visitor came for.
+ *
+ * Pure: merges the item row with the history reads (see getLearnerHistory).
  */
-export async function getLearnerPresentationState({
+export function buildLearnerPresentationState({
   actorId,
+  history,
   item,
-  pointSlug,
 }: {
   actorId: string | null
+  history: LearnerHistory | null
   item: UserGrammarItemApiRecord | null
-  /** Omit to skip the archive read - surfaces that show many points at once. */
-  pointSlug?: string
-}): Promise<LearnerPresentationState> {
+}): LearnerPresentationState {
   const base: LearnerPresentationState = {
     actorId,
     correctAnswerStreak: 0,
@@ -41,18 +69,11 @@ export async function getLearnerPresentationState({
     wrongCount: item?.wrongCount ?? 0,
   }
 
-  if (!actorId) return base
-
-  const [correctAnswerStreak, history] = await Promise.all([
-    getCorrectAnswerStreak(actorId),
-    pointSlug
-      ? getPointScar({ actorId, pointSlug })
-      : { latestVerdict: null, scar: null },
-  ])
+  if (!actorId || !history) return base
 
   return {
     ...base,
-    correctAnswerStreak,
+    correctAnswerStreak: history.correctAnswerStreak,
     recentOutcome: history.latestVerdict,
     // Duplicated onto the top level on purpose: the sensei's regression rung
     // must not depend on an optional beat's data being present.

@@ -11,6 +11,8 @@ import { getLanguageLabel } from '@/modules/dictation/translations/languages'
 
 interface Props {
   className?: string
+  /** The language's captions are still being fetched (picked mid-practice). */
+  isLoading?: boolean
   isUnlocked: boolean
   language: string
   text: string
@@ -19,9 +21,11 @@ interface Props {
 
 const NO_CAPTION_MESSAGE =
   'No caption for this moment in the selected language.'
+const LOADING_MESSAGE = 'Loading this translation...'
 
 export function DictationTranslation({
   className,
+  isLoading = false,
   isUnlocked,
   language,
   text,
@@ -55,7 +59,7 @@ export function DictationTranslation({
         style={hasText ? ANSWER_TEXT_STYLE[textSize] : undefined}
         className="min-w-0 text-base leading-7 font-semibold wrap-break-word"
       >
-        {hasText ? text : NO_CAPTION_MESSAGE}
+        {hasText ? text : isLoading ? LOADING_MESSAGE : NO_CAPTION_MESSAGE}
       </span>
     </div>
   )

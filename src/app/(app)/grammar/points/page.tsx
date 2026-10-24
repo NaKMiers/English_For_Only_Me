@@ -9,9 +9,11 @@ import { GrammarPointMap } from '@/components/grammar/GrammarPointMap'
 import { MangaButton } from '@/components/ui/MangaButton'
 import { hasMongoDbUri } from '@/constants/environments'
 import { GRAMMAR_POINTS_MAX_LIMIT } from '@/modules/grammar/constants'
-import { connectDatabase } from '@/lib/db/connectDatabase'
+import { connectDatabaseWhen } from '@/lib/db/connectDatabase'
 import { getPracticeActorId } from '@/modules/dictation/services/getCurrentUser'
-import { listGrammarPoints } from '@/modules/grammar/services/grammarPointListService'
+import { getCachedGrammarMapPoints } from '@/modules/grammar/services/grammarContentCache'
+import { buildGrammarMapResult } from '@/modules/grammar/services/grammarMapPoints'
+import { listLearnerMapItems } from '@/modules/grammar/services/grammarPointListService'
 import { parseGrammarPointsQuery } from '@/modules/grammar/services/grammarRouteDecisions'
 
 export const metadata: Metadata = {
@@ -24,6 +26,12 @@ export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
 const TOPBAR_SUBTITLE = 'Grammar map by level and difficulty'
+
+async function loadLearnerItems() {
+  const actorId = await connectDatabaseWhen(getPracticeActorId())
+
+  return actorId ? listLearnerMapItems(actorId) : []
+}
 
 export default async function GrammarPointsPage({
   searchParams,
@@ -90,23 +98,24 @@ export default async function GrammarPointsPage({
       </MangaPageShell>
     )
 
-  const actorId = (await getPracticeActorId()) ?? null
-
-  await connectDatabase()
-
   // The map draws every rule the filters match, so it asks for all of them.
   // Paging a map defeats the point of drawing one: the shape of the curriculum
   // is the information, and a shape cut into five pages is five shapes. The
-  // taxonomy is 184 rules against a 200 ceiling, so one query still covers it -
-  // and `limit` is capped by the schema, so this cannot become an unbounded read.
-  const result = await listGrammarPoints(
-    {
-      ...parsed.data,
-      limit: GRAMMAR_POINTS_MAX_LIMIT,
-      page: 1,
-    },
-    actorId
-  )
+  // taxonomy is 184 rules against a 200 ceiling, so one read still covers it.
+  //
+  // Two reads in parallel: the shared, cached content list (projected to what
+  // a leaf draws), and this learner's rows - at most one per rule - which the
+  // study filter and the progress strips both come from.
+  const [points, items] = await Promise.all([
+    getCachedGrammarMapPoints(parsed.data),
+    loadLearnerItems(),
+  ])
+  const result = buildGrammarMapResult({
+    items,
+    limit: GRAMMAR_POINTS_MAX_LIMIT,
+    points,
+    studyStatus: parsed.data.studyStatus,
+  })
 
   return (
     <MangaPageShell

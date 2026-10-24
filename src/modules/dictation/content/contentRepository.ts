@@ -121,6 +121,22 @@ export async function listVideosForTopic(
 }
 
 /**
+ * Every non-archived video filed under some topic, in the same order as
+ * listVideosForTopic. Lets the admin board group in memory instead of running
+ * one query per topic.
+ */
+export async function listFiledVideos(): Promise<DictationVideoApiRecord[]> {
+  const videos = await DictationVideoModel.find({
+    topicId: { $ne: null },
+    ...VISIBLE_VIDEO_FILTER,
+  })
+    .sort({ order: 1, createdAt: -1 })
+    .lean()
+
+  return videos.map(toDictationVideoRecord)
+}
+
+/**
  * Videos with no topic (the "Uncategorized" group). `{ topicId: null }` matches
  * both explicit null and absent (pre-backfill) fields in MongoDB.
  */
@@ -133,6 +149,11 @@ export async function listNoTopicVideos(): Promise<DictationVideoApiRecord[]> {
     .lean()
 
   return videos.map(toDictationVideoRecord)
+}
+
+/** Every video in the catalog, archived included (the stats card total). */
+export async function countAllVideos(): Promise<number> {
+  return DictationVideoModel.countDocuments({})
 }
 
 export async function countNoTopicVideos(): Promise<number> {
@@ -179,10 +200,13 @@ export async function listManageableVideos(): Promise<
   return videos.map(toDictationVideoRecord)
 }
 
-/** Every section across all topics (for admin title lookups / dropdowns). */
+/**
+ * Every section across all topics (for admin title lookups / dropdowns and the
+ * topic board). Within a topic the order matches listSectionsForTopic.
+ */
 export async function listAllSections(): Promise<DictationSectionApiRecord[]> {
   const sections = await DictationSectionModel.find()
-    .sort({ topicId: 1, order: 1 })
+    .sort({ topicId: 1, order: 1, title: 1 })
     .lean<SectionLean[]>()
 
   return sections.map(toSectionRecord)

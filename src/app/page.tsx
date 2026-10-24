@@ -12,6 +12,8 @@ export default async function Home() {
   if (!hasMongoDbUri()) return <HomeStudyDesk />
 
   // Stats are per-user; anonymous visitors see the desk without personal stats.
+  // Auth is a local JWT decode, so it goes first and spares anonymous visitors
+  // the connection handshake entirely.
   const user = await getOptionalUser()
   if (!user) return <HomeStudyDesk />
 

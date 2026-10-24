@@ -1,10 +1,10 @@
 import type { MetadataRoute } from 'next'
 
 import { getSiteUrl, hasMongoDbUri } from '@/constants/environments'
-import { connectDatabase } from '@/lib/db/connectDatabase'
-import { listTopics } from '@/modules/dictation/content/contentRepository'
+import { getCachedTopics } from '@/modules/dictation/content/catalogReaders'
 
-// Reflect newly created topics rather than freezing at build time.
+// Reflect newly created topics rather than freezing at build time. The topic
+// list itself is cached under the dictation catalog tag.
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
@@ -18,9 +18,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   if (!hasMongoDbUri()) return staticEntries
 
-  await connectDatabase()
-
-  const topics = await listTopics()
+  const topics = await getCachedTopics()
 
   return [
     ...staticEntries,

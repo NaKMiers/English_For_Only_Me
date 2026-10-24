@@ -1,5 +1,7 @@
 import 'server-only'
 
+import type { PipelineStage } from 'mongoose'
+
 import { UserVocabItemModel } from '@/models/vocabulary/UserVocabItemModel'
 import { VocabEntryModel } from '@/models/vocabulary/VocabEntryModel'
 import {
@@ -23,9 +25,35 @@ export async function listExploreVocabEntriesForUser({
 }: {
   language?: string
   limit?: number
-  userId: string
+  /** Null for a first-time visitor: nothing is classified yet. */
+  userId: string | null
 }): Promise<VocabEntryWithUserStateRecord[]> {
   const finalLimit = Math.min(Math.max(limit, 1), VOCAB_EXPLORE_MAX_LIMIT)
+  const excludeClassified: PipelineStage[] = userId
+    ? [
+        {
+          $lookup: {
+            as: 'userItems',
+            from: UserVocabItemModel.collection.name,
+            let: { entryId: '$_id' },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      { $eq: ['$vocabEntryId', '$$entryId'] },
+                      { $eq: ['$userId', userId] },
+                    ],
+                  },
+                },
+              },
+              { $limit: 1 },
+            ],
+          },
+        },
+        { $match: { userItems: { $eq: [] } } },
+      ]
+    : []
 
   // VocabEntry -> UserVocabItem lookup keeps exclusion inside MongoDB:
   // unclassified global words in rank order, with no app-memory anti-join.
@@ -39,27 +67,7 @@ export async function listExploreVocabEntriesForUser({
       },
     },
     { $sort: { frequencyRank: 1, normalizedTerm: 1 } },
-    {
-      $lookup: {
-        as: 'userItems',
-        from: UserVocabItemModel.collection.name,
-        let: { entryId: '$_id' },
-        pipeline: [
-          {
-            $match: {
-              $expr: {
-                $and: [
-                  { $eq: ['$vocabEntryId', '$$entryId'] },
-                  { $eq: ['$userId', userId] },
-                ],
-              },
-            },
-          },
-          { $limit: 1 },
-        ],
-      },
-    },
-    { $match: { userItems: { $eq: [] } } },
+    ...excludeClassified,
     { $limit: finalLimit },
   ]).allowDiskUse(true)
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useMemo, useSyncExternalStore } from 'react'
 
 export const DICTATION_PREFERENCES_STORAGE_KEY =
   'english-for-only-me:dictation-preferences'
@@ -111,22 +111,6 @@ function toPreferenceInput(
   return value as Partial<DictationPracticePreferences>
 }
 
-function readStoredDictationPreferences() {
-  if (typeof window === 'undefined') return null
-
-  try {
-    const storedValue = window.localStorage.getItem(
-      DICTATION_PREFERENCES_STORAGE_KEY
-    )
-
-    if (!storedValue) return null
-
-    return normalizePreferences(toPreferenceInput(JSON.parse(storedValue)))
-  } catch {
-    return null
-  }
-}
-
 function toDraftMap(value: unknown): Record<string, string> {
   if (typeof value !== 'object' || value === null) return {}
 
@@ -140,17 +124,101 @@ function toDraftMap(value: unknown): Record<string, string> {
   )
 }
 
-export function readDictationAnswerDrafts(videoId: string) {
-  if (typeof window === 'undefined' || !window.localStorage) return {}
+/** The owner used before a first-time visitor has a guest id. */
+const ANONYMOUS_DRAFT_OWNER = 'anonymous'
+
+/**
+ * Drafts are stored per learner as well as per video, so two accounts sharing
+ * one browser never see each other's typing.
+ */
+export function getDictationAnswerDraftsStorageKey(
+  videoId: string,
+  ownerKey?: string | null
+) {
+  return `${DICTATION_ANSWER_DRAFTS_STORAGE_KEY}:${ownerKey ?? ANONYMOUS_DRAFT_OWNER}:${videoId}`
+}
+
+/** The key drafts used before they were namespaced by owner. */
+function getLegacyAnswerDraftsStorageKey(videoId: string) {
+  return `${DICTATION_ANSWER_DRAFTS_STORAGE_KEY}:${videoId}`
+}
+
+function getDraftStorage() {
+  try {
+    return typeof window === 'undefined' ? null : window.localStorage
+  } catch {
+    return null
+  }
+}
+
+function parseDrafts(storedValue: string | null) {
+  if (!storedValue) return null
 
   try {
-    const storedValue = window.localStorage.getItem(
-      `${DICTATION_ANSWER_DRAFTS_STORAGE_KEY}:${videoId}`
-    )
-
-    if (!storedValue) return {}
-
     return toDraftMap(JSON.parse(storedValue))
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Drafts typed before the guest cookie existed were saved under the anonymous
+ * owner. Once the learner has an owner key they move over (and are removed, so
+ * no later account on this browser sees them); the owner's own drafts win.
+ */
+function adoptAnonymousDrafts(
+  storage: Storage,
+  videoId: string,
+  key: string,
+  drafts: Record<string, string> | null
+) {
+  const anonymousKey = getDictationAnswerDraftsStorageKey(videoId, null)
+
+  if (anonymousKey === key) return drafts
+
+  const anonymousDrafts = parseDrafts(storage.getItem(anonymousKey))
+
+  if (!anonymousDrafts) return drafts
+
+  const merged = { ...anonymousDrafts, ...drafts }
+
+  storage.removeItem(anonymousKey)
+  if (Object.keys(merged).length > 0)
+    storage.setItem(key, JSON.stringify(merged))
+
+  return merged
+}
+
+export function readDictationAnswerDrafts(
+  videoId: string,
+  ownerKey?: string | null
+): Record<string, string> {
+  const storage = getDraftStorage()
+
+  if (!storage) return {}
+
+  try {
+    const key = getDictationAnswerDraftsStorageKey(videoId, ownerKey)
+    const ownDrafts = parseDrafts(storage.getItem(key))
+    const drafts = ownerKey
+      ? adoptAnonymousDrafts(storage, videoId, key, ownDrafts)
+      : ownDrafts
+
+    if (drafts) return drafts
+
+    // One-time migration: the first learner to open the video after the
+    // namespacing change adopts the old shared entry, and it is removed so no
+    // other account on this browser can read it afterwards.
+    const legacyKey = getLegacyAnswerDraftsStorageKey(videoId)
+    const legacyDrafts = parseDrafts(storage.getItem(legacyKey))
+
+    if (!legacyDrafts) return {}
+
+    storage.removeItem(legacyKey)
+    if (Object.keys(legacyDrafts).length > 0)
+      storage.setItem(key, JSON.stringify(legacyDrafts))
+
+    return legacyDrafts
   } catch {
     return {}
   }
@@ -158,64 +226,150 @@ export function readDictationAnswerDrafts(videoId: string) {
 
 export function writeDictationAnswerDrafts(
   videoId: string,
-  drafts: Record<string, string>
+  drafts: Record<string, string>,
+  ownerKey?: string | null
 ) {
-  if (typeof window === 'undefined' || !window.localStorage) return
+  const storage = getDraftStorage()
 
+  if (!storage) return
+
+  const key = getDictationAnswerDraftsStorageKey(videoId, ownerKey)
   const cleanDrafts = toDraftMap(drafts)
 
-  if (Object.keys(cleanDrafts).length === 0) {
-    window.localStorage.removeItem(
-      `${DICTATION_ANSWER_DRAFTS_STORAGE_KEY}:${videoId}`
-    )
-    return
+  try {
+    if (Object.keys(cleanDrafts).length === 0) storage.removeItem(key)
+    else storage.setItem(key, JSON.stringify(cleanDrafts))
+  } catch {
+    // Storage full or blocked: the draft lives on in memory for this visit.
+  }
+}
+
+// MARK: Preferences store
+
+const preferenceListeners = new Set<() => void>()
+let cachedRawPreferences: string | null = null
+let cachedStoredPreferences: DictationPracticePreferences | null = null
+// The last value written in this tab, used when storage is blocked so a toggle
+// still applies for the rest of the visit.
+let memoryPreferences: DictationPracticePreferences | null = null
+
+function readRawPreferences() {
+  try {
+    return window.localStorage.getItem(DICTATION_PREFERENCES_STORAGE_KEY)
+  } catch {
+    return null
+  }
+}
+
+function parsePreferences(raw: string) {
+  try {
+    return normalizePreferences(toPreferenceInput(JSON.parse(raw)))
+  } catch {
+    return null
+  }
+}
+
+/**
+ * The saved preferences, or null when nothing is saved. Cached by the raw
+ * string so useSyncExternalStore gets the same object back until the stored
+ * value really changes (a fresh object every call would loop the render).
+ */
+function getStoredPreferencesSnapshot() {
+  const raw = readRawPreferences()
+
+  if (raw === null) return memoryPreferences
+
+  if (raw !== cachedRawPreferences) {
+    cachedRawPreferences = raw
+    cachedStoredPreferences = parsePreferences(raw)
   }
 
-  window.localStorage.setItem(
-    `${DICTATION_ANSWER_DRAFTS_STORAGE_KEY}:${videoId}`,
-    JSON.stringify(cleanDrafts)
-  )
+  return cachedStoredPreferences ?? memoryPreferences
 }
 
-export function readDictationPreferences() {
-  const storedPreferences = readStoredDictationPreferences()
-
-  if (!storedPreferences) return DEFAULT_DICTATION_PREFERENCES
-
-  return storedPreferences
+// Server HTML (and the hydration pass) never sees localStorage, so it renders
+// with no saved preferences: the defaults. Saved values apply right after.
+function getServerPreferencesSnapshot() {
+  return null
 }
 
-function getInitialPreferences(
-  initialPreferences: Partial<DictationPracticePreferences>
-) {
-  const storedPreferences = readStoredDictationPreferences()
+function subscribeToPreferences(listener: () => void) {
+  preferenceListeners.add(listener)
+  // Follow changes made in other tabs too.
+  window.addEventListener('storage', listener)
 
-  if (storedPreferences)
-    return normalizePreferences({
-      ...DEFAULT_DICTATION_PREFERENCES,
-      ...initialPreferences,
-      ...storedPreferences,
-    })
-
-  return normalizePreferences({
-    ...DEFAULT_DICTATION_PREFERENCES,
-    ...initialPreferences,
-  })
+  return () => {
+    preferenceListeners.delete(listener)
+    window.removeEventListener('storage', listener)
+  }
 }
 
-export function useDictationPreferences(
-  initialPreferences: Partial<DictationPracticePreferences> = {}
-) {
-  const [preferences, setPreferences] = useState(() =>
-    getInitialPreferences(initialPreferences)
-  )
+function writeStoredPreferences(preferences: DictationPracticePreferences) {
+  memoryPreferences = preferences
 
-  useEffect(() => {
+  try {
     window.localStorage.setItem(
       DICTATION_PREFERENCES_STORAGE_KEY,
       JSON.stringify(preferences)
     )
-  }, [preferences])
+  } catch {
+    // Will not persist; still applies this visit through memoryPreferences.
+  }
+
+  for (const listener of preferenceListeners) listener()
+}
+
+export function readDictationPreferences() {
+  if (typeof window === 'undefined') return DEFAULT_DICTATION_PREFERENCES
+
+  return getStoredPreferencesSnapshot() ?? DEFAULT_DICTATION_PREFERENCES
+}
+
+type PreferencesUpdate =
+  | DictationPracticePreferences
+  | ((current: DictationPracticePreferences) => DictationPracticePreferences)
+
+/**
+ * Practice preferences as an external store (D5). Saved preferences win over
+ * the session's; with none saved, the session's values (known on the server
+ * too) fill in over the defaults, so server and first client render agree.
+ * `setPreferences` returns the value it saved, for callers that sync it.
+ */
+export function useDictationPreferences(
+  initialPreferences: Partial<DictationPracticePreferences> = {}
+) {
+  const stored = useSyncExternalStore(
+    subscribeToPreferences,
+    getStoredPreferencesSnapshot,
+    getServerPreferencesSnapshot
+  )
+  // Keyed by value: callers pass a fresh object every render.
+  const initialKey = JSON.stringify(initialPreferences)
+  const fallback = useMemo(
+    () =>
+      normalizePreferences({
+        ...DEFAULT_DICTATION_PREFERENCES,
+        ...toPreferenceInput(JSON.parse(initialKey)),
+      }),
+    [initialKey]
+  )
+  const preferences = stored ?? fallback
+
+  const setPreferences = useCallback(
+    (update: PreferencesUpdate) => {
+      // Read the store, not the render's value, so two updates in one event
+      // build on each other.
+      const current = getStoredPreferencesSnapshot() ?? fallback
+      const next = normalizePreferences(
+        typeof update === 'function' ? update(current) : update
+      )
+
+      writeStoredPreferences(next)
+
+      return next
+    },
+    [fallback]
+  )
 
   return {
     preferences,

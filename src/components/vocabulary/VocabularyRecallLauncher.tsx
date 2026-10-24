@@ -10,11 +10,17 @@ import type { VocabRecallTaskRecord } from '@/modules/vocabulary/types'
 import { VocabTermHeader } from './VocabTermHeader'
 
 interface Props {
+  /** Due count from stats: the queue only holds one page of tasks. */
+  dueCount: number
   onOpenRecall: () => void
   tasks: VocabRecallTaskRecord[]
 }
 
-export function VocabularyRecallLauncher({ onOpenRecall, tasks }: Props) {
+export function VocabularyRecallLauncher({
+  dueCount,
+  onOpenRecall,
+  tasks,
+}: Props) {
   const activeRecall = tasks[0] ?? null
 
   return (
@@ -36,7 +42,9 @@ export function VocabularyRecallLauncher({ onOpenRecall, tasks }: Props) {
         <div className="grid gap-4 lg:grid-cols-[1fr_minmax(260px,380px)]">
           <div className="grid gap-3">
             <div className="flex flex-wrap items-center gap-2">
-              <PageTag tone="red">{tasks.length} due</PageTag>
+              <PageTag tone="red">
+                {Math.max(dueCount, tasks.length)} due
+              </PageTag>
               <PageTag tone="ink">Next: {activeRecall.entry.term}</PageTag>
             </div>
             <p className="text-manga-paper-soft max-w-3xl text-base leading-7 font-semibold">

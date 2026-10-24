@@ -9,10 +9,13 @@ import { GrammarComicLesson } from '@/components/grammar/GrammarComicLesson'
 import { GrammarPointActions } from '@/components/grammar/GrammarPointActions'
 import { MangaButton } from '@/components/ui/MangaButton'
 import { hasMongoDbUri } from '@/constants/environments'
-import { connectDatabase } from '@/lib/db/connectDatabase'
+import { connectDatabaseWhen } from '@/lib/db/connectDatabase'
 import { getPracticeActorId } from '@/modules/dictation/services/getCurrentUser'
-import { getLearnerPresentationState } from '@/modules/grammar/services/grammarPresentationService'
-import { getGrammarLesson } from '@/modules/grammar/services/grammarPointListService'
+import { getCachedGrammarLesson } from '@/modules/grammar/services/grammarContentCache'
+import {
+  buildLearnerPresentationState,
+  getLearnerHistory,
+} from '@/modules/grammar/services/grammarPresentationService'
 import { parseGrammarPointSlug } from '@/modules/grammar/services/grammarRouteDecisions'
 import { getGrammarItemsForActor } from '@/modules/grammar/services/userGrammarItemService'
 
@@ -69,25 +72,30 @@ export default async function GrammarPointPage({
       </MangaPageShell>
     )
 
-  const actorId = (await getPracticeActorId()) ?? ''
-
-  await connectDatabase()
-
-  const lesson = await getGrammarLesson(parsed.data.slug)
+  // The lesson is shared content from the cache; only a known learner needs a
+  // connection, and it opens while the lesson is read.
+  const [lesson, rawActorId] = await Promise.all([
+    getCachedGrammarLesson(parsed.data.slug),
+    connectDatabaseWhen(getPracticeActorId()),
+  ])
 
   if (!lesson) notFound()
 
-  const items = await getGrammarItemsForActor({
-    actorId,
-    pointSlugs: [lesson.slug],
-  })
-  const item = items.get(lesson.slug) ?? null
   // `actorId` is '' for a signed-out visitor, and the comic layer distinguishes
   // that from a real actor: no verdict line, no scar, no wrong count.
-  const learnerState = await getLearnerPresentationState({
+  const actorId = rawActorId ?? ''
+  const [items, history] = await Promise.all([
+    getGrammarItemsForActor({
+      actorId,
+      pointSlugs: [lesson.slug],
+    }),
+    getLearnerHistory({ actorId: actorId || null, pointSlug: lesson.slug }),
+  ])
+  const item = items.get(lesson.slug) ?? null
+  const learnerState = buildLearnerPresentationState({
     actorId: actorId || null,
+    history,
     item,
-    pointSlug: lesson.slug,
   })
 
   return (

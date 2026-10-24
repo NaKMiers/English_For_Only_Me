@@ -10,8 +10,8 @@ import {
 } from '@/modules/vocabulary/constants'
 import type {
   VocabEntryApiRecord,
+  VocabRecallDuePageRecord,
   VocabRecallOptionRecord,
-  VocabRecallTaskRecord,
   VocabRecallTaskType,
 } from '@/modules/vocabulary/types'
 import {
@@ -21,6 +21,11 @@ import {
 
 import { toUserVocabItemRecord } from '../services/userVocabItemRecords'
 import { toVocabEntryRecord } from '../services/vocabEntryRecords'
+import {
+  buildVocabRecallDueFilter,
+  getNextVocabRecallDueCursor,
+  type VocabRecallDueCursor,
+} from './recallDueCursor'
 import { createVocabRecallTaskToken } from './recallTaskToken'
 
 const DISTRACTOR_POOL_MAX = 300
@@ -171,27 +176,35 @@ function buildOptions({
   })
 }
 
+/**
+ * One page of due recall tasks. Tokens are minted per page, so a page is used
+ * well inside the 30-minute token lifetime.
+ */
 export async function listDueVocabRecallTasksForUser({
+  cursor = null,
   excludeListening = false,
   limit,
   now = new Date(),
   userId,
 }: {
+  cursor?: VocabRecallDueCursor | null
   excludeListening?: boolean
   limit: number
   now?: Date
   userId: string
-}): Promise<VocabRecallTaskRecord[]> {
+}): Promise<VocabRecallDuePageRecord> {
   const items = await UserVocabItemModel.find({
-    dueAt: { $lte: now },
+    ...buildVocabRecallDueFilter({ cursor, now }),
     status: 'learning',
     userId,
   })
-    .sort({ dueAt: 1, updatedAt: 1 })
+    .sort({ dueAt: 1, updatedAt: 1, _id: 1 })
     .limit(limit)
     .lean()
 
-  if (items.length === 0) return []
+  if (items.length === 0) return { nextCursor: null, tasks: [] }
+
+  const nextCursor = getNextVocabRecallDueCursor({ cursor, items, limit, now })
 
   const entryIds = items.map(item => item.vocabEntryId)
   const [entries, distractorEntries] = await Promise.all([
@@ -221,7 +234,7 @@ export async function listDueVocabRecallTasksForUser({
     size: items.length,
   })
 
-  return items.flatMap((item, index) => {
+  const tasks = items.flatMap((item, index) => {
     const entry = entryById.get(String(item.vocabEntryId))
     if (!entry) return []
 
@@ -243,8 +256,8 @@ export async function listDueVocabRecallTasksForUser({
         recallStage: itemRecord.recallStage,
         taskId,
         type,
-        userId,
       },
+      userId,
       now
     )
 
@@ -265,4 +278,6 @@ export async function listDueVocabRecallTasksForUser({
       },
     ]
   })
+
+  return { nextCursor, tasks }
 }

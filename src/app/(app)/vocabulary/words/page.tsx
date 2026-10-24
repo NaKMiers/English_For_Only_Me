@@ -9,10 +9,8 @@ import { VocabularyWordList } from '@/components/vocabulary/VocabularyWordList'
 import { hasMongoDbUri } from '@/constants/environments'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { getPracticeActorId } from '@/modules/dictation/services/getCurrentUser'
-import {
-  listVocabWordsForUser,
-  parseVocabWordListView,
-} from '@/modules/vocabulary/services/vocabWordListService'
+import { parseVocabWordListQuery } from '@/modules/vocabulary/services/vocabularyRouteDecisions'
+import { listVocabWordsForUser } from '@/modules/vocabulary/services/vocabWordListService'
 
 export const metadata: Metadata = {
   title: 'Vocabulary Words',
@@ -25,9 +23,13 @@ export const runtime = 'nodejs'
 export default async function VocabularyWordsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ view?: string | string[] }>
+  searchParams: Promise<{
+    page?: string | string[]
+    perPage?: string | string[]
+    view?: string | string[]
+  }>
 }) {
-  const view = parseVocabWordListView((await searchParams).view)
+  const { page, perPage, view } = parseVocabWordListQuery(await searchParams)
 
   if (!hasMongoDbUri())
     return (
@@ -54,12 +56,11 @@ export default async function VocabularyWordsPage({
       </MangaPageShell>
     )
 
-  const actorId = (await getPracticeActorId()) ?? ''
-
-  await connectDatabase()
-
-  const words = await listVocabWordsForUser({
-    userId: actorId,
+  const [actorId] = await Promise.all([getPracticeActorId(), connectDatabase()])
+  const wordPage = await listVocabWordsForUser({
+    page,
+    perPage,
+    userId: actorId ?? '',
     view,
   })
 
@@ -76,8 +77,11 @@ export default async function VocabularyWordsPage({
       <section className="grid gap-5 p-4 sm:p-6 lg:p-8">
         <VocabularyWordList
           activeView={view}
-          key={view}
-          words={words}
+          key={`${view}:${page}:${perPage}`}
+          page={wordPage.page}
+          perPage={wordPage.perPage}
+          total={wordPage.total}
+          words={wordPage.words}
         />
       </section>
     </MangaPageShell>

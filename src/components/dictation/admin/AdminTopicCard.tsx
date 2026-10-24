@@ -1,7 +1,6 @@
 'use client'
 
 import { ChevronDown, EllipsisVertical, Pencil, Trash2, X } from 'lucide-react'
-import { useRouter } from 'next/navigation'
 import type { ReactNode } from 'react'
 import { useState, useTransition } from 'react'
 
@@ -133,6 +132,21 @@ export function reconcileSections(
       }),
     }
   })
+}
+
+/** Put sections in the given id order; ids not present are skipped. */
+export function orderSectionsByIds(
+  sections: AdminSectionData[],
+  ids: string[]
+): AdminSectionData[] {
+  const byId = new Map(sections.map(section => [section.id, section]))
+  const ordered = ids.flatMap(id => {
+    const section = byId.get(id)
+    return section ? [section] : []
+  })
+  const listed = new Set(ids)
+
+  return [...ordered, ...sections.filter(section => !listed.has(section.id))]
 }
 
 function SectionBlock({
@@ -348,14 +362,14 @@ function SectionBlock({
 }
 
 export function AdminTopicCard({ topic }: { topic: AdminTopicData }) {
-  const router = useRouter()
   const [editing, setEditing] = useState(false)
   const [expanded, setExpanded] = useState(false)
   const [, startTransition] = useTransition()
 
-  // Local copy of the sections so a within-section reorder shows instantly,
-  // instead of waiting for the server round-trip + refresh (which is what made
-  // drag-to-reorder feel like it did nothing). When fresh server data arrives we
+  // Local copy of the sections so a reorder (of sections, or of videos within
+  // one) shows instantly instead of waiting for the server action round-trip.
+  // The actions revalidate the page, so the action response itself carries the
+  // fresh server data - no client router.refresh() on top. When it arrives we
   // reconcile it during render (the React-recommended alternative to a
   // prop-syncing effect): a section whose video *set* is unchanged keeps the
   // order the user just dragged - otherwise the post-refresh render would snap
@@ -371,7 +385,6 @@ export function AdminTopicCard({ topic }: { topic: AdminTopicData }) {
   function moveVideo(videoId: string, sectionId: string | null) {
     startTransition(async () => {
       await moveVideoAction({ videoId, topicId: topic.id, sectionId })
-      router.refresh()
     })
   }
 
@@ -390,20 +403,21 @@ export function AdminTopicCard({ topic }: { topic: AdminTopicData }) {
     )
     startTransition(async () => {
       await reorderVideosAction(orderedIds)
-      router.refresh()
     })
   }
 
   function reorderSection(draggedId: string, beforeId: string) {
     if (draggedId === beforeId) return
     const next = reorderIds(
-      topic.sections.map(s => s.id),
+      sections.map(s => s.id),
       draggedId,
       beforeId
     )
+    // Optimistic: the server re-render arrives in the same order, and
+    // reconcileSections follows the server's section order either way.
+    setSections(prev => orderSectionsByIds(prev, next))
     startTransition(async () => {
       await reorderSectionsAction(next)
-      router.refresh()
     })
   }
 

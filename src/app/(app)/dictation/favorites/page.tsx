@@ -25,14 +25,17 @@ export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
 export default async function FavoritesPage() {
-  // Favorites are per-user - require sign-in.
-  const user = await getOptionalUser()
+  // Favorites are per-user - require sign-in. The connection handshake
+  // overlaps with auth.
+  const [user] = await Promise.all([
+    getOptionalUser(),
+    hasMongoDbUri() ? connectDatabase() : null,
+  ])
   if (!user) redirect('/api/auth/signin?callbackUrl=/dictation/favorites')
 
   let items: BrowseVideoItem[] = []
 
   if (hasMongoDbUri()) {
-    await connectDatabase()
     const [videos, completionCounts, inProgressSet] = await Promise.all([
       listFavoriteVideosForUser(user.id),
       getCompletionCountsForUser(user.id),

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 
 import { MissingEnvironmentError } from '@/constants/environments'
 import { connectDatabase } from '@/lib/db/connectDatabase'
+import { revalidateDictationCatalog } from '@/lib/db/revalidateCatalog'
 import { DictationTranscriptModel } from '@/models/dictation/DictationTranscriptModel'
 import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
 import { requireAdmin } from '@/modules/dictation/services/getCurrentUser'
@@ -29,7 +30,7 @@ function authErrorDecision(error: unknown): ApiErrorDecision | null {
     typeof error === 'object' &&
     error !== null &&
     'status' in error &&
-    (error.status === 401 || error.status === 403)
+    (error.status === 401 || error.status === 403 || error.status === 409)
   )
     return {
       status: error.status,
@@ -81,6 +82,8 @@ export async function DELETE(_request: Request, context: RouteContext) {
       })
 
     await transcript.deleteOne()
+
+    revalidateDictationCatalog()
 
     return NextResponse.json({
       deleted: true,

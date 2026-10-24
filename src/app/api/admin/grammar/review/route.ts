@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 
+import { CACHE_TAGS } from '@/lib/db/cacheTags'
 import { connectDatabase } from '@/lib/db/connectDatabase'
+import { expireCacheTags } from '@/lib/db/revalidateCatalog'
 import { GrammarPointModel } from '@/models/grammar/GrammarPointModel'
 import { requireAdmin } from '@/modules/dictation/services/getCurrentUser'
 import { toGrammarApiError } from '@/modules/grammar/services/grammarApiErrors'
@@ -52,6 +54,9 @@ export async function POST(request: Request) {
         status: 404,
         body: { message: 'Grammar point not found.' },
       })
+
+    // The map, the lesson and the dojo tally all show review status.
+    expireCacheTags([CACHE_TAGS.grammarContent])
 
     return NextResponse.json({ point: toGrammarPointRecord(point) })
   } catch (error) {

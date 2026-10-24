@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 
 export type DictationShortcutAction =
   'check' | 'escape' | 'next' | 'previous' | 'replay'
@@ -56,6 +56,15 @@ export function useDictationShortcuts({
   enabled: boolean
   handlers: DictationShortcutHandlers
 }) {
+  // Handlers change whenever the practice state does (every keystroke, while
+  // typing). Reading them through a ref keeps one window listener bound for
+  // the life of the page instead of re-binding it on each render.
+  const handlersRef = useRef(handlers)
+
+  useEffect(() => {
+    handlersRef.current = handlers
+  }, [handlers])
+
   useEffect(() => {
     if (!enabled) return
 
@@ -66,7 +75,7 @@ export function useDictationShortcuts({
 
       if (!action) return
 
-      const handler = handlers[action]
+      const handler = handlersRef.current[action]
 
       if (!handler) return
 
@@ -77,5 +86,5 @@ export function useDictationShortcuts({
     window.addEventListener('keydown', handleKeyDown)
 
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [enabled, handlers])
+  }, [enabled])
 }

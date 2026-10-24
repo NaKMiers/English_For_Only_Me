@@ -21,6 +21,8 @@ import mongoose from 'mongoose'
 import { getMongoDbUri } from '@/constants/environments'
 import { backfillContentHierarchy } from '@/modules/dictation/content/backfill'
 
+import { requestContentRevalidation } from './lib/requestContentRevalidation'
+
 async function main() {
   const apply = process.argv.includes('--apply')
   const dryRun = !apply
@@ -41,6 +43,9 @@ async function main() {
   } finally {
     await mongoose.disconnect()
   }
+
+  // The site caches the catalog; expire it after a real write (opt-in).
+  if (apply) await requestContentRevalidation(['dictation-catalog'])
 }
 
 main().catch(error => {

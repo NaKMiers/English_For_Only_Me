@@ -13,6 +13,7 @@ export const ENV_KEYS = {
   adminEmails: 'ADMIN_EMAILS',
   siteUrl: 'SITE_URL',
   myMemoryEmail: 'MYMEMORY_EMAIL',
+  revalidateSecret: 'REVALIDATE_SECRET',
 } as const
 
 export class MissingEnvironmentError extends Error {
@@ -133,4 +134,13 @@ export function getSiteUrl() {
     'http://localhost:3000'
 
   return raw.replace(/\/+$/, '')
+}
+
+/**
+ * Shared secret for POST /api/admin/revalidate, so seed scripts can expire the
+ * content cache without an admin session. Unset disables the secret path; the
+ * route then accepts signed-in admins only.
+ */
+export function getRevalidateSecret() {
+  return getOptionalServerEnv(ENV_KEYS.revalidateSecret)
 }

@@ -291,10 +291,24 @@
   background: transparent;
 }
 
+/* The page backdrop lives on a fixed layer instead of
+   `background-attachment: fixed`, which forces a full main-thread repaint on
+   every scroll frame. html keeps an opaque base colour so body's background
+   still paints on the body box (it would propagate to the canvas, above this
+   layer, if html had none). Negative z-index paints the layer between html's
+   own background and body's. */
 html {
   min-height: 100%;
+  background-color: var(--manga-paper);
+}
+
+html::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
   background: var(--html-bg);
-  background-attachment: fixed;
   background-size: var(--html-bg-size);
 }
 
@@ -362,7 +376,9 @@ body {
 }
 
 /* Hanging pull-string bulb, fixed to the top-right corner. Dangles from the
-   top edge, sways gently at rest, and swings when yanked. */
+   top edge, sways on hover/focus, and swings when yanked. It hangs still at
+   rest: an always-running animation kept a compositor layer busy on every
+   page for a purely decorative wobble. */
 .lamp-hang {
   position: fixed;
   top: 0;
@@ -381,10 +397,6 @@ body {
   padding: 0 10px 6px;
   cursor: pointer;
   transform-origin: top center;
-  animation: lamp-sway 5s ease-in-out infinite;
-}
-.lamp-hang__btn:hover {
-  animation-duration: 2.4s;
 }
 .lamp-hang__cord {
   width: 2px;
@@ -402,6 +414,7 @@ body {
 /* Bulb hangs upside-down (glass pointing down) like a pendant. rotate(180deg)
    is the base transform; animation keyframes below keep it while bobbing. */
 .lamp-hang__bulb {
+  position: relative;
   margin-top: 1px;
   font-size: 30px;
   line-height: 1;
@@ -410,25 +423,57 @@ body {
     filter 0.5s ease,
     transform 0.2s ease;
 }
+/* Warm amber halo: one static radial gradient behind the glass (the bulb's
+   transform makes it a stacking context, so z-index -1 stays inside it),
+   faded in and out instead of re-rasterising stacked drop-shadow filters. */
+.lamp-hang__bulb::before {
+  content: '';
+  position: absolute;
+  inset: -24px;
+  z-index: -1;
+  border-radius: 9999px;
+  background: radial-gradient(
+    circle,
+    rgba(255, 190, 94, 0.62) 0%,
+    rgba(255, 190, 94, 0.34) 30%,
+    rgba(255, 176, 92, 0.14) 52%,
+    transparent 70%
+  );
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+}
 /* OFF: dim, desaturated. */
 .lamp-hang__bulb--off {
   filter: grayscale(1) brightness(0.7);
 }
 /* ON: warm amber glow halo. */
-.lamp-hang__bulb--on {
-  filter: drop-shadow(0 0 7px rgba(255, 190, 94, 0.95))
-    drop-shadow(0 0 16px rgba(255, 190, 94, 0.6))
-    drop-shadow(0 0 30px rgba(255, 176, 92, 0.35));
+.lamp-hang__bulb--on::before {
+  opacity: 1;
 }
 .lamp-hang__btn:hover .lamp-hang__bulb {
   transform: rotate(180deg) translateY(2px);
 }
-/* Yank: pull straight down, then swing out and settle (pendulum). */
-.lamp-hang--pulling {
-  animation: lamp-yank 0.64s cubic-bezier(0.3, 0.7, 0.3, 1);
-}
-.lamp-hang--pulling .lamp-hang__bulb {
-  animation: lamp-flash 0.64s ease;
+@media (prefers-reduced-motion: no-preference) {
+  /* Hover only where hover is real: on touch screens :hover sticks after a
+     tap and would leave the sway running for good. */
+  .lamp-hang__btn:focus-visible {
+    animation: lamp-sway 2.4s ease-in-out infinite;
+  }
+  @media (hover: hover) {
+    .lamp-hang__btn:hover {
+      animation: lamp-sway 2.4s ease-in-out infinite;
+    }
+  }
+  /* Yank: pull straight down, then swing out and settle (pendulum). Same
+     specificity as the hover sway and later, so a click while hovering
+     always plays the yank. */
+  .lamp-hang__btn.lamp-hang--pulling {
+    animation: lamp-yank 0.64s cubic-bezier(0.3, 0.7, 0.3, 1);
+  }
+  .lamp-hang--pulling .lamp-hang__bulb {
+    animation: lamp-flash 0.64s ease;
+  }
 }
 @keyframes lamp-sway {
   0%,
@@ -465,13 +510,6 @@ body {
   }
   100% {
     transform: rotate(180deg) translateY(0) scale(1);
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .lamp-hang__btn,
-  .lamp-hang--pulling,
-  .lamp-hang--pulling .lamp-hang__bulb {
-    animation: none;
   }
 }
 

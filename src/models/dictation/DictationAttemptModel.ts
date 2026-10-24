@@ -180,12 +180,25 @@ const DictationAttemptSchema = new Schema(
   }
 )
 
+// Uniqueness is enforced per session (a stricter per-user unique index would
+// fail to build on rows already recorded twice across sessions). The attempts
+// route still treats a key as per user: it looks the key up with the
+// non-unique `{userId, idempotencyKey}` index below before inserting, so a
+// retry against a new session replays the original attempt.
 DictationAttemptSchema.index(
   { userId: 1, sessionId: 1, idempotencyKey: 1 },
   { unique: true }
 )
+// Serves the per-user idempotency lookup. Until it is built the lookup still
+// works through the unique index above (userId prefix, key filtered in the
+// index), just with more keys examined.
+DictationAttemptSchema.index({ userId: 1, idempotencyKey: 1 })
 DictationAttemptSchema.index({ userId: 1, segmentId: 1, createdAt: -1 })
 DictationAttemptSchema.index({ userId: 1, videoId: 1, createdAt: -1 })
+// Global stats read one user's newest attempts (capped) for their tokens;
+// none of the compound indexes above can serve a userId-only filter sorted by
+// createdAt (walked backwards here).
+DictationAttemptSchema.index({ userId: 1, createdAt: 1 })
 
 export type DictationAttemptDocument = InferSchemaType<
   typeof DictationAttemptSchema

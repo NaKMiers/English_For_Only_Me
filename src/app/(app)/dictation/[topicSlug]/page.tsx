@@ -14,18 +14,17 @@ import {
   SectionAccordion,
 } from '@/components/dictation/browse/SectionAccordion'
 import { getSiteUrl, hasMongoDbUri } from '@/constants/environments'
-import { connectDatabase } from '@/lib/db/connectDatabase'
+import { connectDatabase, connectDatabaseWhen } from '@/lib/db/connectDatabase'
 import { toBrowseItem } from '@/modules/dictation/content/browseItem'
 import {
   isBrowseQueryActive,
   parseBrowseQuery,
 } from '@/modules/dictation/content/browseQuery'
 import {
-  getTopicBySlug,
-  listSectionsForTopic,
-  listVideosForTopic,
-  searchVideosInTopic,
-} from '@/modules/dictation/content/contentRepository'
+  getCachedTopicCatalog,
+  type TopicCatalog,
+} from '@/modules/dictation/content/catalogReaders'
+import { searchVideosInTopic } from '@/modules/dictation/content/contentRepository'
 import { listFavoriteVideoIds } from '@/modules/dictation/content/favoriteRepository'
 import {
   getCompletionCountsForUser,
@@ -52,8 +51,8 @@ export async function generateMetadata({
 
   if (!hasMongoDbUri()) return { title: topicSlug }
 
-  await connectDatabase()
-  const topic = await getTopicBySlug(topicSlug)
+  // Shared with the page body through React cache(): one cache read.
+  const topic = (await getCachedTopicCatalog(topicSlug))?.topic
 
   if (!topic) return { title: 'Topic not found' }
 
@@ -80,27 +79,36 @@ export default async function TopicPage({ params, searchParams }: PageProps) {
 
   if (!hasMongoDbUri()) notFound()
 
-  await connectDatabase()
-  const topic = await getTopicBySlug(topicSlug)
-
-  if (!topic) notFound()
-
-  const user = await getOptionalUser()
-  const canFavorite = Boolean(user)
-  // Completion badges follow the practice actor (guest or user) so anonymous
-  // progress shows up; favoriting stays login-only.
-  const actorId = await getPracticeActorId()
   const filtering = isBrowseQueryActive(query)
 
-  const [favoritedIds, completionCounts, inProgressSet] = await Promise.all([
-    user ? listFavoriteVideoIds(user.id) : Promise.resolve<string[]>([]),
-    actorId
-      ? getCompletionCountsForUser(actorId)
-      : Promise.resolve<Map<string, number>>(new Map()),
-    actorId
-      ? getInProgressVideoIdsForUser(actorId)
-      : Promise.resolve<Set<string>>(new Set()),
+  // The catalog (topic, sections, videos) is one cached read. A connection is
+  // opened, overlapping with it, only for what the cache cannot serve: the
+  // practice actor's own rows, or a filtered search.
+  const [catalog, user, actorId] = await Promise.all([
+    getCachedTopicCatalog(topicSlug),
+    getOptionalUser(),
+    // Completion badges follow the practice actor (guest or user) so anonymous
+    // progress shows up; favoriting stays login-only.
+    connectDatabaseWhen(getPracticeActorId()),
+    filtering ? connectDatabase() : null,
   ])
+
+  if (!catalog) notFound()
+
+  const { topic } = catalog
+  const canFavorite = Boolean(user)
+
+  const [favoritedIds, completionCounts, inProgressSet, searchResult] =
+    await Promise.all([
+      user ? listFavoriteVideoIds(user.id) : Promise.resolve<string[]>([]),
+      actorId
+        ? getCompletionCountsForUser(actorId)
+        : Promise.resolve<Map<string, number>>(new Map()),
+      actorId
+        ? getInProgressVideoIdsForUser(actorId)
+        : Promise.resolve<Set<string>>(new Set()),
+      filtering ? searchVideosInTopic(topic.id, query) : Promise.resolve(null),
+    ])
   const favoritedSet = new Set(favoritedIds)
 
   return (
@@ -140,9 +148,9 @@ export default async function TopicPage({ params, searchParams }: PageProps) {
           sort={query.sort}
         />
 
-        {filtering ? (
+        {searchResult ? (
           <FlatResults
-            topicId={topic.id}
+            result={searchResult}
             query={query}
             basePath={`/dictation/${topic.slug}`}
             canFavorite={canFavorite}
@@ -152,7 +160,7 @@ export default async function TopicPage({ params, searchParams }: PageProps) {
           />
         ) : (
           <TopicAccordion
-            topicId={topic.id}
+            catalog={catalog}
             canFavorite={canFavorite}
             favoritedSet={favoritedSet}
             completionCounts={completionCounts}
@@ -164,24 +172,19 @@ export default async function TopicPage({ params, searchParams }: PageProps) {
   )
 }
 
-async function TopicAccordion({
-  topicId,
+function TopicAccordion({
+  catalog: { sections, videos },
   canFavorite,
   favoritedSet,
   completionCounts,
   inProgressSet,
 }: {
-  topicId: string
+  catalog: TopicCatalog
   canFavorite: boolean
   favoritedSet: Set<string>
   completionCounts: Map<string, number>
   inProgressSet: Set<string>
 }) {
-  const [sections, videos] = await Promise.all([
-    listSectionsForTopic(topicId),
-    listVideosForTopic(topicId),
-  ])
-
   const groups = buildSectionGroups(
     sections.map(section => ({ id: section.id, title: section.title })),
     videos.map(video => ({
@@ -202,8 +205,8 @@ async function TopicAccordion({
   )
 }
 
-async function FlatResults({
-  topicId,
+function FlatResults({
+  result: { videos, pagination },
   query,
   basePath,
   canFavorite,
@@ -211,7 +214,7 @@ async function FlatResults({
   completionCounts,
   inProgressSet,
 }: {
-  topicId: string
+  result: Awaited<ReturnType<typeof searchVideosInTopic>>
   query: ReturnType<typeof parseBrowseQuery>
   basePath: string
   canFavorite: boolean
@@ -219,7 +222,6 @@ async function FlatResults({
   completionCounts: Map<string, number>
   inProgressSet: Set<string>
 }) {
-  const { videos, pagination } = await searchVideosInTopic(topicId, query)
   const items = videos.map(video =>
     toBrowseItem(video, { completionCounts, favoritedSet, inProgressSet })
   )

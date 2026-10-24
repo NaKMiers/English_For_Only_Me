@@ -14,64 +14,19 @@ import { AdminUnassignedPanel } from '@/components/dictation/admin/AdminUnassign
 import { hasMongoDbUri } from '@/constants/environments'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import {
+  buildAdminTopicBoard,
+  toAdminSectionVideo,
+} from '@/modules/dictation/content/adminTopicBoard'
+import {
+  listAllSections,
+  listFiledVideos,
   listNoTopicVideos,
-  listSectionsForTopic,
   listTopics,
-  listVideosForTopic,
 } from '@/modules/dictation/content/contentRepository'
 
 export const metadata: Metadata = { title: 'Admin · Topics' }
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
-
-async function buildTopicData(): Promise<AdminTopicData[]> {
-  const topics = await listTopics()
-
-  return Promise.all(
-    topics.map(async topic => {
-      const [sections, videos] = await Promise.all([
-        listSectionsForTopic(topic.id),
-        listVideosForTopic(topic.id),
-      ])
-
-      const bySection = new Map<string, AdminSectionVideo[]>()
-      const ungrouped: AdminSectionVideo[] = []
-
-      for (const video of videos) {
-        const item: AdminSectionVideo = {
-          id: video.id,
-          title: video.title,
-          level: video.level,
-          status: video.status,
-          thumbnailUrl: video.thumbnailUrl,
-          youtubeVideoId: video.youtubeVideoId,
-        }
-        if (video.sectionId) {
-          const bucket = bySection.get(video.sectionId) ?? []
-          bucket.push(item)
-          bySection.set(video.sectionId, bucket)
-        } else ungrouped.push(item)
-      }
-
-      return {
-        id: topic.id,
-        slug: topic.slug,
-        title: topic.title,
-        description: topic.description,
-        thumbnailUrl: topic.thumbnailUrl,
-        order: topic.order,
-        hasVideoMedia: topic.hasVideoMedia,
-        videoCount: videos.length,
-        sections: sections.map(section => ({
-          id: section.id,
-          title: section.title,
-          videos: bySection.get(section.id) ?? [],
-        })),
-        ungrouped,
-      } satisfies AdminTopicData
-    })
-  )
-}
 
 export default async function AdminTopicsPage() {
   let topics: AdminTopicData[] = []
@@ -79,19 +34,16 @@ export default async function AdminTopicsPage() {
 
   if (hasMongoDbUri()) {
     await connectDatabase()
-    const [topicData, noTopicVideos] = await Promise.all([
-      buildTopicData(),
-      listNoTopicVideos(),
-    ])
-    topics = topicData
-    unassigned = noTopicVideos.map(video => ({
-      id: video.id,
-      title: video.title,
-      level: video.level,
-      status: video.status,
-      thumbnailUrl: video.thumbnailUrl,
-      youtubeVideoId: video.youtubeVideoId,
-    }))
+    // Four flat queries, grouped in memory - not two queries per topic.
+    const [topicRows, sections, filedVideos, noTopicVideos] = await Promise.all(
+      [listTopics(), listAllSections(), listFiledVideos(), listNoTopicVideos()]
+    )
+    topics = buildAdminTopicBoard({
+      sections,
+      topics: topicRows,
+      videos: filedVideos,
+    })
+    unassigned = noTopicVideos.map(toAdminSectionVideo)
   }
 
   return (

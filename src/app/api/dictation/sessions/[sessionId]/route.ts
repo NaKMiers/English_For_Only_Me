@@ -5,6 +5,7 @@ import { MissingEnvironmentError } from '@/constants/environments'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { DictationSegmentModel } from '@/models/dictation/DictationSegmentModel'
 import { DictationSessionModel } from '@/models/dictation/DictationSessionModel'
+import { resolveSessionCompletedAt } from '@/modules/dictation/practice/sessionCompletion'
 import { toDictationSessionRecord } from '@/modules/dictation/services/dictationSessionRecords'
 import { requirePracticeActor } from '@/modules/dictation/services/getCurrentUser'
 import {
@@ -34,7 +35,7 @@ function toSessionError(error: unknown): ApiErrorDecision {
     typeof error === 'object' &&
     error !== null &&
     'status' in error &&
-    (error.status === 401 || error.status === 403)
+    (error.status === 401 || error.status === 403 || error.status === 409)
   )
     return {
       status: error.status,
@@ -159,9 +160,13 @@ export async function PATCH(request: Request, context: RouteContext) {
     if (parsedBody.data.isVideoHidden !== undefined)
       session.isVideoHidden = parsedBody.data.isVideoHidden
     if (parsedBody.data.status !== undefined) {
+      session.completedAt = resolveSessionCompletedAt({
+        completedAt: session.completedAt,
+        nextStatus: parsedBody.data.status,
+        now: new Date(),
+        previousStatus: session.status,
+      })
       session.status = parsedBody.data.status
-      session.completedAt =
-        parsedBody.data.status === 'completed' ? new Date() : null
     }
 
     session.lastActiveAt = new Date()

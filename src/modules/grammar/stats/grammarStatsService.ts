@@ -1,16 +1,11 @@
 import 'server-only'
 
 import { GrammarDrillAttemptModel } from '@/models/grammar/GrammarDrillAttemptModel'
-import { GrammarPointModel } from '@/models/grammar/GrammarPointModel'
 import { UserGrammarItemModel } from '@/models/grammar/UserGrammarItemModel'
 import { GRAMMAR_STATS_TREND_DAYS } from '@/modules/grammar/constants'
+import { getCachedGrammarTaxonomy } from '@/modules/grammar/services/grammarContentCache'
 import { effectiveL1Risk } from '@/modules/grammar/taxonomy/effectiveL1Risk'
-import type {
-  GrammarCefrLevel,
-  GrammarComplexity,
-  GrammarL1Risk,
-  GrammarStatsRecord,
-} from '@/modules/grammar/types'
+import type { GrammarStatsRecord } from '@/modules/grammar/types'
 
 import { buildProgressCells, computeStreakDays } from './grammarStats'
 
@@ -35,16 +30,11 @@ export async function getGrammarStatsForActor({
 
   startOfToday.setUTCHours(0, 0, 0, 0)
 
-  const [points, items, attempts] = await Promise.all([
-    GrammarPointModel.find({ mergedInto: null })
-      // `reviewStatus`, `family` and both risk fields are here for the map: a
-      // cell has to know whether the lesson behind it has been read by a human
-      // and how hard the learner judged it. This read already covers all 184
-      // points, so these are projection fields, not a second query.
-      .select(
-        'slug cefrLevel complexity family l1Risk l1RiskObserved reviewStatus'
-      )
-      .lean(),
+  const [{ points }, items, attempts] = await Promise.all([
+    // Shared content, cached: `reviewStatus`, `family` and both risk fields
+    // are there for the map - a cell has to know whether the lesson behind it
+    // has been read by a human and how hard the learner judged it.
+    getCachedGrammarTaxonomy(),
     actorId
       ? UserGrammarItemModel.find({ actorId })
           // recallStage is REQUIRED here: the heat map's competence signal is
@@ -80,14 +70,9 @@ export async function getGrammarStatsForActor({
     progressCells: buildProgressCells({
       masteredSlugs,
       points: points.map(point => ({
-        cefrLevel: point.cefrLevel as GrammarCefrLevel,
-        complexity: point.complexity as GrammarComplexity,
-        isDangerous:
-          effectiveL1Risk({
-            l1Risk: point.l1Risk as GrammarL1Risk,
-            l1RiskObserved: (point.l1RiskObserved ??
-              null) as GrammarL1Risk | null,
-          }) === 'high',
+        cefrLevel: point.cefrLevel,
+        complexity: point.complexity,
+        isDangerous: effectiveL1Risk(point) === 'high',
         isUnverified: point.reviewStatus !== 'reviewed',
         slug: point.slug,
       })),

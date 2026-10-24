@@ -30,7 +30,6 @@ interface Props {
     status: 'shouldLearn' | 'alreadyKnow'
   }) => void
   moveExplore: (delta: number) => void
-  pendingDecisions: Record<string, ExploreDecision>
   showExploreIndex: (index: number) => void
 }
 
@@ -90,7 +89,6 @@ export function VocabularyExplorePanel({
   entries,
   markEntry,
   moveExplore,
-  pendingDecisions,
   showExploreIndex,
 }: Props) {
   return (
@@ -136,12 +134,10 @@ export function VocabularyExplorePanel({
 
           <div className="relative min-h-96 overflow-hidden px-2 py-2 sm:min-h-104">
             {entries.map((entry, index) => {
-              const pendingDecision = pendingDecisions[entry.entry.id]
-              const decision = pendingDecision ?? decisions[entry.entry.id]
+              const decision = decisions[entry.entry.id]
               const distance = index - activeIndex
               const visible = Math.abs(distance) <= 2
               const active = distance === 0
-              const isPending = Boolean(pendingDecision)
               const scale = Math.max(0.78, 1 - Math.abs(distance) * 0.08)
               const opacity = active ? 1 : 0.5
               const translateX = `calc(-50% + ${distance * 104}px)`
@@ -201,7 +197,7 @@ export function VocabularyExplorePanel({
                     <div className="grid shrink-0 grid-cols-2 gap-2">
                       <MangaButton
                         className="min-w-0 px-2 text-xs sm:px-4 sm:text-sm [&>span:last-child]:whitespace-nowrap"
-                        disabled={isPending || decision === 'shouldLearn'}
+                        disabled={decision === 'shouldLearn'}
                         icon={<BookOpen className="size-4" />}
                         onClick={() =>
                           markEntry({
@@ -215,7 +211,7 @@ export function VocabularyExplorePanel({
                       </MangaButton>
                       <MangaButton
                         className="min-w-0 px-2 text-xs sm:px-4 sm:text-sm [&>span:last-child]:whitespace-nowrap"
-                        disabled={isPending || decision === 'alreadyKnow'}
+                        disabled={decision === 'alreadyKnow'}
                         icon={<X className="size-4" />}
                         onClick={() =>
                           markEntry({
@@ -266,8 +262,7 @@ export function VocabularyExplorePanel({
             </div>
             <div className="grid grid-cols-[repeat(auto-fill,minmax(1.25rem,1fr))] gap-2">
               {entries.map((entry, index) => {
-                const decision =
-                  pendingDecisions[entry.entry.id] ?? decisions[entry.entry.id]
+                const decision = decisions[entry.entry.id]
 
                 return (
                   <Button

@@ -1,7 +1,9 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import type { ReactElement } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { GrammarRecallTaskRecord } from '@/modules/grammar/types'
+import { OutboxOwnerProvider } from '@/components/common/OutboxOwnerProvider'
+import type { GrammarServedRecallTask } from '@/modules/grammar/recall/recallTaskGrading'
 
 import { GrammarRecallModal } from './GrammarRecallModal'
 
@@ -44,8 +46,8 @@ function stubMatchMedia() {
 }
 
 function task(
-  overrides: Partial<GrammarRecallTaskRecord> = {}
-): GrammarRecallTaskRecord {
+  overrides: Partial<GrammarServedRecallTask> = {}
+): GrammarServedRecallTask {
   return {
     cefrLevel: 'A2',
     choices: [
@@ -54,8 +56,15 @@ function task(
       'There are a few water in the glass.',
     ],
     complexity: 2,
+    counters: { correctCount: 0, reviewCount: 0, wrongCount: 0 },
     drillId: 'd1',
     family: 'nouns-quantifiers',
+    grading: {
+      acceptedAnswers: [],
+      explanation: 'Water is uncountable.',
+      punctuationSensitive: false,
+      target: 'There is a little water in the glass.',
+    },
     idempotencyKey: 'key-1',
     kind: 'choice',
     l1Risk: 'high',
@@ -111,10 +120,28 @@ function mockFetch() {
   return { bodies, fetcher }
 }
 
+/**
+ * Every test gets its own outbox owner. The outbox is cached per owner for the
+ * tab and persisted to localStorage, so a shared owner would let one test's
+ * queue leak into the next. A known owner also skips the guest-cookie mint.
+ */
+let ownerSeq = 0
+
+function renderModal(element: ReactElement) {
+  ownerSeq += 1
+
+  return render(
+    <OutboxOwnerProvider ownerKey={`test-owner-${ownerSeq}`}>
+      {element}
+    </OutboxOwnerProvider>
+  )
+}
+
 describe('GrammarRecallModal', () => {
   beforeEach(() => {
     vi.unstubAllGlobals()
     stubMatchMedia()
+    window.localStorage?.clear()
   })
 
   /**
@@ -138,7 +165,7 @@ describe('GrammarRecallModal', () => {
   it('posts the clicked choice, not the previous answer state', async () => {
     const { bodies } = mockFetch()
 
-    render(
+    renderModal(
       <GrammarRecallModal
         onClose={() => {}}
         tasks={[task()]}
@@ -161,7 +188,7 @@ describe('GrammarRecallModal', () => {
     // exactly as it broke drill 1. This pins both.
     const { bodies } = mockFetch()
 
-    render(
+    renderModal(
       <GrammarRecallModal
         onClose={() => {}}
         tasks={[task(), task({ drillId: 'd2', idempotencyKey: 'key-2' })]}
@@ -199,7 +226,7 @@ describe('GrammarRecallModal', () => {
   it('posts what was typed on a production drill', async () => {
     const { bodies } = mockFetch()
 
-    render(
+    renderModal(
       <GrammarRecallModal
         onClose={() => {}}
         tasks={[task({ choices: null, kind: 'transform' })]}
@@ -222,7 +249,7 @@ describe('GrammarRecallModal', () => {
     // asking for the answer, not offering one.
     const { bodies } = mockFetch()
 
-    render(
+    renderModal(
       <GrammarRecallModal
         onClose={() => {}}
         tasks={[task({ choices: null, kind: 'transform' })]}
@@ -235,5 +262,185 @@ describe('GrammarRecallModal', () => {
 
     expect(bodies[0].answer).toBe('')
     expect(bodies[0].revealed).toBe(true)
+  })
+
+  describe('client-first grading', () => {
+    /**
+     * A fetch the test answers by hand, so it can look at the panel while the
+     * POST is still in flight and then decide what the server says.
+     */
+    function deferredFetch() {
+      const calls: {
+        body: Record<string, unknown>
+        respond: (status: number, data: unknown) => void
+      }[] = []
+
+      vi.stubGlobal(
+        'fetch',
+        vi.fn(
+          (_url: string, init?: RequestInit) =>
+            new Promise<Response>(resolve => {
+              calls.push({
+                body: JSON.parse(String(init?.body)) as Record<string, unknown>,
+                respond: (status, data) =>
+                  resolve({
+                    json: () => Promise.resolve(data),
+                    ok: status < 400,
+                    status,
+                  } as unknown as Response),
+              })
+            })
+        )
+      )
+
+      return calls
+    }
+
+    function serverResult(isCorrect: boolean, recallStage: number) {
+      return {
+        correction: null,
+        explanation: 'From the server.',
+        isCorrect,
+        item: {
+          correctCount: isCorrect ? 1 : 0,
+          dueAt: null,
+          lastReviewedAt: null,
+          masteredAt: null,
+          pointSlug: 'present-perfect',
+          recallStage,
+          reviewCount: 1,
+          status: 'learning',
+          wrongCount: isCorrect ? 0 : 1,
+        },
+        matchedAnswer: 'He has lived here for five years.',
+        verdict: isCorrect ? 'correct' : 'wrong',
+      }
+    }
+
+    const production = () =>
+      task({
+        choices: null,
+        grading: {
+          acceptedAnswers: ["He's lived here for five years."],
+          explanation: 'Present perfect links a past action to now.',
+          punctuationSensitive: false,
+          target: 'He has lived here for five years.',
+        },
+        kind: 'transform',
+        l1Risk: 'medium',
+        pointSlug: 'present-perfect',
+        pointTitle: 'Present Perfect',
+      })
+
+    function typeAndCheck(value: string) {
+      fireEvent.change(screen.getByPlaceholderText('Type your answer'), {
+        target: { value },
+      })
+      fireEvent.click(screen.getByRole('button', { name: 'Check' }))
+    }
+
+    it('shows the verdict before the server responds', () => {
+      const calls = deferredFetch()
+
+      renderModal(
+        <GrammarRecallModal
+          onClose={() => {}}
+          tasks={[production()]}
+        />
+      )
+
+      typeAndCheck("He's lived here for five years")
+
+      expect(calls).toHaveLength(1)
+      expect(calls[0].body.idempotencyKey).toBe('key-1')
+      expect(screen.getByText('Now at stage 2/7')).toBeTruthy()
+      expect(
+        screen.getByText('Present perfect links a past action to now.')
+      ).toBeTruthy()
+    })
+
+    it('switches to the server verdict when it disagrees', async () => {
+      const calls = deferredFetch()
+
+      renderModal(
+        <GrammarRecallModal
+          onClose={() => {}}
+          tasks={[production()]}
+        />
+      )
+
+      typeAndCheck('He lives here for five years')
+
+      expect(screen.getByText('Back to stage 1/7')).toBeTruthy()
+
+      await act(async () => calls[0].respond(200, serverResult(true, 2)))
+
+      await waitFor(() =>
+        expect(screen.getByText('Now at stage 2/7')).toBeTruthy()
+      )
+      expect(screen.getByText('From the server.')).toBeTruthy()
+    })
+
+    it('rolls back on a rejected write and keeps the answer', async () => {
+      const calls = deferredFetch()
+
+      renderModal(
+        <GrammarRecallModal
+          onClose={() => {}}
+          tasks={[production()]}
+        />
+      )
+
+      typeAndCheck('He has lived here for five years')
+
+      expect(screen.getByText('Now at stage 2/7')).toBeTruthy()
+
+      await act(async () =>
+        calls[0].respond(409, {
+          message: 'That drill is stale. Refresh your grammar recall queue.',
+        })
+      )
+
+      await waitFor(() =>
+        expect(
+          screen.getByText(
+            'That drill is stale. Refresh your grammar recall queue.'
+          )
+        ).toBeTruthy()
+      )
+      expect(screen.queryByText('Now at stage 2/7')).toBeNull()
+      expect(
+        (screen.getByPlaceholderText('Type your answer') as HTMLTextAreaElement)
+          .value
+      ).toBe('He has lived here for five years')
+      expect(screen.getByRole('button', { name: 'Check' })).toBeTruthy()
+    })
+
+    it('reports an answer rejected after moving on as not saved', async () => {
+      const calls = deferredFetch()
+
+      renderModal(
+        <GrammarRecallModal
+          onClose={() => {}}
+          tasks={[production()]}
+        />
+      )
+
+      typeAndCheck('He has lived here for five years')
+      fireEvent.click(screen.getByRole('button', { name: 'Finish' }))
+
+      expect(screen.getByText('Saving 1 answer...')).toBeTruthy()
+
+      await act(async () =>
+        calls[0].respond(409, { message: 'That drill is stale.' })
+      )
+
+      await waitFor(() =>
+        expect(
+          screen.getByText('Present Perfect: That drill is stale.')
+        ).toBeTruthy()
+      )
+      expect(screen.getByText(/0 of 1 correct/)).toBeTruthy()
+    })
   })
 })

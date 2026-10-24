@@ -2,14 +2,11 @@ import 'server-only'
 
 import { GrammarPointModel } from '@/models/grammar/GrammarPointModel'
 import { UserGrammarItemModel } from '@/models/grammar/UserGrammarItemModel'
+import { getItemStatusPatch } from '@/modules/grammar/recall/itemStatusPatch'
 import type {
   GrammarUserItemStatus,
   UserGrammarItemApiRecord,
 } from '@/modules/grammar/types'
-import {
-  getAlreadyKnownState,
-  getInitialRecallState,
-} from '@/modules/learning/recall/recallLadder'
 
 /**
  * Shape accepted by the mapper. Dates are optional because Mongoose lean
@@ -45,42 +42,10 @@ export function toUserGrammarItemRecord(
   }
 }
 
-/**
- * Turn a requested status into the fields to persist.
- *
- * Pure, so the state transitions are testable without a database.
- *
- *   learning     -> stage 1, due now. The point enters the ladder.
- *   alreadyKnow  -> never scheduled. The learner asserts they have it.
- *   ignored      -> never scheduled, and not counted as known either.
- */
-export function getItemStatusPatch({
-  now = new Date(),
-  status,
-}: {
-  now?: Date
-  status: GrammarUserItemStatus
-}) {
-  if (status === 'learning') return getInitialRecallState(now)
-  if (status === 'alreadyKnow') return getAlreadyKnownState(now)
-
-  if (status === 'ignored')
-    return {
-      dueAt: null,
-      knownAt: null,
-      knownReason: null,
-      masteredAt: null,
-      masteredReason: null,
-      status: 'ignored' as const,
-    }
-
-  return {
-    dueAt: null,
-    masteredAt: now,
-    masteredReason: 'manual' as const,
-    status: 'mastered' as const,
-  }
-}
+// Re-exported so existing server callers and tests keep one import path. The
+// function lives in `recall/itemStatusPatch.ts` because the browser predicts a
+// status click with it too.
+export { getItemStatusPatch }
 
 /**
  * Resolve a slug through any merge redirect, so a bookmark or a stale client
@@ -102,6 +67,9 @@ async function resolveLiveSlug(pointSlug: string) {
  * Rows are created lazily here - the first time the learner interacts with a
  * point - rather than pre-minted for all 162 on first visit. That is why the
  * browse list left-joins and why there is no `new` status.
+ *
+ * This SETS the requested status (`$set` of a fixed patch, never a toggle), so
+ * the client outbox can replay it safely after a retry or a reload.
  */
 export async function setGrammarItemStatus({
   actorId,

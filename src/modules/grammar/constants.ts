@@ -111,7 +111,18 @@ export const GRAMMAR_DRILL_VERDICTS = ['correct', 'wrong', 'revealed'] as const
  *
  * `'test'` is its successor: the learner-initiated test, launchable any time.
  */
-export const GRAMMAR_ATTEMPT_ORIGINS = ['recall', 'diagnostic', 'test'] as const
+/** The outbox lane every grammar recall answer is queued on. */
+export const GRAMMAR_RECALL_LANE = 'grammar:recall'
+
+// 'early': a recall answer for a point that was no longer due (a queue read in
+// another tab, or while earlier answers were still saving). It is graded and
+// kept like a recall answer, but it never moves the ladder a second time.
+export const GRAMMAR_ATTEMPT_ORIGINS = [
+  'recall',
+  'diagnostic',
+  'test',
+  'early',
+] as const
 
 /**
  * How far back the correct-answer streak looks.

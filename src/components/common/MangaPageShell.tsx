@@ -30,7 +30,10 @@ export function MangaPageShell({
         fullHeight
           ? 'h-[calc(100dvh-24px)] sm:h-[calc(100dvh-32px)]'
           : 'min-h-[calc(100vh-24px)] sm:min-h-[calc(100vh-32px)]',
-        'before:pointer-events-none before:absolute before:inset-0 before:z-0 before:bg-[linear-gradient(110deg,transparent_0_18%,rgba(5,5,5,0.045)_18%_18.5%,transparent_18.5%_42%,rgba(224,48,32,0.05)_42%_42.35%,transparent_42.35%),radial-gradient(ellipse_at_84%_8%,rgba(224,48,32,0.13),transparent_28%),radial-gradient(ellipse_at_4%_82%,rgba(5,5,5,0.08),transparent_30%)]',
+        // The ink-stroke + glow layers scroll with the page as plain painted
+        // content (no fixed attachment, no animation), and paint containment
+        // keeps them from being re-rasterised by changes inside the shell.
+        'before:pointer-events-none before:absolute before:inset-0 before:z-0 before:bg-[linear-gradient(110deg,transparent_0_18%,rgba(5,5,5,0.045)_18%_18.5%,transparent_18.5%_42%,rgba(224,48,32,0.05)_42%_42.35%,transparent_42.35%),radial-gradient(ellipse_at_84%_8%,rgba(224,48,32,0.13),transparent_28%),radial-gradient(ellipse_at_4%_82%,rgba(5,5,5,0.08),transparent_30%)] before:contain-strict',
         'after:border-manga-black/35 after:pointer-events-none after:absolute after:inset-2.5 after:z-0 after:rounded-[calc(var(--sticker-shell)-13px)] after:border after:border-dashed',
         className
       )}

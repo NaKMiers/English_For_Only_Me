@@ -1,27 +1,8 @@
 'use client'
 
-import { Heart, LogOut, Shield } from 'lucide-react'
+import dynamic from 'next/dynamic'
 import Image from 'next/image'
-import Link from 'next/link'
-import { useState } from 'react'
-
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { MangaButton } from '@/components/ui/MangaButton'
+import { useCallback, useState, type KeyboardEvent } from 'react'
 
 interface Props {
   avatarUrl?: string | null
@@ -32,11 +13,26 @@ interface Props {
   signOutAction: () => Promise<void>
 }
 
+const TRIGGER_CLASS_NAME =
+  'border-manga-black bg-manga-white hover:bg-manga-paper-soft rounded-control flex min-h-11 min-w-0 items-center gap-2 border-3 px-2 shadow-[3px_3px_0_var(--manga-black)] transition-colors'
+
+const loadUserMenuPopup = () => import('./UserMenuPopup')
+
+const UserMenuPopup = dynamic(
+  () => loadUserMenuPopup().then(module => module.UserMenuPopup),
+  { ssr: false }
+)
+
+function prefetchPopup() {
+  void loadUserMenuPopup()
+}
+
 /**
- * Account menu in the topbar. The identity chip is the dropdown trigger; the
- * menu holds app shortcuts, the admin console (admins only), and sign-out.
- * Built on the shared shadcn DropdownMenu + Dialog primitives. The signOut
- * server action is injected so this client file never imports the
+ * Account menu in the topbar. The identity chip renders as a plain button; the
+ * dropdown (app shortcuts, the admin console for admins, sign-out) and the
+ * sign-out dialog load on the first interaction, keeping the base-ui popup
+ * code off every page's initial bundle. Hover or focus prefetches the chunk.
+ * The signOut server action is injected so this client file never imports the
  * NextAuth/Mongoose chain into the browser bundle.
  */
 export function UserMenu({
@@ -46,108 +42,75 @@ export function UserMenu({
   isAdmin,
   signOutAction,
 }: Props) {
-  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [isActivated, setIsActivated] = useState(false)
+  const [isPopupMounted, setIsPopupMounted] = useState(false)
+  const handlePopupMounted = useCallback(() => setIsPopupMounted(true), [])
+
+  function handleKeyDown(event: KeyboardEvent<HTMLButtonElement>) {
+    if (event.key !== 'ArrowDown') return
+
+    event.preventDefault()
+    setIsActivated(true)
+  }
+
+  const chip = (
+    <>
+      {avatarUrl ? (
+        <Image
+          src={avatarUrl}
+          alt=""
+          aria-hidden="true"
+          width={28}
+          height={28}
+          unoptimized
+          referrerPolicy="no-referrer"
+          className="border-manga-black bg-manga-white rounded-tag size-7 shrink-0 border-2 object-cover"
+        />
+      ) : (
+        <span
+          aria-hidden="true"
+          className="bg-manga-black text-manga-white grid size-7 shrink-0 place-items-center font-sans text-sm font-black"
+        >
+          {initial}
+        </span>
+      )}
+      <span className="grid min-w-0 leading-tight">
+        <span className="truncate font-sans text-sm font-black">{label}</span>
+        {isAdmin && (
+          <span className="text-manga-ink-soft text-xs font-black uppercase">
+            Admin
+          </span>
+        )}
+      </span>
+    </>
+  )
 
   return (
     <>
-      <DropdownMenu>
-        <DropdownMenuTrigger className="border-manga-black bg-manga-white hover:bg-manga-paper-soft rounded-control flex min-h-11 min-w-0 items-center gap-2 border-3 px-2 shadow-[3px_3px_0_var(--manga-black)] transition-colors">
-          {avatarUrl ? (
-            <Image
-              src={avatarUrl}
-              alt=""
-              aria-hidden="true"
-              width={28}
-              height={28}
-              unoptimized
-              referrerPolicy="no-referrer"
-              className="border-manga-black bg-manga-white rounded-tag size-7 shrink-0 border-2 object-cover"
-            />
-          ) : (
-            <span
-              aria-hidden="true"
-              className="bg-manga-black text-manga-white grid size-7 shrink-0 place-items-center font-sans text-sm font-black"
-            >
-              {initial}
-            </span>
-          )}
-          <span className="grid min-w-0 leading-tight">
-            <span className="truncate font-sans text-sm font-black">
-              {label}
-            </span>
-            {isAdmin && (
-              <span className="text-manga-ink-soft text-xs font-black uppercase">
-                Admin
-              </span>
-            )}
-          </span>
-        </DropdownMenuTrigger>
-
-        <DropdownMenuContent
-          align="end"
-          className="w-56"
+      {/* Stays up while the popup chunk loads, so the chip never blinks. */}
+      {!isPopupMounted && (
+        <button
+          type="button"
+          aria-haspopup="menu"
+          aria-expanded={false}
+          onPointerEnter={prefetchPopup}
+          onFocus={prefetchPopup}
+          onClick={() => setIsActivated(true)}
+          onKeyDown={handleKeyDown}
+          className={TRIGGER_CLASS_NAME}
         >
-          <DropdownMenuItem render={<Link href="/dictation/favorites" />}>
-            <Heart aria-hidden="true" />
-            Favorites
-          </DropdownMenuItem>
-          {isAdmin && (
-            <DropdownMenuItem render={<Link href="/admin" />}>
-              <Shield aria-hidden="true" />
-              Admin
-            </DropdownMenuItem>
-          )}
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            variant="destructive"
-            onClick={() => setConfirmOpen(true)}
-          >
-            <LogOut aria-hidden="true" />
-            Sign out
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-
-      <Dialog
-        open={confirmOpen}
-        onOpenChange={setConfirmOpen}
-      >
-        <DialogContent className="border-manga-black bg-manga-white border-3 shadow-[6px_6px_0_var(--manga-black)]">
-          <DialogHeader>
-            <DialogTitle className="font-sans text-xl leading-tight font-black tracking-normal uppercase">
-              Sign out?
-            </DialogTitle>
-            <DialogDescription className="text-manga-ink-soft text-base leading-7 font-semibold">
-              You will be signed out of English For Only Me.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="bg-manga-paper-soft border-manga-black border-t-3">
-            <DialogClose
-              render={
-                <MangaButton
-                  type="button"
-                  tone="paper"
-                >
-                  Cancel
-                </MangaButton>
-              }
-            />
-            <form action={signOutAction}>
-              <MangaButton
-                type="submit"
-                icon={
-                  <LogOut
-                    aria-hidden="true"
-                    className="size-5"
-                  />
-                }
-              >
-                Sign out
-              </MangaButton>
-            </form>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          {chip}
+        </button>
+      )}
+      {isActivated && (
+        <UserMenuPopup
+          chip={chip}
+          isAdmin={isAdmin}
+          onMounted={handlePopupMounted}
+          signOutAction={signOutAction}
+          triggerClassName={TRIGGER_CLASS_NAME}
+        />
+      )}
     </>
   )
 }

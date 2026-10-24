@@ -4,16 +4,12 @@ import { randomUUID } from 'crypto'
 
 import { GrammarPointModel } from '@/models/grammar/GrammarPointModel'
 import { UserGrammarItemModel } from '@/models/grammar/UserGrammarItemModel'
-import type {
-  GrammarCefrLevel,
-  GrammarComplexity,
-  GrammarDrillRecord,
-  GrammarFamily,
-  GrammarL1Risk,
-  GrammarRecallTaskRecord,
-  GrammarReviewStatus,
-} from '@/modules/grammar/types'
+import type { GrammarDrillRecord } from '@/modules/grammar/types'
 
+import {
+  toServedRecallTask,
+  type GrammarServedRecallTask,
+} from './recallTaskGrading'
 import { selectDrillForStage } from './selectDrillForStage'
 
 /**
@@ -31,6 +27,10 @@ import { selectDrillForStage } from './selectDrillForStage'
  *
  * The `idempotencyKey` for each served drill is minted here, in the same pass,
  * so the client has it to echo back on submit.
+ *
+ * Each task also carries its grading fields and the learner's counters, so the
+ * browser can grade and predict the ladder move instantly (see
+ * `recallTaskGrading.ts`). The server still re-grades on submit and wins.
  */
 export async function getGrammarDueQueue({
   actorId,
@@ -40,7 +40,7 @@ export async function getGrammarDueQueue({
   actorId: string
   limit: number
   now?: Date
-}): Promise<GrammarRecallTaskRecord[]> {
+}): Promise<GrammarServedRecallTask[]> {
   if (!actorId) return []
 
   const dueItems = await UserGrammarItemModel.find({
@@ -78,22 +78,12 @@ export async function getGrammarDueQueue({
     if (!drill) return []
 
     return [
-      {
-        cefrLevel: point.cefrLevel as GrammarCefrLevel,
-        choices: drill.choices ?? null,
-        complexity: point.complexity as GrammarComplexity,
-        drillId: drill.id,
-        family: point.family as GrammarFamily,
+      toServedRecallTask({
+        drill,
         idempotencyKey: randomUUID(),
-        kind: drill.kind,
-        l1Risk: point.l1Risk as GrammarL1Risk,
-        l1RiskObserved: (point.l1RiskObserved ?? null) as GrammarL1Risk | null,
-        pointSlug: point.slug,
-        pointTitle: point.title,
-        prompt: drill.prompt,
-        recallStage: item.recallStage,
-        reviewStatus: point.reviewStatus as GrammarReviewStatus,
-      } satisfies GrammarRecallTaskRecord,
+        item,
+        point,
+      }),
     ]
   })
 }

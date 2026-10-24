@@ -18,4 +18,36 @@ describe('TopicGrid', () => {
     expect(html).toContain('bg-manga-pale-red')
     expect(html).not.toContain('bg-manga-paper ')
   })
+
+  test('renders topic tiles as lazy, Cloudinary-resized images', () => {
+    const now = new Date()
+    const html = renderToStaticMarkup(
+      <TopicGrid
+        topics={[
+          {
+            createdAt: now,
+            description: null,
+            hasVideoMedia: false,
+            id: 't1',
+            lessonCount: 2,
+            levelRange: 'A1',
+            order: 0,
+            sectionCount: 1,
+            slug: 'travel',
+            thumbnailUrl:
+              'https://res.cloudinary.com/demo/image/upload/v1/topic.jpg',
+            title: 'Travel',
+            updatedAt: now,
+          },
+        ]}
+        noTopicCount={0}
+      />
+    )
+
+    expect(html).toContain(
+      'src="https://res.cloudinary.com/demo/image/upload/f_auto,q_auto,c_fill,w_160,h_160/v1/topic.jpg"'
+    )
+    expect(html).toContain('loading="lazy"')
+    expect(html).not.toContain('background-image')
+  })
 })

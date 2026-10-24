@@ -11,7 +11,15 @@ import {
   VOCAB_RECALL_MAX_LIMIT,
   VOCAB_SEARCH_DEFAULT_LIMIT,
   VOCAB_SEARCH_MAX_LIMIT,
+  VOCAB_WORD_LIST_DEFAULT_PAGE_SIZE,
+  VOCAB_WORD_LIST_MAX_PAGE_SIZE,
 } from '@/modules/vocabulary/constants'
+import {
+  decodeVocabRecallDueCursor,
+  VOCAB_RECALL_DUE_CURSOR_PATTERN,
+  type VocabRecallDueCursor,
+} from '@/modules/vocabulary/recall/recallDueCursor'
+import type { VocabWordListView } from '@/modules/vocabulary/types'
 
 type ApiErrorStatus = 400 | 401 | 403 | 404 | 409 | 429 | 500 | 503
 
@@ -105,16 +113,46 @@ const itemStatusBatchSchema = z
   .strict()
 
 const recallDueSchema = z.object({
+  cursor: z
+    .string()
+    .regex(VOCAB_RECALL_DUE_CURSOR_PATTERN)
+    .optional()
+    .transform(
+      (value): VocabRecallDueCursor | null =>
+        (value && decodeVocabRecallDueCursor(value)) || null
+    ),
   excludeListening: z
     .enum(['0', '1', 'false', 'true'])
     .optional()
     .transform(value => value === '1' || value === 'true'),
+  // Clamped rather than rejected: a tab still running the old bundle asks for
+  // 1000 and should get a page, not an error.
   limit: z.coerce
     .number()
     .int()
     .min(1)
-    .max(VOCAB_RECALL_MAX_LIMIT)
+    .transform(value => Math.min(value, VOCAB_RECALL_MAX_LIMIT))
     .default(VOCAB_RECALL_DEFAULT_LIMIT),
+})
+
+const occurrenceRecordSchema = z
+  .object({
+    occurrence: occurrenceSchema.unwrap(),
+    vocabEntryId: objectIdSchema,
+  })
+  .strict()
+
+const wordListQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).max(100_000).catch(1),
+  perPage: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .max(VOCAB_WORD_LIST_MAX_PAGE_SIZE)
+    .catch(VOCAB_WORD_LIST_DEFAULT_PAGE_SIZE),
+  view: z
+    .enum(['learning', 'dueToday', 'alreadyKnow', 'mastered', 'knownTotal'])
+    .catch('learning'),
 })
 
 const recallAnswerSchema = z
@@ -143,6 +181,9 @@ export type ParsedExploreRequest = z.infer<typeof exploreSchema>
 export type ParsedItemStatusRequest = z.infer<typeof itemStatusSchema>
 export type ParsedItemStatusBatchRequest = z.infer<typeof itemStatusBatchSchema>
 export type ParsedRecallDueRequest = z.infer<typeof recallDueSchema>
+export type ParsedOccurrenceRecordRequest = z.infer<
+  typeof occurrenceRecordSchema
+>
 export type ParsedRecallAnswerRequest = z.infer<typeof recallAnswerSchema>
 export type ParsedAdminEnrichRequest = z.infer<typeof adminEnrichSchema>
 
@@ -228,6 +269,7 @@ export function parseRecallDueRequest(
   searchParams: URLSearchParams
 ): VocabRouteDecision<ParsedRecallDueRequest> {
   const result = recallDueSchema.safeParse({
+    cursor: searchParams.get('cursor') ?? undefined,
     excludeListening: searchParams.get('excludeListening') ?? undefined,
     limit: searchParams.get('limit') ?? undefined,
   })
@@ -235,6 +277,45 @@ export function parseRecallDueRequest(
   if (!result.success) return invalid('Vocabulary recall query is invalid.')
 
   return { data: result.data, ok: true }
+}
+
+export function parseOccurrenceRecordRequest(
+  body: unknown
+): VocabRouteDecision<ParsedOccurrenceRecordRequest> {
+  const result = occurrenceRecordSchema.safeParse(body)
+
+  if (!result.success)
+    return invalid('Vocabulary occurrence payload is invalid.')
+
+  return { data: result.data, ok: true }
+}
+
+export interface VocabWordListQuery {
+  page: number
+  perPage: number
+  view: VocabWordListView
+}
+
+type SearchParamValue = string | string[] | undefined
+
+function firstParam(value: SearchParamValue) {
+  return Array.isArray(value) ? value[0] : value
+}
+
+/**
+ * Word list page query. Never fails: a bad value falls back to its default so
+ * a hand-edited URL still renders a page.
+ */
+export function parseVocabWordListQuery(params: {
+  page?: SearchParamValue
+  perPage?: SearchParamValue
+  view?: SearchParamValue
+}): VocabWordListQuery {
+  return wordListQuerySchema.parse({
+    page: firstParam(params.page),
+    perPage: firstParam(params.perPage),
+    view: firstParam(params.view),
+  })
 }
 
 export function parseRecallAnswerRequest(

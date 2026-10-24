@@ -1,11 +1,12 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, updateTag } from 'next/cache'
 
 import {
   getImageFile,
   uploadImageToCloudinary,
 } from '@/lib/cloudinary/uploadImage'
+import { CACHE_TAGS } from '@/lib/db/catalogCache'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import {
   isDictationLevel,
@@ -35,6 +36,9 @@ async function guardAdmin() {
 }
 
 function revalidateBrowse() {
+  // Expire the cached catalog first so the re-render below (and the admin's
+  // next public page view) reads the write, not the cached copy.
+  updateTag(CACHE_TAGS.dictationCatalog)
   revalidatePath('/dictation')
   revalidatePath('/dictation/no-topic')
   revalidatePath('/admin/topics')

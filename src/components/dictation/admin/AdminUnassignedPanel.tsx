@@ -1,7 +1,6 @@
 'use client'
 
 import { ChevronDown } from 'lucide-react'
-import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
 
 import { PageTag } from '@/components/ui/PageTag'
@@ -21,7 +20,6 @@ export function AdminUnassignedPanel({
 }: {
   videos: AdminSectionVideo[]
 }) {
-  const router = useRouter()
   const [open, setOpen] = useState(true)
   const [, startTransition] = useTransition()
 
@@ -29,8 +27,8 @@ export function AdminUnassignedPanel({
 
   function unassign(videoId: string) {
     startTransition(async () => {
+      // The action revalidates the page; its response carries the new lists.
       await moveVideoAction({ videoId, topicId: null, sectionId: null })
-      router.refresh()
     })
   }
 

@@ -22,17 +22,18 @@ export default async function Page() {
   const reviewItems: DictationReviewItemApiRecord[] = []
 
   if (hasMongoDbUri()) {
-    const actorId = await getPracticeActorId()
+    const [actorId] = await Promise.all([
+      getPracticeActorId(),
+      connectDatabase(),
+    ])
 
-    if (actorId) {
-      await connectDatabase()
+    if (actorId)
       reviewItems.push(
         ...(await listDueReviewItemsForUser({
           limit: 30,
           userId: actorId,
         }))
       )
-    }
   }
 
   return (

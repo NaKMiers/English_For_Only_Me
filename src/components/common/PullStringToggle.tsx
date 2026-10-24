@@ -7,10 +7,11 @@ import { cn } from '@/lib/utils'
 
 /**
  * Hanging pull-string bulb, fixed to the top-right corner of the viewport
- * (outside the page chrome). It dangles from the top edge on a cord, sways
- * gently at rest, and on click "yanks" down and swings like a real pull lamp
- * while flipping light <-> light-up. The bulb glows warm amber when light-up
- * is on, and sits dim in day mode. Motion is disabled under reduced-motion.
+ * (outside the page chrome). It dangles from the top edge on a cord, hangs
+ * still at rest, sways on hover/focus, and on click "yanks" down and swings
+ * like a real pull lamp while flipping light <-> light-up. The bulb glows warm
+ * amber when light-up is on, and sits dim in day mode. Motion is disabled
+ * under reduced-motion.
  *
  *        │        <- cord to the top edge
  *       (💡)      <- bulb: pull it to toggle

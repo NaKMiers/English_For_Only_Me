@@ -10,10 +10,15 @@ import { hasMongoDbUri } from '@/constants/environments'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { DictationSegmentModel } from '@/models/dictation/DictationSegmentModel'
 import { DictationSessionModel } from '@/models/dictation/DictationSessionModel'
-import { DictationTranscriptModel } from '@/models/dictation/DictationTranscriptModel'
 import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
 import { getCompletionCountForVideo } from '@/modules/dictation/content/progressRepository'
-import { toDictationSegmentRecord } from '@/modules/dictation/services/dictationSegmentRecords'
+import {
+  buildInitialTranslationTrack,
+  buildPracticeSegments,
+} from '@/modules/dictation/practice/practicePageData'
+import { loadInitialTranslationCues } from '@/modules/dictation/practice/practiceTranslations'
+import { loadSegmentProgressRows } from '@/modules/dictation/practice/segmentProgressService'
+import { PRACTICE_SEGMENT_FIELDS } from '@/modules/dictation/services/dictationSegmentRecords'
 import { toDictationSessionRecord } from '@/modules/dictation/services/dictationSessionRecords'
 import { toDictationVideoRecord } from '@/modules/dictation/services/dictationVideoRecords'
 import { getPracticeActorId } from '@/modules/dictation/services/getCurrentUser'
@@ -94,16 +99,31 @@ export default async function Page({ params }: Props) {
   // Practice is open to everyone - a signed-in user resumes their own session,
   // an anonymous guest resumes the one tied to their guest cookie (null until
   // they start practicing, in which case the shell creates one).
-  const actorId = await getPracticeActorId()
+  const [actorId] = await Promise.all([getPracticeActorId(), connectDatabase()])
 
-  await connectDatabase()
-
-  const video = await DictationVideoModel.findOne({
-    _id: videoId,
-    status: {
-      $ne: 'archived',
-    },
-  }).lean()
+  // Everything keyed only by the URL's video id and the learner starts with
+  // the video lookup instead of waiting for it.
+  const [video, session, completions, progressRows] = await Promise.all([
+    DictationVideoModel.findOne({
+      _id: videoId,
+      status: {
+        $ne: 'archived',
+      },
+    }).lean(),
+    actorId
+      ? DictationSessionModel.findOne({
+          userId: actorId,
+          status: 'active',
+          videoId,
+        })
+          .sort({ lastActiveAt: -1 })
+          .lean()
+      : null,
+    actorId ? getCompletionCountForVideo(actorId, videoId) : 0,
+    // Per-learner progress, never the shared segment's fields (see
+    // segmentProgress.ts).
+    loadSegmentProgressRows({ userId: actorId, videoId }),
+  ])
 
   if (!video) notFound()
 
@@ -118,12 +138,19 @@ export default async function Page({ params }: Props) {
       />
     )
 
-  const segments = await DictationSegmentModel.find({
-    videoId: video._id,
-    transcriptId: video.activeTranscriptId,
-  })
-    .sort({ order: 1 })
-    .lean()
+  const [segments, translations] = await Promise.all([
+    DictationSegmentModel.find({
+      videoId: video._id,
+      transcriptId: video.activeTranscriptId,
+    })
+      .select(PRACTICE_SEGMENT_FIELDS)
+      .sort({ order: 1 })
+      .lean(),
+    loadInitialTranslationCues({
+      defaultLanguage: video.defaultLanguage,
+      videoId,
+    }),
+  ])
 
   if (segments.length === 0)
     return (
@@ -133,35 +160,6 @@ export default async function Page({ params }: Props) {
         videoId={videoId}
       />
     )
-
-  const [session, completions] = await Promise.all([
-    actorId
-      ? DictationSessionModel.findOne({
-          userId: actorId,
-          status: 'active',
-          videoId: video._id,
-        })
-          .sort({ lastActiveAt: -1 })
-          .lean()
-      : null,
-    actorId ? getCompletionCountForVideo(actorId, String(video._id)) : 0,
-  ])
-
-  const trackDocuments = await DictationTranscriptModel.find({
-    videoId: video._id,
-    language: { $ne: video.defaultLanguage },
-    cueCount: { $gt: 0 },
-  })
-    .sort({ language: 1 })
-    .lean()
-  const translationTracks = trackDocuments.map(doc => ({
-    language: doc.language,
-    cues: (doc.rawCues ?? []).map(cue => ({
-      text: cue.text,
-      startMs: cue.startMs ?? null,
-      endMs: cue.endMs ?? null,
-    })),
-  }))
 
   return (
     // No topbar: practice is a focus screen, and the exercise header carries
@@ -175,9 +173,18 @@ export default async function Page({ params }: Props) {
         <DictationPracticeShell
           completions={completions}
           initialSession={session ? toDictationSessionRecord(session) : null}
-          segments={segments.map(toDictationSegmentRecord)}
-          translationTracks={translationTracks}
-          video={videoRecord}
+          initialTranslationTrack={buildInitialTranslationTrack(
+            segments,
+            translations.firstTrack
+          )}
+          segments={buildPracticeSegments(segments, progressRows)}
+          translationLanguages={translations.languages}
+          video={{
+            id: videoRecord.id,
+            level: videoRecord.level,
+            title: videoRecord.title,
+            youtubeVideoId: videoRecord.youtubeVideoId,
+          }}
         />
       </section>
     </MangaPageShell>

@@ -12,15 +12,16 @@ import {
   resolveStudyStatus,
   summariseStudyStatuses,
 } from '@/modules/grammar/presentation/resolveStudyStatus'
-import { effectiveL1Risk } from '@/modules/grammar/taxonomy/effectiveL1Risk'
 import type {
-  GrammarFamily,
-  GrammarPointListResult,
-} from '@/modules/grammar/types'
+  GrammarMapLeaf,
+  GrammarMapResult,
+} from '@/modules/grammar/services/grammarMapPoints'
+import { effectiveL1Risk } from '@/modules/grammar/taxonomy/effectiveL1Risk'
+import type { GrammarFamily } from '@/modules/grammar/types'
 
 import { GrammarStudyPips } from './GrammarStudyPips'
 
-type MapPoint = GrammarPointListResult['points'][number]
+type MapPoint = GrammarMapLeaf
 
 /**
  * The trunk, and one branch's elbow.
@@ -57,11 +58,7 @@ const BRANCH_CLASS =
  * one server-rendered tree of plain elements and CSS elbows: no SVG, no client
  * island, nothing that animates.
  */
-export function GrammarPointMap({
-  result,
-}: {
-  result: GrammarPointListResult
-}) {
+export function GrammarPointMap({ result }: { result: GrammarMapResult }) {
   if (result.points.length === 0)
     return (
       <ComicPanel caption="The map">

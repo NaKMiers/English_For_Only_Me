@@ -1,6 +1,6 @@
 'use client'
 
-import { Check, Headphones, Search, Volume2, X } from 'lucide-react'
+import { Check, Headphones, RotateCcw, Search, Volume2, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import {
@@ -14,7 +14,6 @@ import { MangaButton } from '@/components/ui/MangaButton'
 import { PageTag } from '@/components/ui/PageTag'
 import { cn } from '@/lib/utils'
 import type {
-  UserVocabItemApiRecord,
   VocabRecallAnswerAction,
   VocabRecallTaskRecord,
   VocabRecallTaskType,
@@ -23,21 +22,31 @@ import {
   getEnglishDefinition,
   getRequiredVietnameseMeaning,
 } from '@/modules/vocabulary/vietnameseMeaning'
-import { answerVocabRecallApi } from '@/requests/vocabularyApi'
 
 import { VocabTermHeader } from './VocabTermHeader'
+import type {
+  VocabRecallAnswerInput,
+  VocabRecallCardResult,
+} from './vocabRecallSession'
 
 interface Props {
   isLoading: boolean
-  onAnswered: (result: {
-    isCorrect: boolean
-    item: UserVocabItemApiRecord
-    task: VocabRecallTaskRecord
-  }) => Promise<void> | void
-  onError: (message: string) => void
+  /** Why the next page of cards failed to load, if it did. */
+  loadError?: string | null
+  /** Move past an answered card. */
+  onAdvance: (task: VocabRecallTaskRecord) => void
+  /**
+   * Record an answer and return its verdict right away (graded in the
+   * browser). Returns the existing result when the card was already answered.
+   */
+  onAnswer: (input: VocabRecallAnswerInput) => VocabRecallCardResult
   onListeningSkip: () => void
   onOpenChange: (open: boolean) => void
+  /** Try loading the next page of cards again after `loadError`. */
+  onRetryLoad?: () => void
   open: boolean
+  /** Per-card results by task id; the server's verdict replaces the local one. */
+  results: Record<string, VocabRecallCardResult>
   task: VocabRecallTaskRecord | null
   taskNumber: number
   taskTotal: number
@@ -49,10 +58,8 @@ const LISTENING_TYPES: VocabRecallTaskType[] = [
 ]
 
 interface FeedbackState {
-  isCorrect: boolean
-  item: UserVocabItemApiRecord
   selectedOptionId: string | null
-  task: VocabRecallTaskRecord
+  taskId: string
 }
 
 function speakTerm(term: string) {
@@ -99,13 +106,6 @@ function playFeedbackSound(isCorrect: boolean) {
   })
 
   window.setTimeout(() => void context.close(), 700)
-}
-
-function createRecallIdempotencyKey(taskId: string) {
-  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto)
-    return crypto.randomUUID()
-
-  return `${taskId}:${Date.now()}`
 }
 
 function getInstruction(type: VocabRecallTaskType) {
@@ -178,11 +178,14 @@ function formatExample(task: VocabRecallTaskRecord) {
 
 export function VocabRecallModal({
   isLoading,
-  onAnswered,
-  onError,
+  loadError = null,
+  onAdvance,
+  onAnswer,
   onListeningSkip,
   onOpenChange,
+  onRetryLoad,
   open,
+  results,
   task,
   taskNumber,
   taskTotal,
@@ -192,96 +195,71 @@ export function VocabRecallModal({
     taskId: string
   } | null>(null)
   const [feedback, setFeedback] = useState<FeedbackState | null>(null)
-  const [pendingAnswer, setPendingAnswer] = useState(false)
   const isListeningTask = task ? LISTENING_TYPES.includes(task.type) : false
-  const wrongFeedback =
-    feedback && feedback.task.taskId === task?.taskId && !feedback.isCorrect
-      ? feedback
+  const taskResult = task ? (results[task.taskId] ?? null) : null
+  // A wrong answer keeps the card on screen until Continue. If the server then
+  // counts it as correct, the same panel flips to say so.
+  const cardFeedback =
+    feedback && taskResult && feedback.taskId === task?.taskId
+      ? { ...feedback, isCorrect: taskResult.isCorrect }
       : null
+  const wrongFeedback =
+    cardFeedback && !cardFeedback.isCorrect ? cardFeedback : null
+  const answered = Boolean(taskResult)
   const selectedOptionId =
     selectedOption && selectedOption.taskId === task?.taskId
       ? selectedOption.optionId
       : null
 
+  const showingFeedback = Boolean(cardFeedback)
+
   useEffect(() => {
-    if (!open || !task || !isListeningTask || wrongFeedback) return
+    if (!open || !task || !isListeningTask || showingFeedback) return
 
     const timeoutId = window.setTimeout(() => speakTerm(task.entry.term), 250)
 
     return () => window.clearTimeout(timeoutId)
-  }, [isListeningTask, open, task, wrongFeedback])
+  }, [isListeningTask, open, showingFeedback, task])
 
-  async function submitAnswer(
+  function submitAnswer(
     action: VocabRecallAnswerAction | null = null,
     optionId: string | null = null
   ) {
-    if (!task || pendingAnswer) return
+    if (!task || answered) return
 
     const effectiveOptionId = optionId ?? selectedOptionId
 
     if (task.type !== 'exampleRemember' && !effectiveOptionId && !action) return
 
-    setPendingAnswer(true)
+    const result = onAnswer({
+      action,
+      selectedOptionId: effectiveOptionId,
+      task,
+    })
 
-    try {
-      const response = await answerVocabRecallApi({
-        action,
-        idempotencyKey: createRecallIdempotencyKey(task.taskId),
-        selectedOptionId: effectiveOptionId,
-        token: task.token,
-      })
+    playFeedbackSound(result.isCorrect)
 
-      const nextFeedback = {
-        isCorrect: response.isCorrect,
-        item: response.item,
-        selectedOptionId: effectiveOptionId,
-        task,
-      }
-
-      playFeedbackSound(response.isCorrect)
-
-      if (response.isCorrect) {
-        setFeedback(null)
-        setSelectedOption(null)
-        await onAnswered({
-          isCorrect: response.isCorrect,
-          item: response.item,
-          task,
-        })
-        return
-      }
-
-      setFeedback(nextFeedback)
-    } catch (error) {
-      onError(
-        error instanceof Error ? error.message : 'Could not answer flashcard.'
-      )
-    } finally {
-      setPendingAnswer(false)
-    }
-  }
-
-  async function continueAfterFeedback() {
-    if (!wrongFeedback || pendingAnswer) return
-
-    setPendingAnswer(true)
-
-    try {
+    if (result.isCorrect) {
       setFeedback(null)
       setSelectedOption(null)
-      await onAnswered({
-        isCorrect: wrongFeedback.isCorrect,
-        item: wrongFeedback.item,
-        task: wrongFeedback.task,
-      })
-    } finally {
-      setPendingAnswer(false)
+      onAdvance(task)
+      return
     }
+
+    setFeedback({ selectedOptionId: effectiveOptionId, taskId: task.taskId })
+  }
+
+  function continueAfterFeedback() {
+    if (!cardFeedback || !task) return
+
+    setFeedback(null)
+    setSelectedOption(null)
+    onAdvance(task)
   }
 
   function handleOpenChange(nextOpen: boolean) {
-    if (!nextOpen && wrongFeedback) {
-      void continueAfterFeedback()
+    if (!nextOpen && cardFeedback) {
+      continueAfterFeedback()
       return
     }
 
@@ -309,7 +287,9 @@ export function VocabRecallModal({
               <DialogDescription className="text-manga-paper-soft text-base leading-6 font-semibold">
                 {wrongFeedback
                   ? 'Not quite. Check the correct answer, then continue.'
-                  : getInstruction(task.type)}
+                  : cardFeedback
+                    ? 'Counted as correct after all. Continue when ready.'
+                    : getInstruction(task.type)}
               </DialogDescription>
             </DialogHeader>
 
@@ -359,11 +339,11 @@ export function VocabRecallModal({
                 </div>
               )}
 
-              {!wrongFeedback && task.type === 'exampleRemember' ? (
+              {!cardFeedback && task.type === 'exampleRemember' ? (
                 <div className="grid grid-cols-2 gap-3">
                   <MangaButton
                     className="border-manga-white bg-manga-white text-manga-black"
-                    disabled={isLoading || pendingAnswer}
+                    disabled={isLoading || answered}
                     icon={<Search className="size-4" />}
                     onClick={() => submitAnswer('lookup')}
                     tone="paper"
@@ -372,7 +352,7 @@ export function VocabRecallModal({
                   </MangaButton>
                   <MangaButton
                     className="border-manga-white bg-manga-paper-soft text-manga-black"
-                    disabled={isLoading || pendingAnswer}
+                    disabled={isLoading || answered}
                     icon={<Check className="size-4" />}
                     onClick={() => submitAnswer('remember')}
                   >
@@ -396,7 +376,7 @@ export function VocabRecallModal({
                           !wrongFeedback &&
                           'text-manga-black bg-cyan-300'
                       )}
-                      disabled={pendingAnswer || Boolean(wrongFeedback)}
+                      disabled={answered}
                       onClick={() => {
                         setSelectedOption({
                           optionId: option.id,
@@ -437,7 +417,7 @@ export function VocabRecallModal({
                   </p>
                 </div>
               ) : null}
-              {isListeningTask && !wrongFeedback ? (
+              {isListeningTask && !cardFeedback ? (
                 <MangaButton
                   className="border-manga-white bg-manga-black text-manga-white hover:bg-manga-black"
                   icon={<Headphones className="size-4" />}
@@ -450,10 +430,9 @@ export function VocabRecallModal({
             </div>
 
             <div className="border-manga-white/20 grid gap-3 border-t-2 p-3 sm:p-4">
-              {wrongFeedback ? (
+              {cardFeedback ? (
                 <MangaButton
                   className="border-manga-white w-full"
-                  disabled={pendingAnswer}
                   icon={<Check className="size-4" />}
                   onClick={continueAfterFeedback}
                 >
@@ -462,7 +441,7 @@ export function VocabRecallModal({
               ) : (
                 <MangaButton
                   className="border-manga-white bg-manga-black text-manga-white hover:bg-manga-black w-full"
-                  disabled={isLoading || pendingAnswer}
+                  disabled={isLoading || answered}
                   icon={<X className="size-4" />}
                   onClick={() => submitAnswer('notSure')}
                   tone="ink"
@@ -472,7 +451,35 @@ export function VocabRecallModal({
               )}
             </div>
           </div>
-        ) : null}
+        ) : loadError ? (
+          <div className="grid place-items-center gap-3 p-8 text-center">
+            <DialogTitle className="font-sans text-xl font-black uppercase">
+              Could not load more cards
+            </DialogTitle>
+            <DialogDescription className="text-manga-paper-soft text-sm font-semibold">
+              {loadError}
+            </DialogDescription>
+            {onRetryLoad ? (
+              <MangaButton
+                className="border-manga-white"
+                icon={<RotateCcw className="size-4" />}
+                onClick={onRetryLoad}
+              >
+                Try again
+              </MangaButton>
+            ) : null}
+          </div>
+        ) : (
+          // Between pages of the due queue: the next cards are on their way.
+          <div className="grid place-items-center gap-2 p-8 text-center">
+            <DialogTitle className="font-sans text-xl font-black uppercase">
+              Loading more cards
+            </DialogTitle>
+            <DialogDescription className="text-manga-paper-soft text-sm font-semibold">
+              One moment.
+            </DialogDescription>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   )

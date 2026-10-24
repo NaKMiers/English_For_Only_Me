@@ -11,6 +11,8 @@ import {
 import { validateGrammarContent } from '@/modules/grammar/seed/validateGrammarContent'
 import { resolveL1RiskRank } from '@/modules/grammar/taxonomy/effectiveL1Risk'
 
+import { requestContentRevalidation } from './lib/requestContentRevalidation'
+
 /**
  * Load the validated content file into MongoDB.
  *
@@ -106,6 +108,9 @@ async function main() {
   )
 
   await disconnect()
+
+  // The site caches lessons; expire them so the seed shows up (opt-in).
+  await requestContentRevalidation(['grammar-content'])
 }
 
 main().catch(error => {

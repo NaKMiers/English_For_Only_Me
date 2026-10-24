@@ -171,6 +171,24 @@ DictationReviewItemSchema.index({
   kind: 1,
   reason: 1,
 })
+// At most one ACTIVE item per (user, segment, kind, reason), so two
+// overlapping recomputes cannot both insert the same item (the loser gets
+// E11000, which insertReviewCandidates tolerates). Partial so completed and
+// dismissed history (many per key) stays unconstrained. Built only by
+// `bun run db:sync-indexes --apply`; production rows with duplicate active
+// items must be deduped first or the build fails (the script reports it and
+// carries on). `$in` in a partial filter needs MongoDB 6.0+.
+DictationReviewItemSchema.index(
+  // Same fields as the plain index above in another order, so the two never
+  // share a key pattern (which MongoDB only allows under version-dependent
+  // rules for partial indexes).
+  { userId: 1, segmentId: 1, reason: 1, kind: 1 },
+  {
+    name: 'active_review_item_unique',
+    unique: true,
+    partialFilterExpression: { status: { $in: ['due', 'scheduled'] } },
+  }
+)
 
 export type DictationReviewItemDocument = InferSchemaType<
   typeof DictationReviewItemSchema

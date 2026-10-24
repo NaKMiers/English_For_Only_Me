@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { after, NextResponse } from 'next/server'
 
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { UserVocabItemModel } from '@/models/vocabulary/UserVocabItemModel'
@@ -79,14 +79,22 @@ export async function POST(request: Request) {
     }
 
     // Valid English word - only now record where the user encountered it.
-    if (parsed.data.occurrence)
-      await recordVocabOccurrence({
-        ...parsed.data.occurrence,
-        reason: parsed.data.occurrence.reason,
-        selectedText: parsed.data.occurrence.selectedText ?? shell.term,
-        userId: actor.id,
-        vocabEntryId: resolved.id,
-      })
+    // The write runs after the response is sent: it is side data the learner
+    // never waits on, recorded once per lookup like before.
+    const { occurrence } = parsed.data
+
+    if (occurrence)
+      after(() =>
+        recordVocabOccurrence({
+          ...occurrence,
+          reason: occurrence.reason,
+          selectedText: occurrence.selectedText ?? shell.term,
+          userId: actor.id,
+          vocabEntryId: resolved.id,
+        }).catch(error => {
+          console.error('Vocabulary occurrence write failed', error)
+        })
+      )
 
     const record = await getVocabEntryWithUserState({
       entryId: resolved.id,

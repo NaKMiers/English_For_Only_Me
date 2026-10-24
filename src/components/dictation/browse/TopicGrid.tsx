@@ -5,6 +5,8 @@ import { PageTag } from '@/components/ui/PageTag'
 import { cn } from '@/lib/utils'
 import type { DictationTopicSummaryRecord } from '@/modules/dictation/types'
 
+import { getTopicTileImageUrl } from './topicThumbnailUrl'
+
 interface TopicCardProps {
   href: string
   title: string
@@ -13,19 +15,6 @@ interface TopicCardProps {
   lessonCount: number
   hasVideoMedia?: boolean
   muted?: boolean
-}
-
-function getSafeImageUrl(url: string | null | undefined) {
-  if (!url) return null
-
-  try {
-    const parsed = new URL(url)
-    if (parsed.protocol !== 'https:') return null
-
-    return parsed.toString()
-  } catch {
-    return null
-  }
 }
 
 function ThumbTile({
@@ -38,24 +27,32 @@ function ThumbTile({
   muted?: boolean
 }) {
   const initial = title.trim().charAt(0).toUpperCase() || '?'
-  const safeThumbnailUrl = getSafeImageUrl(thumbnailUrl)
+  const tileImageUrl = getTopicTileImageUrl(thumbnailUrl)
 
   return (
     <div
       aria-hidden="true"
       className={cn(
-        'border-manga-black rounded-control grid size-16 shrink-0 place-items-center overflow-hidden border-3 bg-cover bg-center font-sans text-2xl font-black shadow-[3px_3px_0_var(--manga-black)] sm:size-20',
+        'border-manga-black rounded-control grid size-16 shrink-0 place-items-center overflow-hidden border-3 font-sans text-2xl font-black shadow-[3px_3px_0_var(--manga-black)] sm:size-20',
         muted
           ? 'bg-manga-paper-soft text-manga-ink-soft'
           : 'bg-manga-pale-red text-manga-black'
       )}
-      style={
-        safeThumbnailUrl
-          ? { backgroundImage: `url("${safeThumbnailUrl}")` }
-          : {}
-      }
     >
-      {safeThumbnailUrl ? null : muted ? (
+      {tileImageUrl ? (
+        // A plain lazy img: res.cloudinary.com is not in images.remotePatterns,
+        // and the URL already carries a Cloudinary resize transform.
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={tileImageUrl}
+          alt=""
+          width={80}
+          height={80}
+          loading="lazy"
+          decoding="async"
+          className="size-full object-cover"
+        />
+      ) : muted ? (
         <Layers className="size-7" />
       ) : (
         initial

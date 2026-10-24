@@ -12,9 +12,9 @@ import { GrammarRecallLauncher } from '@/components/grammar/GrammarRecallLaunche
 import { GrammarTestLauncher } from '@/components/grammar/GrammarTestLauncher'
 import { MangaButton } from '@/components/ui/MangaButton'
 import { hasMongoDbUri } from '@/constants/environments'
-import { connectDatabase } from '@/lib/db/connectDatabase'
-import { GrammarPointModel } from '@/models/grammar/GrammarPointModel'
+import { connectDatabaseWhen } from '@/lib/db/connectDatabase'
 import { getPracticeActorId } from '@/modules/dictation/services/getCurrentUser'
+import { getCachedGrammarTaxonomy } from '@/modules/grammar/services/grammarContentCache'
 import { getGrammarStatsForActor } from '@/modules/grammar/stats/grammarStatsService'
 
 export const metadata: Metadata = {
@@ -64,21 +64,17 @@ export default async function GrammarPage() {
       </MangaPageShell>
     )
 
-  const actorId = (await getPracticeActorId()) ?? ''
-
-  await connectDatabase()
-
-  const [withLesson, reviewed, stats] = await Promise.all([
-    GrammarPointModel.countDocuments({
-      explanation: { $ne: null },
-      mergedInto: null,
-    }),
-    GrammarPointModel.countDocuments({
-      mergedInto: null,
-      reviewStatus: 'reviewed',
-    }),
-    getGrammarStatsForActor({ actorId }),
+  // The taxonomy is cached, so only a known learner needs a connection.
+  const actorId = await connectDatabaseWhen(getPracticeActorId())
+  // The lesson and review counts come from the same cached taxonomy read the
+  // stats use (React cache() makes it one read), not two countDocuments.
+  const [{ points, withLessonCount: withLesson }, stats] = await Promise.all([
+    getCachedGrammarTaxonomy(),
+    getGrammarStatsForActor({ actorId: actorId ?? '' }),
   ])
+  const reviewed = points.filter(
+    point => point.reviewStatus === 'reviewed'
+  ).length
   const total = stats.totalPoints
 
   return (

@@ -30,13 +30,14 @@ export async function GET(request: Request) {
 
     await connectDatabase()
 
-    return NextResponse.json({
-      tasks: await listDueVocabRecallTasksForUser({
+    return NextResponse.json(
+      await listDueVocabRecallTasksForUser({
+        cursor: parsed.data.cursor,
         excludeListening: parsed.data.excludeListening,
         limit: parsed.data.limit,
         userId: actor.id,
-      }),
-    })
+      })
+    )
   } catch (error) {
     return jsonError(toVocabApiError(error))
   }

@@ -48,9 +48,10 @@ function document(overrides: Record<string, unknown> = {}) {
 }
 
 /**
- * MANDATORY regression guard for the module's central guarantee, stated at
- * `GrammarRecallModal.tsx:56`: the client never learns the answer before
- * submitting.
+ * MANDATORY regression guard: point records never carry drills, targets or
+ * accepted answers. Only served recall tasks carry answers, by owner decision,
+ * so the browser can grade instantly (see `recall/recallTaskGrading.ts`); the
+ * diagnostic test still never sends them.
  *
  * This mapper is the boundary. Every lesson page, every browse row and every
  * API response for all 184 points goes through it, and the Mongo document it

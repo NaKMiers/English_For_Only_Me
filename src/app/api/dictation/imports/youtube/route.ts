@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 
 import { MissingEnvironmentError } from '@/constants/environments'
 import { connectDatabase } from '@/lib/db/connectDatabase'
+import { revalidateDictationCatalog } from '@/lib/db/revalidateCatalog'
 import { getYouTubeVideoMetadata } from '@/lib/youtube/getYouTubeVideoMetadata'
 import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
 import { toDictationVideoRecord } from '@/modules/dictation/services/dictationVideoRecords'
@@ -26,7 +27,7 @@ function toImportError(error: unknown): ApiErrorDecision {
     typeof error === 'object' &&
     error !== null &&
     'status' in error &&
-    (error.status === 401 || error.status === 403)
+    (error.status === 401 || error.status === 403 || error.status === 409)
   )
     return {
       status: error.status,
@@ -163,6 +164,8 @@ export async function POST(request: Request) {
         upsert: true,
       }
     )
+
+    revalidateDictationCatalog()
 
     return NextResponse.json(
       {

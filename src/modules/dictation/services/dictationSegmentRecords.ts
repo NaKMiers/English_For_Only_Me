@@ -1,4 +1,5 @@
 import type { DictationSegmentRecord } from '@/models/dictation/DictationSegmentModel'
+import type { DictationPracticeSegmentContent } from '@/modules/dictation/practice/types'
 import type { DictationSegmentQualityFlag } from '@/modules/dictation/types'
 
 const segmentQualityFlags = new Set<DictationSegmentQualityFlag>([
@@ -22,7 +23,7 @@ function isSegmentQualityFlag(
 /** Segment translations come back as a Mongoose Map (toObject) or a plain object
  * (lean), depending on the read. Normalize both to a plain string record and
  * drop empty values. */
-function normalizeTranslations(value: unknown): Record<string, string> {
+export function normalizeTranslations(value: unknown): Record<string, string> {
   if (!value) return {}
 
   const entries =
@@ -81,4 +82,54 @@ export function toDictationSegmentRecord(segment: {
     videoId: String(segment.videoId),
     warningAccepted: segment.warningAccepted ?? false,
   }
+}
+
+/** Fields the practice page loads, so the query projects to what it sends. */
+export const PRACTICE_SEGMENT_FIELDS =
+  'videoId transcriptId order text startMs endMs hints hintsOverridden translations'
+
+export function toDictationPracticeSegmentContent(segment: {
+  _id: unknown
+  endMs?: number | null
+  hints?: string[]
+  hintsOverridden?: boolean
+  order: number
+  startMs?: number | null
+  text: string
+  transcriptId: unknown
+  videoId: unknown
+}): DictationPracticeSegmentContent {
+  const hintsOverridden = segment.hintsOverridden ?? false
+
+  return {
+    endMs: segment.endMs ?? null,
+    // Hints only render when the admin overrode them; the rest are derived
+    // in the browser, so there is nothing to send.
+    hints: hintsOverridden ? (segment.hints ?? []) : [],
+    hintsOverridden,
+    id: String(segment._id),
+    order: segment.order,
+    startMs: segment.startMs ?? null,
+    text: segment.text,
+    transcriptId: String(segment.transcriptId),
+    videoId: String(segment.videoId),
+  }
+}
+
+/** One language's per-segment overrides (segmentId -> text), empty ones dropped. */
+export function pickSegmentTranslationOverrides(
+  segments: Array<{ _id: unknown; translations?: unknown }>,
+  language: string
+): Record<string, string> {
+  const overrides: Record<string, string> = {}
+
+  if (!language) return overrides
+
+  for (const segment of segments) {
+    const value = normalizeTranslations(segment.translations)[language]
+
+    if (value) overrides[String(segment._id)] = value
+  }
+
+  return overrides
 }

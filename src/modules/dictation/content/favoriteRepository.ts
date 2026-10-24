@@ -27,27 +27,21 @@ export async function addFavorite(userId: string, videoId: string) {
   }
 }
 
+/** Whether a video can be favorited: it exists and is not archived. */
+export async function isFavoritableVideo(videoId: string) {
+  const video = await DictationVideoModel.exists({
+    _id: videoId,
+    status: { $ne: 'archived' },
+  })
+
+  return Boolean(video)
+}
+
 /** Remove a favorite. Returns true if a row was removed. */
 export async function removeFavorite(userId: string, videoId: string) {
   const result = await DictationFavoriteModel.deleteOne({ userId, videoId })
 
   return (result.deletedCount ?? 0) > 0
-}
-
-/** Toggle a favorite; returns the resulting state. */
-export async function toggleFavorite(userId: string, videoId: string) {
-  const existing = await DictationFavoriteModel.findOne({
-    userId,
-    videoId,
-  }).lean()
-
-  if (existing) {
-    await removeFavorite(userId, videoId)
-    return { favorited: false }
-  }
-
-  await addFavorite(userId, videoId)
-  return { favorited: true }
 }
 
 /** The set of video ids this user has favorited (for badging lists). */

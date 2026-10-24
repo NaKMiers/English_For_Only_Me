@@ -1,9 +1,11 @@
 'use client'
 
 import { Flame } from 'lucide-react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import dynamic from 'next/dynamic'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { MangaPanel } from '@/components/common/MangaPanel'
+import { useClientOutbox } from '@/components/common/OutboxOwnerProvider'
 import {
   SkeletonHero,
   SkeletonPanel,
@@ -11,16 +13,18 @@ import {
 } from '@/components/common/PageSkeletons'
 import { PageTag } from '@/components/ui/PageTag'
 import {
-  VOCAB_API_PATHS,
+  VOCAB_EXPLORE_INITIAL_LIMIT,
   VOCAB_EXPLORE_MAX_LIMIT,
+  VOCAB_RECALL_DEFAULT_LIMIT,
   VOCAB_RECALL_LISTENING_TASK_TYPES,
-  VOCAB_RECALL_MAX_LIMIT,
 } from '@/modules/vocabulary/constants'
 import type {
   UserVocabItemApiRecord,
   VocabEntryWithUserStateRecord,
+  VocabLearningSource,
   VocabRecallTaskRecord,
   VocabStatsRecord,
+  VocabularyDashboardInitialData,
 } from '@/modules/vocabulary/types'
 import {
   getDueVocabRecallApi,
@@ -28,11 +32,9 @@ import {
   getVocabStatsApi,
   lookupVocabEntryApi,
   searchVocabApi,
-  setVocabItemStatusApi,
-  setVocabItemStatusBatchApi,
 } from '@/requests/vocabularyApi'
 
-import { VocabRecallModal } from './VocabRecallModal'
+import { VocabRecallSessionSummary } from './VocabRecallSessionSummary'
 import {
   VocabularyExplorePanel,
   type ExploreDecision,
@@ -40,8 +42,32 @@ import {
 import { VocabularyRecallLauncher } from './VocabularyRecallLauncher'
 import { VocabularySearchPanel } from './VocabularySearchPanel'
 import { VocabularyStatsOverview } from './VocabularyStatsOverview'
+import {
+  buildOptimisticUserItem,
+  createEntryWriteTracker,
+  enqueueVocabItemStatus,
+  type VocabMarkStatus,
+} from './vocabItemWrites'
+import {
+  createVocabRecallCardResult,
+  enqueueVocabRecallAnswer,
+  isVocabRecallTaskExpired,
+  mergeVocabRecallPage,
+  reconcileVocabRecallCardResult,
+  shouldPrefetchVocabRecallPage,
+  type VocabRecallAnswerInput,
+  type VocabRecallCardResult,
+} from './vocabRecallSession'
+
+// The recall modal only matters once a session starts, so its code is split
+// out and first loads when the learner (or the daily auto-open) opens it.
+const VocabRecallModal = dynamic(() =>
+  import('./VocabRecallModal').then(module => module.VocabRecallModal)
+)
 
 interface Props {
+  /** Read on the server so the dashboard paints with data, not a skeleton. */
+  initialData?: VocabularyDashboardInitialData | null
   mongoConfigured: boolean
 }
 
@@ -64,21 +90,17 @@ const EMPTY_STATS: VocabStatsRecord = {
 const LISTENING_SKIP_STORAGE_KEY = 'vocab:recall:listening-skip-until'
 const DAILY_AUTO_OPEN_STORAGE_KEY = 'vocab:recall:auto-open-date'
 
-// Rapid explore decisions are coalesced: presses are queued and sent as one
-// batch after the user pauses, and the heavy stats + due-recall refetch waits
-// until presses settle. This turns a burst of N presses (N item POSTs + N
-// stats + N 80kB due fetches) into ~1 batch write + 1 progress refresh.
-const WRITE_FLUSH_DELAY_MS = 2000
+// Marks land through the outbox one by one; the heavier stats + due refresh
+// waits until presses pause and every queued write has reached the server.
 const PROGRESS_REFRESH_DELAY_MS = 1500
 
-type MarkableSource = 'search' | 'explore' | 'dictionary' | 'manual'
-type MarkableStatus = 'shouldLearn' | 'alreadyKnow'
+// Offline, or while a lane keeps retrying, the outbox never drains. Refreshes
+// that wait on it go ahead after this long so the dashboard never wedges.
+export const OUTBOX_IDLE_TIMEOUT_MS = 8000
 
-interface PendingExploreWrite {
-  previousDecision: ExploreDecision | undefined
-  previousUserItem: UserVocabItemApiRecord | null
-  source: MarkableSource
-  status: MarkableStatus
+interface EntrySnapshot {
+  decision: ExploreDecision | undefined
+  userItem: UserVocabItemApiRecord | null
 }
 
 function getTodayStorageLabel() {
@@ -93,6 +115,10 @@ function isListeningSkipped() {
   return Number.isFinite(value) && value > Date.now()
 }
 
+function isListeningTask(task: VocabRecallTaskRecord) {
+  return VOCAB_RECALL_LISTENING_TASK_TYPES.includes(task.type)
+}
+
 function speakTerm(term: string) {
   if (typeof window === 'undefined' || !window.speechSynthesis) return
 
@@ -102,61 +128,37 @@ function speakTerm(term: string) {
   window.speechSynthesis.speak(utterance)
 }
 
-function buildOptimisticUserItem({
-  entry,
-  source,
-  status,
-}: {
-  entry: VocabEntryWithUserStateRecord
-  source: MarkableSource
-  status: MarkableStatus
-}): UserVocabItemApiRecord {
-  const now = new Date()
-  const existingItem = entry.userItem
-  const base = {
-    correctCount: existingItem?.correctCount ?? 0,
-    createdAt: existingItem?.createdAt ?? now,
-    firstSeenAt: existingItem?.firstSeenAt ?? now,
-    id: existingItem?.id ?? `optimistic-${entry.entry.id}`,
-    lastReviewedAt: existingItem?.lastReviewedAt ?? null,
-    notes: existingItem?.notes ?? null,
-    reviewCount: existingItem?.reviewCount ?? 0,
-    source,
-    updatedAt: now,
-    userId: existingItem?.userId ?? 'optimistic',
-    vocabEntryId: entry.entry.id,
-    wrongCount: existingItem?.wrongCount ?? 0,
-  }
-
-  if (status === 'shouldLearn')
-    return {
-      ...base,
-      correctCount: 0,
-      dueAt: now,
-      knownAt: null,
-      knownReason: null,
-      masteredAt: null,
-      masteredReason: null,
-      recallStage: 1,
-      reviewCount: 0,
-      status: 'learning',
-      wrongCount: 0,
-    }
-
-  return {
-    ...base,
-    dueAt: null,
-    knownAt: now,
-    knownReason: 'manual',
-    masteredAt: null,
-    masteredReason: null,
-    recallStage: 1,
-    status: 'alreadyKnow',
-  }
+function getErrorMessage(error: unknown, fallback: string) {
+  return error instanceof Error ? error.message : fallback
 }
 
-export function VocabularyDashboard({ mongoConfigured }: Props) {
-  const [stats, setStats] = useState<VocabStatsRecord>(EMPTY_STATS)
+function getRecallStatusMessage(result: VocabRecallCardResult) {
+  if (result.item.status === 'mastered')
+    return `Mastered "${result.term}". That one is yours now.`
+  if (result.isCorrect)
+    return `Nice. "${result.term}" moved to stage ${result.item.recallStage}.`
+
+  return `"${result.term}" reset to stage 1.`
+}
+
+/** Append newly fetched Explore cards, keeping the ones already dealt. */
+export function mergeExploreEntries(
+  current: VocabEntryWithUserStateRecord[],
+  incoming: VocabEntryWithUserStateRecord[]
+) {
+  const known = new Set(current.map(item => item.entry.id))
+
+  return [...current, ...incoming.filter(item => !known.has(item.entry.id))]
+}
+
+export function VocabularyDashboard({
+  initialData = null,
+  mongoConfigured,
+}: Props) {
+  const outbox = useClientOutbox()
+  const [stats, setStats] = useState<VocabStatsRecord>(
+    initialData?.stats ?? EMPTY_STATS
+  )
   const [query, setQuery] = useState('')
   const [searchResults, setSearchResults] = useState<
     VocabEntryWithUserStateRecord[]
@@ -165,57 +167,177 @@ export function VocabularyDashboard({ mongoConfigured }: Props) {
     useState<VocabEntryWithUserStateRecord | null>(null)
   const [exploreEntries, setExploreEntries] = useState<
     VocabEntryWithUserStateRecord[]
-  >([])
+  >(initialData?.exploreEntries ?? [])
   const [exploreDecisions, setExploreDecisions] = useState<
     Record<string, ExploreDecision>
   >({})
-  const [pendingExploreDecisions, setPendingExploreDecisions] = useState<
-    Record<string, ExploreDecision>
-  >({})
   const [activeExploreIndex, setActiveExploreIndex] = useState(0)
-  const [recallTasks, setRecallTasks] = useState<VocabRecallTaskRecord[]>([])
+  const [recallTasks, setRecallTasks] = useState<VocabRecallTaskRecord[]>(
+    initialData?.due.tasks ?? []
+  )
+  const [recallCursor, setRecallCursor] = useState<string | null>(
+    initialData?.due.nextCursor ?? null
+  )
+  // Set when fetching the next due page failed; the modal offers a retry.
+  const [recallPageError, setRecallPageError] = useState<string | null>(null)
+  // Bumped to make the prefetch effect look again after a fetch was dropped
+  // or retried: neither changes the cards or the cursor on its own.
+  const [recallPageRetry, setRecallPageRetry] = useState(0)
   const [recallModalOpen, setRecallModalOpen] = useState(false)
+  const [recallModalMounted, setRecallModalMounted] = useState(false)
   const [recallAnsweredCount, setRecallAnsweredCount] = useState(0)
+  const [recallResults, setRecallResults] = useState<VocabRecallCardResult[]>(
+    []
+  )
   const [isLoading, setIsLoading] = useState(false)
-  const [isInitialLoad, setIsInitialLoad] = useState(mongoConfigured)
+  const [isInitialLoad, setIsInitialLoad] = useState(
+    mongoConfigured && !initialData
+  )
   const [statusMessage, setStatusMessage] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-  // Queued explore writes keyed by entry id (last decision per entry wins),
-  // plus the debounce timers for flushing them and for the progress refresh.
-  const pendingWritesRef = useRef<Map<string, PendingExploreWrite>>(new Map())
-  const writeFlushTimerRef = useRef<number | null>(null)
+  const itemWritesRef = useRef(createEntryWriteTracker<EntrySnapshot>())
   const progressRefreshTimerRef = useRef<number | null>(null)
+  const exploreRefreshRef = useRef(false)
+  // Bumped whenever the Explore deck is replaced or topped up, so whichever of
+  // the top-up and a new-deck refresh lands second is dropped: the deck never
+  // resets under a learner already on the topped-up cards, and a stale top-up
+  // never re-deals decided words into a fresh deck.
+  const exploreDeckGenerationRef = useRef(0)
+  // Recall session bookkeeping that must be read synchronously (a double click
+  // lands twice before React re-renders).
+  const recallModalOpenRef = useRef(false)
+  const recallResultsRef = useRef(new Map<string, VocabRecallCardResult>())
+  const answeredItemIdsRef = useRef(new Set<string>())
+  const recallPageFetchRef = useRef(false)
+  // Bumped whenever the due queue is replaced, so a slow next-page response
+  // for the old queue is dropped instead of appended.
+  const recallQueueGenerationRef = useRef(0)
 
-  const refreshProgressData = useCallback(async () => {
-    if (!mongoConfigured) return
+  const recallResultsById = useMemo(
+    () => Object.fromEntries(recallResults.map(item => [item.taskId, item])),
+    [recallResults]
+  )
 
-    const [statsResponse, dueResponse] = await Promise.all([
-      getVocabStatsApi(),
-      getDueVocabRecallApi({
+  const reportError = useCallback((error: unknown, fallback: string) => {
+    setErrorMessage(getErrorMessage(error, fallback))
+  }, [])
+
+  const refreshStats = useCallback(async () => {
+    const response = await getVocabStatsApi()
+
+    setStats(response.stats)
+  }, [])
+
+  const loadRecallFirstPage = useCallback(
+    async ({ whileOpen = false }: { whileOpen?: boolean } = {}) => {
+      const generation = ++recallQueueGenerationRef.current
+      const page = await getDueVocabRecallApi({
         excludeListening: isListeningSkipped(),
-        limit: VOCAB_RECALL_MAX_LIMIT,
-      }),
-    ])
+        limit: VOCAB_RECALL_DEFAULT_LIMIT,
+      })
 
-    setStats(statsResponse.stats)
-    setRecallTasks(dueResponse.tasks)
-  }, [mongoConfigured])
+      if (generation !== recallQueueGenerationRef.current) return
+      // Never swap the cards under a learner in the middle of a session.
+      if (recallModalOpenRef.current && !whileOpen) return
 
-  const refreshExploreData = useCallback(async () => {
-    if (!mongoConfigured) return
+      if (whileOpen) {
+        // Mid-session: items already answered (their answer may still be on
+        // its way) must not be dealt again, so keep the set and skip them.
+        const answeredItemIds = answeredItemIdsRef.current
 
-    const exploreResponse = await getExploreVocabApi({
-      limit: VOCAB_EXPLORE_MAX_LIMIT,
+        setRecallTasks(
+          page.tasks.filter(task => !answeredItemIds.has(task.item.id))
+        )
+      } else {
+        answeredItemIdsRef.current = new Set()
+        setRecallTasks(page.tasks)
+      }
+
+      setRecallCursor(page.nextCursor)
+      setRecallPageError(null)
+    },
+    []
+  )
+
+  const loadRecallNextPage = useCallback(async (cursor: string) => {
+    const generation = recallQueueGenerationRef.current
+
+    recallPageFetchRef.current = true
+
+    try {
+      const page = await getDueVocabRecallApi({
+        cursor,
+        excludeListening: isListeningSkipped(),
+        limit: VOCAB_RECALL_DEFAULT_LIMIT,
+      })
+
+      if (generation !== recallQueueGenerationRef.current) {
+        // The queue was replaced mid-fetch. If that replacement was dropped
+        // too, nothing else changes state, so ask the prefetch effect to look
+        // at the current cursor again instead of waiting forever.
+        setRecallPageRetry(current => current + 1)
+        return
+      }
+
+      setRecallTasks(current =>
+        mergeVocabRecallPage({
+          answeredItemIds: answeredItemIdsRef.current,
+          current,
+          incoming: page.tasks,
+        })
+      )
+      setRecallCursor(page.nextCursor)
+      setRecallPageError(null)
+    } finally {
+      recallPageFetchRef.current = false
+    }
+  }, [])
+
+  const retryRecallNextPage = useCallback(() => {
+    setRecallPageError(null)
+    setRecallPageRetry(current => current + 1)
+  }, [])
+
+  const refreshRecallWithoutListening = useCallback(async () => {
+    const generation = ++recallQueueGenerationRef.current
+
+    setRecallTasks(current => current.filter(task => !isListeningTask(task)))
+
+    const page = await getDueVocabRecallApi({
+      excludeListening: true,
+      limit: VOCAB_RECALL_DEFAULT_LIMIT,
     })
 
-    setExploreEntries(exploreResponse.entries)
-    setActiveExploreIndex(0)
-  }, [mongoConfigured])
+    if (generation !== recallQueueGenerationRef.current) return
 
-  const refreshCoreData = useCallback(async () => {
-    await Promise.all([refreshProgressData(), refreshExploreData()])
-  }, [refreshExploreData, refreshProgressData])
+    // Items whose listening card was dropped come back as other card types.
+    setRecallTasks(current =>
+      mergeVocabRecallPage({
+        answeredItemIds: answeredItemIdsRef.current,
+        current,
+        incoming: page.tasks,
+      })
+    )
+    setRecallCursor(page.nextCursor)
+  }, [])
+
+  // Only for a brand-new deck (first load, or every card decided): it starts
+  // the deck over at the first card. Marks never call it.
+  const refreshExploreData = useCallback(
+    async (generation = exploreDeckGenerationRef.current) => {
+      const exploreResponse = await getExploreVocabApi({
+        limit: VOCAB_EXPLORE_MAX_LIMIT,
+      })
+
+      if (generation !== exploreDeckGenerationRef.current) return
+
+      exploreDeckGenerationRef.current += 1
+      setExploreEntries(exploreResponse.entries)
+      setActiveExploreIndex(0)
+    },
+    []
+  )
 
   const setEntryUserItem = useCallback(
     (entryId: string, userItem: UserVocabItemApiRecord | null) => {
@@ -231,13 +353,13 @@ export function VocabularyDashboard({ mongoConfigured }: Props) {
     []
   )
 
-  const rollbackEntry = useCallback(
-    (entryId: string, write: PendingExploreWrite) => {
-      setEntryUserItem(entryId, write.previousUserItem)
+  const applyEntrySnapshot = useCallback(
+    (entryId: string, snapshot: EntrySnapshot) => {
+      setEntryUserItem(entryId, snapshot.userItem)
       setExploreDecisions(current => {
         const next = { ...current }
 
-        if (write.previousDecision) next[entryId] = write.previousDecision
+        if (snapshot.decision) next[entryId] = snapshot.decision
         else delete next[entryId]
 
         return next
@@ -252,153 +374,127 @@ export function VocabularyDashboard({ mongoConfigured }: Props) {
 
     progressRefreshTimerRef.current = window.setTimeout(() => {
       progressRefreshTimerRef.current = null
-      refreshProgressData().catch(error => {
-        setErrorMessage(
-          error instanceof Error
-            ? error.message
-            : 'Could not refresh vocabulary progress.'
+      outbox
+        .whenIdle({ timeoutMs: OUTBOX_IDLE_TIMEOUT_MS })
+        .then(() =>
+          Promise.all([
+            refreshStats(),
+            recallModalOpenRef.current ? null : loadRecallFirstPage(),
+          ])
         )
-      })
+        .catch(error =>
+          reportError(error, 'Could not refresh vocabulary progress.')
+        )
     }, PROGRESS_REFRESH_DELAY_MS)
-  }, [refreshProgressData])
+  }, [loadRecallFirstPage, outbox, refreshStats, reportError])
 
-  const flushPendingWrites = useCallback(async () => {
-    if (writeFlushTimerRef.current) {
-      window.clearTimeout(writeFlushTimerRef.current)
-      writeFlushTimerRef.current = null
-    }
-
-    const snapshot = [...pendingWritesRef.current.entries()]
-
-    if (snapshot.length === 0) return
-
-    pendingWritesRef.current = new Map()
-
-    const updates = snapshot.map(([vocabEntryId, write]) => ({
-      source: write.source,
-      status: write.status,
-      vocabEntryId,
-    }))
-
-    try {
-      const { results } = await setVocabItemStatusBatchApi({ updates })
-      const resultByEntryId = new Map(
-        results.map(result => [result.vocabEntryId, result])
-      )
-      let firstError: string | null = null
-
-      for (const [entryId, write] of snapshot) {
-        const result = resultByEntryId.get(entryId)
-
-        if (result?.item) setEntryUserItem(entryId, result.item)
-        else {
-          rollbackEntry(entryId, write)
-          if (!firstError)
-            firstError = result?.error ?? 'Could not update this word.'
-        }
-      }
-
-      if (firstError) setErrorMessage(firstError)
-
-      scheduleProgressRefresh()
-    } catch (error) {
-      for (const [entryId, write] of snapshot) rollbackEntry(entryId, write)
-
-      setErrorMessage(
-        error instanceof Error ? error.message : 'Could not update these words.'
-      )
-    } finally {
-      setPendingExploreDecisions(current => {
-        const next = { ...current }
-
-        for (const [entryId] of snapshot) delete next[entryId]
-
-        return next
-      })
-    }
-  }, [rollbackEntry, scheduleProgressRefresh, setEntryUserItem])
-
-  const scheduleWriteFlush = useCallback(() => {
-    if (writeFlushTimerRef.current)
-      window.clearTimeout(writeFlushTimerRef.current)
-
-    writeFlushTimerRef.current = window.setTimeout(() => {
-      writeFlushTimerRef.current = null
-      flushPendingWrites().catch(() => {})
-    }, WRITE_FLUSH_DELAY_MS)
-  }, [flushPendingWrites])
-
-  // Never drop queued decisions when the user navigates away or backgrounds the
-  // tab: flush them with sendBeacon (fire-and-forget) so the writes still land.
-  useEffect(() => {
-    function flushViaBeacon() {
-      if (writeFlushTimerRef.current) {
-        window.clearTimeout(writeFlushTimerRef.current)
-        writeFlushTimerRef.current = null
-      }
-
-      const snapshot = [...pendingWritesRef.current.entries()]
-
-      if (snapshot.length === 0) return
-
-      pendingWritesRef.current = new Map()
-
-      const payload = JSON.stringify({
-        updates: snapshot.map(([vocabEntryId, write]) => ({
-          source: write.source,
-          status: write.status,
-          vocabEntryId,
-        })),
-      })
-
-      if (typeof navigator !== 'undefined' && navigator.sendBeacon)
-        navigator.sendBeacon(
-          VOCAB_API_PATHS.itemsBatch,
-          new Blob([payload], { type: 'application/json' })
-        )
-      else
-        fetch(VOCAB_API_PATHS.itemsBatch, {
-          body: payload,
-          headers: { 'content-type': 'application/json' },
-          keepalive: true,
-          method: 'POST',
-        }).catch(() => {})
-    }
-
-    function handleVisibilityChange() {
-      if (document.visibilityState === 'hidden') flushViaBeacon()
-    }
-
-    document.addEventListener('visibilitychange', handleVisibilityChange)
-    window.addEventListener('pagehide', flushViaBeacon)
-
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange)
-      window.removeEventListener('pagehide', flushViaBeacon)
-      flushViaBeacon()
-    }
-  }, [])
+  useEffect(
+    () => () => {
+      if (progressRefreshTimerRef.current)
+        window.clearTimeout(progressRefreshTimerRef.current)
+    },
+    []
+  )
 
   const openRecallModal = useCallback(() => {
+    recallModalOpenRef.current = true
+    recallResultsRef.current = new Map()
+    setRecallResults([])
     setRecallAnsweredCount(0)
+    setRecallModalMounted(true)
     setRecallModalOpen(true)
-  }, [])
 
+    // A queue rendered long ago can hold cards past their token lifetime: deal
+    // fresh ones instead of letting every answer come back "not saved".
+    if (recallTasks.some(task => isVocabRecallTaskExpired(task)))
+      loadRecallFirstPage({ whileOpen: true }).catch(error =>
+        reportError(error, 'Could not refresh recall.')
+      )
+  }, [loadRecallFirstPage, recallTasks, reportError])
+
+  const closeRecallSession = useCallback(() => {
+    recallModalOpenRef.current = false
+    setRecallModalOpen(false)
+
+    // Stats refresh once per session, after every queued answer has landed,
+    // and the next session starts from a fresh first page.
+    outbox
+      .whenIdle({ timeoutMs: OUTBOX_IDLE_TIMEOUT_MS })
+      .then(() => Promise.all([refreshStats(), loadRecallFirstPage()]))
+      .catch(error => reportError(error, 'Could not refresh recall.'))
+  }, [loadRecallFirstPage, outbox, refreshStats, reportError])
+
+  // Without server data (the server read failed), load in the browser.
   useEffect(() => {
+    if (!mongoConfigured || initialData) return
+
     const timeoutId = window.setTimeout(() => {
-      refreshCoreData()
-        .catch(error => {
-          setErrorMessage(
-            error instanceof Error
-              ? error.message
-              : 'Could not load vocabulary.'
-          )
-        })
+      Promise.all([refreshStats(), loadRecallFirstPage(), refreshExploreData()])
+        .catch(error => reportError(error, 'Could not load vocabulary.'))
         .finally(() => setIsInitialLoad(false))
     }, 0)
 
     return () => window.clearTimeout(timeoutId)
-  }, [refreshCoreData])
+  }, [
+    initialData,
+    loadRecallFirstPage,
+    mongoConfigured,
+    refreshExploreData,
+    refreshStats,
+    reportError,
+  ])
+
+  // The server renders only the first few Explore cards to keep the page
+  // small; top the deck up to the full set once the page is interactive.
+  // Cards already on screen keep their place, so the learner never jumps.
+  useEffect(() => {
+    if (
+      !initialData ||
+      initialData.exploreEntries.length < VOCAB_EXPLORE_INITIAL_LIMIT
+    )
+      return
+
+    let cancelled = false
+    const generation = exploreDeckGenerationRef.current
+
+    getExploreVocabApi({ limit: VOCAB_EXPLORE_MAX_LIMIT })
+      .then(response => {
+        if (cancelled || generation !== exploreDeckGenerationRef.current) return
+
+        // The deck is still the server-rendered one (the generation matches).
+        // Nothing new: leave a pending new-deck refresh to deal the next deck.
+        const dealt = new Set(
+          initialData.exploreEntries.map(item => item.entry.id)
+        )
+
+        if (response.entries.every(item => dealt.has(item.entry.id))) return
+
+        exploreDeckGenerationRef.current += 1
+        setExploreEntries(current =>
+          mergeExploreEntries(current, response.entries)
+        )
+      })
+      .catch(error => reportError(error, 'Could not load more explore words.'))
+
+    return () => {
+      cancelled = true
+    }
+  }, [initialData, reportError])
+
+  // The server cannot see the "listening paused" flag (it lives in this
+  // browser), so a server-dealt queue may need its listening cards swapped.
+  useEffect(() => {
+    if (!initialData?.due.tasks.some(isListeningTask) || !isListeningSkipped())
+      return
+
+    const timeoutId = window.setTimeout(() => {
+      refreshRecallWithoutListening().catch(error =>
+        reportError(error, 'Could not refresh recall.')
+      )
+    }, 0)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [initialData, refreshRecallWithoutListening, reportError])
 
   useEffect(() => {
     if (recallTasks.length === 0 || recallModalOpen) return
@@ -414,9 +510,47 @@ export function VocabularyDashboard({ mongoConfigured }: Props) {
     return () => window.clearTimeout(timeoutId)
   }, [openRecallModal, recallModalOpen, recallTasks.length])
 
+  // Page the due queue: fetch the next page while 5 cards remain, so the
+  // learner never waits at a page boundary.
+  // A failed fetch waits for the learner's retry instead of looping; a
+  // dropped one bumps `recallPageRetry` so this runs again.
+  useEffect(() => {
+    if (!mongoConfigured || !recallCursor || recallPageError) return
+    if (
+      !shouldPrefetchVocabRecallPage({
+        isFetching: recallPageFetchRef.current,
+        nextCursor: recallCursor,
+        remaining: recallTasks.length,
+      })
+    )
+      return
+
+    loadRecallNextPage(recallCursor).catch(error =>
+      setRecallPageError(
+        getErrorMessage(error, 'Could not load more flashcards.')
+      )
+    )
+  }, [
+    loadRecallNextPage,
+    mongoConfigured,
+    recallCursor,
+    recallPageError,
+    recallPageRetry,
+    recallTasks.length,
+  ])
+
+  // End the session once the queue is empty and there is no page left.
+  useEffect(() => {
+    if (!recallModalOpen || recallTasks.length > 0 || recallCursor) return
+
+    const timeoutId = window.setTimeout(() => closeRecallSession(), 0)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [closeRecallSession, recallCursor, recallModalOpen, recallTasks.length])
+
   useEffect(() => {
     if (!mongoConfigured || exploreEntries.length === 0) return
-    if (Object.keys(pendingExploreDecisions).length > 0) return
+    if (exploreRefreshRef.current) return
 
     const lastIndex = exploreEntries.length - 1
     const lastDecided = Boolean(
@@ -429,24 +563,27 @@ export function VocabularyDashboard({ mongoConfigured }: Props) {
 
     if (!allDecided && !(reachedEnd && lastDecided)) return
 
-    const timeoutId = window.setTimeout(() => {
-      refreshExploreData().catch(error => {
-        setErrorMessage(
-          error instanceof Error
-            ? error.message
-            : 'Could not load more explore words.'
-        )
-      })
-    }, 0)
+    exploreRefreshRef.current = true
 
-    return () => window.clearTimeout(timeoutId)
+    const generation = exploreDeckGenerationRef.current
+
+    // Wait for queued decisions to land first, or Explore would deal the same
+    // still-unclassified words again.
+    outbox
+      .whenIdle({ timeoutMs: OUTBOX_IDLE_TIMEOUT_MS })
+      .then(() => refreshExploreData(generation))
+      .catch(error => reportError(error, 'Could not load more explore words.'))
+      .finally(() => {
+        exploreRefreshRef.current = false
+      })
   }, [
     activeExploreIndex,
     exploreDecisions,
     exploreEntries,
     mongoConfigured,
-    pendingExploreDecisions,
+    outbox,
     refreshExploreData,
+    reportError,
   ])
 
   async function runLookup(term: string) {
@@ -459,17 +596,16 @@ export function VocabularyDashboard({ mongoConfigured }: Props) {
     setStatusMessage(null)
 
     try {
-      const entry = await lookupVocabEntryApi({ term: cleanTerm })
-      const results = await searchVocabApi({ query: cleanTerm })
+      const [entry, results] = await Promise.all([
+        lookupVocabEntryApi({ term: cleanTerm }),
+        searchVocabApi({ query: cleanTerm }),
+      ])
 
       setSelectedEntry(entry)
       setSearchResults(results.entries)
       setStatusMessage(`Loaded "${entry.entry.term}".`)
-      await refreshCoreData()
     } catch (error) {
-      setErrorMessage(
-        error instanceof Error ? error.message : 'Could not lookup this word.'
-      )
+      reportError(error, 'Could not lookup this word.')
     } finally {
       setIsLoading(false)
     }
@@ -481,104 +617,56 @@ export function VocabularyDashboard({ mongoConfigured }: Props) {
     status,
   }: {
     entry: VocabEntryWithUserStateRecord
-    source: MarkableSource
-    status: MarkableStatus
+    source: VocabLearningSource
+    status: VocabMarkStatus
   }) {
-    if (source === 'explore') {
-      const entryId = entry.entry.id
+    const entryId = entry.entry.id
+    const ticket = itemWritesRef.current.begin(entryId, {
+      decision: exploreDecisions[entryId],
+      userItem: entry.userItem,
+    })
 
-      if (pendingExploreDecisions[entryId]) return
+    setErrorMessage(null)
+    setStatusMessage(
+      status === 'shouldLearn'
+        ? `"${entry.entry.term}" is in your recall queue.`
+        : `"${entry.entry.term}" is marked as known.`
+    )
+    setEntryUserItem(
+      entryId,
+      buildOptimisticUserItem({ entry, source, status })
+    )
+    setExploreDecisions(current => ({ ...current, [entryId]: status }))
 
-      const previousDecision = exploreDecisions[entryId]
-      const previousUserItem = entry.userItem
-
-      setErrorMessage(null)
-      setStatusMessage(
-        status === 'shouldLearn'
-          ? `"${entry.entry.term}" is in your recall queue.`
-          : `"${entry.entry.term}" is marked as known.`
-      )
-      setPendingExploreDecisions(current => ({
-        ...current,
-        [entryId]: status,
-      }))
-      setEntryUserItem(
-        entryId,
-        buildOptimisticUserItem({ entry, source, status })
-      )
-      setExploreDecisions(current => ({
-        ...current,
-        [entryId]: status,
-      }))
+    if (source === 'explore')
       setActiveExploreIndex(current =>
         Math.min(current + 1, exploreEntries.length - 1)
       )
 
-      // Queue the write instead of firing per press. Keep the earliest captured
-      // previous state so a rollback restores where the entry started, even if
-      // the user toggles it several times before the batch flushes.
-      const existing = pendingWritesRef.current.get(entryId)
+    const outcome = await enqueueVocabItemStatus(outbox, {
+      source,
+      status,
+      vocabEntryId: entryId,
+    })
+    const settled = itemWritesRef.current.settle(
+      entryId,
+      ticket,
+      outcome.kind === 'saved'
+        ? { kind: 'saved', state: { decision: status, userItem: outcome.item } }
+        : outcome
+    )
 
-      pendingWritesRef.current.set(entryId, {
-        previousDecision: existing
-          ? existing.previousDecision
-          : previousDecision,
-        previousUserItem: existing
-          ? existing.previousUserItem
-          : previousUserItem,
-        source,
-        status,
-      })
-      scheduleWriteFlush()
+    if (settled.kind === 'ignore') return
 
+    applyEntrySnapshot(entryId, settled.state)
+
+    if (settled.kind === 'rollback' && outcome.kind === 'failed') {
+      setStatusMessage(null)
+      setErrorMessage(outcome.error)
       return
     }
 
-    setIsLoading(true)
-    setErrorMessage(null)
-    setStatusMessage(null)
-
-    try {
-      const response = await setVocabItemStatusApi({
-        source,
-        status,
-        vocabEntryId: entry.entry.id,
-      })
-      const nextEntry = {
-        ...entry,
-        userItem: response.item,
-      }
-
-      setSelectedEntry(current =>
-        current?.entry.id === entry.entry.id ? nextEntry : current
-      )
-      setSearchResults(current =>
-        current.map(item =>
-          item.entry.id === entry.entry.id ? nextEntry : item
-        )
-      )
-      setExploreEntries(current =>
-        current.map(item =>
-          item.entry.id === entry.entry.id ? nextEntry : item
-        )
-      )
-      setExploreDecisions(current => ({
-        ...current,
-        [entry.entry.id]: status,
-      }))
-      setStatusMessage(
-        status === 'shouldLearn'
-          ? `"${entry.entry.term}" is in your recall queue.`
-          : `"${entry.entry.term}" is marked as known.`
-      )
-      await refreshCoreData()
-    } catch (error) {
-      setErrorMessage(
-        error instanceof Error ? error.message : 'Could not update this word.'
-      )
-    } finally {
-      setIsLoading(false)
-    }
+    scheduleProgressRefresh()
   }
 
   function showExploreIndex(index: number) {
@@ -591,39 +679,40 @@ export function VocabularyDashboard({ mongoConfigured }: Props) {
     showExploreIndex(activeExploreIndex + delta)
   }
 
-  async function handleRecallAnswered({
-    isCorrect,
-    item,
-    task,
-  }: {
-    isCorrect: boolean
-    item: VocabRecallTaskRecord['item']
-    task: VocabRecallTaskRecord
-  }) {
-    const remainingTasks = recallTasks.filter(
-      recallTask => recallTask.taskId !== task.taskId
+  function answerRecallTask(input: VocabRecallAnswerInput) {
+    const existing = recallResultsRef.current.get(input.task.taskId)
+
+    if (existing) return existing
+
+    const result = createVocabRecallCardResult(input)
+
+    recallResultsRef.current.set(result.taskId, result)
+    answeredItemIdsRef.current.add(result.itemId)
+    setRecallResults(current => [...current, result])
+
+    if (result.saveState === 'saving')
+      void enqueueVocabRecallAnswer(outbox, input).then(outcome => {
+        setRecallResults(current =>
+          current.map(item =>
+            item.taskId === result.taskId
+              ? reconcileVocabRecallCardResult(item, outcome)
+              : item
+          )
+        )
+      })
+
+    return result
+  }
+
+  function advanceRecall(task: VocabRecallTaskRecord) {
+    const result = recallResultsRef.current.get(task.taskId)
+
+    if (result) setStatusMessage(getRecallStatusMessage(result))
+
+    setRecallTasks(current =>
+      current.filter(recallTask => recallTask.taskId !== task.taskId)
     )
-
-    if (item.status === 'mastered')
-      setStatusMessage(`Mastered "${task.entry.term}". That one is yours now.`)
-    else if (isCorrect)
-      setStatusMessage(
-        `Nice. "${task.entry.term}" moved to stage ${item.recallStage}.`
-      )
-    else setStatusMessage(`"${task.entry.term}" reset to stage 1.`)
-
-    setRecallTasks(remainingTasks)
     setRecallAnsweredCount(current => current + 1)
-
-    if (remainingTasks.length === 0) {
-      setRecallModalOpen(false)
-      await refreshCoreData()
-      return
-    }
-
-    const statsResponse = await getVocabStatsApi()
-
-    setStats(statsResponse.stats)
   }
 
   function skipListeningForNow() {
@@ -632,16 +721,9 @@ export function VocabularyDashboard({ mongoConfigured }: Props) {
       String(Date.now() + 15 * 60_000)
     )
     setStatusMessage('Listening flashcards are paused for 15 minutes.')
-    setRecallTasks(current =>
-      current.filter(
-        task => !VOCAB_RECALL_LISTENING_TASK_TYPES.includes(task.type)
-      )
+    refreshRecallWithoutListening().catch(error =>
+      reportError(error, 'Could not refresh recall.')
     )
-    refreshProgressData().catch(error => {
-      setErrorMessage(
-        error instanceof Error ? error.message : 'Could not refresh recall.'
-      )
-    })
   }
 
   if (!mongoConfigured)
@@ -668,6 +750,11 @@ export function VocabularyDashboard({ mongoConfigured }: Props) {
     )
 
   const activeRecall = recallTasks[0] ?? null
+  const heldRecallTotal = recallAnsweredCount + recallTasks.length
+  // With pages still to fetch, the session size comes from the due count.
+  const recallTaskTotal = recallCursor
+    ? Math.max(heldRecallTotal, stats.dueTodayCount)
+    : heldRecallTotal
 
   return (
     <div className="grid gap-5 p-4 sm:p-6 lg:p-8">
@@ -720,9 +807,14 @@ export function VocabularyDashboard({ mongoConfigured }: Props) {
       ) : null}
 
       <VocabularyRecallLauncher
+        dueCount={stats.dueTodayCount}
         onOpenRecall={openRecallModal}
         tasks={recallTasks}
       />
+
+      {recallModalOpen ? null : (
+        <VocabRecallSessionSummary results={recallResults} />
+      )}
 
       <VocabularyExplorePanel
         activeIndex={activeExploreIndex}
@@ -730,21 +822,27 @@ export function VocabularyDashboard({ mongoConfigured }: Props) {
         entries={exploreEntries}
         markEntry={markEntry}
         moveExplore={moveExplore}
-        pendingDecisions={pendingExploreDecisions}
         showExploreIndex={showExploreIndex}
       />
 
-      <VocabRecallModal
-        isLoading={isLoading}
-        onAnswered={handleRecallAnswered}
-        onError={setErrorMessage}
-        onListeningSkip={skipListeningForNow}
-        onOpenChange={setRecallModalOpen}
-        open={recallModalOpen}
-        task={activeRecall}
-        taskNumber={recallTasks.length > 0 ? recallAnsweredCount + 1 : 0}
-        taskTotal={recallAnsweredCount + recallTasks.length}
-      />
+      {recallModalMounted ? (
+        <VocabRecallModal
+          isLoading={isLoading}
+          loadError={recallPageError}
+          onAdvance={advanceRecall}
+          onAnswer={answerRecallTask}
+          onListeningSkip={skipListeningForNow}
+          onOpenChange={open => {
+            if (!open) closeRecallSession()
+          }}
+          onRetryLoad={retryRecallNextPage}
+          open={recallModalOpen}
+          results={recallResultsById}
+          task={activeRecall}
+          taskNumber={activeRecall ? recallAnsweredCount + 1 : 0}
+          taskTotal={recallTaskTotal}
+        />
+      ) : null}
     </div>
   )
 }

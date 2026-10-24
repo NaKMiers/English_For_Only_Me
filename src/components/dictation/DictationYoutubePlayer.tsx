@@ -1,7 +1,17 @@
 'use client'
 
 import { ChevronRight, Ratio } from 'lucide-react'
-import { useCallback, useEffect, useId, useRef, useState } from 'react'
+import Image from 'next/image'
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
+import { preconnect } from 'react-dom'
 
 import { cn } from '@/lib/utils'
 import {
@@ -100,6 +110,72 @@ interface Props {
   youtubeVideoId: string | null
 }
 
+const YOUTUBE_ORIGIN = 'https://www.youtube.com'
+const YOUTUBE_THUMBNAIL_ORIGIN = 'https://i.ytimg.com'
+const YOUTUBE_ID_PATTERN = /^[A-Za-z0-9_-]{11}$/
+/** Upper bound on how long an idle-deferred player waits to be created. */
+const PLAYER_IDLE_TIMEOUT_MS = 3000
+/** Fallback delay where requestIdleCallback is missing (Safari). */
+const PLAYER_IDLE_FALLBACK_MS = 1200
+const ACTIVATION_EVENTS = ['pointerdown', 'keydown', 'touchstart'] as const
+
+type PlayerCommand = (commands: PlayerCommands) => void
+type PlayerCommands = Pick<
+  PlayerController,
+  'pause' | 'playFromMs' | 'playSegment' | 'replay' | 'seekToMs'
+>
+
+/**
+ * Run `callback` once the main thread is idle (bounded by `timeoutMs`), or
+ * after a short delay where requestIdleCallback is unavailable. Returns a
+ * cancel function.
+ */
+export function scheduleWhenIdle(
+  callback: () => void,
+  {
+    fallbackMs = PLAYER_IDLE_FALLBACK_MS,
+    timeoutMs = PLAYER_IDLE_TIMEOUT_MS,
+  }: { fallbackMs?: number; timeoutMs?: number } = {}
+) {
+  if (typeof window.requestIdleCallback === 'function') {
+    const handle = window.requestIdleCallback(callback, { timeout: timeoutMs })
+
+    return () => window.cancelIdleCallback(handle)
+  }
+
+  const handle = window.setTimeout(callback, fallbackMs)
+
+  return () => window.clearTimeout(handle)
+}
+
+/**
+ * Defer creating the player (and downloading the IFrame API) until the page
+ * is idle or the learner first interacts, whichever comes first. `activate`
+ * forces it immediately (a queued player command).
+ */
+function useDeferredActivation(enabled: boolean) {
+  const [isActivated, setIsActivated] = useState(false)
+  const activate = useCallback(() => setIsActivated(true), [])
+
+  useEffect(() => {
+    if (!enabled || isActivated) return
+
+    const cancelIdle = scheduleWhenIdle(activate)
+    const options = { capture: true, passive: true } as const
+
+    for (const type of ACTIVATION_EVENTS)
+      window.addEventListener(type, activate, options)
+
+    return () => {
+      cancelIdle()
+      for (const type of ACTIVATION_EVENTS)
+        window.removeEventListener(type, activate, options)
+    }
+  }, [activate, enabled, isActivated])
+
+  return { activate, isActivated }
+}
+
 function loadYoutubeIframeApi() {
   if (typeof window === 'undefined') return Promise.reject()
   if (window.YT?.Player) return Promise.resolve(window.YT)
@@ -124,6 +200,16 @@ function loadYoutubeIframeApi() {
   })
 }
 
+/**
+ * hqdefault is 4:3 with the 16:9 frame letterboxed inside; object-cover on the
+ * 16:9 box crops exactly to the picture, and it stays sharp at player size.
+ */
+export function getPlayerPlaceholderUrl(youtubeVideoId: string) {
+  if (!YOUTUBE_ID_PATTERN.test(youtubeVideoId)) return null
+
+  return `${YOUTUBE_THUMBNAIL_ORIGIN}/vi/${youtubeVideoId}/hqdefault.jpg`
+}
+
 export function DictationYoutubePlayer({
   className,
   hidden,
@@ -140,6 +226,19 @@ export function DictationYoutubePlayer({
   const playerElementId = useId().replace(/:/g, '')
   const [isSizeMenuOpen, setIsSizeMenuOpen] = useState(false)
   const playerRef = useRef<YoutubeDictationPlayerAdapter | null>(null)
+  const usesYoutube = !mockPlayer && Boolean(youtubeVideoId)
+  const { activate, isActivated } = useDeferredActivation(usesYoutube)
+  // True once a real (or mock) player is attached. Until then, commands from
+  // the shell are queued (latest wins) instead of being dropped.
+  const [isPlayerReady, setIsPlayerReady] = useState(false)
+  const isPlayerReadyRef = useRef(false)
+  const pendingCommandRef = useRef<PlayerCommand | null>(null)
+
+  if (usesYoutube) {
+    preconnect(YOUTUBE_ORIGIN)
+    preconnect(YOUTUBE_THUMBNAIL_ORIGIN)
+  }
+
   const {
     attachPlayer,
     canReplay,
@@ -157,6 +256,75 @@ export function DictationYoutubePlayer({
     seekToMs,
     status,
   } = useYoutubeDictationPlayer({ playbackSpeed, timing })
+  const commandsRef = useRef<PlayerCommands>({
+    pause,
+    playFromMs,
+    playSegment,
+    replay,
+    seekToMs,
+  })
+
+  useLayoutEffect(() => {
+    commandsRef.current = { pause, playFromMs, playSegment, replay, seekToMs }
+  }, [pause, playFromMs, playSegment, replay, seekToMs])
+
+  // Re-created exactly when the hook's commands change (so callers' effects
+  // re-run as before), but a command issued before the player exists is
+  // queued and also creates the player right away.
+  const queuedCommands = useMemo<PlayerCommands>(() => {
+    const run = (command: PlayerCommand, fallback: () => void) => {
+      if (isPlayerReadyRef.current || !usesYoutube) {
+        fallback()
+        return
+      }
+
+      pendingCommandRef.current = command
+      activate()
+    }
+
+    return {
+      pause: () => {
+        if (isPlayerReadyRef.current || !usesYoutube) pause()
+        else pendingCommandRef.current = null
+      },
+      playFromMs: startMs =>
+        run(
+          commands => commands.playFromMs(startMs),
+          () => playFromMs(startMs)
+        ),
+      playSegment: (startMs, endMs, options) =>
+        run(
+          commands => commands.playSegment(startMs, endMs, options),
+          () => playSegment(startMs, endMs, options)
+        ),
+      replay: () =>
+        run(
+          commands => commands.replay(),
+          () => replay()
+        ),
+      seekToMs: (startMs, options) =>
+        run(
+          commands => commands.seekToMs(startMs, options),
+          () => seekToMs(startMs, options)
+        ),
+    }
+  }, [activate, pause, playFromMs, playSegment, replay, seekToMs, usesYoutube])
+
+  const markPlayerReady = useCallback(() => {
+    isPlayerReadyRef.current = true
+    setIsPlayerReady(true)
+  }, [])
+
+  // Flush the queued command once the player is attached, through the latest
+  // hook commands (which already see the attached player).
+  useEffect(() => {
+    if (!isPlayerReady) return
+
+    const command = pendingCommandRef.current
+    pendingCommandRef.current = null
+    command?.(commandsRef.current)
+  }, [isPlayerReady])
+
   const toggleHidden = useCallback(() => {
     onHiddenChange(!hidden)
   }, [hidden, onHiddenChange])
@@ -168,6 +336,7 @@ export function DictationYoutubePlayer({
     markPaused,
     markPlaying,
     markReady,
+    markPlayerReady,
   })
 
   useEffect(() => {
@@ -178,6 +347,7 @@ export function DictationYoutubePlayer({
       markPaused,
       markPlaying,
       markReady,
+      markPlayerReady,
     }
   }, [
     attachPlayer,
@@ -185,6 +355,7 @@ export function DictationYoutubePlayer({
     markError,
     markPaused,
     markPlaying,
+    markPlayerReady,
     markReady,
   ])
 
@@ -193,11 +364,7 @@ export function DictationYoutubePlayer({
       canReplay,
       getCurrentTimeMs,
       message,
-      pause,
-      playFromMs,
-      playSegment,
-      replay,
-      seekToMs,
+      ...queuedCommands,
       status,
     })
   }, [
@@ -205,11 +372,7 @@ export function DictationYoutubePlayer({
     getCurrentTimeMs,
     message,
     onControllerChange,
-    pause,
-    playFromMs,
-    playSegment,
-    replay,
-    seekToMs,
+    queuedCommands,
     status,
   ])
 
@@ -217,6 +380,7 @@ export function DictationYoutubePlayer({
     if (mockPlayer) {
       playerRef.current = mockPlayer
       playerHandlersRef.current.attachPlayer(mockPlayer)
+      playerHandlersRef.current.markPlayerReady()
       return
     }
 
@@ -224,6 +388,8 @@ export function DictationYoutubePlayer({
       playerHandlersRef.current.attachPlayer(null)
       return
     }
+
+    if (!isActivated) return
 
     let isMounted = true
 
@@ -244,6 +410,7 @@ export function DictationYoutubePlayer({
             onReady: event => {
               playerHandlersRef.current.attachPlayer(event.target)
               playerHandlersRef.current.markReady()
+              playerHandlersRef.current.markPlayerReady()
             },
             onStateChange: event => {
               const playerState = window.YT?.PlayerState
@@ -270,7 +437,12 @@ export function DictationYoutubePlayer({
     return () => {
       isMounted = false
     }
-  }, [mockPlayer, playerElementId, youtubeVideoId])
+  }, [isActivated, mockPlayer, playerElementId, youtubeVideoId])
+
+  const placeholderThumbnailUrl =
+    usesYoutube && !isPlayerReady && youtubeVideoId
+      ? getPlayerPlaceholderUrl(youtubeVideoId)
+      : null
 
   return (
     <section
@@ -294,6 +466,21 @@ export function DictationYoutubePlayer({
             YouTube metadata is missing for this video.
           </div>
         )}
+        {/* Until the deferred player is ready, the video's own thumbnail holds
+            the frame (and is the practice page's LCP image). */}
+        {placeholderThumbnailUrl ? (
+          <Image
+            src={placeholderThumbnailUrl}
+            alt=""
+            aria-hidden="true"
+            fill
+            unoptimized
+            loading="eager"
+            fetchPriority="high"
+            sizes="(min-width: 1024px) 50vw, 100vw"
+            className="pointer-events-none object-cover"
+          />
+        ) : null}
         {hidden ? (
           <div
             aria-hidden="true"

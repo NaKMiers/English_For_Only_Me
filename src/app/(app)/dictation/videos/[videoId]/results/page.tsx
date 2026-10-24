@@ -97,16 +97,39 @@ export default async function Page({ params }: Props) {
   // Results are open to everyone. A null actor id (a visitor with no practice
   // history) owns no rows, so the reads below short-circuit to empty and the
   // page renders the "Practice first" state - never a query on an empty owner.
-  const actorId = await getPracticeActorId()
+  const [actorId] = await Promise.all([getPracticeActorId(), connectDatabase()])
 
-  await connectDatabase()
-
-  const video = await DictationVideoModel.findOne({
-    _id: videoId,
-    status: {
-      $ne: 'archived',
-    },
-  }).lean()
+  // The reads below are keyed by the URL's video id and the learner, so they
+  // start together with the video lookup instead of waiting for it.
+  const [video, stats, reviewItems, latestDebrief, progress] =
+    await Promise.all([
+      DictationVideoModel.findOne({
+        _id: videoId,
+        status: {
+          $ne: 'archived',
+        },
+      }).lean(),
+      getVideoStatsForUser({
+        userId: actorId,
+        videoId,
+      }),
+      listDueReviewItemsForUser({
+        userId: actorId,
+        videoId,
+      }),
+      actorId
+        ? DictationDebriefModel.findOne({
+            userId: actorId,
+            status: 'ready',
+            videoId,
+          })
+            .sort({ createdAt: -1 })
+            .lean()
+        : Promise.resolve(null),
+      actorId
+        ? getVideoProgressForUser({ userId: actorId, videoId })
+        : Promise.resolve<DictationVideoProgress>('notStarted'),
+    ])
 
   if (!video) notFound()
 
@@ -121,28 +144,6 @@ export default async function Page({ params }: Props) {
       />
     )
 
-  const [stats, reviewItems, latestDebrief, progress] = await Promise.all([
-    getVideoStatsForUser({
-      userId: actorId,
-      videoId,
-    }),
-    listDueReviewItemsForUser({
-      userId: actorId,
-      videoId,
-    }),
-    actorId
-      ? DictationDebriefModel.findOne({
-          userId: actorId,
-          status: 'ready',
-          videoId,
-        })
-          .sort({ createdAt: -1 })
-          .lean()
-      : Promise.resolve(null),
-    actorId
-      ? getVideoProgressForUser({ userId: actorId, videoId })
-      : Promise.resolve<DictationVideoProgress>('notStarted'),
-  ])
   const isEmpty = stats.segmentCount === 0 || stats.completedSegmentCount === 0
 
   return (

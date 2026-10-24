@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 
 import { MissingEnvironmentError } from '@/constants/environments'
 import { connectDatabase } from '@/lib/db/connectDatabase'
+import { revalidateDictationCatalog } from '@/lib/db/revalidateCatalog'
 import { DictationSegmentModel } from '@/models/dictation/DictationSegmentModel'
 import { DictationTranscriptModel } from '@/models/dictation/DictationTranscriptModel'
 import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
@@ -34,7 +35,7 @@ function authErrorDecision(error: unknown): ApiErrorDecision | null {
     typeof error === 'object' &&
     error !== null &&
     'status' in error &&
-    (error.status === 401 || error.status === 403)
+    (error.status === 401 || error.status === 403 || error.status === 409)
   )
     return {
       status: error.status,
@@ -172,6 +173,8 @@ export async function DELETE(_request: Request, { params }: Props) {
         },
       })
 
+    revalidateDictationCatalog()
+
     return NextResponse.json({
       video: toDictationVideoRecord(video),
     })
@@ -251,6 +254,8 @@ export async function PATCH(request: Request, { params }: Props) {
           message: 'Dictation video was not found.',
         },
       })
+
+    revalidateDictationCatalog()
 
     return NextResponse.json({
       video: toDictationVideoRecord(video),

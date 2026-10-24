@@ -1,16 +1,11 @@
 import type {
-  DictationAttemptApiRecord,
+  DictationCorrectionTokenRecord,
   DictationGlobalStatsRecord,
-  DictationReviewItemApiRecord,
-  DictationVideoApiRecord,
 } from '@/modules/dictation/types'
 
-type CompletedAttempt = Pick<
-  DictationAttemptApiRecord,
-  'action' | 'isPassed' | 'segmentId'
->
+/** Review statuses that count as "due" on the stats card. */
+export const ACTIVE_REVIEW_STATUSES = ['due', 'scheduled'] as const
 
-const ACTIVE_REVIEW_STATUSES = new Set(['due', 'scheduled'])
 const DAY_MS = 86_400_000
 
 function getDayKey(date: Date) {
@@ -27,53 +22,241 @@ function getDaysAgo(now: Date, days: number) {
   return new Date(now.getTime() - days * DAY_MS)
 }
 
-function isCompletedAttempt(attempt: CompletedAttempt) {
-  return (
-    attempt.isPassed || attempt.action === 'reveal' || attempt.action === 'skip'
-  )
-}
-
 function getPercent(part: number, whole: number) {
   if (whole <= 0) return 0
 
   return Math.round((part / whole) * 100)
 }
 
-function getCompletedSegmentCount(attempts: DictationAttemptApiRecord[]) {
-  return new Set(
-    attempts.filter(isCompletedAttempt).map(attempt => attempt.segmentId)
-  ).size
+/**
+ * How many of the user's most recent attempts feed the token-based parts
+ * (weak words, mistake types). Everything else is counted over the user's
+ * whole history inside MongoDB; these two need every feedback token, so they
+ * are bounded to keep the cost flat however long someone has practised.
+ * Semantics: "your weak spots lately", not all-time totals.
+ */
+export const RECENT_TOKEN_ATTEMPT_LIMIT = 500
+
+/** The days the first-try trend shows, today included. */
+const TREND_DAYS = 7
+
+/** One token-bearing attempt from the capped recent window. */
+export interface GlobalStatsTokenAttempt {
+  feedbackTokens: Pick<
+    DictationCorrectionTokenRecord,
+    'expected' | 'expectedOriginal' | 'status'
+  >[]
 }
 
-function getPracticeTimeSince({
-  attempts,
-  since,
-}: {
-  attempts: DictationAttemptApiRecord[]
-  since: Date
-}) {
-  return attempts
-    .filter(attempt => attempt.createdAt >= since)
-    .reduce((total, attempt) => total + attempt.timeSpentMs, 0)
+export const GLOBAL_STATS_TOKEN_PROJECTION = {
+  _id: 0,
+  'feedbackTokens.expected': 1,
+  'feedbackTokens.expectedOriginal': 1,
+  'feedbackTokens.status': 1,
+} as const
+
+/** Lean shape returned by a find() with GLOBAL_STATS_TOKEN_PROJECTION. */
+export interface GlobalStatsTokenAttemptDocument {
+  feedbackTokens?:
+    | {
+        expected?: string | null
+        expectedOriginal?: string | null
+        status: DictationCorrectionTokenRecord['status']
+      }[]
+    | null
 }
 
-function getActiveStreakDays({
-  attempts,
+/** Same defaults as toDictationAttemptRecord, for the projected fields only. */
+export function toGlobalStatsTokenAttempt(
+  attempt: GlobalStatsTokenAttemptDocument
+): GlobalStatsTokenAttempt {
+  return {
+    feedbackTokens: (attempt.feedbackTokens ?? []).map(token => ({
+      expected: token.expected ?? null,
+      expectedOriginal: token.expectedOriginal ?? null,
+      status: token.status,
+    })),
+  }
+}
+
+/** The first `check` of one segment (ever), when it falls in the trend. */
+export interface GlobalStatsFirstCheck {
+  correctCount: number
+  createdAt: Date
+  totalExpected: number
+}
+
+/**
+ * Whole-history counts, computed by MongoDB (buildGlobalStatsPipeline) so the
+ * server ships a few numbers instead of every attempt.
+ */
+export interface GlobalStatsSummary {
+  completedSegmentCount: number
+  // First checks of segments whose first check is inside the trend window.
+  firstChecks: GlobalStatsFirstCheck[]
+  monthlyPracticeTimeMs: number
+  // Distinct UTC days (YYYY-MM-DD) with any attempt; one per day practised,
+  // so it stays small and the streak can be any length.
+  practiceDayKeys: string[]
+  weeklyPracticeTimeMs: number
+}
+
+export const EMPTY_GLOBAL_STATS_SUMMARY: GlobalStatsSummary = {
+  completedSegmentCount: 0,
+  firstChecks: [],
+  monthlyPracticeTimeMs: 0,
+  practiceDayKeys: [],
+  weeklyPracticeTimeMs: 0,
+}
+
+export function getGlobalStatsWindows(now: Date) {
+  return {
+    monthStart: getDaysAgo(now, 30),
+    trendStart: getStartOfUtcDay(
+      new Date(now.getTime() - (TREND_DAYS - 1) * DAY_MS)
+    ),
+    weekStart: getDaysAgo(now, 7),
+  }
+}
+
+/**
+ * One pass over the user's attempts (served by the userId indexes), split by
+ * $facet. Mirrors the old in-memory rules exactly:
+ * - completed segment: passed, revealed or skipped at least once
+ * - practice time: rolling 7 and 30 days, summed timeSpentMs
+ * - first try: each segment's earliest check (ties broken by _id), kept only
+ *   when it falls in the trend window
+ * - streak days: UTC calendar days, like toISOString().slice(0, 10)
+ */
+export function buildGlobalStatsPipeline({
   now,
+  userId,
 }: {
-  attempts: DictationAttemptApiRecord[]
   now: Date
+  userId: string
 }) {
-  const practiceDays = new Set(
-    attempts.map(attempt => getDayKey(attempt.createdAt))
-  )
+  const { monthStart, trendStart, weekStart } = getGlobalStatsWindows(now)
+
+  return [
+    { $match: { userId } },
+    {
+      $facet: {
+        completedSegments: [
+          {
+            $match: {
+              $or: [
+                { isPassed: true },
+                { action: { $in: ['reveal', 'skip'] } },
+              ],
+            },
+          },
+          { $group: { _id: '$segmentId' } },
+          { $count: 'count' },
+        ],
+        firstChecks: [
+          { $match: { action: 'check' } },
+          {
+            $group: {
+              _id: '$segmentId',
+              // Documents compare field by field, so this is the earliest
+              // check, then the lowest _id, carrying its stats along.
+              first: {
+                $min: {
+                  createdAt: '$createdAt',
+                  id: '$_id',
+                  correctCount: '$stats.correctCount',
+                  totalExpected: '$stats.totalExpected',
+                },
+              },
+            },
+          },
+          { $match: { 'first.createdAt': { $gte: trendStart } } },
+          {
+            $project: {
+              _id: 0,
+              correctCount: '$first.correctCount',
+              createdAt: '$first.createdAt',
+              totalExpected: '$first.totalExpected',
+            },
+          },
+        ],
+        practiceDays: [
+          {
+            $group: {
+              _id: {
+                $dateToString: {
+                  date: '$createdAt',
+                  format: '%Y-%m-%d',
+                  timezone: 'UTC',
+                },
+              },
+            },
+          },
+        ],
+        practiceTime: [
+          { $match: { createdAt: { $gte: monthStart } } },
+          {
+            $group: {
+              _id: null,
+              monthly: { $sum: '$timeSpentMs' },
+              weekly: {
+                $sum: {
+                  $cond: [
+                    { $gte: ['$createdAt', weekStart] },
+                    '$timeSpentMs',
+                    0,
+                  ],
+                },
+              },
+            },
+          },
+        ],
+      },
+    },
+  ]
+}
+
+/** Raw output document of buildGlobalStatsPipeline. */
+export interface GlobalStatsFacetResult {
+  completedSegments?: { count?: number | null }[]
+  firstChecks?: {
+    correctCount?: number | null
+    createdAt: Date
+    totalExpected?: number | null
+  }[]
+  practiceDays?: { _id: string | null }[]
+  practiceTime?: { monthly?: number | null; weekly?: number | null }[]
+}
+
+export function toGlobalStatsSummary(
+  result: GlobalStatsFacetResult | undefined
+): GlobalStatsSummary {
+  if (!result) return EMPTY_GLOBAL_STATS_SUMMARY
+
+  const [practiceTime] = result.practiceTime ?? []
+
+  return {
+    completedSegmentCount: result.completedSegments?.[0]?.count ?? 0,
+    firstChecks: (result.firstChecks ?? []).map(check => ({
+      correctCount: check.correctCount ?? 0,
+      createdAt: check.createdAt,
+      totalExpected: check.totalExpected ?? 0,
+    })),
+    monthlyPracticeTimeMs: practiceTime?.monthly ?? 0,
+    practiceDayKeys: (result.practiceDays ?? [])
+      .map(day => day._id)
+      .filter((day): day is string => Boolean(day)),
+    weeklyPracticeTimeMs: practiceTime?.weekly ?? 0,
+  }
+}
+
+function getActiveStreakDays(practiceDayKeys: string[]) {
+  const practiceDays = new Set(practiceDayKeys)
 
   if (practiceDays.size === 0) return 0
 
   const latestPracticeDay = Array.from(practiceDays).sort().at(-1)
-  let cursor = latestPracticeDay
-    ? getStartOfUtcDay(new Date(`${latestPracticeDay}T00:00:00.000Z`))
-    : getStartOfUtcDay(now)
+  let cursor = getStartOfUtcDay(new Date(`${latestPracticeDay}T00:00:00.000Z`))
   let streak = 0
 
   while (practiceDays.has(getDayKey(cursor))) {
@@ -84,7 +267,7 @@ function getActiveStreakDays({
   return streak
 }
 
-function getWeakWords(attempts: DictationAttemptApiRecord[]) {
+function getWeakWords(attempts: GlobalStatsTokenAttempt[]) {
   const words = new Map<string, number>()
 
   for (const attempt of attempts)
@@ -109,7 +292,7 @@ function getWeakWords(attempts: DictationAttemptApiRecord[]) {
     .slice(0, 10)
 }
 
-function getRepeatedMistakeTypes(attempts: DictationAttemptApiRecord[]) {
+function getRepeatedMistakeTypes(attempts: GlobalStatsTokenAttempt[]) {
   const counts = {
     extra: 0,
     missing: 0,
@@ -149,38 +332,29 @@ function getRepeatedMistakeTypes(attempts: DictationAttemptApiRecord[]) {
 }
 
 function getFirstTryAccuracyTrend({
-  attempts,
+  firstChecks,
   now,
 }: {
-  attempts: DictationAttemptApiRecord[]
+  firstChecks: GlobalStatsFirstCheck[]
   now: Date
 }) {
-  const firstChecksBySegment = new Map<string, DictationAttemptApiRecord>()
-
-  for (const attempt of attempts
-    .filter(item => item.action === 'check')
-    .sort(
-      (left, right) => left.createdAt.getTime() - right.createdAt.getTime()
-    ))
-    if (!firstChecksBySegment.has(attempt.segmentId))
-      firstChecksBySegment.set(attempt.segmentId, attempt)
-
-  return Array.from({ length: 7 }, (_, index) => {
-    const day = getStartOfUtcDay(new Date(now.getTime() - (6 - index) * DAY_MS))
+  return Array.from({ length: TREND_DAYS }, (_, index) => {
+    const day = getStartOfUtcDay(
+      new Date(now.getTime() - (TREND_DAYS - 1 - index) * DAY_MS)
+    )
     const nextDay = new Date(day.getTime() + DAY_MS)
-    const dayAttempts = Array.from(firstChecksBySegment.values()).filter(
-      attempt => attempt.createdAt >= day && attempt.createdAt < nextDay
-    )
-    const totals = dayAttempts.reduce(
-      (currentTotals, attempt) => ({
-        correct: currentTotals.correct + attempt.stats.correctCount,
-        expected: currentTotals.expected + attempt.stats.totalExpected,
-      }),
-      {
-        correct: 0,
-        expected: 0,
-      }
-    )
+    const totals = firstChecks
+      .filter(check => check.createdAt >= day && check.createdAt < nextDay)
+      .reduce(
+        (currentTotals, check) => ({
+          correct: currentTotals.correct + check.correctCount,
+          expected: currentTotals.expected + check.totalExpected,
+        }),
+        {
+          correct: 0,
+          expected: 0,
+        }
+      )
 
     return {
       accuracy: getPercent(totals.correct, totals.expected),
@@ -189,54 +363,42 @@ function getFirstTryAccuracyTrend({
   })
 }
 
-export function aggregateGlobalDictationStats({
-  attempts,
-  completedVideoIds,
+/**
+ * Global dictation stats for one user. Every input is already scoped to that
+ * user by the query: `summary` is the whole-history aggregation, and
+ * `recentTokenAttempts` the newest RECENT_TOKEN_ATTEMPT_LIMIT attempts' tokens.
+ * The video totals come from counts rather than the whole catalog.
+ */
+export function computeGlobalDictationStats({
+  completedVideoCount,
+  dueReviewItemCount,
   now = new Date(),
-  userId,
-  reviewItems,
-  videos,
+  recentTokenAttempts,
+  summary,
+  totalVideoCount,
 }: {
-  attempts: DictationAttemptApiRecord[]
-  // Ids of videos this user has completed at least one session on (per-user,
-  // derived from sessions — not the shared video.status).
-  completedVideoIds: Set<string>
+  // Videos this user has completed at least one session on (per-user, derived
+  // from sessions - not the shared video.status) that still exist.
+  completedVideoCount: number
+  dueReviewItemCount: number
   now?: Date
-  userId: string
-  reviewItems: DictationReviewItemApiRecord[]
-  videos: DictationVideoApiRecord[]
+  recentTokenAttempts: GlobalStatsTokenAttempt[]
+  summary: GlobalStatsSummary
+  totalVideoCount: number
 }): DictationGlobalStatsRecord {
-  // Content (videos) is global; practice data (attempts, review items,
-  // completions) is per-user, so only those are filtered by the current user.
-  const userAttempts = attempts.filter(attempt => attempt.userId === userId)
-  const userReviewItems = reviewItems.filter(item => item.userId === userId)
-
   return {
-    activeStreakDays: getActiveStreakDays({
-      attempts: userAttempts,
-      now,
-    }),
-    completedSegmentCount: getCompletedSegmentCount(userAttempts),
-    completedVideoCount: videos.filter(video =>
-      completedVideoIds.has(video.id)
-    ).length,
-    dueReviewItemCount: userReviewItems.filter(item =>
-      ACTIVE_REVIEW_STATUSES.has(item.status)
-    ).length,
+    activeStreakDays: getActiveStreakDays(summary.practiceDayKeys),
+    completedSegmentCount: summary.completedSegmentCount,
+    completedVideoCount,
+    dueReviewItemCount,
     firstTryAccuracyTrend: getFirstTryAccuracyTrend({
-      attempts: userAttempts,
+      firstChecks: summary.firstChecks,
       now,
     }),
-    monthlyPracticeTimeMs: getPracticeTimeSince({
-      attempts: userAttempts,
-      since: getDaysAgo(now, 30),
-    }),
-    repeatedMistakeTypes: getRepeatedMistakeTypes(userAttempts),
-    totalVideoCount: videos.length,
-    weakWords: getWeakWords(userAttempts),
-    weeklyPracticeTimeMs: getPracticeTimeSince({
-      attempts: userAttempts,
-      since: getDaysAgo(now, 7),
-    }),
+    monthlyPracticeTimeMs: summary.monthlyPracticeTimeMs,
+    repeatedMistakeTypes: getRepeatedMistakeTypes(recentTokenAttempts),
+    totalVideoCount,
+    weakWords: getWeakWords(recentTokenAttempts),
+    weeklyPracticeTimeMs: summary.weeklyPracticeTimeMs,
   }
 }

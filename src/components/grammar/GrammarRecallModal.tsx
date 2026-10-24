@@ -1,8 +1,9 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { MangaPanel } from '@/components/common/MangaPanel'
+import { useClientOutbox } from '@/components/common/OutboxOwnerProvider'
 import { CreatureMotion } from '@/components/grammar/cast/CreatureMotion'
 import { CreatureSigil } from '@/components/grammar/cast/CreatureSigil'
 import { SenseiPortrait } from '@/components/grammar/cast/SenseiPortrait'
@@ -11,19 +12,32 @@ import { SpeechBubble } from '@/components/grammar/comic/SpeechBubble'
 import { MangaButton } from '@/components/ui/MangaButton'
 import { useGrammarSfx } from '@/lib/audio/useGrammarSfx'
 import { useReducedMotion } from '@/lib/motion/useReducedMotion'
+import { GRAMMAR_RECALL_LANE } from '@/modules/grammar/constants'
 import { creatureFromPoint } from '@/modules/grammar/presentation/creatureFromPoint'
 import { resolveCreatureState } from '@/modules/grammar/presentation/resolveCreatureState'
 import { resolveDrillBeat } from '@/modules/grammar/presentation/resolveDrillBeat'
 import { SENSEI_LINES } from '@/modules/grammar/presentation/senseiLines'
-import type {
-  GrammarRecallAnswerResult,
-  GrammarRecallTaskRecord,
-} from '@/modules/grammar/types'
+import {
+  predictGrammarRecallResult,
+  type GrammarServedRecallTask,
+} from '@/modules/grammar/recall/recallTaskGrading'
+import type { GrammarRecallAnswerResult } from '@/modules/grammar/types'
 
 import { L1RiskTag } from './GrammarRiskBadges'
 
 /** Kinds where the learner produces free text, so a rejected answer may be valid. */
 const PRODUCTION_KINDS = new Set(['transform', 'correct', 'build'])
+
+export { GRAMMAR_RECALL_LANE }
+const ANSWER_URL = '/api/grammar/recall/answer'
+
+/** Where one submitted answer stands. `isCorrect` is the server's once saved. */
+interface AnswerOutcome {
+  error: string | null
+  isCorrect: boolean
+  pointTitle: string
+  status: 'failed' | 'pending' | 'saved'
+}
 
 const TOKEN_CLASS: Record<string, string> = {
   correct: 'bg-manga-white text-manga-black',
@@ -66,31 +80,44 @@ function CorrectionDiff({
 /**
  * The daily recall loop.
  *
- * The client never learns the correct answer before submitting: the served task
- * carries only the prompt, the kind, and the choices. Grading happens on the
- * server, which is what keeps the ladder honest.
+ * Graded in the browser first. Each served task carries its accepted answers
+ * (an explicit owner decision for this one-owner app; the diagnostic test still
+ * hides its answers), so the verdict, the diff and the predicted ladder move
+ * show the moment the learner answers. The POST then goes through the client
+ * outbox, and the server re-grades from Mongo: its verdict wins, and if it
+ * disagrees the panel switches to it. A rejected write rolls the card back to
+ * its unanswered state with the learner's answer still in place.
  *
- * `idempotencyKey` arrives with the task and is echoed back on submit, so a
- * double-click or a retried request replays the original result instead of
- * advancing two ladder rungs.
+ * `idempotencyKey` arrives with the task and doubles as the outbox item id, so
+ * a double-click, a retry or a replay after reload returns the original result
+ * instead of advancing two ladder rungs.
  */
 export function GrammarRecallModal({
   onClose,
   tasks: initialTasks,
 }: {
   onClose: () => void
-  tasks: GrammarRecallTaskRecord[]
+  tasks: GrammarServedRecallTask[]
 }) {
+  const outbox = useClientOutbox()
   const [tasks] = useState(initialTasks)
   const [index, setIndex] = useState(0)
   const [answer, setAnswer] = useState('')
   const [result, setResult] = useState<GrammarRecallAnswerResult | null>(null)
   const [pending, setPending] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
-  const [correct, setCorrect] = useState(0)
+  const [outcomes, setOutcomes] = useState<Record<string, AnswerOutcome>>({})
   const [accepted, setAccepted] = useState(false)
+  // Keys already enqueued, so a fast double-click cannot queue one answer
+  // twice before the first render disables the buttons.
+  const submittedKeysRef = useRef(new Set<string>())
+  const activeKeyRef = useRef<string | null>(null)
 
   const task = tasks[index] ?? null
+
+  useEffect(() => {
+    activeKeyRef.current = task?.idempotencyKey ?? null
+  }, [task])
 
   /**
    * The escape hatch that makes accept-lists survivable.
@@ -139,6 +166,25 @@ export function GrammarRecallModal({
   const { enabled: soundOn, play, toggle: toggleSound } = useGrammarSfx()
   const { reduced: motionOff, toggle: toggleMotion } = useReducedMotion()
 
+  // Driven off the same beat the visuals use, so the four outcomes cannot
+  // disagree with each other. `play` is a no-op while sound is off, and the
+  // context was created by the toggle click - never here - so autoplay policy
+  // cannot block it.
+  const playVerdict = useCallback(
+    (graded: GrammarRecallAnswerResult, stageBefore: number) => {
+      const sting = resolveDrillBeat({
+        stageAfter: graded.item.recallStage,
+        stageBefore,
+        verdict: graded.verdict,
+      })
+
+      if (sting.isRegression) play('revive')
+      else if (graded.verdict === 'correct') play('correct')
+      else if (graded.verdict === 'wrong') play('wrong')
+    },
+    [play]
+  )
+
   /**
    * Submit one answer.
    *
@@ -157,58 +203,94 @@ export function GrammarRecallModal({
    * reason about.
    */
   const submit = useCallback(
-    async ({ revealed, value }: { revealed: boolean; value: string }) => {
-      if (!task || pending || result) return
+    ({ revealed, value }: { revealed: boolean; value: string }) => {
+      if (!task || result) return
 
-      setPending(true)
+      const key = task.idempotencyKey
+
+      if (submittedKeysRef.current.has(key)) return
+
+      submittedKeysRef.current.add(key)
+
+      const predicted = predictGrammarRecallResult({
+        answer: value,
+        revealed,
+        task,
+      })
+
       setMessage(null)
+      setResult(predicted)
+      setOutcomes(previous => ({
+        ...previous,
+        [key]: {
+          error: null,
+          isCorrect: predicted.isCorrect,
+          pointTitle: task.pointTitle,
+          status: 'pending',
+        },
+      }))
+      playVerdict(predicted, task.recallStage)
 
-      try {
-        const response = await fetch('/api/grammar/recall/answer', {
-          body: JSON.stringify({
+      void outbox
+        .enqueue({
+          body: {
             answer: value,
             drillId: task.drillId,
-            idempotencyKey: task.idempotencyKey,
+            idempotencyKey: key,
             revealed,
             slug: task.pointSlug,
-          }),
-          headers: { 'Content-Type': 'application/json' },
-          method: 'POST',
+          },
+          id: key,
+          lane: GRAMMAR_RECALL_LANE,
+          url: ANSWER_URL,
         })
+        .then(outcome => {
+          const isActive = activeKeyRef.current === key
 
-        if (!response.ok) {
-          const body: unknown = await response.json().catch(() => null)
+          if (!outcome.ok) {
+            // Let the learner try again on this card with the same key: a
+            // rejected write applied nothing on the server.
+            submittedKeysRef.current.delete(key)
+            setOutcomes(previous => ({
+              ...previous,
+              [key]: {
+                ...previous[key],
+                error: outcome.error,
+                status: 'failed',
+              },
+            }))
 
-          setMessage(
-            (body as { message?: string } | null)?.message ??
-              'Could not submit that answer.'
-          )
-          return
-        }
+            if (isActive) {
+              setResult(current => (current === predicted ? null : current))
+              setMessage(outcome.error || 'Could not submit that answer.')
+            } else
+              setMessage(
+                `Your answer on ${task.pointTitle} was not saved: ${outcome.error}`
+              )
+            return
+          }
 
-        const graded = (await response.json()) as GrammarRecallAnswerResult
+          const graded = outcome.data as GrammarRecallAnswerResult
 
-        setResult(graded)
-        if (graded.isCorrect) setCorrect(previous => previous + 1)
+          setOutcomes(previous => ({
+            ...previous,
+            [key]: {
+              ...previous[key],
+              isCorrect: graded.isCorrect,
+              status: 'saved',
+            },
+          }))
 
-        // Driven off the same beat the visuals use, so the four outcomes cannot
-        // disagree with each other. `play` is a no-op while sound is off, and
-        // the context was created by the toggle click - never here, after an
-        // await, where autoplay policy would block it.
-        const sting = resolveDrillBeat({
-          stageAfter: graded.item.recallStage,
-          stageBefore: task.recallStage,
-          verdict: graded.verdict,
+          if (!isActive) return
+
+          // Server wins. Only the shown result for THIS drill is replaced, and
+          // a disagreement gets its own sting so the change is noticed.
+          setResult(current => (current === predicted ? graded : current))
+          if (graded.verdict !== predicted.verdict)
+            playVerdict(graded, task.recallStage)
         })
-
-        if (sting.isRegression) play('revive')
-        else if (graded.verdict === 'correct') play('correct')
-        else if (graded.verdict === 'wrong') play('wrong')
-      } finally {
-        setPending(false)
-      }
     },
-    [pending, play, result, task]
+    [outbox, playVerdict, result, task]
   )
 
   const next = useCallback(() => {
@@ -230,6 +312,17 @@ export function GrammarRecallModal({
     return () => window.removeEventListener('keydown', onKey)
   }, [onClose])
 
+  const outcomeList = Object.values(outcomes)
+  const correct = outcomeList.filter(
+    outcome => outcome.status !== 'failed' && outcome.isCorrect
+  ).length
+  const saving = outcomeList.filter(
+    outcome => outcome.status === 'pending'
+  ).length
+  const unsaved = Object.entries(outcomes).filter(
+    ([, outcome]) => outcome.status === 'failed'
+  )
+
   if (!task)
     return (
       <MangaPanel
@@ -240,6 +333,24 @@ export function GrammarRecallModal({
           {correct} of {tasks.length} correct. Points you missed are due again
           immediately; the rest move up the ladder.
         </p>
+        {saving > 0 ? (
+          <p
+            className="text-manga-ink-soft font-sans text-xs font-black uppercase"
+            role="status"
+          >
+            Saving {saving} {saving === 1 ? 'answer' : 'answers'}...
+          </p>
+        ) : null}
+        {unsaved.length > 0 ? (
+          <div className="border-manga-black bg-manga-red text-manga-white rounded-control grid gap-1 border-3 p-3 text-sm font-black uppercase">
+            <p>Not saved - these points stay due:</p>
+            {unsaved.map(([key, outcome]) => (
+              <p key={key}>
+                {outcome.pointTitle}: {outcome.error}
+              </p>
+            ))}
+          </div>
+        ) : null}
         <MangaButton onClick={onClose}>Close</MangaButton>
       </MangaPanel>
     )
@@ -330,7 +441,7 @@ export function GrammarRecallModal({
                 // accept-my-answer flow. The graded value is passed straight
                 // through, because state is not readable yet in this tick.
                 setAnswer(choice)
-                void submit({ revealed: false, value: choice })
+                submit({ revealed: false, value: choice })
               }}
               tone={answer === choice ? 'ink' : 'paper'}
               type="button"
@@ -420,16 +531,16 @@ export function GrammarRecallModal({
           {task.choices?.length ? null : (
             <MangaButton
               disabled={pending || !answer.trim()}
-              onClick={() => void submit({ revealed: false, value: answer })}
+              onClick={() => submit({ revealed: false, value: answer })}
               tone="ink"
               type="button"
             >
-              {pending ? 'Checking...' : 'Check'}
+              Check
             </MangaButton>
           )}
           <MangaButton
             disabled={pending}
-            onClick={() => void submit({ revealed: true, value: answer })}
+            onClick={() => submit({ revealed: true, value: answer })}
             type="button"
           >
             Reveal

@@ -10,6 +10,7 @@ import {
   type VocabApiErrorDecision,
 } from '@/modules/vocabulary/services/vocabularyRouteDecisions'
 
+// Kept for tabs still on the previous bundle; new writes use /api/vocab/items.
 export const runtime = 'nodejs'
 
 function jsonError(decision: VocabApiErrorDecision) {

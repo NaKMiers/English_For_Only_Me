@@ -10,6 +10,7 @@ import type {
   GrammarUserItemStatus,
 } from '@/modules/grammar/types'
 
+import type { GrammarMapContentQuery } from './grammarMapPoints'
 import type { ParsedGrammarPointsQuery } from './grammarRouteDecisions'
 import { toGrammarPointRecord } from './grammarPointRecords'
 import { resolveContrastsWith } from './resolveContrastsWith'
@@ -22,7 +23,7 @@ import { resolveContrastsWith } from './resolveContrastsWith'
  *
  * Pure, so the filter logic is testable without a database.
  */
-export function buildGrammarPointFilter(query: ParsedGrammarPointsQuery) {
+export function buildGrammarPointFilter(query: GrammarMapContentQuery) {
   const filter: Record<string, unknown> = { mergedInto: null }
 
   if (query.cefrLevel) filter.cefrLevel = query.cefrLevel
@@ -154,11 +155,25 @@ export async function resolveStudySlugFilter({
     return { slug: { $in: due.map(item => item.pointSlug) } }
   }
 
-  const matching = await UserGrammarItemModel.find({ actorId, status: studyStatus })
+  const matching = await UserGrammarItemModel.find({
+    actorId,
+    status: studyStatus,
+  })
     .select('pointSlug')
     .lean()
 
   return { slug: { $in: matching.map(item => item.pointSlug) } }
+}
+
+/**
+ * Every row this learner has, projected to what the map needs. At most one row
+ * per rule, so this is bounded by the taxonomy, and it feeds both the study
+ * filter and the progress strips (see buildGrammarMapResult).
+ */
+export async function listLearnerMapItems(actorId: string) {
+  return UserGrammarItemModel.find({ actorId })
+    .select('pointSlug status recallStage dueAt')
+    .lean()
 }
 
 export async function listGrammarPoints(

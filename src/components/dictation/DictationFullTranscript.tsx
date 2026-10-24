@@ -5,12 +5,17 @@ import { useEffect, useRef } from 'react'
 import { MoveVertical, Play, Repeat } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
-import type {
-  DictationSegmentApiRecord,
-  DictationSegmentAttemptStatus,
-} from '@/modules/dictation/types'
+import type { DictationSegmentAttemptStatus } from '@/modules/dictation/types'
 
-interface Props {
+/** What the list renders: the learner's own status, never shared progress. */
+export interface FullTranscriptSegment {
+  attemptStatus: DictationSegmentAttemptStatus
+  id: string
+  startMs: number | null
+  text: string
+}
+
+interface Props<TSegment extends FullTranscriptSegment> {
   autoScroll: boolean
   canRepeat: boolean
   currentSegmentId: string | null
@@ -19,11 +24,11 @@ interface Props {
   fillAvailableHeight?: boolean
   isActive: boolean
   isRepeating: boolean
-  onSelectSegment: (segment: DictationSegmentApiRecord) => void
+  onSelectSegment: (segment: TSegment) => void
   onToggleAutoScroll: () => void
   onToggleRepeat: () => void
   playingSegmentId: string | null
-  segments: DictationSegmentApiRecord[]
+  segments: TSegment[]
   // segmentId -> translated caption in the selected language (bilingual view).
   translations?: Record<string, string>
 }
@@ -61,7 +66,9 @@ function formatTimestamp(ms: number | null) {
   return `${minutes}:${seconds.toString().padStart(2, '0')}`
 }
 
-export function DictationFullTranscript({
+export function DictationFullTranscript<
+  TSegment extends FullTranscriptSegment,
+>({
   autoScroll,
   canRepeat,
   currentSegmentId,
@@ -74,7 +81,7 @@ export function DictationFullTranscript({
   playingSegmentId,
   segments,
   translations,
-}: Props) {
+}: Props<TSegment>) {
   const activeItemRef = useRef<HTMLButtonElement | null>(null)
   const highlightedId = playingSegmentId ?? currentSegmentId
 

@@ -1,10 +1,10 @@
 import { VOCAB_API_PATHS } from '@/modules/vocabulary/constants'
 import type {
-  UserVocabItemApiRecord,
   VocabAdminQueueSummaryRecord,
   VocabEntryWithUserStateRecord,
+  VocabOccurrenceReason,
   VocabRecallCardRecord,
-  VocabRecallTaskRecord,
+  VocabRecallDuePageRecord,
   VocabStatsRecord,
 } from '@/modules/vocabulary/types'
 import type { AdminEnrichResult } from '@/modules/vocabulary/enrichment/enrichmentService'
@@ -15,42 +15,14 @@ export interface VocabEntriesResponse {
   entries: VocabEntryWithUserStateRecord[]
 }
 
-export interface VocabItemResponse {
-  item: UserVocabItemApiRecord
-}
-
-export interface VocabItemBatchResult {
-  vocabEntryId: string
-  item: UserVocabItemApiRecord | null
-  error?: string
-}
-
-export interface VocabItemBatchResponse {
-  results: VocabItemBatchResult[]
-}
-
-export interface VocabItemStatusUpdate {
-  source: 'search' | 'explore' | 'dictionary' | 'manual'
-  status: 'shouldLearn' | 'alreadyKnow'
-  vocabEntryId: string
-}
-
 export interface VocabRecallCardsResponse {
   cards: VocabRecallCardRecord[]
 }
 
-export interface VocabRecallTasksResponse {
-  tasks: VocabRecallTaskRecord[]
-}
+export type VocabRecallTasksResponse = VocabRecallDuePageRecord
 
 export interface VocabStatsResponse {
   stats: VocabStatsRecord
-}
-
-export interface VocabRecallAnswerResponse {
-  attemptId: string
-  isCorrect: boolean
-  item: UserVocabItemApiRecord
 }
 
 export interface VocabAdminQueueResponse {
@@ -123,42 +95,38 @@ export async function searchVocabApi({
   return readJson<VocabEntriesResponse>(response)
 }
 
+export interface VocabOccurrenceInput {
+  attemptId?: string | null
+  contextSentence?: string | null
+  reason: VocabOccurrenceReason
+  segmentId?: string | null
+  selectedText?: string | null
+  videoId?: string | null
+}
+
+function toSafeOccurrence(occurrence: VocabOccurrenceInput) {
+  return {
+    ...occurrence,
+    attemptId: isObjectId(occurrence.attemptId)
+      ? occurrence.attemptId
+      : undefined,
+    segmentId: isObjectId(occurrence.segmentId)
+      ? occurrence.segmentId
+      : undefined,
+    videoId: isObjectId(occurrence.videoId) ? occurrence.videoId : undefined,
+  }
+}
+
 export async function lookupVocabEntryApi({
   input = VOCAB_API_PATHS.lookup,
   occurrence,
   term,
 }: {
   input?: string
-  occurrence?: {
-    attemptId?: string | null
-    contextSentence?: string | null
-    reason:
-      | 'manualSearch'
-      | 'dictionaryLookup'
-      | 'explore'
-      | 'clickedInAnswer'
-      | 'missedWord'
-      | 'aiDebrief'
-    segmentId?: string | null
-    selectedText?: string | null
-    videoId?: string | null
-  }
+  occurrence?: VocabOccurrenceInput
   term: string
 }) {
-  const safeOccurrence = occurrence
-    ? {
-        ...occurrence,
-        attemptId: isObjectId(occurrence.attemptId)
-          ? occurrence.attemptId
-          : undefined,
-        segmentId: isObjectId(occurrence.segmentId)
-          ? occurrence.segmentId
-          : undefined,
-        videoId: isObjectId(occurrence.videoId)
-          ? occurrence.videoId
-          : undefined,
-      }
-    : undefined
+  const safeOccurrence = occurrence ? toSafeOccurrence(occurrence) : undefined
   const response = await fetch(input, {
     body: JSON.stringify({
       occurrence: safeOccurrence ?? {
@@ -175,49 +143,42 @@ export async function lookupVocabEntryApi({
   return readJson<VocabEntryResponse>(response)
 }
 
-export async function setVocabItemStatusApi({
-  input = VOCAB_API_PATHS.items,
-  source,
-  status,
+/**
+ * Record that the learner met a word again without re-running the lookup
+ * (the entry came from the in-tab lookup cache). Fire-and-forget: it is side
+ * data that is safe to lose, so it is not queued in the outbox, and keepalive
+ * lets it finish if the learner navigates away right after.
+ */
+export async function recordVocabOccurrenceApi({
+  input = VOCAB_API_PATHS.occurrences,
+  occurrence,
   vocabEntryId,
 }: {
   input?: string
-  source: 'search' | 'explore' | 'dictionary' | 'manual'
-  status: 'shouldLearn' | 'alreadyKnow'
+  occurrence: VocabOccurrenceInput
   vocabEntryId: string
 }) {
   const response = await fetch(input, {
-    body: JSON.stringify({ source, status, vocabEntryId }),
+    body: JSON.stringify({
+      occurrence: toSafeOccurrence(occurrence),
+      vocabEntryId,
+    }),
     cache: 'no-store',
     headers: { 'content-type': 'application/json' },
+    keepalive: true,
     method: 'POST',
   })
 
-  return readJson<VocabItemResponse>(response)
-}
-
-export async function setVocabItemStatusBatchApi({
-  input = VOCAB_API_PATHS.itemsBatch,
-  updates,
-}: {
-  input?: string
-  updates: VocabItemStatusUpdate[]
-}) {
-  const response = await fetch(input, {
-    body: JSON.stringify({ updates }),
-    cache: 'no-store',
-    headers: { 'content-type': 'application/json' },
-    method: 'POST',
-  })
-
-  return readJson<VocabItemBatchResponse>(response)
+  return readJson<{ ok: true }>(response)
 }
 
 export async function getDueVocabRecallApi({
+  cursor,
   excludeListening,
   input = VOCAB_API_PATHS.dueRecall,
   limit,
 }: {
+  cursor?: string | null
   excludeListening?: boolean
   input?: string
   limit?: number
@@ -226,34 +187,12 @@ export async function getDueVocabRecallApi({
 
   if (limit) params.set('limit', String(limit))
   if (excludeListening) params.set('excludeListening', '1')
+  if (cursor) params.set('cursor', cursor)
 
   const query = params.size > 0 ? `?${params.toString()}` : ''
   const response = await fetch(`${input}${query}`, { cache: 'no-store' })
 
   return readJson<VocabRecallTasksResponse>(response)
-}
-
-export async function answerVocabRecallApi({
-  action,
-  input = VOCAB_API_PATHS.recallAnswer,
-  idempotencyKey,
-  selectedOptionId,
-  token,
-}: {
-  action?: 'lookup' | 'notSure' | 'remember' | null
-  input?: string
-  idempotencyKey: string
-  selectedOptionId?: string | null
-  token: string
-}) {
-  const response = await fetch(input, {
-    body: JSON.stringify({ action, idempotencyKey, selectedOptionId, token }),
-    cache: 'no-store',
-    headers: { 'content-type': 'application/json' },
-    method: 'POST',
-  })
-
-  return readJson<VocabRecallAnswerResponse>(response)
 }
 
 export async function getVocabAdminQueueApi(

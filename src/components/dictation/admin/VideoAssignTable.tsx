@@ -1,7 +1,6 @@
 'use client'
 
 import { Trash2 } from 'lucide-react'
-import { useRouter } from 'next/navigation'
 import { useMemo, useState, useTransition } from 'react'
 
 import { Input } from '@/components/ui/input'
@@ -48,8 +47,11 @@ const controlClass =
   'border-manga-black min-h-9 rounded-control border-2 bg-manga-white px-2 py-1 text-sm font-black'
 const VIDEO_ORDER_MIME = 'application/x-efom-admin-video-order'
 
+/**
+ * The assign and reorder actions revalidate this page, so their responses carry
+ * the fresh rows; there is no client router.refresh() after them.
+ */
 export function VideoAssignTable({ videos, topics, sections }: Props) {
-  const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [topicId, setTopicId] = useState('')
@@ -131,7 +133,6 @@ export function VideoAssignTable({ videos, topics, sections }: Props) {
         level: (level || null) as DictationLevel | null,
       })
       setSelected(new Set())
-      router.refresh()
     })
   }
 
@@ -154,7 +155,6 @@ export function VideoAssignTable({ videos, topics, sections }: Props) {
 
     startTransition(async () => {
       await reorderVideosAction(next)
-      router.refresh()
     })
   }
 

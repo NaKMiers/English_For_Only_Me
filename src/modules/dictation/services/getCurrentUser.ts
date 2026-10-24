@@ -1,6 +1,13 @@
 import 'server-only'
 
+import { headers } from 'next/headers'
+import { cache } from 'react'
+
 import { auth } from '@/lib/auth/auth'
+import {
+  assertOutboxOwnerMatchesActor,
+  OUTBOX_OWNER_HEADER,
+} from '@/lib/auth/clientOwnerKey'
 import { getGuestId, getOrCreateGuestId } from '@/lib/auth/guestUser'
 import { assertOwnerKey } from '@/lib/auth/ownerKey'
 import type { UserRole } from '@/lib/auth/roles'
@@ -41,8 +48,14 @@ export class ForbiddenError extends Error {
   }
 }
 
-/** The signed-in user, or null when anonymous (public browsing). */
-export async function getOptionalUser(): Promise<CurrentUser | null> {
+/**
+ * The signed-in user, or null when anonymous (public browsing). Wrapped in
+ * React cache() so the JWT is decoded once per request no matter how many
+ * layouts, pages and helpers ask for it.
+ */
+export const getOptionalUser = cache(readOptionalUser)
+
+async function readOptionalUser(): Promise<CurrentUser | null> {
   const session = await auth()
 
   if (!session?.user?.id) return null
@@ -69,21 +82,41 @@ export async function requireUser(): Promise<CurrentUser> {
   return user
 }
 
+/** The client owner key an outbox write was queued for, when it says so. */
+async function readOutboxOwnerHeader() {
+  try {
+    return (await headers()).get(OUTBOX_OWNER_HEADER)
+  } catch {
+    // Outside a request scope there is no outbox request to check.
+    return null
+  }
+}
+
 /**
  * Resolve the owner of per-user practice data: the signed-in user when present,
  * otherwise a guest identity. Mints the guest cookie when missing, so this may
  * only be called from Route Handlers or Server Functions (it writes a cookie).
- * Never throws - anonymous practice is always allowed.
+ * Anonymous practice is always allowed; the only throw is
+ * OutboxOwnerMismatchError (409) when a queued write names another learner.
  */
 export async function requirePracticeActor(): Promise<PracticeActor> {
-  const user = await getOptionalUser()
+  const [user, outboxOwner] = await Promise.all([
+    getOptionalUser(),
+    readOutboxOwnerHeader(),
+  ])
 
   // assertOwnerKey is the write-boundary guard: every per-user row created or
   // updated downstream is scoped to this id, so a null/empty/malformed owner
   // must never get this far (see ownerKey.ts - the data-isolation contract).
-  if (user) return { id: assertOwnerKey(user.id), isGuest: false }
+  const actor: PracticeActor = user
+    ? { id: assertOwnerKey(user.id), isGuest: false }
+    : { id: assertOwnerKey(await getOrCreateGuestId()), isGuest: true }
 
-  return { id: assertOwnerKey(await getOrCreateGuestId()), isGuest: true }
+  // A tab left open across a sign-in or sign-out still holds writes queued for
+  // the previous learner; they must never land on this one.
+  assertOutboxOwnerMatchesActor(outboxOwner, actor)
+
+  return actor
 }
 
 /**

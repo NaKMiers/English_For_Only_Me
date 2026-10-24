@@ -5,6 +5,7 @@ import { connectDatabase } from '@/lib/db/connectDatabase'
 import { DictationSegmentModel } from '@/models/dictation/DictationSegmentModel'
 import { DictationSessionModel } from '@/models/dictation/DictationSessionModel'
 import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
+import { isDuplicateKeyError } from '@/modules/dictation/practice/duplicateKeyError'
 import { toDictationSessionRecord } from '@/modules/dictation/services/dictationSessionRecords'
 import { requirePracticeActor } from '@/modules/dictation/services/getCurrentUser'
 import {
@@ -24,22 +25,12 @@ function jsonError(decision: ApiErrorDecision) {
   return NextResponse.json(decision.body, { status: decision.status })
 }
 
-/** MongoServerError code 11000: a unique/partial-unique index was violated. */
-function isDuplicateKeyError(error: unknown): boolean {
-  return (
-    typeof error === 'object' &&
-    error !== null &&
-    'code' in error &&
-    (error as { code?: number }).code === 11000
-  )
-}
-
 function toSessionError(error: unknown): ApiErrorDecision {
   if (
     typeof error === 'object' &&
     error !== null &&
     'status' in error &&
-    (error.status === 401 || error.status === 403)
+    (error.status === 401 || error.status === 403 || error.status === 409)
   )
     return {
       status: error.status,

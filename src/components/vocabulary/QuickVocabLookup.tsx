@@ -1,8 +1,12 @@
 'use client'
 
 import { BookOpen, Check, Search } from 'lucide-react'
-import { useState, type ReactNode } from 'react'
+import { useRef, useState, type ReactNode } from 'react'
 
+import {
+  useClientOutbox,
+  useOutboxOwnerKey,
+} from '@/components/common/OutboxOwnerProvider'
 import {
   Dialog,
   DialogContent,
@@ -12,18 +16,28 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { MangaButton } from '@/components/ui/MangaButton'
-import type { VocabEntryWithUserStateRecord } from '@/modules/vocabulary/types'
+import type {
+  UserVocabItemApiRecord,
+  VocabEntryWithUserStateRecord,
+} from '@/modules/vocabulary/types'
 import {
   getEnglishDefinition,
   getRequiredVietnameseMeaning,
   hasVietnameseMeaning,
 } from '@/modules/vocabulary/vietnameseMeaning'
-import {
-  lookupVocabEntryApi,
-  setVocabItemStatusApi,
-} from '@/requests/vocabularyApi'
+import type { VocabOccurrenceInput } from '@/requests/vocabularyApi'
 
 import { VocabTermHeader } from './VocabTermHeader'
+import {
+  buildOptimisticUserItem,
+  createEntryWriteTracker,
+  enqueueVocabItemStatus,
+  type VocabMarkStatus,
+} from './vocabItemWrites'
+import {
+  lookupVocabEntryCached,
+  updateCachedVocabUserItem,
+} from './vocabLookupCache'
 
 interface Props {
   attemptId?: string | null
@@ -67,6 +81,83 @@ function normalizeLookupTerm(term: string) {
   return term.replace(/^[^A-Za-z]+|[^A-Za-z'-]+$/g, '')
 }
 
+/**
+ * Shared lookup + mark state for both quick lookup surfaces. A mark closes the
+ * dialog at once and shows the new status; the write goes through the outbox
+ * and a rejected write puts the old status back and reports the error.
+ */
+function useQuickVocabEntry({
+  onMarkFailed,
+}: {
+  onMarkFailed: (message: string) => void
+}) {
+  const outbox = useClientOutbox()
+  const owner = useOutboxOwnerKey()
+  const [entry, setEntry] = useState<VocabEntryWithUserStateRecord | null>(null)
+  const [open, setOpen] = useState(false)
+  const trackerRef = useRef(
+    createEntryWriteTracker<UserVocabItemApiRecord | null>()
+  )
+
+  function setEntryUserItem(
+    entryId: string,
+    userItem: UserVocabItemApiRecord | null
+  ) {
+    updateCachedVocabUserItem(owner, entryId, userItem)
+    setEntry(current =>
+      current?.entry.id === entryId ? { ...current, userItem } : current
+    )
+  }
+
+  async function lookup({
+    occurrence,
+    term,
+  }: {
+    occurrence: VocabOccurrenceInput
+    term: string
+  }) {
+    const record = await lookupVocabEntryCached({ occurrence, owner, term })
+
+    setEntry(record)
+    setOpen(true)
+  }
+
+  async function mark(status: VocabMarkStatus) {
+    if (!entry) return
+
+    const entryId = entry.entry.id
+    const ticket = trackerRef.current.begin(entryId, entry.userItem)
+
+    setEntryUserItem(
+      entryId,
+      buildOptimisticUserItem({ entry, source: 'manual', status })
+    )
+    setOpen(false)
+
+    const outcome = await enqueueVocabItemStatus(outbox, {
+      source: 'manual',
+      status,
+      vocabEntryId: entryId,
+    })
+    const settled = trackerRef.current.settle(
+      entryId,
+      ticket,
+      outcome.kind === 'saved'
+        ? { kind: 'saved', state: outcome.item }
+        : outcome
+    )
+
+    if (settled.kind === 'ignore') return
+
+    setEntryUserItem(entryId, settled.state)
+
+    if (settled.kind === 'rollback' && outcome.kind === 'failed')
+      onMarkFailed(outcome.error)
+  }
+
+  return { entry, lookup, mark, open, setOpen }
+}
+
 export function QuickVocabWordButton({
   attemptId = null,
   children,
@@ -78,21 +169,29 @@ export function QuickVocabWordButton({
   term,
   videoId = null,
 }: WordButtonProps) {
-  const [entry, setEntry] = useState<VocabEntryWithUserStateRecord | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
+  const { entry, lookup, mark, open, setOpen } = useQuickVocabEntry({
+    onMarkFailed: message => {
+      if (onError) onError(message)
+      else {
+        // The error line lives in the dialog, so bring it back to show it.
+        setError(message)
+        setOpen(true)
+      }
+    },
+  })
   const lookupTerm = normalizeLookupTerm(term)
 
   if (!lookupTerm) return <>{children ?? term}</>
 
-  async function lookup() {
+  async function lookupWord() {
     setBusy(true)
     setError(null)
     onError?.(null)
 
     try {
-      const response = await lookupVocabEntryApi({
+      await lookup({
         occurrence: {
           attemptId,
           contextSentence,
@@ -103,9 +202,6 @@ export function QuickVocabWordButton({
         },
         term: lookupTerm,
       })
-
-      setEntry(response)
-      setOpen(true)
     } catch (requestError) {
       const message =
         requestError instanceof Error
@@ -119,30 +215,9 @@ export function QuickVocabWordButton({
     }
   }
 
-  async function mark(status: 'shouldLearn' | 'alreadyKnow') {
-    if (!entry) return
-
+  function markWord(status: VocabMarkStatus) {
     setError(null)
-
-    try {
-      const response = await setVocabItemStatusApi({
-        source: 'manual',
-        status,
-        vocabEntryId: entry.entry.id,
-      })
-
-      setEntry({
-        ...entry,
-        userItem: response.item,
-      })
-      setOpen(false)
-    } catch (requestError) {
-      setError(
-        requestError instanceof Error
-          ? requestError.message
-          : 'Could not update this word.'
-      )
-    }
+    void mark(status)
   }
 
   return (
@@ -151,7 +226,7 @@ export function QuickVocabWordButton({
         aria-label={`Lookup ${lookupTerm}`}
         className={className}
         disabled={busy}
-        onClick={lookup}
+        onClick={lookupWord}
         type="button"
       >
         {children ?? term}
@@ -185,7 +260,7 @@ export function QuickVocabWordButton({
                     className="[&>span:last-child]:whitespace-nowrap"
                     disabled={!hasVietnameseMeaning(entry.entry)}
                     icon={<BookOpen className="size-4" />}
-                    onClick={() => mark('shouldLearn')}
+                    onClick={() => markWord('shouldLearn')}
                   >
                     Should Learn
                   </MangaButton>
@@ -193,7 +268,7 @@ export function QuickVocabWordButton({
                     className="[&>span:last-child]:whitespace-nowrap"
                     disabled={!hasVietnameseMeaning(entry.entry)}
                     icon={<Check className="size-4" />}
-                    onClick={() => mark('alreadyKnow')}
+                    onClick={() => markWord('alreadyKnow')}
                     tone="paper"
                   >
                     Already Know
@@ -229,17 +304,18 @@ export function QuickVocabLookup({
   segmentId = null,
   videoId = null,
 }: Props) {
-  const [entry, setEntry] = useState<VocabEntryWithUserStateRecord | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [open, setOpen] = useState(false)
   const [busyTerm, setBusyTerm] = useState<string | null>(null)
+  const { entry, lookup, mark, open, setOpen } = useQuickVocabEntry({
+    onMarkFailed: setError,
+  })
 
-  async function lookup(term: string) {
+  async function lookupWord(term: string) {
     setBusyTerm(term)
     setError(null)
 
     try {
-      const response = await lookupVocabEntryApi({
+      await lookup({
         occurrence: {
           attemptId,
           contextSentence,
@@ -250,9 +326,6 @@ export function QuickVocabLookup({
         },
         term,
       })
-
-      setEntry(response)
-      setOpen(true)
     } catch (requestError) {
       setError(
         requestError instanceof Error
@@ -264,30 +337,9 @@ export function QuickVocabLookup({
     }
   }
 
-  async function mark(status: 'shouldLearn' | 'alreadyKnow') {
-    if (!entry) return
-
+  function markWord(status: VocabMarkStatus) {
     setError(null)
-
-    try {
-      const response = await setVocabItemStatusApi({
-        source: 'manual',
-        status,
-        vocabEntryId: entry.entry.id,
-      })
-
-      setEntry({
-        ...entry,
-        userItem: response.item,
-      })
-      setOpen(false)
-    } catch (requestError) {
-      setError(
-        requestError instanceof Error
-          ? requestError.message
-          : 'Could not update this word.'
-      )
-    }
+    void mark(status)
   }
 
   const tokens = tokenize(contextSentence)
@@ -302,7 +354,7 @@ export function QuickVocabLookup({
             key={`${token.term}-${token.index}`}
             className="border-manga-black bg-manga-white hover:bg-manga-paper-soft rounded-control h-auto border-2 px-2 py-1 text-sm font-black shadow-[2px_2px_0_var(--manga-black)]"
             disabled={busyTerm === token.term}
-            onClick={() => lookup(token.term)}
+            onClick={() => lookupWord(token.term)}
             type="button"
             variant="ghost"
           >
@@ -342,7 +394,7 @@ export function QuickVocabLookup({
                     className="[&>span:last-child]:whitespace-nowrap"
                     disabled={!hasVietnameseMeaning(entry.entry)}
                     icon={<BookOpen className="size-4" />}
-                    onClick={() => mark('shouldLearn')}
+                    onClick={() => markWord('shouldLearn')}
                   >
                     Should Learn
                   </MangaButton>
@@ -350,7 +402,7 @@ export function QuickVocabLookup({
                     className="[&>span:last-child]:whitespace-nowrap"
                     disabled={!hasVietnameseMeaning(entry.entry)}
                     icon={<Check className="size-4" />}
-                    onClick={() => mark('alreadyKnow')}
+                    onClick={() => markWord('alreadyKnow')}
                     tone="paper"
                   >
                     Already Know

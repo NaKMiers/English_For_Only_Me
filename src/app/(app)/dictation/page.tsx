@@ -12,12 +12,12 @@ import { TopicGrid } from '@/components/dictation/browse/TopicGrid'
 import { MangaButton } from '@/components/ui/MangaButton'
 import { PageTag } from '@/components/ui/PageTag'
 import { hasMongoDbUri } from '@/constants/environments'
-import { connectDatabase } from '@/lib/db/connectDatabase'
+import { connectDatabaseWhen } from '@/lib/db/connectDatabase'
 import { toBrowseItem } from '@/modules/dictation/content/browseItem'
 import {
-  countNoTopicVideos,
-  listTopicSummaries,
-} from '@/modules/dictation/content/contentRepository'
+  getCachedNoTopicCount,
+  getCachedTopicSummaries,
+} from '@/modules/dictation/content/catalogReaders'
 import { listFavoriteVideoIds } from '@/modules/dictation/content/favoriteRepository'
 import {
   getCompletionCountsForUser,
@@ -64,13 +64,20 @@ export default async function DictationPage() {
   let canFavorite = false
 
   if (hasMongoDbUri()) {
-    await connectDatabase()
+    // The catalog and the anonymous stats total come from the cache, so only a
+    // known practice actor needs a connection for their own rows.
     const [user, actorId] = await Promise.all([
       getOptionalUser(),
-      getPracticeActorId(),
+      connectDatabaseWhen(getPracticeActorId()),
     ])
     hasPracticeActor = Boolean(actorId)
     canFavorite = Boolean(user)
+
+    // Loaded once and shared: the stats card and the in-progress cards both
+    // need this user's completion counts.
+    const completionCountsPromise = actorId
+      ? getCompletionCountsForUser(actorId)
+      : Promise.resolve<Map<string, number>>(new Map())
 
     const [
       topicSummaries,
@@ -81,17 +88,17 @@ export default async function DictationPage() {
       favoritedIds,
       completionCounts,
     ] = await Promise.all([
-      listTopicSummaries(),
-      countNoTopicVideos(),
-      getGlobalStatsForUser(actorId),
+      getCachedTopicSummaries(),
+      getCachedNoTopicCount(),
+      getGlobalStatsForUser(actorId, {
+        completionCounts: completionCountsPromise,
+      }),
       actorId ? getLatestCompletedVideoForUser(actorId) : Promise.resolve(null),
       actorId
         ? listInProgressVideosForUser(actorId)
         : Promise.resolve<DictationVideoApiRecord[]>([]),
       user ? listFavoriteVideoIds(user.id) : Promise.resolve<string[]>([]),
-      actorId
-        ? getCompletionCountsForUser(actorId)
-        : Promise.resolve<Map<string, number>>(new Map()),
+      completionCountsPromise,
     ])
 
     topics = topicSummaries
@@ -127,7 +134,7 @@ export default async function DictationPage() {
                 <MangaButton
                   href={`/dictation/videos/${latestCompletedVideo.id}/results`}
                   tone="primary"
-                  className="bg-manga-paper-soft min-h-10 px-3 py-1 text-xs hover:bg-manga-pale-red"
+                  className="bg-manga-paper-soft hover:bg-manga-pale-red min-h-10 px-3 py-1 text-xs"
                   icon={
                     <Trophy
                       aria-hidden="true"

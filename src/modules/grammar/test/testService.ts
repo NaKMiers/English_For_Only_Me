@@ -12,7 +12,6 @@ import {
   GRAMMAR_TEST_COOLDOWN_MS,
   GRAMMAR_TEST_DAILY_LIMIT,
 } from '../constants'
-import { selectDrillForStage } from '../recall/selectDrillForStage'
 import type {
   GrammarCefrLevel,
   GrammarComplexity,
@@ -25,6 +24,7 @@ import type {
 
 import { generateTestDrills } from './generateTestDrills'
 import { gradeTestSession } from './gradeTestSession'
+import { selectTestDrill } from './selectTestDrill'
 import { selectTestPoints } from './selectTestPoints'
 import type {
   GrammarTestCandidate,
@@ -264,9 +264,9 @@ export async function startGrammarTest({
       continue
     }
 
-    // Backfill. `selectDrillForStage` already excludes generated drills, so
-    // this only ever reaches reviewed content.
-    const stored = selectDrillForStage({
+    // Backfill with reviewed content only, and never with the drill recall
+    // serves (with its answers) for this point at this stage.
+    const stored = selectTestDrill({
       drills: point.drills,
       pointSlug: point.slug,
       stage: Math.max(1, stageBefore),

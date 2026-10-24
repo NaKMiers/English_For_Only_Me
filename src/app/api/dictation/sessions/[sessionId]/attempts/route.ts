@@ -7,17 +7,26 @@ import { DictationAttemptModel } from '@/models/dictation/DictationAttemptModel'
 import { DictationSegmentModel } from '@/models/dictation/DictationSegmentModel'
 import { DictationSessionModel } from '@/models/dictation/DictationSessionModel'
 import { buildDictationCorrection } from '@/modules/dictation/correction'
-import { recomputeReviewItemsForVideo } from '@/modules/dictation/review/reviewItemService'
+import {
+  canRecordAttemptForSession,
+  resolveAttemptCursor,
+} from '@/modules/dictation/practice/attemptCursor'
+import { isDuplicateKeyError } from '@/modules/dictation/practice/duplicateKeyError'
+import {
+  EMPTY_SEGMENT_PROGRESS,
+  type SegmentProgressRow,
+} from '@/modules/dictation/practice/segmentProgress'
+import { loadSegmentProgressRows } from '@/modules/dictation/practice/segmentProgressService'
+import { recomputeReviewItemsForSegment } from '@/modules/dictation/review/reviewItemService'
 import { toDictationAttemptRecord } from '@/modules/dictation/services/dictationAttemptRecords'
 import { toDictationSessionRecord } from '@/modules/dictation/services/dictationSessionRecords'
 import { requirePracticeActor } from '@/modules/dictation/services/getCurrentUser'
 import {
-  getAttemptSegmentStatus,
-  getCheckSegmentStatus,
   parseAttemptPayload,
   resolveAttemptSubmissionMode,
   shouldAdvanceAttemptCursor,
 } from '@/modules/dictation/services/attemptRouteDecisions'
+import type { DictationAttemptApiRecord } from '@/modules/dictation/types'
 import { parseSessionIdParam } from '@/modules/dictation/services/sessionRouteDecisions'
 import {
   type ApiErrorDecision,
@@ -37,12 +46,99 @@ function jsonError(decision: ApiErrorDecision) {
   return NextResponse.json(decision.body, { status: decision.status })
 }
 
+/** The learner's own progress on the attempted segment, for the shell. */
+async function loadAttemptedSegmentProgress({
+  segmentId,
+  userId,
+  videoId,
+}: {
+  segmentId: string
+  userId: string
+  videoId: string
+}): Promise<SegmentProgressRow> {
+  const [row] = await loadSegmentProgressRows({ segmentId, userId, videoId })
+
+  return row ?? { ...EMPTY_SEGMENT_PROGRESS, segmentId }
+}
+
+/**
+ * The attempt this user already recorded under `idempotencyKey`, in any of
+ * their sessions. Keys are per user: after a 404/409 the client may retry the
+ * same queued attempt against a fresh session, and that must replay the
+ * original instead of recording it twice. The oldest wins if historical data
+ * holds the key twice.
+ */
+async function findAttemptByIdempotencyKey({
+  idempotencyKey,
+  userId,
+}: {
+  idempotencyKey: string
+  userId: string
+}) {
+  return DictationAttemptModel.findOne({ userId, idempotencyKey })
+    .sort({ createdAt: 1 })
+    .lean()
+}
+
+/**
+ * The response for an attempt that already exists. The cursor is left alone,
+ * but review items are recomputed: if the first delivery saved the attempt and
+ * then failed (session save or recompute threw, so the client saw a 500), the
+ * retry lands here and is the only chance to create that attempt's review
+ * item. The recompute is idempotent, and a race with a still-running first
+ * delivery ends in E11000 on the active-item unique index, which it tolerates.
+ *
+ * The session is the one the request targets (a retry may come through a newer
+ * session than the attempt's own), still scoped to the user.
+ */
+async function respondWithReplay({
+  attempt,
+  sessionId,
+  userId,
+}: {
+  attempt: DictationAttemptApiRecord
+  sessionId: string
+  userId: string
+}) {
+  const [session, progress] = await Promise.all([
+    DictationSessionModel.findOne({ _id: sessionId, userId }).lean(),
+    loadAttemptedSegmentProgress({
+      segmentId: attempt.segmentId,
+      userId,
+      videoId: attempt.videoId,
+    }),
+    recomputeReviewItemsForSegment({
+      segmentId: attempt.segmentId,
+      userId,
+      videoId: attempt.videoId,
+    }),
+  ])
+
+  if (!session)
+    return jsonError({
+      status: 404,
+      body: {
+        message: 'This dictation session was not found.',
+      },
+    })
+
+  return NextResponse.json({
+    attempt,
+    mode: 'idempotent' as const,
+    nextSegmentId: session.currentSegmentId
+      ? String(session.currentSegmentId)
+      : null,
+    progress,
+    session: toDictationSessionRecord(session),
+  })
+}
+
 function toAttemptError(error: unknown): ApiErrorDecision {
   if (
     typeof error === 'object' &&
     error !== null &&
     'status' in error &&
-    (error.status === 401 || error.status === 403)
+    (error.status === 401 || error.status === 403 || error.status === 409)
   )
     return {
       status: error.status,
@@ -89,38 +185,23 @@ export async function POST(request: Request, context: RouteContext) {
 
     await connectDatabase()
 
-    const existingAttempt = await DictationAttemptModel.findOne({
-      userId: actor.id,
-      sessionId: parsedSessionId.data.sessionId,
+    const existingAttempt = await findAttemptByIdempotencyKey({
       idempotencyKey: parsedBody.data.idempotencyKey,
-    }).lean()
+      userId: actor.id,
+    })
     const submissionMode = resolveAttemptSubmissionMode(
       existingAttempt ? toDictationAttemptRecord(existingAttempt) : null
     )
 
-    if (submissionMode.attempt) {
-      const session = await DictationSessionModel.findOne({
-        _id: parsedSessionId.data.sessionId,
-        userId: actor.id,
-      }).lean()
-
-      if (!session)
-        return jsonError({
-          status: 404,
-          body: {
-            message: 'This dictation session was not found.',
-          },
-        })
-
-      return NextResponse.json({
+    // Replay (a retried outbox item, a second tab, or a retry through a newer
+    // session): the attempt already exists, so it is not recorded twice and
+    // the cursor is left alone.
+    if (submissionMode.attempt)
+      return respondWithReplay({
         attempt: submissionMode.attempt,
-        mode: submissionMode.mode,
-        nextSegmentId: session.currentSegmentId
-          ? String(session.currentSegmentId)
-          : null,
-        session: toDictationSessionRecord(session),
+        sessionId: parsedSessionId.data.sessionId,
+        userId: actor.id,
       })
-    }
 
     const session = await DictationSessionModel.findOne({
       _id: parsedSessionId.data.sessionId,
@@ -135,7 +216,7 @@ export async function POST(request: Request, context: RouteContext) {
         },
       })
 
-    if (session.status !== 'active')
+    if (!canRecordAttemptForSession(session.status))
       return jsonError({
         status: 409,
         body: {
@@ -143,14 +224,10 @@ export async function POST(request: Request, context: RouteContext) {
         },
       })
 
-    if (String(session.currentSegmentId) !== parsedBody.data.segmentId)
-      return jsonError({
-        status: 409,
-        body: {
-          message: 'This attempt is not for the current session segment.',
-        },
-      })
-
+    // Any segment of the session's own transcript is accepted: the browser
+    // grades locally and queues attempts, so the cursor may already be
+    // elsewhere when this lands. The transcript/video match is the ownership
+    // check that keeps a session from recording another video's segments.
     const segment = await DictationSegmentModel.findOne({
       _id: parsedBody.data.segmentId,
       transcriptId: session.transcriptId,
@@ -191,54 +268,86 @@ export async function POST(request: Request, context: RouteContext) {
       stats: correction.stats,
     })
 
-    await attempt.save()
+    try {
+      await attempt.save()
+    } catch (error) {
+      // A concurrent duplicate (keepalive flush racing the normal send) won
+      // the unique (userId, sessionId, idempotencyKey) index: answer with its
+      // attempt.
+      if (!isDuplicateKeyError(error)) throw error
 
-    const nonCheckStatus = getAttemptSegmentStatus(parsedBody.data.action)
-    segment.attemptStatus =
-      nonCheckStatus ?? getCheckSegmentStatus(correction.isPassed)
-    segment.attemptCount += 1
-    segment.lastAttemptAt = now
-    await segment.save()
-
-    let nextSegmentId: string | null = String(session.currentSegmentId)
-
-    if (
-      shouldAdvanceAttemptCursor({
-        action: parsedBody.data.action,
-        isPassed: correction.isPassed,
+      const winner = await findAttemptByIdempotencyKey({
+        idempotencyKey: parsedBody.data.idempotencyKey,
+        userId: actor.id,
       })
-    ) {
-      const nextSegment = await DictationSegmentModel.findOne({
-        order: { $gt: segment.order },
-        transcriptId: session.transcriptId,
-        videoId: session.videoId,
-      }).sort({ order: 1 })
 
-      if (nextSegment) {
-        session.currentSegmentId = new Types.ObjectId(String(nextSegment._id))
-        session.currentSegmentOrder = nextSegment.order
-        nextSegmentId = String(nextSegment._id)
-      } else {
-        // Per-user completion only. The shared video.status is no longer
-        // mutated by practice — progress is derived per-user from sessions.
-        session.status = 'completed'
-        session.completedAt = now
-        nextSegmentId = null
-      }
+      if (!winner) throw error
+
+      return respondWithReplay({
+        attempt: toDictationAttemptRecord(winner),
+        sessionId: parsedSessionId.data.sessionId,
+        userId: actor.id,
+      })
+    }
+
+    // Progress is per learner and derived from attempts (see
+    // segmentProgress.ts); the shared segment document is never written here.
+    const shouldAdvance = shouldAdvanceAttemptCursor({
+      action: parsedBody.data.action,
+      isPassed: correction.isPassed,
+    })
+    const nextSegment =
+      shouldAdvance && session.status === 'active'
+        ? await DictationSegmentModel.findOne({
+            order: { $gt: segment.order },
+            transcriptId: session.transcriptId,
+            videoId: session.videoId,
+          })
+            .sort({ order: 1 })
+            .select('_id order')
+            .lean()
+        : null
+    const cursor = resolveAttemptCursor({
+      attemptedSegment: { id: String(segment._id), order: segment.order },
+      currentSegmentId: session.currentSegmentId
+        ? String(session.currentSegmentId)
+        : null,
+      nextSegment: nextSegment
+        ? { id: String(nextSegment._id), order: nextSegment.order }
+        : null,
+      sessionStatus: session.status,
+      shouldAdvance,
+    })
+
+    if (cursor.type === 'move') {
+      session.currentSegmentId = new Types.ObjectId(cursor.segmentId)
+      session.currentSegmentOrder = cursor.order
+    } else if (cursor.type === 'complete') {
+      // Per-user completion only. The shared video.status is no longer
+      // mutated by practice - progress is derived per-user from sessions.
+      session.status = 'completed'
+      session.completedAt = now
     }
 
     session.lastActiveAt = now
-    await session.save()
-    await recomputeReviewItemsForVideo({
-      userId: actor.id,
-      videoId: String(session.videoId),
-    })
+
+    const videoId = String(session.videoId)
+    const segmentId = String(segment._id)
+    const [, progress] = await Promise.all([
+      session.save(),
+      loadAttemptedSegmentProgress({ segmentId, userId: actor.id, videoId }),
+      recomputeReviewItemsForSegment({ segmentId, userId: actor.id, videoId }),
+    ])
 
     return NextResponse.json(
       {
         attempt: toDictationAttemptRecord(attempt.toObject()),
         mode: submissionMode.mode,
-        nextSegmentId,
+        nextSegmentId:
+          session.status === 'completed' || !session.currentSegmentId
+            ? null
+            : String(session.currentSegmentId),
+        progress,
         session: toDictationSessionRecord(session.toObject()),
       },
       { status: 201 }

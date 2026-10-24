@@ -47,7 +47,7 @@ function toSegmentError(error: unknown): ApiErrorDecision {
     typeof error === 'object' &&
     error !== null &&
     'status' in error &&
-    (error.status === 401 || error.status === 403)
+    (error.status === 401 || error.status === 403 || error.status === 409)
   )
     return {
       status: error.status,

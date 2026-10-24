@@ -3,15 +3,17 @@ import { disconnect } from 'mongoose'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
 
+import { requestContentRevalidation } from './lib/requestContentRevalidation'
+
 /**
  * One-shot migration. Dictation `video.status` no longer stores per-user
- * practice progress — that is derived from sessions now. Remap any video still
+ * practice progress - that is derived from sessions now. Remap any video still
  * stamped with the removed `'completed'`/`'inProgress'` values back to the
  * content-lifecycle `'ready'`.
  *
  * Run this BEFORE deploying the reduced enum: after deploy, docs left on the
  * old values render an undefined status chip and reject on admin save (enum
- * validation). Idempotent — safe to re-run.
+ * validation). Idempotent - safe to re-run.
  */
 async function main() {
   await connectDatabase()
@@ -28,6 +30,10 @@ async function main() {
   )
 
   await disconnect()
+
+  // The site caches the catalog, video status included (opt-in).
+  if (result.modifiedCount > 0)
+    await requestContentRevalidation(['dictation-catalog'])
 }
 
 main().catch(error => {
