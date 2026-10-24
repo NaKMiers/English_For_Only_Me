@@ -4,8 +4,15 @@ import { MangaPanel } from '@/components/common/MangaPanel'
 import { MangaButton } from '@/components/ui/MangaButton'
 import type { DictationGlobalStatsRecord } from '@/modules/dictation/types'
 
+/** What the grammar path wants next, for the Today list. */
+export interface GrammarTodayRecord {
+  nextTitle: string | null
+  dueCount: number
+}
+
 interface Props {
   dictationStats?: DictationGlobalStatsRecord | null
+  grammarToday?: GrammarTodayRecord | null
 }
 
 function formatDuration(durationMs: number) {
@@ -16,7 +23,10 @@ function formatDuration(durationMs: number) {
   return `${minutes} min`
 }
 
-export function HomeTodayPanel({ dictationStats = null }: Props) {
+export function HomeTodayPanel({
+  dictationStats = null,
+  grammarToday = null,
+}: Props) {
   const todayTasks = [
     {
       order: '1',
@@ -32,6 +42,13 @@ export function HomeTodayPanel({ dictationStats = null }: Props) {
       order: '3',
       title: 'Review queue',
       meta: `${dictationStats?.dueReviewItemCount ?? 0} due`,
+    },
+    {
+      order: '4',
+      title: grammarToday?.nextTitle
+        ? `Grammar: ${grammarToday.nextTitle}`
+        : 'Grammar path',
+      meta: `${grammarToday?.dueCount ?? 0} cần ôn`,
     },
   ]
 

@@ -2,10 +2,8 @@
  * The shared 7-stage recall ladder.
  *
  * Lives in `modules/learning` rather than inside a single subject module
- * because grammar is its first consumer and vocabulary is its second: pointing
- * vocabulary at this file is the Phase 2 exit criterion. A shared abstraction
- * with one consumer is just a private module with an aspirational directory
- * name, so the migration is a gate rather than an aspiration.
+ * because two modules schedule on it: vocabulary per word, grammar per lesson
+ * (a passed lesson enters at stage 2 and its node fades on the path when due).
  *
  *              ┌──────── wrong answer, from ANY stage ────────┐
  *              ▼                                              │
@@ -40,13 +38,11 @@ export type RecallDifficulty = 'low' | 'medium' | 'high'
 /**
  * Interval multiplier by item difficulty.
  *
- * This is where the grammar module's `l1Risk` becomes load-bearing rather than
- * decorative. FSRS beats a fixed ladder by *learning* per-card difficulty from
- * review history, but a 162-point curriculum spends most of its life in the
- * cold start, where FSRS has nothing to learn from yet. `l1Risk` is a better
- * prior available on day zero: a Vietnamese speaker's article errors are
- * predictably persistent before a single review happens. So hard items come
- * back sooner and easy items come back later, from the very first answer.
+ * FSRS beats a fixed ladder by *learning* per-card difficulty from review
+ * history, but a small course spends most of its life in the cold start, where
+ * FSRS has nothing to learn from yet. A known-hard prior (e.g. articles for a
+ * Vietnamese speaker) is available on day zero, so hard items can come back
+ * sooner and easy items later, from the very first answer.
  *
  * `medium` is exactly 1 so existing callers keep their current schedule.
  */

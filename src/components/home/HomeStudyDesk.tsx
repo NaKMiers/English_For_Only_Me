@@ -8,7 +8,7 @@ import type { VocabStatsRecord } from '@/modules/vocabulary/types'
 import { HomeFutureModuleMap } from './HomeFutureModuleMap'
 import { HomeIeltsSnapshot } from './HomeIeltsSnapshot'
 import { HomeModuleLauncher } from './HomeModuleLauncher'
-import { HomeTodayPanel } from './HomeTodayPanel'
+import { HomeTodayPanel, type GrammarTodayRecord } from './HomeTodayPanel'
 
 function StudyDeskSketch() {
   return (
@@ -109,6 +109,7 @@ function StudyDeskSketch() {
 
 interface Props {
   dictationStats?: DictationGlobalStatsRecord | null
+  grammarToday?: GrammarTodayRecord | null
   vocabStats?: VocabStatsRecord | null
 }
 
@@ -170,6 +171,7 @@ function HomeVocabularySnapshot({
 
 export function HomeStudyDesk({
   dictationStats = null,
+  grammarToday = null,
   vocabStats = null,
 }: Props) {
   return (
@@ -217,7 +219,10 @@ export function HomeStudyDesk({
 
           <div className="grid gap-5 p-4 lg:grid-cols-[minmax(0,1fr)_minmax(260px,340px)]">
             <StudyDeskSketch />
-            <HomeTodayPanel dictationStats={dictationStats} />
+            <HomeTodayPanel
+              dictationStats={dictationStats}
+              grammarToday={grammarToday}
+            />
           </div>
 
           <HomeModuleLauncher />

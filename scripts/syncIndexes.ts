@@ -12,10 +12,10 @@ import { DictationSessionModel } from '@/models/dictation/DictationSessionModel'
 import { DictationTopicModel } from '@/models/dictation/DictationTopicModel'
 import { DictationTranscriptModel } from '@/models/dictation/DictationTranscriptModel'
 import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
-import { GrammarDrillAttemptModel } from '@/models/grammar/GrammarDrillAttemptModel'
-import { GrammarPointModel } from '@/models/grammar/GrammarPointModel'
-import { GrammarTestSessionModel } from '@/models/grammar/GrammarTestSessionModel'
-import { UserGrammarItemModel } from '@/models/grammar/UserGrammarItemModel'
+import { GrammarCardMissModel } from '@/models/grammar/GrammarCardMissModel'
+import { GrammarLessonProgressModel } from '@/models/grammar/GrammarLessonProgressModel'
+import { GrammarSessionModel } from '@/models/grammar/GrammarSessionModel'
+import { GrammarUnitProgressModel } from '@/models/grammar/GrammarUnitProgressModel'
 import { UserModel } from '@/models/UserModel'
 import { UserVocabItemModel } from '@/models/vocabulary/UserVocabItemModel'
 import { VocabEntryModel } from '@/models/vocabulary/VocabEntryModel'
@@ -36,7 +36,8 @@ mongoose.set('autoCreate', false)
  * because syncIndexes DROPS every index the schema no longer declares, and an
  * index dropped by surprise can turn a hot query into a collection scan.
  * Indexes present in the database but not in the schema are only reported;
- * drop them with a dedicated script (see dropStaleGrammarIndexes.ts).
+ * drop them with a dedicated script (see dropLegacyGrammar.ts for the
+ * grammar v2 collections).
  *
  * DRY-RUN by default - prints what would be created. Pass --apply to build.
  * The script connects with autoCreate and autoIndex off in every environment
@@ -60,10 +61,10 @@ const MODELS: Model<never>[] = [
   DictationTopicModel,
   DictationTranscriptModel,
   DictationVideoModel,
-  GrammarDrillAttemptModel,
-  GrammarPointModel,
-  GrammarTestSessionModel,
-  UserGrammarItemModel,
+  GrammarCardMissModel,
+  GrammarLessonProgressModel,
+  GrammarSessionModel,
+  GrammarUnitProgressModel,
   UserModel,
   UserVocabItemModel,
   VocabEntryModel,

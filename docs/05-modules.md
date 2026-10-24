@@ -90,7 +90,8 @@ with `tokens`). Pipeline, in order:
    - `ignoreStructuralPunctuation` (optional): `stripStructuralPunctuation`
      drops commas, hyphens, quotes, brackets and semicolons but KEEPS an
      apostrophe that sits inside a word, so `don't` survives while `'quoted'`
-     does not become a token. Used by the grammar module, per drill.
+     does not become a token. Added for grammar v2 drills; unused since grammar
+     v3 grades with its own `normalizeGrammarAnswer`.
    - neither: punctuation is left alone.
 
    Position matters: this step runs AFTER `expandSymbolicVariants`, so `50%`

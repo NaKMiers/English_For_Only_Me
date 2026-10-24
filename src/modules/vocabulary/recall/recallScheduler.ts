@@ -13,9 +13,9 @@
  * exactly 1, so every interval vocabulary schedules is byte-identical to before.
  * `recallScheduler.test.ts` is unchanged and is the proof.
  *
- * Grammar passes a real difficulty (derived from `l1Risk`) to get tighter
- * spacing on the points a Vietnamese speaker actually keeps failing. Vocabulary
- * can adopt that later by passing its own signal; it does not have to.
+ * Grammar schedules whole lessons on the same ladder, also at `medium`. Either
+ * module can pass a real difficulty later to tighten spacing on items a learner
+ * keeps failing; neither has to.
  */
 export {
   applyRecallAnswer,

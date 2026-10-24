@@ -59,7 +59,7 @@ export const APP_MODULES: AppModule[] = [
     skill: 'Grammar',
     status: 'active',
     description:
-      'Complete CEFR grammar map by level and difficulty, with drills and spaced recall.',
+      'A path of short grammar lessons from A1 to C1, with stars, checkpoints, and spaced review.',
   },
   {
     key: 'writing-notes',

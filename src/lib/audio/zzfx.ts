@@ -7,10 +7,10 @@
  * four sound effects. `.agents/rules/project-style.md` asks for no new runtime
  * dependency; this is the alternative it asks for.
  *
- * Reduced from the original: only the parameters the four grammar stings use are
+ * Reduced from the original: only the parameters the four lesson stings use are
  * kept, and the global mutable state and auto-created AudioContext are gone -
  * the context is passed in, because it has to be created inside a user gesture
- * (see `useGrammarSfx`).
+ * (see `useLessonSfx`).
  *
  * Copyright (c) 2019 Frank Force
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,6 +24,8 @@
 export interface ZzfxParams {
   attack?: number
   decay?: number
+  /** Seconds after now to start, so a sting can be a short run of notes. */
+  delay?: number
   frequency?: number
   release?: number
   shape?: 0 | 1 | 2 | 3
@@ -45,6 +47,7 @@ export function zzfx(
   {
     attack = 0.01,
     decay = 0.05,
+    delay = 0,
     frequency = 440,
     release = 0.1,
     shape = 0,
@@ -89,7 +92,7 @@ export function zzfx(
 
   source.buffer = buffer
   source.connect(context.destination)
-  source.start()
+  source.start(context.currentTime + delay)
 
   return source
 }

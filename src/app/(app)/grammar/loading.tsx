@@ -1,24 +1,27 @@
-import {
-  SkeletonBlock,
-  SkeletonPageShell,
-  SkeletonPanel,
-} from '@/components/common/PageSkeletons'
+import { MangaPageShell } from '@/components/common/MangaPageShell'
+import { Skeleton } from '@/components/ui/skeleton'
 
-export default function Loading() {
+export default function GrammarLoading() {
   return (
-    <SkeletonPageShell
-      activeHref="/grammar"
-      subtitle="Grammar map by level and difficulty"
-    >
-      <SkeletonPanel lines={3} />
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        {Array.from({ length: 4 }).map((_, index) => (
-          <SkeletonBlock
-            className="h-24"
-            key={index}
-          />
-        ))}
+    <MangaPageShell>
+      <div
+        aria-busy
+        aria-label="Đang tải lộ trình"
+        className="grid gap-6 p-4 sm:p-6 lg:p-8"
+      >
+        <Skeleton className="rounded-control h-10 w-64" />
+        <Skeleton className="rounded-panel h-16 w-full" />
+        <div className="mx-auto grid w-full max-w-xl justify-items-center gap-7">
+          <Skeleton className="rounded-panel h-28 w-full" />
+          {[0, 44, 64, 44, 0].map((offset, index) => (
+            <Skeleton
+              className="size-16 rounded-full"
+              key={index}
+              style={{ transform: `translateX(${offset}px)` }}
+            />
+          ))}
+        </div>
       </div>
-    </SkeletonPageShell>
+    </MangaPageShell>
   )
 }
