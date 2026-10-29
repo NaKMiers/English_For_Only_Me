@@ -12,6 +12,7 @@ import type { IeltsWritingReviewTask } from '@/modules/ielts/services/resultPage
 import { gradeIeltsWritingApi } from '@/requests/ieltsApi'
 
 import { TaskVisual } from '../visual/TaskVisual'
+import { WritingPrompt } from '../widgets/WritingPrompt'
 import { ExamButton, ExamCard, StatTile } from '@/components/ielts/ui'
 
 interface Props {
@@ -93,7 +94,7 @@ function TaskFeedback({
           Prompt
         </summary>
         <div className="mt-2 grid gap-3">
-          <p className="whitespace-pre-line">{task.prompt}</p>
+          <WritingPrompt text={task.prompt} />
           {task.visual ? (
             <TaskVisual
               className="border-manga-black rounded-control max-w-2xl border-2"

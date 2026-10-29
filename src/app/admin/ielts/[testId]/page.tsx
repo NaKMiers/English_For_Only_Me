@@ -8,7 +8,10 @@ import { TestEditor } from '@/components/ielts/editor/TestEditor'
 import { hasMongoDbUri } from '@/constants/environments'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { parseTestId } from '@/modules/ielts/tests/testRouteDecisions'
-import { readAdminTest } from '@/modules/ielts/tests/testService'
+import {
+  listIeltsSeries,
+  readAdminTest,
+} from '@/modules/ielts/tests/testService'
 
 export const metadata: Metadata = { title: 'Admin · Edit IELTS test' }
 export const dynamic = 'force-dynamic'
@@ -25,7 +28,10 @@ export default async function AdminIeltsEditorPage({ params }: Props) {
 
   await connectDatabase()
 
-  const test = await readAdminTest(id.data)
+  const [test, seriesOptions] = await Promise.all([
+    readAdminTest(id.data),
+    listIeltsSeries(),
+  ])
 
   if (!test) notFound()
 
@@ -44,6 +50,7 @@ export default async function AdminIeltsEditorPage({ params }: Props) {
       <TestEditor
         initial={test}
         key={test.id}
+        seriesOptions={seriesOptions}
       />
     </MangaPageShell>
   )

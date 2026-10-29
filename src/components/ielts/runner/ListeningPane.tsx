@@ -1,9 +1,14 @@
 'use client'
 
-import { Play } from 'lucide-react'
+import { Check, Hourglass, Lock, Play, Volume2 } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { Progress } from '@/components/ui/progress'
+import {
+  AUDIO_PLAY_BUTTON_CLASS,
+  AudioClock,
+  AudioMeter,
+  AudioPlayer,
+} from '@/components/common/AudioPlayer'
 import { cn } from '@/lib/utils'
 import type { IeltsAttemptRecord } from '@/modules/ielts/attempts/attemptRecords'
 import { IELTS_MAX_AUDIO_INTERRUPTIONS } from '@/modules/ielts/constants'
@@ -11,7 +16,6 @@ import type { IeltsPublicSection } from '@/modules/ielts/publicView'
 import { postIeltsAudioEventApi } from '@/requests/ieltsApi'
 
 import { highlightText, type IeltsHighlight } from './PassagePane'
-import { formatClock } from './useMockDeadline'
 import { ExamButton } from '@/components/ielts/ui'
 
 interface Props {
@@ -40,6 +44,7 @@ function Transcript({
   return (
     <ol
       aria-label="Transcript"
+      data-highlight-scope={`transcript:${section.key}`}
       className="font-body grid gap-2 text-[17px] leading-[1.7]"
     >
       {lines.map((line, index) => (
@@ -79,11 +84,9 @@ function PracticeAudio({
     <div className="grid gap-4">
       {audio ? (
         // Captions are the transcript toggle below.
-        <audio
-          className="w-full"
-          controls
+        <AudioPlayer
+          durationSec={audio.durationSec}
           key={audio.url}
-          preload="metadata"
           src={audio.url}
         />
       ) : (
@@ -245,6 +248,25 @@ function MockAudio({
     void audioRef.current?.play()
   }
 
+  const canStart = !playing && !finished && preview === 0 && !locked
+  const startLabel = startedParts.length ? 'Resume audio' : 'Start audio'
+  const status = finished
+    ? 'Audio ended'
+    : preview > 0
+      ? `Preview Part ${sections[partIndex + 1]?.order}: ${preview}s`
+      : playing
+        ? `Playing Part ${section?.order}`
+        : canStart
+          ? `${startLabel}. It plays once and cannot be rewound.`
+          : 'The audio plays once. You cannot rewind it.'
+  const StatusIcon = finished
+    ? Check
+    : preview > 0
+      ? Hourglass
+      : playing
+        ? Volume2
+        : Lock
+
   return (
     <div className="grid gap-4">
       {/* No controls: a mock cannot seek. Transcript is hidden in mock. */}
@@ -257,38 +279,59 @@ function MockAudio({
         preload="auto"
         ref={audioRef}
       />
-      <div className="border-manga-black rounded-control bg-manga-white grid gap-3 border-2 p-4">
-        <p className="font-sans text-sm font-black">
-          {finished
-            ? 'Audio ended'
-            : preview > 0
-              ? `Preview Part ${sections[partIndex + 1]?.order}: ${preview}s`
-              : playing
-                ? `Playing Part ${section?.order}`
-                : 'The audio plays once. You cannot rewind it.'}
-        </p>
-        <Progress value={duration ? (position / duration) * 100 : 0} />
-        <p className="text-muted-foreground text-xs font-semibold tabular-nums">
-          {formatClock(Math.floor(position))} /{' '}
-          {formatClock(Math.floor(duration))}
-          {interruptions
-            ? ` · Interruptions ${interruptions}/${IELTS_MAX_AUDIO_INTERRUPTIONS}`
-            : ''}
-        </p>
-        {!playing && !finished && preview === 0 && !locked ? (
-          <ExamButton
-            icon={
+      <div className="border-manga-black bg-manga-paper-soft rounded-control grid gap-3 border-2 p-3">
+        <div className="flex items-center gap-3">
+          {canStart ? (
+            // Same key as the practice player; raw because it starts a timed part.
+            <button
+              aria-label={startLabel}
+              className={AUDIO_PLAY_BUTTON_CLASS}
+              onClick={() => playPart(partIndex)}
+              title={startLabel}
+              type="button"
+            >
               <Play
                 aria-hidden="true"
-                className="size-4"
+                className="size-5 translate-x-px fill-current"
               />
-            }
-            onClick={() => playPart(partIndex)}
-            tone="ink"
-            type="button"
-          >
-            {startedParts.length ? 'Resume audio' : 'Start'}
-          </ExamButton>
+            </button>
+          ) : (
+            <span
+              aria-hidden="true"
+              className="border-manga-black bg-manga-white rounded-control grid size-11 shrink-0 place-items-center border-2"
+            >
+              <StatusIcon
+                className={cn(
+                  'size-5',
+                  playing && 'text-manga-red animate-pulse'
+                )}
+              />
+            </span>
+          )}
+          <div className="grid min-w-0 flex-1 gap-1.5">
+            <div className="flex items-baseline justify-between gap-2">
+              <p
+                aria-live="polite"
+                className="min-w-0 truncate font-sans text-sm font-black"
+              >
+                {status}
+              </p>
+              <AudioClock
+                duration={duration}
+                time={position}
+              />
+            </div>
+            <AudioMeter
+              duration={duration}
+              label="Audio progress"
+              time={position}
+            />
+          </div>
+        </div>
+        {interruptions ? (
+          <p className="text-manga-ink-soft text-xs font-semibold">
+            Interruptions {interruptions}/{IELTS_MAX_AUDIO_INTERRUPTIONS}
+          </p>
         ) : null}
         {stalled ? (
           <div

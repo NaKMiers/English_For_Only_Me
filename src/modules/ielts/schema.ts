@@ -142,6 +142,8 @@ export const ieltsSectionSchema = z.object({
 
 export const ieltsTestMetaSchema = z.object({
   title: text(160).min(1),
+  /** Catalogue group ("IELTS 21"); empty groups by the title instead. */
+  series: text(80),
   track: z.enum(IELTS_TRACKS),
   targetBand: z.number().min(4).max(9),
   tags: z.array(text(40).min(1)).max(10),

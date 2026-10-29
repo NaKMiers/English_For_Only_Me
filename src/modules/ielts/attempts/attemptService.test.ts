@@ -8,6 +8,8 @@ const mocks = vi.hoisted(() => ({
   findOneAndUpdate: vi.fn(),
   updateOne: vi.fn(),
   create: vi.fn(),
+  deleteOne: vi.fn(),
+  ledgerInsert: vi.fn(),
 }))
 
 const chain = (value: unknown) => ({
@@ -22,7 +24,12 @@ vi.mock('@/models/ielts/IeltsAttemptModel', () => ({
       chain(mocks.findOneAndUpdate(...args)),
     updateOne: mocks.updateOne,
     create: mocks.create,
+    deleteOne: mocks.deleteOne,
   },
+}))
+
+vi.mock('@/models/ielts/IeltsGradingLedgerModel', () => ({
+  IeltsGradingLedgerModel: { insertMany: mocks.ledgerInsert },
 }))
 
 vi.mock('../tests/testReaders', () => ({
@@ -36,6 +43,7 @@ const OWNER = 'user-1'
 const NOW = new Date('2026-10-29T10:00:00Z')
 
 import {
+  deleteAttemptForOwner,
   readPracticeEvidence,
   saveAttemptAnswers,
   startOrResumeAttempt,
@@ -243,5 +251,35 @@ describe('readPracticeEvidence', () => {
         ownerId: OWNER,
       })
     ).toMatchObject({ ok: false, status: 403 })
+  })
+})
+
+describe('deleteAttemptForOwner', () => {
+  it("deletes the owner's attempt and keeps only today's gradings for the cap", async () => {
+    const today = new Date('2026-10-29T08:00:00Z')
+
+    mocks.findOne.mockReturnValue({
+      gradings: [{ at: new Date('2026-10-28T23:00:00Z') }, { at: today }],
+    })
+    mocks.deleteOne.mockResolvedValue({ deletedCount: 1 })
+
+    const deleted = await deleteAttemptForOwner(OWNER, 'a1', NOW)
+
+    expect(mocks.findOne).toHaveBeenCalledWith(
+      { _id: 'a1', ownerId: OWNER },
+      { gradings: 1 }
+    )
+    expect(mocks.ledgerInsert).toHaveBeenCalledWith([
+      { ownerId: OWNER, at: today },
+    ])
+    expect(mocks.deleteOne).toHaveBeenCalledWith({ _id: 'a1', ownerId: OWNER })
+    expect(deleted).toBe(true)
+  })
+
+  it("refuses an attempt that is missing or someone else's", async () => {
+    mocks.findOne.mockReturnValue(null)
+
+    expect(await deleteAttemptForOwner(OWNER, 'a1', NOW)).toBe(false)
+    expect(mocks.deleteOne).not.toHaveBeenCalled()
   })
 })

@@ -27,7 +27,7 @@ the edge runtime, which cannot load Mongoose.
 - `src/lib/auth/auth.ts` - the full Node-runtime instance. It spreads
   `authConfig`, sets `session: { strategy: 'jwt' }`, and overrides the `jwt`
   callback with a DB-touching version that provisions the Mongoose user and
-  merges guest data. It exports `{ handlers, auth, signIn, signOut }`.
+  merges guest data (`foldGuestIntoUser`). It exports `{ handlers, auth, signIn, signOut }`.
 
 The file header of `auth.config.ts` states the reason explicitly: the DB-
 touching provisioning "lives in `auth.ts` (Node only)" because the config
@@ -114,11 +114,23 @@ anonymous identity so practice never requires login:
 - `getGuestId()` reads the cookie (never writes) - safe in Server Components.
 - `getOrCreateGuestId()` mints and writes a cookie when absent - only valid in
   Route Handlers or Server Functions.
-- `clearGuestCookie()` deletes the cookie after a merge.
+- `clearGuestCookie()` deletes the cookie (and the pending-merge owner below)
+  after a merge.
+- Cookie `dictationGuestMergeOwner` (`GUEST_MERGE_OWNER_COOKIE`) exists only
+  while a merge is unfinished: it holds the account id that merge was for
+  (`getGuestMergeOwner` / `setGuestMergeOwner`).
 
-On first sign-in, the Node `jwt` callback in `auth.ts` reads the guest id and,
-if present, calls `mergeGuestDataIntoUser(guestId, id)` then `clearGuestCookie()`.
-This is wrapped in try/catch so a merge failure logs but never blocks login.
+On every sign-in, the Node `jwt` callback in `auth.ts` calls
+`foldGuestIntoUser(id)` (`src/lib/auth/guestMerge.ts`). With a guest cookie it
+runs the dictation, grammar and IELTS merges (each tried even if another
+fails). All succeed: `clearGuestCookie()`. Any fails: the guest cookie stays and
+`dictationGuestMergeOwner` is set to this account, so only this account's next
+sign-in retries (a re-run over already-moved rows is a no-op). If a different
+account signs in while a merge is pending, `guestMergeStep` returns `abandon`:
+the leftovers are not merged and both cookies are cleared, so one person's
+guest data never reaches another account on a shared browser. Anonymous
+practice with no pending merge still goes to whoever signs in. Everything is
+best-effort: a merge failure logs but never blocks login.
 
 `src/modules/dictation/services/mergeGuestData.ts` (`mergeGuestDataIntoUser`)
 reassigns guest rows to the real user via `updateMany({ userId: guestId },
@@ -142,9 +154,15 @@ sequenceDiagram
   J->>DB: provisionUserOnSignIn (upsert User)
   DB-->>J: ObjectId -> token.uid
   J->>J: getGuestId() from cookie
-  alt guest cookie present
-    J->>DB: mergeGuestDataIntoUser (reassign sessions/attempts/reviews/debriefs)
-    J->>U: clearGuestCookie()
+  alt guest cookie present, no merge pending for another account
+    J->>DB: dictation, grammar and IELTS merges (reassign guest rows)
+    alt all merged
+      J->>U: clearGuestCookie()
+    else a merge failed
+      J->>U: setGuestMergeOwner(this account) - retry on its next sign-in
+    end
+  else merge pending for another account
+    J->>U: clearGuestCookie() (leftovers abandoned)
   end
   J->>J: token.role = resolveRole(email)
 ```
@@ -496,9 +514,8 @@ Setup files:
   `extractYouTubeId`, `parseIso8601DurationSeconds`,
   `mapYouTubeVideosListResponse`, `requestOpenAiStructuredOutput` (injectable
   `fetcher`), `resolveRole`/`isAdminEmail`, `normalizeVocabTerm`,
-  vocabulary provider adapters, vocabulary route-decision helpers, recall
-  scheduling, and `backfillContentHierarchy` (which accepts an injected
-  `BackfillVideoModel` so it runs with a mock instead of a live DB).
+  vocabulary provider adapters, vocabulary route-decision helpers, and recall
+  scheduling.
 
 ### 5.4 Quality gates
 
@@ -521,33 +538,14 @@ catches (the guest-merge catch in `auth.ts` logs before swallowing, by design).
 
 ## 6. Operational Scripts
 
-`scripts/backfillContentHierarchy.ts` (npm script `backfill:content`) files
-pre-hierarchy dictation videos into the no-topic / ungrouped state. It runs
-under Node (not Bun - the mongodb driver needs `node:v8` snapshot APIs Bun
-lacks) via `tsx` with `--conditions=react-server`, which resolves `server-only`
-imports to their no-op stub. It connects Mongoose directly, delegates to
-`backfillContentHierarchy` in `src/modules/dictation/content/backfill.ts`, and
-defaults to a DRY RUN unless `--apply` is passed. The core function is
-idempotent: it matches videos missing any of `topicId`/`sectionId`/`level` and
-`$set`s them to `null`; a second run matches zero. The model is injected
-(`BackfillVideoModel` interface) so the logic is unit-testable without a live
-database.
-
 `scripts/seedVocabulary.ts` (script `vocab:seed`) downloads the official NGSL
 stats CSV through `src/modules/vocabulary/seed/seedVocabulary.ts`, parses the top
 1000 ranked terms, connects through `connectDatabase()`, and upserts seeded
 `VocabEntry` shells. It runs with
 `node --conditions=react-server --env-file-if-exists=.env.development --import tsx`
-for the same `server-only` compatibility reason as the backfill script (the
+because the mongodb driver needs Node (Bun lacks the `node:v8` snapshot APIs) and
+`--conditions=react-server` resolves `server-only` imports to their no-op stub (the
 `--env-file-if-exists` flag is a no-op since no `.env.development` is committed).
-
-`scripts/backfillVocabularyVietnameseMeanings.ts` (script `vocab:backfill-vi`)
-fills in missing Vietnamese meanings for existing entries. It connects via
-`connectDatabase()`, selects entries matching `VOCAB_MISSING_VI_MEANING_FILTER`
-(or all when `--overwrite` is passed), and reuses `enrichVocabEntryIfNeeded` plus
-`translateTextToVietnamese` (3.6). Batch size comes from a numeric argv, the
-`VOCAB_VI_BACKFILL_LIMIT` env var, or a default of 25. It runs with the same
-`node --conditions=react-server --env-file-if-exists=.env --import tsx` wrapper.
 
 `scripts/resegmentAllTranscripts.ts` (script `resegment`) rebuilds dictation
 transcript segments and runs under the same Node/`tsx` wrapper.

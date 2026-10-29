@@ -18,7 +18,7 @@ type CacheArg = string | number | boolean | null
  * whenever that happens: the new deploy then reads fresh keys and the old
  * entries age out unused.
  */
-export const CATALOG_CACHE_VERSION = 1
+export const CATALOG_CACHE_VERSION = 2
 
 /**
  * Wrap a shared-content loader in the Next data cache.

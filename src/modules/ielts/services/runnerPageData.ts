@@ -11,13 +11,19 @@ export interface IeltsRunnerPageData {
   testSlug: string
   testTitle: string
   skill: IeltsSkill
-  part: number | null
+  /** The part to open first (`?part=`); the attempt always covers every part. */
+  startPart: number | null
   sections: IeltsPublicSection[]
+  /** The test's next skill in exam order (L, R, W), or null after the last. */
+  nextSkill: IeltsSkill | null
+  /** The test's previous skill in exam order, or null before the first. */
+  prevSkill: IeltsSkill | null
 }
 
 /**
  * Public sections for a runner page, or null when the test, skill or part
- * does not exist. Mock never ships the listening transcript.
+ * does not exist. Every part of the skill is included; `?part=` only picks
+ * the part shown first. Mock never ships the listening transcript.
  */
 export async function loadRunnerPageData({
   mode,
@@ -48,15 +54,27 @@ export async function loadRunnerPageData({
 
   if (!test) return null
 
-  const sections = sectionsInScope(test.sections, skill, part)
+  const sections = sectionsInScope(test.sections, skill, null)
 
   if (!sections.length) return null
 
+  const skillsInTest = new Set(test.sections.map(item => item.skill))
+  const nextSkill =
+    IELTS_SKILLS.slice(IELTS_SKILLS.indexOf(skill) + 1).find(item =>
+      skillsInTest.has(item)
+    ) ?? null
+  const prevSkill =
+    IELTS_SKILLS.slice(0, IELTS_SKILLS.indexOf(skill))
+      .reverse()
+      .find(item => skillsInTest.has(item)) ?? null
+
   return {
+    nextSkill,
+    prevSkill,
     testSlug: test.slug,
     testTitle: test.title,
     skill,
-    part,
+    startPart: part,
     sections: sections.map(section =>
       toPublicSection(section, { includeTranscript: mode === 'practice' })
     ),

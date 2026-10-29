@@ -17,7 +17,11 @@ import { ExamButton } from '@/components/ielts/ui'
 interface Props {
   backHref: string
   mode: 'practice' | 'mock'
-  part: number | null
+  /** Practice only: the test's next and previous skills, for the bottom bar. */
+  next?: { href: string; label: string } | null
+  prev?: { href: string; label: string } | null
+  /** Part to open first; the attempt itself always covers the whole skill. */
+  startPart: number | null
   sections: IeltsPublicSection[]
   skill: IeltsSkill
   testSlug: string
@@ -31,7 +35,7 @@ function mintKey() {
 }
 
 /**
- * The start key is kept per (test, skill, mode, part) in sessionStorage, so
+ * The start key is kept per (test, skill, mode) in sessionStorage, so
  * a double mount or a reload replays the same request instead of opening a
  * second attempt. A replay of an attempt that is already finished mints a
  * fresh key and starts a new one.
@@ -72,7 +76,9 @@ export function RunnerSkeleton() {
 export function AttemptLoader({
   backHref,
   mode,
-  part,
+  next = null,
+  prev = null,
+  startPart,
   sections,
   skill,
   testSlug,
@@ -82,7 +88,7 @@ export function AttemptLoader({
   const [attempt, setAttempt] = useState<IeltsAttemptRecord | null>(null)
   const [error, setError] = useState('')
   const startedRef = useRef(false)
-  const keyName = `ielts:start:${testSlug}:${skill}:${mode}:${part ?? 'all'}`
+  const keyName = `ielts:start:${testSlug}:${skill}:${mode}`
 
   const start = useCallback(async () => {
     setError('')
@@ -92,9 +98,7 @@ export function AttemptLoader({
 
       const body = {
         mode,
-        scope: part
-          ? { kind: 'part' as const, part }
-          : { kind: 'skill' as const },
+        scope: { kind: 'skill' as const },
         sessionId: null,
         skill,
         testSlug,
@@ -126,7 +130,7 @@ export function AttemptLoader({
         caught instanceof Error ? caught.message : 'Could not open the test.'
       )
     }
-  }, [keyName, mode, ownerKey, part, skill, testSlug])
+  }, [keyName, mode, ownerKey, skill, testSlug])
 
   useEffect(() => {
     if (startedRef.current) return
@@ -169,6 +173,7 @@ export function AttemptLoader({
         attempt={attempt}
         backHref={backHref}
         sections={sections}
+        startPart={startPart}
         testTitle={testTitle}
       />
     )
@@ -177,7 +182,10 @@ export function AttemptLoader({
     <IeltsRunner
       attempt={attempt}
       backHref={backHref}
+      next={next}
+      prev={prev}
       sections={sections}
+      startPart={startPart}
       testTitle={testTitle}
     />
   )

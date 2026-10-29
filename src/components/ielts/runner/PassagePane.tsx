@@ -80,6 +80,7 @@ export const PassagePane = memo(function PassagePane({
   return (
     <article
       aria-label="Reading passage"
+      data-highlight-scope={`passage:${partLabel}`}
       className={cn(
         'text-manga-black mx-auto grid max-w-[70ch] gap-4 text-[17px] leading-[1.75]',
         className

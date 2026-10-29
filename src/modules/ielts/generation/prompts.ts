@@ -182,7 +182,7 @@ export function writingTaskMessages(
       content: [
         'You write IELTS-style Writing tasks for a private practice site.',
         ORIGINALITY,
-        'The prompt follows the usual layout: "You should spend about N minutes on this task.", the task, then "Write at least N words."',
+        'The prompt follows the usual layout: "You should spend about N minutes on this task.", the task, then "Write at least N words." Paragraphs are separated by a blank line. The task statement itself (what the chart shows and what to do, or the essay topic and question) goes in the exam box: start each of its lines with "> ", and use a line with only ">" between its paragraphs.',
         `The sample answer is a model response at about band ${context.targetBand}, ${task === 1 ? '170-200' : '270-320'} words, paragraphs separated by a blank line.`,
       ].join('\n\n'),
     },

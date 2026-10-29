@@ -15,7 +15,9 @@ describe('ownerKey', () => {
     it('accepts a 24-hex user id and a guest id', () => {
       expect(isValidOwnerKey(USER_ID)).toBe(true)
       expect(isValidOwnerKey(GUEST_ID)).toBe(true)
-      expect(isValidOwnerKey('guest_6525bb5983144a05b56a2045cdb8acf8')).toBe(true)
+      expect(isValidOwnerKey('guest_6525bb5983144a05b56a2045cdb8acf8')).toBe(
+        true
+      )
     })
 
     it('rejects null, undefined, and empty string', () => {

@@ -50,7 +50,7 @@ Every path below is under `src/` unless noted otherwise.
 | `src/requests`              | Client-side fetch wrappers around the internal API; every export ends in `Api`.                                                          |
 | `src/types`                 | Ambient/global type declarations (`next-auth.d.ts` augments the session type).                                                           |
 | `src/test`                  | Vitest setup and stubs (`setup.ts`, `setupDom.ts`, `serverOnlyStub.ts`, `jsdom.d.ts`).                                                   |
-| `scripts` (repo root)       | One-off maintenance scripts run with `tsx` under the `react-server` condition: `backfillContentHierarchy.ts`, `resegmentAllTranscripts.ts`, `seedVocabulary.ts`, `backfillVocabularyVietnameseMeanings.ts` (see section 9).                                    |
+| `scripts` (repo root)       | One-off maintenance scripts run with `tsx` under the `react-server` condition: `resegmentAllTranscripts.ts`, `seedVocabulary.ts`, `syncIndexes.ts`, `revalidateContent.ts` and others (see section 9).                                    |
 | `public` (repo root)        | Static assets: favicons, `site.webmanifest`, icons referenced by `src/app/layout.tsx`.                                                   |
 | `.agents/rules` (repo root) | The six rule files defining the intended layering and conventions (style, App Router, API security, data/state, frontend UI, testing).   |
 
@@ -398,10 +398,8 @@ From `package.json` scripts (run with Bun per project convention, e.g. `bun run 
 | `bun run test:watch`       | `vitest` - watch mode.                                                                                                                             |
 | `bun run format`           | `prettier . --write`.                                                                                                                              |
 | `bun run format:check`     | `prettier . --check`.                                                                                                                              |
-| `bun run backfill:content` | `node --conditions=react-server --import tsx scripts/backfillContentHierarchy.ts` - one-off content-hierarchy migration.                           |
 | `bun run resegment`        | `node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/resegmentAllTranscripts.ts` - re-segments every dictation transcript with the current pause logic; DRY RUN unless `-- --apply` is passed (destructive with `--apply`). |
 | `bun run vocab:seed`       | `node --conditions=react-server --env-file-if-exists=.env.development --import tsx scripts/seedVocabulary.ts` - downloads the NGSL stats CSV and upserts the top 1000 vocabulary shells. |
-| `bun run vocab:backfill-vi`| `node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/backfillVocabularyVietnameseMeanings.ts` - backfills Vietnamese meanings for entries missing them (batch limit via arg or `VOCAB_VI_BACKFILL_LIMIT`; `--overwrite` to replace existing). |
 | `bun run clean`            | `rm -rf .next node_modules bun.lock` - destructive; do not run unless asked.                                                                       |
 
 End-to-end tests use Playwright (`playwright.config.ts`, matching `**/*.e2e.ts` under

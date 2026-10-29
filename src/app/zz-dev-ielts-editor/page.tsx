@@ -43,7 +43,10 @@ export default async function Page({
 
   return (
     <MangaPageShell fullHeight>
-      <TestEditor initial={test} />
+      <TestEditor
+        initial={test}
+        seriesOptions={['Cambridge 19', 'IELTS 21']}
+      />
     </MangaPageShell>
   )
 }

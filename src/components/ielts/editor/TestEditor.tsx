@@ -85,6 +85,7 @@ const PANES: { value: Pane; label: string; Icon: typeof Eye }[] = [
 function metaOf(test: IeltsAdminTest): TestMeta {
   return {
     title: test.title,
+    series: test.series,
     track: test.track,
     targetBand: test.targetBand,
     tags: test.tags,
@@ -100,7 +101,13 @@ function metaOf(test: IeltsAdminTest): TestMeta {
  * log open in dialogs. Each section saves on its own with a revision guard;
  * Ctrl/Cmd+S saves the open one.
  */
-export function TestEditor({ initial }: { initial: IeltsAdminTest }) {
+export function TestEditor({
+  initial,
+  seriesOptions,
+}: {
+  initial: IeltsAdminTest
+  seriesOptions: string[]
+}) {
   const router = useRouter()
   const [test, setTest] = useState(initial)
   const [selectedKey, setSelectedKey] = useState(initial.sections[0]?.key)
@@ -768,6 +775,7 @@ export function TestEditor({ initial }: { initial: IeltsAdminTest }) {
         onOpenChange={open => setDialog(open ? 'details' : null)}
         onSave={() => void saveMeta()}
         open={dialog === 'details'}
+        seriesOptions={seriesOptions}
       />
 
       <Dialog

@@ -90,6 +90,16 @@ export async function readIeltsAttemptApi(
   return readJson(response)
 }
 
+export async function deleteIeltsAttemptApi(
+  attemptId: string
+): Promise<{ deleted: true }> {
+  const response = await fetch(IELTS_API_PATHS.attempt(attemptId), {
+    method: 'DELETE',
+  })
+
+  return readJson(response)
+}
+
 export async function readIeltsEvidenceApi(
   attemptId: string,
   number: number

@@ -17,11 +17,13 @@ export interface IeltsCatalogEntry {
   slug: string
   version: number
   title: string
+  series: string
   track: IeltsTrack
   targetBand: number
   tags: string[]
   description: string
-  skills: { skill: IeltsSkill; parts: number }[]
+  /** `mockReady` is false for listening while any part still lacks audio. */
+  skills: { skill: IeltsSkill; parts: number; mockReady: boolean }[]
   publishedAt: string | null
 }
 
@@ -32,12 +34,14 @@ async function loadCatalog(): Promise<IeltsCatalogEntry[]> {
       slug: 1,
       version: 1,
       title: 1,
+      series: 1,
       track: 1,
       targetBand: 1,
       tags: 1,
       description: 1,
       publishedAt: 1,
       'sections.skill': 1,
+      'sections.listening.audio.url': 1,
     }
   )
     .sort({ publishedAt: -1 })
@@ -45,28 +49,44 @@ async function loadCatalog(): Promise<IeltsCatalogEntry[]> {
 
   return docs.map(doc => {
     const counts = new Map<IeltsSkill, number>()
+    let listeningAudioMissing = false
 
     const sections =
-      (doc as unknown as { sections?: { skill: string }[] }).sections ?? []
+      (
+        doc as unknown as {
+          sections?: {
+            skill: string
+            listening?: { audio?: { url?: string } | null } | null
+          }[]
+        }
+      ).sections ?? []
 
-    for (const section of sections)
+    for (const section of sections) {
       counts.set(
         section.skill as IeltsSkill,
         (counts.get(section.skill as IeltsSkill) ?? 0) + 1
       )
+      if (section.skill === 'listening' && !section.listening?.audio?.url)
+        listeningAudioMissing = true
+    }
 
     return {
       id: String(doc._id),
       slug: doc.slug,
       version: doc.version,
       title: doc.title,
+      series: doc.series ?? '',
       track: doc.track as IeltsTrack,
       targetBand: doc.targetBand ?? 6.5,
       tags: doc.tags ?? [],
       description: doc.description ?? '',
       skills: (['listening', 'reading', 'writing'] as const)
         .filter(skill => counts.has(skill))
-        .map(skill => ({ skill, parts: counts.get(skill) ?? 0 })),
+        .map(skill => ({
+          skill,
+          parts: counts.get(skill) ?? 0,
+          mockReady: skill !== 'listening' || !listeningAudioMissing,
+        })),
       publishedAt: doc.publishedAt ? doc.publishedAt.toISOString() : null,
     }
   })

@@ -14,6 +14,7 @@ import {
   type IeltsAnswerContextValue,
 } from '../widgets/answerContext'
 import { GroupBlock } from '../widgets/GroupBlock'
+import { WritingPrompt } from '../widgets/WritingPrompt'
 
 /**
  * Live preview with the learner widgets. "Show answers" fills every widget
@@ -86,7 +87,7 @@ export function SectionPreview({ section }: { section: IeltsSection }) {
       ) : null}
       {section.writing ? (
         <div className="font-body grid gap-3 text-[16px] leading-[1.7]">
-          <p className="whitespace-pre-line">{section.writing.prompt}</p>
+          <WritingPrompt text={section.writing.prompt} />
           {section.writing.visual ? (
             <TaskVisual
               className="border-manga-black rounded-control border-2"

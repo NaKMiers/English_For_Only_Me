@@ -1,6 +1,5 @@
 'use client'
 
-import { Eye } from 'lucide-react'
 import { memo, useCallback } from 'react'
 
 import { Checkbox } from '@/components/ui/checkbox'
@@ -28,6 +27,7 @@ import {
   questionControlId,
   useIeltsAnswers,
 } from './answerContext'
+import { EvidenceIconButton } from './EvidenceIconButton'
 import { IeltsMarkdown } from './IeltsMarkdown'
 import { ReviewMark } from './ReviewMark'
 import { SlotInput } from './SlotInput'
@@ -44,27 +44,6 @@ function optionsFor(group: IeltsPublicGroup): IeltsOption[] {
     return YNNG_OPTIONS.map(key => ({ key, text: '' }))
 
   return group.options
-}
-
-function EvidenceButton({ number }: { number: number }) {
-  const { onShowEvidence } = useIeltsAnswers()
-
-  if (!onShowEvidence) return null
-
-  return (
-    <button
-      aria-label={`Show evidence for question ${number}`}
-      className="border-manga-black text-manga-red hover:bg-manga-paper-soft rounded-tag bg-manga-white inline-flex min-h-8 items-center gap-1 border-2 px-2 text-xs font-semibold"
-      onClick={() => onShowEvidence(number)}
-      type="button"
-    >
-      <Eye
-        aria-hidden="true"
-        className="size-3.5"
-      />
-      Show in text
-    </button>
-  )
 }
 
 function QuestionNumber({ number }: { number: number }) {
@@ -107,11 +86,9 @@ function RadioQuestions({ group }: Props) {
           >
             <div className="flex items-start gap-3">
               <QuestionNumber number={question.number} />
-              <p
-                className="pt-0.5 font-medium"
-                id={promptId}
-              >
-                {question.prompt}
+              <p className="pt-0.5 font-medium">
+                <span id={promptId}>{question.prompt}</span>{' '}
+                <EvidenceIconButton number={question.number} />
               </p>
             </div>
             <RadioGroup
@@ -155,10 +132,11 @@ function RadioQuestions({ group }: Props) {
                 )
               })}
             </RadioGroup>
-            <div className="flex flex-wrap items-center gap-2 pl-10">
-              {mark ? <ReviewMark mark={mark} /> : null}
-              <EvidenceButton number={question.number} />
-            </div>
+            {mark ? (
+              <div className="pl-10">
+                <ReviewMark mark={mark} />
+              </div>
+            ) : null}
           </li>
         )
       })}
@@ -194,7 +172,11 @@ function CheckboxQuestions({ group }: Props) {
         <span className="bg-manga-pale-red rounded-tag inline-grid h-7 shrink-0 place-items-center px-1.5 text-sm font-bold tabular-nums">
           {group.from}-{group.to}
         </span>
-        {stem ? <p className="pt-0.5 font-medium">{stem}</p> : null}
+        <p className="pt-0.5 font-medium">
+          {stem}
+          {stem ? ' ' : null}
+          <EvidenceIconButton number={first} />
+        </p>
       </div>
       <p
         className="text-muted-foreground pl-10 text-sm"
@@ -256,9 +238,6 @@ function CheckboxQuestions({ group }: Props) {
           )}
         </div>
       ) : null}
-      <div className="pl-10">
-        <EvidenceButton number={first} />
-      </div>
     </div>
   )
 }
@@ -310,11 +289,9 @@ function DropdownQuestions({ group }: Props) {
             >
               <div className="flex flex-wrap items-center gap-3">
                 <QuestionNumber number={question.number} />
-                <span
-                  className="min-w-0 flex-1 font-medium"
-                  id={promptId}
-                >
-                  {question.prompt}
+                <span className="min-w-0 flex-1 font-medium">
+                  <span id={promptId}>{question.prompt}</span>{' '}
+                  <EvidenceIconButton number={question.number} />
                 </span>
                 <Select
                   disabled={readOnly}
@@ -345,10 +322,11 @@ function DropdownQuestions({ group }: Props) {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="flex flex-wrap items-center gap-2 pl-10">
-                {mark ? <ReviewMark mark={mark} /> : null}
-                <EvidenceButton number={question.number} />
-              </div>
+              {mark ? (
+                <div className="pl-10">
+                  <ReviewMark mark={mark} />
+                </div>
+              ) : null}
             </li>
           )
         })}
@@ -408,36 +386,7 @@ function SlotQuestions({ group }: Props) {
           ))}
         </ol>
       ) : null}
-      <div className="flex flex-wrap gap-2">
-        {group.questions.map(question => (
-          <EvidenceButtonForSlot
-            key={question.number}
-            number={question.number}
-          />
-        ))}
-      </div>
     </div>
-  )
-}
-
-function EvidenceButtonForSlot({ number }: { number: number }) {
-  const { onShowEvidence } = useIeltsAnswers()
-
-  if (!onShowEvidence) return null
-
-  return (
-    <button
-      aria-label={`Show evidence for question ${number}`}
-      className="border-manga-black text-manga-red hover:bg-manga-paper-soft rounded-tag bg-manga-white inline-flex min-h-8 items-center gap-1 border-2 px-2 text-xs font-semibold"
-      onClick={() => onShowEvidence(number)}
-      type="button"
-    >
-      <Eye
-        aria-hidden="true"
-        className="size-3.5"
-      />
-      {number}
-    </button>
   )
 }
 
@@ -451,6 +400,7 @@ export const GroupBlock = memo(function GroupBlock({ group }: Props) {
   return (
     <section
       aria-labelledby={`ielts-group-${group.id}-title`}
+      data-highlight-scope={`group:${group.id}`}
       className="grid gap-3"
     >
       <header className="grid gap-1">

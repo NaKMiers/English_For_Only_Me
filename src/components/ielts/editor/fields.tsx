@@ -38,15 +38,19 @@ export function TextField({
   label,
   onChange,
   placeholder,
+  suggestions,
   value,
 }: {
   className?: string
   label: string
   onChange: (value: string) => void
   placeholder?: string
+  /** Offered as the browser's autocomplete list; typing anything is fine. */
+  suggestions?: string[]
   value: string
 }) {
   const id = useId()
+  const listId = suggestions?.length ? `${id}-list` : undefined
 
   return (
     <div className={cn('grid gap-1', className)}>
@@ -59,10 +63,21 @@ export function TextField({
       <Input
         className={INPUT_CLASS}
         id={id}
+        list={listId}
         onChange={event => onChange(event.target.value)}
         placeholder={placeholder}
         value={value}
       />
+      {listId ? (
+        <datalist id={listId}>
+          {suggestions?.map(item => (
+            <option
+              key={item}
+              value={item}
+            />
+          ))}
+        </datalist>
+      ) : null}
     </div>
   )
 }

@@ -15,6 +15,7 @@ import { AreaField, BandField, ListField, TextField } from './fields'
 
 export interface TestMeta {
   title: string
+  series: string
   track: IeltsTrack
   targetBand: number
   tags: string[]
@@ -28,9 +29,11 @@ interface Props {
   onOpenChange: (open: boolean) => void
   onSave: () => void
   open: boolean
+  /** Series names other tests already use. */
+  seriesOptions: string[]
 }
 
-/** Title, track, band, tags and description. */
+/** Title, series, track, band, tags and description. */
 export function TestDetailsDialog({
   busy,
   meta,
@@ -38,6 +41,7 @@ export function TestDetailsDialog({
   onOpenChange,
   onSave,
   open,
+  seriesOptions,
 }: Props) {
   return (
     <Dialog
@@ -57,6 +61,19 @@ export function TestDetailsDialog({
             onChange={title => onChange({ ...meta, title })}
             value={meta.title}
           />
+          <div className="grid gap-1">
+            <TextField
+              label="Series"
+              onChange={series => onChange({ ...meta, series })}
+              placeholder="IELTS 21"
+              suggestions={seriesOptions}
+              value={meta.series}
+            />
+            <p className="text-muted-foreground text-xs">
+              Groups tests on the IELTS page. Pick an existing one to keep them
+              together; leave empty to group by the title.
+            </p>
+          </div>
           <div className="grid grid-cols-2 gap-2">
             <div className="grid gap-1">
               <span className="font-sans text-xs font-black">Track</span>

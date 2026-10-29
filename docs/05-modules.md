@@ -664,16 +664,6 @@ counts to 0.
   tiers. `getLatestCompletedVideoForUser` returns the user's most recently completed,
   non-archived video (sorted by `completedAt` then `updatedAt`) for a prominent results CTA.
 
-### Backfill migration (`backfill.ts`)
-
-`backfillContentHierarchy({ dryRun }, model = DictationVideoModel)` files pre-hierarchy
-videos (imported before the hierarchy existed) into the no-topic/ungrouped state by setting
-`topicId`, `sectionId`, and `level` all to `null`. It matches videos missing any of those
-fields (`NEEDS_BACKFILL_FILTER` uses `$exists: false`), which makes it idempotent (a second
-run matches zero). On `dryRun` or when nothing needs it, it mutates nothing and reports
-counts; otherwise it `updateMany`s and reports `updated`. The model interface is injected so
-the pure logic is unit-testable with a mock.
-
 ---
 
 ## preferences/ - local user preferences and keyboard shortcuts
@@ -913,7 +903,7 @@ normalizedTerm }`: `$set` sets `frequencyRank`, `entryType`, license/attribution
 `difficultyLevel` (`core-1000` when rank <= 1000, else `core`), and `seedRank/seedSource`;
 `$setOnInsert` stamps `enrichmentStatus: 'seeded'` and `enrichmentAttempts: 0`. Idempotent
 (re-running only refreshes `$set`). Run via `scripts/seedVocabulary.ts` / `bun run
-vocab:seed`; a companion `bun run vocab:backfill-vi` backfills Vietnamese meanings.
+vocab:seed`.
 
 ### providers/ - adapters and the fallback chain
 

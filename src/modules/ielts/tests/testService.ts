@@ -64,6 +64,15 @@ export interface IeltsAdminTest extends IeltsTestRecord {
 
 type LeanDoc = Record<string, unknown>
 
+/** Series names already in use, for the editor's suggestions. */
+export async function listIeltsSeries(): Promise<string[]> {
+  const names: unknown[] = await IeltsTestModel.distinct('series', {
+    series: { $nin: ['', null] },
+  })
+
+  return names.map(String).sort((left, right) => left.localeCompare(right))
+}
+
 export async function listAdminTests(): Promise<IeltsAdminTestRow[]> {
   const docs = await IeltsTestModel.find(
     {},
@@ -191,6 +200,7 @@ export async function createTest(
     status: 'draft',
     source: generated ? 'ai' : 'manual',
     title,
+    series: '',
     track: input.track,
     targetBand: input.targetBand,
     tags: [],

@@ -98,6 +98,7 @@ async function main() {
         status: 'draft',
         source: 'ai',
         title: 'eval',
+        series: '',
         track: 'academic',
         targetBand: 6.5,
         tags: [],

@@ -21,6 +21,7 @@ import type { IeltsPublicSection } from '@/modules/ielts/publicView'
 import { countEssayWords } from '@/modules/ielts/scoring/wordCount'
 
 import { TaskVisual } from '../visual/TaskVisual'
+import { WritingPrompt } from '../widgets/WritingPrompt'
 import { ExamButton, segmentClass } from '../ui'
 import { RunnerToolbar } from './RunnerToolbar'
 import { useAttemptAnswers } from './useAttemptAnswers'
@@ -30,25 +31,9 @@ interface Props {
   attempt: IeltsAttemptRecord
   backHref: string
   sections: IeltsPublicSection[]
+  /** Task to show first, from the test page's task links. */
+  startPart?: number | null
   testTitle: string
-}
-
-function PromptText({ text }: { text: string }) {
-  return (
-    <div className="grid gap-3">
-      {text
-        .split(/\n{2,}/)
-        .filter(Boolean)
-        .map((paragraph, index) => (
-          <p
-            className="whitespace-pre-line"
-            key={index}
-          >
-            {paragraph}
-          </p>
-        ))}
-    </div>
-  )
 }
 
 /**
@@ -60,6 +45,7 @@ export function WritingRunner({
   attempt,
   backHref,
   sections,
+  startPart = null,
   testTitle,
 }: Props) {
   const router = useRouter()
@@ -78,7 +64,12 @@ export function WritingRunner({
     () => sections.filter(section => section.writing),
     [sections]
   )
-  const [taskIndex, setTaskIndex] = useState(0)
+  const [taskIndex, setTaskIndex] = useState(() =>
+    Math.max(
+      0,
+      sections.findIndex(section => section.order === startPart)
+    )
+  )
   const [mobileTab, setMobileTab] = useState<'task' | 'essay'>('task')
   const [spellCheck, setSpellCheck] = useState(false)
   const [notice, setNotice] = useState('')
@@ -238,7 +229,7 @@ export function WritingRunner({
             <h2 className="font-sans text-[22px] font-black">
               Writing Task {writing.task}
             </h2>
-            <PromptText text={writing.prompt} />
+            <WritingPrompt text={writing.prompt} />
             {writing.visual ? (
               <TaskVisual
                 className="border-manga-black rounded-control border-2"

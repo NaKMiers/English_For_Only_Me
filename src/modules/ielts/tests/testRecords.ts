@@ -134,6 +134,7 @@ export function toIeltsTestRecord(raw: LeanDoc): IeltsTestRecord {
     status: (raw.status as IeltsTestRecord['status']) ?? 'draft',
     source: (raw.source as IeltsTestRecord['source']) ?? 'manual',
     title: asString(raw.title),
+    series: asString(raw.series),
     track: (raw.track as IeltsTestRecord['track']) ?? 'academic',
     targetBand: asNumber(raw.targetBand, 6.5),
     tags: asArray<string>(raw.tags).map(String),

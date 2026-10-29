@@ -20,13 +20,8 @@ import {
 } from '@/modules/ielts/constants'
 import type { IeltsSection } from '@/modules/ielts/schema'
 import { readPublishedIeltsTest } from '@/modules/ielts/tests/testReaders'
-import {
-  ExamBadge,
-  ExamButton,
-  ExamCard,
-  ExamSheet,
-  ExamHero,
-} from '@/components/ielts/ui'
+import { SkillLauncher } from '@/components/ielts/catalogue/SkillLauncher'
+import { ExamBadge, ExamSheet, ExamHero } from '@/components/ielts/ui'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -129,7 +124,7 @@ export default async function IeltsTestPage({ params }: Props) {
           ) : null}
         </ExamHero>
 
-        <div className="grid gap-6 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {IELTS_SKILLS.map(skill => {
             const parts = test.sections
               .filter(section => section.skill === skill)
@@ -142,84 +137,43 @@ export default async function IeltsTestPage({ params }: Props) {
             if (!parts.length) return null
 
             return (
-              <ExamCard
-                eyebrow={`${parts.length} ${SECTION_NOUNS[skill]}${parts.length === 1 ? '' : 's'}`}
+              <SkillLauncher
+                fullMeta={{
+                  practice: `All ${parts.length} ${SECTION_NOUNS[skill]}s`,
+                  mock:
+                    skill === 'listening'
+                      ? 'Audio plays once'
+                      : `${(skill === 'reading' ? IELTS_TIMERS.readingSkill : IELTS_TIMERS.writingSkill) / 60} min`,
+                }}
                 key={skill}
+                latest={
+                  last
+                    ? {
+                        href: `/ielts/attempts/${last.id}`,
+                        label:
+                          last.band !== null
+                            ? `Band ${last.band.toFixed(1)}`
+                            : last.raw !== null
+                              ? `${last.raw}/${last.total}`
+                              : 'View',
+                      }
+                    : null
+                }
+                mockBlockedReason={
+                  audioMissing
+                    ? 'The mock test opens once every part has audio.'
+                    : null
+                }
+                parts={parts.map(section => ({
+                  label: partLabel(section),
+                  meta: partMinutes(section),
+                  part: section.order,
+                }))}
+                partsNoun={`${parts.length} ${SECTION_NOUNS[skill]}${parts.length === 1 ? '' : 's'}`}
+                skill={skill}
+                slug={slug}
                 title={IELTS_SKILL_LABELS[skill]}
-              >
-                <ul className="grid gap-2">
-                  {parts.map(section => (
-                    <li
-                      className="border-manga-black/20 flex flex-wrap items-center justify-between gap-2 border-b pb-2"
-                      key={section.key}
-                    >
-                      <span className="min-w-0 font-semibold">
-                        <strong className="font-sans font-black">
-                          {partLabel(section)}
-                        </strong>{' '}
-                        · {partMinutes(section)}
-                      </span>
-                      <span className="flex gap-1.5">
-                        <ExamButton
-                          className="min-h-9 px-2.5 text-xs"
-                          href={`/ielts/${slug}/${skill}?part=${section.order}`}
-                          tone="paper"
-                        >
-                          Practice
-                        </ExamButton>
-                        {skill === 'listening' &&
-                        !section.listening?.audio?.url ? null : (
-                          <ExamButton
-                            className="min-h-9 px-2.5 text-xs"
-                            href={`/ielts/${slug}/${skill}/mock?part=${section.order}`}
-                            tone="paper"
-                          >
-                            Mock
-                          </ExamButton>
-                        )}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-                <div className="flex flex-wrap gap-2">
-                  <ExamButton
-                    href={`/ielts/${slug}/${skill}`}
-                    tone="paper"
-                  >
-                    Practice all
-                  </ExamButton>
-                  {audioMissing ? (
-                    <span className="text-muted-foreground self-center text-sm font-semibold">
-                      Mock test needs audio for every part.
-                    </span>
-                  ) : (
-                    <ExamButton
-                      href={`/ielts/${slug}/${skill}/mock`}
-                      tone="ink"
-                    >
-                      Mock{' '}
-                      {skill === 'listening'
-                        ? ''
-                        : `${(skill === 'reading' ? IELTS_TIMERS.readingSkill : IELTS_TIMERS.writingSkill) / 60} min`}
-                    </ExamButton>
-                  )}
-                </div>
-                {last ? (
-                  <p className="text-sm">
-                    Latest:{' '}
-                    <Link
-                      className="font-bold underline"
-                      href={`/ielts/attempts/${last.id}`}
-                    >
-                      {last.band !== null
-                        ? `Band ${last.band.toFixed(1)}`
-                        : last.raw !== null
-                          ? `${last.raw}/${last.total}`
-                          : 'View result'}
-                    </Link>
-                  </p>
-                ) : null}
-              </ExamCard>
+              />
             )
           })}
         </div>

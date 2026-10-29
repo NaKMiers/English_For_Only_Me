@@ -29,9 +29,9 @@ export default async function IeltsMockPage({ params, searchParams }: Props) {
     <div className="ielts-exam fixed inset-0 z-[70] flex flex-col">
       <AttemptLoader
         backHref={`/ielts/${data.testSlug}`}
-        key={`${data.skill}-${data.part ?? 'all'}`}
+        key={`${data.skill}-${data.startPart ?? 'first'}`}
         mode="mock"
-        part={data.part}
+        startPart={data.startPart}
         sections={data.sections}
         skill={data.skill}
         testSlug={data.testSlug}

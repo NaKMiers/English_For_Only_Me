@@ -3,6 +3,7 @@ import 'server-only'
 import { Types } from 'mongoose'
 
 import { IeltsAttemptModel } from '@/models/ielts/IeltsAttemptModel'
+import { IeltsGradingLedgerModel } from '@/models/ielts/IeltsGradingLedgerModel'
 import { isDuplicateKeyError } from '@/modules/dictation/practice/duplicateKeyError'
 
 import { IELTS_MAX_AUDIO_EVENTS, IELTS_TIMERS, NOT_GIVEN } from '../constants'
@@ -207,6 +208,41 @@ async function readOwnedAttempt(ownerId: string, attemptId: string) {
     _id: attemptId,
     ownerId,
   }).lean()) as unknown as LeanAttempt | null
+}
+
+/**
+ * Deletes one of the owner's attempts for good: answers, result, writing
+ * feedback and gradings all live on the attempt document, and every metric
+ * (band estimate, weak spots, history) is computed from attempts at read
+ * time, so they drop it on the next read. Today's AI gradings move to the
+ * grading ledger first, so a delete never resets the daily grading cap.
+ * False when the attempt does not exist or belongs to someone else.
+ */
+export async function deleteAttemptForOwner(
+  ownerId: string,
+  attemptId: string,
+  now = new Date()
+) {
+  const attempt = (await IeltsAttemptModel.findOne(
+    { _id: attemptId, ownerId },
+    { gradings: 1 }
+  ).lean()) as { gradings?: Array<{ at: Date }> } | null
+
+  if (!attempt) return false
+
+  const since = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
+  )
+  const today = (attempt.gradings ?? []).filter(item => item.at >= since)
+
+  if (today.length)
+    await IeltsGradingLedgerModel.insertMany(
+      today.map(item => ({ ownerId, at: item.at }))
+    )
+
+  const deleted = await IeltsAttemptModel.deleteOne({ _id: attemptId, ownerId })
+
+  return deleted.deletedCount === 1
 }
 
 /**

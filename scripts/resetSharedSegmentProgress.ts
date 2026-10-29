@@ -30,8 +30,8 @@ async function main() {
   // nothing (scripts run without NODE_ENV, where they would otherwise be on).
   await connect(getMongoDbUri(), getManualSchemaConnectOptions())
 
-  // Raw driver collection, like migrateDictationVideoStatus.ts: these fields
-  // are on their way out of the model, so match the stored data directly.
+  // Raw driver collection: these fields are on their way out of the model, so
+  // match the stored data directly.
   const segments = DictationSegmentModel.collection
   const dirtyCount = await segments.countDocuments(DIRTY_SEGMENT_FILTER)
 

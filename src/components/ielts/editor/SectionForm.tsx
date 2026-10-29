@@ -714,6 +714,7 @@ function WritingForm({
         variant="block"
       >
         <AreaField
+          hint='Start a line with "> " to put it in the exam box.'
           label="Prompt"
           onChange={prompt => onChange({ ...material, prompt })}
           rows={6}

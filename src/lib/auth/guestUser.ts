@@ -9,6 +9,11 @@ import { cookies } from 'next/headers'
  * login the guest's rows are merged into the real account (see mergeGuestData).
  */
 export const GUEST_COOKIE_NAME = 'dictationGuestId'
+/**
+ * Set only while a guest merge is unfinished: the account id that merge was
+ * for. A retry may only run for that account (see guestMerge.ts).
+ */
+export const GUEST_MERGE_OWNER_COOKIE = 'dictationGuestMergeOwner'
 
 const GUEST_ID_PREFIX = 'guest_'
 // One year - guests keep their progress across visits until they sign in.
@@ -58,9 +63,33 @@ export async function getOrCreateGuestId(): Promise<string> {
   return id
 }
 
-/** Drop the guest cookie once its data has been merged into a real account. */
+/**
+ * Drop the guest cookie (and any pending-merge owner) once its data has been
+ * merged into a real account, or abandoned.
+ */
 export async function clearGuestCookie(): Promise<void> {
   const store = await cookies()
 
   store.delete(GUEST_COOKIE_NAME)
+  store.delete(GUEST_MERGE_OWNER_COOKIE)
+}
+
+/** The account an unfinished guest merge belongs to, or null. */
+export async function getGuestMergeOwner(): Promise<string | null> {
+  const store = await cookies()
+
+  return store.get(GUEST_MERGE_OWNER_COOKIE)?.value || null
+}
+
+/** Remember which account must finish this guest's merge. */
+export async function setGuestMergeOwner(userId: string): Promise<void> {
+  const store = await cookies()
+
+  store.set(GUEST_MERGE_OWNER_COOKIE, userId, {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    path: '/',
+    maxAge: GUEST_COOKIE_MAX_AGE,
+  })
 }

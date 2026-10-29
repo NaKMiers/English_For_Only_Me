@@ -1,4 +1,5 @@
 import type { IeltsVisual } from '../schema'
+import { plainWritingPrompt } from './promptBlocks'
 
 export interface ExaminerLesson {
   id: string
@@ -60,7 +61,7 @@ export function buildExaminerMessages(input: ExaminerInput) {
 
   const user = [
     `Track: ${input.track}. Writing Task ${input.task}.`,
-    `Task prompt:\n${input.prompt}`,
+    `Task prompt:\n${plainWritingPrompt(input.prompt)}`,
     `Visual data: ${describeVisual(input.visual)}`,
     `Word count: ${input.wordCount} (minimum ${input.minWords}).`,
     `Grammar lessons available (id: title):\n${input.lessons

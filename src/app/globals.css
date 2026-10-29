@@ -408,6 +408,9 @@ body {
   position: fixed;
   top: 0;
   right: clamp(12px, 3vw, 40px);
+  /* Layers: lamp 60, the IELTS exam stage (.ielts-exam) 70, and every popup
+     (dialog, sheet, select, menu, tooltip in components/ui) 80, so a popup
+     opened inside an exam is never hidden behind it. */
   z-index: 60;
   pointer-events: none;
 }
@@ -752,6 +755,13 @@ textarea:focus-visible,
 ::selection {
   background: var(--selection-bg);
   color: var(--selection-fg);
+}
+
+/* Learner highlights in the IELTS exam (TextHighlighter). Painted through the
+   CSS Custom Highlight API, so no <mark> is ever added to the text. */
+::highlight(ielts-user) {
+  background-color: #fde047;
+  color: #050505;
 }
 
 /* IELTS runner stage: the full-screen layer that holds a test run. It sits

@@ -6,6 +6,7 @@ import {
   getOpenAiIeltsGradingModel,
 } from '@/constants/environments'
 import { IeltsAttemptModel } from '@/models/ielts/IeltsAttemptModel'
+import { IeltsGradingLedgerModel } from '@/models/ielts/IeltsGradingLedgerModel'
 import { grammarCourse } from '@/modules/grammar/course'
 
 import {
@@ -39,17 +40,23 @@ function startOfUtcDay(now: Date) {
   )
 }
 
-/** Successful gradings today across all the owner's attempts. */
+/**
+ * Successful gradings today across all the owner's attempts, plus those of
+ * attempts deleted today (kept in the grading ledger).
+ */
 export async function countGradingsToday(ownerId: string, now = new Date()) {
   const since = startOfUtcDay(now)
-  const [row] = await IeltsAttemptModel.aggregate<{ count: number }>([
-    { $match: { ownerId, 'gradings.at': { $gte: since } } },
-    { $unwind: '$gradings' },
-    { $match: { 'gradings.at': { $gte: since } } },
-    { $count: 'count' },
+  const [[row], deleted] = await Promise.all([
+    IeltsAttemptModel.aggregate<{ count: number }>([
+      { $match: { ownerId, 'gradings.at': { $gte: since } } },
+      { $unwind: '$gradings' },
+      { $match: { 'gradings.at': { $gte: since } } },
+      { $count: 'count' },
+    ]),
+    IeltsGradingLedgerModel.countDocuments({ ownerId, at: { $gte: since } }),
   ])
 
-  return row?.count ?? 0
+  return (row?.count ?? 0) + deleted
 }
 
 /**

@@ -180,6 +180,7 @@ const IeltsTestSchema = new Schema(
     status: { type: String, enum: IELTS_TEST_STATUSES, default: 'draft' },
     source: { type: String, enum: IELTS_TEST_SOURCES, default: 'manual' },
     title: { type: String, required: true, trim: true },
+    series: str,
     track: { type: String, enum: IELTS_TRACKS, default: 'academic' },
     targetBand: { type: Number, default: 6.5 },
     tags: { type: [String], default: [] },

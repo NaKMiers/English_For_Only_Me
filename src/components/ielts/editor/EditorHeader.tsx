@@ -119,6 +119,7 @@ export function EditorHeader({
             <MetaChip>
               {test.track === 'academic' ? 'Academic' : 'General'}
             </MetaChip>
+            {test.series ? <MetaChip>{test.series}</MetaChip> : null}
             <MetaChip>Band {test.targetBand.toFixed(1)}</MetaChip>
             <MetaChip>{test.source}</MetaChip>
             {test.tags.slice(0, 3).map(tag => (

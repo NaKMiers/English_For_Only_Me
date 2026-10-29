@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils'
 import { IELTS_ANSWER_MAX_LENGTH } from '@/modules/ielts/constants'
 
 import { answerText, questionControlId, useIeltsAnswers } from './answerContext'
+import { EvidenceIconButton } from './EvidenceIconButton'
 import { ReviewMark } from './ReviewMark'
 
 interface Props {
@@ -22,8 +23,9 @@ function focusNext(number: number) {
 }
 
 /**
- * An inline blank inside a note, table, form or sentence: a number tag then
- * an input that grows with its content (9ch to 24ch).
+ * An inline blank inside a note, table, form or sentence: a number tag, an
+ * input that grows with its content (9ch to 24ch) and, in Guided practice,
+ * its show-in-text key.
  */
 export const SlotInput = memo(function SlotInput({
   describedBy,
@@ -84,6 +86,7 @@ export const SlotInput = memo(function SlotInput({
         style={{ width: `${Math.min(24, Math.max(10, value.length + 3))}ch` }}
         value={value}
       />
+      <EvidenceIconButton number={number} />
       {mark ? <ReviewMark mark={mark} /> : null}
     </span>
   )

@@ -1,5 +1,12 @@
 'use client'
 
+import {
+  BookOpen,
+  FileText,
+  Headphones,
+  Lightbulb,
+  ListChecks,
+} from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import {
   type ReactNode,
@@ -10,7 +17,6 @@ import {
   useState,
 } from 'react'
 
-import { Label } from '@/components/ui/label'
 import {
   Dialog,
   DialogContent,
@@ -19,7 +25,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Switch } from '@/components/ui/switch'
 import { cn } from '@/lib/utils'
 import type { IeltsAttemptRecord } from '@/modules/ielts/attempts/attemptRecords'
 import { IELTS_SKILL_LABELS } from '@/modules/ielts/constants'
@@ -41,14 +46,20 @@ import {
   countBlanks,
   type IeltsQuestionEntry,
 } from './questionIndex'
-import { ExamButton, segmentClass } from '../ui'
-import { RunnerToolbar } from './RunnerToolbar'
+import { ExamButton } from '../ui'
+import { RunnerToolbar, ToolbarToggle } from './RunnerToolbar'
+import { TextHighlighter } from './TextHighlighter'
 import { useAttemptAnswers } from './useAttemptAnswers'
 import { useMockDeadline } from './useMockDeadline'
 
 interface Props {
   attempt: IeltsAttemptRecord
   backHref: string
+  /** The test's next and previous skills, at either end of the bottom bar. */
+  next?: { href: string; label: string } | null
+  prev?: { href: string; label: string } | null
+  /** Part to show first, from the test page's part links. */
+  startPart?: number | null
   sections: IeltsPublicSection[]
   testTitle: string
 }
@@ -76,7 +87,15 @@ function focusQuestion(number: number) {
  * chrome on the toolbar, navigator and widgets; the passage and questions
  * sit on plain paper. Split pane from 1024px, two tabs below.
  */
-export function IeltsRunner({ attempt, backHref, sections, testTitle }: Props) {
+export function IeltsRunner({
+  attempt,
+  backHref,
+  next = null,
+  prev = null,
+  sections,
+  startPart = null,
+  testTitle,
+}: Props) {
   const router = useRouter()
   const isMock = attempt.mode === 'mock'
   const isPractice = attempt.mode === 'practice'
@@ -85,6 +104,8 @@ export function IeltsRunner({ attempt, backHref, sections, testTitle }: Props) {
   const locked = !open || submitting
   // Filled in below once `finish` exists; the hook calls it on a late save.
   const finishRef = useRef<() => void>(() => undefined)
+  // Passage, transcript and questions: where text can be highlighted.
+  const stageRef = useRef<HTMLDivElement>(null)
   const { answers, saveState, setAnswer, submit } = useAttemptAnswers({
     attempt,
     enabled: !locked,
@@ -95,15 +116,22 @@ export function IeltsRunner({ attempt, backHref, sections, testTitle }: Props) {
     () => [...new Set(sections.map(section => section.order))],
     [sections]
   )
-  const [currentPart, setCurrentPart] = useState(parts[0] ?? 1)
+  const [currentPart, setCurrentPart] = useState(
+    startPart !== null && parts.includes(startPart)
+      ? startPart
+      : (parts[0] ?? 1)
+  )
   const [currentNumber, setCurrentNumber] = useState<number | null>(
-    index[0]?.number ?? null
+    () =>
+      (index.find(entry => entry.part === currentPart) ?? index[0])?.number ??
+      null
   )
   const [mobileTab, setMobileTab] = useState<'material' | 'questions'>(
     'material'
   )
-  const [guided, setGuided] = useState(false)
-  const [showTranscript, setShowTranscript] = useState(false)
+  const [guided, setGuided] = useState(isPractice)
+  // Practice opens with the transcript showing; mock never shows it.
+  const [showTranscript, setShowTranscript] = useState(true)
   const [highlight, setHighlight] = useState<
     (IeltsHighlight & { sectionKey: string }) | null
   >(null)
@@ -257,25 +285,80 @@ export function IeltsRunner({ attempt, backHref, sections, testTitle }: Props) {
     ) : null
 
   const toggles = isPractice ? (
-    <div className="flex flex-wrap items-center gap-3">
-      <Label className="text-manga-black flex items-center gap-2 text-xs font-semibold">
-        <Switch
-          checked={guided}
-          onCheckedChange={setGuided}
-        />
-        Guided
-      </Label>
+    <div className="flex items-center gap-2">
+      <ToolbarToggle
+        checked={guided}
+        icon={<Lightbulb aria-hidden="true" />}
+        label="Guided"
+        onCheckedChange={checked => {
+          setGuided(checked)
+          // Guided off hides every hint, including the evidence highlight.
+          if (!checked) setHighlight(null)
+        }}
+      />
       {attempt.skill === 'listening' ? (
-        <Label className="text-manga-black flex items-center gap-2 text-xs font-semibold">
-          <Switch
-            checked={showTranscript}
-            onCheckedChange={setShowTranscript}
-          />
-          Transcript
-        </Label>
+        <ToolbarToggle
+          checked={showTranscript}
+          icon={<FileText aria-hidden="true" />}
+          label="Transcript"
+          onCheckedChange={setShowTranscript}
+        />
       ) : null}
     </div>
   ) : null
+
+  // Segmented toggle (aria-pressed): the documented raw-button exception.
+  const panes = (
+    <div
+      aria-label="Choose panel"
+      className="border-manga-black bg-manga-paper-soft rounded-control flex h-9 border-2 p-0.5"
+      role="group"
+    >
+      {(
+        [
+          [
+            'material',
+            attempt.skill === 'listening' ? 'Audio' : 'Passage',
+            attempt.skill === 'listening' ? Headphones : BookOpen,
+          ],
+          ['questions', 'Questions', ListChecks],
+        ] as const
+      ).map(([value, label, Icon]) => {
+        const active = mobileTab === value
+
+        return (
+          <button
+            aria-pressed={active}
+            className={cn(
+              'rounded-tag flex min-w-0 flex-auto items-center justify-center gap-1.5 px-2 font-sans text-[13px] font-black transition-colors',
+              active
+                ? 'bg-manga-black text-manga-white'
+                : 'text-manga-black hover:bg-manga-white'
+            )}
+            key={value}
+            onClick={() => setMobileTab(value)}
+            type="button"
+          >
+            <Icon
+              aria-hidden="true"
+              className="size-4 shrink-0 max-sm:hidden"
+            />
+            <span className="truncate">{label}</span>
+            {value === 'questions' ? (
+              <span
+                className={cn(
+                  'rounded-tag shrink-0 px-1 text-[11px] leading-4 tabular-nums',
+                  active ? 'bg-manga-white/20' : 'bg-manga-black/10'
+                )}
+              >
+                {answeredCount}/{total}
+              </span>
+            ) : null}
+          </button>
+        )
+      })}
+    </div>
+  )
 
   return (
     <IeltsAnswerContext.Provider value={context}>
@@ -285,6 +368,7 @@ export function IeltsRunner({ attempt, backHref, sections, testTitle }: Props) {
           modeLabel={MODE_LABELS[attempt.mode]}
           onBack={isMock && open ? () => setExitOpen(true) : undefined}
           onSubmit={requestSubmit}
+          panes={panes}
           saveState={open ? saveState : 'saved'}
           secondsLeft={secondsLeft}
           submitDisabled={!open}
@@ -309,31 +393,10 @@ export function IeltsRunner({ attempt, backHref, sections, testTitle }: Props) {
           </p>
         ) : null}
 
-        {/* Segmented toggle (aria-pressed): the documented raw-button exception. */}
         <div
-          aria-label="Choose panel"
-          className="border-manga-black bg-manga-white sticky top-0 flex shrink-0 gap-2 border-b-2 px-3 py-2 lg:hidden"
-          role="group"
+          className="grid min-h-0 flex-1 lg:grid-cols-[55fr_45fr]"
+          ref={stageRef}
         >
-          {(
-            [
-              ['material', attempt.skill === 'listening' ? 'Audio' : 'Passage'],
-              ['questions', `Questions ${answeredCount}/${total}`],
-            ] as const
-          ).map(([value, label]) => (
-            <button
-              aria-pressed={mobileTab === value}
-              className={segmentClass(mobileTab === value, 'min-h-10 flex-1')}
-              key={value}
-              onClick={() => setMobileTab(value)}
-              type="button"
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-
-        <div className="grid min-h-0 flex-1 lg:grid-cols-[55fr_45fr]">
           <section
             aria-label={
               attempt.skill === 'listening' ? 'Audio' : 'Reading passage'
@@ -352,25 +415,6 @@ export function IeltsRunner({ attempt, backHref, sections, testTitle }: Props) {
               mobileTab === 'questions' ? 'block' : 'hidden'
             )}
           >
-            {parts.length > 1 ? (
-              <div
-                aria-label="Choose section"
-                className="mb-4 flex flex-wrap gap-2"
-                role="group"
-              >
-                {parts.map(part => (
-                  <button
-                    aria-pressed={part === currentPart}
-                    className={segmentClass(part === currentPart, 'min-h-9')}
-                    key={part}
-                    onClick={() => setCurrentPart(part)}
-                    type="button"
-                  >
-                    {partName(attempt.skill, part, attempt.mode)}
-                  </button>
-                ))}
-              </div>
-            ) : null}
             <div className="text-manga-black mx-auto grid max-w-[70ch] gap-10 text-[16px] leading-[1.7]">
               {section?.groups.map(group => (
                 <GroupBlock
@@ -382,10 +426,16 @@ export function IeltsRunner({ attempt, backHref, sections, testTitle }: Props) {
           </section>
         </div>
 
+        <TextHighlighter rootRef={stageRef} />
+
         <QuestionNavigator
           answers={answers}
           currentNumber={currentNumber}
+          currentPart={currentPart}
           index={index}
+          next={isPractice ? next : null}
+          prev={isPractice ? prev : null}
+          onPartChange={setCurrentPart}
           onSelect={selectEntry}
           partLabel={part => partName(attempt.skill, part, attempt.mode)}
         />
