@@ -34,6 +34,11 @@ const LINKS = [
     desc: 'Add a new YouTube source.',
   },
   {
+    href: '/admin/ielts',
+    title: 'IELTS tests',
+    desc: 'Write, generate with AI, check and publish IELTS tests.',
+  },
+  {
     href: '/admin/vocab',
     title: 'Vocabulary',
     desc: 'Seed and enrich the global vocabulary cache.',

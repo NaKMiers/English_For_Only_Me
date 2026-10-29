@@ -1,6 +1,7 @@
 import {
   BookOpen,
   Bot,
+  ClipboardCheck,
   Headphones,
   Languages,
   NotebookPen,
@@ -45,6 +46,12 @@ const moduleIcons: Record<AppModuleKey, ReactNode> = {
   ),
   speaking: (
     <Headphones
+      aria-hidden="true"
+      className="size-6"
+    />
+  ),
+  ielts: (
+    <ClipboardCheck
       aria-hidden="true"
       className="size-6"
     />

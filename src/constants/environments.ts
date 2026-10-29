@@ -13,6 +13,10 @@ export const ENV_KEYS = {
   siteUrl: 'SITE_URL',
   myMemoryEmail: 'MYMEMORY_EMAIL',
   revalidateSecret: 'REVALIDATE_SECRET',
+  openAiIeltsGenerationModel: 'OPENAI_IELTS_GENERATION_MODEL',
+  openAiIeltsGradingModel: 'OPENAI_IELTS_GRADING_MODEL',
+  openAiTtsModel: 'OPENAI_TTS_MODEL',
+  ieltsWritingDailyLimit: 'IELTS_WRITING_DAILY_LIMIT',
 } as const
 
 export class MissingEnvironmentError extends Error {
@@ -77,6 +81,29 @@ export function getOpenAiTranslationModel() {
     getOptionalServerEnv(ENV_KEYS.openAiTranslationModel) ??
     getOpenAiDebriefModel()
   )
+}
+
+/** IELTS test generation needs a stronger model than the nano default. */
+export function getOpenAiIeltsGenerationModel() {
+  return getOptionalServerEnv(ENV_KEYS.openAiIeltsGenerationModel) ?? 'gpt-5.4'
+}
+
+export function getOpenAiIeltsGradingModel() {
+  return (
+    getOptionalServerEnv(ENV_KEYS.openAiIeltsGradingModel) ??
+    getOpenAiIeltsGenerationModel()
+  )
+}
+
+export function getOpenAiTtsModel() {
+  return getOptionalServerEnv(ENV_KEYS.openAiTtsModel) ?? 'gpt-4o-mini-tts'
+}
+
+/** Successful writing gradings per learner per UTC day. */
+export function getIeltsWritingDailyLimit() {
+  const raw = Number(getOptionalServerEnv(ENV_KEYS.ieltsWritingDailyLimit))
+
+  return Number.isInteger(raw) && raw > 0 ? raw : 10
 }
 
 export function getIeltsGoal() {

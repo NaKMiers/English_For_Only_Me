@@ -306,7 +306,8 @@ async function persistReadyResult({
           $push: {
             providerErrors: {
               at: now,
-              message: 'Vietnamese meaning is required before this word is ready.',
+              message:
+                'Vietnamese meaning is required before this word is ready.',
               provider: MY_MEMORY_PROVIDER,
               status: 'missingVietnameseMeaning',
             },

@@ -27,7 +27,9 @@
     "vocab:seed-family": "node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/seedVocabularyFamily.ts",
     "vocab:enrich": "node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/enrichVocabularyBatch.ts",
     "vocab:translate-openai": "node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/translateVocabularyOpenAi.ts",
-    "vocab:backfill-vi": "node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/backfillVocabularyVietnameseMeanings.ts"
+    "vocab:backfill-vi": "node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/backfillVocabularyVietnameseMeanings.ts",
+    "ielts:seed-sample": "node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/seedIeltsSample.ts",
+    "ielts:eval-generation": "node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/evalIeltsGeneration.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",

@@ -9,7 +9,8 @@ export type VocabUserItemStatus =
 export type VocabWordListView =
   'learning' | 'dueToday' | 'alreadyKnow' | 'mastered' | 'knownTotal'
 
-export type VocabLearningSource = 'search' | 'explore' | 'dictionary' | 'manual'
+export type VocabLearningSource =
+  'search' | 'explore' | 'dictionary' | 'manual' | 'ielts'
 
 export type VocabKnownReason = 'manual' | 'recallMastery'
 

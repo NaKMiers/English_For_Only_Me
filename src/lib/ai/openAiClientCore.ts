@@ -16,6 +16,8 @@ interface OpenAiStructuredOutputRequest {
    */
   maxOutputTokens?: number
   model: string
+  /** Reasoning models only; omitted from the request when unset. */
+  reasoningEffort?: 'minimal' | 'low' | 'medium' | 'high'
   schema: Record<string, unknown>
   schemaName: string
 }
@@ -74,6 +76,7 @@ export async function requestOpenAiStructuredOutput({
   input,
   maxOutputTokens = DEFAULT_MAX_OUTPUT_TOKENS,
   model,
+  reasoningEffort,
   schema,
   schemaName,
 }: OpenAiStructuredOutputRequest): Promise<OpenAiStructuredOutputResult> {
@@ -94,6 +97,7 @@ export async function requestOpenAiStructuredOutput({
         input,
         max_output_tokens: maxOutputTokens,
         model,
+        ...(reasoningEffort ? { reasoning: { effort: reasoningEffort } } : {}),
         text: {
           format: {
             name: schemaName,

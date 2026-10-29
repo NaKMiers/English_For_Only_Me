@@ -2,6 +2,7 @@ import NextAuth from 'next-auth'
 
 import { mergeGuestDataIntoUser } from '@/modules/dictation/services/mergeGuestData'
 import { mergeGrammarGuestData } from '@/modules/grammar/services/mergeGrammarGuestData'
+import { mergeIeltsGuestData } from '@/modules/ielts/services/mergeIeltsGuestData'
 
 import { clearGuestCookie, getGuestId } from './guestUser'
 import { resolveRole } from './roles'
@@ -40,8 +41,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           if (guestId) {
             await mergeGuestDataIntoUser(guestId, id)
 
-            // If the grammar merge fails, keep the guest cookie: the guest's
-            // grammar rows stay reachable and the next sign-in retries. The
+            // If the grammar or IELTS merge fails, keep the guest cookie: the
+            // guest's rows stay reachable and the next sign-in retries. The
             // dictation merge re-running then is a no-op (its rows moved).
             const grammarMerged = await mergeGrammarGuestData(guestId, id)
               .then(() => true)
@@ -54,7 +55,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 return false
               })
 
-            if (grammarMerged) await clearGuestCookie()
+            const ieltsMerged = await mergeIeltsGuestData(guestId, id)
+              .then(() => true)
+              .catch(error => {
+                console.error(
+                  'Failed to merge guest IELTS data on sign-in',
+                  error
+                )
+
+                return false
+              })
+
+            if (grammarMerged && ieltsMerged) await clearGuestCookie()
           }
         } catch (error) {
           console.error('Failed to merge guest practice data on sign-in', error)

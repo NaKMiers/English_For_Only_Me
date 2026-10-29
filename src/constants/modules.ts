@@ -2,6 +2,7 @@ export type AppModuleKey =
   | 'dictation'
   | 'vocabulary'
   | 'grammar'
+  | 'ielts'
   | 'writing-notes'
   | 'ai-coach'
   | 'reading'
@@ -19,6 +20,7 @@ export interface AppModule {
     | 'Listening'
     | 'Vocabulary'
     | 'Grammar'
+    | 'Testing'
     | 'Writing'
     | 'Coaching'
     | 'Reading'
@@ -60,6 +62,17 @@ export const APP_MODULES: AppModule[] = [
     status: 'active',
     description:
       'A path of short grammar lessons from A1 to C1, with stars, checkpoints, and spaced review.',
+  },
+  {
+    key: 'ielts',
+    title: 'IELTS Tests',
+    shortTitle: 'IELTS',
+    href: '/ielts',
+    pageTag: 'Active',
+    skill: 'Testing',
+    status: 'active',
+    description:
+      'Full Listening, Reading and Writing tests with practice and timed mock modes, bands and evidence review.',
   },
   {
     key: 'writing-notes',

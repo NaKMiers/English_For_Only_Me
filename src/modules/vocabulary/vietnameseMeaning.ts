@@ -1,8 +1,7 @@
 import { VOCAB_DEFAULT_LOCALIZED_LANGUAGE } from './constants'
 import type { VocabEntryApiRecord } from './types'
 
-export const REQUIRED_VOCAB_MEANING_LANGUAGE =
-  VOCAB_DEFAULT_LOCALIZED_LANGUAGE
+export const REQUIRED_VOCAB_MEANING_LANGUAGE = VOCAB_DEFAULT_LOCALIZED_LANGUAGE
 
 export const VOCAB_REQUIRES_VI_MEANING_FILTER = {
   localizedMeanings: {

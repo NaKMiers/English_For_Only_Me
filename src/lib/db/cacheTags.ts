@@ -12,6 +12,7 @@
 export const CACHE_TAGS = {
   dictationCatalog: 'dictation-catalog',
   grammarContent: 'grammar-content',
+  ieltsContent: 'ielts-content',
 } as const
 
 export type CacheTag = (typeof CACHE_TAGS)[keyof typeof CACHE_TAGS]
@@ -29,4 +30,6 @@ export const CACHE_TAG_LIST = Object.values(CACHE_TAGS) as [
 export const CACHE_REVALIDATE_SECONDS: Record<CacheTag, number> = {
   'dictation-catalog': 300,
   'grammar-content': 3600,
+  // Published IELTS versions never change; publish and archive expire the tag.
+  'ielts-content': 3600,
 }

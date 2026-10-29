@@ -64,6 +64,7 @@ export const VOCAB_LEARNING_SOURCES: VocabLearningSource[] = [
   'explore',
   'dictionary',
   'manual',
+  'ielts',
 ]
 
 export const VOCAB_KNOWN_REASONS: VocabKnownReason[] = [

@@ -99,7 +99,7 @@ const itemStatusSchema = z
       ])
       .optional(),
     source: z
-      .enum(['search', 'explore', 'dictionary', 'manual'])
+      .enum(['search', 'explore', 'dictionary', 'manual', 'ielts'])
       .default('manual'),
     status: z.enum(['shouldLearn', 'alreadyKnow']),
     vocabEntryId: objectIdSchema,

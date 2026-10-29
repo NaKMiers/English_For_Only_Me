@@ -103,7 +103,11 @@ describe('createCatalogReader', () => {
     })
   })
 
-  it('lists exactly the two content tags', () => {
-    expect(CACHE_TAG_LIST).toEqual(['dictation-catalog', 'grammar-content'])
+  it('lists exactly the three content tags', () => {
+    expect(CACHE_TAG_LIST).toEqual([
+      'dictation-catalog',
+      'grammar-content',
+      'ielts-content',
+    ])
   })
 })

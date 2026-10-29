@@ -126,3 +126,67 @@ receives entries. Cross-session learning capture works. No action needed.
 - **Cons:** Index builds put load on the cluster for a few seconds.
 - **Context:** Run it after each deploy that adds an index declaration. `bun run grammar:drop-stale-indexes` (listed above) is the separate tool for dropping superseded ones.
 - **Depends on / blocked by:** The performance pass deployed.
+
+## Deferred After IELTS Testing v1 (2026-10-28)
+
+Plans: `.prompts/ielts-testing/` (design, CEO plan, eng plan, design review).
+
+### IELTS Speaking
+
+- **What:** Speaking tests: browser recording, speech-to-text, AI examiner for Fluency and Coherence, Lexical Resource, Grammatical Range and Accuracy, and an estimated Pronunciation band; examiner questions via TTS.
+- **Why:** Completes the four skills so the overall band is real, not a 3-skill estimate.
+- **Pros:** The schema already carries `skill`; TTS and the examiner pattern exist after v1.
+- **Cons:** Microphone permissions, audio upload size, and pronunciation scoring from a transcript is only an estimate.
+- **Context:** v1 ships Listening, Reading, Writing. Overall is labelled "N-skill estimate" until this lands.
+- **Effort:** L (human) / M (CC). **Priority:** P2.
+- **Depends on / blocked by:** IELTS v1 shipped (attempt model, examiner, TTS client).
+
+### IELTS Passage Highlight And Notes
+
+- **What:** Select text in a passage or transcript to highlight it or attach a note, saved per attempt.
+- **Why:** Mirrors how learners mark up paper tests; jumpinto has it.
+- **Pros:** Small, self-contained UI on top of the runner.
+- **Cons:** Range anchoring across re-renders and mobile selection are fiddly.
+- **Context:** Deferred from v1 by the office-hours spec review to keep the runner lean.
+- **Effort:** M (human) / S (CC). **Priority:** P3.
+- **Depends on / blocked by:** IELTS runner.
+
+### IELTS Band Trend And Home Row
+
+- **What:** A band trend chart per skill on `/ielts` and a "latest band" row on the Home Study Desk.
+- **Why:** Shows progress over weeks, the main motivation signal.
+- **Pros:** Data already in attempts.
+- **Cons:** Touches home server data loading.
+- **Context:** v1 has an attempt list with bands only.
+- **Effort:** S (human) / S (CC). **Priority:** P3.
+- **Depends on / blocked by:** A few weeks of scored attempts to be worth drawing.
+
+### IELTS Map Labelling Generation And More AI Assist
+
+- **What:** AI generation for plan/map/diagram labelling (generated image or SVG plan) and more assist actions: per-blank variant suggestions, difficulty rewrite, Vietnamese explanations.
+- **Why:** v1 supports map labelling only when the admin uploads an image by hand.
+- **Pros:** Fuller question-type coverage in generated tests.
+- **Cons:** Generating a usable labelled plan image is the hard part.
+- **Context:** v1 assist has four actions (material, questions, evidence and explanations, sample answer).
+- **Effort:** M (human) / S (CC). **Priority:** P3.
+- **Depends on / blocked by:** IELTS editor and generation pipeline.
+
+### IELTS Background Generation Queue
+
+- **What:** Run test generation as queued jobs (a job collection plus a Vercel cron or after() worker) so it continues when the editor tab closes, and optionally keep N unseen published tests ready.
+- **Why:** v1 generation is driven by the open editor (resumable per section, but it stops when the tab closes).
+- **Pros:** Hands-off bank refills; a learner never runs out of fresh tests.
+- **Cons:** Adds leases, retries and cron config for one admin; auto-publish needs a quality gate.
+- **Context:** Deliberate v1 decision (CEO review 1A). Per-section `genStatus` and `generationLog` already exist, so a worker can reuse `runSectionJob` and the conditional section write.
+- **Effort:** M (human) / S (CC). **Priority:** P3.
+- **Depends on / blocked by:** IELTS generation pipeline (M5).
+
+### IELTS Line Dictation History
+
+- **What:** Store the results of "Type this line" on the Listening review and schedule missed lines for spaced review like Dictation Lab.
+- **Why:** v1 grades the line in place and forgets it, so repeated misses are not tracked.
+- **Pros:** Reuses the correction engine and the learning ladder in `src/modules/learning`.
+- **Cons:** New attempt-like collection and a review surface.
+- **Context:** E2 in `.prompts/ielts-testing/03-ceo-plan.md`; grading is client-side `buildDictationCorrection`.
+- **Effort:** M (human) / S (CC). **Priority:** P3.
+- **Depends on / blocked by:** IELTS Listening review (M6).

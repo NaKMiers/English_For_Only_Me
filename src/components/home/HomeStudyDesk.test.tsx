@@ -14,7 +14,8 @@ describe('HomeStudyDesk', () => {
     expect(html).toContain('Your English training desk.')
     // Every active module is guaranteed a launcher slot; placeholders fill the
     // rest. Grammar became active, so it displaced AI Coach (a planned module
-    // with no route) rather than being left off the desk.
+    // with no route) rather than being left off the desk; IELTS Tests, the
+    // fourth active module, displaced Writing Notes the same way.
     for (const activeModule of APP_MODULES.filter(
       module => module.status === 'active'
     ))
@@ -26,9 +27,11 @@ describe('HomeStudyDesk', () => {
     expect(html).toContain('Dictation Lab')
     expect(html).toContain('Vocabulary')
     expect(html).toContain('Grammar')
-    expect(html).toContain('Writing Notes')
+    expect(html).toContain('IELTS Tests')
+    expect(html).not.toContain('Writing Notes')
     expect(html).toContain('href="/dictation"')
     expect(html).toContain('href="/grammar"')
+    expect(html).toContain('href="/ielts"')
   })
 
   test('renders real dictation global stats when provided', () => {
