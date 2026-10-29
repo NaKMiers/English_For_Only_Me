@@ -1,6 +1,14 @@
 'use client'
 
-import { Sparkles } from 'lucide-react'
+import {
+  ChevronDown,
+  FileQuestion,
+  ListChecks,
+  Quote,
+  Shuffle,
+  Sparkles,
+  WandSparkles,
+} from 'lucide-react'
 import { useState } from 'react'
 
 import {
@@ -11,6 +19,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import type { IeltsSection, IeltsSectionInput } from '@/modules/ielts/schema'
 import {
   assistIeltsSectionApi,
@@ -21,43 +38,58 @@ import {
 import { AreaField } from './fields'
 import { ExamButton } from '@/components/ielts/ui'
 
-const ACTIONS: { action: IeltsAssistAction; label: string; help: string }[] = [
+const ACTIONS: {
+  action: IeltsAssistAction
+  label: string
+  help: string
+  Icon: typeof Sparkles
+}[] = [
   {
     action: 'draft-questions',
-    label: 'Soạn câu hỏi từ nội dung',
-    help: 'Giữ bài đọc hoặc kịch bản, AI viết thêm nhóm câu hỏi với đáp án và bằng chứng.',
+    label: 'Draft questions from the text',
+    help: 'Keeps the passage or script; AI adds question groups with answers and evidence.',
+    Icon: FileQuestion,
   },
   {
     action: 'paraphrase-distractors',
-    label: 'Viết lại cho khó hơn',
-    help: 'Diễn đạt lại câu hỏi và thêm lựa chọn gây nhiễu, không đổi đáp án.',
+    label: 'Make it harder',
+    help: 'Rewords the questions and adds distractors without changing the answers.',
+    Icon: Shuffle,
   },
   {
     action: 'suggest-evidence',
-    label: 'Gợi ý bằng chứng và giải thích',
-    help: 'Điền trích dẫn nguyên văn và giải thích cho các câu còn thiếu.',
+    label: 'Suggest evidence and explanations',
+    help: 'Fills in verbatim quotes and explanations where questions lack them.',
+    Icon: Quote,
   },
   {
     action: 'check-answers',
-    label: 'Soát đáp án',
-    help: 'AI tự làm đề và chỉ ra câu có đáp án đáng ngờ. Không sửa gì.',
+    label: 'Check answers',
+    help: 'AI takes the test and flags questions with doubtful answers. Changes nothing.',
+    Icon: ListChecks,
   },
 ]
 
 /**
- * AI-assisted editing: the admin picks an action, the AI returns a proposal
- * for the whole section, and nothing changes until "Dùng đề xuất" puts it
- * into the unsaved draft (still reviewed and saved by hand).
+ * Every AI action on a section behind one "AI" menu: the generation step
+ * (draft, questions or auto-fix), then the assist actions. An assist action
+ * opens a dialog where the AI returns a proposal for the whole section, and
+ * nothing changes until "Use proposal" puts it into the unsaved draft (still
+ * reviewed and saved by hand). Writing tasks only get the generation step.
  */
 export function AssistMenu({
   disabled,
+  generateLabel,
   onApply,
+  onGenerate,
   section,
   testId,
   value,
 }: {
   disabled: boolean
+  generateLabel: string
   onApply: (input: IeltsSectionInput) => void
+  onGenerate: () => void
   section: IeltsSection
   testId: string
   value: IeltsSectionInput
@@ -69,7 +101,7 @@ export function AssistMenu({
   const [error, setError] = useState('')
   const [proposal, setProposal] = useState<IeltsAssistProposal | null>(null)
 
-  if (section.skill === 'writing') return null
+  const canAssist = section.skill !== 'writing'
 
   const run = async () => {
     setBusy(true)
@@ -87,37 +119,74 @@ export function AssistMenu({
 
       setProposal(result.proposal)
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'AI lỗi.')
+      setError(caught instanceof Error ? caught.message : 'AI request failed.')
     } finally {
       setBusy(false)
     }
   }
 
+  const openAssist = (next: IeltsAssistAction) => {
+    setAction(next)
+    setProposal(null)
+    setError('')
+    setOpen(true)
+  }
+
   return (
     <>
-      <ExamButton
-        disabled={disabled}
-        icon={
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          className="border-manga-black bg-manga-white hover:bg-manga-pale-red rounded-control sticker-press inline-flex min-h-10 items-center gap-1.5 border-2 px-3 font-sans text-sm font-black shadow-[2px_2px_0_var(--manga-black)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:opacity-55"
+          disabled={disabled}
+        >
           <Sparkles
             aria-hidden="true"
             className="size-4"
           />
-        }
-        onClick={() => setOpen(true)}
-        tone="paper"
-        type="button"
-      >
-        AI hỗ trợ
-      </ExamButton>
+          AI
+          <ChevronDown
+            aria-hidden="true"
+            className="size-3.5"
+          />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          align="end"
+          className="w-72"
+        >
+          <DropdownMenuItem onClick={onGenerate}>
+            <WandSparkles aria-hidden="true" />
+            {generateLabel}
+          </DropdownMenuItem>
+          {canAssist ? (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>
+                  Assist (review before use)
+                </DropdownMenuLabel>
+                {ACTIONS.map(item => (
+                  <DropdownMenuItem
+                    key={item.action}
+                    onClick={() => openAssist(item.action)}
+                  >
+                    <item.Icon aria-hidden="true" />
+                    {item.label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuGroup>
+            </>
+          ) : null}
+        </DropdownMenuContent>
+      </DropdownMenu>
       <Dialog
         onOpenChange={setOpen}
         open={open}
       >
         <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-xl">
           <DialogHeader>
-            <DialogTitle>AI hỗ trợ soạn</DialogTitle>
+            <DialogTitle>AI editing assist</DialogTitle>
             <DialogDescription>
-              AI chỉ đề xuất. Bạn xem lại rồi mới lưu.
+              AI only proposes. Review it before you save.
             </DialogDescription>
           </DialogHeader>
           {/* Option list (aria-pressed): documented raw exception. */}
@@ -127,14 +196,14 @@ export function AssistMenu({
                 aria-pressed={action === item.action}
                 className={
                   action === item.action
-                    ? 'border-ex-line bg-ex-accent rounded-lg border p-2 text-left text-white'
-                    : 'border-ex-line hover:bg-ex-soft rounded-lg border bg-white p-2 text-left'
+                    ? 'border-manga-black bg-manga-red rounded-control text-manga-white border-2 p-2 text-left'
+                    : 'border-manga-black hover:bg-manga-pale-red rounded-control bg-manga-white border-2 p-2 text-left'
                 }
                 key={item.action}
                 onClick={() => setAction(item.action)}
                 type="button"
               >
-                <span className="block font-sans text-sm font-bold">
+                <span className="block font-sans text-sm font-black">
                   {item.label}
                 </span>
                 <span className="block text-xs">{item.help}</span>
@@ -142,21 +211,21 @@ export function AssistMenu({
             ))}
           </div>
           <AreaField
-            label="Yêu cầu thêm (tuỳ chọn)"
+            label="Extra instructions (optional)"
             onChange={setInstruction}
             rows={2}
             value={instruction}
           />
           {error ? (
             <p
-              className="text-ex-wrong text-sm font-semibold"
+              className="text-manga-red text-sm font-semibold"
               role="alert"
             >
               {error}
             </p>
           ) : null}
           {proposal ? (
-            <div className="border-ex-line grid gap-2 rounded-lg border bg-white p-3 text-sm">
+            <div className="border-manga-black rounded-control bg-manga-white grid gap-2 border-2 p-3 text-sm">
               <p className="font-semibold">{proposal.summary}</p>
               {proposal.notes.length ? (
                 <ul className="list-disc pl-5">
@@ -174,7 +243,7 @@ export function AssistMenu({
               tone="paper"
               type="button"
             >
-              {busy ? 'AI đang làm...' : 'Chạy'}
+              {busy ? 'AI working...' : 'Run'}
             </ExamButton>
             {proposal?.section ? (
               <ExamButton
@@ -186,7 +255,7 @@ export function AssistMenu({
                 tone="ink"
                 type="button"
               >
-                Dùng đề xuất
+                Use proposal
               </ExamButton>
             ) : null}
           </DialogFooter>

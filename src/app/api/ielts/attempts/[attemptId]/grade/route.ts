@@ -57,7 +57,7 @@ export async function POST(request: Request, context: RouteContext) {
     return ieltsRouteFailure(
       error,
       'ielts writing grade failed',
-      'Không chấm được bài. Thử lại sau nhé.'
+      'Could not grade. Try again later.'
     )
   }
 }

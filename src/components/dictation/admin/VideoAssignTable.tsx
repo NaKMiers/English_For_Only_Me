@@ -1,9 +1,10 @@
 'use client'
 
-import { Trash2 } from 'lucide-react'
 import { useMemo, useState, useTransition } from 'react'
 
-import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Label } from '@/components/ui/label'
 import { MangaButton } from '@/components/ui/MangaButton'
 import {
   Select,
@@ -12,53 +13,72 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { cn } from '@/lib/utils'
 import {
   assignVideosAction,
-  deleteVideoAction,
   reorderVideosAction,
 } from '@/modules/dictation/content/adminActions'
-import { matchesBrowseQuery } from '@/modules/dictation/content/browseQuery'
+import {
+  type AdminVideoFilter,
+  countAdminVideoFacets,
+  filterAdminVideos,
+  writeAdminVideoFilter,
+} from '@/modules/dictation/content/adminVideoFilter'
 import type { DictationLevel } from '@/modules/dictation/levels'
 import { DICTATION_LEVELS } from '@/modules/dictation/levels'
 import type { DictationVideoStatus } from '@/modules/dictation/types'
 
 import { AdminVideoRow } from './AdminVideoRow'
-import { ConfirmSubmitButton } from './ConfirmSubmitButton'
+import { VideoFilterBar } from './VideoFilterBar'
 
 export interface AdminVideoRow {
   id: string
   title: string
+  channelTitle: string | null
   level: string | null
+  topicId: string | null
   topicTitle: string | null
+  sectionId: string | null
   sectionTitle: string | null
   status: DictationVideoStatus
+  /** Epoch milliseconds. */
+  createdAt: number
+  durationSeconds: number | null
   thumbnailUrl: string | null
   youtubeVideoId: string | null
   order: number
 }
 
 interface Props {
+  /** Read from the URL by the page, so the first render is already filtered. */
+  initialFilter: AdminVideoFilter
   videos: AdminVideoRow[]
   topics: Array<{ id: string; title: string }>
   sections: Array<{ id: string; topicId: string; title: string }>
 }
 
-const controlClass =
-  'border-manga-black min-h-9 rounded-control border-2 bg-manga-white px-2 py-1 text-sm font-black'
+const LEVEL_ITEMS = [
+  { value: '', label: 'No level' },
+  ...DICTATION_LEVELS.map(level => ({ value: level, label: level })),
+]
 const VIDEO_ORDER_MIME = 'application/x-efom-admin-video-order'
 
 /**
  * The assign and reorder actions revalidate this page, so their responses carry
  * the fresh rows; there is no client router.refresh() after them.
  */
-export function VideoAssignTable({ videos, topics, sections }: Props) {
+export function VideoAssignTable({
+  initialFilter,
+  videos,
+  topics,
+  sections,
+}: Props) {
   const [pending, startTransition] = useTransition()
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [topicId, setTopicId] = useState('')
   const [sectionId, setSectionId] = useState('')
   const [level, setLevel] = useState('')
-  const [filterSearch, setFilterSearch] = useState('')
-  const [filterLevel, setFilterLevel] = useState('')
+  const [filter, setFilter] = useState(initialFilter)
   const [orderedVideoIds, setOrderedVideoIds] = useState(() =>
     videos.map(video => video.id)
   )
@@ -98,20 +118,45 @@ export function VideoAssignTable({ videos, topics, sections }: Props) {
   )
 
   const visibleVideos = useMemo(
-    () =>
-      orderedVideos.filter(video =>
-        matchesBrowseQuery(
-          { title: video.title, level: video.level as DictationLevel | null },
-          {
-            search: filterSearch,
-            level: (filterLevel || null) as DictationLevel | null,
-            sort: 'order',
-            page: 1,
-          }
-        )
-      ),
-    [orderedVideos, filterSearch, filterLevel]
+    () => filterAdminVideos(orderedVideos, filter),
+    [orderedVideos, filter]
   )
+  const facetCounts = useMemo(
+    () => countAdminVideoFacets(videos, filter),
+    [videos, filter]
+  )
+  const visibleIds = visibleVideos.map(video => video.id)
+  const selectedShown = visibleIds.filter(id => selected.has(id)).length
+  const selectedHidden = selected.size - selectedShown
+  // Dragging only means something in the saved (custom) order.
+  const canReorder = filter.sort === 'order'
+
+  function changeFilter(next: AdminVideoFilter) {
+    setFilter(next)
+
+    // Native history keeps the filter in the URL without a server round trip.
+    const params = writeAdminVideoFilter(
+      new URLSearchParams(window.location.search),
+      next
+    )
+    const query = params.toString()
+
+    window.history.replaceState(
+      null,
+      '',
+      `${window.location.pathname}${query ? `?${query}` : ''}`
+    )
+  }
+
+  function toggleAllShown(checked: boolean) {
+    setSelected(prev => {
+      const next = new Set(prev)
+      for (const id of visibleIds)
+        if (checked) next.add(id)
+        else next.delete(id)
+      return next
+    })
+  }
 
   function toggle(id: string) {
     setSelected(prev => {
@@ -160,132 +205,155 @@ export function VideoAssignTable({ videos, topics, sections }: Props) {
 
   return (
     <div className="grid gap-3">
-      <div className="border-manga-black bg-manga-paper-soft rounded-panel flex flex-wrap items-center gap-2 border-3 p-3">
-        <span className="font-sans text-sm font-black">
-          {selected.size} selected →
-        </span>
-        <Select
-          value={topicId}
-          items={topicItems}
-          onValueChange={value => {
-            setTopicId(value ?? '')
-            setSectionId('')
-          }}
-        >
-          <SelectTrigger
-            size="sm"
-            aria-label="Topic"
-          >
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="">No topic</SelectItem>
-            {topics.map(t => (
-              <SelectItem
-                key={t.id}
-                value={t.id}
+      <VideoFilterBar
+        counts={facetCounts}
+        filter={filter}
+        onChange={changeFilter}
+        sections={sections}
+        shown={visibleVideos.length}
+        topics={topics}
+        total={videos.length}
+      />
+
+      <div
+        className={cn(
+          'border-manga-black rounded-panel grid gap-2 border-2 px-3 py-2',
+          selected.size ? 'bg-manga-pale-red' : 'bg-manga-paper-soft'
+        )}
+      >
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          <Label className="flex min-h-9 cursor-pointer items-center gap-2 font-sans text-sm font-black">
+            <Checkbox
+              checked={selectedShown > 0 && selectedShown === visibleIds.length}
+              disabled={visibleIds.length === 0}
+              indeterminate={
+                selectedShown > 0 && selectedShown < visibleIds.length
+              }
+              onCheckedChange={checked => toggleAllShown(checked)}
+            />
+            {selected.size
+              ? `${selected.size} selected`
+              : `Select all ${visibleIds.length} shown`}
+          </Label>
+          {selectedHidden ? (
+            <span className="text-manga-ink-soft text-xs font-black">
+              ({selectedHidden} hidden by filters)
+            </span>
+          ) : null}
+          {selected.size ? (
+            <Button
+              className="text-manga-red ml-auto h-7 px-1 font-sans text-xs font-black"
+              onClick={() => setSelected(new Set())}
+              type="button"
+              variant="link"
+            >
+              Clear selection
+            </Button>
+          ) : (
+            <span className="text-manga-ink-soft text-xs font-semibold">
+              Then set topic, section and level together.
+            </span>
+          )}
+        </div>
+
+        {selected.size ? (
+          <div className="flex flex-wrap items-center gap-2">
+            <Select
+              value={topicId}
+              items={topicItems}
+              onValueChange={value => {
+                setTopicId(value ?? '')
+                setSectionId('')
+              }}
+            >
+              <SelectTrigger
+                size="sm"
+                aria-label="Topic"
               >
-                {t.title}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select
-          value={sectionId}
-          items={sectionItems}
-          onValueChange={value => setSectionId(value ?? '')}
-          disabled={!topicId}
-        >
-          <SelectTrigger
-            size="sm"
-            aria-label="Section"
-          >
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="">No section</SelectItem>
-            {topicSections.map(s => (
-              <SelectItem
-                key={s.id}
-                value={s.id}
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {topicItems.map(item => (
+                  <SelectItem
+                    key={item.value}
+                    value={item.value}
+                  >
+                    {item.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select
+              value={sectionId}
+              items={sectionItems}
+              onValueChange={value => setSectionId(value ?? '')}
+              disabled={!topicId}
+            >
+              <SelectTrigger
+                size="sm"
+                aria-label="Section"
               >
-                {s.title}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select
-          value={level}
-          onValueChange={value => setLevel(value ?? '')}
-        >
-          <SelectTrigger
-            size="sm"
-            aria-label="Level"
-          >
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="">No level</SelectItem>
-            {DICTATION_LEVELS.map(l => (
-              <SelectItem
-                key={l}
-                value={l}
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {sectionItems.map(item => (
+                  <SelectItem
+                    key={item.value}
+                    value={item.value}
+                  >
+                    {item.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select
+              value={level}
+              items={LEVEL_ITEMS}
+              onValueChange={value => setLevel(value ?? '')}
+            >
+              <SelectTrigger
+                size="sm"
+                aria-label="Level"
               >
-                {l}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <MangaButton
-          type="button"
-          tone="paper"
-          onClick={apply}
-          disabled={selected.size === 0 || pending}
-          className="min-h-9 border-2 shadow-[2px_2px_0_var(--manga-black)]"
-        >
-          {pending ? 'Applying…' : 'Apply'}
-        </MangaButton>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {LEVEL_ITEMS.map(item => (
+                  <SelectItem
+                    key={item.value}
+                    value={item.value}
+                  >
+                    {item.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <MangaButton
+              type="button"
+              tone="ink"
+              onClick={apply}
+              disabled={pending}
+              className="min-h-9 border-2 shadow-[2px_2px_0_var(--manga-black)] max-sm:flex-1"
+            >
+              {pending ? 'Applying…' : `Apply to ${selected.size}`}
+            </MangaButton>
+          </div>
+        ) : null}
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
-        <Input
-          type="search"
-          aria-label="Filter videos"
-          placeholder="Filter by title"
-          value={filterSearch}
-          onChange={e => setFilterSearch(e.target.value)}
-          className={`${controlClass} min-w-40 flex-1`}
-        />
-        <Select
-          value={filterLevel}
-          onValueChange={value => setFilterLevel(value ?? '')}
-        >
-          <SelectTrigger
-            size="sm"
-            aria-label="Filter level"
-          >
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="">All levels</SelectItem>
-            {DICTATION_LEVELS.map(l => (
-              <SelectItem
-                key={l}
-                value={l}
-              >
-                {l}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <span className="text-manga-ink-soft text-xs font-black">
-          {visibleVideos.length}/{videos.length}
-        </span>
-      </div>
+      {canReorder ? null : (
+        <p className="text-manga-ink-soft text-xs font-semibold">
+          Drag to reorder works in Custom order.
+        </p>
+      )}
 
       <ul className="grid gap-1">
         {visibleVideos.length === 0 ? (
-          <li className="text-manga-ink-soft text-sm">No videos match.</li>
+          <li className="border-manga-black/40 rounded-control grid justify-items-center gap-2 border-2 border-dashed p-6 text-center">
+            <span className="text-manga-ink-soft text-sm font-semibold">
+              No videos match these filters.
+            </span>
+          </li>
         ) : (
           visibleVideos.map(video => (
             <AdminVideoRow
@@ -297,6 +365,7 @@ export function VideoAssignTable({ videos, topics, sections }: Props) {
                 dataTransfer.setData(VIDEO_ORDER_MIME, video.id)
               }
               onReorder={(draggedId, targetId, placement) => {
+                if (!canReorder) return false
                 reorder(draggedId, targetId, placement)
                 return true
               }}
@@ -308,32 +377,6 @@ export function VideoAssignTable({ videos, topics, sections }: Props) {
                   {video.topicTitle ?? 'No topic'}
                   {video.sectionTitle ? ` · ${video.sectionTitle}` : ''}
                 </span>
-              }
-              menuActions={
-                <form
-                  action={deleteVideoAction}
-                  onClick={event => event.stopPropagation()}
-                  onKeyDown={event => event.stopPropagation()}
-                  className="shrink-0"
-                >
-                  <input
-                    type="hidden"
-                    name="id"
-                    value={video.id}
-                  />
-                  <ConfirmSubmitButton
-                    confirmTitle="Delete video?"
-                    confirmMessage={`Delete "${video.title}"? This archives the video and removes it from admin and app lists.`}
-                    confirmLabel="Delete video"
-                    className="focus:bg-manga-red focus:text-manga-white text-manga-red hover:bg-manga-red hover:text-manga-white rounded-tag flex min-h-11 w-full items-center gap-2 px-3 font-sans text-sm font-black whitespace-nowrap transition-colors"
-                  >
-                    <Trash2
-                      aria-hidden="true"
-                      className="size-4"
-                    />
-                    Delete
-                  </ConfirmSubmitButton>
-                </form>
               }
             />
           ))

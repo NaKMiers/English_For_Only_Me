@@ -34,7 +34,7 @@ export function DrillButton({
     } catch (caught) {
       setBusy(false)
       setError(
-        caught instanceof Error ? caught.message : 'Không mở được drill.'
+        caught instanceof Error ? caught.message : 'Could not open the drill.'
       )
     }
   }
@@ -47,11 +47,11 @@ export function DrillButton({
         tone="paper"
         type="button"
       >
-        {busy ? 'Đang mở...' : 'Luyện dạng này'}
+        {busy ? 'Opening...' : 'Drill this type'}
       </ExamButton>
       {error ? (
         <span
-          className="text-ex-wrong text-xs font-semibold"
+          className="text-manga-red text-xs font-semibold"
           role="alert"
         >
           {error}

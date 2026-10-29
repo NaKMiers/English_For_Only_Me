@@ -39,8 +39,8 @@ export const QuestionNavigator = memo(function QuestionNavigator({
 
   return (
     <nav
-      aria-label="Danh sách câu hỏi"
-      className="border-ex-line shrink-0 border-t bg-white px-3 py-2"
+      aria-label="Question list"
+      className="border-manga-black bg-manga-white shrink-0 border-t-3 px-3 py-2"
     >
       <div
         className="flex items-center gap-5 overflow-x-auto pb-1 lg:flex-wrap lg:overflow-visible"
@@ -55,9 +55,9 @@ export const QuestionNavigator = memo(function QuestionNavigator({
               className="flex shrink-0 items-center gap-1"
               key={part}
             >
-              <span className="text-ex-ink mr-1.5 text-xs font-bold whitespace-nowrap">
+              <span className="text-manga-black mr-1.5 text-xs font-bold whitespace-nowrap">
                 {partLabel(part)}
-                <span className="text-ex-muted ml-1 font-normal">
+                <span className="text-muted-foreground ml-1 font-normal">
                   {done.length}/{entries.length}
                 </span>
               </span>
@@ -69,14 +69,14 @@ export const QuestionNavigator = memo(function QuestionNavigator({
                   // Navigator chip (aria-current): a plain button by design.
                   <button
                     aria-current={current ? 'true' : undefined}
-                    aria-label={`Câu ${entry.number}, ${current ? 'đang chọn' : answered ? 'đã trả lời' : 'chưa trả lời'}`}
+                    aria-label={`Question ${entry.number}, ${current ? 'current' : answered ? 'answered' : 'not answered'}`}
                     className={cn(
-                      'relative grid h-8 min-w-8 place-items-center rounded-md border px-1 text-[13px] font-semibold tabular-nums transition-colors after:absolute after:-inset-1',
+                      'rounded-tag relative grid h-8 min-w-8 place-items-center border-2 px-1 text-[13px] font-semibold tabular-nums transition-colors after:absolute after:-inset-1',
                       current
-                        ? 'border-ex-accent bg-ex-accent text-white'
+                        ? 'border-manga-red bg-manga-red text-manga-white'
                         : answered
-                          ? 'border-ex-accent/30 bg-ex-accent-soft text-ex-accent'
-                          : 'border-ex-line text-ex-ink hover:bg-ex-soft bg-white'
+                          ? 'border-manga-red/30 bg-manga-paper-soft text-manga-red'
+                          : 'border-manga-black text-manga-black hover:bg-manga-pale-red bg-manga-white'
                     )}
                     key={entry.number}
                     onClick={() => onSelect(entry)}

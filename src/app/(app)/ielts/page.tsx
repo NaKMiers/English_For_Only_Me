@@ -24,7 +24,7 @@ export default async function IeltsPage() {
         <AppTopbar
           activeHref="/ielts"
           authControl={<AuthControl />}
-          subtitle="Luyện đề IELTS: Listening, Reading, Writing"
+          subtitle="IELTS practice: Listening, Reading, Writing"
         />
       }
     >

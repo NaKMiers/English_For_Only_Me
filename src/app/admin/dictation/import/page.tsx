@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { redirect } from 'next/navigation'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
@@ -18,10 +19,10 @@ export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
 export default async function DictationImportPage() {
-  // Admin-only: importing creates shared catalog content (gated in place;
-  // relocation into /admin is a deferred follow-up).
+  // Admin-only: importing creates shared catalog content. The proxy gates
+  // /admin too; this guard keeps the redirect target exact.
   const user = await getOptionalUser()
-  if (!user) redirect('/api/auth/signin?callbackUrl=/admin/import')
+  if (!user) redirect('/api/auth/signin?callbackUrl=/admin/dictation/import')
   if (user.role !== 'admin') redirect('/dictation')
 
   return (
@@ -47,6 +48,12 @@ export default async function DictationImportPage() {
       }
     >
       <div className="grid gap-5 p-3 sm:p-5">
+        <Link
+          href="/admin/dictation"
+          className="text-manga-red justify-self-start text-sm font-black hover:underline"
+        >
+          ← Dictation
+        </Link>
         <section
           aria-labelledby="dictation-import-title"
           className="border-manga-black bg-manga-white/92 rounded-panel grid min-w-0 overflow-hidden border-3 shadow-[6px_6px_0_var(--manga-black)]"

@@ -1,5 +1,4 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
@@ -11,7 +10,7 @@ import { connectDatabase } from '@/lib/db/connectDatabase'
 import { parseTestId } from '@/modules/ielts/tests/testRouteDecisions'
 import { readAdminTest } from '@/modules/ielts/tests/testService'
 
-export const metadata: Metadata = { title: 'Admin · Soạn đề IELTS' }
+export const metadata: Metadata = { title: 'Admin · Edit IELTS test' }
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
@@ -30,8 +29,11 @@ export default async function AdminIeltsEditorPage({ params }: Props) {
 
   if (!test) notFound()
 
+  // The shell locks to the viewport: the editor and preview panes scroll on
+  // their own under the header (the whole page scrolls below 1280px).
   return (
     <MangaPageShell
+      fullHeight
       topbar={
         <AppTopbar
           authControl={<AuthControl />}
@@ -39,36 +41,6 @@ export default async function AdminIeltsEditorPage({ params }: Props) {
         />
       }
     >
-      <nav
-        aria-label="Breadcrumb"
-        className="px-4 pt-4 text-sm font-semibold"
-      >
-        <Link
-          className="underline"
-          href="/admin"
-        >
-          Admin
-        </Link>{' '}
-        /{' '}
-        <Link
-          className="underline"
-          href="/admin/ielts"
-        >
-          IELTS
-        </Link>{' '}
-        / {test.title}
-        {test.status === 'published' ? (
-          <>
-            {' · '}
-            <Link
-              className="underline"
-              href={`/ielts/${test.slug}`}
-            >
-              Xem như học viên
-            </Link>
-          </>
-        ) : null}
-      </nav>
       <TestEditor
         initial={test}
         key={test.id}

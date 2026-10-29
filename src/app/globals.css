@@ -182,19 +182,6 @@
 }
 
 @theme inline {
-  --color-ex-bg: var(--ex-bg);
-  --color-ex-soft: var(--ex-soft);
-  --color-ex-line: var(--ex-line);
-  --color-ex-ink: var(--ex-ink);
-  --color-ex-muted: var(--ex-muted);
-  --color-ex-accent: var(--ex-accent);
-  --color-ex-accent-soft: var(--ex-accent-soft);
-  --color-ex-correct: var(--ex-correct);
-  --color-ex-correct-soft: var(--ex-correct-soft);
-  --color-ex-wrong: var(--ex-wrong);
-  --color-ex-wrong-soft: var(--ex-wrong-soft);
-  --color-ex-mark: var(--ex-mark);
-
   --color-manga-white: var(--manga-white);
   --color-manga-black: var(--manga-black);
   --color-manga-red: var(--manga-logo-red);
@@ -415,7 +402,8 @@ body {
 /* Hanging pull-string bulb, fixed to the top-right corner. Dangles from the
    top edge, sways on hover/focus, and swings when yanked. It hangs still at
    rest: an always-running animation kept a compositor layer busy on every
-   page for a purely decorative wobble. */
+   page for a purely decorative wobble. Dragging slides it sideways by setting
+   an inline `right` (see PullStringToggle). */
 .lamp-hang {
   position: fixed;
   top: 0;
@@ -434,6 +422,8 @@ body {
   padding: 0 10px 6px;
   cursor: pointer;
   transform-origin: top center;
+  /* Pointer drags move the lamp instead of scrolling the page. */
+  touch-action: none;
 }
 .lamp-hang__cord {
   width: 2px;
@@ -511,6 +501,15 @@ body {
   .lamp-hang--pulling .lamp-hang__bulb {
     animation: lamp-flash 0.64s ease;
   }
+}
+/* Hold still while dragged: no sway, no hover nudge. Higher specificity than
+   the hover and yank rules above. */
+.lamp-hang.lamp-hang--dragging .lamp-hang__btn {
+  cursor: grabbing;
+  animation: none;
+}
+.lamp-hang.lamp-hang--dragging .lamp-hang__bulb {
+  transform: rotate(180deg);
 }
 @keyframes lamp-sway {
   0%,
@@ -652,6 +651,61 @@ body {
   background-color: var(--manga-white);
 }
 
+/* ============================================================
+   ONE FRAME ON A PHONE
+   Under 640px nested ink outlines pile up (shell > panel > box > input) and
+   the screen reads as a stack of lines. So on a phone:
+   - The shell stops being a framed sheet and becomes the page itself
+     (edge-attached, so square): MangaPageShell and the error boundaries
+     that copy its frame.
+   - A plain ink-bordered box INSIDE a panel or dialog drops its border and
+     ledge; a white one becomes a tint so the grouping stays visible. Only
+     containers (never buttons, links, labels, inputs: those stay pressable
+     stickers), only fully bordered ones (a dashed underline or divider is
+     content, not a frame), and only `border-manga-black` boxes, so coloured
+     state boxes (right / wrong) keep their outlines. Add `keep-frame` to opt
+     one out (e.g. a typing field built from a div around an overlay input).
+   Unlayered and placed after the light-up retints above, with enough
+   specificity to beat them, so this holds in both themes.
+   ============================================================ */
+@media (max-width: 639px) {
+  :root .rounded-shell.border-3 {
+    width: 100%;
+    min-height: 100dvh;
+    margin-block: 0;
+    border-width: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  :root .manga-shell::after {
+    display: none;
+  }
+
+  :root
+    .rounded-panel
+    :is(div, li, section, article, fieldset, aside, figure, form, details):is(
+      .rounded-panel,
+      .rounded-control
+    ).border-manga-black:is(.border-2, .border-3):not(.keep-frame) {
+    border-width: 0;
+    box-shadow: none;
+  }
+  :root
+    .rounded-panel
+    :is(div, li, section, article, fieldset, aside, figure, form, details):is(
+      .rounded-panel,
+      .rounded-control
+    ).border-manga-black.bg-manga-white:is(.border-2, .border-3):not(
+      .keep-frame
+    ) {
+    background-color: color-mix(
+      in srgb,
+      var(--manga-pale-red) 60%,
+      var(--manga-white)
+    );
+  }
+}
+
 /* Keep this in @layer base so Tailwind text utilities (text-3xl, font-semibold,
    leading-*) applied directly to a button/input/textarea still win. Unlayered,
    `font: inherit` beats every @layer utility and silently kills those classes. */
@@ -700,56 +754,10 @@ textarea:focus-visible,
   color: var(--selection-fg);
 }
 
-/* ============================================================
-   IELTS EXAM SURFACE
-   The IELTS module reads like the computer-delivered test: white paper,
-   dark text, hairline borders, one blue accent. It ignores the light-up
-   room on purpose (long passages need maximum contrast), and remaps the
-   manga tokens inside it so shared primitives (Select, Checkbox, Switch,
-   Dialog content) come out light and quiet too.
-   ============================================================ */
+/* IELTS runner stage: the full-screen layer that holds a test run. It sits
+   outside MangaPageShell, so it paints the lit card surface itself (paper by
+   day, lamp-lit paper in light-up) and every pane keeps dark ink on it. */
 .ielts-exam {
-  --ex-bg: #ffffff;
-  --ex-soft: #f5f6f8;
-  --ex-line: #dcdfe5;
-  --ex-ink: #1b1e25;
-  --ex-muted: #5a6070;
-  --ex-accent: #2155c4;
-  --ex-accent-soft: #e9effc;
-  --ex-correct: #17723c;
-  --ex-correct-soft: #e6f4eb;
-  --ex-wrong: #b42318;
-  --ex-wrong-soft: #fcebea;
-  --ex-mark: #fff1a8;
-
-  --manga-white: #ffffff;
-  --manga-black: #1b1e25;
-  --manga-paper: #ffffff;
-  --manga-paper-soft: #e9effc;
-  --manga-pale-red: #f1f4fb;
-  --manga-ink-soft: #5a6070;
-  --manga-logo-red: #b42318;
-  --manga-bright-red: #2155c4;
-  --manga-line: #1b1e25;
-  --manga-offset: transparent;
-  --lesson-correct: #17723c;
-  --ring: #2155c4;
-  --primary: #2155c4;
-  --input: #dcdfe5;
-  --popover: #ffffff;
-  --popover-foreground: #1b1e25;
-
-  background: var(--ex-bg);
-  color: var(--ex-ink);
-  font-family: var(--font-source-sans), Arial, Helvetica, sans-serif;
-}
-
-.ielts-exam,
-.ielts-exam * {
-  scrollbar-color: #c3c8d2 transparent;
-}
-
-.ielts-exam :focus-visible {
-  outline: 2px solid var(--ex-accent);
-  outline-offset: 2px;
+  background: var(--manga-white);
+  color: var(--manga-black);
 }

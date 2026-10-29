@@ -1,6 +1,12 @@
 'use client'
 
-import { Upload } from 'lucide-react'
+import {
+  AudioLines,
+  LoaderCircle,
+  Sparkles,
+  Trash2,
+  Upload,
+} from 'lucide-react'
 import { useRef, useState } from 'react'
 
 import {
@@ -10,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { cn } from '@/lib/utils'
 import { LISTENING_VOICES } from '@/modules/ielts/constants'
 import type {
   IeltsChartVisual,
@@ -23,10 +30,16 @@ import type {
 } from '@/modules/ielts/schema'
 import { uploadIeltsFileApi } from '@/requests/ieltsAdminApi'
 
+import { AdminAudioPlayer } from './AdminAudioPlayer'
 import {
   AddButton,
   AreaField,
+  countLabel,
+  Disclosure,
+  EntryPager,
+  INNER_BOX_CLASS,
   ListField,
+  MetaChip,
   NumberField,
   removeAt,
   replaceAt,
@@ -35,7 +48,7 @@ import {
 } from './fields'
 import { GroupEditor, newGroup } from './GroupEditor'
 import { ImageUploadField } from './ImageUploadField'
-import { ExamButton } from '@/components/ielts/ui'
+import { ExamButton, ExamIconButton } from '@/components/ielts/ui'
 
 interface Props {
   /** Number the first new question of this section should get. */
@@ -45,6 +58,34 @@ interface Props {
   audioBusy?: boolean
   section: IeltsSection
   value: IeltsSectionInput
+}
+
+/** Compact sticker buttons for the audio row, a size down from MangaButton. */
+const AUDIO_BUTTON_CLASS =
+  'min-h-9 border-2 px-3 shadow-[2px_2px_0_var(--manga-black)]'
+
+/** Script lines shown per page; a full part runs to 40-60 lines. */
+const LINE_PAGE_SIZE = 8
+
+function countWords(text: string) {
+  return text.trim().split(/\s+/).filter(Boolean).length
+}
+
+/** First words of a block, for a closed row's summary. */
+function snippet(text: string, empty = 'Empty') {
+  const clean = text.trim().replace(/\s+/g, ' ')
+
+  return clean
+    ? clean.length > 90
+      ? `${clean.slice(0, 90)}...`
+      : clean
+    : empty
+}
+
+function formatDuration(seconds: number) {
+  const whole = Math.round(seconds)
+
+  return `${Math.floor(whole / 60)}:${String(whole % 60).padStart(2, '0')}`
 }
 
 function ListeningForm({
@@ -61,6 +102,27 @@ function ListeningForm({
   const fileRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState('')
+  const [page, setPage] = useState(0)
+  const pageCount = Math.max(
+    1,
+    Math.ceil(material.lines.length / LINE_PAGE_SIZE)
+  )
+  // Deleting the last line of the last page falls back a page.
+  const safePage = Math.min(page, pageCount - 1)
+  const pageStart = safePage * LINE_PAGE_SIZE
+  const visibleLines = material.lines.slice(
+    pageStart,
+    pageStart + LINE_PAGE_SIZE
+  )
+  const pager = (
+    <EntryPager
+      label="Line"
+      onPageChange={setPage}
+      page={safePage}
+      pageSize={LINE_PAGE_SIZE}
+      total={material.lines.length}
+    />
+  )
 
   const upload = async (file: File) => {
     setUploading(true)
@@ -86,177 +148,231 @@ function ListeningForm({
     }
   }
 
-  return (
-    <div className="grid gap-3">
-      <AreaField
-        label="Bối cảnh (ai nói gì, ở đâu)"
-        onChange={context => onChange({ ...material, context })}
-        rows={2}
-        value={material.context}
-      />
-      <div className="border-ex-line grid gap-2 rounded-lg border bg-white p-3">
-        <p className="font-sans text-xs font-bold">Audio</p>
-        {material.audio?.url ? (
-          <>
-            {/* Admin preview of the generated or uploaded file. */}
-            <audio
-              className="w-full"
-              controls
-              preload="none"
-              src={material.audio.url}
-            />
-            <p className="text-xs font-semibold">
-              {Math.round(material.audio.durationSec)} giây ·{' '}
-              {material.audio.lineOffsetsSec.length
-                ? 'có mốc thời gian từng dòng'
-                : 'không có mốc từng dòng'}
-            </p>
-          </>
-        ) : (
-          <p className="text-sm font-semibold">Chưa có audio.</p>
-        )}
-        <div className="flex flex-wrap gap-2">
-          {onGenerateAudio ? (
-            <ExamButton
-              disabled={audioBusy || material.lines.length === 0}
-              onClick={onGenerateAudio}
-              tone="ink"
-              type="button"
-            >
-              {audioBusy ? 'Đang tạo audio...' : 'Tạo audio bằng AI'}
-            </ExamButton>
-          ) : null}
-          {/* File input behind an sr-only trigger: documented raw exception. */}
-          <input
-            accept="audio/*"
-            className="sr-only"
-            onChange={event => {
-              const file = event.target.files?.[0]
+  const speakers = new Set(material.lines.map(line => line.speaker)).size
 
-              if (file) void upload(file)
-              event.target.value = ''
-            }}
-            ref={fileRef}
-            tabIndex={-1}
-            type="file"
-          />
-          <ExamButton
-            disabled={uploading}
-            icon={
-              <Upload
+  return (
+    <>
+      <Disclosure
+        defaultOpen={!material.audio?.url || !material.context}
+        meta={
+          material.audio?.url ? (
+            <>
+              <MetaChip tone="ok">
+                {formatDuration(material.audio.durationSec)}
+              </MetaChip>
+              {material.audio.lineOffsetsSec.length
+                ? 'per-line timings'
+                : 'no per-line timings'}
+            </>
+          ) : (
+            <MetaChip tone="warn">No audio</MetaChip>
+          )
+        }
+        title="Context & audio"
+        variant="block"
+      >
+        <AreaField
+          label="Context (who speaks, where)"
+          onChange={context => onChange({ ...material, context })}
+          rows={2}
+          value={material.context}
+        />
+        <div className={cn(INNER_BOX_CLASS, 'grid gap-2 p-2')}>
+          {material.audio?.url ? (
+            <AdminAudioPlayer
+              audio={material.audio}
+              key={material.audio.url}
+              lines={material.lines}
+            />
+          ) : (
+            <p className="border-manga-black/40 text-manga-ink-soft rounded-tag flex min-h-10 items-center gap-2 border-2 border-dashed px-3 text-sm font-semibold">
+              <AudioLines
                 aria-hidden="true"
-                className="size-4"
+                className="size-4 shrink-0"
               />
-            }
-            onClick={() => fileRef.current?.click()}
-            tone="paper"
-            type="button"
-          >
-            {uploading ? 'Đang tải...' : 'Tải mp3 lên'}
-          </ExamButton>
-          {material.audio ? (
+              No audio yet. Generate it from the script or upload an mp3.
+            </p>
+          )}
+          <div className="flex flex-wrap items-center gap-2">
+            {onGenerateAudio ? (
+              <ExamButton
+                className={AUDIO_BUTTON_CLASS}
+                disabled={audioBusy || material.lines.length === 0}
+                icon={
+                  audioBusy ? (
+                    <LoaderCircle
+                      aria-hidden="true"
+                      className="size-4 animate-spin"
+                    />
+                  ) : (
+                    <Sparkles
+                      aria-hidden="true"
+                      className="size-4"
+                    />
+                  )
+                }
+                onClick={onGenerateAudio}
+                tone={material.audio ? 'paper' : 'ink'}
+                type="button"
+              >
+                {audioBusy
+                  ? 'Generating...'
+                  : material.audio
+                    ? 'Regenerate'
+                    : 'Generate audio'}
+              </ExamButton>
+            ) : null}
+            {/* File input behind an sr-only trigger: documented raw exception. */}
+            <input
+              accept="audio/*"
+              className="sr-only"
+              onChange={event => {
+                const file = event.target.files?.[0]
+
+                if (file) void upload(file)
+                event.target.value = ''
+              }}
+              ref={fileRef}
+              tabIndex={-1}
+              type="file"
+            />
             <ExamButton
-              onClick={() => onChange({ ...material, audio: null })}
+              className={AUDIO_BUTTON_CLASS}
+              disabled={uploading}
+              icon={
+                uploading ? (
+                  <LoaderCircle
+                    aria-hidden="true"
+                    className="size-4 animate-spin"
+                  />
+                ) : (
+                  <Upload
+                    aria-hidden="true"
+                    className="size-4"
+                  />
+                )
+              }
+              onClick={() => fileRef.current?.click()}
               tone="paper"
               type="button"
             >
-              Bỏ audio
+              {uploading
+                ? 'Uploading...'
+                : material.audio
+                  ? 'Replace mp3'
+                  : 'Upload mp3'}
             </ExamButton>
+            {material.audio ? (
+              <ExamIconButton
+                className="hover:bg-manga-red hover:text-manga-white text-manga-red ml-auto size-9 border-2 shadow-[2px_2px_0_var(--manga-black)]"
+                label="Remove audio"
+                onClick={() => onChange({ ...material, audio: null })}
+                type="button"
+              >
+                <Trash2
+                  aria-hidden="true"
+                  className="size-4"
+                />
+              </ExamIconButton>
+            ) : null}
+          </div>
+          {error ? (
+            <p
+              className="text-manga-red text-xs font-semibold"
+              role="alert"
+            >
+              {error}
+            </p>
           ) : null}
         </div>
-        {error ? (
-          <p
-            className="text-ex-wrong text-xs font-semibold"
-            role="alert"
-          >
-            {error}
-          </p>
-        ) : null}
-      </div>
-      <div className="grid gap-2">
-        <p className="font-sans text-xs font-bold">
-          Kịch bản ({material.lines.length} dòng, dòng đầu là 0)
-        </p>
+      </Disclosure>
+      <Disclosure
+        defaultOpen={material.lines.length === 0}
+        meta={`${countLabel(material.lines.length, 'line')} · ${countLabel(speakers, 'speaker')} · first line is 0`}
+        title="Script"
+        variant="block"
+      >
+        {pager}
         <ol className="grid gap-2">
-          {material.lines.map((line, index) => (
-            <li
-              className="grid gap-2 sm:grid-cols-[2rem_8rem_8rem_1fr_auto] sm:items-end"
-              key={index}
-            >
-              <span className="font-sans text-xs font-bold tabular-nums">
-                {index}
-              </span>
-              <TextField
-                label="Người nói"
-                onChange={speaker =>
-                  onChange({
-                    ...material,
-                    lines: replaceAt(material.lines, index, {
-                      ...line,
-                      speaker,
-                    }),
-                  })
-                }
-                value={line.speaker}
-              />
-              <div className="grid gap-1">
-                <span className="font-sans text-xs font-bold">Giọng</span>
-                <Select
-                  onValueChange={voice =>
-                    onChange({
-                      ...material,
-                      lines: replaceAt(material.lines, index, {
-                        ...line,
-                        voice: String(voice ?? line.voice),
-                      }),
-                    })
-                  }
-                  value={line.voice}
-                >
-                  <SelectTrigger
-                    aria-label={`Giọng dòng ${index}`}
-                    size="sm"
-                  >
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {LISTENING_VOICES.map(voice => (
-                      <SelectItem
-                        key={voice.id}
-                        value={voice.id}
+          {visibleLines.map((line, offset) => {
+            const index = pageStart + offset
+            const setLine = (next: Partial<typeof line>) =>
+              onChange({
+                ...material,
+                lines: replaceAt(material.lines, index, { ...line, ...next }),
+              })
+
+            return (
+              <li
+                className={cn(
+                  INNER_BOX_CLASS,
+                  '@container grid min-w-0 gap-2 p-2'
+                )}
+                key={index}
+              >
+                <div className="flex min-w-0 items-end gap-2">
+                  <MetaChip className="mb-2 tabular-nums">{index}</MetaChip>
+                  <div className="grid min-w-0 flex-1 gap-2 @xs:grid-cols-2">
+                    <TextField
+                      label="Speaker"
+                      onChange={speaker => setLine({ speaker })}
+                      value={line.speaker}
+                    />
+                    <div className="grid gap-1">
+                      <span className="font-sans text-xs font-black">
+                        Voice
+                      </span>
+                      <Select
+                        onValueChange={voice =>
+                          setLine({ voice: String(voice ?? line.voice) })
+                        }
+                        value={line.voice}
                       >
-                        {voice.id} ({voice.hint})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <TextField
-                label="Lời thoại"
-                onChange={text =>
-                  onChange({
-                    ...material,
-                    lines: replaceAt(material.lines, index, { ...line, text }),
-                  })
-                }
-                value={line.text}
-              />
-              <RowActions
-                label={`Xoá dòng ${index}`}
-                onRemove={() =>
-                  onChange({
-                    ...material,
-                    lines: removeAt(material.lines, index),
-                  })
-                }
-              />
-            </li>
-          ))}
+                        <SelectTrigger
+                          aria-label={`Voice for line ${index}`}
+                          className="w-full data-[size=default]:min-h-10 data-[size=default]:py-1.5"
+                        >
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {LISTENING_VOICES.map(voice => (
+                            <SelectItem
+                              key={voice.id}
+                              value={voice.id}
+                            >
+                              {voice.id} ({voice.hint})
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <RowActions
+                    label={`Remove line ${index}`}
+                    onRemove={() =>
+                      onChange({
+                        ...material,
+                        lines: removeAt(material.lines, index),
+                      })
+                    }
+                  />
+                </div>
+                <AreaField
+                  label={`Line ${index} text`}
+                  onChange={text => setLine({ text })}
+                  rows={2}
+                  value={line.text}
+                />
+              </li>
+            )
+          })}
         </ol>
         <AddButton
           onClick={() => {
             const last = material.lines.at(-1)
 
+            // Jump to the page the new line lands on.
+            setPage(Math.floor(material.lines.length / LINE_PAGE_SIZE))
             onChange({
               ...material,
               lines: [
@@ -270,10 +386,10 @@ function ListeningForm({
             })
           }}
         >
-          Thêm dòng
+          Add line
         </AddButton>
-      </div>
-    </div>
+      </Disclosure>
+    </>
   )
 }
 
@@ -285,73 +401,97 @@ function ReadingForm({
   onChange: (material: IeltsReadingMaterial) => void
 }) {
   const words = material.paragraphs
-    .map(paragraph => paragraph.text.trim().split(/\s+/).filter(Boolean).length)
+    .map(paragraph => countWords(paragraph.text))
     .reduce((sum, count) => sum + count, 0)
 
   return (
-    <div className="grid gap-3">
+    <Disclosure
+      defaultOpen={material.paragraphs.length === 0}
+      meta={
+        <>
+          <MetaChip tone={words >= 700 && words <= 1000 ? 'ok' : 'warn'}>
+            {words} words
+          </MetaChip>
+          {countLabel(material.paragraphs.length, 'paragraph')} · aim for
+          700-1000 words
+        </>
+      }
+      title="Passage"
+      variant="block"
+    >
       <div className="grid gap-2 sm:grid-cols-2">
         <TextField
-          label="Tiêu đề bài đọc"
+          label="Passage title"
           onChange={title => onChange({ ...material, title })}
           value={material.title}
         />
         <TextField
-          label="Phụ đề"
+          label="Subtitle"
           onChange={subtitle => onChange({ ...material, subtitle })}
           value={material.subtitle}
         />
       </div>
-      <p className="font-sans text-xs font-bold">
-        Đoạn văn ({words} từ, nên 700-1000; đoạn đầu là 0)
-      </p>
-      <ol className="grid gap-3">
+      <ol className="grid gap-2">
         {material.paragraphs.map((paragraph, index) => (
-          <li
-            className="grid gap-2 sm:grid-cols-[2rem_4rem_1fr_auto] sm:items-start"
-            key={index}
-          >
-            <span className="pt-6 font-sans text-xs font-bold tabular-nums">
-              {index}
-            </span>
-            <TextField
-              label="Nhãn"
-              onChange={label =>
-                onChange({
-                  ...material,
-                  paragraphs: replaceAt(material.paragraphs, index, {
-                    ...paragraph,
-                    label,
-                  }),
-                })
+          <li key={index}>
+            <Disclosure
+              actions={
+                <RowActions
+                  label={`Remove paragraph ${index}`}
+                  onRemove={() =>
+                    onChange({
+                      ...material,
+                      paragraphs: removeAt(material.paragraphs, index),
+                    })
+                  }
+                />
               }
-              value={paragraph.label}
-            />
-            <AreaField
-              label="Nội dung"
-              onChange={text =>
-                onChange({
-                  ...material,
-                  paragraphs: replaceAt(material.paragraphs, index, {
-                    ...paragraph,
-                    text,
-                  }),
-                })
+              defaultOpen={!paragraph.text}
+              meta={
+                <>
+                  <span className="tabular-nums">
+                    {countWords(paragraph.text)}w
+                  </span>
+                  <span className="truncate">{snippet(paragraph.text)}</span>
+                </>
               }
-              rows={5}
-              value={paragraph.text}
-            />
-            <div className="pt-5">
-              <RowActions
-                label={`Xoá đoạn ${index}`}
-                onRemove={() =>
-                  onChange({
-                    ...material,
-                    paragraphs: removeAt(material.paragraphs, index),
-                  })
-                }
-              />
-            </div>
+              title={
+                <span className="flex items-center gap-1.5">
+                  <MetaChip className="tabular-nums">{index}</MetaChip>
+                  {paragraph.label ? `Paragraph ${paragraph.label}` : null}
+                </span>
+              }
+            >
+              <div className="grid gap-2 @md:grid-cols-[6rem_minmax(0,1fr)] @md:items-start">
+                <TextField
+                  label="Label"
+                  onChange={label =>
+                    onChange({
+                      ...material,
+                      paragraphs: replaceAt(material.paragraphs, index, {
+                        ...paragraph,
+                        label,
+                      }),
+                    })
+                  }
+                  value={paragraph.label}
+                />
+                <AreaField
+                  label="Text"
+                  onChange={text =>
+                    onChange({
+                      ...material,
+                      paragraphs: replaceAt(material.paragraphs, index, {
+                        ...paragraph,
+                        text,
+                      }),
+                    })
+                  }
+                  rows={6}
+                  value={paragraph.text}
+                />
+              </div>
+            </Disclosure>
           </li>
         ))}
       </ol>
@@ -371,11 +511,20 @@ function ReadingForm({
           })
         }
       >
-        Thêm đoạn
+        Add paragraph
       </AddButton>
-    </div>
+    </Disclosure>
   )
 }
+
+const VISUAL_LABELS = {
+  none: 'None',
+  line: 'Line graph',
+  bar: 'Bar chart',
+  pie: 'Pie chart',
+  table: 'Table',
+  image: 'Image (process, map)',
+} as const
 
 const EMPTY_CHART: IeltsChartVisual = {
   kind: 'line',
@@ -397,9 +546,14 @@ function VisualForm({
   const kind = visual?.kind ?? 'none'
 
   return (
-    <div className="border-ex-line grid gap-3 rounded-lg border bg-white p-3">
+    <Disclosure
+      defaultOpen={!visual}
+      meta={VISUAL_LABELS[kind]}
+      title="Task 1 visual"
+      variant="block"
+    >
       <div className="grid gap-1">
-        <span className="font-sans text-xs font-bold">Hình Task 1</span>
+        <span className="font-sans text-xs font-black">Task 1 visual</span>
         <Select
           onValueChange={value => {
             const next = String(value ?? 'none')
@@ -416,30 +570,32 @@ function VisualForm({
           value={kind}
         >
           <SelectTrigger
-            aria-label="Loại hình"
+            aria-label="Visual type"
             size="sm"
           >
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="none">Không có</SelectItem>
-            <SelectItem value="line">Line graph</SelectItem>
-            <SelectItem value="bar">Bar chart</SelectItem>
-            <SelectItem value="pie">Pie chart</SelectItem>
-            <SelectItem value="table">Table</SelectItem>
-            <SelectItem value="image">Ảnh (process, map)</SelectItem>
+            {Object.entries(VISUAL_LABELS).map(([value, label]) => (
+              <SelectItem
+                key={value}
+                value={value}
+              >
+                {label}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
       {visual?.kind === 'image' ? (
         <>
           <ImageUploadField
-            label="URL ảnh"
+            label="Image URL"
             onChange={imageUrl => onChange({ ...visual, imageUrl })}
             value={visual.imageUrl}
           />
           <TextField
-            label="Mô tả ảnh (alt, cũng dùng cho AI chấm)"
+            label="Image description (alt, also used for AI grading)"
             onChange={alt => onChange({ ...visual, alt })}
             value={visual.alt}
           />
@@ -448,31 +604,29 @@ function VisualForm({
       {visual && visual.kind !== 'image' ? (
         <>
           <TextField
-            label="Tiêu đề hình"
+            label="Visual title"
             onChange={title => onChange({ ...visual, title })}
             value={visual.title}
           />
           <div className="grid gap-2 sm:grid-cols-3">
             <TextField
-              label="Nhãn trục X"
+              label="X-axis label"
               onChange={xLabel => onChange({ ...visual, xLabel })}
               value={visual.xLabel}
             />
             <TextField
-              label="Nhãn trục Y"
+              label="Y-axis label"
               onChange={yLabel => onChange({ ...visual, yLabel })}
               value={visual.yLabel}
             />
             <TextField
-              label="Đơn vị"
+              label="Unit"
               onChange={unit => onChange({ ...visual, unit })}
               value={visual.unit}
             />
           </div>
           <ListField
-            label={
-              visual.kind === 'pie' ? 'Các phần (lát bánh)' : 'Các mốc trục X'
-            }
+            label={visual.kind === 'pie' ? 'Slices' : 'X-axis categories'}
             onChange={categories => onChange({ ...visual, categories })}
             separator=","
             value={visual.categories}
@@ -485,7 +639,7 @@ function VisualForm({
               >
                 <TextField
                   className="w-40"
-                  label={visual.kind === 'pie' ? 'Tên biểu đồ' : 'Tên dãy'}
+                  label={visual.kind === 'pie' ? 'Chart name' : 'Series name'}
                   onChange={name =>
                     onChange({
                       ...visual,
@@ -499,7 +653,7 @@ function VisualForm({
                 />
                 <TextField
                   className="min-w-48 flex-1"
-                  label="Giá trị (cách nhau bởi ,)"
+                  label="Values (separated by ,)"
                   onChange={text =>
                     onChange({
                       ...visual,
@@ -515,7 +669,7 @@ function VisualForm({
                   value={series.values.join(', ')}
                 />
                 <RowActions
-                  label={`Xoá dãy ${series.name}`}
+                  label={`Remove series ${series.name}`}
                   onRemove={() =>
                     onChange({
                       ...visual,
@@ -534,11 +688,11 @@ function VisualForm({
               })
             }
           >
-            Thêm dãy số liệu
+            Add data series
           </AddButton>
         </>
       ) : null}
-    </div>
+    </Disclosure>
   )
 }
 
@@ -549,35 +703,58 @@ function WritingForm({
   material: IeltsWritingMaterial
   onChange: (material: IeltsWritingMaterial) => void
 }) {
+  const sampleWords = countWords(material.sampleAnswer)
+
   return (
-    <div className="grid gap-3">
-      <AreaField
-        label="Đề bài"
-        onChange={prompt => onChange({ ...material, prompt })}
-        rows={8}
-        value={material.prompt}
-      />
-      <NumberField
-        className="w-40"
-        label="Số từ tối thiểu"
-        max={400}
-        min={50}
-        onChange={minWords => onChange({ ...material, minWords })}
-        value={material.minWords}
-      />
+    <>
+      <Disclosure
+        defaultOpen
+        meta={`${countWords(material.prompt)} words · min ${material.minWords} in the answer`}
+        title="Task"
+        variant="block"
+      >
+        <AreaField
+          label="Prompt"
+          onChange={prompt => onChange({ ...material, prompt })}
+          rows={6}
+          value={material.prompt}
+        />
+        <NumberField
+          className="w-40"
+          label="Minimum words"
+          max={400}
+          min={50}
+          onChange={minWords => onChange({ ...material, minWords })}
+          value={material.minWords}
+        />
+      </Disclosure>
       {material.task === 1 ? (
         <VisualForm
           onChange={visual => onChange({ ...material, visual })}
           visual={material.visual}
         />
       ) : null}
-      <AreaField
-        label="Bài mẫu (học viên xem sau khi nộp)"
-        onChange={sampleAnswer => onChange({ ...material, sampleAnswer })}
-        rows={10}
-        value={material.sampleAnswer}
-      />
-    </div>
+      <Disclosure
+        defaultOpen={!material.sampleAnswer}
+        meta={
+          <>
+            <MetaChip tone={sampleWords >= material.minWords ? 'ok' : 'warn'}>
+              {sampleWords} words
+            </MetaChip>
+            learners see it after submitting
+          </>
+        }
+        title="Sample answer"
+        variant="block"
+      >
+        <AreaField
+          label="Sample answer"
+          onChange={sampleAnswer => onChange({ ...material, sampleAnswer })}
+          rows={10}
+          value={material.sampleAnswer}
+        />
+      </Disclosure>
+    </>
   )
 }
 
@@ -596,10 +773,12 @@ export function SectionForm({
     value.groups.flatMap(group => group.questions).at(-1)?.number ??
     nextNumber - 1
 
+  const questionCount = value.groups.flatMap(group => group.questions).length
+
   return (
-    <div className="grid gap-4">
+    <div className="grid gap-3">
       <TextField
-        label="Tiêu đề phần"
+        label="Section title"
         onChange={title => onChange({ ...value, title })}
         value={value.title}
       />
@@ -624,28 +803,34 @@ export function SectionForm({
         />
       ) : null}
       {section.skill !== 'writing' ? (
-        <div className="grid gap-3">
-          <p className="font-sans text-sm font-bold">
-            Nhóm câu hỏi (
-            {value.groups.flatMap(group => group.questions).length} câu)
-          </p>
-          {value.groups.map((group, index) => (
-            <GroupEditor
-              group={group}
-              index={index}
-              key={group.id}
-              onChange={next => setGroups(replaceAt(value.groups, index, next))}
-              onRemove={() => setGroups(removeAt(value.groups, index))}
-            />
-          ))}
+        <Disclosure
+          defaultOpen
+          meta={`${countLabel(questionCount, 'question')} in ${countLabel(value.groups.length, 'group')}`}
+          title="Questions"
+          variant="block"
+        >
+          <ol className="grid gap-2">
+            {value.groups.map((group, index) => (
+              <li key={group.id}>
+                <GroupEditor
+                  group={group}
+                  index={index}
+                  onChange={next =>
+                    setGroups(replaceAt(value.groups, index, next))
+                  }
+                  onRemove={() => setGroups(removeAt(value.groups, index))}
+                />
+              </li>
+            ))}
+          </ol>
           <AddButton
             onClick={() =>
               setGroups([...value.groups, newGroup(lastNumber + 1)])
             }
           >
-            Thêm nhóm câu
+            Add question group
           </AddButton>
-        </div>
+        </Disclosure>
       ) : null}
     </div>
   )

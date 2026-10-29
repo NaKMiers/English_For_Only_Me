@@ -47,7 +47,7 @@ function Transcript({
           className="grid grid-cols-[minmax(5rem,auto)_1fr] gap-3"
           key={index}
         >
-          <strong className="font-sans text-sm font-bold">
+          <strong className="font-sans text-sm font-black">
             {line.speaker}
           </strong>
           <span>
@@ -87,8 +87,8 @@ function PracticeAudio({
           src={audio.url}
         />
       ) : (
-        <p className="border-ex-line bg-ex-soft rounded-lg border p-3 text-sm font-semibold">
-          Phần này chưa có audio. Đọc transcript để luyện.
+        <p className="border-manga-black bg-manga-pale-red rounded-control border-2 p-3 text-sm font-semibold">
+          This part has no audio yet. Read the transcript to practise.
         </p>
       )}
       {transcriptVisible ? (
@@ -158,7 +158,7 @@ function MockAudio({
 
         onAttemptChange(result.attempt)
       } catch {
-        onNotice('Không ghi được thời điểm audio. Đồng hồ vẫn chạy.')
+        onNotice('Could not save the audio position. The timer keeps running.')
       }
     },
     [attempt.id, onAttemptChange, onNotice]
@@ -179,7 +179,7 @@ function MockAudio({
           setPlaying(true)
           void post({ kind: 'part-started', part: next.order })
         },
-        () => onNotice('Trình duyệt chặn phát audio. Bấm Bắt đầu lại.')
+        () => onNotice('The browser blocked the audio. Press Start again.')
       )
     },
     [onNotice, onPartChange, post, sections]
@@ -205,7 +205,7 @@ function MockAudio({
       setPreview(30)
     } else {
       setFinished(true)
-      onNotice('Audio đã hết. Kiểm tra lại đáp án rồi nộp bài.')
+      onNotice('The audio has ended. Check your answers, then submit.')
     }
   }
 
@@ -257,22 +257,22 @@ function MockAudio({
         preload="auto"
         ref={audioRef}
       />
-      <div className="border-ex-line grid gap-3 rounded-lg border bg-white p-4">
-        <p className="font-sans text-sm font-bold">
+      <div className="border-manga-black rounded-control bg-manga-white grid gap-3 border-2 p-4">
+        <p className="font-sans text-sm font-black">
           {finished
-            ? 'Audio đã hết'
+            ? 'Audio ended'
             : preview > 0
-              ? `Xem trước Part ${sections[partIndex + 1]?.order}: ${preview}s`
+              ? `Preview Part ${sections[partIndex + 1]?.order}: ${preview}s`
               : playing
-                ? `Đang phát Part ${section?.order}`
-                : 'Audio phát một lần, không tua được.'}
+                ? `Playing Part ${section?.order}`
+                : 'The audio plays once. You cannot rewind it.'}
         </p>
         <Progress value={duration ? (position / duration) * 100 : 0} />
-        <p className="text-ex-muted text-xs font-semibold tabular-nums">
+        <p className="text-muted-foreground text-xs font-semibold tabular-nums">
           {formatClock(Math.floor(position))} /{' '}
           {formatClock(Math.floor(duration))}
           {interruptions
-            ? ` · Gián đoạn ${interruptions}/${IELTS_MAX_AUDIO_INTERRUPTIONS}`
+            ? ` · Interruptions ${interruptions}/${IELTS_MAX_AUDIO_INTERRUPTIONS}`
             : ''}
         </p>
         {!playing && !finished && preview === 0 && !locked ? (
@@ -287,31 +287,33 @@ function MockAudio({
             tone="ink"
             type="button"
           >
-            {startedParts.length ? 'Tiếp tục audio' : 'Bắt đầu'}
+            {startedParts.length ? 'Resume audio' : 'Start'}
           </ExamButton>
         ) : null}
         {stalled ? (
           <div
-            className="bg-ex-soft grid gap-2 rounded-md p-2 text-sm font-semibold"
+            className="bg-manga-pale-red rounded-tag grid gap-2 p-2 text-sm font-semibold"
             role="alert"
           >
-            Audio bị gián đoạn.
+            The audio was interrupted.
             {!overCap ? (
               <ExamButton
                 onClick={resume}
                 tone="paper"
                 type="button"
               >
-                Tiếp tục
+                Resume
               </ExamButton>
             ) : (
-              <span>Đã quá số lần gián đoạn. Nộp bài như hiện tại.</span>
+              <span>
+                Too many interruptions. Submit your answers as they are.
+              </span>
             )}
           </div>
         ) : null}
       </div>
       {section?.listening?.context ? (
-        <p className={cn('text-ex-muted text-sm font-semibold')}>
+        <p className={cn('text-muted-foreground text-sm font-semibold')}>
           {section.listening.context}
         </p>
       ) : null}
@@ -331,10 +333,10 @@ export function ListeningPane(props: Props) {
   return (
     <div className="mx-auto grid max-w-[68ch] gap-4">
       <header className="grid gap-1">
-        <p className="text-ex-muted font-sans text-xs font-bold uppercase">
+        <p className="text-muted-foreground font-sans text-xs font-black uppercase">
           Part {section.order}
         </p>
-        <h2 className="font-sans text-xl font-bold">{section.title}</h2>
+        <h2 className="font-sans text-xl font-black">{section.title}</h2>
         {section.listening?.context ? (
           <p className="font-semibold">{section.listening.context}</p>
         ) : null}

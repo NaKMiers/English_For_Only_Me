@@ -98,7 +98,7 @@ export async function gradeWritingTask({
   if (isGuest)
     return ieltsError(
       401,
-      'Đăng nhập để AI chấm bài viết. Xem bài mẫu để tự so.'
+      'Sign in to get AI grading. Compare with the model answer yourself.'
     )
 
   const attempt = await IeltsAttemptModel.findOne({
@@ -123,12 +123,15 @@ export async function gradeWritingTask({
     return ieltsError(404, 'That task is not in this attempt.')
 
   if (!getOpenAiApiKey())
-    return ieltsError(503, 'Chưa cấu hình OpenAI. Xem bài mẫu để tự so.')
+    return ieltsError(
+      503,
+      'OpenAI is not configured. Compare with the model answer yourself.'
+    )
 
   const limit = getIeltsWritingDailyLimit()
 
   if ((await countGradingsToday(ownerId, now)) >= limit)
-    return ieltsError(429, `Hết lượt chấm hôm nay (${limit} lượt).`)
+    return ieltsError(429, `No gradings left today (limit ${limit}).`)
 
   const staleBefore = new Date(
     now.getTime() - IELTS_GENERATING_STALE_SECONDS * 1000
@@ -151,7 +154,8 @@ export async function gradeWritingTask({
     { new: true }
   ).lean()
 
-  if (!claimed) return ieltsError(409, 'Task này đang được chấm. Chờ một chút.')
+  if (!claimed)
+    return ieltsError(409, 'This task is already being graded. Wait a moment.')
 
   const sections = await loadAttemptSections(
     claimed as unknown as Parameters<typeof loadAttemptSections>[0]
@@ -193,7 +197,7 @@ export async function gradeWritingTask({
           lessons: examinerLessons(),
         },
       })
-    : ({ ok: false, message: 'Bài viết trống, không có gì để chấm.' } as const)
+    : ({ ok: false, message: 'The essay is empty, nothing to grade.' } as const)
 
   if (!result.ok) {
     console.warn('ielts writing grading failed', {

@@ -12,7 +12,7 @@ import {
   type IeltsDecision,
 } from '../attempts/attemptRouteDecisions'
 import { IELTS_GENERATION_LOG_LIMIT, type IeltsSectionKey } from '../constants'
-import { toAdminTest, type IeltsAdminTest } from '../tests/testService'
+import { adoptSaved, type IeltsAdminTest } from '../tests/testService'
 import { toIeltsTestRecord } from '../tests/testRecords'
 import { assemblePcm, type PcmLine } from './wav'
 
@@ -44,14 +44,11 @@ export async function generateSectionAudio({
 
   const apiKey = getOpenAiApiKey()
 
-  if (!apiKey) return ieltsError(503, 'Chưa cấu hình OPENAI_API_KEY.')
+  if (!apiKey) return ieltsError(503, 'OPENAI_API_KEY is not configured.')
 
   const doc = (await IeltsTestModel.findById(testId).lean()) as LeanDoc | null
 
   if (!doc) return ieltsError(404, 'Test not found.')
-
-  if (doc.status !== 'draft')
-    return ieltsError(409, 'Only drafts can be edited.')
 
   const record = toIeltsTestRecord(doc)
   const section = record.sections.find(item => item.key === key)
@@ -60,7 +57,7 @@ export async function generateSectionAudio({
     return ieltsError(400, 'This part has no script yet.')
 
   if (section.revision !== revision)
-    return ieltsError(409, 'Section vừa được cập nhật ở nơi khác. Tải lại.')
+    return ieltsError(409, 'Section was just updated elsewhere. Reload.')
 
   const signal = AbortSignal.timeout(AUDIO_BUDGET_MS)
   const started = Date.now()
@@ -151,12 +148,11 @@ export async function generateSectionAudio({
     }
   )
 
-  if (!audio) return ieltsError(500, `Không tạo được audio: ${error}`)
+  if (!audio) return ieltsError(500, `Could not create audio: ${error}`)
 
   const updated = await IeltsTestModel.findOneAndUpdate(
     {
       _id: testId,
-      status: 'draft',
       sections: { $elemMatch: { key, revision } },
     },
     {
@@ -169,13 +165,10 @@ export async function generateSectionAudio({
   ).lean()
 
   if (!updated)
-    return ieltsError(
-      409,
-      'Section vừa được cập nhật trong lúc tạo audio. Tải lại.'
-    )
+    return ieltsError(409, 'Section was updated while creating audio. Reload.')
 
   return {
     ok: true,
-    data: { test: toAdminTest(updated as unknown as LeanDoc) },
+    data: { test: adoptSaved(updated) },
   }
 }

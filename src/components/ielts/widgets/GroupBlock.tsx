@@ -53,8 +53,8 @@ function EvidenceButton({ number }: { number: number }) {
 
   return (
     <button
-      aria-label={`Xem bằng chứng cho câu ${number}`}
-      className="border-ex-line text-ex-accent hover:bg-ex-accent-soft inline-flex min-h-8 items-center gap-1 rounded-md border bg-white px-2 text-xs font-semibold"
+      aria-label={`Show evidence for question ${number}`}
+      className="border-manga-black text-manga-red hover:bg-manga-paper-soft rounded-tag bg-manga-white inline-flex min-h-8 items-center gap-1 border-2 px-2 text-xs font-semibold"
       onClick={() => onShowEvidence(number)}
       type="button"
     >
@@ -62,7 +62,7 @@ function EvidenceButton({ number }: { number: number }) {
         aria-hidden="true"
         className="size-3.5"
       />
-      Xem trong bài
+      Show in text
     </button>
   )
 }
@@ -74,10 +74,10 @@ function QuestionNumber({ number }: { number: number }) {
     <span
       aria-hidden="true"
       className={cn(
-        'inline-grid h-7 min-w-7 shrink-0 place-items-center rounded-md px-1 text-sm font-bold tabular-nums',
+        'rounded-tag inline-grid h-7 min-w-7 shrink-0 place-items-center px-1 text-sm font-bold tabular-nums',
         currentNumber === number
-          ? 'bg-ex-accent text-white'
-          : 'bg-ex-soft text-ex-ink'
+          ? 'bg-manga-red text-manga-white'
+          : 'bg-manga-pale-red text-manga-black'
       )}
     >
       {number}
@@ -130,11 +130,11 @@ function RadioQuestions({ group }: Props) {
                 return (
                   <Label
                     className={cn(
-                      'flex min-h-10 cursor-pointer items-start gap-3 rounded-lg border px-3 py-2 text-[16px] font-normal transition-colors',
+                      'rounded-control flex min-h-10 cursor-pointer items-start gap-3 border-2 px-3 py-2 text-[16px] font-normal transition-colors',
                       isJudgement && 'whitespace-nowrap',
                       value === option.key
-                        ? 'border-ex-accent bg-ex-accent-soft'
-                        : 'hover:bg-ex-soft border-transparent'
+                        ? 'border-manga-red bg-manga-paper-soft'
+                        : 'hover:bg-manga-pale-red border-transparent'
                     )}
                     htmlFor={id}
                     key={option.key}
@@ -146,7 +146,7 @@ function RadioQuestions({ group }: Props) {
                       value={option.key}
                     />
                     <span className="leading-[1.6]">
-                      <strong className="font-sans font-bold">
+                      <strong className="font-sans font-black">
                         {option.key}
                       </strong>
                       {option.text ? ` ${option.text}` : ''}
@@ -191,17 +191,17 @@ function CheckboxQuestions({ group }: Props) {
       id={questionBlockId(first)}
     >
       <div className="flex items-start gap-3">
-        <span className="bg-ex-soft inline-grid h-7 shrink-0 place-items-center rounded-md px-1.5 text-sm font-bold tabular-nums">
+        <span className="bg-manga-pale-red rounded-tag inline-grid h-7 shrink-0 place-items-center px-1.5 text-sm font-bold tabular-nums">
           {group.from}-{group.to}
         </span>
         {stem ? <p className="pt-0.5 font-medium">{stem}</p> : null}
       </div>
       <p
-        className="text-ex-muted pl-10 text-sm"
+        className="text-muted-foreground pl-10 text-sm"
         role="status"
       >
-        Đã chọn {chosen.length}/{size}
-        {full && !readOnly ? '. Bỏ một lựa chọn để đổi.' : ''}
+        Chosen {chosen.length}/{size}
+        {full && !readOnly ? '. Remove a choice to change it.' : ''}
       </p>
       <div className="grid gap-1 pl-10">
         {group.options.map((option, index) => {
@@ -214,10 +214,10 @@ function CheckboxQuestions({ group }: Props) {
           return (
             <Label
               className={cn(
-                'flex min-h-10 cursor-pointer items-start gap-3 rounded-lg border px-3 py-2 text-[16px] font-normal transition-colors',
+                'rounded-control flex min-h-10 cursor-pointer items-start gap-3 border-2 px-3 py-2 text-[16px] font-normal transition-colors',
                 checked
-                  ? 'border-ex-accent bg-ex-accent-soft'
-                  : 'hover:bg-ex-soft border-transparent'
+                  ? 'border-manga-red bg-manga-paper-soft'
+                  : 'hover:bg-manga-pale-red border-transparent'
               )}
               htmlFor={id}
               key={option.key}
@@ -231,7 +231,7 @@ function CheckboxQuestions({ group }: Props) {
                 onFocus={() => onFocusQuestion(first)}
               />
               <span className="leading-[1.6]">
-                <strong className="font-sans font-bold">{option.key}</strong>{' '}
+                <strong className="font-sans font-black">{option.key}</strong>{' '}
                 {option.text}
               </span>
             </Label>
@@ -274,11 +274,11 @@ function DropdownQuestions({ group }: Props) {
         // eslint-disable-next-line @next/next/no-img-element -- admin-uploaded Cloudinary image of any size
         <img
           alt={group.title || 'Plan'}
-          className="border-ex-line max-h-[420px] w-full rounded-lg border object-contain"
+          className="border-manga-black rounded-control max-h-[420px] w-full border-2 object-contain"
           src={group.imageUrl}
         />
       ) : null}
-      <div className="border-ex-line bg-ex-soft grid gap-1.5 rounded-lg border p-3">
+      <div className="border-manga-black bg-manga-pale-red rounded-control grid gap-1.5 border-2 p-3">
         {group.title ? (
           <p className="text-sm font-bold">{group.title}</p>
         ) : null}
@@ -288,7 +288,7 @@ function DropdownQuestions({ group }: Props) {
               className="flex gap-2 leading-[1.6]"
               key={option.key}
             >
-              <strong className="min-w-8 font-sans font-bold">
+              <strong className="min-w-8 font-sans font-black">
                 {option.key}
               </strong>
               <span>{option.text}</span>
@@ -325,12 +325,12 @@ function DropdownQuestions({ group }: Props) {
                 >
                   <SelectTrigger
                     aria-labelledby={promptId}
-                    className="border-ex-line min-w-24 rounded-md border bg-white font-semibold"
+                    className="border-manga-black rounded-tag bg-manga-white min-w-24 border-2 font-semibold"
                     id={questionControlId(question.number)}
                     onFocus={() => onFocusQuestion(question.number)}
                     size="sm"
                   >
-                    <SelectValue placeholder="Chọn" />
+                    <SelectValue placeholder="Choose" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="">-</SelectItem>
@@ -378,11 +378,11 @@ function SlotQuestions({ group }: Props) {
     <div className="grid gap-4">
       {group.body ? (
         <div
-          className="border-ex-line rounded-lg border bg-white p-4"
+          className="border-manga-black rounded-control bg-manga-white border-2 p-4"
           id={bodyId}
         >
           {group.title ? (
-            <p className="mb-3 text-center font-sans font-bold">
+            <p className="mb-3 text-center font-sans font-black">
               {group.title}
             </p>
           ) : null}
@@ -427,8 +427,8 @@ function EvidenceButtonForSlot({ number }: { number: number }) {
 
   return (
     <button
-      aria-label={`Xem bằng chứng cho câu ${number}`}
-      className="border-ex-line text-ex-accent hover:bg-ex-accent-soft inline-flex min-h-8 items-center gap-1 rounded-md border bg-white px-2 text-xs font-semibold"
+      aria-label={`Show evidence for question ${number}`}
+      className="border-manga-black text-manga-red hover:bg-manga-paper-soft rounded-tag bg-manga-white inline-flex min-h-8 items-center gap-1 border-2 px-2 text-xs font-semibold"
       onClick={() => onShowEvidence(number)}
       type="button"
     >
@@ -455,14 +455,14 @@ export const GroupBlock = memo(function GroupBlock({ group }: Props) {
     >
       <header className="grid gap-1">
         <h3
-          className="font-sans text-base font-bold"
+          className="font-sans text-base font-black"
           id={`ielts-group-${group.id}-title`}
         >
           {group.from === group.to
             ? `Question ${group.from}`
             : `Questions ${group.from}-${group.to}`}
         </h3>
-        <p className="text-ex-ink leading-[1.6]">{group.instruction}</p>
+        <p className="text-manga-black leading-[1.6]">{group.instruction}</p>
       </header>
       {widget === 'slot' ? <SlotQuestions group={group} /> : null}
       {widget === 'radio' ? <RadioQuestions group={group} /> : null}

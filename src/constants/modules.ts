@@ -120,9 +120,24 @@ export const APP_MODULES: AppModule[] = [
   },
 ]
 
-export const PRIMARY_NAV_ITEMS = [
+// The IELTS module already covers these skills, so they get no header button.
+const NAV_HIDDEN_MODULE_KEYS: AppModuleKey[] = [
+  'writing-notes',
+  'reading',
+  'speaking',
+]
+
+export interface NavItem {
+  disabled?: boolean
+  href: string
+  label: string
+}
+
+export const PRIMARY_NAV_ITEMS: NavItem[] = [
   { label: 'Study Desk', href: '/' },
-  ...APP_MODULES.map(module => ({
+  ...APP_MODULES.filter(
+    module => !NAV_HIDDEN_MODULE_KEYS.includes(module.key)
+  ).map(module => ({
     disabled: module.status !== 'active',
     label: module.shortTitle,
     href: module.href,

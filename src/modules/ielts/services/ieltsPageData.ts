@@ -40,7 +40,7 @@ export async function loadIeltsHomeData(): Promise<IeltsHomeData> {
   }
 
   if (!hasMongoDbUri())
-    return { ...empty, error: 'Chưa cấu hình cơ sở dữ liệu.' }
+    return { ...empty, error: 'Database is not configured.' }
 
   try {
     const [user, actorId] = await Promise.all([
@@ -65,6 +65,6 @@ export async function loadIeltsHomeData(): Promise<IeltsHomeData> {
   } catch (error) {
     console.error('ielts home data failed', { error })
 
-    return { ...empty, error: 'Không tải được danh sách đề.' }
+    return { ...empty, error: 'Could not load tests.' }
   }
 }

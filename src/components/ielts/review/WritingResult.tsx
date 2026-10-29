@@ -40,12 +40,12 @@ function MarkedEssay({
     parts.push(essay.slice(cursor, mark.start))
     parts.push(
       <mark
-        className="bg-ex-wrong-soft text-ex-ink decoration-ex-wrong rounded px-0.5 underline decoration-wavy decoration-2"
+        className="bg-manga-pale-red text-manga-black decoration-manga-red rounded-tag px-0.5 underline decoration-wavy decoration-2"
         key={mark.index}
         title={`${mark.item.suggestion}: ${mark.item.reason}`}
       >
         {mark.item.quote}
-        <sup className="font-sans text-[10px] font-bold">{mark.index + 1}</sup>
+        <sup className="font-sans text-[10px] font-black">{mark.index + 1}</sup>
       </mark>
     )
     cursor = mark.start + mark.item.quote.length
@@ -54,7 +54,7 @@ function MarkedEssay({
   parts.push(essay.slice(cursor))
 
   return (
-    <div className="font-body border-ex-line rounded-lg border bg-white p-4 text-[17px] leading-[1.8] whitespace-pre-wrap">
+    <div className="font-body border-manga-black rounded-control bg-manga-white border-2 p-4 text-[17px] leading-[1.8] whitespace-pre-wrap">
       {parts}
     </div>
   )
@@ -85,18 +85,18 @@ function TaskFeedback({
 
   return (
     <ExamCard
-      eyebrow={`${words} từ · tối thiểu ${task.minWords}`}
+      eyebrow={`${words} words · minimum ${task.minWords}`}
       title={`Task ${task.task}${feedback?.band != null ? ` · Band ${feedback.band.toFixed(1)}` : ''}`}
     >
       <details>
-        <summary className="cursor-pointer font-sans text-sm font-bold">
-          Đề bài
+        <summary className="cursor-pointer font-sans text-sm font-black">
+          Prompt
         </summary>
         <div className="mt-2 grid gap-3">
           <p className="whitespace-pre-line">{task.prompt}</p>
           {task.visual ? (
             <TaskVisual
-              className="border-ex-line max-w-2xl rounded-lg border"
+              className="border-manga-black rounded-control max-w-2xl border-2"
               visual={task.visual}
             />
           ) : null}
@@ -124,26 +124,26 @@ function TaskFeedback({
             <ol className="grid gap-3">
               {feedback.corrections.map((item, index) => (
                 <li
-                  className="border-ex-line grid gap-1 border-b pb-2"
+                  className="border-manga-black/20 grid gap-1 border-b pb-2"
                   key={index}
                 >
                   <p>
-                    <span className="font-sans text-xs font-bold">
+                    <span className="font-sans text-xs font-black">
                       {index + 1}.
                     </span>{' '}
-                    <s className="text-ex-wrong">{item.quote}</s>{' '}
+                    <s className="text-manga-red">{item.quote}</s>{' '}
                     <span aria-hidden="true">→</span>{' '}
-                    <strong className="text-ex-correct">
+                    <strong className="text-lesson-correct">
                       {item.suggestion}
                     </strong>
                   </p>
                   <p className="text-sm">{item.reason}</p>
                   {item.grammarLessonId ? (
                     <Link
-                      className="w-fit font-sans text-sm font-bold underline"
+                      className="w-fit font-sans text-sm font-black underline"
                       href={`/grammar/lessons/${item.grammarLessonId}`}
                     >
-                      Học lại: {item.grammarLessonTitle}
+                      Study: {item.grammarLessonTitle}
                     </Link>
                   ) : null}
                 </li>
@@ -152,10 +152,10 @@ function TaskFeedback({
           ) : null}
           {feedback.improved ? (
             <div className="grid gap-1">
-              <p className="font-sans text-sm font-bold">
-                Đoạn viết lại (khoảng 1 band cao hơn)
+              <p className="font-sans text-sm font-black">
+                Rewritten paragraph (about 1 band higher)
               </p>
-              <p className="font-body border-ex-line rounded-lg border bg-white p-3 leading-[1.7]">
+              <p className="font-body border-manga-black rounded-control bg-manga-white border-2 p-3 leading-[1.7]">
                 {feedback.improved}
               </p>
             </div>
@@ -165,13 +165,13 @@ function TaskFeedback({
         <>
           <p role="status">
             {status === 'grading'
-              ? `AI đang chấm Task ${task.task}...`
+              ? `AI is grading Task ${task.task}...`
               : status === 'failed'
-                ? `Chấm thất bại: ${feedback?.error || 'không rõ lý do'}`
-                : 'Chưa chấm.'}
+                ? `Grading failed: ${feedback?.error || 'unknown reason'}`
+                : 'Not graded yet.'}
           </p>
-          <div className="font-body border-ex-line rounded-lg border bg-white p-4 text-[17px] leading-[1.8] whitespace-pre-wrap">
-            {task.essay || '(Bài trống)'}
+          <div className="font-body border-manga-black rounded-control bg-manga-white border-2 p-4 text-[17px] leading-[1.8] whitespace-pre-wrap">
+            {task.essay || '(Blank)'}
           </div>
         </>
       )}
@@ -184,23 +184,23 @@ function TaskFeedback({
           type="button"
         >
           {busy
-            ? 'Đang chấm...'
+            ? 'Grading...'
             : status === 'done'
-              ? 'Chấm lại'
+              ? 'Grade again'
               : status === 'failed'
-                ? 'Chấm lại'
-                : 'AI chấm bài'}
+                ? 'Grade again'
+                : 'Grade with AI'}
         </ExamButton>
         <ExamButton
           onClick={() => setShowSample(current => !current)}
           tone="paper"
           type="button"
         >
-          {showSample ? 'Ẩn bài mẫu' : 'Xem bài mẫu'}
+          {showSample ? 'Hide sample answer' : 'Show sample answer'}
         </ExamButton>
       </div>
       {showSample && task.sampleAnswer ? (
-        <div className="font-body border-ex-line rounded-lg border bg-white p-4 text-[17px] leading-[1.8] whitespace-pre-wrap">
+        <div className="font-body border-manga-black rounded-control bg-manga-white border-2 p-4 text-[17px] leading-[1.8] whitespace-pre-wrap">
           {task.sampleAnswer}
         </div>
       ) : null}
@@ -223,7 +223,7 @@ export function WritingResult({ attempt: initial, tasks }: Props) {
 
       setAttempt(result.attempt)
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'Không chấm được.')
+      setError(caught instanceof Error ? caught.message : 'Could not grade.')
     } finally {
       setBusyTask(null)
     }
@@ -232,14 +232,14 @@ export function WritingResult({ attempt: initial, tasks }: Props) {
   return (
     <div className="grid gap-6">
       <section
-        aria-label="Kết quả"
+        aria-label="Result"
         className="grid grid-cols-2 gap-3 md:grid-cols-4"
       >
         <StatTile
           detail={
             attempt.scope.kind === 'part'
-              ? 'Một task không quy ra band Writing'
-              : 'Task 2 tính gấp đôi Task 1'
+              ? 'A single task does not give a Writing band'
+              : 'Task 2 counts double Task 1'
           }
           label="Writing band"
           tone="ink"
@@ -262,7 +262,7 @@ export function WritingResult({ attempt: initial, tasks }: Props) {
       </section>
       {error ? (
         <p
-          className="border-ex-line bg-ex-soft rounded-lg border px-3 py-2"
+          className="border-manga-black bg-manga-pale-red rounded-control border-2 px-3 py-2"
           role="alert"
         >
           {error}

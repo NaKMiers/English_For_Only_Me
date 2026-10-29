@@ -1,6 +1,6 @@
 'use client'
 
-import { EllipsisVertical, GripVertical, Pencil } from 'lucide-react'
+import { EllipsisVertical, GripVertical, Pencil, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import type { DragEvent, ReactNode } from 'react'
 import { useTransition } from 'react'
@@ -22,7 +22,10 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
-import { updateVideoLevelAction } from '@/modules/dictation/content/adminActions'
+import {
+  deleteVideoAction,
+  updateVideoLevelAction,
+} from '@/modules/dictation/content/adminActions'
 import {
   DICTATION_LEVELS,
   type DictationLevel,
@@ -32,6 +35,8 @@ import {
   getDictationStatusTone,
 } from '@/modules/dictation/statusDisplay'
 import type { DictationVideoStatus } from '@/modules/dictation/types'
+
+import { ConfirmSubmitButton } from './ConfirmSubmitButton'
 
 /** Click-to-edit level badge; changes persist immediately, without touching topic/section. */
 function AdminVideoLevelBadge({
@@ -124,17 +129,37 @@ function AdminVideoActionsMenu({
         className="w-44"
       >
         <DropdownMenuItem
-          render={<Link href={`/admin/videos/${video.id}/edit`} />}
+          render={<Link href={`/admin/dictation/videos/${video.id}/edit`} />}
         >
           <Pencil aria-hidden="true" />
           Edit
         </DropdownMenuItem>
-        {children && (
-          <>
-            <DropdownMenuSeparator />
-            {children}
-          </>
-        )}
+        {children}
+        <DropdownMenuSeparator />
+        {/* Soft delete: archives the video into the trash panel, where it can
+            be restored or deleted for good. */}
+        <form
+          action={deleteVideoAction}
+          className="shrink-0"
+        >
+          <input
+            type="hidden"
+            name="id"
+            value={video.id}
+          />
+          <ConfirmSubmitButton
+            confirmTitle="Delete video?"
+            confirmMessage={`Move "${video.title}" to the trash? It disappears from admin and app lists until you restore it.`}
+            confirmLabel="Move to trash"
+            className="focus:bg-manga-red focus:text-manga-white text-manga-red hover:bg-manga-red hover:text-manga-white rounded-tag flex min-h-11 w-full items-center gap-2 px-3 font-sans text-sm font-black whitespace-nowrap transition-colors"
+          >
+            <Trash2
+              aria-hidden="true"
+              className="size-4"
+            />
+            Delete
+          </ConfirmSubmitButton>
+        </form>
       </DropdownMenuContent>
     </DropdownMenu>
   )
@@ -150,7 +175,7 @@ export function dropPlacement(
 
 /**
  * Shared admin video row: grip handle, thumbnail, title, level + status badges,
- * and a trailing actions menu. Both /admin/videos and /admin/topics render this
+ * and a trailing actions menu. Both views of /admin/dictation render this
  * so the two surfaces stay visually identical.
  *
  * Drag model: the row and its grip both start a drag by writing

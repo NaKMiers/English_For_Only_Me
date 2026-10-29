@@ -1,7 +1,16 @@
 'use client'
 
+import {
+  ChevronLeft,
+  ChevronRight,
+  Columns2,
+  Eye,
+  PenLine,
+  Save,
+  X,
+} from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import {
   Dialog,
@@ -15,45 +24,35 @@ import { cn } from '@/lib/utils'
 import {
   checkSection,
   checkTest,
-  type IeltsConsistencyIssue,
   type IeltsConsistencyReport,
 } from '@/modules/ielts/consistency/checkTest'
-import {
-  IELTS_SKILL_LABELS,
-  IELTS_TRACKS,
-  type IeltsGenStatus,
-} from '@/modules/ielts/constants'
+import { IELTS_SKILL_LABELS } from '@/modules/ielts/constants'
 import type { IeltsSection, IeltsSectionInput } from '@/modules/ielts/schema'
 import type { IeltsAdminTest } from '@/modules/ielts/tests/testService'
 import {
   archiveIeltsTestApi,
-  deleteIeltsDraftApi,
+  deleteIeltsTestApi,
   generateIeltsAudioApi,
   generateIeltsSectionApi,
   IeltsAdminApiError,
   type IeltsGenerateStep,
-  newIeltsVersionApi,
   readIeltsTestApi,
   publishIeltsTestApi,
   saveIeltsMetaApi,
   saveIeltsSectionApi,
+  unarchiveIeltsTestApi,
 } from '@/requests/ieltsAdminApi'
 
 import { AssistMenu } from './AssistMenu'
-import { AreaField, ListField, NumberField, TextField } from './fields'
+import { ChecksPanel, IssueList } from './ChecksPanel'
+import { EditorHeader } from './EditorHeader'
+import { countLabel, Disclosure, MetaChip } from './fields'
 import { GenerationLog } from './GenerationLog'
 import { SectionForm } from './SectionForm'
+import { isDone, SectionPicker, statusOf } from './SectionPicker'
 import { SectionPreview } from './SectionPreview'
-import { ExamButton, ExamCard } from '@/components/ielts/ui'
-
-const GEN_LABELS: Record<IeltsGenStatus, string> = {
-  pending: 'Chờ',
-  generating: 'Đang tạo...',
-  needsRepair: 'Cần sửa lỗi',
-  ready: 'Sẵn sàng',
-  failed: 'Lỗi',
-  manual: 'Soạn tay',
-}
+import { TestDetailsDialog, type TestMeta } from './TestDetailsDialog'
+import { ExamButton, ExamIconButton, segmentClass } from '@/components/ielts/ui'
 
 function toInput(section: IeltsSection): IeltsSectionInput {
   return {
@@ -75,47 +74,48 @@ function nextNumberFor(sections: IeltsSection[], section: IeltsSection) {
   return before.length ? Math.max(...before) + 1 : 1
 }
 
-function IssueList({ issues }: { issues: IeltsConsistencyIssue[] }) {
-  if (!issues.length) return null
+type Pane = 'edit' | 'split' | 'preview'
 
-  return (
-    <ul className="grid gap-1 text-sm">
-      {issues.slice(0, 30).map((issue, index) => (
-        <li key={index}>
-          <code className="font-sans text-xs font-bold">{issue.rule}</code>{' '}
-          <span className="text-ex-muted">{issue.path}</span>: {issue.message}
-        </li>
-      ))}
-      {issues.length > 30 ? <li>... và {issues.length - 30} lỗi nữa</li> : null}
-    </ul>
-  )
+const PANES: { value: Pane; label: string; Icon: typeof Eye }[] = [
+  { value: 'edit', label: 'Edit', Icon: PenLine },
+  { value: 'split', label: 'Split', Icon: Columns2 },
+  { value: 'preview', label: 'Preview', Icon: Eye },
+]
+
+function metaOf(test: IeltsAdminTest): TestMeta {
+  return {
+    title: test.title,
+    track: test.track,
+    targetBand: test.targetBand,
+    tags: test.tags,
+    description: test.description,
+  }
 }
 
 /**
- * Three columns: sections and publish (left), the section form (centre),
- * the learner preview (right; a tab under 1280px). Each section saves on
- * its own with a revision guard.
+ * One header card (test info, checks, actions, section strip) over a
+ * workspace: the section editor and the learner preview side by side from
+ * 1280px, each scrolling on its own under a fixed toolbar, or one at a time
+ * (Edit / Split / Preview). Test details, the full check report and the AI
+ * log open in dialogs. Each section saves on its own with a revision guard;
+ * Ctrl/Cmd+S saves the open one.
  */
 export function TestEditor({ initial }: { initial: IeltsAdminTest }) {
   const router = useRouter()
   const [test, setTest] = useState(initial)
   const [selectedKey, setSelectedKey] = useState(initial.sections[0]?.key)
   const [drafts, setDrafts] = useState<Record<string, IeltsSectionInput>>({})
-  const [meta, setMeta] = useState({
-    title: initial.title,
-    track: initial.track,
-    targetBand: initial.targetBand,
-    tags: initial.tags,
-    description: initial.description,
-  })
+  const [meta, setMeta] = useState(() => metaOf(initial))
   const [busy, setBusy] = useState<string | null>(null)
   const [message, setMessage] = useState('')
   const [publishReport, setPublishReport] =
     useState<IeltsConsistencyReport | null>(null)
   const [confirmWarnings, setConfirmWarnings] = useState(false)
-  const [previewTab, setPreviewTab] = useState<'form' | 'preview'>('form')
+  const [pane, setPane] = useState<Pane>('split')
+  const [dialog, setDialog] = useState<'details' | 'checks' | 'log' | null>(
+    null
+  )
   const stopLoopRef = useRef(false)
-  const isDraft = test.status === 'draft'
   const section = test.sections.find(item => item.key === selectedKey)
   const draft = section ? (drafts[section.key] ?? toInput(section)) : null
   const dirty = section ? Boolean(drafts[section.key]) : false
@@ -141,7 +141,9 @@ export function TestEditor({ initial }: { initial: IeltsAdminTest }) {
   }
 
   const fail = (caught: unknown) => {
-    setMessage(caught instanceof Error ? caught.message : 'Có lỗi xảy ra.')
+    setMessage(
+      caught instanceof Error ? caught.message : 'Something went wrong.'
+    )
 
     if (caught instanceof IeltsAdminApiError && caught.report)
       setPublishReport(caught.report)
@@ -175,7 +177,7 @@ export function TestEditor({ initial }: { initial: IeltsAdminTest }) {
       )
 
       adopt(next, [section.key])
-      setMessage('Đã lưu.')
+      setMessage('Saved.')
     } catch (caught) {
       fail(caught)
     } finally {
@@ -195,7 +197,8 @@ export function TestEditor({ initial }: { initial: IeltsAdminTest }) {
       )
 
       adopt(next)
-      setMessage('Đã lưu thông tin đề.')
+      setDialog(null)
+      setMessage('Test details saved.')
     } catch (caught) {
       fail(caught)
     } finally {
@@ -238,7 +241,7 @@ export function TestEditor({ initial }: { initial: IeltsAdminTest }) {
   }
 
   /**
-   * "Tạo tiếp phần còn thiếu": one request per step, section by section,
+   * "Generate missing sections": one request per step, section by section,
    * re-reading the test between calls. Closing the tab loses nothing; the
    * loop picks up where it stopped.
    */
@@ -352,7 +355,7 @@ export function TestEditor({ initial }: { initial: IeltsAdminTest }) {
       )
 
       adopt(next, [section.key])
-      setMessage('Đã tạo audio.')
+      setMessage('Audio generated.')
     } catch (caught) {
       fail(caught)
     } finally {
@@ -370,7 +373,7 @@ export function TestEditor({ initial }: { initial: IeltsAdminTest }) {
 
       adopt(next)
       setConfirmWarnings(false)
-      setMessage('Đã xuất bản.')
+      setMessage('Published.')
     } catch (caught) {
       if (
         caught instanceof IeltsAdminApiError &&
@@ -381,19 +384,6 @@ export function TestEditor({ initial }: { initial: IeltsAdminTest }) {
 
       fail(caught)
     } finally {
-      setBusy(null)
-    }
-  }
-
-  const newVersion = async () => {
-    setBusy('version')
-
-    try {
-      const { test: next } = await newIeltsVersionApi(test.id)
-
-      router.push(`/admin/ielts/${next.id}`)
-    } catch (caught) {
-      fail(caught)
       setBusy(null)
     }
   }
@@ -410,13 +400,42 @@ export function TestEditor({ initial }: { initial: IeltsAdminTest }) {
     }
   }
 
+  const unarchive = async () => {
+    setBusy('unarchive')
+
+    try {
+      adopt((await unarchiveIeltsTestApi(test.id)).test)
+    } catch (caught) {
+      fail(caught)
+    } finally {
+      setBusy(null)
+    }
+  }
+
   const remove = async () => {
-    if (!window.confirm('Xoá bản nháp này? Không hoàn tác được.')) return
+    if (!window.confirm("Delete this test? This can't be undone.")) return
 
     setBusy('delete')
 
     try {
-      await deleteIeltsDraftApi(test.id)
+      try {
+        await deleteIeltsTestApi(test.id)
+      } catch (caught) {
+        const count =
+          caught instanceof IeltsAdminApiError ? caught.attemptCount : null
+
+        // Old reviews read this test: deleting it takes them along.
+        if (
+          !count ||
+          !window.confirm(
+            `${count} attempts use this test and will be deleted with it (reviews included). Delete anyway?`
+          )
+        )
+          throw caught
+
+        await deleteIeltsTestApi(test.id, true)
+      }
+
       router.push('/admin/ielts')
     } catch (caught) {
       fail(caught)
@@ -431,344 +450,365 @@ export function TestEditor({ initial }: { initial: IeltsAdminTest }) {
         item.genStatus === 'ready' &&
         !item.listening?.audio)
   ).length
+  const sectionIndex = section ? test.sections.indexOf(section) : -1
+  const prevSection = test.sections[sectionIndex - 1]
+  const nextSection = test.sections[sectionIndex + 1]
+  const canSave = dirty && busy === null
+
+  // Ctrl/Cmd+S saves the open section instead of the browser's "save page".
+  const saveRef = useRef(saveSection)
+  useEffect(() => {
+    saveRef.current = saveSection
+  })
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (!(event.metaKey || event.ctrlKey) || event.key.toLowerCase() !== 's')
+        return
+
+      event.preventDefault()
+      if (canSave) void saveRef.current()
+    }
+
+    window.addEventListener('keydown', onKey)
+
+    return () => window.removeEventListener('keydown', onKey)
+  }, [canSave])
+
+  const generateStep: IeltsGenerateStep | null = section
+    ? section.genStatus === 'needsRepair'
+      ? 'repair'
+      : section.skill === 'listening'
+        ? section.listening?.lines.length
+          ? 'questions'
+          : 'script'
+        : 'draft'
+    : null
+  const generateLabel =
+    generateStep === 'repair'
+      ? 'Auto-fix with AI'
+      : generateStep === 'questions'
+        ? 'Generate questions'
+        : generateStep === 'script'
+          ? 'Generate script with AI'
+          : 'Generate with AI'
+  const sectionStatus = section
+    ? statusOf(section, busy === `gen:${section.key}`)
+    : null
+  const showEditor = pane !== 'preview'
+  const showPreview = pane !== 'edit'
 
   return (
-    <div className="ielts-exam border-ex-line m-3 grid gap-4 rounded-2xl border p-4 sm:m-4 xl:grid-cols-[280px_minmax(0,1fr)_minmax(0,1fr)]">
-      <aside className="grid content-start gap-4">
-        <ExamCard
-          eyebrow={`v${test.version} · ${test.status}`}
-          title="Đề"
+    <div className="flex h-full min-h-0 flex-col gap-3 overflow-y-auto p-3 sm:p-4 xl:overflow-hidden">
+      <EditorHeader
+        busy={busy}
+        onArchive={() => void archive()}
+        onDelete={() => void remove()}
+        onEditDetails={() => {
+          // Reopening drops edits from a cancelled dialog.
+          setMeta(metaOf(test))
+          setDialog('details')
+        }}
+        onGenerateMissing={() => void generateMissing()}
+        onOpenChecks={() => setDialog('checks')}
+        onOpenLog={() => setDialog('log')}
+        onPublish={() => void publish(false)}
+        onStop={() => {
+          stopLoopRef.current = true
+        }}
+        onUnarchive={() => void unarchive()}
+        pendingCount={pendingCount}
+        picker={
+          <SectionPicker
+            busyKey={busy?.startsWith('gen:') ? busy.slice(4) : undefined}
+            dirtyKeys={Object.keys(drafts)}
+            onSelect={setSelectedKey}
+            sections={test.sections}
+            selectedKey={selectedKey}
+          />
+        }
+        report={testReport}
+        test={test}
+      />
+
+      {message ? (
+        <div
+          className="border-manga-black bg-manga-pale-red rounded-control flex shrink-0 items-center gap-2 border-2 py-1 pr-1 pl-3"
+          role="status"
         >
-          <TextField
-            label="Tên đề"
-            onChange={title => setMeta({ ...meta, title })}
-            value={meta.title}
-          />
-          <div className="grid grid-cols-2 gap-2">
-            <div className="grid gap-1">
-              <span className="font-sans text-xs font-bold">Loại</span>
-              {/* Segmented toggle (aria-pressed): documented raw exception. */}
-              <div className="flex gap-1">
-                {IELTS_TRACKS.map(track => (
-                  <button
-                    aria-pressed={meta.track === track}
-                    className={cn(
-                      'border-ex-line min-h-9 flex-1 rounded-lg border font-sans text-xs font-bold',
-                      meta.track === track
-                        ? 'bg-ex-accent text-white'
-                        : 'bg-white'
-                    )}
-                    disabled={!isDraft}
-                    key={track}
-                    onClick={() => setMeta({ ...meta, track })}
-                    type="button"
-                  >
-                    {track === 'academic' ? 'AC' : 'GT'}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <NumberField
-              label="Band mục tiêu"
-              max={9}
-              min={4}
-              onChange={targetBand => setMeta({ ...meta, targetBand })}
-              step={0.5}
-              value={meta.targetBand}
-            />
-          </div>
-          <ListField
-            label="Tags"
-            onChange={tags => setMeta({ ...meta, tags })}
-            separator=","
-            value={meta.tags}
-          />
-          <AreaField
-            label="Mô tả"
-            onChange={description => setMeta({ ...meta, description })}
-            rows={2}
-            value={meta.description}
-          />
-          {isDraft ? (
-            <ExamButton
-              disabled={busy !== null}
-              onClick={() => void saveMeta()}
-              tone="paper"
-              type="button"
-            >
-              {busy === 'meta' ? 'Đang lưu...' : 'Lưu thông tin'}
-            </ExamButton>
-          ) : null}
-        </ExamCard>
-
-        <ExamCard title="Các phần">
-          <ul className="grid gap-1.5">
-            {test.sections.map(item => (
-              <li key={item.key}>
-                {/* Section picker (aria-pressed): documented raw exception. */}
-                <button
-                  aria-pressed={item.key === selectedKey}
-                  className={cn(
-                    'border-ex-line flex min-h-10 w-full items-center justify-between gap-2 rounded-lg border px-2.5 text-left text-sm',
-                    item.key === selectedKey
-                      ? 'bg-ex-accent text-white'
-                      : 'hover:bg-ex-soft bg-white'
-                  )}
-                  onClick={() => setSelectedKey(item.key)}
-                  type="button"
-                >
-                  <span className="font-sans font-bold">
-                    {IELTS_SKILL_LABELS[item.skill]} {item.order}
-                    {drafts[item.key] ? ' *' : ''}
-                  </span>
-                  <span className="text-xs font-semibold">
-                    {busy === `gen:${item.key}`
-                      ? 'Đang tạo...'
-                      : GEN_LABELS[item.genStatus]}
-                  </span>
-                </button>
-              </li>
-            ))}
-          </ul>
-          {isDraft && pendingCount ? (
-            <div className="flex flex-wrap gap-2">
-              <ExamButton
-                disabled={busy !== null}
-                onClick={() => void generateMissing()}
-                tone="ink"
-                type="button"
-              >
-                Tạo tiếp phần còn thiếu ({pendingCount})
-              </ExamButton>
-              {busy?.startsWith('gen:') ? (
-                <ExamButton
-                  onClick={() => {
-                    stopLoopRef.current = true
-                  }}
-                  tone="paper"
-                  type="button"
-                >
-                  Dừng
-                </ExamButton>
-              ) : null}
-            </div>
-          ) : null}
-        </ExamCard>
-
-        <ExamCard
-          className="xl:sticky xl:top-4"
-          title="Xuất bản"
-        >
-          <p className="text-sm font-semibold">
-            {testReport.errors.length} lỗi · {testReport.warnings.length} cảnh
-            báo
-          </p>
-          {isDraft ? (
-            <>
-              <ExamButton
-                disabled={busy !== null || testReport.errors.length > 0}
-                onClick={() => void publish(false)}
-                tone="ink"
-                type="button"
-              >
-                {busy === 'publish' ? 'Đang xuất bản...' : 'Xuất bản'}
-              </ExamButton>
-              <ExamButton
-                disabled={busy !== null}
-                onClick={() => void remove()}
-                tone="paper"
-                type="button"
-              >
-                Xoá bản nháp
-              </ExamButton>
-            </>
-          ) : (
-            <>
-              <ExamButton
-                disabled={busy !== null}
-                onClick={() => void newVersion()}
-                tone="ink"
-                type="button"
-              >
-                Tạo phiên bản mới để sửa
-              </ExamButton>
-              {test.status === 'published' ? (
-                <ExamButton
-                  disabled={busy !== null}
-                  onClick={() => void archive()}
-                  tone="paper"
-                  type="button"
-                >
-                  Gỡ khỏi danh sách
-                </ExamButton>
-              ) : null}
-            </>
-          )}
-          <details>
-            <summary className="cursor-pointer font-sans text-xs font-bold">
-              Chi tiết kiểm tra
-            </summary>
-            <div className="mt-2 grid gap-2">
-              <IssueList issues={testReport.errors} />
-              <IssueList issues={testReport.warnings} />
-            </div>
-          </details>
-        </ExamCard>
-      </aside>
-
-      <section
-        aria-label="Soạn phần"
-        className={cn(
-          'grid content-start gap-4',
-          previewTab === 'preview' && 'hidden xl:grid'
-        )}
-      >
-        <div className="flex flex-wrap items-center gap-2 xl:hidden">
-          {/* Tab toggle (aria-pressed): documented raw exception. */}
-          {(['form', 'preview'] as const).map(value => (
-            <button
-              aria-pressed={previewTab === value}
-              className={cn(
-                'border-ex-line min-h-9 rounded-lg border px-3 font-sans text-sm font-bold',
-                previewTab === value ? 'bg-ex-accent text-white' : 'bg-white'
-              )}
-              key={value}
-              onClick={() => setPreviewTab(value)}
-              type="button"
-            >
-              {value === 'form' ? 'Soạn' : 'Xem trước'}
-            </button>
-          ))}
-        </div>
-        {message ? (
-          <p
-            className="border-ex-line bg-ex-soft rounded-lg border px-3 py-2 text-sm font-semibold"
-            role="status"
+          <p className="min-w-0 flex-1 text-sm font-semibold">{message}</p>
+          <ExamIconButton
+            className="size-8 border-2 shadow-none"
+            label="Dismiss"
+            onClick={() => setMessage('')}
+            type="button"
           >
-            {message}
-          </p>
-        ) : null}
-        {section && draft ? (
-          <ExamCard
-            action={
-              isDraft ? (
-                <div className="flex flex-wrap gap-2">
+            <X
+              aria-hidden="true"
+              className="size-4"
+            />
+          </ExamIconButton>
+        </div>
+      ) : null}
+
+      {section && draft ? (
+        <div
+          className={cn(
+            'grid min-w-0 gap-4 xl:min-h-0 xl:flex-1 xl:grid-rows-[minmax(0,1fr)]',
+            showEditor && showPreview && 'xl:grid-cols-2'
+          )}
+        >
+          {showEditor ? (
+            <section
+              aria-label="Edit section"
+              className="border-manga-black bg-manga-white rounded-panel grid min-w-0 content-start border-3 shadow-[4px_4px_0_var(--manga-black)] xl:min-h-0 xl:grid-rows-[auto_minmax(0,1fr)] xl:overflow-hidden"
+            >
+              <div className="border-manga-black bg-manga-white rounded-t-panel sticky top-0 z-20 flex min-w-0 flex-wrap items-center gap-2 border-b-2 px-2 py-2 sm:px-3">
+                <ExamIconButton
+                  className="size-9"
+                  disabled={!prevSection}
+                  label="Previous section"
+                  onClick={() => prevSection && setSelectedKey(prevSection.key)}
+                  type="button"
+                >
+                  <ChevronLeft
+                    aria-hidden="true"
+                    className="size-4"
+                  />
+                </ExamIconButton>
+                <ExamIconButton
+                  className="size-9"
+                  disabled={!nextSection}
+                  label="Next section"
+                  onClick={() => nextSection && setSelectedKey(nextSection.key)}
+                  type="button"
+                >
+                  <ChevronRight
+                    aria-hidden="true"
+                    className="size-4"
+                  />
+                </ExamIconButton>
+                <div className="grid min-w-0 flex-1 gap-1 pl-1">
+                  <h2 className="font-sans text-lg leading-none font-black uppercase">
+                    {IELTS_SKILL_LABELS[section.skill]} {section.order}
+                  </h2>
+                  <div className="flex flex-wrap items-center gap-1">
+                    {sectionStatus ? (
+                      <MetaChip
+                        tone={
+                          isDone(section)
+                            ? 'ok'
+                            : section.genStatus === 'failed' ||
+                                section.genStatus === 'needsRepair'
+                              ? 'red'
+                              : 'warn'
+                        }
+                      >
+                        <sectionStatus.Icon
+                          aria-hidden="true"
+                          className={cn(
+                            busy === `gen:${section.key}` && 'animate-spin'
+                          )}
+                        />
+                        {sectionStatus.label}
+                      </MetaChip>
+                    ) : null}
+                    <MetaChip className="tabular-nums">
+                      rev {section.revision}
+                    </MetaChip>
+                    {dirty ? <MetaChip tone="pale">Unsaved</MetaChip> : null}
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center justify-end gap-2 max-sm:w-full">
+                  <ViewSwitch
+                    onChange={setPane}
+                    value={pane}
+                  />
                   <AssistMenu
                     disabled={busy !== null}
+                    generateLabel={generateLabel}
                     onApply={input =>
                       setDrafts(current => ({
                         ...current,
                         [section.key]: input,
                       }))
                     }
+                    onGenerate={() =>
+                      generateStep &&
+                      void generateOne(section.key, generateStep)
+                    }
                     section={section}
                     testId={test.id}
                     value={draft}
                   />
                   <ExamButton
-                    disabled={busy !== null}
-                    onClick={() =>
-                      void generateOne(
-                        section.key,
-                        section.genStatus === 'needsRepair'
-                          ? 'repair'
-                          : section.skill === 'listening'
-                            ? section.listening?.lines.length
-                              ? 'questions'
-                              : 'script'
-                            : 'draft'
-                      )
+                    className="min-h-10 px-3"
+                    disabled={!canSave}
+                    icon={
+                      <Save
+                        aria-hidden="true"
+                        className="size-4"
+                      />
                     }
-                    tone="paper"
-                    type="button"
-                  >
-                    {section.genStatus === 'needsRepair'
-                      ? 'Sửa tự động'
-                      : section.skill === 'listening' &&
-                          section.listening?.lines.length
-                        ? 'AI tạo câu hỏi'
-                        : 'AI tạo phần này'}
-                  </ExamButton>
-                  <ExamButton
-                    disabled={busy !== null || !dirty}
                     onClick={() => void saveSection()}
+                    title="Save section (Ctrl+S)"
                     tone="ink"
                     type="button"
                   >
-                    {busy === 'save'
-                      ? 'Đang lưu...'
-                      : dirty
-                        ? 'Lưu phần'
-                        : 'Đã lưu'}
+                    {busy === 'save' ? 'Saving...' : dirty ? 'Save' : 'Saved'}
                   </ExamButton>
                 </div>
-              ) : null
-            }
-            eyebrow={`${GEN_LABELS[section.genStatus]} · rev ${section.revision}`}
-            title={`${IELTS_SKILL_LABELS[section.skill]} ${section.order}`}
-          >
-            {section.genError ? (
-              <p
-                className="text-ex-wrong text-sm font-semibold"
-                role="alert"
-              >
-                {section.genError}
-              </p>
-            ) : null}
-            <fieldset
-              className="grid min-w-0 gap-4"
-              disabled={!isDraft}
-            >
-              <SectionForm
-                audioBusy={busy === `audio:${section.key}`}
-                nextNumber={nextNumberFor(test.sections, section)}
-                onChange={input =>
-                  setDrafts(current => ({ ...current, [section.key]: input }))
-                }
-                onGenerateAudio={
-                  isDraft && !dirty ? () => void generateAudio() : undefined
-                }
-                section={section}
-                value={draft}
-              />
-            </fieldset>
-            {sectionIssues &&
-            (sectionIssues.errors.length || sectionIssues.warnings.length) ? (
-              <details open>
-                <summary className="cursor-pointer font-sans text-xs font-bold">
-                  Kiểm tra phần này: {sectionIssues.errors.length} lỗi,{' '}
-                  {sectionIssues.warnings.length} cảnh báo
-                </summary>
-                <div className="mt-2 grid gap-2">
-                  <IssueList issues={sectionIssues.errors} />
-                  <IssueList issues={sectionIssues.warnings} />
-                </div>
-              </details>
-            ) : null}
-          </ExamCard>
-        ) : null}
-        <GenerationLog rows={test.generationLog} />
-      </section>
+              </div>
 
-      <section
-        aria-label="Xem trước"
-        className={cn(
-          'border-ex-line content-start rounded-xl border bg-white p-4',
-          previewTab === 'form' ? 'hidden xl:grid' : 'grid'
-        )}
+              <div className="grid min-w-0 content-start gap-3 p-3 sm:p-4 xl:overflow-y-auto">
+                {section.genError ? (
+                  <p
+                    className="border-manga-red text-manga-red rounded-control border-2 px-3 py-2 text-sm font-semibold"
+                    role="alert"
+                  >
+                    {section.genError}
+                  </p>
+                ) : null}
+                {test.status === 'published' ? (
+                  <p
+                    className="border-manga-black rounded-control border-2 bg-yellow-100 px-3 py-2 text-sm font-semibold"
+                    role="note"
+                  >
+                    This test is live: learners see each saved change right
+                    away, past results included.
+                  </p>
+                ) : null}
+                {sectionIssues &&
+                (sectionIssues.errors.length ||
+                  sectionIssues.warnings.length) ? (
+                  <Disclosure
+                    defaultOpen={sectionIssues.errors.length > 0}
+                    key={section.key}
+                    meta={
+                      <>
+                        {sectionIssues.errors.length ? (
+                          <MetaChip tone="red">
+                            {countLabel(sectionIssues.errors.length, 'error')}
+                          </MetaChip>
+                        ) : null}
+                        {sectionIssues.warnings.length ? (
+                          <MetaChip tone="warn">
+                            {countLabel(
+                              sectionIssues.warnings.length,
+                              'warning'
+                            )}
+                          </MetaChip>
+                        ) : null}
+                      </>
+                    }
+                    title="Section check"
+                  >
+                    <ChecksPanel report={sectionIssues} />
+                  </Disclosure>
+                ) : null}
+                <SectionForm
+                  audioBusy={busy === `audio:${section.key}`}
+                  key={section.key}
+                  nextNumber={nextNumberFor(test.sections, section)}
+                  onChange={input =>
+                    setDrafts(current => ({
+                      ...current,
+                      [section.key]: input,
+                    }))
+                  }
+                  onGenerateAudio={
+                    dirty ? undefined : () => void generateAudio()
+                  }
+                  section={section}
+                  value={draft}
+                />
+              </div>
+            </section>
+          ) : null}
+
+          {showPreview ? (
+            <section
+              aria-label="Preview"
+              className="border-manga-black bg-manga-white rounded-panel grid min-w-0 content-start border-3 shadow-[4px_4px_0_var(--manga-black)] xl:min-h-0 xl:grid-rows-[auto_minmax(0,1fr)] xl:overflow-hidden"
+            >
+              <div className="border-manga-black flex min-w-0 flex-wrap items-center justify-between gap-2 border-b-2 px-3 py-2">
+                <h2 className="flex items-center gap-2 font-sans text-sm font-black uppercase">
+                  <Eye
+                    aria-hidden="true"
+                    className="size-4"
+                  />
+                  Learner preview
+                  {dirty ? <MetaChip tone="pale">Live draft</MetaChip> : null}
+                </h2>
+                {showEditor ? null : (
+                  <ViewSwitch
+                    onChange={setPane}
+                    value={pane}
+                  />
+                )}
+              </div>
+              <div className="min-w-0 p-3 sm:p-4 xl:overflow-y-auto">
+                {previewSection ? (
+                  <SectionPreview section={previewSection} />
+                ) : null}
+              </div>
+            </section>
+          ) : null}
+        </div>
+      ) : (
+        <p className="text-muted-foreground p-4 text-sm font-semibold">
+          This test has no sections.
+        </p>
+      )}
+
+      <TestDetailsDialog
+        busy={busy === 'meta'}
+        meta={meta}
+        onChange={setMeta}
+        onOpenChange={open => setDialog(open ? 'details' : null)}
+        onSave={() => void saveMeta()}
+        open={dialog === 'details'}
+      />
+
+      <Dialog
+        onOpenChange={open => setDialog(open ? 'checks' : null)}
+        open={dialog === 'checks'}
       >
-        {previewTab === 'preview' ? (
-          <ExamButton
-            className="mb-3 w-fit xl:hidden"
-            onClick={() => setPreviewTab('form')}
-            tone="paper"
-            type="button"
-          >
-            Quay lại soạn
-          </ExamButton>
-        ) : null}
-        {previewSection ? <SectionPreview section={previewSection} /> : null}
-      </section>
+        <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-xl">
+          <DialogHeader>
+            <DialogTitle>Test checks</DialogTitle>
+            <DialogDescription>
+              Errors block publishing; warnings ask first. Pick an issue to open
+              its section.
+            </DialogDescription>
+          </DialogHeader>
+          <ChecksPanel
+            onJump={key => {
+              const target = test.sections.find(item => item.key === key)
+
+              if (target) setSelectedKey(target.key)
+              setPane(current => (current === 'preview' ? 'split' : current))
+              setDialog(null)
+            }}
+            report={testReport}
+          />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        onOpenChange={open => setDialog(open ? 'log' : null)}
+        open={dialog === 'log'}
+      >
+        <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>AI log</DialogTitle>
+            <DialogDescription>
+              Every AI request on this test, newest first.
+            </DialogDescription>
+          </DialogHeader>
+          <GenerationLog rows={test.generationLog} />
+        </DialogContent>
+      </Dialog>
 
       <Dialog
         onOpenChange={setConfirmWarnings}
@@ -776,9 +816,9 @@ export function TestEditor({ initial }: { initial: IeltsAdminTest }) {
       >
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Xuất bản với cảnh báo?</DialogTitle>
+            <DialogTitle>Publish with warnings?</DialogTitle>
             <DialogDescription>
-              Không có lỗi chặn, nhưng còn các cảnh báo dưới đây.
+              No blocking errors, but the warnings below remain.
             </DialogDescription>
           </DialogHeader>
           <IssueList issues={publishReport?.warnings ?? []} />
@@ -788,18 +828,57 @@ export function TestEditor({ initial }: { initial: IeltsAdminTest }) {
               tone="paper"
               type="button"
             >
-              Huỷ
+              Cancel
             </ExamButton>
             <ExamButton
               onClick={() => void publish(true)}
               tone="ink"
               type="button"
             >
-              Vẫn xuất bản
+              Publish anyway
             </ExamButton>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+    </div>
+  )
+}
+
+/** Edit / Split / Preview: which panes the workspace shows. */
+function ViewSwitch({
+  onChange,
+  value,
+}: {
+  onChange: (pane: Pane) => void
+  value: Pane
+}) {
+  return (
+    <div
+      aria-label="Workspace view"
+      className="flex gap-1"
+      role="group"
+    >
+      {PANES.map(item => (
+        // Segmented toggle (aria-pressed): documented raw exception.
+        <button
+          aria-label={item.label}
+          aria-pressed={value === item.value}
+          className={segmentClass(
+            value === item.value,
+            'inline-flex min-h-9 items-center gap-1 px-2 text-xs'
+          )}
+          key={item.value}
+          onClick={() => onChange(item.value)}
+          title={item.label}
+          type="button"
+        >
+          <item.Icon
+            aria-hidden="true"
+            className="size-3.5"
+          />
+          <span className="hidden 2xl:inline">{item.label}</span>
+        </button>
+      ))}
     </div>
   )
 }

@@ -10,7 +10,9 @@ export class IeltsAdminApiError extends Error {
   constructor(
     message: string,
     readonly status: number,
-    readonly report: IeltsConsistencyReport | null = null
+    readonly report: IeltsConsistencyReport | null = null,
+    /** Attempts that block deleting an archived version (409). */
+    readonly attemptCount: number | null = null
   ) {
     super(message)
     this.name = 'IeltsAdminApiError'
@@ -35,13 +37,15 @@ async function send<T>(
   const body = (await response.json().catch(() => ({}))) as {
     message?: string
     report?: IeltsConsistencyReport
+    attemptCount?: number
   }
 
   if (!response.ok)
     throw new IeltsAdminApiError(
       body.message ?? `Request failed (${response.status}).`,
       response.status,
-      body.report ?? null
+      body.report ?? null,
+      body.attemptCount ?? null
     )
 
   return body as T
@@ -84,10 +88,12 @@ export const saveIeltsMetaApi = (
     json: { meta, metaRevision },
   })
 
-export const deleteIeltsDraftApi = (testId: string) =>
-  send<{ deleted: true }>(IELTS_API_PATHS.adminTest(testId), {
-    method: 'DELETE',
-  })
+/** Delete a draft or archived version (`withAttempts` also deletes its attempts). */
+export const deleteIeltsTestApi = (testId: string, withAttempts = false) =>
+  send<{ deleted: true; attemptsDeleted: number }>(
+    `${IELTS_API_PATHS.adminTest(testId)}${withAttempts ? '?withAttempts=1' : ''}`,
+    { method: 'DELETE' }
+  )
 
 export const saveIeltsSectionApi = (
   testId: string,
@@ -106,17 +112,19 @@ export const publishIeltsTestApi = (testId: string, confirmWarnings = false) =>
     { method: 'POST', json: { confirmWarnings } }
   )
 
-export const newIeltsVersionApi = (testId: string) =>
-  send<{ test: IeltsAdminTest }>(IELTS_API_PATHS.adminNewVersion(testId), {
-    method: 'POST',
-  })
-
 export const archiveIeltsTestApi = (testId: string) =>
   send<{ test: IeltsAdminTest }>(
     `${IELTS_API_PATHS.adminTest(testId)}/archive`,
     {
       method: 'POST',
     }
+  )
+
+/** Put an archived test back on the catalogue (409 while another is live). */
+export const unarchiveIeltsTestApi = (testId: string) =>
+  send<{ test: IeltsAdminTest }>(
+    `${IELTS_API_PATHS.adminTest(testId)}/unarchive`,
+    { method: 'POST' }
   )
 
 export type IeltsGenerateStep = 'draft' | 'repair' | 'script' | 'questions'

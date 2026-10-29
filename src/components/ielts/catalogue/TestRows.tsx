@@ -51,7 +51,7 @@ export function TestRows({ attempts, catalog }: Props) {
       {tracks.length > 1 ? (
         // Segmented filter (aria-pressed): the documented raw-button exception.
         <div
-          aria-label="Lọc theo loại đề"
+          aria-label="Filter by test type"
           className="flex flex-wrap gap-2"
           role="group"
         >
@@ -59,16 +59,16 @@ export function TestRows({ attempts, catalog }: Props) {
             <button
               aria-pressed={track === value}
               className={cn(
-                'border-ex-line min-h-9 rounded-lg border px-3 font-sans text-sm font-bold',
+                'border-manga-black rounded-control min-h-9 border-2 px-3 font-sans text-sm font-black',
                 track === value
-                  ? 'bg-ex-accent text-white'
-                  : 'hover:bg-ex-soft bg-white'
+                  ? 'bg-manga-red text-manga-white'
+                  : 'hover:bg-manga-pale-red bg-manga-white'
               )}
               key={value}
               onClick={() => setTrack(value)}
               type="button"
             >
-              {value === 'all' ? 'Tất cả' : TRACK_LABELS[value]}
+              {value === 'all' ? 'All' : TRACK_LABELS[value]}
             </button>
           ))}
         </div>
@@ -76,13 +76,13 @@ export function TestRows({ attempts, catalog }: Props) {
       <ul className="grid gap-2">
         {visible.map(entry => (
           <li
-            className="border-ex-line grid gap-3 rounded-lg border bg-white px-4 py-3 sm:grid-cols-[1fr_auto_auto] sm:items-center"
+            className="border-manga-black rounded-control bg-manga-white grid gap-3 border-2 px-4 py-3 sm:grid-cols-[1fr_auto_auto] sm:items-center"
             key={entry.id}
           >
             <div className="grid min-w-0 gap-1">
-              <p className="font-sans font-bold">{entry.title}</p>
-              <p className="text-ex-muted text-sm">
-                {TRACK_LABELS[entry.track]} · mục tiêu {entry.targetBand}
+              <p className="font-sans font-black">{entry.title}</p>
+              <p className="text-muted-foreground text-sm">
+                {TRACK_LABELS[entry.track]} · target {entry.targetBand}
                 {entry.description ? ` · ${entry.description}` : ''}
               </p>
             </div>
@@ -92,7 +92,7 @@ export function TestRows({ attempts, catalog }: Props) {
 
                 return (
                   <span
-                    className="border-ex-line inline-flex min-h-7 items-center gap-1 rounded-md border px-2 font-sans text-xs font-bold"
+                    className="border-manga-black rounded-tag inline-flex min-h-7 items-center gap-1 border-2 px-2 font-sans text-xs font-black"
                     key={skill}
                     title={IELTS_SKILL_LABELS[skill]}
                   >
@@ -108,7 +108,7 @@ export function TestRows({ attempts, catalog }: Props) {
               href={`/ielts/${entry.slug}`}
               tone="ink"
             >
-              Mở
+              Open
             </ExamButton>
           </li>
         ))}

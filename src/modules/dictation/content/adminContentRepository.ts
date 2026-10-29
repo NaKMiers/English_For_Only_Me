@@ -1,11 +1,20 @@
 import 'server-only'
 
+import { DictationAttemptModel } from '@/models/dictation/DictationAttemptModel'
+import { DictationDebriefModel } from '@/models/dictation/DictationDebriefModel'
+import { DictationFavoriteModel } from '@/models/dictation/DictationFavoriteModel'
+import { DictationReviewItemModel } from '@/models/dictation/DictationReviewItemModel'
 import { DictationSectionModel } from '@/models/dictation/DictationSectionModel'
+import { DictationSegmentModel } from '@/models/dictation/DictationSegmentModel'
+import { DictationSessionModel } from '@/models/dictation/DictationSessionModel'
 import { DictationTopicModel } from '@/models/dictation/DictationTopicModel'
+import { DictationTranscriptModel } from '@/models/dictation/DictationTranscriptModel'
 import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
+import { VocabOccurrenceModel } from '@/models/vocabulary/VocabOccurrenceModel'
 import type { DictationLevel } from '@/modules/dictation/levels'
 
 import { slugify } from './slugify'
+import { restoredVideoStatus } from './videoTrash'
 
 // Archived videos are soft-deleted and hidden from every admin/browse count,
 // so "does this topic/section still have videos" must ignore them too -
@@ -162,6 +171,64 @@ export async function deleteVideo(id: string) {
     { _id: id, status: { $ne: 'archived' } },
     { $set: { status: 'archived' } }
   )
+}
+
+/**
+ * Bring an archived video back. The status it had before archiving is not
+ * kept, so it is rebuilt from what the video still has.
+ */
+export async function restoreVideo(id: string) {
+  const video = await DictationVideoModel.findOne(
+    { _id: id, status: 'archived' },
+    { activeTranscriptId: 1, sentenceCount: 1 }
+  ).lean()
+  if (!video) return { ok: false as const }
+
+  await DictationVideoModel.updateOne(
+    { _id: id, status: 'archived' },
+    {
+      $set: {
+        status: restoredVideoStatus({
+          activeTranscriptId: video.activeTranscriptId
+            ? String(video.activeTranscriptId)
+            : null,
+          sentenceCount: video.sentenceCount ?? 0,
+        }),
+      },
+    }
+  )
+  return { ok: true as const }
+}
+
+/**
+ * Permanently delete an archived video with its transcripts, segments and
+ * every learner's practice data for it. Saved vocabulary keeps its context
+ * sentence but loses the link to the video. Refuses a video that is not
+ * archived, so a live lesson always goes through the trash first.
+ */
+export async function purgeVideo(id: string) {
+  const archived = await DictationVideoModel.exists({
+    _id: id,
+    status: 'archived',
+  })
+  if (!archived) return { ok: false as const }
+
+  const byVideo = { videoId: id }
+  await Promise.all([
+    DictationTranscriptModel.deleteMany(byVideo),
+    DictationSegmentModel.deleteMany(byVideo),
+    DictationSessionModel.deleteMany(byVideo),
+    DictationAttemptModel.deleteMany(byVideo),
+    DictationDebriefModel.deleteMany(byVideo),
+    DictationReviewItemModel.deleteMany(byVideo),
+    DictationFavoriteModel.deleteMany(byVideo),
+    VocabOccurrenceModel.updateMany(byVideo, {
+      $set: { attemptId: null, segmentId: null, videoId: null },
+    }),
+  ])
+  // Last, so a failed cleanup leaves the video in the trash to retry.
+  await DictationVideoModel.deleteOne({ _id: id, status: 'archived' })
+  return { ok: true as const }
 }
 
 /** Set each video's display order to its index in the given id list. */

@@ -84,7 +84,7 @@ export async function assistSection({
     return ieltsError(400, 'Assist works on listening and reading sections.')
 
   if (!getOpenAiApiKey())
-    return ieltsError(503, 'Chưa cấu hình OPENAI_API_KEY.')
+    return ieltsError(503, 'OPENAI_API_KEY is not configured.')
 
   if (!materialText(section).trim())
     return ieltsError(400, 'Write the passage or script first.')
@@ -161,7 +161,7 @@ export async function assistSection({
       section: next,
       notes: [
         ...parsed.data.notes,
-        ...issues.slice(0, 10).map(issue => `Kiểm tra: ${issue}`),
+        ...issues.slice(0, 10).map(issue => `Check: ${issue}`),
       ],
     },
   }

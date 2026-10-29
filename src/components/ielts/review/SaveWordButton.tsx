@@ -55,9 +55,7 @@ export function SaveWordButton({
         className="size-9"
         disabled={state === 'busy' || state === 'saved'}
         label={
-          state === 'saved'
-            ? `Đã lưu "${term}"`
-            : `Lưu "${term}" vào Vocabulary`
+          state === 'saved' ? `Saved "${term}"` : `Save "${term}" to Vocabulary`
         }
         onClick={() => void save()}
         type="button"
@@ -79,10 +77,10 @@ export function SaveWordButton({
         className="text-xs font-semibold"
       >
         {state === 'saved'
-          ? 'Đã lưu'
+          ? 'Saved'
           : state === 'failed'
-            ? 'Không lưu được'
-            : `Lưu "${term}"`}
+            ? 'Could not save'
+            : `Save "${term}"`}
       </span>
     </span>
   )

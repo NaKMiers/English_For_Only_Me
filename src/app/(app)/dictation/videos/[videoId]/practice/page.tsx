@@ -66,12 +66,12 @@ function PracticeSetupState({
           <div className="flex flex-wrap gap-3">
             <MangaButton href="/dictation">Back To Dictation Lab</MangaButton>
             {videoId ? (
-              <MangaButton href={`/admin/videos/${videoId}/edit`}>
+              <MangaButton href={`/admin/dictation/videos/${videoId}/edit`}>
                 Add Transcript
               </MangaButton>
             ) : null}
             <MangaButton
-              href="/admin/import"
+              href="/admin/dictation/import"
               tone="paper"
             >
               Import Video

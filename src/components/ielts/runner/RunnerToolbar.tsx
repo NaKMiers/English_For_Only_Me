@@ -10,12 +10,12 @@ import type { IeltsSaveState } from './useAttemptAnswers'
 import { formatClock, IELTS_TIMER_WARNING_SECONDS } from './useMockDeadline'
 
 const SAVE_LABELS: Record<IeltsSaveState, string> = {
-  idle: 'Chưa lưu',
-  pending: 'Đang lưu...',
-  saving: 'Đang lưu...',
-  saved: 'Đã lưu',
-  offline: 'Ngoại tuyến, bài vẫn lưu trên máy',
-  timeup: 'Hết giờ',
+  idle: 'Not saved',
+  pending: 'Saving...',
+  saving: 'Saving...',
+  saved: 'Saved',
+  offline: 'Offline, answers saved on this device',
+  timeup: 'Time is up',
 }
 
 interface Props {
@@ -33,9 +33,9 @@ interface Props {
 
 /** Shown at 10, 5 and 1 minute left only, so a screen reader is not spammed. */
 function timerAnnouncement(seconds: number) {
-  if (seconds === 600) return 'Còn 10 phút'
-  if (seconds === 300) return 'Còn 5 phút'
-  if (seconds === 60) return 'Còn 1 phút'
+  if (seconds === 600) return '10 minutes remaining'
+  if (seconds === 300) return '5 minutes remaining'
+  if (seconds === 60) return '1 minute remaining'
 
   return ''
 }
@@ -66,11 +66,11 @@ export function RunnerToolbar({
   )
 
   return (
-    <header className="border-ex-line grid shrink-0 grid-cols-[1fr_auto] items-center gap-x-3 gap-y-2 border-b bg-white px-3 py-2 sm:px-4 md:grid-cols-[1fr_auto_1fr]">
+    <header className="border-manga-black bg-manga-white grid shrink-0 grid-cols-[1fr_auto] items-center gap-x-3 gap-y-2 border-b-3 px-3 py-2 sm:px-4 md:grid-cols-[1fr_auto_1fr]">
       <div className="flex min-w-0 items-center gap-3">
         {onBack ? (
           <ExamIconButton
-            label="Thoát"
+            label="Leave"
             onClick={onBack}
             type="button"
           >
@@ -79,15 +79,17 @@ export function RunnerToolbar({
         ) : (
           <ExamIconButton
             href={backHref ?? '/ielts'}
-            label="Thoát"
+            label="Leave"
           >
             {back}
           </ExamIconButton>
         )}
         <div className="grid min-w-0">
-          <p className="text-ex-ink truncate text-[15px] font-bold">{title}</p>
-          <p className="text-ex-muted flex items-center gap-2 text-xs">
-            <span className="bg-ex-soft rounded px-1.5 py-0.5 font-semibold">
+          <p className="text-manga-black truncate font-sans text-[15px] font-black">
+            {title}
+          </p>
+          <p className="text-muted-foreground flex items-center gap-2 text-xs">
+            <span className="border-manga-black bg-manga-pale-red text-manga-black rounded-tag border-2 px-1.5 py-0.5 font-sans text-[11px] font-black uppercase">
               {modeLabel}
             </span>
             <span
@@ -99,10 +101,10 @@ export function RunnerToolbar({
                 className={cn(
                   'inline-block size-1.5 rounded-full',
                   saveState === 'saved'
-                    ? 'bg-ex-correct'
+                    ? 'bg-lesson-correct'
                     : saveState === 'offline' || saveState === 'timeup'
-                      ? 'bg-ex-wrong'
-                      : 'bg-ex-muted'
+                      ? 'bg-manga-red'
+                      : 'bg-muted-foreground'
                 )}
               />
               {SAVE_LABELS[saveState]}
@@ -114,10 +116,10 @@ export function RunnerToolbar({
       <div className="order-last col-span-2 flex justify-center md:order-none md:col-span-1">
         {secondsLeft !== null ? (
           <div
-            aria-label="Thời gian còn lại"
+            aria-label="Time remaining"
             className={cn(
-              'inline-flex items-center gap-2 rounded-lg px-3 py-1 font-sans text-xl font-bold tabular-nums',
-              urgent ? 'bg-ex-wrong-soft text-ex-wrong' : 'text-ex-ink'
+              'rounded-control inline-flex items-center gap-2 px-3 py-1 font-sans text-xl font-black tabular-nums',
+              urgent ? 'bg-manga-pale-red text-manga-red' : 'text-manga-black'
             )}
             role="timer"
           >
@@ -150,7 +152,7 @@ export function RunnerToolbar({
           tone="ink"
           type="button"
         >
-          {submitting ? 'Đang nộp...' : 'Nộp bài'}
+          {submitting ? 'Submitting...' : 'Submit'}
         </ExamButton>
       </div>
     </header>

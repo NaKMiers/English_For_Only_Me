@@ -207,7 +207,9 @@ describe('DictationImportForm', () => {
     fireEvent.click(view.getByRole('button', { name: 'Save Video' }))
 
     await waitFor(() => {
-      expect(pushMock).toHaveBeenCalledWith(`/admin/videos/${videoId}/edit`)
+      expect(pushMock).toHaveBeenCalledWith(
+        `/admin/dictation/videos/${videoId}/edit`
+      )
     })
 
     expect(view.queryByText('Language captions')).toBeNull()

@@ -9,7 +9,7 @@ import type { DictationCorrectionResult } from '@/modules/dictation/correction'
 import { ExamButton } from '@/components/ielts/ui'
 
 /**
- * "Gõ lại câu này": retype the script line that holds the answer, checked
+ * "Retype this line": retype the script line that holds the answer, checked
  * with the Dictation Lab's word correction. Nothing is stored (v1).
  */
 export function LineDictation({ line }: { line: string }) {
@@ -27,7 +27,7 @@ export function LineDictation({ line }: { line: string }) {
           tone="paper"
           type="button"
         >
-          Gõ lại câu này
+          Retype this line
         </ExamButton>
       </div>
     )
@@ -42,15 +42,16 @@ export function LineDictation({ line }: { line: string }) {
     )
 
   return (
-    <div className="border-ex-line grid gap-2 rounded-lg border bg-white p-3">
+    <div className="border-manga-black rounded-control bg-manga-white grid gap-2 border-2 p-3">
       <p className="text-sm">
-        Nhớ lại câu trong audio rồi gõ lại, không nhìn transcript.
+        Recall the line from the audio and type it without looking at the
+        transcript.
       </p>
       <div className="flex flex-wrap gap-2">
         <Input
-          aria-label="Câu bạn nghe được"
+          aria-label="The line you heard"
           autoComplete="off"
-          className="border-ex-line h-11 min-w-0 flex-1 border bg-white text-base"
+          className="border-manga-black bg-manga-white h-11 min-w-0 flex-1 border-2 text-base"
           onChange={event => setTyped(event.target.value)}
           onKeyDown={event => {
             if (event.key === 'Enter') check()
@@ -63,7 +64,7 @@ export function LineDictation({ line }: { line: string }) {
           tone="ink"
           type="button"
         >
-          Kiểm tra
+          Check
         </ExamButton>
       </div>
       {result ? (
@@ -74,10 +75,10 @@ export function LineDictation({ line }: { line: string }) {
           {result.feedbackTokens.map((token, index) => (
             <span
               className={cn(
-                'mr-1 rounded-md px-0.5',
+                'rounded-tag mr-1 px-0.5',
                 token.status === 'correct' || token.status === 'spellingVariant'
-                  ? 'text-ex-correct'
-                  : 'bg-ex-soft text-ex-wrong font-bold',
+                  ? 'text-lesson-correct'
+                  : 'bg-manga-pale-red text-manga-red font-bold',
                 token.status === 'extra' && 'line-through'
               )}
               key={index}
@@ -91,7 +92,9 @@ export function LineDictation({ line }: { line: string }) {
             </span>
           ))}
           <span className="block text-sm font-bold">
-            {result.isPassed ? 'Đúng hết.' : `Đúng ${result.stats.accuracy}%.`}
+            {result.isPassed
+              ? 'All correct.'
+              : `${result.stats.accuracy}% correct.`}
           </span>
         </p>
       ) : null}

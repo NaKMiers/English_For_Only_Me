@@ -19,34 +19,19 @@ export const runtime = 'nodejs'
 
 const LINKS = [
   {
-    href: '/admin/topics',
-    title: 'Topics & Sections',
-    desc: 'Create and organize the content hierarchy.',
-  },
-  {
-    href: '/admin/videos',
-    title: 'Videos',
-    desc: 'Assign videos to a topic, section, and level.',
-  },
-  {
-    href: '/admin/import',
-    title: 'Import',
-    desc: 'Add a new YouTube source.',
+    href: '/admin/dictation',
+    title: 'Dictation',
+    desc: 'Topics, sections and videos: organize, import and clean up.',
   },
   {
     href: '/admin/ielts',
-    title: 'IELTS tests',
+    title: 'IELTS Tests',
     desc: 'Write, generate with AI, check and publish IELTS tests.',
   },
   {
     href: '/admin/vocab',
     title: 'Vocabulary',
     desc: 'Seed and enrich the global vocabulary cache.',
-  },
-  {
-    href: '/dictation/stats',
-    title: 'Stats',
-    desc: 'Practice stats dashboard.',
   },
 ]
 
@@ -77,7 +62,7 @@ export default async function AdminDashboard() {
         <PageHero>
           <PageTag tone="ink">Admin</PageTag>
           <h1 className="font-sans text-[clamp(1.8rem,4vw,2.6rem)] leading-none font-black uppercase">
-            Manage content
+            Manage Content
           </h1>
           <p className="text-manga-ink-soft text-sm">
             {topicCount} topics · {uncategorized} uncategorized videos

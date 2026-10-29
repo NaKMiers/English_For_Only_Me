@@ -92,7 +92,9 @@ export function DictationGlobalStats({ stats }: Props) {
             page will then show where Dictation Lab should push you next.
           </p>
           <div className="flex flex-wrap gap-3">
-            <MangaButton href="/admin/import">Import Video</MangaButton>
+            <MangaButton href="/admin/dictation/import">
+              Import Video
+            </MangaButton>
             <MangaButton
               href="/dictation"
               tone="paper"

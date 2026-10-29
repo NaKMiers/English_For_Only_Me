@@ -225,7 +225,7 @@ export function DictationImportForm({
       const response = await importYouTubeVideoApi({ youtubeUrl })
 
       if (response.alreadyExists) {
-        router.push(`/admin/videos/${response.video.id}/edit`)
+        router.push(`/admin/dictation/videos/${response.video.id}/edit`)
         return
       }
 

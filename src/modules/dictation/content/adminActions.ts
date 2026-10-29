@@ -21,9 +21,11 @@ import {
   deleteSection,
   deleteTopic,
   deleteVideo,
+  purgeVideo,
   reorderSections,
   reorderTopics,
   reorderVideos,
+  restoreVideo,
   updateSection,
   updateTopic,
 } from './adminContentRepository'
@@ -41,8 +43,7 @@ function revalidateBrowse() {
   updateTag(CACHE_TAGS.dictationCatalog)
   revalidatePath('/dictation')
   revalidatePath('/dictation/no-topic')
-  revalidatePath('/admin/topics')
-  revalidatePath('/admin/videos')
+  revalidatePath('/admin/dictation')
 }
 
 function str(formData: FormData, key: string): string {
@@ -167,6 +168,28 @@ export async function deleteVideoAction(formData: FormData) {
 
   await deleteVideo(id)
   revalidateBrowse()
+}
+
+/** Bring a soft-deleted video back from the trash. */
+export async function restoreVideoAction(formData: FormData) {
+  await guardAdmin()
+
+  const id = str(formData, 'id')
+  if (!id) return
+
+  const result = await restoreVideo(id)
+  if (result.ok) revalidateBrowse()
+}
+
+/** Permanently delete a video that is already in the trash. */
+export async function purgeVideoAction(formData: FormData) {
+  await guardAdmin()
+
+  const id = str(formData, 'id')
+  if (!id) return
+
+  const result = await purgeVideo(id)
+  if (result.ok) revalidateBrowse()
 }
 
 /** Reorder videos by their id order (drag-to-reorder). */

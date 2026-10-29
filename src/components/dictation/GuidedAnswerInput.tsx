@@ -437,7 +437,9 @@ export function GuidedAnswerInput({
         </p>
       ) : null}
 
-      <div className="border-manga-black bg-manga-white rounded-control relative border-2 shadow-[2px_2px_0_var(--manga-black)]">
+      {/* The visible typing field around the transparent overlay input:
+          `keep-frame` keeps its border when nested boxes flatten on a phone. */}
+      <div className="keep-frame border-manga-black bg-manga-white rounded-control relative border-2 shadow-[2px_2px_0_var(--manga-black)]">
         <div
           aria-hidden="true"
           style={inputTextStyle}

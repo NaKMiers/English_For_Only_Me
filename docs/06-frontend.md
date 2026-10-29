@@ -112,7 +112,7 @@ hand.
 | ----- | ---- | ---- |
 | Pure theme logic | `src/lib/theme/theme.ts` | Dependency-free helpers: `autoThemeForTime`, `nextThreshold`, `resolveTheme`, `manualState`, `parseStoredTheme`. Window boundaries `MORNING_THRESHOLD_MIN` (06:30) and `EVENING_THRESHOLD_MIN` (18:30); a manual override wins only until the next threshold, then auto resumes. State is persisted under `THEME_STORAGE_KEY` (`efom-theme`). |
 | `ThemeProvider` | `src/components/common/ThemeProvider.tsx` | Client. Reads the theme via `useSyncExternalStore` (external store over localStorage + wall clock; `getServerSnapshot` pins `light` to avoid hydration mismatch). Re-checks on a timer and on `visibilitychange`/`focus`, and syncs `data-theme` onto `<html>`. Exposes `useTheme()` -> `{ theme, toggle }`, with a safe default so it also works inside client `error.tsx` boundaries. |
-| `PullStringToggle` | `src/components/common/PullStringToggle.tsx` | Client. A hanging pull-string bulb fixed to the top-right of the viewport (outside the page chrome). Yanks and swings on click, glows amber in light-up, dim in day; flips the theme via `useTheme().toggle`. Motion respects reduced-motion. |
+| `PullStringToggle` | `src/components/common/PullStringToggle.tsx` | Client. A hanging pull-string bulb fixed to the top-right of the viewport (outside the page chrome). Yanks and swings on click, glows amber in light-up, dim in day; flips the theme via `useTheme().toggle`. Motion respects reduced-motion. Draggable along the x axis only (cord length fixed; Left/Right arrow keys too); a drag does not toggle. The offset is written to the DOM from a ref and saved as `{ right }` under `efom-lamp-position` in localStorage. |
 | No-FOUC script | `src/app/layout.tsx` | An inline `<script>` (`THEME_INIT_SCRIPT`) that mirrors `theme.ts` and stamps `data-theme` on `<html>` before first paint. `<html suppressHydrationWarning>` covers the difference. The root layout wraps `children` in `ThemeProvider` and renders `PullStringToggle` once, globally. |
 
 `src/app/globals.css` drives the whole flip off the `[data-theme]` attribute (not
@@ -190,15 +190,16 @@ without a backend. Auth uses `getOptionalUser()` /
 | `/vocabulary`                          | (app)   | `src/app/(app)/vocabulary/page.tsx`            | Server + client island | Vocabulary dashboard: stats, growth, due flashcards, dictionary lookup, search results, and Explore.                                                                                                           | Open (practice actor)                          |
 | `/vocabulary/words`                    | (app)   | `src/app/(app)/vocabulary/words/page.tsx`      | Server                 | Filtered vocabulary word list for `learning`, `dueToday`, `alreadyKnow`, `mastered`, and `knownTotal` views.                                                                                                   | Open (practice actor)                          |
 | `/admin`                               | (admin) | `src/app/admin/page.tsx`                       | Server                 | Admin dashboard: link cards + topic/uncategorized counts.                                                                                                                                                      | Admin only (via layout)                        |
-| `/admin/topics`                        | (admin) | `src/app/admin/topics/page.tsx`                | Server                 | Manage topics/sections/videos: create form, unassigned pool, drag-reorderable topic list.                                                                                                                      | Admin only                                     |
-| `/admin/videos`                        | (admin) | `src/app/admin/videos/page.tsx`                | Server                 | Bulk video assignment table (topic/section/level, reorder, delete).                                                                                                                                            | Admin only                                     |
-| `/admin/videos/[videoId]/edit`         | (admin) | `.../videos/[videoId]/edit/page.tsx`           | Server                 | Attach transcript source to a saved video (`DictationImportForm` in edit mode). Own admin guard + id validation.                                                                                               | Admin only (own redirect guard)                |
-| `/admin/import`                        | (admin) | `src/app/admin/import/page.tsx`                | Server                 | Import a new YouTube video and attach transcript. Own admin guard.                                                                                                                                             | Admin only (own redirect guard)                |
+| `/admin/dictation`                     | (admin) | `src/app/admin/dictation/page.tsx`             | Server                 | Dictation admin. `?view=list` shows the bulk assign table, any other value the topic board (create form, unassigned pool, drag-reorderable topics). Both views: Import button, Deleted videos trash.           | Admin only                                     |
+| `/admin/dictation/videos/[videoId]/edit` | (admin) | `.../dictation/videos/[videoId]/edit/page.tsx` | Server                 | Attach transcript source to a saved video (`DictationImportForm` in edit mode). Own admin guard + id validation.                                                                                               | Admin only (own redirect guard)                |
+| `/admin/dictation/import`              | (admin) | `src/app/admin/dictation/import/page.tsx`      | Server                 | Import a new YouTube video and attach transcript. Own admin guard.                                                                                                                                             | Admin only (own redirect guard)                |
 | `/admin/vocab`                         | (admin) | `src/app/admin/vocab/page.tsx`                 | Server + client island | Vocabulary enrichment queue summary and Enrich N control.                                                                                                                                                      | Admin only                                     |
 
 Route groups: `(app)` groups the learner-facing dictation routes; `(admin)` is not
 a Next route group folder but a real `/admin` path segment whose `layout.tsx`
-enforces the admin guard for all children. There is no `(app)` layout file; the
+enforces the admin guard for all children. The old `/admin/topics`,
+`/admin/videos` (to `?view=list`), `/admin/videos/:videoId/edit` and
+`/admin/import` URLs redirect permanently via `next.config.ts`. There is no `(app)` layout file; the
 dictation routes each render their own `MangaPageShell` + `AppTopbar`.
 
 Segment-level UX files (under `src/app/(app)/dictation/`):
@@ -210,7 +211,7 @@ Segment-level UX files (under `src/app/(app)/dictation/`):
 
 The `/admin/layout.tsx` guard redirects anonymous users to
 `/api/auth/signin?callbackUrl=/admin` and non-admins to `/dictation`. The
-`/admin/import` and `/admin/videos/[videoId]/edit` pages repeat the same guard
+`/admin/dictation/import` and `/admin/dictation/videos/[videoId]/edit` pages repeat the same guard
 inline (defense in depth, plus id-format validation).
 
 ---
@@ -395,9 +396,10 @@ exception is `DictationImportForm`, which calls the client request helper
 | `AdminTopicCard`            | `admin/AdminTopicCard.tsx`            | client  | Expandable topic editor: sections, ungrouped videos, moves, reorders. Many actions (create/delete/update section, move/remove/reorder video, update/delete topic). Renders `AdminVideoRow`, `AdminTopicThumbnailFields`, `ConfirmSubmitButton`. |
 | `AdminCreateTopicForm`      | `admin/AdminCreateTopicForm.tsx`      | client  | Create-topic form (`createTopicAction`, multipart).                                                                                                                                                                                             |
 | `AdminTopicThumbnailFields` | `admin/AdminTopicThumbnailFields.tsx` | client  | Thumbnail file upload (`uploadTopicThumbnailAction`) feeding a hidden field.                                                                                                                                                                    |
+| `AdminTrashPanel`           | `admin/AdminTrashPanel.tsx`           | server  | Collapsible "Deleted videos" list under both admin views. Each row's ⋯ menu (`AdminTrashVideoMenu`, client) has Restore (`restoreVideoAction`) and Delete permanently (`purgeVideoAction`, confirm first). Renders null when empty.                                                                   |
 | `AdminUnassignedPanel`      | `admin/AdminUnassignedPanel.tsx`      | client  | Collapsible pool of topic-less videos; both drag source and unassign drop target (`moveVideoAction`).                                                                                                                                           |
-| `AdminVideoRow`             | `admin/AdminVideoRow.tsx`             | client  | Shared draggable/selectable video row (grip, thumbnail, level `Select` via `updateVideoLevelAction`, edit link).                                                                                                                                |
-| `VideoAssignTable`          | `admin/VideoAssignTable.tsx`          | client  | `/admin/videos` bulk table: filter/search, multi-select, bulk assign (`assignVideosAction`), reorder (`reorderVideosAction`), delete (`deleteVideoAction`).                                                                                     |
+| `AdminVideoRow`             | `admin/AdminVideoRow.tsx`             | client  | Shared draggable/selectable video row (grip, thumbnail, level `Select` via `updateVideoLevelAction`); its menu always has Edit and Delete (soft delete via `deleteVideoAction`).                                                                                                                                |
+| `VideoAssignTable`          | `admin/VideoAssignTable.tsx`          | client  | List view of `/admin/dictation`: filter/search, multi-select, bulk assign (`assignVideosAction`), reorder (`reorderVideosAction`).                                                                                     |
 | `adminVideoDnd`             | `admin/adminVideoDnd.tsx`             | client  | Shared DnD primitives (`DropZone`, `ReorderHandle`), MIME constants, `reorderIds` re-export.                                                                                                                                                    |
 | `ConfirmSubmitButton`       | `admin/ConfirmSubmitButton.tsx`       | client  | Confirm-modal submit button that calls `form.requestSubmit()` on confirm.                                                                                                                                                                       |
 | `DictationImportForm`       | `dictation/DictationImportForm.tsx`   | client  | Import/edit form; saves a video via `importYouTubeVideoApi`, then reveals `DictationCaptionManager`. Modes `import` and `edit`.                                                                                                                 |
@@ -537,10 +539,17 @@ Every page wraps its content in `MangaPageShell` and passes an `AppTopbar` into 
 - `AppTopbar` (`src/components/common/AppTopbar.tsx`, server): the page header -
   logo + title + subtitle (links to `/`), a horizontal primary nav rendered from
   `PRIMARY_NAV_ITEMS` (default) with `aria-current` on the active `activeHref`, and
-  an `authControl` slot. It is intentionally client-safe: it takes the auth control
-  as a `ReactNode` slot rather than importing the NextAuth/Mongoose chain, so the
+  an `authControl` slot. The inline nav shows from `xl` up; below `xl` it is
+  replaced by `TopbarMenu`, and below `sm` the auth control moves into that menu
+  too. It is intentionally client-safe: it takes the auth control as a
+  `ReactNode` slot rather than importing the NextAuth/Mongoose chain, so the
   client `error.tsx` can render it without dragging server-only code into the
   browser bundle.
+- `TopbarMenu` (`src/components/common/TopbarMenu.tsx`, client): the hamburger
+  `IconButton`. On first click it lazy-loads `TopbarMenuSheet` (next/dynamic,
+  prefetched on hover/focus, same pattern as `UserMenu`), a right-side `Sheet`
+  drawer listing the same nav items as large sticker links (disabled ones tagged
+  "Soon"), plus the auth control on phones. Tapping a link closes the drawer.
 - `AuthControl` (`src/components/common/AuthControl.tsx`, server async): reads the
   session via `auth()`. Renders nothing if Google auth is unconfigured
   (`hasGoogleAuth()`), a "Sign in" `MangaButton` (server-action `signIn('google')`)
@@ -556,10 +565,9 @@ Every page wraps its content in `MangaPageShell` and passes an `AppTopbar` into 
   itself renders no theme control.
 
 Navigation source of truth: `PRIMARY_NAV_ITEMS` in `src/constants/modules.ts`
-("Study Desk" plus every `APP_MODULES` short title). Only `dictation` and
-`vocabulary` are `active`; the remaining nav items (Writing, Coach, Reading,
-Speaking) are rendered `disabled` and point at routes that are not yet
-implemented.
+("Study Desk" plus every `APP_MODULES` short title except Writing, Reading and
+Speaking, which the IELTS module covers). Non-active nav items (Coach) are
+rendered `disabled` and point at routes that are not yet implemented.
 
 ---
 

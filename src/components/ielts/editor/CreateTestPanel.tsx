@@ -6,10 +6,10 @@ import { useState } from 'react'
 import { cn } from '@/lib/utils'
 import { createIeltsTestApi } from '@/requests/ieltsAdminApi'
 
-import { AreaField, NumberField, TextField } from './fields'
+import { AreaField, BandField, TextField } from './fields'
 import { ExamButton, ExamCard } from '@/components/ielts/ui'
 
-/** "Tạo đề tay" (blank draft) or "Tạo đề bằng AI" (pending sections). */
+/** "Manual" (blank draft) or "Generate with AI" (pending sections). */
 export function CreateTestPanel() {
   const router = useRouter()
   const [mode, setMode] = useState<'manual' | 'generate'>('generate')
@@ -29,7 +29,7 @@ export function CreateTestPanel() {
         mode === 'manual'
           ? await createIeltsTestApi({
               mode,
-              title: title || 'Đề mới',
+              title: title || 'New test',
               track,
               targetBand,
             })
@@ -47,7 +47,9 @@ export function CreateTestPanel() {
 
       router.push(`/admin/ielts/${test.id}`)
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'Không tạo được đề.')
+      setError(
+        caught instanceof Error ? caught.message : "Couldn't create the test."
+      )
       setBusy(false)
     }
   }
@@ -62,8 +64,8 @@ export function CreateTestPanel() {
     <button
       aria-pressed={current === value}
       className={cn(
-        'border-ex-line min-h-10 flex-1 rounded-lg border px-3 font-sans text-sm font-bold',
-        current === value ? 'bg-ex-accent text-white' : 'bg-white'
+        'border-manga-black rounded-control min-h-10 flex-1 border-2 px-3 font-sans text-sm font-black',
+        current === value ? 'bg-manga-red text-manga-white' : 'bg-manga-white'
       )}
       onClick={onClick}
       type="button"
@@ -74,15 +76,24 @@ export function CreateTestPanel() {
 
   return (
     <ExamCard
-      eyebrow="Tạo đề"
-      title="Đề mới"
+      eyebrow="Create test"
+      title="New test"
     >
       <div className="flex gap-2">
-        {toggle('generate', mode, () => setMode('generate'), 'Tạo đề bằng AI')}
-        {toggle('manual', mode, () => setMode('manual'), 'Tạo đề tay')}
+        {toggle(
+          'generate',
+          mode,
+          () => setMode('generate'),
+          'Generate with AI'
+        )}
+        {toggle('manual', mode, () => setMode('manual'), 'Manual')}
       </div>
       <TextField
-        label={mode === 'generate' ? 'Tên đề (để trống để tự đặt)' : 'Tên đề'}
+        label={
+          mode === 'generate'
+            ? 'Test title (leave blank to auto-name)'
+            : 'Test title'
+        }
         onChange={setTitle}
         value={title}
       />
@@ -91,19 +102,15 @@ export function CreateTestPanel() {
           {toggle('academic', track, () => setTrack('academic'), 'Academic')}
           {toggle('general', track, () => setTrack('general'), 'General')}
         </div>
-        <NumberField
-          label="Band mục tiêu"
-          max={9}
-          min={4}
+        <BandField
           onChange={setTargetBand}
-          step={0.5}
           value={targetBand}
         />
       </div>
       {mode === 'generate' ? (
         <AreaField
-          hint="Mỗi dòng một chủ đề, rải lần lượt cho 9 phần. Để trống thì AI tự chọn chủ đề."
-          label="Chủ đề gợi ý"
+          hint="One topic per line, spread across the 9 sections in order. Leave blank and AI picks the topics."
+          label="Suggested topics"
           onChange={setTopics}
           rows={4}
           value={topics}
@@ -111,7 +118,7 @@ export function CreateTestPanel() {
       ) : null}
       {error ? (
         <p
-          className="text-ex-wrong text-sm font-semibold"
+          className="text-manga-red text-sm font-semibold"
           role="alert"
         >
           {error}
@@ -123,7 +130,7 @@ export function CreateTestPanel() {
         tone="ink"
         type="button"
       >
-        {busy ? 'Đang tạo...' : 'Tạo bản nháp'}
+        {busy ? 'Creating...' : 'Create draft'}
       </ExamButton>
     </ExamCard>
   )

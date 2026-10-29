@@ -29,9 +29,9 @@ interface Props {
 type Filter = 'all' | 'wrong' | 'blank'
 
 const FILTERS: [Filter, string][] = [
-  ['all', 'Tất cả'],
-  ['wrong', 'Sai'],
-  ['blank', 'Bỏ trống'],
+  ['all', 'All'],
+  ['wrong', 'Wrong'],
+  ['blank', 'Blank'],
 ]
 
 /** The block the evidence points at: a passage paragraph or a script line. */
@@ -56,7 +56,7 @@ function EvidenceContext({
   if (!text) return null
 
   return (
-    <blockquote className="border-ex-line font-body rounded-lg border-l-4 bg-white px-3 py-2 text-[16px] leading-[1.7]">
+    <blockquote className="border-manga-black font-body rounded-control bg-manga-white border-l-4 px-3 py-2 text-[16px] leading-[1.7]">
       {speaker ? <strong className="font-sans">{speaker}: </strong> : null}
       {label ? <strong className="font-sans">{label} </strong> : null}
       {highlightText(text, row.evidence.quote)}
@@ -115,20 +115,20 @@ export function ObjectiveResult({ attempt, rows, sections }: Props) {
       attempt.deadlineAt &&
       new Date(attempt.submittedAt) > new Date(attempt.deadlineAt) ? (
         <p
-          className="border-ex-line bg-ex-soft rounded-lg border px-3 py-2"
+          className="border-manga-black bg-manga-pale-red rounded-control border-2 px-3 py-2"
           role="status"
         >
-          Hết giờ, đã chấm phần đã lưu.
+          Time ran out. Saved answers were graded.
         </p>
       ) : null}
 
       <section
-        aria-label="Kết quả"
+        aria-label="Result"
         className="grid grid-cols-2 gap-3 md:grid-cols-4"
       >
         {result?.band !== null && result?.band !== undefined ? (
           <StatTile
-            detail={`${result.raw}/${result.total} câu đúng`}
+            detail={`${result.raw}/${result.total} correct`}
             label={`${IELTS_SKILL_LABELS[attempt.skill]} band`}
             tone="ink"
             value={result.band.toFixed(1)}
@@ -137,10 +137,10 @@ export function ObjectiveResult({ attempt, rows, sections }: Props) {
           <StatTile
             detail={
               attempt.mode === 'drill'
-                ? 'Drill không quy ra band'
-                : 'Chỉ cả bài 40 câu mới có band'
+                ? 'A drill does not give a band'
+                : 'Only a full 40-question test gives a band'
             }
-            label="Điểm"
+            label="Score"
             tone="ink"
             value={`${result?.raw ?? 0}/${result?.total ?? 0}`}
           />
@@ -155,14 +155,14 @@ export function ObjectiveResult({ attempt, rows, sections }: Props) {
       </section>
 
       <ExamCard
-        eyebrow="Tiếp theo"
-        title={`${wrong} câu sai hoặc bỏ trống`}
+        eyebrow="Next"
+        title={`${wrong} wrong or blank`}
       >
         <div className="flex flex-wrap items-center gap-3">
           {weakest && attempt.skill !== 'writing' ? (
             <>
               <span className="font-semibold">
-                Yếu nhất: {IELTS_QUESTION_TYPE_LABELS[weakest]}
+                Weakest: {IELTS_QUESTION_TYPE_LABELS[weakest]}
               </span>
               <DrillButton
                 skill={attempt.skill as 'listening' | 'reading'}
@@ -170,26 +170,26 @@ export function ObjectiveResult({ attempt, rows, sections }: Props) {
               />
             </>
           ) : (
-            <span className="font-semibold">Không có câu sai. Tốt lắm.</span>
+            <span className="font-semibold">No wrong answers. Well done.</span>
           )}
           {attempt.testSlug ? (
             <ExamButton
               href={`/ielts/${attempt.testSlug}`}
               tone="paper"
             >
-              Về đề
+              Back to test
             </ExamButton>
           ) : null}
         </div>
       </ExamCard>
 
       <ExamCard
-        eyebrow="Xem lại"
-        title="Đáp án"
+        eyebrow="Review"
+        title="Answers"
       >
         {/* Segmented filter (aria-pressed): the documented raw-button exception. */}
         <div
-          aria-label="Lọc câu"
+          aria-label="Filter questions"
           className="flex flex-wrap gap-2"
           role="group"
         >
@@ -197,10 +197,10 @@ export function ObjectiveResult({ attempt, rows, sections }: Props) {
             <button
               aria-pressed={filter === value}
               className={cn(
-                'border-ex-line min-h-9 rounded-lg border px-3 font-sans text-sm font-bold',
+                'border-manga-black rounded-control min-h-9 border-2 px-3 font-sans text-sm font-black',
                 filter === value
-                  ? 'bg-ex-accent text-white'
-                  : 'hover:bg-ex-soft bg-white'
+                  ? 'bg-manga-red text-manga-white'
+                  : 'hover:bg-manga-pale-red bg-manga-white'
               )}
               key={value}
               onClick={() => setFilter(value)}
@@ -213,7 +213,7 @@ export function ObjectiveResult({ attempt, rows, sections }: Props) {
         <div className="overflow-x-auto">
           <table className="w-full min-w-[560px] border-collapse text-left">
             <thead>
-              <tr className="border-ex-line border-b font-sans text-xs uppercase">
+              <tr className="border-manga-black border-b-2 font-sans text-xs uppercase">
                 <th
                   className="py-2 pr-2"
                   scope="col"
@@ -224,25 +224,25 @@ export function ObjectiveResult({ attempt, rows, sections }: Props) {
                   className="py-2 pr-2"
                   scope="col"
                 >
-                  Dạng
+                  Type
                 </th>
                 <th
                   className="py-2 pr-2"
                   scope="col"
                 >
-                  Bạn trả lời
+                  Your answer
                 </th>
                 <th
                   className="py-2 pr-2"
                   scope="col"
                 >
-                  Đáp án
+                  Answer
                 </th>
                 <th
                   className="py-2"
                   scope="col"
                 >
-                  Kết quả
+                  Result
                 </th>
               </tr>
             </thead>
@@ -252,13 +252,13 @@ export function ObjectiveResult({ attempt, rows, sections }: Props) {
 
                 return (
                   <Fragment key={row.number}>
-                    <tr className="border-ex-line border-b align-top">
+                    <tr className="border-manga-black/20 border-b align-top">
                       <td className="py-2 pr-2">
                         {/* Disclosure trigger (aria-expanded): documented raw-button exception. */}
                         <button
                           aria-controls={`ielts-row-${row.number}`}
                           aria-expanded={expanded}
-                          className="inline-flex min-h-8 items-center gap-1 font-sans font-bold"
+                          className="inline-flex min-h-8 items-center gap-1 font-sans font-black"
                           onClick={() =>
                             setOpenRow(expanded ? null : row.number)
                           }
@@ -280,8 +280,8 @@ export function ObjectiveResult({ attempt, rows, sections }: Props) {
                       <td className="py-2 pr-2 font-semibold">
                         {row.given || '-'}
                         {row.overLimit ? (
-                          <span className="text-ex-wrong block text-xs">
-                            Quá số từ cho phép
+                          <span className="text-manga-red block text-xs">
+                            Over the word limit
                           </span>
                         ) : null}
                       </td>
@@ -309,8 +309,8 @@ export function ObjectiveResult({ attempt, rows, sections }: Props) {
                                 sections={sections}
                               />
                             ) : (
-                              <p className="text-ex-muted text-sm">
-                                Không có trong bài (NOT GIVEN).
+                              <p className="text-muted-foreground text-sm">
+                                Not in the text (NOT GIVEN).
                               </p>
                             )}
                             {row.outcome !== 'correct' &&

@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
   // answer re-renders only what changed. Opt a component out with 'use no memo'.
   reactCompiler: true,
 
-  // Grammar v2 routes. Bookmarks and history entries land on the new path
+  // Moved routes. Bookmarks and history entries land on the new path
   // instead of a 404.
   async redirects() {
     return [
@@ -17,6 +17,27 @@ const nextConfig: NextConfig = {
       },
       { destination: '/grammar', permanent: true, source: '/grammar/archive' },
       { destination: '/admin', permanent: true, source: '/admin/grammar' },
+      // Topics, videos and import were merged into one dictation admin page.
+      {
+        destination: '/admin/dictation',
+        permanent: true,
+        source: '/admin/topics',
+      },
+      {
+        destination: '/admin/dictation?view=list',
+        permanent: true,
+        source: '/admin/videos',
+      },
+      {
+        destination: '/admin/dictation/videos/:videoId/edit',
+        permanent: true,
+        source: '/admin/videos/:videoId/edit',
+      },
+      {
+        destination: '/admin/dictation/import',
+        permanent: true,
+        source: '/admin/import',
+      },
       {
         destination: '/admin',
         permanent: true,

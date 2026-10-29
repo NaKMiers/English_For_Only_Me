@@ -157,6 +157,11 @@ export const IELTS_GENERATION_LOG_LIMIT = 50
 
 export const IELTS_WRITING_MIN_WORDS = { 1: 150, 2: 250 } as const
 
+/** Target bands an author can pick for a test (schema allows 4-9). */
+export const IELTS_TARGET_BANDS = [
+  4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9,
+] as const
+
 export const IELTS_ANSWER_MAX_LENGTH = 300
 export const IELTS_ESSAY_MAX_LENGTH = 20_000
 
@@ -198,8 +203,6 @@ export const IELTS_API_PATHS = {
   adminAudio: (testId: string, key: string) =>
     `/api/admin/ielts/tests/${testId}/sections/${key}/audio`,
   adminPublish: (testId: string) => `/api/admin/ielts/tests/${testId}/publish`,
-  adminNewVersion: (testId: string) =>
-    `/api/admin/ielts/tests/${testId}/new-version`,
   adminAssist: '/api/admin/ielts/assist',
   adminUploadSign: '/api/admin/ielts/uploads/sign',
 } as const

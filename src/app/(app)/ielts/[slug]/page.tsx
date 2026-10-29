@@ -25,6 +25,7 @@ import {
   ExamButton,
   ExamCard,
   ExamSheet,
+  ExamHero,
 } from '@/components/ielts/ui'
 
 export const dynamic = 'force-dynamic'
@@ -44,15 +45,20 @@ function partMinutes(section: IeltsSection) {
   if (section.skill === 'listening') {
     const seconds = section.listening?.audio?.durationSec ?? 0
 
-    return seconds ? `${Math.ceil(seconds / 60)} phút audio` : 'chưa có audio'
+    return seconds ? `${Math.ceil(seconds / 60)} min audio` : 'no audio yet'
   }
 
-  if (section.skill === 'reading')
-    return `${IELTS_TIMERS.readingPart / 60} phút`
+  if (section.skill === 'reading') return `${IELTS_TIMERS.readingPart / 60} min`
 
   return section.writing?.task === 1
-    ? `${IELTS_TIMERS.writingTask1 / 60} phút`
-    : `${IELTS_TIMERS.writingTask2 / 60} phút`
+    ? `${IELTS_TIMERS.writingTask1 / 60} min`
+    : `${IELTS_TIMERS.writingTask2 / 60} min`
+}
+
+const SECTION_NOUNS: Record<IeltsSkill, string> = {
+  listening: 'part',
+  reading: 'passage',
+  writing: 'task',
 }
 
 function partLabel(section: IeltsSection) {
@@ -91,18 +97,18 @@ export default async function IeltsTestPage({ params }: Props) {
         <AppTopbar
           activeHref="/ielts"
           authControl={<AuthControl />}
-          subtitle="Luyện đề IELTS: Listening, Reading, Writing"
+          subtitle="IELTS practice: Listening, Reading, Writing"
         />
       }
     >
       <ExamSheet>
-        <header className="grid gap-2">
+        <ExamHero>
           <nav
             aria-label="Breadcrumb"
-            className="text-ex-muted text-sm"
+            className="text-muted-foreground text-sm font-semibold"
           >
             <Link
-              className="hover:text-ex-accent underline"
+              className="hover:text-manga-red underline"
               href="/ielts"
             >
               IELTS
@@ -113,15 +119,15 @@ export default async function IeltsTestPage({ params }: Props) {
             <ExamBadge tone="pale">
               {test.track === 'general' ? 'General Training' : 'Academic'}
             </ExamBadge>
-            <ExamBadge>Mục tiêu {test.targetBand}</ExamBadge>
+            <ExamBadge>Target {test.targetBand}</ExamBadge>
           </div>
-          <h1 className="text-ex-ink font-sans text-2xl leading-tight font-bold sm:text-3xl">
+          <h1 className="font-sans text-3xl leading-tight font-black wrap-break-word sm:text-4xl">
             {test.title}
           </h1>
           {test.description ? (
             <p className="max-w-2xl">{test.description}</p>
           ) : null}
-        </header>
+        </ExamHero>
 
         <div className="grid gap-6 lg:grid-cols-3">
           {IELTS_SKILLS.map(skill => {
@@ -137,18 +143,18 @@ export default async function IeltsTestPage({ params }: Props) {
 
             return (
               <ExamCard
-                eyebrow={`${parts.length} phần`}
+                eyebrow={`${parts.length} ${SECTION_NOUNS[skill]}${parts.length === 1 ? '' : 's'}`}
                 key={skill}
                 title={IELTS_SKILL_LABELS[skill]}
               >
                 <ul className="grid gap-2">
                   {parts.map(section => (
                     <li
-                      className="border-ex-line flex flex-wrap items-center justify-between gap-2 border-b pb-2"
+                      className="border-manga-black/20 flex flex-wrap items-center justify-between gap-2 border-b pb-2"
                       key={section.key}
                     >
                       <span className="min-w-0 font-semibold">
-                        <strong className="font-sans font-bold">
+                        <strong className="font-sans font-black">
                           {partLabel(section)}
                         </strong>{' '}
                         · {partMinutes(section)}
@@ -180,11 +186,11 @@ export default async function IeltsTestPage({ params }: Props) {
                     href={`/ielts/${slug}/${skill}`}
                     tone="paper"
                   >
-                    Practice cả bài
+                    Practice all
                   </ExamButton>
                   {audioMissing ? (
-                    <span className="text-ex-muted self-center text-sm font-semibold">
-                      Mock cần audio cho mọi part.
+                    <span className="text-muted-foreground self-center text-sm font-semibold">
+                      Mock test needs audio for every part.
                     </span>
                   ) : (
                     <ExamButton
@@ -194,13 +200,13 @@ export default async function IeltsTestPage({ params }: Props) {
                       Mock{' '}
                       {skill === 'listening'
                         ? ''
-                        : `${(skill === 'reading' ? IELTS_TIMERS.readingSkill : IELTS_TIMERS.writingSkill) / 60} phút`}
+                        : `${(skill === 'reading' ? IELTS_TIMERS.readingSkill : IELTS_TIMERS.writingSkill) / 60} min`}
                     </ExamButton>
                   )}
                 </div>
                 {last ? (
                   <p className="text-sm">
-                    Lần gần nhất:{' '}
+                    Latest:{' '}
                     <Link
                       className="font-bold underline"
                       href={`/ielts/attempts/${last.id}`}
@@ -209,7 +215,7 @@ export default async function IeltsTestPage({ params }: Props) {
                         ? `Band ${last.band.toFixed(1)}`
                         : last.raw !== null
                           ? `${last.raw}/${last.total}`
-                          : 'Xem kết quả'}
+                          : 'View result'}
                     </Link>
                   </p>
                 ) : null}

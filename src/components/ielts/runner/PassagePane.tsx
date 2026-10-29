@@ -40,7 +40,7 @@ function highlightAt(text: string, start: number, length: number) {
     <>
       {text.slice(0, start)}
       <mark
-        className="bg-ex-mark decoration-ex-correct rounded px-0.5 text-inherit underline decoration-2 underline-offset-4"
+        className="decoration-lesson-correct rounded-tag bg-yellow-200 px-0.5 text-inherit underline decoration-2 underline-offset-4"
         data-ielts-evidence
       >
         {text.slice(start, start + length)}
@@ -79,22 +79,22 @@ export const PassagePane = memo(function PassagePane({
 
   return (
     <article
-      aria-label="Bài đọc"
+      aria-label="Reading passage"
       className={cn(
-        'text-ex-ink mx-auto grid max-w-[70ch] gap-4 text-[17px] leading-[1.75]',
+        'text-manga-black mx-auto grid max-w-[70ch] gap-4 text-[17px] leading-[1.75]',
         className
       )}
       ref={rootRef}
     >
       <header className="grid gap-1.5 pb-1">
-        <p className="text-ex-muted text-xs font-semibold tracking-wide uppercase">
+        <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
           {partLabel}
         </p>
-        <h2 className="font-sans text-[22px] leading-tight font-bold">
+        <h2 className="font-sans text-[22px] leading-tight font-black">
           {material.title}
         </h2>
         {material.subtitle ? (
-          <p className="text-ex-muted italic">{material.subtitle}</p>
+          <p className="text-muted-foreground italic">{material.subtitle}</p>
         ) : null}
       </header>
       {material.paragraphs.map((paragraph, index) => (
@@ -103,7 +103,7 @@ export const PassagePane = memo(function PassagePane({
           key={index}
         >
           {paragraph.label ? (
-            <strong className="text-ex-muted font-sans text-sm leading-[1.75rem] font-bold">
+            <strong className="text-muted-foreground font-sans text-sm leading-[1.75rem] font-black">
               {paragraph.label}
             </strong>
           ) : null}

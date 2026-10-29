@@ -23,16 +23,18 @@ import {
  * (the authority). Nothing per-learner is ever written here: attempts live in
  * IeltsAttemptModel.
  *
- * One document per version. Lifecycle:
+ * One document per test, edited in place in every status. Status is only
+ * visibility:
  *
- *   draft --publish (transaction)--> published --next publish--> archived
- *     ^                                  |
- *     +-------- new-version (copy) ------+
+ *   draft --publish--> published --archive--> archived
+ *                          ^                     |
+ *                          +----- unarchive -----+
  *
- * A partial unique index keeps at most one published version per slug, so the
- * publish route archives the old version and publishes the new one in one
- * transaction. Archived versions stay readable for in-progress attempts and
- * old reviews.
+ * Attempts point at slug + version; `version` stays 1 for new tests (older
+ * data may still hold several versions of a slug). A partial unique index
+ * keeps at most one published document per slug, so publishing archives any
+ * other live one in the same transaction. Archived tests stay readable for
+ * in-progress attempts and old reviews.
  */
 
 const str = { type: String, default: '', trim: true }

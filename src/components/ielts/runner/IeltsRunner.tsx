@@ -56,7 +56,7 @@ interface Props {
 const MODE_LABELS = { practice: 'Practice', mock: 'Mock', drill: 'Drill' }
 
 function partName(skill: string, part: number, mode?: string) {
-  if (mode === 'drill') return `Nhóm ${part}`
+  if (mode === 'drill') return `Group ${part}`
 
   return skill === 'listening' ? `Part ${part}` : `Passage ${part}`
 }
@@ -112,7 +112,9 @@ export function IeltsRunner({ attempt, backHref, sections, testTitle }: Props) {
     const answered = new Set(Object.keys(attempt.answers ?? {}).map(Number))
     const next = index.find(entry => !answered.has(entry.number))
 
-    return open && answered.size && next ? `Tiếp tục từ câu ${next.number}` : ''
+    return open && answered.size && next
+      ? `Continue from question ${next.number}`
+      : ''
   })
   const [confirmBlanks, setConfirmBlanks] = useState<number | null>(null)
   const [exitOpen, setExitOpen] = useState(false)
@@ -133,7 +135,7 @@ export function IeltsRunner({ attempt, backHref, sections, testTitle }: Props) {
     }
 
     setSubmitting(false)
-    setNotice(`Không nộp được bài: ${outcome.message}`)
+    setNotice(`Could not submit: ${outcome.message}`)
   }, [attempt.id, router, submit])
 
   useEffect(() => {
@@ -143,10 +145,10 @@ export function IeltsRunner({ attempt, backHref, sections, testTitle }: Props) {
   const secondsLeft = useMockDeadline({
     deadlineAt: isMock && open ? deadlineAt : null,
     onExpire: () => {
-      setNotice('Hết giờ. Đang nộp bài...')
+      setNotice('Time is up. Submitting...')
       void finish()
     },
-    onWarning: () => setNotice('Còn 5 phút.'),
+    onWarning: () => setNotice('5 minutes remaining.'),
   })
 
   // A mock cannot be paused: warn before the tab closes.
@@ -185,8 +187,8 @@ export function IeltsRunner({ attempt, backHref, sections, testTitle }: Props) {
         if (!result.evidence) {
           setNotice(
             result.notGiven
-              ? `Câu ${number}: không có trong bài (NOT GIVEN).`
-              : `Câu ${number}: chưa có bằng chứng.`
+              ? `Question ${number}: not in the text (NOT GIVEN).`
+              : `Question ${number}: no evidence yet.`
           )
           return
         }
@@ -198,7 +200,7 @@ export function IeltsRunner({ attempt, backHref, sections, testTitle }: Props) {
 
         if (attempt.skill === 'listening') setShowTranscript(true)
       } catch {
-        setNotice('Không lấy được bằng chứng.')
+        setNotice('Could not load the evidence.')
       }
     },
     [attempt.id, attempt.skill, sections]
@@ -256,7 +258,7 @@ export function IeltsRunner({ attempt, backHref, sections, testTitle }: Props) {
 
   const toggles = isPractice ? (
     <div className="flex flex-wrap items-center gap-3">
-      <Label className="text-ex-ink flex items-center gap-2 text-xs font-semibold">
+      <Label className="text-manga-black flex items-center gap-2 text-xs font-semibold">
         <Switch
           checked={guided}
           onCheckedChange={setGuided}
@@ -264,7 +266,7 @@ export function IeltsRunner({ attempt, backHref, sections, testTitle }: Props) {
         Guided
       </Label>
       {attempt.skill === 'listening' ? (
-        <Label className="text-ex-ink flex items-center gap-2 text-xs font-semibold">
+        <Label className="text-manga-black flex items-center gap-2 text-xs font-semibold">
           <Switch
             checked={showTranscript}
             onCheckedChange={setShowTranscript}
@@ -293,30 +295,30 @@ export function IeltsRunner({ attempt, backHref, sections, testTitle }: Props) {
 
         {notice ? (
           <p
-            className="border-ex-line text-ex-ink flex shrink-0 items-center justify-between gap-3 border-b bg-[#fff8db] px-4 py-2 text-sm"
+            className="border-manga-black text-manga-black flex shrink-0 items-center justify-between gap-3 border-b-2 bg-yellow-100 px-4 py-2 text-sm"
             role="status"
           >
             {notice}
             <button
-              className="text-ex-accent text-xs font-semibold underline"
+              className="text-manga-red text-xs font-semibold underline"
               onClick={() => setNotice('')}
               type="button"
             >
-              Đóng
+              Close
             </button>
           </p>
         ) : null}
 
         {/* Segmented toggle (aria-pressed): the documented raw-button exception. */}
         <div
-          aria-label="Chọn khung"
-          className="border-ex-line sticky top-0 flex shrink-0 gap-2 border-b bg-white px-3 py-2 lg:hidden"
+          aria-label="Choose panel"
+          className="border-manga-black bg-manga-white sticky top-0 flex shrink-0 gap-2 border-b-2 px-3 py-2 lg:hidden"
           role="group"
         >
           {(
             [
-              ['material', attempt.skill === 'listening' ? 'Audio' : 'Bài đọc'],
-              ['questions', `Câu hỏi ${answeredCount}/${total}`],
+              ['material', attempt.skill === 'listening' ? 'Audio' : 'Passage'],
+              ['questions', `Questions ${answeredCount}/${total}`],
             ] as const
           ).map(([value, label]) => (
             <button
@@ -333,24 +335,26 @@ export function IeltsRunner({ attempt, backHref, sections, testTitle }: Props) {
 
         <div className="grid min-h-0 flex-1 lg:grid-cols-[55fr_45fr]">
           <section
-            aria-label={attempt.skill === 'listening' ? 'Audio' : 'Bài đọc'}
+            aria-label={
+              attempt.skill === 'listening' ? 'Audio' : 'Reading passage'
+            }
             className={cn(
-              'min-h-0 overflow-y-auto bg-white px-4 py-6 sm:px-8 lg:block',
+              'bg-manga-white min-h-0 overflow-y-auto px-4 py-6 sm:px-8 lg:block',
               mobileTab === 'material' ? 'block' : 'hidden'
             )}
           >
             {material}
           </section>
           <section
-            aria-label="Câu hỏi"
+            aria-label="Questions"
             className={cn(
-              'border-ex-line bg-ex-soft/60 min-h-0 overflow-y-auto px-4 py-6 sm:px-8 lg:block lg:border-l',
+              'border-manga-black bg-manga-pale-red/60 min-h-0 overflow-y-auto px-4 py-6 sm:px-8 lg:block lg:border-l-3',
               mobileTab === 'questions' ? 'block' : 'hidden'
             )}
           >
             {parts.length > 1 ? (
               <div
-                aria-label="Chọn phần"
+                aria-label="Choose section"
                 className="mb-4 flex flex-wrap gap-2"
                 role="group"
               >
@@ -367,7 +371,7 @@ export function IeltsRunner({ attempt, backHref, sections, testTitle }: Props) {
                 ))}
               </div>
             ) : null}
-            <div className="text-ex-ink mx-auto grid max-w-[70ch] gap-10 text-[16px] leading-[1.7]">
+            <div className="text-manga-black mx-auto grid max-w-[70ch] gap-10 text-[16px] leading-[1.7]">
               {section?.groups.map(group => (
                 <GroupBlock
                   group={group}
@@ -391,11 +395,13 @@ export function IeltsRunner({ attempt, backHref, sections, testTitle }: Props) {
         onOpenChange={next => (next ? null : setConfirmBlanks(null))}
         open={confirmBlanks !== null}
       >
-        <DialogContent className="ielts-exam">
+        <DialogContent>
           <DialogHeader>
-            <DialogTitle>Còn {confirmBlanks} câu trống. Nộp?</DialogTitle>
+            <DialogTitle>
+              {confirmBlanks} questions are blank. Submit?
+            </DialogTitle>
             <DialogDescription>
-              Câu bỏ trống được tính là sai.
+              Blank questions are marked wrong.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -404,14 +410,14 @@ export function IeltsRunner({ attempt, backHref, sections, testTitle }: Props) {
               tone="paper"
               type="button"
             >
-              Làm tiếp
+              Keep going
             </ExamButton>
             <ExamButton
               onClick={() => void finish()}
               tone="ink"
               type="button"
             >
-              Nộp bài
+              Submit
             </ExamButton>
           </DialogFooter>
         </DialogContent>
@@ -421,11 +427,11 @@ export function IeltsRunner({ attempt, backHref, sections, testTitle }: Props) {
         onOpenChange={setExitOpen}
         open={exitOpen}
       >
-        <DialogContent className="ielts-exam">
+        <DialogContent>
           <DialogHeader>
-            <DialogTitle>Thoát mock?</DialogTitle>
+            <DialogTitle>Leave the mock test?</DialogTitle>
             <DialogDescription>
-              Đồng hồ vẫn chạy. Quay lại từ trang IELTS.
+              The timer keeps running. Come back from the IELTS page.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -434,13 +440,13 @@ export function IeltsRunner({ attempt, backHref, sections, testTitle }: Props) {
               tone="paper"
               type="button"
             >
-              Ở lại
+              Stay
             </ExamButton>
             <ExamButton
               href={backHref}
               tone="ink"
             >
-              Thoát
+              Leave
             </ExamButton>
           </DialogFooter>
         </DialogContent>

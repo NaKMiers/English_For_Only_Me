@@ -1,6 +1,7 @@
 'use client'
 
-import { useId } from 'react'
+import { CircleAlert } from 'lucide-react'
+import { useId, useState } from 'react'
 
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
@@ -22,7 +23,9 @@ import type { IeltsQuestion, IeltsQuestionGroup } from '@/modules/ielts/schema'
 import {
   AddButton,
   AreaField,
+  Disclosure,
   ListField,
+  MetaChip,
   NumberField,
   removeAt,
   replaceAt,
@@ -30,6 +33,7 @@ import {
   TextField,
 } from './fields'
 import { ImageUploadField } from './ImageUploadField'
+import { segmentClass } from '@/components/ielts/ui'
 
 interface Props {
   group: IeltsQuestionGroup
@@ -86,69 +90,108 @@ function QuestionEditor({
   onRemove: () => void
   question: IeltsQuestion
 }) {
+  const missingAnswer = !isMulti && question.answers.length === 0
+  const missingEvidence = !question.evidence?.quote
+
   return (
-    <li className="border-ex-line grid gap-2 border-l-4 pl-3">
-      <div className="flex flex-wrap items-end gap-2">
-        <NumberField
-          className="w-20"
-          label="Số câu"
-          max={40}
-          min={1}
-          onChange={number => onChange({ ...question, number })}
-          value={question.number}
-        />
+    <li>
+      <Disclosure
+        actions={
+          <RowActions
+            label={`Remove question ${question.number}`}
+            onRemove={onRemove}
+          />
+        }
+        defaultOpen={missingAnswer && !question.prompt}
+        meta={
+          <>
+            {missingAnswer ? (
+              <MetaChip tone="warn">
+                <CircleAlert aria-hidden="true" />
+                No answer
+              </MetaChip>
+            ) : isMulti ? null : (
+              <span className="text-manga-black truncate font-bold">
+                {question.answers.join(' | ')}
+              </span>
+            )}
+            {missingEvidence ? (
+              <MetaChip tone="warn">No evidence</MetaChip>
+            ) : null}
+            {question.prompt ? (
+              <span className="truncate">{question.prompt}</span>
+            ) : null}
+          </>
+        }
+        title={`Q${question.number}`}
+        variant="rail"
+      >
+        <div className="flex flex-wrap items-end gap-2">
+          <NumberField
+            className="w-20"
+            label="No."
+            max={40}
+            min={1}
+            onChange={number => onChange({ ...question, number })}
+            value={question.number}
+          />
+          <TextField
+            className="min-w-48 flex-1"
+            label="Prompt (leave blank if the gap is in the body)"
+            onChange={prompt => onChange({ ...question, prompt })}
+            value={question.prompt}
+          />
+        </div>
+        {isMulti ? null : (
+          <ListField
+            label="Accepted answers"
+            onChange={answers => onChange({ ...question, answers })}
+            value={question.answers}
+          />
+        )}
+        <div className="grid gap-2 @md:grid-cols-[1fr_7rem]">
+          <TextField
+            label="Evidence (verbatim quote)"
+            onChange={quote =>
+              onChange({
+                ...question,
+                evidence: quote
+                  ? { quote, blockIndex: question.evidence?.blockIndex ?? 0 }
+                  : null,
+              })
+            }
+            value={question.evidence?.quote ?? ''}
+          />
+          <NumberField
+            label="Block (from 0)"
+            min={0}
+            onChange={blockIndex =>
+              onChange({
+                ...question,
+                evidence: { quote: question.evidence?.quote ?? '', blockIndex },
+              })
+            }
+            value={question.evidence?.blockIndex ?? 0}
+          />
+        </div>
         <TextField
-          className="min-w-48 flex-1"
-          label="Prompt (để trống nếu chỗ trống nằm trong body)"
-          onChange={prompt => onChange({ ...question, prompt })}
-          value={question.prompt}
+          label="Explanation"
+          onChange={explanation => onChange({ ...question, explanation })}
+          value={question.explanation}
         />
-        <RowActions
-          label={`Xoá câu ${question.number}`}
-          onRemove={onRemove}
-        />
-      </div>
-      {isMulti ? null : (
-        <ListField
-          label="Đáp án chấp nhận"
-          onChange={answers => onChange({ ...question, answers })}
-          value={question.answers}
-        />
-      )}
-      <div className="grid gap-2 sm:grid-cols-[1fr_7rem]">
-        <TextField
-          label="Bằng chứng (trích nguyên văn)"
-          onChange={quote =>
-            onChange({
-              ...question,
-              evidence: quote
-                ? { quote, blockIndex: question.evidence?.blockIndex ?? 0 }
-                : null,
-            })
-          }
-          value={question.evidence?.quote ?? ''}
-        />
-        <NumberField
-          label="Đoạn / dòng (từ 0)"
-          min={0}
-          onChange={blockIndex =>
-            onChange({
-              ...question,
-              evidence: { quote: question.evidence?.quote ?? '', blockIndex },
-            })
-          }
-          value={question.evidence?.blockIndex ?? 0}
-        />
-      </div>
-      <TextField
-        label="Giải thích"
-        onChange={explanation => onChange({ ...question, explanation })}
-        value={question.explanation}
-      />
+      </Disclosure>
     </li>
   )
 }
 
+type GroupTab = 'setup' | 'options' | 'questions'
+
+/**
+ * One question group as a collapsible card: the header names its range,
+ * type and size; inside, three tabs keep the setup (type, instructions,
+ * body), the options and the question list apart so only one is on screen.
+ * A brand-new group opens on its own.
+ */
 export function GroupEditor({ group, index, onChange, onRemove }: Props) {
   const widget = IELTS_QUESTION_WIDGETS[group.type]
   const isMulti = group.type === 'multiple-choice-multi'
@@ -157,119 +200,186 @@ export function GroupEditor({ group, index, onChange, onRemove }: Props) {
     group.type !== 'true-false-not-given' &&
     group.type !== 'yes-no-not-given'
   const allowNumberId = useId()
+  const [tab, setTab] = useState<GroupTab>('setup')
   const update = (next: Partial<IeltsQuestionGroup>) =>
     onChange(withRange({ ...group, ...next }))
   const lastNumber = group.questions.at(-1)?.number ?? group.from - 1
+  const missing = group.questions.filter(
+    question => !isMulti && question.answers.length === 0
+  ).length
+  const isNew =
+    group.questions.every(question => question.answers.length === 0) &&
+    group.correctKeys.length === 0
+  const tabs: { value: GroupTab; label: string }[] = [
+    { value: 'setup', label: 'Setup' },
+    ...(usesOptions
+      ? [
+          {
+            value: 'options' as const,
+            label: `Options (${group.options.length})`,
+          },
+        ]
+      : []),
+    { value: 'questions', label: `Questions (${group.questions.length})` },
+  ]
+  // Switching the type away from an options type hides that tab.
+  const activeTab = tab === 'options' && !usesOptions ? 'setup' : tab
 
   return (
-    <fieldset className="border-ex-line grid gap-3 rounded-lg border bg-white p-3">
-      <legend className="px-1 font-sans text-sm font-bold">
-        Nhóm {index + 1} · Questions {group.from}-{group.to}
-      </legend>
-      <div className="flex flex-wrap items-end gap-2">
-        <div className="grid min-w-56 flex-1 gap-1">
-          <span className="font-sans text-xs font-bold">Dạng câu</span>
-          <Select
-            onValueChange={value =>
-              update({ type: (value ?? group.type) as IeltsQuestionType })
-            }
-            value={group.type}
-          >
-            <SelectTrigger
-              aria-label="Dạng câu"
-              className="w-full"
-              size="sm"
-            >
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {IELTS_QUESTION_TYPES.map(type => (
-                <SelectItem
-                  key={type}
-                  value={type}
-                >
-                  {IELTS_QUESTION_TYPE_LABELS[type]}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+    <Disclosure
+      actions={
         <RowActions
-          label={`Xoá nhóm ${index + 1}`}
+          label={`Remove group ${index + 1}`}
           onRemove={onRemove}
         />
-      </div>
-      <AreaField
-        label="Hướng dẫn (tiếng Anh)"
-        onChange={instruction => update({ instruction })}
-        rows={2}
-        value={group.instruction}
-      />
-      {widget === 'slot' ? (
-        <div className="flex flex-wrap items-end gap-3">
-          <NumberField
-            className="w-28"
-            label="Tối đa số từ"
-            max={5}
-            min={0}
-            onChange={maxWords =>
-              update({
-                wordLimit: maxWords
-                  ? {
-                      maxWords,
-                      allowNumber: group.wordLimit?.allowNumber ?? false,
-                    }
-                  : null,
-              })
-            }
-            value={group.wordLimit?.maxWords ?? 0}
-          />
-          <Label
-            className="flex min-h-10 items-center gap-2 text-sm font-semibold"
-            htmlFor={allowNumberId}
+      }
+      defaultOpen={isNew}
+      meta={
+        <>
+          <span className="text-manga-black truncate font-bold">
+            {IELTS_QUESTION_TYPE_LABELS[group.type]}
+          </span>
+          {missing ? (
+            <MetaChip tone="warn">
+              <CircleAlert aria-hidden="true" />
+              {missing} no answer
+            </MetaChip>
+          ) : null}
+        </>
+      }
+      title={
+        <span className="tabular-nums">
+          Q{group.from}
+          {group.to > group.from ? `-${group.to}` : ''}
+        </span>
+      }
+    >
+      <div
+        aria-label={`Group ${index + 1} parts`}
+        className="flex flex-wrap gap-1.5"
+        role="group"
+      >
+        {tabs.map(item => (
+          // Segmented toggle (aria-pressed): documented raw exception.
+          <button
+            aria-pressed={activeTab === item.value}
+            className={segmentClass(
+              activeTab === item.value,
+              'min-h-8 px-2.5 text-xs'
+            )}
+            key={item.value}
+            onClick={() => setTab(item.value)}
+            type="button"
           >
-            <Checkbox
-              checked={group.wordLimit?.allowNumber ?? false}
-              disabled={!group.wordLimit}
-              id={allowNumberId}
-              onCheckedChange={checked =>
-                group.wordLimit &&
-                update({
-                  wordLimit: {
-                    ...group.wordLimit,
-                    allowNumber: checked === true,
-                  },
-                })
+            {item.label}
+          </button>
+        ))}
+      </div>
+
+      {activeTab === 'setup' ? (
+        <div className="grid gap-3">
+          <div className="grid gap-1">
+            <span className="font-sans text-xs font-black">Question type</span>
+            <Select
+              onValueChange={value =>
+                update({ type: (value ?? group.type) as IeltsQuestionType })
               }
+              value={group.type}
+            >
+              <SelectTrigger
+                aria-label="Question type"
+                className="w-full"
+                size="sm"
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {IELTS_QUESTION_TYPES.map(type => (
+                  <SelectItem
+                    key={type}
+                    value={type}
+                  >
+                    {IELTS_QUESTION_TYPE_LABELS[type]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <AreaField
+            label="Instructions (in English)"
+            onChange={instruction => update({ instruction })}
+            rows={2}
+            value={group.instruction}
+          />
+          <div className="grid gap-3 @md:grid-cols-[minmax(0,1fr)_auto] @md:items-end">
+            <TextField
+              label="Group title (optional)"
+              onChange={title => update({ title })}
+              value={group.title}
             />
-            AND/OR A NUMBER
-          </Label>
+            {widget === 'slot' ? (
+              <div className="flex flex-wrap items-end gap-3">
+                <NumberField
+                  className="w-24"
+                  label="Max words"
+                  max={5}
+                  min={0}
+                  onChange={maxWords =>
+                    update({
+                      wordLimit: maxWords
+                        ? {
+                            maxWords,
+                            allowNumber: group.wordLimit?.allowNumber ?? false,
+                          }
+                        : null,
+                    })
+                  }
+                  value={group.wordLimit?.maxWords ?? 0}
+                />
+                <Label
+                  className="flex min-h-10 items-center gap-2 text-sm font-semibold"
+                  htmlFor={allowNumberId}
+                >
+                  <Checkbox
+                    checked={group.wordLimit?.allowNumber ?? false}
+                    disabled={!group.wordLimit}
+                    id={allowNumberId}
+                    onCheckedChange={checked =>
+                      group.wordLimit &&
+                      update({
+                        wordLimit: {
+                          ...group.wordLimit,
+                          allowNumber: checked === true,
+                        },
+                      })
+                    }
+                  />
+                  AND/OR A NUMBER
+                </Label>
+              </div>
+            ) : null}
+          </div>
+          {widget === 'slot' ? (
+            <AreaField
+              hint="Markdown: # heading, - bullet, | table |, **bold**, *italic*, {{q12}} is the gap for question 12. No HTML."
+              label="Text (body)"
+              onChange={body => update({ body })}
+              rows={8}
+              value={group.body}
+            />
+          ) : null}
+          {group.type === 'plan-map-labelling' ? (
+            <ImageUploadField
+              label="Plan / map image"
+              onChange={imageUrl => update({ imageUrl })}
+              value={group.imageUrl}
+            />
+          ) : null}
         </div>
       ) : null}
-      <TextField
-        label="Tiêu đề nhóm (tuỳ chọn)"
-        onChange={title => update({ title })}
-        value={group.title}
-      />
-      {widget === 'slot' ? (
-        <AreaField
-          hint="Markdown: # tiêu đề, - gạch đầu dòng, | bảng |, **đậm**, *nghiêng*, {{q12}} là chỗ trống câu 12. Không dùng HTML."
-          label="Nội dung (body)"
-          onChange={body => update({ body })}
-          rows={8}
-          value={group.body}
-        />
-      ) : null}
-      {group.type === 'plan-map-labelling' ? (
-        <ImageUploadField
-          label="Ảnh sơ đồ / bản đồ"
-          onChange={imageUrl => update({ imageUrl })}
-          value={group.imageUrl}
-        />
-      ) : null}
-      {usesOptions ? (
+
+      {activeTab === 'options' ? (
         <div className="grid gap-2">
-          <p className="font-sans text-xs font-bold">Lựa chọn</p>
           <ol className="grid gap-2">
             {group.options.map((option, optionIndex) => (
               <li
@@ -277,8 +387,8 @@ export function GroupEditor({ group, index, onChange, onRemove }: Props) {
                 key={optionIndex}
               >
                 <TextField
-                  className="w-20"
-                  label="Mã"
+                  className="w-16"
+                  label="Key"
                   onChange={key =>
                     update({
                       options: replaceAt(group.options, optionIndex, {
@@ -290,8 +400,8 @@ export function GroupEditor({ group, index, onChange, onRemove }: Props) {
                   value={option.key}
                 />
                 <TextField
-                  className="flex-1"
-                  label="Nội dung"
+                  className="min-w-0 flex-1"
+                  label="Text"
                   onChange={text =>
                     update({
                       options: replaceAt(group.options, optionIndex, {
@@ -303,7 +413,7 @@ export function GroupEditor({ group, index, onChange, onRemove }: Props) {
                   value={option.text}
                 />
                 <RowActions
-                  label={`Xoá lựa chọn ${option.key}`}
+                  label={`Remove option ${option.key}`}
                   onRemove={() =>
                     update({ options: removeAt(group.options, optionIndex) })
                   }
@@ -327,48 +437,52 @@ export function GroupEditor({ group, index, onChange, onRemove }: Props) {
               })
             }
           >
-            Thêm lựa chọn
+            Add option
+          </AddButton>
+          {isMulti ? (
+            <ListField
+              label={`Correct keys (exactly ${group.questions.length})`}
+              onChange={correctKeys => update({ correctKeys })}
+              separator=","
+              value={group.correctKeys}
+            />
+          ) : null}
+        </div>
+      ) : null}
+
+      {activeTab === 'questions' ? (
+        <div className="grid gap-2">
+          <ol className="grid gap-1">
+            {group.questions.map((question, questionIndex) => (
+              <QuestionEditor
+                isMulti={isMulti}
+                key={questionIndex}
+                onChange={next =>
+                  update({
+                    questions: replaceAt(group.questions, questionIndex, next),
+                  })
+                }
+                onRemove={() =>
+                  update({
+                    questions: removeAt(group.questions, questionIndex),
+                  })
+                }
+                question={question}
+              />
+            ))}
+          </ol>
+          <AddButton
+            onClick={() =>
+              update({
+                questions: [...group.questions, newQuestion(lastNumber + 1)],
+              })
+            }
+          >
+            Add question
           </AddButton>
         </div>
       ) : null}
-      {isMulti ? (
-        <ListField
-          label={`Các mã đúng (đủ ${group.questions.length})`}
-          onChange={correctKeys => update({ correctKeys })}
-          separator=","
-          value={group.correctKeys}
-        />
-      ) : null}
-      <div className="grid gap-2">
-        <p className="font-sans text-xs font-bold">Câu hỏi</p>
-        <ol className="grid gap-4">
-          {group.questions.map((question, questionIndex) => (
-            <QuestionEditor
-              isMulti={isMulti}
-              key={questionIndex}
-              onChange={next =>
-                update({
-                  questions: replaceAt(group.questions, questionIndex, next),
-                })
-              }
-              onRemove={() =>
-                update({ questions: removeAt(group.questions, questionIndex) })
-              }
-              question={question}
-            />
-          ))}
-        </ol>
-        <AddButton
-          onClick={() =>
-            update({
-              questions: [...group.questions, newQuestion(lastNumber + 1)],
-            })
-          }
-        >
-          Thêm câu
-        </AddButton>
-      </div>
-    </fieldset>
+    </Disclosure>
   )
 }
 

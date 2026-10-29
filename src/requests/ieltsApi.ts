@@ -41,7 +41,7 @@ export class IeltsApiError extends Error {
 async function readJson<T>(response: Response): Promise<T> {
   if (response.ok) return (await response.json()) as T
 
-  let message = 'Yêu cầu IELTS bị lỗi.'
+  let message = 'IELTS request failed.'
 
   try {
     const body = (await response.json()) as { message?: unknown }

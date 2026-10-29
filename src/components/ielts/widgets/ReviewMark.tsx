@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils'
 
 import type { IeltsReviewMark } from './answerContext'
 
-const LABELS = { correct: 'Đúng', wrong: 'Sai', blank: 'Bỏ trống' } as const
+const LABELS = { correct: 'Correct', wrong: 'Wrong', blank: 'Blank' } as const
 
 /** Colour always paired with an icon and a word (a11y rule). */
 export function ReviewMark({
@@ -22,12 +22,12 @@ export function ReviewMark({
   return (
     <span
       className={cn(
-        'inline-flex flex-wrap items-center gap-1 rounded-md px-1.5 py-0.5 text-sm font-semibold',
+        'rounded-tag inline-flex flex-wrap items-center gap-1 px-1.5 py-0.5 text-sm font-semibold',
         mark.outcome === 'correct'
-          ? 'bg-ex-correct-soft text-ex-correct'
+          ? 'bg-lesson-correct/10 text-lesson-correct'
           : mark.outcome === 'wrong'
-            ? 'bg-ex-wrong-soft text-ex-wrong'
-            : 'bg-ex-soft text-ex-muted',
+            ? 'bg-manga-pale-red text-manga-red'
+            : 'bg-manga-pale-red text-muted-foreground',
         className
       )}
     >
@@ -37,8 +37,8 @@ export function ReviewMark({
       />
       {LABELS[mark.outcome]}
       {showAccepted && mark.outcome !== 'correct' && mark.accepted.length ? (
-        <span className="text-ex-ink font-normal">
-          · Đáp án: {mark.accepted.join(' / ')}
+        <span className="text-manga-black font-normal">
+          · Answer: {mark.accepted.join(' / ')}
         </span>
       ) : null}
     </span>

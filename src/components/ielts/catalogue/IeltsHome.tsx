@@ -16,6 +16,7 @@ import {
   ExamButton,
   ExamCard,
   ExamSheet,
+  ExamHero,
 } from '@/components/ielts/ui'
 
 const MODE_LABELS = { practice: 'Practice', mock: 'Mock', drill: 'Drill' }
@@ -45,7 +46,7 @@ function ContinueStrip({ attempts }: { attempts: IeltsAttemptSummary[] }) {
 
   return (
     <section
-      aria-label="Bài đang làm dở"
+      aria-label="Unfinished attempts"
       className="grid gap-2"
     >
       {attempts.slice(0, 3).map(attempt => {
@@ -53,7 +54,7 @@ function ContinueStrip({ attempts }: { attempts: IeltsAttemptSummary[] }) {
 
         return (
           <div
-            className="border-ex-line flex flex-wrap items-center gap-3 rounded-lg border bg-white px-4 py-3"
+            className="border-manga-black rounded-control bg-manga-white flex flex-wrap items-center gap-3 border-2 px-4 py-3"
             key={attempt.id}
           >
             <PlayCircle
@@ -61,19 +62,19 @@ function ContinueStrip({ attempts }: { attempts: IeltsAttemptSummary[] }) {
               className="size-5 shrink-0"
             />
             <p className="min-w-0 flex-1">
-              <strong className="font-sans font-bold">
+              <strong className="font-sans font-black">
                 {attempt.testTitle || attempt.testSlug}
               </strong>{' '}
               · {IELTS_SKILL_LABELS[attempt.skill]}
               {attempt.part ? ` part ${attempt.part}` : ''} ·{' '}
               {MODE_LABELS[attempt.mode]}
-              {left !== null ? ` · còn ${left} phút` : ''}
+              {left !== null ? ` · ${left} min left` : ''}
             </p>
             <ExamButton
               href={attemptHref(attempt)}
               tone="ink"
             >
-              Làm tiếp
+              Continue
             </ExamButton>
           </div>
         )
@@ -85,13 +86,13 @@ function ContinueStrip({ attempts }: { attempts: IeltsAttemptSummary[] }) {
 function WeaknessMap({ weakness }: Pick<IeltsHomeData, 'weakness'>) {
   return (
     <ExamCard
-      eyebrow="Điểm yếu"
-      title="Dạng câu hay sai"
+      eyebrow="Weak spots"
+      title="Most-missed question types"
     >
       {!weakness || weakness.weakest.length === 0 ? (
         <p>
-          Chưa đủ dữ liệu (cần ít nhất 5 câu mỗi dạng). Làm thêm 1 đề để thấy
-          điểm yếu.
+          Not enough data yet (needs at least 5 questions per type). Take one
+          more test to see your weak spots.
         </p>
       ) : (
         <ul className="grid gap-4">
@@ -105,11 +106,11 @@ function WeaknessMap({ weakness }: Pick<IeltsHomeData, 'weakness'>) {
               >
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="font-semibold">
-                    <strong className="font-sans font-bold">
+                    <strong className="font-sans font-black">
                       {IELTS_QUESTION_TYPE_LABELS[row.type]}
                     </strong>{' '}
                     · {IELTS_SKILL_LABELS[row.skill]} · {row.correct}/
-                    {row.total} đúng
+                    {row.total} correct
                   </span>
                   <DrillButton
                     skill={row.skill}
@@ -118,11 +119,11 @@ function WeaknessMap({ weakness }: Pick<IeltsHomeData, 'weakness'>) {
                 </div>
                 <div className="flex items-center gap-3">
                   <Progress
-                    aria-label={`${percent}% đúng`}
+                    aria-label={`${percent}% correct`}
                     className="flex-1"
                     value={percent}
                   />
-                  <span className="w-12 text-right font-sans text-sm font-bold tabular-nums">
+                  <span className="w-12 text-right font-sans text-sm font-black tabular-nums">
                     {percent}%
                   </span>
                 </div>
@@ -151,38 +152,40 @@ export function IeltsHome({
 
   return (
     <ExamSheet>
-      <header className="flex flex-wrap items-end justify-between gap-4">
+      <ExamHero className="flex flex-wrap items-end justify-between gap-4">
         <div className="grid gap-2">
           <ExamBadge tone="pale">IELTS</ExamBadge>
-          <h1 className="text-ex-ink font-sans text-2xl leading-tight font-bold sm:text-3xl">
+          <h1 className="font-sans text-3xl leading-tight font-black wrap-break-word sm:text-4xl">
             IELTS Tests
           </h1>
           <p className="max-w-2xl">
-            Listening, Reading và Writing: luyện từng phần hoặc thi thử có giờ,
-            chấm band và xem bằng chứng trong bài.
+            Listening, Reading and Writing: practise one section or take a timed
+            mock test, get a band score and see the evidence in the text.
           </p>
         </div>
-        <div className="border-ex-line grid gap-1 rounded-lg border bg-white px-4 py-3">
-          <span className="font-sans text-xs font-bold uppercase">
-            Ước tính hiện tại
-            {overall ? ` (${overall.skills.length} kỹ năng)` : ''}
+        <div className="border-manga-black bg-manga-paper-soft rounded-panel grid gap-1 border-3 px-4 py-3 shadow-[4px_4px_0_var(--manga-black)]">
+          <span className="font-sans text-xs font-black uppercase">
+            Current estimate
+            {overall
+              ? ` (${overall.skills.length} ${overall.skills.length === 1 ? 'skill' : 'skills'})`
+              : ''}
           </span>
-          <strong className="font-sans text-3xl leading-none font-bold tabular-nums">
+          <strong className="font-sans text-3xl leading-none font-black tabular-nums">
             {overall ? overall.band.toFixed(1) : '-'}
           </strong>
         </div>
-      </header>
+      </ExamHero>
 
       <ContinueStrip attempts={open} />
 
       {error ? (
-        <ExamCard title="Không tải được danh sách đề">
+        <ExamCard title="Could not load tests">
           <p>{error}</p>
           <ExamButton
             href="/ielts"
             tone="ink"
           >
-            Thử lại
+            Try again
           </ExamButton>
         </ExamCard>
       ) : (
@@ -199,12 +202,12 @@ export function IeltsHome({
                 }
                 tone="paper"
               >
-                Quản lý đề
+                Manage tests
               </ExamButton>
             ) : null
           }
-          eyebrow="Đề thi"
-          title="Chọn đề"
+          eyebrow="Tests"
+          title="Choose a test"
         >
           {catalog.length ? (
             <TestRows
@@ -213,15 +216,13 @@ export function IeltsHome({
             />
           ) : (
             <div className="grid gap-3">
-              <p>
-                {isAdmin ? 'Chưa có đề nào.' : 'Đề mới sẽ xuất hiện ở đây.'}
-              </p>
+              <p>{isAdmin ? 'No tests yet.' : 'New tests will appear here.'}</p>
               {isAdmin ? (
                 <ExamButton
                   href="/admin/ielts"
                   tone="ink"
                 >
-                  Tạo đề
+                  Create test
                 </ExamButton>
               ) : null}
             </div>
@@ -234,9 +235,8 @@ export function IeltsHome({
         <AttemptHistory attempts={attempts} />
       </div>
 
-      <p className="text-ex-muted text-sm">
-        Band là ước tính theo bảng quy đổi thông dụng, không phải điểm chính
-        thức.
+      <p className="text-muted-foreground text-sm">
+        Bands are estimates from common conversion tables, not official scores.
       </p>
     </ExamSheet>
   )

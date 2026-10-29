@@ -200,6 +200,15 @@ export async function listManageableVideos(): Promise<
   return videos.map(toDictationVideoRecord)
 }
 
+/** Archived (soft-deleted) videos for the admin trash, newest first. */
+export async function listArchivedVideos(): Promise<DictationVideoApiRecord[]> {
+  const videos = await DictationVideoModel.find({ status: 'archived' })
+    .sort({ updatedAt: -1 })
+    .lean()
+
+  return videos.map(toDictationVideoRecord)
+}
+
 /**
  * Every section across all topics (for admin title lookups / dropdowns and the
  * topic board). Within a topic the order matches listSectionsForTopic.

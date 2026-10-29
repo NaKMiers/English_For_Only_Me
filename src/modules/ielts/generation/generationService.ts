@@ -13,7 +13,7 @@ import {
 } from '../attempts/attemptRouteDecisions'
 import { IELTS_GENERATION_LOG_LIMIT, type IeltsSectionKey } from '../constants'
 import type { IeltsSection } from '../schema'
-import { toAdminTest, type IeltsAdminTest } from '../tests/testService'
+import { adoptSaved, type IeltsAdminTest } from '../tests/testService'
 import { effectiveGenStatus, toIeltsTestRecord } from '../tests/testRecords'
 import { withTimeout } from '../writing/runExaminer'
 import type { IeltsJobKind } from './aiSchemas'
@@ -123,14 +123,11 @@ export async function generateSectionStep({
   testId: string
 }): Promise<IeltsDecision<{ test: IeltsAdminTest; message: string }>> {
   if (!getOpenAiApiKey())
-    return ieltsError(503, 'Chưa cấu hình OPENAI_API_KEY.')
+    return ieltsError(503, 'OPENAI_API_KEY is not configured.')
 
   const doc = (await IeltsTestModel.findById(testId).lean()) as LeanDoc | null
 
   if (!doc) return ieltsError(404, 'Test not found.')
-
-  if (doc.status !== 'draft')
-    return ieltsError(409, 'Only drafts can be generated.')
 
   const record = toIeltsTestRecord(doc)
   const section = record.sections.find(item => item.key === key)
@@ -138,10 +135,10 @@ export async function generateSectionStep({
   if (!section) return ieltsError(404, 'Section not found.')
 
   if (section.revision !== revision)
-    return ieltsError(409, 'Section vừa được cập nhật ở nơi khác. Tải lại.')
+    return ieltsError(409, 'Section was just updated elsewhere. Reload.')
 
   if (effectiveGenStatus(section, now) === 'generating')
-    return ieltsError(409, 'Phần này đang được tạo.')
+    return ieltsError(409, 'This section is already being generated.')
 
   const rawSection = ((doc.sections as LeanDoc[]) ?? []).find(
     item => item.key === key
@@ -162,7 +159,6 @@ export async function generateSectionStep({
   const claimed = await IeltsTestModel.updateOne(
     {
       _id: testId,
-      status: 'draft',
       sections: { $elemMatch: { key, revision } },
     },
     {
@@ -176,7 +172,7 @@ export async function generateSectionStep({
   )
 
   if (claimed.matchedCount === 0)
-    return ieltsError(409, 'Section vừa được cập nhật ở nơi khác. Tải lại.')
+    return ieltsError(409, 'Section was just updated elsewhere. Reload.')
 
   const started = Date.now()
   const result = await runSectionJob({
@@ -232,7 +228,6 @@ export async function generateSectionStep({
   await IeltsTestModel.updateOne(
     {
       _id: testId,
-      status: 'draft',
       sections: { $elemMatch: { key, revision: claimedRevision } },
     },
     {
@@ -261,15 +256,15 @@ export async function generateSectionStep({
   return {
     ok: true,
     data: {
-      test: toAdminTest(fresh),
+      test: adoptSaved(fresh),
       message:
         result.outcome === 'ok'
           ? kind === 'listening-script'
-            ? 'Đã tạo kịch bản. Bước tiếp: câu hỏi.'
-            : 'Đã tạo xong.'
+            ? 'Script created. Next step: questions.'
+            : 'Done.'
           : result.outcome === 'needsRepair'
-            ? 'Cần sửa lỗi. Bấm "Sửa tự động".'
-            : `Lỗi: ${result.error}`,
+            ? 'Needs fixes. Click "Auto-fix".'
+            : `Error: ${result.error}`,
     },
   }
 }

@@ -66,7 +66,9 @@ export default async function Page({ params }: Props) {
   // Editing mutates catalog content, so only an admin may open it.
   const user = await getOptionalUser()
   if (!user)
-    redirect(`/api/auth/signin?callbackUrl=/admin/videos/${videoId}/edit`)
+    redirect(
+      `/api/auth/signin?callbackUrl=/admin/dictation/videos/${videoId}/edit`
+    )
 
   if (user.role !== 'admin') redirect('/dictation')
 

@@ -53,7 +53,7 @@ export async function readJsonBody(
 export function ieltsRouteFailure(
   error: unknown,
   context: string,
-  fallback = 'Có lỗi xảy ra. Thử lại sau nhé.'
+  fallback = 'Something went wrong. Try again later.'
 ) {
   if (
     error instanceof OutboxOwnerMismatchError ||

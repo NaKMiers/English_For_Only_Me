@@ -102,7 +102,7 @@ export function WritingRunner({
     }
 
     setSubmitting(false)
-    setNotice(`Không nộp được bài: ${outcome.message}`)
+    setNotice(`Could not submit: ${outcome.message}`)
   }, [attempt.id, router, submit])
 
   useEffect(() => {
@@ -112,10 +112,10 @@ export function WritingRunner({
   const secondsLeft = useMockDeadline({
     deadlineAt: isMock && open ? attempt.deadlineAt : null,
     onExpire: () => {
-      setNotice('Hết giờ. Đang nộp bài...')
+      setNotice('Time is up. Submitting...')
       void finish()
     },
-    onWarning: () => setNotice('Còn 5 phút.'),
+    onWarning: () => setNotice('5 minutes remaining.'),
   })
 
   useEffect(() => {
@@ -142,7 +142,9 @@ export function WritingRunner({
       .map(item => `Task ${item.task}`)
 
     if (short.length)
-      setConfirm(`${short.join(' và ')} chưa đủ số từ tối thiểu. Vẫn nộp?`)
+      setConfirm(
+        `${short.join(' and ')} ${short.length > 1 ? 'are' : 'is'} under the minimum word count. Submit anyway?`
+      )
     else void finish()
   }
 
@@ -162,12 +164,12 @@ export function WritingRunner({
         title={`${testTitle} · Writing`}
         toggles={
           isMock ? null : (
-            <Label className="text-ex-ink flex items-center gap-2 text-xs font-semibold">
+            <Label className="text-manga-black flex items-center gap-2 text-xs font-semibold">
               <Switch
                 checked={spellCheck}
                 onCheckedChange={setSpellCheck}
               />
-              Kiểm tra chính tả
+              Spell check
             </Label>
           )
         }
@@ -175,22 +177,22 @@ export function WritingRunner({
 
       {notice ? (
         <p
-          className="border-ex-line text-ex-ink flex shrink-0 items-center justify-between gap-3 border-b bg-[#fff8db] px-4 py-2 text-sm"
+          className="border-manga-black text-manga-black flex shrink-0 items-center justify-between gap-3 border-b-2 bg-yellow-100 px-4 py-2 text-sm"
           role="status"
         >
           {notice}
           <button
-            className="text-ex-accent text-xs font-semibold underline"
+            className="text-manga-red text-xs font-semibold underline"
             onClick={() => setNotice('')}
             type="button"
           >
-            Đóng
+            Close
           </button>
         </p>
       ) : null}
 
       {/* Segmented toggles (aria-pressed): the documented raw-button exception. */}
-      <div className="border-ex-line flex shrink-0 flex-wrap gap-2 border-b bg-white px-3 py-2">
+      <div className="border-manga-black bg-manga-white flex shrink-0 flex-wrap gap-2 border-b-2 px-3 py-2">
         {tasks.length > 1
           ? tasks.map((section, index) => (
               <button
@@ -207,8 +209,8 @@ export function WritingRunner({
         <div className="ml-auto flex gap-2 lg:hidden">
           {(
             [
-              ['task', 'Đề bài'],
-              ['essay', 'Bài viết'],
+              ['task', 'Prompt'],
+              ['essay', 'Essay'],
             ] as const
           ).map(([value, label]) => (
             <button
@@ -226,43 +228,43 @@ export function WritingRunner({
 
       <div className="grid min-h-0 flex-1 lg:grid-cols-[1fr_1fr]">
         <section
-          aria-label="Đề bài"
+          aria-label="Prompt"
           className={cn(
-            'min-h-0 overflow-y-auto bg-white px-4 py-6 sm:px-8 lg:block',
+            'bg-manga-white min-h-0 overflow-y-auto px-4 py-6 sm:px-8 lg:block',
             mobileTab === 'task' ? 'block' : 'hidden'
           )}
         >
           <div className="font-body mx-auto grid max-w-[68ch] gap-4 text-[17px] leading-[1.7]">
-            <h2 className="font-sans text-[22px] font-bold">
+            <h2 className="font-sans text-[22px] font-black">
               Writing Task {writing.task}
             </h2>
             <PromptText text={writing.prompt} />
             {writing.visual ? (
               <TaskVisual
-                className="border-ex-line rounded-lg border"
+                className="border-manga-black rounded-control border-2"
                 visual={writing.visual}
               />
             ) : null}
           </div>
         </section>
         <section
-          aria-label="Bài viết"
+          aria-label="Essay"
           className={cn(
-            'border-ex-line bg-ex-soft/60 min-h-0 overflow-y-auto px-4 py-6 sm:px-8 lg:flex lg:border-l',
+            'border-manga-black bg-manga-pale-red/60 min-h-0 overflow-y-auto px-4 py-6 sm:px-8 lg:flex lg:border-l-3',
             mobileTab === 'essay' ? 'flex' : 'hidden',
             'flex-col gap-2'
           )}
         >
           <Label
-            className="text-ex-ink text-sm font-semibold"
+            className="text-manga-black text-sm font-semibold"
             htmlFor={`ielts-essay-${taskKey}`}
           >
-            Bài viết Task {writing.task}
+            Task {writing.task} essay
           </Label>
           <Textarea
             autoCapitalize="off"
             autoCorrect="off"
-            className="font-body border-ex-line text-ex-ink focus-visible:border-ex-accent min-h-[50vh] flex-1 resize-none rounded-lg border bg-white p-4 text-[17px] leading-[1.75] shadow-none focus-visible:ring-0"
+            className="font-body border-manga-black text-manga-black focus-visible:border-manga-red rounded-control bg-manga-white min-h-[50vh] flex-1 resize-none border-2 p-4 text-[17px] leading-[1.75] shadow-none focus-visible:ring-0"
             id={`ielts-essay-${taskKey}`}
             maxLength={IELTS_ESSAY_MAX_LENGTH}
             onChange={event => setAnswer(Number(taskKey), event.target.value)}
@@ -273,10 +275,12 @@ export function WritingRunner({
           <p
             className={cn(
               'text-sm font-semibold tabular-nums',
-              words < writing.minWords ? 'text-ex-muted' : 'text-ex-correct'
+              words < writing.minWords
+                ? 'text-muted-foreground'
+                : 'text-lesson-correct'
             )}
           >
-            {words} từ · tối thiểu {writing.minWords}
+            {words} words · minimum {writing.minWords}
           </p>
         </section>
       </div>
@@ -285,9 +289,9 @@ export function WritingRunner({
         onOpenChange={next => (next ? null : setConfirm(null))}
         open={confirm !== null}
       >
-        <DialogContent className="ielts-exam">
+        <DialogContent>
           <DialogHeader>
-            <DialogTitle>Nộp bài?</DialogTitle>
+            <DialogTitle>Submit?</DialogTitle>
             <DialogDescription>{confirm}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -296,14 +300,14 @@ export function WritingRunner({
               tone="paper"
               type="button"
             >
-              Viết tiếp
+              Keep writing
             </ExamButton>
             <ExamButton
               onClick={() => void finish()}
               tone="ink"
               type="button"
             >
-              Nộp bài
+              Submit
             </ExamButton>
           </DialogFooter>
         </DialogContent>
@@ -313,11 +317,11 @@ export function WritingRunner({
         onOpenChange={setExitOpen}
         open={exitOpen}
       >
-        <DialogContent className="ielts-exam">
+        <DialogContent>
           <DialogHeader>
-            <DialogTitle>Thoát mock?</DialogTitle>
+            <DialogTitle>Leave the mock test?</DialogTitle>
             <DialogDescription>
-              Đồng hồ vẫn chạy. Quay lại từ trang IELTS.
+              The timer keeps running. Come back from the IELTS page.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -326,13 +330,13 @@ export function WritingRunner({
               tone="paper"
               type="button"
             >
-              Ở lại
+              Stay
             </ExamButton>
             <ExamButton
               href={backHref}
               tone="ink"
             >
-              Thoát
+              Leave
             </ExamButton>
           </DialogFooter>
         </DialogContent>

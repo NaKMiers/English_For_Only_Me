@@ -6,13 +6,13 @@ import { ExamCard } from '@/components/ielts/ui'
 
 const MODE_LABELS = { practice: 'Practice', mock: 'Mock', drill: 'Drill' }
 const STATUS_LABELS = {
-  in_progress: 'Đang làm',
-  submitted: 'Đã nộp',
-  scored: 'Đã chấm',
-  expired: 'Hết giờ',
+  in_progress: 'In progress',
+  submitted: 'Submitted',
+  scored: 'Scored',
+  expired: 'Time up',
 }
 
-const dateFormat = new Intl.DateTimeFormat('vi-VN', {
+const dateFormat = new Intl.DateTimeFormat('en-GB', {
   day: '2-digit',
   month: '2-digit',
   hour: '2-digit',
@@ -28,43 +28,44 @@ export function AttemptHistory({
 
   return (
     <ExamCard
-      eyebrow="Lịch sử"
-      title="Bài đã làm"
+      eyebrow="History"
+      title="Attempt history"
     >
       {finished.length === 0 ? (
-        <p>Chưa có bài nào. Làm thử một đề nhé.</p>
+        <p>No attempts yet. Try a test.</p>
       ) : (
         <details>
-          <summary className="cursor-pointer font-sans text-sm font-bold">
-            {finished.length} bài gần đây
+          <summary className="cursor-pointer font-sans text-sm font-black">
+            {finished.length} recent{' '}
+            {finished.length === 1 ? 'attempt' : 'attempts'}
           </summary>
           <div className="mt-3 overflow-x-auto">
             <table className="w-full min-w-[520px] border-collapse text-left text-sm">
               <thead>
-                <tr className="border-ex-line border-b font-sans text-xs uppercase">
+                <tr className="border-manga-black border-b-2 font-sans text-xs uppercase">
                   <th
                     className="py-1.5 pr-2"
                     scope="col"
                   >
-                    Ngày
+                    Date
                   </th>
                   <th
                     className="py-1.5 pr-2"
                     scope="col"
                   >
-                    Đề
+                    Test
                   </th>
                   <th
                     className="py-1.5 pr-2"
                     scope="col"
                   >
-                    Kỹ năng
+                    Skill
                   </th>
                   <th
                     className="py-1.5 pr-2"
                     scope="col"
                   >
-                    Điểm
+                    Score
                   </th>
                   <th
                     className="py-1.5"
@@ -77,7 +78,7 @@ export function AttemptHistory({
               <tbody>
                 {finished.map(attempt => (
                   <tr
-                    className="border-ex-line border-b"
+                    className="border-manga-black/20 border-b"
                     key={attempt.id}
                   >
                     <td className="py-1.5 pr-2 tabular-nums">
@@ -101,7 +102,7 @@ export function AttemptHistory({
                         ? `${attempt.raw}/${attempt.total}`
                         : STATUS_LABELS[attempt.status]}
                     </td>
-                    <td className="py-1.5 font-sans font-bold tabular-nums">
+                    <td className="py-1.5 font-sans font-black tabular-nums">
                       {attempt.band === null ? '-' : attempt.band.toFixed(1)}
                     </td>
                   </tr>

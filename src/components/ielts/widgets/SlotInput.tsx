@@ -52,26 +52,27 @@ export const SlotInput = memo(function SlotInput({
       <span
         aria-hidden="true"
         className={cn(
-          'inline-grid h-5 min-w-5 place-items-center rounded px-1 text-[11px] font-bold tabular-nums',
+          'rounded-tag inline-grid h-5 min-w-5 place-items-center px-1 text-[11px] font-bold tabular-nums',
           currentNumber === number
-            ? 'bg-ex-accent text-white'
-            : 'bg-ex-soft text-ex-muted'
+            ? 'bg-manga-red text-manga-white'
+            : 'bg-manga-pale-red text-muted-foreground'
         )}
       >
         {number}
       </span>
       <Input
         aria-describedby={describedBy}
-        aria-label={`Câu ${number}`}
+        aria-label={`Question ${number}`}
         autoCapitalize="off"
         autoComplete="off"
         autoCorrect="off"
         className={cn(
-          'border-ex-line text-ex-ink focus-visible:border-ex-accent h-8 rounded-md border bg-white px-2 text-[16px] font-medium shadow-none focus-visible:ring-0 md:text-[16px] pointer-coarse:h-11',
-          mark?.outcome === 'correct' && 'border-ex-correct bg-ex-correct-soft',
+          'border-manga-black text-manga-black focus-visible:border-manga-red rounded-tag bg-manga-white h-8 border-2 px-2 text-[16px] font-medium shadow-none focus-visible:ring-0 md:text-[16px] pointer-coarse:h-11',
+          mark?.outcome === 'correct' &&
+            'border-lesson-correct bg-lesson-correct/10',
           mark &&
             mark.outcome !== 'correct' &&
-            'border-ex-wrong bg-ex-wrong-soft'
+            'border-manga-red bg-manga-pale-red'
         )}
         id={questionControlId(number)}
         maxLength={IELTS_ANSWER_MAX_LENGTH}

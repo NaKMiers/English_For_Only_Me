@@ -56,13 +56,13 @@ export function RunnerSkeleton() {
   return (
     <div
       aria-busy
-      aria-label="Đang tải bài thi"
+      aria-label="Loading test"
       className="flex h-full flex-col"
     >
       <Skeleton className="h-16 w-full" />
       <div className="grid flex-1 gap-4 p-4 lg:grid-cols-[55fr_45fr]">
-        <Skeleton className="h-full min-h-60 rounded-xl" />
-        <Skeleton className="h-full min-h-60 rounded-xl" />
+        <Skeleton className="rounded-panel h-full min-h-60" />
+        <Skeleton className="rounded-panel h-full min-h-60" />
       </div>
       <Skeleton className="h-14 w-full" />
     </div>
@@ -123,7 +123,7 @@ export function AttemptLoader({
       setAttempt(result.attempt)
     } catch (caught) {
       setError(
-        caught instanceof Error ? caught.message : 'Không mở được bài thi.'
+        caught instanceof Error ? caught.message : 'Could not open the test.'
       )
     }
   }, [keyName, mode, ownerKey, part, skill, testSlug])
@@ -141,7 +141,7 @@ export function AttemptLoader({
         className="grid h-full place-content-center gap-4 p-6 text-center"
         role="alert"
       >
-        <p className="font-sans text-lg font-bold">Không mở được bài thi</p>
+        <p className="font-sans text-lg font-black">Could not open the test</p>
         <p className="font-semibold">{error}</p>
         <div className="flex flex-wrap justify-center gap-3">
           <ExamButton
@@ -149,13 +149,13 @@ export function AttemptLoader({
             tone="ink"
             type="button"
           >
-            Thử lại
+            Try again
           </ExamButton>
           <ExamButton
             href={backHref}
             tone="paper"
           >
-            Quay lại
+            Back
           </ExamButton>
         </div>
       </div>

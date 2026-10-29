@@ -101,7 +101,7 @@ export async function startDrill({
   if (!picked.length)
     return ieltsError(
       404,
-      `Chưa có nhóm câu dạng ${IELTS_QUESTION_TYPE_LABELS[input.type]}.`
+      `No ${IELTS_QUESTION_TYPE_LABELS[input.type]} question groups yet.`
     )
 
   const maps = planDrillNumbers(picked.map(item => item.group))

@@ -15,7 +15,7 @@ import {
   parseTestId,
 } from '@/modules/ielts/tests/testRouteDecisions'
 import {
-  deleteDraft,
+  deleteTest,
   readAdminTest,
   saveTestMeta,
 } from '@/modules/ielts/tests/testService'
@@ -80,7 +80,8 @@ export async function PUT(request: Request, context: RouteContext) {
   }
 }
 
-export async function DELETE(_request: Request, context: RouteContext) {
+/** Delete a draft or archived version; `?withAttempts=1` confirms losing its attempts. */
+export async function DELETE(request: Request, context: RouteContext) {
   const missing = ieltsMissingMongo()
 
   if (missing) return missing
@@ -93,7 +94,13 @@ export async function DELETE(_request: Request, context: RouteContext) {
     await requireAdmin()
     await connectDatabase()
 
-    return ieltsDecisionResponse(await deleteDraft(id.data))
+    return ieltsDecisionResponse(
+      await deleteTest({
+        testId: id.data,
+        withAttempts:
+          new URL(request.url).searchParams.get('withAttempts') === '1',
+      })
+    )
   } catch (error) {
     return ieltsRouteFailure(error, 'ielts admin delete failed')
   }

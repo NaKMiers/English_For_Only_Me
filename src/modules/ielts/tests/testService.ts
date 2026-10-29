@@ -1,9 +1,8 @@
 import 'server-only'
 
-import { Types } from 'mongoose'
-
 import { CACHE_TAGS } from '@/lib/db/cacheTags'
 import { expireCacheTags } from '@/lib/db/revalidateCatalog'
+import { IeltsAttemptModel } from '@/models/ielts/IeltsAttemptModel'
 import { IeltsTestModel } from '@/models/ielts/IeltsTestModel'
 import { isDuplicateKeyError } from '@/modules/dictation/practice/duplicateKeyError'
 
@@ -26,9 +25,11 @@ import {
 } from './testRecords'
 
 /*
- * Admin authoring. Drafts are edited per section with a revision guard so a
- * manual save and an AI job never overwrite each other; publishing runs in a
- * transaction because at most one version per slug may be published.
+ * Admin authoring. One document per test, editable in every status: status
+ * only decides who sees it. Sections save with a revision guard so a manual
+ * save and an AI job never overwrite each other; saving a published or
+ * archived test refreshes the learner cache. Publishing runs in a transaction
+ * because at most one document per slug may be published.
  */
 
 export interface IeltsAdminTestRow {
@@ -213,37 +214,37 @@ export async function saveTestMeta({
   testId: string
 }): Promise<IeltsDecision<IeltsAdminTest>> {
   const updated = await IeltsTestModel.findOneAndUpdate(
-    { _id: testId, status: 'draft', metaRevision },
+    { _id: testId, metaRevision },
     { $set: { ...meta, metaRevision: metaRevision + 1 } },
     { new: true }
   ).lean()
 
-  if (updated)
-    return { ok: true, data: toAdminTest(updated as unknown as LeanDoc) }
+  if (updated) return { ok: true, data: adoptSaved(updated) }
 
-  return explainDraftConflict(testId)
+  return explainConflict(testId)
 }
 
-async function explainDraftConflict(
-  testId: string
-): Promise<IeltsDecision<never>> {
-  const current = await IeltsTestModel.findById(testId, { status: 1 }).lean()
+/** Learners read published and archived tests from the cache: refresh it. */
+export function adoptSaved(raw: unknown): IeltsAdminTest {
+  const test = toAdminTest(raw as LeanDoc)
+
+  if (test.status !== 'draft') expireCacheTags([CACHE_TAGS.ieltsContent])
+
+  return test
+}
+
+async function explainConflict(testId: string): Promise<IeltsDecision<never>> {
+  const current = await IeltsTestModel.exists({ _id: testId })
 
   if (!current) return ieltsError(404, 'Test not found.')
 
-  if (current.status !== 'draft')
-    return ieltsError(
-      409,
-      'Only drafts can be edited. Create a new version to change it.'
-    )
-
-  return ieltsError(409, 'Section vừa được cập nhật ở nơi khác. Tải lại.')
+  return ieltsError(409, 'Section was just updated elsewhere. Reload.')
 }
 
 /**
- * Conditional per-section write: matches only the expected revision of a
- * draft, so a stale editor tab or a running AI job gets a 409 instead of a
- * silent overwrite. A manual save marks the section `manual`.
+ * Conditional per-section write: matches only the expected revision, so a
+ * stale editor tab or a running AI job gets a 409 instead of a silent
+ * overwrite. A manual save marks the section `manual`.
  */
 export async function saveTestSection({
   input,
@@ -284,19 +285,14 @@ export async function saveTestSection({
     genError: '',
   }
   const updated = await IeltsTestModel.findOneAndUpdate(
-    {
-      _id: testId,
-      status: 'draft',
-      sections: { $elemMatch: { key, revision } },
-    },
+    { _id: testId, sections: { $elemMatch: { key, revision } } },
     { $set: { 'sections.$': { ...next, genPending: null } } },
     { new: true }
   ).lean()
 
-  if (updated)
-    return { ok: true, data: toAdminTest(updated as unknown as LeanDoc) }
+  if (updated) return { ok: true, data: adoptSaved(updated) }
 
-  return explainDraftConflict(testId)
+  return explainConflict(testId)
 }
 
 export interface PublishOutcome {
@@ -340,7 +336,7 @@ export async function publishTest({
       ok: false,
       status: 422,
       body: {
-        message: `${report.errors.length} lỗi cần sửa trước khi xuất bản.`,
+        message: `${report.errors.length} ${report.errors.length === 1 ? 'error' : 'errors'} to fix before publishing.`,
         report,
       },
     }
@@ -350,7 +346,7 @@ export async function publishTest({
       ok: false,
       status: 422,
       body: {
-        message: `${report.warnings.length} cảnh báo. Xác nhận để xuất bản.`,
+        message: `${report.warnings.length} ${report.warnings.length === 1 ? 'warning' : 'warnings'}. Confirm to publish.`,
         report,
       },
     }
@@ -379,7 +375,7 @@ export async function publishTest({
       isDuplicateKeyError(error) ||
       (error as Error).message?.includes('Draft changed')
     )
-      return ieltsError(409, 'Đề vừa được xuất bản ở nơi khác. Tải lại.')
+      return ieltsError(409, 'Test was just published elsewhere. Reload.')
 
     throw error
   } finally {
@@ -415,77 +411,123 @@ export async function archiveTest(
 }
 
 /**
- * Copy a published or archived version into a new draft (next version
- * number). An existing draft of the slug is returned instead of a second one.
+ * Put an archived version back on the catalogue. Only one version of a slug
+ * can be live, so a newer published version has to be archived first.
  */
-export async function createNewVersion(
-  testId: string,
-  createdBy: string
+export async function unarchiveTest(
+  testId: string
 ): Promise<IeltsDecision<IeltsAdminTest>> {
-  const source = await IeltsTestModel.findById(testId).lean()
-
-  if (!source) return ieltsError(404, 'Test not found.')
-
-  if (source.status === 'draft')
-    return { ok: true, data: toAdminTest(source as unknown as LeanDoc) }
-
-  const existingDraft = await IeltsTestModel.findOne({
-    slug: source.slug,
-    status: 'draft',
+  const test = await IeltsTestModel.findById(testId, {
+    slug: 1,
+    status: 1,
   }).lean()
 
-  if (existingDraft)
-    return { ok: true, data: toAdminTest(existingDraft as unknown as LeanDoc) }
+  if (!test) return ieltsError(404, 'Test not found.')
 
-  const latest = await IeltsTestModel.findOne({ slug: source.slug })
-    .sort({ version: -1 })
-    .select({ version: 1 })
-    .lean()
-  const copy = { ...(source as unknown as LeanDoc) }
+  if (test.status !== 'archived')
+    return ieltsError(409, 'Only an archived test can be unarchived.')
 
-  delete copy._id
-  delete copy.createdAt
-  delete copy.updatedAt
+  const live = await IeltsTestModel.findOne(
+    { slug: test.slug, status: 'published' },
+    { version: 1 }
+  ).lean()
+
+  if (live)
+    return ieltsError(
+      409,
+      'Another test with this slug is live. Archive it first.'
+    )
 
   try {
-    const created = await IeltsTestModel.create({
-      ...copy,
-      _id: new Types.ObjectId(),
-      version: (latest?.version ?? source.version) + 1,
-      status: 'draft',
-      publishedAt: null,
-      archivedAt: null,
-      createdBy,
-      metaRevision: 0,
-      generationLog: [],
-      sections: (source.sections ?? []).map(section => ({
-        ...section,
-        revision: 0,
-      })),
-    })
+    const updated = await IeltsTestModel.findOneAndUpdate(
+      { _id: testId, status: 'archived' },
+      { $set: { status: 'published', archivedAt: null } },
+      { new: true }
+    ).lean()
 
-    return {
-      ok: true,
-      data: toAdminTest(created.toObject() as unknown as LeanDoc),
-    }
+    if (!updated) return ieltsError(409, 'Test status just changed. Reload.')
+
+    expireCacheTags([CACHE_TAGS.ieltsContent])
+
+    return { ok: true, data: toAdminTest(updated as unknown as LeanDoc) }
   } catch (error) {
+    // The partial unique index: another version went live meanwhile.
     if (isDuplicateKeyError(error))
-      return ieltsError(409, 'Một bản nháp mới vừa được tạo. Tải lại.')
+      return ieltsError(409, 'Another version was just published. Reload.')
 
     throw error
   }
 }
 
-export async function deleteDraft(
+/**
+ * Delete a draft or an archived test. An archived test still backs old
+ * reviews, so when attempts use it the call stops with their count (409)
+ * until `withAttempts` deletes those attempts too. A published test has to
+ * be archived first.
+ */
+export async function deleteTest({
+  testId,
+  withAttempts = false,
+}: {
   testId: string
-): Promise<IeltsDecision<{ deleted: true }>> {
+  withAttempts?: boolean
+}): Promise<
+  | IeltsDecision<{ deleted: true; attemptsDeleted: number }>
+  | {
+      ok: false
+      status: 409
+      body: { message: string; attemptCount: number }
+    }
+> {
+  const test = await IeltsTestModel.findById(testId, {
+    slug: 1,
+    status: 1,
+    version: 1,
+  }).lean()
+
+  if (!test) return ieltsError(404, 'Test not found.')
+
+  if (test.status === 'published')
+    return ieltsError(409, 'Archive the test before deleting it.')
+
+  // Attempts find their test by slug + version (drills per item).
+  const attemptFilter = {
+    $or: [
+      { testSlug: test.slug, testVersion: test.version },
+      { items: { $elemMatch: { testSlug: test.slug, version: test.version } } },
+    ],
+  }
+  const attemptCount =
+    test.status === 'archived'
+      ? await IeltsAttemptModel.countDocuments(attemptFilter)
+      : 0
+
+  if (attemptCount > 0 && !withAttempts)
+    return {
+      ok: false,
+      status: 409,
+      body: {
+        message: `${attemptCount} ${attemptCount === 1 ? 'attempt uses' : 'attempts use'} this test.`,
+        attemptCount,
+      },
+    }
+
   const result = await IeltsTestModel.deleteOne({
     _id: testId,
-    status: 'draft',
+    status: test.status,
   })
 
   if (result.deletedCount === 0)
-    return ieltsError(409, 'Only drafts can be deleted.')
+    return ieltsError(409, 'Test status just changed. Reload.')
 
-  return { ok: true, data: { deleted: true } }
+  const attempts = attemptCount
+    ? await IeltsAttemptModel.deleteMany(attemptFilter)
+    : { deletedCount: 0 }
+
+  if (test.status === 'archived') expireCacheTags([CACHE_TAGS.ieltsContent])
+
+  return {
+    ok: true,
+    data: { deleted: true, attemptsDeleted: attempts.deletedCount },
+  }
 }

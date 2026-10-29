@@ -16,7 +16,7 @@ import {
 import { GroupBlock } from '../widgets/GroupBlock'
 
 /**
- * Live preview with the learner widgets. "Hiện đáp án" fills every widget
+ * Live preview with the learner widgets. "Show answers" fills every widget
  * with the first accepted answer, so a wrong key or a missing slot shows up
  * before publishing.
  */
@@ -55,7 +55,7 @@ export function SectionPreview({ section }: { section: IeltsSection }) {
   return (
     <div className="grid gap-4">
       <Label
-        className="flex items-center gap-2 font-sans text-xs font-bold"
+        className="flex items-center gap-2 font-sans text-xs font-black"
         htmlFor={switchId}
       >
         <Switch
@@ -63,7 +63,7 @@ export function SectionPreview({ section }: { section: IeltsSection }) {
           id={switchId}
           onCheckedChange={setShowAnswers}
         />
-        Hiện đáp án
+        Show answers
       </Label>
       {section.reading ? (
         <PassagePane
@@ -76,7 +76,7 @@ export function SectionPreview({ section }: { section: IeltsSection }) {
         <ol className="font-body grid gap-1 text-sm leading-[1.6]">
           {section.listening.lines.map((line, index) => (
             <li key={index}>
-              <span className="text-ex-muted font-sans text-xs tabular-nums">
+              <span className="text-muted-foreground font-sans text-xs tabular-nums">
                 {index}
               </span>{' '}
               <strong className="font-sans">{line.speaker}:</strong> {line.text}
@@ -89,7 +89,7 @@ export function SectionPreview({ section }: { section: IeltsSection }) {
           <p className="whitespace-pre-line">{section.writing.prompt}</p>
           {section.writing.visual ? (
             <TaskVisual
-              className="border-ex-line rounded-lg border"
+              className="border-manga-black rounded-control border-2"
               visual={section.writing.visual}
             />
           ) : null}

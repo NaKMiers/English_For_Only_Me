@@ -9,12 +9,12 @@ import { ObjectiveResult } from '@/components/ielts/review/ObjectiveResult'
 import { WritingResult } from '@/components/ielts/review/WritingResult'
 import { IELTS_SKILL_LABELS } from '@/modules/ielts/constants'
 import { loadResultPageData } from '@/modules/ielts/services/resultPageData'
-import { ExamSheet } from '@/components/ielts/ui'
+import { ExamSheet, ExamHero } from '@/components/ielts/ui'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
-export const metadata: Metadata = { title: 'IELTS · Kết quả' }
+export const metadata: Metadata = { title: 'IELTS · Result' }
 
 interface Props {
   params: Promise<{ attemptId: string }>
@@ -51,18 +51,18 @@ export default async function IeltsResultPage({ params }: Props) {
         <AppTopbar
           activeHref="/ielts"
           authControl={<AuthControl />}
-          subtitle="Luyện đề IELTS: Listening, Reading, Writing"
+          subtitle="IELTS practice: Listening, Reading, Writing"
         />
       }
     >
       <ExamSheet>
-        <header className="grid gap-2">
+        <ExamHero>
           <nav
             aria-label="Breadcrumb"
-            className="text-ex-muted text-sm"
+            className="text-muted-foreground text-sm font-semibold"
           >
             <Link
-              className="hover:text-ex-accent underline"
+              className="hover:text-manga-red underline"
               href="/ielts"
             >
               IELTS
@@ -80,17 +80,17 @@ export default async function IeltsResultPage({ params }: Props) {
             ) : null}{' '}
             / {IELTS_SKILL_LABELS[attempt.skill]}
           </nav>
-          <h1 className="text-ex-ink font-sans text-2xl leading-tight font-bold sm:text-3xl">
-            Kết quả {IELTS_SKILL_LABELS[attempt.skill]}
+          <h1 className="font-sans text-3xl leading-tight font-black wrap-break-word sm:text-4xl">
+            {IELTS_SKILL_LABELS[attempt.skill]} result
           </h1>
           <p>
             {MODE_LABELS[attempt.mode]}
             {attempt.scope.kind === 'part'
               ? ` · Part ${attempt.scope.part}`
               : ''}
-            {attempt.status === 'expired' ? ' · Hết giờ' : ''}
+            {attempt.status === 'expired' ? ' · Time up' : ''}
           </p>
-        </header>
+        </ExamHero>
         {attempt.skill === 'writing' ? (
           <WritingResult
             attempt={attempt}

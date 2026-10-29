@@ -2,14 +2,9 @@ import Image from 'next/image'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 
-import { PRIMARY_NAV_ITEMS } from '@/constants/modules'
+import { TopbarMenu } from '@/components/common/TopbarMenu'
+import { PRIMARY_NAV_ITEMS, type NavItem } from '@/constants/modules'
 import { cn } from '@/lib/utils'
-
-interface NavItem {
-  disabled?: boolean
-  href: string
-  label: string
-}
 
 interface Props {
   activeHref?: string
@@ -37,7 +32,7 @@ export function AppTopbar({
   return (
     <header
       className={cn(
-        'border-manga-black bg-manga-white/88 grid min-h-21 grid-cols-1 items-center gap-4 border-b-3 p-4 sm:grid-cols-[minmax(260px,420px)_1fr] lg:grid-cols-[minmax(300px,430px)_1fr_auto]',
+        'border-manga-black bg-manga-white/88 grid min-h-21 grid-cols-[minmax(0,1fr)_auto] items-center gap-4 border-b-3 p-4 xl:grid-cols-[minmax(240px,1fr)_auto_auto]',
         className
       )}
     >
@@ -65,7 +60,7 @@ export function AppTopbar({
 
       <nav
         aria-label="Primary"
-        className="flex min-w-0 snap-x snap-proximity items-center gap-2 overflow-x-auto pb-1"
+        className="hidden min-w-0 snap-x snap-proximity items-center gap-2 overflow-x-auto pb-1 xl:flex"
       >
         {navItems.map(item =>
           item.disabled ? (
@@ -90,8 +85,16 @@ export function AppTopbar({
         )}
       </nav>
 
-      <div className="flex items-center justify-start gap-2 sm:col-span-2 lg:col-span-1 lg:justify-end">
-        {authControl}
+      <div className="flex min-w-0 items-center justify-end gap-2">
+        {/* On phones the account control lives in the menu instead. */}
+        <div className="hidden min-w-0 sm:flex">{authControl}</div>
+        {/* Below xl the inline nav would overflow, so it moves into a menu. */}
+        <TopbarMenu
+          activeHref={activeHref}
+          authControl={authControl}
+          navItems={navItems}
+          className="xl:hidden"
+        />
       </div>
     </header>
   )

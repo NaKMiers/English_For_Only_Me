@@ -8,7 +8,7 @@ import type { DictationVideoStatus } from '@/modules/dictation/types'
 
 export { reorderIds } from '@/modules/dictation/content/reorder'
 
-// Distinct drag payload types so the three drag interactions on /admin/topics
+// Distinct drag payload types so the three drag interactions on /admin/dictation
 // (move a video, reorder topics, reorder sections) never cross-activate each
 // other's drop zones. Browsers lowercase custom types in dataTransfer.types.
 export const MIME_VIDEO = 'application/x-efom-video'

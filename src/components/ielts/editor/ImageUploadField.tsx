@@ -71,12 +71,12 @@ export function ImageUploadField({
           tone="paper"
           type="button"
         >
-          {busy ? 'Đang tải...' : 'Tải ảnh'}
+          {busy ? 'Uploading...' : 'Upload image'}
         </ExamButton>
       </div>
       {error ? (
         <p
-          className="text-ex-wrong text-xs font-semibold"
+          className="text-manga-red text-xs font-semibold"
           role="alert"
         >
           {error}

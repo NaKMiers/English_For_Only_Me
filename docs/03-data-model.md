@@ -502,7 +502,7 @@ All unions are defined in `src/modules/dictation/types.ts` and mirrored by the s
 | `inProgress`      | Being practiced.                                                               |
 | `completed`       | A session was completed (set when a session finishes; attempts route `:236`).  |
 | `failed`          | Processing failed.                                                             |
-| `archived`        | Soft-deleted / hidden (set by admin archive, `adminContentRepository.ts:163`). |
+| `archived`        | Soft-deleted / hidden (admin Delete). Restore rebuilds the status; Delete permanently removes the doc (`adminContentRepository.ts`). |
 
 ### 4.2 DictationTranscriptStatus (`types.ts:14`)
 

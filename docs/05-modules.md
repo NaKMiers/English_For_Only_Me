@@ -596,7 +596,8 @@ injected model) is separated from `server-only` repositories and `'use server'` 
   (wrapped in React `cache` so metadata and body share one query per request),
   `listSectionsForTopic`, `listVideosForTopic`, `listNoTopicVideos`/`countNoTopicVideos`
   (the `{ topicId: null }` filter matches both explicit null and absent field),
-  `searchVideosInTopic` (flat-list mode), `listManageableVideos`, `listAllSections`, and
+  `searchVideosInTopic` (flat-list mode), `listManageableVideos`, `listArchivedVideos`
+  (the admin trash), `listAllSections`, and
   `listTopicSummaries` (runs `listTopics` plus two Mongo aggregations for live lesson/level
   and section counts, then delegates to `buildTopicSummaries`). A shared
   `VISIBLE_VIDEO_FILTER = { status: { $ne: 'archived' } }` excludes soft-deleted videos.
@@ -605,12 +606,17 @@ injected model) is separated from `server-only` repositories and `'use server'` 
   renaming a topic regenerates its slug and changes the public URL), `createSection`/
   `updateSection`, `deleteTopic`/`deleteSection` (guarded: refuse while non-archived videos
   remain; deleting a topic also deletes its empty sections), `deleteVideo` (soft delete via
-  `status: 'archived'`), `assignVideos` (bulk set topic/section/level; `null` clears a
+  `status: 'archived'`), `restoreVideo` (status rebuilt by `restoredVideoStatus` in
+  `videoTrash.ts`: segments → `ready`, active transcript → `transcriptReady`, else
+  `needsTranscript`), `purgeVideo` (archived only: deletes transcripts, segments,
+  sessions, attempts, debriefs, review items and favorites, unlinks vocab occurrences,
+  then the video), `assignVideos` (bulk set topic/section/level; `null` clears a
   field), and the `reorder*` persisters.
 - `adminActions.ts` (`'use server'`): thin wrappers that call `guardAdmin()`
   (`requireAdmin` + `connectDatabase`, re-checking the admin role server-side), then a
   repository function, then `revalidateBrowse()` (revalidates `/dictation`,
-  `/dictation/no-topic`, `/admin/topics`, `/admin/videos`). Includes
+  `/dictation/no-topic`, `/admin/dictation`). Includes `restoreVideoAction`/
+  `purgeVideoAction` for the trash,
   `moveVideoAction`/`assignVideosAction` for drag-and-drop moves and
   `uploadTopicThumbnailAction` (Cloudinary).
 
