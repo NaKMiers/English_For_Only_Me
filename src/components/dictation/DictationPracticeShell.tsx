@@ -1699,7 +1699,8 @@ export function DictationPracticeShell({
                 value="practice"
                 className={cn(
                   'grid min-w-0 content-start gap-2',
-                  !isVideoStacked && 'lg:min-h-0 lg:overflow-y-auto lg:pr-1'
+                  !isVideoStacked &&
+                    'lg:min-h-0 lg:snap-y lg:snap-proximity lg:overflow-y-auto lg:pr-1 lg:*:snap-start'
                 )}
               >
                 {isCompleted ? (

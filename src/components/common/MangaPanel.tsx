@@ -9,6 +9,7 @@ interface Props {
   action?: ReactNode
   children: ReactNode
   className?: string
+  contentClassName?: string
   eyebrow?: string
   title?: string
 }
@@ -17,6 +18,7 @@ export function MangaPanel({
   action,
   children,
   className,
+  contentClassName,
   eyebrow,
   title,
 }: Props) {
@@ -40,7 +42,9 @@ export function MangaPanel({
           {action ? <div className="shrink-0">{action}</div> : null}
         </CardHeader>
       ) : null}
-      <CardContent className="grid gap-4 p-0">{children}</CardContent>
+      <CardContent className={cn('grid gap-4 p-0', contentClassName)}>
+        {children}
+      </CardContent>
     </Card>
   )
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useId, useMemo, useState } from 'react'
+import { useId, useMemo } from 'react'
 
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
@@ -17,13 +17,45 @@ import { GroupBlock } from '../widgets/GroupBlock'
 import { WritingPrompt } from '../widgets/WritingPrompt'
 
 /**
- * Live preview with the learner widgets. "Show answers" fills every widget
+ * The "Show answers" toggle. It lives in the preview pane's header, so the
+ * editor owns the state and hands it to `SectionPreview`.
+ */
+export function ShowAnswersSwitch({
+  checked,
+  onCheckedChange,
+}: {
+  checked: boolean
+  onCheckedChange: (checked: boolean) => void
+}) {
+  const switchId = useId()
+
+  return (
+    <Label
+      className="flex items-center gap-2 font-sans text-xs font-black"
+      htmlFor={switchId}
+    >
+      <Switch
+        checked={checked}
+        id={switchId}
+        onCheckedChange={onCheckedChange}
+      />
+      Show answers
+    </Label>
+  )
+}
+
+/**
+ * Live preview with the learner widgets. `showAnswers` fills every widget
  * with the first accepted answer, so a wrong key or a missing slot shows up
  * before publishing.
  */
-export function SectionPreview({ section }: { section: IeltsSection }) {
-  const [showAnswers, setShowAnswers] = useState(true)
-  const switchId = useId()
+export function SectionPreview({
+  section,
+  showAnswers,
+}: {
+  section: IeltsSection
+  showAnswers: boolean
+}) {
   const publicSection = useMemo(
     () => toPublicSection(section, { includeTranscript: true }),
     [section]
@@ -55,17 +87,6 @@ export function SectionPreview({ section }: { section: IeltsSection }) {
 
   return (
     <div className="grid gap-4">
-      <Label
-        className="flex items-center gap-2 font-sans text-xs font-black"
-        htmlFor={switchId}
-      >
-        <Switch
-          checked={showAnswers}
-          id={switchId}
-          onCheckedChange={setShowAnswers}
-        />
-        Show answers
-      </Label>
       {section.reading ? (
         <PassagePane
           highlight={null}

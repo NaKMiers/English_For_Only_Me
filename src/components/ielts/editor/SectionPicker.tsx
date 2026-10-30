@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
+import { isSectionReady } from '@/modules/ielts/consistency/checkTest'
 import {
   IELTS_SKILL_LABELS,
   IELTS_SKILLS,
@@ -47,13 +48,8 @@ interface Props {
   selectedKey?: SectionKey
 }
 
-/** A listening part counts as done only once its audio exists. */
-export function isDone(section: IeltsSection) {
-  if (section.genStatus === 'manual') return true
-  if (section.genStatus !== 'ready') return false
-
-  return section.skill !== 'listening' || Boolean(section.listening?.audio)
-}
+/** Done means ready for learners: see `isSectionReady`. */
+export const isDone = isSectionReady
 
 export function statusOf(section: IeltsSection, busy: boolean) {
   if (busy) return { Icon: LoaderCircle, label: 'Generating...' }

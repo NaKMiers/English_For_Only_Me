@@ -9,6 +9,11 @@ import { cn } from '@/lib/utils'
 interface Props {
   activeHref?: string
   className?: string
+  /**
+   * One slim row (smaller logo, title and controls) for work screens that
+   * need the height, like the IELTS test editor.
+   */
+  compact?: boolean
   navItems?: NavItem[]
   subtitle?: string
   title?: string
@@ -24,6 +29,7 @@ interface Props {
 export function AppTopbar({
   activeHref = '/',
   className,
+  compact = false,
   navItems = PRIMARY_NAV_ITEMS,
   subtitle = 'Personal IELTS manga desk',
   title = 'English For Only Me',
@@ -32,13 +38,19 @@ export function AppTopbar({
   return (
     <header
       className={cn(
-        'border-manga-black bg-manga-white/88 grid min-h-21 grid-cols-[minmax(0,1fr)_auto] items-center gap-4 border-b-3 p-4 xl:grid-cols-[minmax(240px,1fr)_auto_auto]',
+        'border-manga-black bg-manga-white/88 grid grid-cols-[minmax(0,1fr)_auto] items-center border-b-3 xl:grid-cols-[minmax(240px,1fr)_auto_auto]',
+        compact ? 'gap-3 px-4 py-2' : 'min-h-21 gap-4 p-4',
         className
       )}
     >
       <Link
         href="/"
-        className="text-manga-black grid min-w-0 grid-cols-[54px_1fr] items-center gap-3"
+        className={cn(
+          'text-manga-black grid min-w-0 items-center',
+          compact
+            ? 'grid-cols-[36px_1fr] gap-2.5'
+            : 'grid-cols-[54px_1fr] gap-3'
+        )}
       >
         <Image
           src="/logo.png"
@@ -46,13 +58,30 @@ export function AppTopbar({
           width={58}
           height={58}
           priority
-          className="border-manga-black bg-manga-white rounded-control size-14 border-3 object-contain shadow-[4px_4px_0_var(--manga-black)]"
+          className={cn(
+            'border-manga-black bg-manga-white rounded-control object-contain',
+            compact
+              ? 'size-9 border-2 shadow-[2px_2px_0_var(--manga-black)]'
+              : 'size-14 border-3 shadow-[4px_4px_0_var(--manga-black)]'
+          )}
         />
-        <span className="grid min-w-0 gap-1">
-          <strong className="font-sans text-[clamp(1.05rem,3.5vw,1.5rem)] leading-tight font-black tracking-normal text-balance uppercase sm:text-[clamp(1.1rem,1.8vw,1.6rem)]">
+        <span className={cn('grid min-w-0', compact ? 'gap-0.5' : 'gap-1')}>
+          <strong
+            className={cn(
+              'font-sans leading-tight font-black tracking-normal text-balance uppercase',
+              compact
+                ? 'truncate text-sm sm:text-base'
+                : 'text-[clamp(1.05rem,3.5vw,1.5rem)] sm:text-[clamp(1.1rem,1.8vw,1.6rem)]'
+            )}
+          >
             {title}
           </strong>
-          <span className="text-manga-ink-soft truncate text-xs leading-tight font-black sm:text-sm">
+          <span
+            className={cn(
+              'text-manga-ink-soft truncate text-xs leading-tight font-black',
+              !compact && 'sm:text-sm'
+            )}
+          >
             {subtitle}
           </span>
         </span>
@@ -60,7 +89,12 @@ export function AppTopbar({
 
       <nav
         aria-label="Primary"
-        className="hidden min-w-0 snap-x snap-proximity items-center gap-2 overflow-x-auto pb-1 xl:flex"
+        className={cn(
+          'hidden min-w-0 snap-x snap-proximity items-center gap-2 overflow-x-auto pb-1 xl:flex',
+          // Slimmer chips: thinner border and shadow, smaller type.
+          compact &&
+            'gap-1.5 *:min-h-9 *:border-2 *:px-2.5 *:text-xs *:shadow-[2px_2px_0_var(--manga-black)]'
+        )}
       >
         {navItems.map(item =>
           item.disabled ? (
@@ -87,13 +121,24 @@ export function AppTopbar({
 
       <div className="flex min-w-0 items-center justify-end gap-2">
         {/* On phones the account control lives in the menu instead. */}
-        <div className="hidden min-w-0 sm:flex">{authControl}</div>
+        <div
+          className={cn(
+            'hidden min-w-0 sm:flex',
+            compact &&
+              '[&_button]:min-h-9 [&_button]:border-2 [&_button]:shadow-[2px_2px_0_var(--manga-black)]'
+          )}
+        >
+          {authControl}
+        </div>
         {/* Below xl the inline nav would overflow, so it moves into a menu. */}
         <TopbarMenu
           activeHref={activeHref}
           authControl={authControl}
           navItems={navItems}
-          className="xl:hidden"
+          className={cn(
+            'xl:hidden',
+            compact && 'size-9 border-2 shadow-[2px_2px_0_var(--manga-black)]'
+          )}
         />
       </div>
     </header>

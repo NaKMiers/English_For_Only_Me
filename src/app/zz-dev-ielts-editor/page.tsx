@@ -1,6 +1,7 @@
 // TEMPORARY visual harness for the IELTS editor redesign. Delete after review.
 import { notFound } from 'next/navigation'
 
+import { AppTopbar } from '@/components/common/AppTopbar'
 import { MangaPageShell } from '@/components/common/MangaPageShell'
 import { TestEditor } from '@/components/ielts/editor/TestEditor'
 import { IELTS_SAMPLE_TEST } from '@/modules/ielts/fixtures/sampleTest'
@@ -42,7 +43,15 @@ export default async function Page({
   } as unknown as IeltsAdminTest
 
   return (
-    <MangaPageShell fullHeight>
+    <MangaPageShell
+      className="overflow-clip"
+      topbar={
+        <AppTopbar
+          compact
+          subtitle="Admin · IELTS"
+        />
+      }
+    >
       <TestEditor
         initial={test}
         seriesOptions={['Cambridge 19', 'IELTS 21']}

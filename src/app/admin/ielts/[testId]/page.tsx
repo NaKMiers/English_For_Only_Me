@@ -35,14 +35,15 @@ export default async function AdminIeltsEditorPage({ params }: Props) {
 
   if (!test) notFound()
 
-  // The shell locks to the viewport: the editor and preview panes scroll on
-  // their own under the header (the whole page scrolls below 1280px).
+  // The shell grows with the editor and the page scrolls; `overflow-clip`
+  // (not hidden) keeps the editor's sticky header bar working.
   return (
     <MangaPageShell
-      fullHeight
+      className="overflow-clip"
       topbar={
         <AppTopbar
           authControl={<AuthControl />}
+          compact
           subtitle="Admin · IELTS"
         />
       }

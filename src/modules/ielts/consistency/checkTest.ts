@@ -382,6 +382,20 @@ export function checkSection(section: IeltsSection): IeltsConsistencyReport {
   return { errors, warnings }
 }
 
+/**
+ * Ready for learners: written (by AI or by hand), free of blocking errors and,
+ * for listening, with its audio. `manual` only says who wrote a section, so a
+ * blank manual draft is not ready.
+ */
+export function isSectionReady(section: IeltsSection) {
+  if (section.genStatus !== 'ready' && section.genStatus !== 'manual')
+    return false
+
+  if (section.skill === 'listening' && !section.listening?.audio) return false
+
+  return checkSection(section).errors.length === 0
+}
+
 const OBJECTIVE_SKILLS: Exclude<IeltsSkill, 'writing'>[] = [
   'listening',
   'reading',

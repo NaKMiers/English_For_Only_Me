@@ -11,8 +11,10 @@ interface Props {
    * The page itself then never scrolls - `main` becomes the frame and whatever
    * is rendered inside owns its own scroll regions (see the dictation practice
    * layout). Off by default so every other route keeps growing normally.
+   * `'lg'` locks it from the lg breakpoint only; smaller screens keep the
+   * normal page scroll.
    */
-  fullHeight?: boolean
+  fullHeight?: boolean | 'lg'
   topbar?: ReactNode
 }
 
@@ -27,10 +29,11 @@ export function MangaPageShell({
     <div
       className={cn(
         'manga-shell border-manga-black bg-manga-paper text-manga-black rounded-shell relative mx-auto my-3 flex w-[min(1460px,calc(100%-24px))] flex-col overflow-hidden border-3 shadow-[8px_8px_0_var(--manga-black),18px_18px_0_var(--manga-shadow)] sm:my-4 sm:w-[min(1460px,calc(100%-32px))]',
-        fullHeight
+        fullHeight === true
           ? // A phone drops the shell's margin (globals.css), so it fills the screen.
             'h-dvh sm:h-[calc(100dvh-32px)]'
           : 'min-h-[calc(100vh-24px)] sm:min-h-[calc(100vh-32px)]',
+        fullHeight === 'lg' && 'lg:h-[calc(100dvh-32px)] lg:min-h-0',
         // The ink-stroke + glow layers scroll with the page as plain painted
         // content (no fixed attachment, no animation), and paint containment
         // keeps them from being re-rasterised by changes inside the shell.
@@ -43,7 +46,8 @@ export function MangaPageShell({
       <main
         className={cn(
           'relative z-10 min-w-0 flex-1',
-          fullHeight && 'min-h-0 overflow-hidden'
+          fullHeight === true && 'min-h-0 overflow-hidden',
+          fullHeight === 'lg' && 'lg:min-h-0 lg:overflow-hidden'
         )}
       >
         {children}

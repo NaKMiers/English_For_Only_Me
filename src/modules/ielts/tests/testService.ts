@@ -13,6 +13,7 @@ import {
 import {
   type IeltsConsistencyReport,
   checkTest,
+  isSectionReady,
 } from '../consistency/checkTest'
 import { IELTS_SECTION_KEYS, type IeltsSectionKey } from '../constants'
 import type { IeltsSection, IeltsSectionInput, IeltsTestMeta } from '../schema'
@@ -21,6 +22,7 @@ import type { CreateTestInput } from './testRouteDecisions'
 import {
   effectiveGenStatus,
   type IeltsTestRecord,
+  toIeltsSection,
   toIeltsTestRecord,
 } from './testRecords'
 
@@ -38,11 +40,18 @@ export interface IeltsAdminTestRow {
   version: number
   status: IeltsTestRecord['status']
   source: IeltsTestRecord['source']
+  /** Admin-set group name; empty groups the test by its title. */
+  series: string
   title: string
   track: IeltsTestRecord['track']
   updatedAt: string | null
   publishedAt: string | null
-  sections: { key: string; genStatus: IeltsSection['genStatus'] }[]
+  sections: {
+    key: string
+    genStatus: IeltsSection['genStatus']
+    /** Passes `isSectionReady`, worked out here so the row stays small. */
+    ready: boolean
+  }[]
 }
 
 export interface IeltsAdminTest extends IeltsTestRecord {
@@ -81,13 +90,14 @@ export async function listAdminTests(): Promise<IeltsAdminTestRow[]> {
       version: 1,
       status: 1,
       source: 1,
+      series: 1,
       title: 1,
       track: 1,
       updatedAt: 1,
       publishedAt: 1,
-      'sections.key': 1,
-      'sections.genStatus': 1,
-      'sections.genStartedAt': 1,
+      // Whole sections: readiness needs their content (the collection is
+      // small, a few KB per test).
+      sections: 1,
     }
   )
     .sort({ updatedAt: -1 })
@@ -104,6 +114,7 @@ export async function listAdminTests(): Promise<IeltsAdminTestRow[]> {
       version: Number(doc.version),
       status: doc.status as IeltsAdminTestRow['status'],
       source: doc.source as IeltsAdminTestRow['source'],
+      series: doc.series ? String(doc.series) : '',
       title: String(doc.title),
       track: doc.track as IeltsAdminTestRow['track'],
       updatedAt: doc.updatedAt
@@ -112,15 +123,16 @@ export async function listAdminTests(): Promise<IeltsAdminTestRow[]> {
       publishedAt: doc.publishedAt
         ? new Date(doc.publishedAt as string).toISOString()
         : null,
-      sections: sections.map(section => ({
-        key: String(section.key),
-        genStatus: effectiveGenStatus({
-          genStatus: section.genStatus as IeltsSection['genStatus'],
-          genStartedAt: section.genStartedAt
-            ? new Date(section.genStartedAt as string)
-            : null,
-        }),
-      })),
+      sections: sections.map(raw => {
+        const section = toIeltsSection(raw)
+        const genStatus = effectiveGenStatus(section)
+
+        return {
+          key: section.key,
+          genStatus,
+          ready: isSectionReady({ ...section, genStatus }),
+        }
+      }),
     }
   })
 }

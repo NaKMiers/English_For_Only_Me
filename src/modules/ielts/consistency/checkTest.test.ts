@@ -3,7 +3,8 @@ import { describe, expect, it } from 'vitest'
 import { IELTS_SAMPLE_TEST } from '../fixtures/sampleTest'
 import type { IeltsSection, IeltsTestContent } from '../schema'
 import { ieltsTestSchema } from '../schema'
-import { checkSection, checkTest } from './checkTest'
+import { emptySections } from '../tests/emptySections'
+import { checkSection, checkTest, isSectionReady } from './checkTest'
 
 function clone(): IeltsTestContent {
   return structuredClone(IELTS_SAMPLE_TEST)
@@ -128,5 +129,43 @@ describe('checkTest', () => {
     section(test, 'writing-1').writing!.visual = null
 
     expect(rules(test)).toContain('writing_task')
+  })
+})
+
+describe('isSectionReady', () => {
+  it('does not count a blank hand-written draft as ready', () => {
+    for (const blank of emptySections('manual'))
+      expect(isSectionReady(blank), blank.key).toBe(false)
+  })
+
+  it('counts a complete hand-written section as ready', () => {
+    const test = clone()
+
+    expect(isSectionReady(section(test, 'reading-1'))).toBe(true)
+    expect(isSectionReady(section(test, 'writing-2'))).toBe(true)
+  })
+
+  it('needs audio before a listening part is ready', () => {
+    const part = section(clone(), 'listening-1')
+
+    expect(isSectionReady(part)).toBe(false)
+
+    part.listening = {
+      ...part.listening!,
+      audio: {
+        url: 'https://example.test/a.mp3',
+        publicId: 'a',
+        durationSec: 300,
+        lineOffsetsSec: [],
+      },
+    }
+    expect(isSectionReady(part)).toBe(true)
+  })
+
+  it('never counts a pending or failed section', () => {
+    const part = section(clone(), 'reading-1')
+
+    for (const genStatus of ['pending', 'generating', 'failed'] as const)
+      expect(isSectionReady({ ...part, genStatus })).toBe(false)
   })
 })

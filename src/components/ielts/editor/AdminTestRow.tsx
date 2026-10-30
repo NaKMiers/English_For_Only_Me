@@ -20,6 +20,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { cn } from '@/lib/utils'
 import type { IeltsTestStatus } from '@/modules/ielts/constants'
 import {
   archiveIeltsTestApi,
@@ -32,16 +33,21 @@ import {
 export interface AdminTestRowItem {
   detail: string
   id: string
-  progress: string
+  /** Short name inside its series ("Test 4"), or the title when it has none. */
+  label: string
+  ready: number
   slug: string
   status: IeltsTestStatus
   title: string
+  total: number
+  updated: string
 }
 
 /**
- * One test in the admin list: the row opens the editor, the ⋮ menu runs the
- * quick actions for its status (publish or delete a draft; view or archive a
- * published test; publish again or delete an archived one) without opening it.
+ * One test in the admin list, as a small tile inside its series: the tile
+ * opens the editor, the ⋮ menu runs the quick actions for its status (publish
+ * or delete a draft; view or archive a published test; publish again or
+ * delete an archived one) without opening it.
  */
 export function AdminTestRow({ row }: { row: AdminTestRowItem }) {
   const router = useRouter()
@@ -126,29 +132,47 @@ export function AdminTestRow({ row }: { row: AdminTestRowItem }) {
     })
   }
 
+  const complete = row.total > 0 && row.ready === row.total
+
   return (
-    <li className="grid gap-1">
-      <div className="border-manga-black rounded-control bg-manga-white flex min-w-0 items-center gap-2 border-2 py-1 pr-2">
+    <li className="grid min-w-0 gap-1">
+      <div className="border-manga-black rounded-control bg-manga-white flex min-w-0 items-start gap-1 border-2 p-1">
         <Link
-          className="hover:bg-manga-pale-red rounded-control grid min-w-0 flex-1 gap-1 px-3 py-1 sm:grid-cols-[1fr_auto] sm:items-center"
+          className="hover:bg-manga-pale-red rounded-tag grid min-w-0 flex-1 gap-1.5 px-2 py-1.5"
           href={editHref}
+          title={`${row.title} · ${row.detail}`}
         >
-          <span className="grid min-w-0 gap-0.5">
-            <strong className="font-sans font-black wrap-break-word">
-              {row.title}
-            </strong>
-            <span className="text-muted-foreground text-xs font-semibold wrap-break-word">
-              {row.detail}
-            </span>
+          <strong className="font-sans text-sm leading-tight font-black wrap-break-word">
+            {row.label}
+            {row.label === row.title ? null : (
+              <span className="sr-only"> ({row.title})</span>
+            )}
+          </strong>
+          <span
+            aria-hidden="true"
+            className="border-manga-black bg-manga-paper-soft rounded-tag h-1.5 overflow-hidden border"
+          >
+            <span
+              className={cn(
+                'block h-full',
+                complete ? 'bg-manga-black' : 'bg-manga-red'
+              )}
+              style={{
+                width: `${row.total ? (row.ready / row.total) * 100 : 0}%`,
+              }}
+            />
           </span>
-          <span className="text-xs font-semibold tabular-nums">
-            {row.progress}
+          <span className="text-muted-foreground flex flex-wrap justify-between gap-x-2 text-[11px] font-semibold tabular-nums">
+            <span>
+              {row.ready}/{row.total} ready
+            </span>
+            {row.updated ? <span>{row.updated}</span> : null}
           </span>
         </Link>
         <DropdownMenu>
           <DropdownMenuTrigger
             aria-label={`Actions for ${row.title}`}
-            className="border-manga-black bg-manga-white hover:bg-manga-paper-soft rounded-control grid size-9 shrink-0 place-items-center border-2 shadow-[2px_2px_0_var(--manga-black)] transition-colors disabled:opacity-50"
+            className="border-manga-black bg-manga-white hover:bg-manga-paper-soft rounded-control grid size-8 shrink-0 place-items-center border-2 shadow-[2px_2px_0_var(--manga-black)] transition-colors disabled:opacity-50"
             disabled={busy}
             title="Actions"
           >

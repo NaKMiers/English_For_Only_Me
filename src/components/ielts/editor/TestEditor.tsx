@@ -50,7 +50,7 @@ import { countLabel, Disclosure, MetaChip } from './fields'
 import { GenerationLog } from './GenerationLog'
 import { SectionForm } from './SectionForm'
 import { isDone, SectionPicker, statusOf } from './SectionPicker'
-import { SectionPreview } from './SectionPreview'
+import { SectionPreview, ShowAnswersSwitch } from './SectionPreview'
 import { TestDetailsDialog, type TestMeta } from './TestDetailsDialog'
 import { ExamButton, ExamIconButton, segmentClass } from '@/components/ielts/ui'
 
@@ -119,6 +119,7 @@ export function TestEditor({
     useState<IeltsConsistencyReport | null>(null)
   const [confirmWarnings, setConfirmWarnings] = useState(false)
   const [pane, setPane] = useState<Pane>('split')
+  const [showAnswers, setShowAnswers] = useState(true)
   const [dialog, setDialog] = useState<'details' | 'checks' | 'log' | null>(
     null
   )
@@ -481,6 +482,25 @@ export function TestEditor({
     return () => window.removeEventListener('keydown', onKey)
   }, [canSave])
 
+  // The header bar sticks to the top from xl; the pane toolbars and the
+  // preview stick right under it, so its live height drives `--editor-bar`.
+  const rootRef = useRef<HTMLDivElement>(null)
+  const barRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const root = rootRef.current
+    const bar = barRef.current
+
+    if (!root || !bar) return
+
+    const observer = new ResizeObserver(() =>
+      root.style.setProperty('--editor-bar', `${bar.offsetHeight}px`)
+    )
+
+    observer.observe(bar)
+
+    return () => observer.disconnect()
+  }, [])
+
   const generateStep: IeltsGenerateStep | null = section
     ? section.genStatus === 'needsRepair'
       ? 'repair'
@@ -503,73 +523,83 @@ export function TestEditor({
     : null
   const showEditor = pane !== 'preview'
   const showPreview = pane !== 'edit'
+  const split = showEditor && showPreview
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-3 overflow-y-auto p-3 sm:p-4 xl:overflow-hidden">
-      <EditorHeader
-        busy={busy}
-        onArchive={() => void archive()}
-        onDelete={() => void remove()}
-        onEditDetails={() => {
-          // Reopening drops edits from a cancelled dialog.
-          setMeta(metaOf(test))
-          setDialog('details')
-        }}
-        onGenerateMissing={() => void generateMissing()}
-        onOpenChecks={() => setDialog('checks')}
-        onOpenLog={() => setDialog('log')}
-        onPublish={() => void publish(false)}
-        onStop={() => {
-          stopLoopRef.current = true
-        }}
-        onUnarchive={() => void unarchive()}
-        pendingCount={pendingCount}
-        picker={
-          <SectionPicker
-            busyKey={busy?.startsWith('gen:') ? busy.slice(4) : undefined}
-            dirtyKeys={Object.keys(drafts)}
-            onSelect={setSelectedKey}
-            sections={test.sections}
-            selectedKey={selectedKey}
-          />
-        }
-        report={testReport}
-        test={test}
-      />
-
-      {message ? (
-        <div
-          className="border-manga-black bg-manga-pale-red rounded-control flex shrink-0 items-center gap-2 border-2 py-1 pr-1 pl-3"
-          role="status"
-        >
-          <p className="min-w-0 flex-1 text-sm font-semibold">{message}</p>
-          <ExamIconButton
-            className="size-8 border-2 shadow-none"
-            label="Dismiss"
-            onClick={() => setMessage('')}
-            type="button"
-          >
-            <X
-              aria-hidden="true"
-              className="size-4"
+    <div
+      className="flex min-w-0 flex-col gap-3 p-3 sm:p-4 xl:pt-1"
+      ref={rootRef}
+    >
+      <div
+        className="bg-manga-paper grid gap-2 xl:sticky xl:top-0 xl:z-30 xl:-mx-4 xl:px-4 xl:pt-3 xl:pb-1"
+        ref={barRef}
+      >
+        <EditorHeader
+          busy={busy}
+          onArchive={() => void archive()}
+          onDelete={() => void remove()}
+          onEditDetails={() => {
+            // Reopening drops edits from a cancelled dialog.
+            setMeta(metaOf(test))
+            setDialog('details')
+          }}
+          onGenerateMissing={() => void generateMissing()}
+          onOpenChecks={() => setDialog('checks')}
+          onOpenLog={() => setDialog('log')}
+          onPublish={() => void publish(false)}
+          onStop={() => {
+            stopLoopRef.current = true
+          }}
+          onUnarchive={() => void unarchive()}
+          pendingCount={pendingCount}
+          picker={
+            <SectionPicker
+              busyKey={busy?.startsWith('gen:') ? busy.slice(4) : undefined}
+              dirtyKeys={Object.keys(drafts)}
+              onSelect={setSelectedKey}
+              sections={test.sections}
+              selectedKey={selectedKey}
             />
-          </ExamIconButton>
-        </div>
-      ) : null}
+          }
+          report={testReport}
+          test={test}
+        />
+
+        {message ? (
+          <div
+            className="border-manga-black bg-manga-pale-red rounded-control flex shrink-0 items-center gap-2 border-2 py-1 pr-1 pl-3"
+            role="status"
+          >
+            <p className="min-w-0 flex-1 text-sm font-semibold">{message}</p>
+            <ExamIconButton
+              className="size-8 border-2 shadow-none"
+              label="Dismiss"
+              onClick={() => setMessage('')}
+              type="button"
+            >
+              <X
+                aria-hidden="true"
+                className="size-4"
+              />
+            </ExamIconButton>
+          </div>
+        ) : null}
+      </div>
 
       {section && draft ? (
         <div
           className={cn(
-            'grid min-w-0 gap-4 xl:min-h-0 xl:flex-1 xl:grid-rows-[minmax(0,1fr)]',
-            showEditor && showPreview && 'xl:grid-cols-2'
+            'grid min-w-0 items-start gap-4',
+            split && 'xl:grid-cols-2'
           )}
         >
           {showEditor ? (
             <section
               aria-label="Edit section"
-              className="border-manga-black bg-manga-white rounded-panel grid min-w-0 content-start border-3 shadow-[4px_4px_0_var(--manga-black)] xl:min-h-0 xl:grid-rows-[auto_minmax(0,1fr)] xl:overflow-hidden"
+              className="border-manga-black bg-manga-white rounded-panel grid min-w-0 content-start border-3 shadow-[4px_4px_0_var(--manga-black)]"
             >
-              <div className="border-manga-black bg-manga-white rounded-t-panel sticky top-0 z-20 flex min-w-0 flex-wrap items-center gap-2 border-b-2 px-2 py-2 sm:px-3">
+              {/* Sticks under the header bar while the page scrolls. */}
+              <div className="border-manga-black bg-manga-white rounded-t-panel sticky top-0 z-20 flex min-w-0 flex-wrap items-center gap-2 border-b-2 px-2 py-1.5 sm:px-3 xl:top-(--editor-bar)">
                 <ExamIconButton
                   className="size-9"
                   disabled={!prevSection}
@@ -594,8 +624,8 @@ export function TestEditor({
                     className="size-4"
                   />
                 </ExamIconButton>
-                <div className="grid min-w-0 flex-1 gap-1 pl-1">
-                  <h2 className="font-sans text-lg leading-none font-black uppercase">
+                <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2 gap-y-1 pl-1">
+                  <h2 className="font-sans text-base leading-none font-black whitespace-nowrap uppercase">
                     {IELTS_SKILL_LABELS[section.skill]} {section.order}
                   </h2>
                   <div className="flex flex-wrap items-center gap-1">
@@ -649,7 +679,7 @@ export function TestEditor({
                     value={draft}
                   />
                   <ExamButton
-                    className="min-h-10 px-3"
+                    className="min-h-9 px-3"
                     disabled={!canSave}
                     icon={
                       <Save
@@ -667,7 +697,7 @@ export function TestEditor({
                 </div>
               </div>
 
-              <div className="grid min-w-0 content-start gap-3 p-3 sm:p-4 xl:overflow-y-auto">
+              <div className="grid min-w-0 content-start gap-3 p-3 sm:p-4">
                 {section.genError ? (
                   <p
                     className="border-manga-red text-manga-red rounded-control border-2 px-3 py-2 text-sm font-semibold"
@@ -736,17 +766,28 @@ export function TestEditor({
           {showPreview ? (
             <section
               aria-label="Preview"
-              className="border-manga-black bg-manga-white rounded-panel grid min-w-0 content-start border-3 shadow-[4px_4px_0_var(--manga-black)] xl:min-h-0 xl:grid-rows-[auto_minmax(0,1fr)] xl:overflow-hidden"
+              className={cn(
+                'border-manga-black bg-manga-white rounded-panel grid min-w-0 content-start border-3 shadow-[4px_4px_0_var(--manga-black)]',
+                // Beside the editor it stays in view and scrolls on its own.
+                split &&
+                  'xl:sticky xl:top-(--editor-bar) xl:max-h-[calc(100dvh-var(--editor-bar)-16px)] xl:grid-rows-[auto_minmax(0,1fr)] xl:overflow-hidden'
+              )}
             >
               <div className="border-manga-black flex min-w-0 flex-wrap items-center justify-between gap-2 border-b-2 px-3 py-2">
-                <h2 className="flex items-center gap-2 font-sans text-sm font-black uppercase">
-                  <Eye
-                    aria-hidden="true"
-                    className="size-4"
+                <div className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2">
+                  <h2 className="flex items-center gap-2 font-sans text-sm font-black uppercase">
+                    <Eye
+                      aria-hidden="true"
+                      className="size-4"
+                    />
+                    Learner preview
+                    {dirty ? <MetaChip tone="pale">Live draft</MetaChip> : null}
+                  </h2>
+                  <ShowAnswersSwitch
+                    checked={showAnswers}
+                    onCheckedChange={setShowAnswers}
                   />
-                  Learner preview
-                  {dirty ? <MetaChip tone="pale">Live draft</MetaChip> : null}
-                </h2>
+                </div>
                 {showEditor ? null : (
                   <ViewSwitch
                     onChange={setPane}
@@ -754,9 +795,17 @@ export function TestEditor({
                   />
                 )}
               </div>
-              <div className="min-w-0 p-3 sm:p-4 xl:overflow-y-auto">
+              <div
+                className={cn(
+                  'min-w-0 p-3 sm:p-4',
+                  split && 'xl:overflow-y-auto xl:overscroll-contain'
+                )}
+              >
                 {previewSection ? (
-                  <SectionPreview section={previewSection} />
+                  <SectionPreview
+                    section={previewSection}
+                    showAnswers={showAnswers}
+                  />
                 ) : null}
               </div>
             </section>
