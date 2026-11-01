@@ -4,10 +4,15 @@ import { BookOpen, ChevronRight, Headphones, PenLine } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
 
-import { cn } from '@/lib/utils'
-import { IELTS_SKILL_LABELS, type IeltsTrack } from '@/modules/ielts/constants'
+import { IELTS_SKILL_LABELS, IELTS_SKILLS } from '@/modules/ielts/constants'
 import type { IeltsCatalogEntry } from '@/modules/ielts/tests/testReaders'
 
+import { CatalogueToolbar, type CatalogueFilter } from './CatalogueToolbar'
+import {
+  matchesCatalogueSearch,
+  sortCatalogue,
+  type CatalogueSort,
+} from './catalogueFilters'
 import { groupCatalogue, TRACK_LABELS } from './catalogueGroups'
 
 interface Props {
@@ -20,44 +25,75 @@ const SKILL_ICONS = {
   writing: PenLine,
 } as const
 
+// No "updated" option: learners never see edits, only new tests.
+const SORT_OPTIONS: CatalogueSort[] = ['newest', 'oldest', 'title']
+
 /**
  * The catalogue as books of test cards: a heading per series ("IELTS 21
  * Academic"), then one card per test. The whole card is one link to the test
  * page, where the learner picks a skill and practice or timed mode; the skill
- * icons only show what the test contains.
+ * icons only show what the test contains. Newest tests come first; the
+ * toolbar searches, re-sorts and filters by type and skill.
  */
 export function TestCards({ catalog }: Props) {
-  const [track, setTrack] = useState<IeltsTrack | 'all'>('all')
+  const [query, setQuery] = useState('')
+  const [sort, setSort] = useState<CatalogueSort>('newest')
+  const [track, setTrack] = useState('all')
+  const [skill, setSkill] = useState('all')
   const tracks = [...new Set(catalog.map(entry => entry.track))]
-  const visible =
-    track === 'all' ? catalog : catalog.filter(entry => entry.track === track)
+  const skills = IELTS_SKILLS.filter(value =>
+    catalog.some(entry => entry.skills.some(item => item.skill === value))
+  )
+  const visible = sortCatalogue(
+    catalog.filter(
+      entry =>
+        (track === 'all' || entry.track === track) &&
+        (skill === 'all' || entry.skills.some(item => item.skill === skill)) &&
+        matchesCatalogueSearch(entry, query)
+    ),
+    sort
+  )
+  const filters: CatalogueFilter[] = []
+
+  if (tracks.length > 1)
+    filters.push({
+      id: 'track',
+      label: 'Test type',
+      onChange: setTrack,
+      options: [
+        { value: 'all', label: 'All types' },
+        ...tracks.map(value => ({ value, label: TRACK_LABELS[value] })),
+      ],
+      value: track,
+    })
+  if (skills.length > 1)
+    filters.push({
+      id: 'skill',
+      label: 'Has skill',
+      onChange: setSkill,
+      options: [
+        { value: 'all', label: 'Any skill' },
+        ...skills.map(value => ({ value, label: IELTS_SKILL_LABELS[value] })),
+      ],
+      value: skill,
+    })
 
   return (
     <div className="grid gap-6">
-      {tracks.length > 1 ? (
-        // Segmented filter (aria-pressed): the documented raw-button exception.
-        <div
-          aria-label="Filter by test type"
-          className="border-manga-black bg-manga-white rounded-control flex justify-self-start border-2 p-1"
-          role="group"
-        >
-          {(['all', ...tracks] as const).map(value => (
-            <button
-              aria-pressed={track === value}
-              className={cn(
-                'rounded-tag min-h-8 px-3 font-sans text-sm font-black transition-colors',
-                track === value
-                  ? 'bg-manga-black text-manga-white'
-                  : 'hover:bg-manga-paper-soft'
-              )}
-              key={value}
-              onClick={() => setTrack(value)}
-              type="button"
-            >
-              {value === 'all' ? 'All' : TRACK_LABELS[value]}
-            </button>
-          ))}
-        </div>
+      <CatalogueToolbar
+        className="max-w-2xl"
+        filters={filters}
+        onQueryChange={setQuery}
+        onSortChange={setSort}
+        query={query}
+        sort={sort}
+        sortOptions={SORT_OPTIONS}
+      />
+
+      {visible.length === 0 ? (
+        <p className="text-manga-ink-soft rounded-control bg-manga-paper-soft p-4 text-sm font-semibold">
+          No tests match the search or filters.
+        </p>
       ) : null}
 
       {groupCatalogue(visible).map(group => (

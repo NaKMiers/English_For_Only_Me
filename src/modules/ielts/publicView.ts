@@ -1,4 +1,8 @@
-import type { IeltsSkill, IeltsTrack } from './constants'
+import {
+  IELTS_QUESTION_WIDGETS,
+  type IeltsSkill,
+  type IeltsTrack,
+} from './constants'
 import type {
   IeltsAudio,
   IeltsListeningLine,
@@ -10,6 +14,7 @@ import type {
   IeltsVisual,
   IeltsWordLimit,
 } from './schema'
+import { normalizeIeltsKey } from './scoring/normalize'
 
 /*
  * What a learner's browser may receive before an attempt is submitted. Built
@@ -36,6 +41,12 @@ export interface IeltsPublicGroup {
   title: string
   body: string
   options: IeltsOption[]
+  /**
+   * A completion group answered with option letters ("Choose the correct
+   * letter, A-I"): each blank is a letter dropdown, not free text. Says only
+   * that the answers are letters, which the instruction already tells.
+   */
+  pickLetter: boolean
   imageUrl: string
   questions: IeltsPublicQuestion[]
 }
@@ -70,7 +81,28 @@ export interface IeltsPublicTest {
   sections: IeltsPublicSection[]
 }
 
+const OPTION_LINE = /^\s*[-*]\s+\*\*([A-Z])\*\*\s+(.+)$/gm
+
+/** The "- **A** ending" lines a summary body lists its word box with. */
+export function optionsInBody(body: string): IeltsOption[] {
+  return [...body.matchAll(OPTION_LINE)].map(([, key, text]) => ({
+    key,
+    text: text.trim(),
+  }))
+}
+
 function toPublicGroup(group: IeltsQuestionGroup): IeltsPublicGroup {
+  const options = group.options.length
+    ? group.options
+    : optionsInBody(group.body)
+  const keys = new Set(options.map(option => normalizeIeltsKey(option.key)))
+  const pickLetter =
+    IELTS_QUESTION_WIDGETS[group.type] === 'slot' &&
+    keys.size > 0 &&
+    group.questions.every(question =>
+      question.answers.some(answer => keys.has(normalizeIeltsKey(answer)))
+    )
+
   return {
     id: group.id,
     type: group.type,
@@ -85,10 +117,11 @@ function toPublicGroup(group: IeltsQuestionGroup): IeltsPublicGroup {
       : null,
     title: group.title,
     body: group.body,
-    options: group.options.map(option => ({
+    options: options.map(option => ({
       key: option.key,
       text: option.text,
     })),
+    pickLetter,
     imageUrl: group.imageUrl,
     questions: group.questions.map(question => ({
       number: question.number,

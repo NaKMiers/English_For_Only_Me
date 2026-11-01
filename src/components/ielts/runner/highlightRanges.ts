@@ -6,12 +6,15 @@ const WORD_CHAR = /[\p{L}\p{N}'’-]/u
 /**
  * Grow [start, end) outward to whole words, so selecting "nvironmen" marks
  * "environment". Leading and trailing spaces are trimmed first, so a
- * selection that ends on a space does not swallow the next word.
+ * selection that ends on a space does not swallow the next word. Growth also
+ * stops at `breaks`, offsets where one block of text ends and the next starts
+ * with no space between them.
  */
 export function expandToWords(
   text: string,
   start: number,
-  end: number
+  end: number,
+  breaks: ReadonlySet<number> = new Set()
 ): HighlightSpan | null {
   let from = Math.max(0, Math.min(start, end))
   let to = Math.min(text.length, Math.max(start, end))
@@ -21,8 +24,10 @@ export function expandToWords(
 
   if (from >= to) return null
 
-  while (from > 0 && WORD_CHAR.test(text[from - 1])) from -= 1
-  while (to < text.length && WORD_CHAR.test(text[to])) to += 1
+  while (from > 0 && !breaks.has(from) && WORD_CHAR.test(text[from - 1]))
+    from -= 1
+  while (to < text.length && !breaks.has(to) && WORD_CHAR.test(text[to]))
+    to += 1
 
   return [from, to]
 }

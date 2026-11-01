@@ -1,7 +1,8 @@
 'use client'
 
 import { Check, X } from 'lucide-react'
-import type { ReactNode } from 'react'
+import { useRef, type PointerEvent, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 
 import { PageTag } from '@/components/ui/PageTag'
 import { Input } from '@/components/ui/input'
@@ -11,7 +12,8 @@ import type { PlayCard } from '@/modules/grammar/session/preparePlayCards'
 
 import { SpeakButton } from '../SpeakButton'
 
-import type { CardDraft } from './cardDraft'
+import { placeTile, type CardDraft } from './cardDraft'
+import { useTileDrag } from './useTileDrag'
 
 // MARK: Shared pieces
 
@@ -23,6 +25,7 @@ interface TileProps {
   disabled?: boolean
   label?: string
   onClick?: () => void
+  onPointerDown?: (event: PointerEvent<HTMLButtonElement>) => void
   pressed?: boolean
   tone?: TileTone
 }
@@ -36,6 +39,9 @@ const tileToneClassName: Record<TileTone, string> = {
   used: 'bg-manga-white text-transparent shadow-none border-dashed',
 }
 
+const tileClassName =
+  'border-manga-black rounded-control sticker-press min-h-11 border-3 px-3 py-2 text-left font-sans text-base leading-snug font-bold shadow-[3px_3px_0_var(--manga-black)] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none disabled:cursor-default'
+
 /**
  * A word tile or answer option. Raw button on purpose: it is a segmented
  * toggle whose state lives in `aria-pressed`, the documented exception in
@@ -47,6 +53,7 @@ function Tile({
   disabled,
   label,
   onClick,
+  onPointerDown,
   pressed,
   tone = 'idle',
 }: TileProps) {
@@ -55,13 +62,10 @@ function Tile({
       aria-label={label}
       aria-pressed={pressed}
       data-tile
-      className={cn(
-        'border-manga-black rounded-control sticker-press min-h-11 border-3 px-3 py-2 text-left font-sans text-base leading-snug font-bold shadow-[3px_3px_0_var(--manga-black)] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none disabled:cursor-default',
-        tileToneClassName[tone],
-        className
-      )}
+      className={cn(tileClassName, tileToneClassName[tone], className)}
       disabled={disabled}
       onClick={onClick}
+      onPointerDown={onPointerDown}
       type="button"
     >
       {children}
@@ -332,40 +336,104 @@ function FillView({
 function OrderView({ card, checked, draft, onDraft, play }: PracticeProps) {
   if (card.kind !== 'order' || draft.kind !== 'order') return null
 
-  const tiles = play.tiles ?? []
-  const picked = new Set(draft.picked)
+  return (
+    <OrderBoard
+      checked={checked}
+      onPick={picked => onDraft({ kind: 'order', picked })}
+      picked={draft.picked}
+      sentence={card.sentence}
+      tiles={play.tiles ?? []}
+    />
+  )
+}
+
+/**
+ * Tap a word to add it to the end or take it back, or drag it: into any gap
+ * of the answer line, to another place in the line, or back to the bank.
+ */
+function OrderBoard({
+  checked,
+  onPick,
+  picked,
+  sentence,
+  tiles,
+}: {
+  checked: boolean | null
+  onPick: (picked: number[]) => void
+  picked: number[]
+  sentence: string
+  tiles: string[]
+}) {
+  const lineRef = useRef<HTMLDivElement>(null)
+  const bankRef = useRef<HTMLDivElement>(null)
+  const { drag, startPress, wasDragged } = useTileDrag({
+    bankRef,
+    lineRef,
+    onDrop: (tileIndex, target) => {
+      if (target.zone === 'line')
+        onPick(placeTile(picked, tileIndex, target.position))
+      else onPick(picked.filter(index => index !== tileIndex))
+    },
+  })
+
+  const answering = checked === null
+  const used = new Set(picked)
   // The end mark is fixed, not a tile: it says whether a statement or a
   // question is wanted, so "Has he finished" is not a fair answer to a
   // statement card.
-  const endMark = /[.?!]$/.exec(card.sentence.trim())?.[0] ?? null
+  const endMark = /[.?!]$/.exec(sentence.trim())?.[0] ?? null
+  const lineTarget = drag?.target?.zone === 'line' ? drag.target : null
+  const overBank =
+    drag?.target?.zone === 'bank' && used.has(drag.tileIndex) ? true : false
 
   return (
     <>
       <div
         aria-label="Câu của bạn"
         aria-live="polite"
-        className="border-manga-black rounded-control flex min-h-16 flex-wrap content-start gap-2 border-b-3 border-dashed pb-3"
+        className={cn(
+          'border-manga-black rounded-control flex min-h-16 flex-wrap content-start gap-2 border-b-3 border-dashed pb-3 transition-colors',
+          lineTarget && 'border-manga-red bg-manga-paper-soft'
+        )}
+        ref={lineRef}
       >
-        {draft.picked.length === 0 ? (
+        {picked.length === 0 ? (
           <span className="text-manga-ink-soft self-center text-sm">
-            Chạm vào các từ bên dưới theo đúng thứ tự.
+            Chạm hoặc kéo các từ vào đây theo đúng thứ tự.
           </span>
         ) : null}
-        {draft.picked.map((tileIndex, position) => (
-          <Tile
-            disabled={checked !== null}
+        {picked.map((tileIndex, position) => (
+          <span
+            className="relative"
+            data-line-slot
             key={tileIndex}
-            label={`Bỏ "${tiles[tileIndex]}"`}
-            onClick={() =>
-              onDraft({
-                kind: 'order',
-                picked: draft.picked.filter((_, index) => index !== position),
-              })
-            }
-            tone={checked === null ? 'idle' : checked ? 'right' : 'wrong'}
           >
-            {tiles[tileIndex]}
-          </Tile>
+            {lineTarget?.position === position ? (
+              <DropMarker side="left" />
+            ) : null}
+            {lineTarget?.position === picked.length &&
+            position === picked.length - 1 ? (
+              <DropMarker side="right" />
+            ) : null}
+            <Tile
+              className={cn(
+                answering && 'touch-none select-none',
+                drag?.tileIndex === tileIndex && 'opacity-40'
+              )}
+              disabled={!answering}
+              label={`Bỏ "${tiles[tileIndex]}"`}
+              onClick={() => {
+                if (wasDragged()) return
+                onPick(picked.filter((_, index) => index !== position))
+              }}
+              onPointerDown={event => {
+                if (answering) startPress(tileIndex, event)
+              }}
+              tone={answering ? 'idle' : checked ? 'right' : 'wrong'}
+            >
+              {tiles[tileIndex]}
+            </Tile>
+          </span>
         ))}
         {endMark ? (
           <span
@@ -378,24 +446,70 @@ function OrderView({ card, checked, draft, onDraft, play }: PracticeProps) {
       </div>
       <div
         aria-label="Các từ để xếp"
-        className="flex flex-wrap gap-2"
+        className={cn(
+          'rounded-control flex flex-wrap gap-2 transition-colors',
+          overBank &&
+            'bg-manga-paper-soft outline-manga-red outline-2 outline-offset-4 outline-dashed'
+        )}
+        ref={bankRef}
         role="group"
       >
         {tiles.map((tile, tileIndex) => (
           <Tile
-            disabled={checked !== null || picked.has(tileIndex)}
+            className={cn(
+              answering && !used.has(tileIndex) && 'touch-none select-none',
+              drag?.tileIndex === tileIndex && 'opacity-40'
+            )}
+            disabled={!answering || used.has(tileIndex)}
             key={`${tile}-${tileIndex}`}
-            label={picked.has(tileIndex) ? `${tile} (đã dùng)` : tile}
-            onClick={() =>
-              onDraft({ kind: 'order', picked: [...draft.picked, tileIndex] })
-            }
-            tone={picked.has(tileIndex) ? 'used' : 'idle'}
+            label={used.has(tileIndex) ? `${tile} (đã dùng)` : tile}
+            onClick={() => {
+              if (wasDragged()) return
+              onPick([...picked, tileIndex])
+            }}
+            onPointerDown={event => {
+              if (answering && !used.has(tileIndex))
+                startPress(tileIndex, event)
+            }}
+            tone={used.has(tileIndex) ? 'used' : 'idle'}
           >
             {tile}
           </Tile>
         ))}
       </div>
+      {drag
+        ? createPortal(
+            <span
+              aria-hidden
+              className={cn(
+                tileClassName,
+                tileToneClassName.idle,
+                'pointer-events-none fixed z-50 -rotate-3 shadow-[5px_5px_0_var(--manga-black)]'
+              )}
+              style={{
+                left: drag.x - drag.offsetX,
+                top: drag.y - drag.offsetY,
+              }}
+            >
+              {tiles[drag.tileIndex]}
+            </span>,
+            document.body
+          )
+        : null}
     </>
+  )
+}
+
+/** The bar showing which gap a dragged word will drop into. */
+function DropMarker({ side }: { side: 'left' | 'right' }) {
+  return (
+    <span
+      aria-hidden
+      className={cn(
+        'bg-manga-red pointer-events-none absolute inset-y-0 w-1 rounded-full',
+        side === 'left' ? '-left-1.5' : '-right-1.5'
+      )}
+    />
   )
 }
 

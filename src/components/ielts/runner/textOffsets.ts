@@ -14,6 +14,43 @@ function textNodes(scope: Node) {
   return nodes
 }
 
+/** Nearest element up to the scope that lays out as its own box. */
+function boxOf(scope: Node, node: Node) {
+  for (
+    let element = node.parentElement;
+    element && element !== scope;
+    element = element.parentElement
+  ) {
+    const { display } = getComputedStyle(element)
+
+    if (display !== 'inline' && display !== 'contents') return element
+  }
+
+  return scope
+}
+
+/**
+ * Offsets in the scope's text where one box ends and the next begins (a list
+ * row, a table cell, a paragraph). The text has no space there, so a word at
+ * the end of one row would otherwise run into the first word of the next.
+ */
+export function boxBreaks(scope: Node) {
+  const breaks = new Set<number>()
+  let position = 0
+  let previous: Node | null = null
+
+  for (const node of textNodes(scope)) {
+    const box = boxOf(scope, node)
+
+    if (previous && box !== previous) breaks.add(position)
+
+    previous = box
+    position += node.data.length
+  }
+
+  return breaks
+}
+
 /** Character offset of a DOM boundary point within the scope's text. */
 export function offsetWithin(scope: Node, node: Node, offset: number) {
   const range = document.createRange()

@@ -12,7 +12,7 @@ import {
   removeOverlapping,
   spansOverlap,
 } from './highlightRanges'
-import { offsetWithin, rangeFromOffsets } from './textOffsets'
+import { boxBreaks, offsetWithin, rangeFromOffsets } from './textOffsets'
 
 /** Name of the CSS highlight; styled by `::highlight(ielts-user)` in globals.css. */
 const HIGHLIGHT_NAME = 'ielts-user'
@@ -61,7 +61,7 @@ function pickSelection(root: HTMLElement): Picked[] | null {
     const end = scope.contains(range.endContainer)
       ? offsetWithin(scope, range.endContainer, range.endOffset)
       : text.length
-    const span = expandToWords(text, start, end)
+    const span = expandToWords(text, start, end, boxBreaks(scope))
     const key = scope.getAttribute(SCOPE_ATTR)
 
     if (span && key) picked.push({ key, span })

@@ -24,6 +24,8 @@ export interface IeltsCatalogEntry {
   description: string
   /** `mockReady` is false for listening while any part still lacks audio. */
   skills: { skill: IeltsSkill; parts: number; mockReady: boolean }[]
+  /** Missing on catalogue entries cached before it was added. */
+  createdAt?: string | null
   publishedAt: string | null
 }
 
@@ -39,12 +41,13 @@ async function loadCatalog(): Promise<IeltsCatalogEntry[]> {
       targetBand: 1,
       tags: 1,
       description: 1,
+      createdAt: 1,
       publishedAt: 1,
       'sections.skill': 1,
       'sections.listening.audio.url': 1,
     }
   )
-    .sort({ publishedAt: -1 })
+    .sort({ createdAt: -1 })
     .lean()
 
   return docs.map(doc => {
@@ -87,6 +90,7 @@ async function loadCatalog(): Promise<IeltsCatalogEntry[]> {
           parts: counts.get(skill) ?? 0,
           mockReady: skill !== 'listening' || !listeningAudioMissing,
         })),
+      createdAt: doc.createdAt ? doc.createdAt.toISOString() : null,
       publishedAt: doc.publishedAt ? doc.publishedAt.toISOString() : null,
     }
   })

@@ -30,6 +30,16 @@ describe('expandToWords', () => {
     expect(span && TEXT.slice(...span)).toBe('affects')
   })
 
+  it('stops at a block break even with no space there', () => {
+    const rows = 'complex societiesiiThe role'
+    const breaks = new Set([rows.indexOf('ii'), rows.indexOf('The')])
+    const end = expandToWords(rows, 10, 12, breaks)
+    const start = expandToWords(rows, rows.indexOf('he'), rows.length, breaks)
+
+    expect(end && rows.slice(...end)).toBe('societies')
+    expect(start && rows.slice(...start)).toBe('The role')
+  })
+
   it('returns null for a selection of only spaces or punctuation', () => {
     expect(expandToWords(TEXT, 28, 30)).toBeNull()
   })

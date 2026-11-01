@@ -38,6 +38,25 @@ export function isDraftReady(draft: CardDraft) {
   }
 }
 
+/**
+ * Puts a tile into the answer line at `position`, counted over the line as it
+ * is shown (the tile itself included when it is already there), so dragging
+ * a tile within the line and dragging one in from the bank share one rule.
+ */
+export function placeTile(
+  picked: number[],
+  tileIndex: number,
+  position: number
+) {
+  const from = picked.indexOf(tileIndex)
+  const rest = picked.filter(index => index !== tileIndex)
+  const at = from !== -1 && from < position ? position - 1 : position
+
+  rest.splice(Math.min(Math.max(at, 0), rest.length), 0, tileIndex)
+
+  return rest
+}
+
 /** The raw answer the grader (and the server) understands. */
 export function toCardAnswer(play: PlayCard, draft: CardDraft): CardAnswer {
   switch (draft.kind) {

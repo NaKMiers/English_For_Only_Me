@@ -18,7 +18,10 @@ import {
   TFNG_OPTIONS,
   YNNG_OPTIONS,
 } from '@/modules/ielts/constants'
-import type { IeltsPublicGroup } from '@/modules/ielts/publicView'
+import {
+  type IeltsPublicGroup,
+  optionsInBody,
+} from '@/modules/ielts/publicView'
 import type { IeltsOption } from '@/modules/ielts/schema'
 
 import {
@@ -242,6 +245,34 @@ function CheckboxQuestions({ group }: Props) {
   )
 }
 
+/** The lettered list the answers are picked from. */
+function OptionsBox({
+  options,
+  title,
+}: {
+  options: IeltsOption[]
+  title?: string
+}) {
+  return (
+    <div className="border-manga-black bg-manga-pale-red rounded-control grid gap-1.5 border-2 p-3">
+      {title ? <p className="text-sm font-bold">{title}</p> : null}
+      <ul className="grid gap-1">
+        {options.map(option => (
+          <li
+            className="flex gap-2 leading-[1.6]"
+            key={option.key}
+          >
+            <strong className="min-w-8 font-sans font-black">
+              {option.key}
+            </strong>
+            <span>{option.text}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
 /** Matching and labelling: a box of options, then one dropdown per item. */
 function DropdownQuestions({ group }: Props) {
   const { answers, onFocusQuestion, readOnly, review, setAnswer } =
@@ -257,24 +288,10 @@ function DropdownQuestions({ group }: Props) {
           src={group.imageUrl}
         />
       ) : null}
-      <div className="border-manga-black bg-manga-pale-red rounded-control grid gap-1.5 border-2 p-3">
-        {group.title ? (
-          <p className="text-sm font-bold">{group.title}</p>
-        ) : null}
-        <ul className="grid gap-1">
-          {group.options.map(option => (
-            <li
-              className="flex gap-2 leading-[1.6]"
-              key={option.key}
-            >
-              <strong className="min-w-8 font-sans font-black">
-                {option.key}
-              </strong>
-              <span>{option.text}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
+      <OptionsBox
+        options={group.options}
+        title={group.title}
+      />
       <ol className="grid gap-3">
         {group.questions.map(question => {
           const value = answerText(answers[String(question.number)])
@@ -335,18 +352,24 @@ function DropdownQuestions({ group }: Props) {
   )
 }
 
-/** Completion: the body with inline blanks, plus prompt-only questions. */
+/**
+ * Completion: the body with inline blanks, plus prompt-only questions. When
+ * the answers are letters, each blank is a dropdown and the word box shows
+ * under the body unless the body already lists it.
+ */
 function SlotQuestions({ group }: Props) {
   const bodyId = `ielts-group-${group.id}-body`
+  const letters = group.pickLetter ? group.options : undefined
   const renderSlot = useCallback(
     (number: number) => (
       <SlotInput
         describedBy={bodyId}
         key={number}
         number={number}
+        options={letters}
       />
     ),
-    [bodyId]
+    [bodyId, letters]
   )
   const promptQuestions = group.questions.filter(question =>
     question.prompt.includes(`{{q${question.number}}}`)
@@ -369,6 +392,9 @@ function SlotQuestions({ group }: Props) {
             source={group.body}
           />
         </div>
+      ) : null}
+      {letters && !optionsInBody(group.body).length ? (
+        <OptionsBox options={letters} />
       ) : null}
       {promptQuestions.length ? (
         <ol className="grid gap-3">

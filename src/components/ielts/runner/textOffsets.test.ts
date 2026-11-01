@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { offsetWithin, rangeFromOffsets } from './textOffsets'
+import { boxBreaks, offsetWithin, rangeFromOffsets } from './textOffsets'
 
 function scope() {
   const element = document.createElement('div')
@@ -23,6 +23,10 @@ describe('text offsets', () => {
     const range = rangeFromOffsets(root, 6, 15)
 
     expect(range?.toString()).toBe('brave new')
+  })
+
+  it('marks where one block ends and the next begins, not inline tags', () => {
+    expect([...boxBreaks(scope())]).toEqual(['Hello brave new'.length])
   })
 
   it('returns null when the offsets run past the text', () => {

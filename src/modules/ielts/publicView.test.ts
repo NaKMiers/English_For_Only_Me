@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
 import { IELTS_SAMPLE_TEST } from './fixtures/sampleTest'
-import { toPublicTest } from './publicView'
+import { optionsInBody, toPublicSection, toPublicTest } from './publicView'
+import type { IeltsOption, IeltsQuestionGroup, IeltsSection } from './schema'
 
 const FORBIDDEN = [
   'answers',
@@ -62,5 +63,61 @@ describe('toPublicTest', () => {
     expect(
       view.sections.find(item => item.key === 'writing-1')?.writing?.visual
     ).not.toBeNull()
+  })
+})
+
+describe('pickLetter', () => {
+  const sections = IELTS_SAMPLE_TEST.sections as IeltsSection[]
+  const section = sections.find(item =>
+    item.groups.some(group => group.type === 'summary-completion')
+  )!
+  const summary = section.groups.find(
+    group => group.type === 'summary-completion'
+  )!
+  const body = 'Tehrani studied {{q24}} and {{q25}} and {{q26}}.'
+  const list = '\n\n- **A** ending\n- **B** links\n- **C** plot'
+
+  function viewOf(group: IeltsQuestionGroup) {
+    return toPublicSection(
+      { ...section, groups: [group] },
+      {
+        includeTranscript: true,
+      }
+    ).groups[0]
+  }
+
+  function lettered(answers: string[][], options: IeltsOption[]) {
+    return {
+      ...summary,
+      body: body + list,
+      options,
+      questions: summary.questions.map((question, index) => ({
+        ...question,
+        answers: answers[index],
+      })),
+    }
+  }
+
+  it('is set when every answer is an option letter', () => {
+    const view = viewOf(
+      lettered([['B'], ['a'], ['long-term', 'C']], optionsInBody(list))
+    )
+
+    expect(view.pickLetter).toBe(true)
+  })
+
+  it('reads the options from the body list when the group has none', () => {
+    const view = viewOf(lettered([['B'], ['A'], ['C']], []))
+
+    expect(view.pickLetter).toBe(true)
+    expect(view.options.map(option => option.key)).toEqual(['A', 'B', 'C'])
+  })
+
+  it('stays off when the answers are words from the list', () => {
+    expect(
+      viewOf(lettered([['links'], ['ending'], ['plot']], optionsInBody(list)))
+        .pickLetter
+    ).toBe(false)
+    expect(viewOf(summary).pickLetter).toBe(false)
   })
 })

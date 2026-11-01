@@ -44,6 +44,7 @@ export interface IeltsAdminTestRow {
   series: string
   title: string
   track: IeltsTestRecord['track']
+  createdAt: string | null
   updatedAt: string | null
   publishedAt: string | null
   sections: {
@@ -93,6 +94,7 @@ export async function listAdminTests(): Promise<IeltsAdminTestRow[]> {
       series: 1,
       title: 1,
       track: 1,
+      createdAt: 1,
       updatedAt: 1,
       publishedAt: 1,
       // Whole sections: readiness needs their content (the collection is
@@ -100,7 +102,7 @@ export async function listAdminTests(): Promise<IeltsAdminTestRow[]> {
       sections: 1,
     }
   )
-    .sort({ updatedAt: -1 })
+    .sort({ createdAt: -1 })
     .limit(200)
     .lean()
 
@@ -117,6 +119,9 @@ export async function listAdminTests(): Promise<IeltsAdminTestRow[]> {
       series: doc.series ? String(doc.series) : '',
       title: String(doc.title),
       track: doc.track as IeltsAdminTestRow['track'],
+      createdAt: doc.createdAt
+        ? new Date(doc.createdAt as string).toISOString()
+        : null,
       updatedAt: doc.updatedAt
         ? new Date(doc.updatedAt as string).toISOString()
         : null,
