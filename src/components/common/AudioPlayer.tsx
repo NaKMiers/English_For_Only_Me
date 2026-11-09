@@ -21,7 +21,7 @@ interface Props {
   durationSec?: number
   /**
    * Start time of each script line. With markers the skip buttons step line by
-   * line and the bar marks every line; without them skips jump 10 s.
+   * line and the bar marks every line; without them skips jump 5 s.
    */
   markers?: number[]
   /** Optional row under the controls, given the current marker index (-1 before the first). */
@@ -30,10 +30,11 @@ interface Props {
 }
 
 const RATES = [1, 1.25, 1.5, 0.75]
-const SKIP_SEC = 10
+const SKIP_SEC = 5
 
-const SMALL_BUTTON_CLASS =
-  'border-manga-black bg-manga-white hover:bg-manga-paper-soft rounded-control sticker-press grid size-9 shrink-0 place-items-center border-2 shadow-[2px_2px_0_var(--manga-black)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:opacity-50'
+/** Skip and speed keys: flat icons, so the one-line player stays light. */
+const GHOST_BUTTON_CLASS =
+  'text-manga-black hover:bg-manga-white focus-visible:ring-manga-red rounded-tag grid h-8 shrink-0 place-items-center outline-none focus-visible:ring-2 disabled:opacity-50'
 
 /** The big black play/pause key, shared with read-only players (mock tests). */
 export const AUDIO_PLAY_BUTTON_CLASS =
@@ -88,10 +89,16 @@ export function AudioMeter({
   )
 }
 
+/** The play key shrunk to fit the one-line player. */
+const COMPACT_PLAY_BUTTON_CLASS = cn(
+  AUDIO_PLAY_BUTTON_CLASS,
+  'size-9 shadow-[2px_2px_0_var(--manga-red)] active:translate-x-[2px] active:translate-y-[2px]'
+)
+
 /**
- * The app's audio player, in the manga sticker style: play/pause, two skip
- * keys, a seek bar, the clock and a speed toggle. Key it by `src` so a new
- * file starts from zero.
+ * The app's audio player, in the manga sticker style, on one line:
+ * play/pause, two skip keys, a seek bar, the clock and a speed toggle. Key it
+ * by `src` so a new file starts from zero.
  */
 export function AudioPlayer({
   className,
@@ -149,7 +156,7 @@ export function AudioPlayer({
   return (
     <div
       className={cn(
-        'border-manga-black bg-manga-paper-soft rounded-control grid gap-2 border-2 p-2',
+        'border-manga-black bg-manga-paper-soft rounded-control grid gap-1.5 border-2 p-1.5',
         className
       )}
     >
@@ -167,12 +174,12 @@ export function AudioPlayer({
         ref={ref}
         src={src}
       />
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex min-w-0 items-center gap-1">
         {/* Player transport (aria-pressed toggle): documented raw exception. */}
         <button
           aria-label={playing ? 'Pause' : 'Play'}
           aria-pressed={playing}
-          className={AUDIO_PLAY_BUTTON_CLASS}
+          className={COMPACT_PLAY_BUTTON_CLASS}
           onClick={toggle}
           title={playing ? 'Pause' : 'Play'}
           type="button"
@@ -191,7 +198,7 @@ export function AudioPlayer({
         </button>
         <button
           aria-label={timed ? 'Previous line' : `Back ${SKIP_SEC} seconds`}
-          className={SMALL_BUTTON_CLASS}
+          className={cn(GHOST_BUTTON_CLASS, 'ml-0.5 w-8')}
           onClick={() => step(-1)}
           title={timed ? 'Previous line' : `Back ${SKIP_SEC} s`}
           type="button"
@@ -203,7 +210,7 @@ export function AudioPlayer({
         </button>
         <button
           aria-label={timed ? 'Next line' : `Forward ${SKIP_SEC} seconds`}
-          className={SMALL_BUTTON_CLASS}
+          className={cn(GHOST_BUTTON_CLASS, 'w-8')}
           onClick={() => step(1)}
           title={timed ? 'Next line' : `Forward ${SKIP_SEC} s`}
           type="button"
@@ -215,7 +222,7 @@ export function AudioPlayer({
         </button>
 
         <Slider.Root
-          className="order-last basis-full sm:order-none sm:min-w-32 sm:flex-1 sm:basis-auto"
+          className="mx-1 min-w-0 flex-1"
           max={total}
           min={0}
           onValueChange={value => seek(value)}
@@ -244,17 +251,15 @@ export function AudioPlayer({
           </Slider.Control>
         </Slider.Root>
 
-        <span className="ml-auto sm:ml-0">
-          <AudioClock
-            duration={duration}
-            time={time}
-          />
-        </span>
+        <AudioClock
+          duration={duration}
+          time={time}
+        />
         <button
           aria-label={`Playback speed ${rate}x`}
           className={cn(
-            SMALL_BUTTON_CLASS,
-            'w-12 font-sans text-xs font-black'
+            GHOST_BUTTON_CLASS,
+            'w-10 font-sans text-xs font-black'
           )}
           onClick={cycleRate}
           title="Change speed"

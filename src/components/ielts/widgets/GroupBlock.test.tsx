@@ -121,3 +121,47 @@ describe('GroupBlock covers every IELTS question type', () => {
     }
   )
 })
+
+describe('GroupBlock picture multiple choice and intro', () => {
+  const choice = groups.find(
+    ({ group }) => group.type === 'multiple-choice'
+  )!
+  const renderVariant = (patch: Partial<IeltsQuestionGroup>) => {
+    const group = { ...choice.group, ...patch }
+    const section = {
+      ...choice.section,
+      groups: choice.section.groups.map(item =>
+        item.id === group.id ? group : item
+      ),
+    }
+
+    return { group, region: renderGroup(section, group) }
+  }
+
+  it('shows the picture and a letter dropdown, without the options box', () => {
+    const { group, region } = renderVariant({
+      imageUrl: 'https://example.com/a-d.png',
+    })
+    const first = group.questions[0]
+
+    expect(within(region).getByRole('img')).toHaveAttribute(
+      'src',
+      'https://example.com/a-d.png'
+    )
+    expect(within(region).queryAllByRole('radio')).toHaveLength(0)
+    expect(
+      region.querySelector(`#${questionControlId(first.number)}`)?.textContent
+    ).toContain(first.answers[0])
+    expect(region).not.toHaveTextContent(group.options[0].text)
+  })
+
+  it('renders the worked example above text choices', () => {
+    const { region } = renderVariant({
+      body: '*(Example)*\n\nWhat has the woman lost? **A**',
+    })
+
+    expect(region).toHaveTextContent('(Example)')
+    expect(region).toHaveTextContent('What has the woman lost? A')
+    expect(within(region).getAllByRole('radio').length).toBeGreaterThan(0)
+  })
+})

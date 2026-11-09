@@ -12,7 +12,7 @@ interface Props {
  * Admin preview of a listening part's audio. Generated audio carries per-line
  * timings, so the player steps line by line and the caption shows who is
  * speaking - handy for checking the voice against the script. An uploaded mp3
- * has no timings and falls back to 10 s skips. Key it by `audio.url`.
+ * has no timings and falls back to 5 s skips. Key it by `audio.url`.
  */
 export function AdminAudioPlayer({ audio, lines }: Props) {
   const offsets = audio.lineOffsetsSec
@@ -25,7 +25,7 @@ export function AdminAudioPlayer({ audio, lines }: Props) {
         if (!offsets.length)
           return (
             <p className="text-manga-ink-soft px-1 text-xs font-semibold">
-              Uploaded mp3: no per-line timings, so skips jump 10 s.
+              Uploaded mp3: no per-line timings, so skips jump 5 s.
             </p>
           )
 

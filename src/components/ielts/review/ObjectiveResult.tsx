@@ -57,7 +57,7 @@ function EvidenceContext({
 
   return (
     <blockquote className="border-manga-black font-body rounded-control bg-manga-white border-l-4 px-3 py-2 text-[16px] leading-[1.7]">
-      {speaker ? <strong className="font-sans">{speaker}: </strong> : null}
+      {speaker ? <strong className="font-sans uppercase">{speaker}: </strong> : null}
       {label ? <strong className="font-sans">{label} </strong> : null}
       {highlightText(text, row.evidence.quote)}
     </blockquote>

@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
-import { expandToWords, mergeSpans, removeOverlapping } from './highlightRanges'
+import {
+  expandToWords,
+  mergeSpans,
+  removeOverlapping,
+  sentenceAround,
+  singleWordAt,
+} from './highlightRanges'
 
 const TEXT = 'Noise affects our well-being, they’re saying.'
 
@@ -70,5 +76,47 @@ describe('mergeSpans and removeOverlapping', () => {
         [15, 16]
       )
     ).toEqual([[0, 5]])
+  })
+})
+
+describe('singleWordAt', () => {
+  const at = (word: string) =>
+    [TEXT.indexOf(word), TEXT.indexOf(word) + word.length] as [number, number]
+
+  it('returns one word, hyphenated words and contractions included', () => {
+    expect(singleWordAt(TEXT, at('Noise'))).toBe('Noise')
+    expect(singleWordAt(TEXT, at('well-being'))).toBe('well-being')
+    expect(singleWordAt(TEXT, at('they’re'))).toBe("they're")
+  })
+
+  it('returns null for more than one word', () => {
+    expect(singleWordAt(TEXT, at('Noise affects'))).toBeNull()
+  })
+
+  it('returns null for numbers and for words split by a block break', () => {
+    expect(singleWordAt('in 1990 they', [3, 7])).toBeNull()
+    expect(singleWordAt('TitleBody', [0, 9], new Set([5]))).toBeNull()
+  })
+})
+
+describe('sentenceAround', () => {
+  const PASSAGE = 'First one. Noise affects   our\nsleep! Last one?'
+
+  it('returns only the sentence that holds the span', () => {
+    const start = PASSAGE.indexOf('affects')
+
+    expect(sentenceAround(PASSAGE, [start, start + 7])).toBe(
+      'Noise affects our'
+    )
+  })
+
+  it('stops at sentence marks followed by space and at block breaks', () => {
+    const start = PASSAGE.indexOf('Last')
+
+    expect(sentenceAround(PASSAGE, [start, start + 4])).toBe('Last one?')
+    expect(sentenceAround('3.5 metres tall', [4, 10])).toBe('3.5 metres tall')
+    expect(sentenceAround('TitleBody text', [5, 9], new Set([5]))).toBe(
+      'Body text'
+    )
   })
 })

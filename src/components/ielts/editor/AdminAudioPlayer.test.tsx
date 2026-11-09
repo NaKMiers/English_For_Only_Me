@@ -30,12 +30,12 @@ describe('AdminAudioPlayer', () => {
     expect(screen.getByText('2/2')).toBeTruthy()
   })
 
-  it('falls back to 10 second skips for an uploaded mp3', () => {
+  it('falls back to 5 second skips for an uploaded mp3', () => {
     renderPlayer([])
 
-    fireEvent.click(screen.getByRole('button', { name: 'Forward 10 seconds' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Forward 5 seconds' }))
 
-    expect(screen.getByText('0:10')).toBeTruthy()
+    expect(screen.getByText('0:05')).toBeTruthy()
   })
 
   it('cycles the playback speed', () => {

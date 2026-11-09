@@ -1,6 +1,13 @@
 'use client'
 
-import { Check, Hourglass, Lock, Play, Volume2 } from 'lucide-react'
+import {
+  Check,
+  ChevronDown,
+  Hourglass,
+  Lock,
+  Play,
+  Volume2,
+} from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import {
@@ -9,6 +16,11 @@ import {
   AudioMeter,
   AudioPlayer,
 } from '@/components/common/AudioPlayer'
+import {
+  Collapsible,
+  CollapsiblePanel,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible'
 import { cn } from '@/lib/utils'
 import type { IeltsAttemptRecord } from '@/modules/ielts/attempts/attemptRecords'
 import { IELTS_MAX_AUDIO_INTERRUPTIONS } from '@/modules/ielts/constants'
@@ -25,6 +37,7 @@ interface Props {
   onAttemptChange: (attempt: IeltsAttemptRecord) => void
   onNotice: (message: string) => void
   onPartChange: (part: number) => void
+  onShowTranscriptChange: (open: boolean) => void
   sections: IeltsPublicSection[]
   showTranscript: boolean
   visiblePart: number
@@ -48,13 +61,10 @@ function Transcript({
       className="font-body grid gap-2 text-[17px] leading-[1.7]"
     >
       {lines.map((line, index) => (
-        <li
-          className="grid grid-cols-[minmax(5rem,auto)_1fr] gap-3"
-          key={index}
-        >
-          <strong className="font-sans text-sm font-black">
-            {line.speaker}
-          </strong>
+        <li key={index}>
+          <strong className="font-sans text-sm font-black uppercase">
+            {line.speaker}:
+          </strong>{' '}
           <span>
             {highlight?.sectionKey === section.key &&
             highlight.blockIndex === index
@@ -67,23 +77,29 @@ function Transcript({
   )
 }
 
-/** Practice: a normal player per part, seek allowed, transcript on demand. */
+/**
+ * Practice: a normal player per part, seek allowed, and the transcript in a
+ * section the learner can expand or collapse. A part without audio always
+ * shows its transcript.
+ */
 function PracticeAudio({
   highlight,
+  onShowTranscriptChange,
   section,
   showTranscript,
 }: {
   highlight: Props['highlight']
+  onShowTranscriptChange: (open: boolean) => void
   section: IeltsPublicSection
   showTranscript: boolean
 }) {
   const audio = section.listening?.audio
-  const transcriptVisible = showTranscript || !audio
+  const hasLines = Boolean(section.listening?.lines?.length)
 
   return (
     <div className="grid gap-4">
       {audio ? (
-        // Captions are the transcript toggle below.
+        // Captions are the collapsible transcript below.
         <AudioPlayer
           durationSec={audio.durationSec}
           key={audio.url}
@@ -94,11 +110,31 @@ function PracticeAudio({
           This part has no audio yet. Read the transcript to practise.
         </p>
       )}
-      {transcriptVisible ? (
+      {!audio ? (
         <Transcript
           highlight={highlight}
           section={section}
         />
+      ) : hasLines ? (
+        <Collapsible
+          className="grid gap-3"
+          onOpenChange={onShowTranscriptChange}
+          open={showTranscript}
+        >
+          <CollapsibleTrigger className="group/transcript border-manga-black bg-manga-white hover:bg-manga-paper-soft rounded-control inline-flex min-h-10 items-center justify-between gap-2 border-2 px-3 font-sans text-sm font-black transition-colors">
+            Transcript
+            <ChevronDown
+              aria-hidden="true"
+              className="size-4 transition-transform group-data-[panel-open]/transcript:rotate-180"
+            />
+          </CollapsibleTrigger>
+          <CollapsiblePanel>
+            <Transcript
+              highlight={highlight}
+              section={section}
+            />
+          </CollapsiblePanel>
+        </Collapsible>
       ) : null}
     </div>
   )
@@ -386,6 +422,7 @@ export function ListeningPane(props: Props) {
       </header>
       <PracticeAudio
         highlight={props.highlight}
+        onShowTranscriptChange={props.onShowTranscriptChange}
         section={section}
         showTranscript={props.showTranscript}
       />

@@ -58,3 +58,54 @@ export function removeOverlapping(
 ): HighlightSpan[] {
   return spans.filter(item => !spansOverlap(item, span))
 }
+
+/**
+ * The span's text when it is exactly one word with at least one letter
+ * ("well-being", "they're"), else null. A block break inside the span means
+ * two words that only look glued together.
+ */
+export function singleWordAt(
+  text: string,
+  [start, end]: HighlightSpan,
+  breaks: ReadonlySet<number> = new Set()
+): string | null {
+  const word = text.slice(start, end)
+
+  if (!word || /\s/.test(word) || !/\p{L}/u.test(word)) return null
+
+  for (let offset = start + 1; offset < end; offset += 1)
+    if (breaks.has(offset)) return null
+
+  return word.replace(/’/g, "'")
+}
+
+const SENTENCE_END = /[.!?]/
+const SENTENCE_MAX = 3000
+
+/**
+ * The sentence holding the span: from the previous sentence end (a `.`, `!`
+ * or `?` before whitespace), line break or block break, up to and including
+ * the next one. Whitespace is collapsed.
+ */
+export function sentenceAround(
+  text: string,
+  [start, end]: HighlightSpan,
+  breaks: ReadonlySet<number> = new Set()
+): string {
+  const endsBefore = (offset: number) =>
+    breaks.has(offset) ||
+    text[offset - 1] === '\n' ||
+    (SENTENCE_END.test(text[offset - 1]) && /\s/.test(text[offset] ?? ' '))
+
+  let from = start
+  let to = end
+
+  while (from > 0 && !endsBefore(from)) from -= 1
+  while (to < text.length && !endsBefore(to)) to += 1
+
+  return text
+    .slice(from, to)
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, SENTENCE_MAX)
+}

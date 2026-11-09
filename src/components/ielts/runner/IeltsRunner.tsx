@@ -1,12 +1,6 @@
 'use client'
 
-import {
-  BookOpen,
-  FileText,
-  Headphones,
-  Lightbulb,
-  ListChecks,
-} from 'lucide-react'
+import { BookOpen, Headphones, Lightbulb, ListChecks } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import {
   type ReactNode,
@@ -65,6 +59,12 @@ interface Props {
 }
 
 const MODE_LABELS = { practice: 'Practice', mock: 'Mock', drill: 'Drill' }
+
+/** The two panes a phone switches between. */
+type PaneTab = 'material' | 'questions'
+
+/** Alt+Q swaps panes; `code` so Option+Q on a Mac still matches. */
+const PANE_SHORTCUT_CODE = 'KeyQ'
 
 function partName(skill: string, part: number, mode?: string) {
   if (mode === 'drill') return `Group ${part}`
@@ -126,11 +126,10 @@ export function IeltsRunner({
       (index.find(entry => entry.part === currentPart) ?? index[0])?.number ??
       null
   )
-  const [mobileTab, setMobileTab] = useState<'material' | 'questions'>(
-    'material'
-  )
+  const [mobileTab, setMobileTab] = useState<PaneTab>('material')
   const [guided, setGuided] = useState(isPractice)
-  // Practice opens with the transcript showing; mock never shows it.
+  // Practice opens with the transcript expanded (the learner can collapse it
+  // in the audio pane); mock never shows it.
   const [showTranscript, setShowTranscript] = useState(true)
   const [highlight, setHighlight] = useState<
     (IeltsHighlight & { sectionKey: string }) | null
@@ -178,6 +177,60 @@ export function IeltsRunner({
     },
     onWarning: () => setNotice('5 minutes remaining.'),
   })
+
+  // Alt+Q (Option+Q on Mac) swaps between the material and the questions:
+  // on a phone it flips the tab, on desktop (both panes showing) it moves
+  // focus to the other pane. Matched on `code`, so it works while typing in
+  // an answer box and whatever character the layout makes.
+  const materialRef = useRef<HTMLElement>(null)
+  const questionsRef = useRef<HTMLElement>(null)
+  const pendingFocusRef = useRef<PaneTab | null>(null)
+
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (
+        event.code !== PANE_SHORTCUT_CODE ||
+        !event.altKey ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.shiftKey ||
+        event.repeat
+      )
+        return
+
+      event.preventDefault()
+
+      const active = document.activeElement
+      const target: PaneTab = questionsRef.current?.contains(active)
+        ? 'material'
+        : materialRef.current?.contains(active)
+          ? 'questions'
+          : mobileTab === 'material'
+            ? 'questions'
+            : 'material'
+      const pane =
+        target === 'material' ? materialRef.current : questionsRef.current
+
+      setMobileTab(target)
+
+      // Hidden on a phone until the tab flips: focus it after the render.
+      if (pane?.checkVisibility()) pane.focus({ preventScroll: true })
+      else pendingFocusRef.current = target
+    }
+
+    window.addEventListener('keydown', onKey)
+
+    return () => window.removeEventListener('keydown', onKey)
+  }, [mobileTab])
+
+  useEffect(() => {
+    if (pendingFocusRef.current !== mobileTab) return
+
+    pendingFocusRef.current = null
+    ;(mobileTab === 'material' ? materialRef : questionsRef).current?.focus({
+      preventScroll: true,
+    })
+  }, [mobileTab])
 
   // A mock cannot be paused: warn before the tab closes.
   useEffect(() => {
@@ -273,6 +326,7 @@ export function IeltsRunner({
         onPartChange={setCurrentPart}
         onNotice={setNotice}
         sections={sections}
+        onShowTranscriptChange={setShowTranscript}
         showTranscript={isPractice && showTranscript}
         visiblePart={currentPart}
       />
@@ -296,14 +350,6 @@ export function IeltsRunner({
           if (!checked) setHighlight(null)
         }}
       />
-      {attempt.skill === 'listening' ? (
-        <ToolbarToggle
-          checked={showTranscript}
-          icon={<FileText aria-hidden="true" />}
-          label="Transcript"
-          onCheckedChange={setShowTranscript}
-        />
-      ) : null}
     </div>
   ) : null
 
@@ -328,6 +374,7 @@ export function IeltsRunner({
 
         return (
           <button
+            aria-keyshortcuts="Alt+Q"
             aria-pressed={active}
             className={cn(
               'rounded-tag flex min-w-0 flex-auto items-center justify-center gap-1.5 px-2 font-sans text-[13px] font-black transition-colors',
@@ -337,6 +384,7 @@ export function IeltsRunner({
             )}
             key={value}
             onClick={() => setMobileTab(value)}
+            title={`${label} (Alt+Q to switch)`}
             type="button"
           >
             <Icon
@@ -402,18 +450,22 @@ export function IeltsRunner({
               attempt.skill === 'listening' ? 'Audio' : 'Reading passage'
             }
             className={cn(
-              'bg-manga-white min-h-0 overflow-y-auto px-4 py-6 sm:px-8 lg:block',
+              'bg-manga-white min-h-0 overflow-y-auto px-4 py-6 outline-none sm:px-8 lg:block',
               mobileTab === 'material' ? 'block' : 'hidden'
             )}
+            ref={materialRef}
+            tabIndex={-1}
           >
             {material}
           </section>
           <section
             aria-label="Questions"
             className={cn(
-              'border-manga-black bg-manga-pale-red/60 min-h-0 overflow-y-auto px-4 py-6 sm:px-8 lg:block lg:border-l-3',
+              'border-manga-black bg-manga-white in-data-[theme=lightup]:bg-manga-pale-red/60 min-h-0 overflow-y-auto px-4 py-6 outline-none sm:px-8 lg:block lg:border-l-3',
               mobileTab === 'questions' ? 'block' : 'hidden'
             )}
+            ref={questionsRef}
+            tabIndex={-1}
           >
             <div className="text-manga-black mx-auto grid max-w-[70ch] gap-10 text-[16px] leading-[1.7]">
               {section?.groups.map(group => (

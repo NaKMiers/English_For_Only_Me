@@ -39,6 +39,26 @@ interface Props {
   group: IeltsPublicGroup
 }
 
+/**
+ * Picture multiple choice ("Which picture shows ..."): the letters live in
+ * the image, so it renders as the image plus a letter dropdown, with no
+ * options box. The option texts stay for the editor and review.
+ */
+export function isPictureChoice(group: IeltsPublicGroup): boolean {
+  return group.type === 'multiple-choice' && Boolean(group.imageUrl)
+}
+
+/**
+ * Groups whose letters are printed on the image (a labelled plan or map, or
+ * pictures A-D): the image replaces the options box, as on the real test.
+ */
+function lettersInImage(group: IeltsPublicGroup): boolean {
+  return (
+    Boolean(group.imageUrl) &&
+    (group.type === 'plan-map-labelling' || group.type === 'multiple-choice')
+  )
+}
+
 function optionsFor(group: IeltsPublicGroup): IeltsOption[] {
   if (group.type === 'true-false-not-given')
     return TFNG_OPTIONS.map(key => ({ key, text: '' }))
@@ -96,7 +116,10 @@ function RadioQuestions({ group }: Props) {
             </div>
             <RadioGroup
               aria-labelledby={promptId}
-              className={cn('pl-10', isJudgement && 'flex flex-wrap')}
+              className={cn(
+                'gap-0.5 pl-10',
+                isJudgement && 'flex flex-wrap gap-2'
+              )}
               onValueChange={next => setAnswer(question.number, String(next))}
               readOnly={readOnly}
               value={value || null}
@@ -110,7 +133,7 @@ function RadioQuestions({ group }: Props) {
                 return (
                   <Label
                     className={cn(
-                      'rounded-control flex min-h-10 cursor-pointer items-start gap-3 border-2 px-3 py-2 text-[16px] font-normal transition-colors',
+                      'rounded-control flex min-h-9 cursor-pointer items-start gap-3 border-2 px-3 py-1 text-[16px] font-normal transition-colors',
                       isJudgement && 'whitespace-nowrap',
                       value === option.key
                         ? 'border-manga-red bg-manga-paper-soft'
@@ -188,7 +211,7 @@ function CheckboxQuestions({ group }: Props) {
         Chosen {chosen.length}/{size}
         {full && !readOnly ? '. Remove a choice to change it.' : ''}
       </p>
-      <div className="grid gap-1 pl-10">
+      <div className="grid gap-0.5 pl-10">
         {group.options.map((option, index) => {
           const checked = chosen.includes(option.key)
           const id =
@@ -199,7 +222,7 @@ function CheckboxQuestions({ group }: Props) {
           return (
             <Label
               className={cn(
-                'rounded-control flex min-h-10 cursor-pointer items-start gap-3 border-2 px-3 py-2 text-[16px] font-normal transition-colors',
+                'rounded-control flex min-h-9 cursor-pointer items-start gap-3 border-2 px-3 py-1 text-[16px] font-normal transition-colors',
                 checked
                   ? 'border-manga-red bg-manga-paper-soft'
                   : 'hover:bg-manga-pale-red border-transparent'
@@ -273,25 +296,37 @@ function OptionsBox({
   )
 }
 
-/** Matching and labelling: a box of options, then one dropdown per item. */
+/**
+ * Matching and labelling: a box of options (or the labelled image instead),
+ * then one dropdown per item.
+ */
 function DropdownQuestions({ group }: Props) {
   const { answers, onFocusQuestion, readOnly, review, setAnswer } =
     useIeltsAnswers()
+  const isPicture = isPictureChoice(group)
+  const hideOptions = lettersInImage(group)
 
   return (
     <div className="grid gap-4">
+      {hideOptions && group.title ? (
+        <p className="text-center font-sans text-lg font-black">
+          {group.title}
+        </p>
+      ) : null}
       {group.imageUrl ? (
         // eslint-disable-next-line @next/next/no-img-element -- admin-uploaded Cloudinary image of any size
         <img
-          alt={group.title || 'Plan'}
-          className="border-manga-black rounded-control max-h-[420px] w-full border-2 object-contain"
+          alt={group.title || (isPicture ? 'Pictures A to D' : 'Plan')}
+          className="border-manga-black rounded-control bg-manga-white max-h-[420px] w-full border-2 object-contain"
           src={group.imageUrl}
         />
       ) : null}
-      <OptionsBox
-        options={group.options}
-        title={group.title}
-      />
+      {hideOptions ? null : (
+        <OptionsBox
+          options={group.options}
+          title={group.title}
+        />
+      )}
       <ol className="grid gap-3">
         {group.questions.map(question => {
           const value = answerText(answers[String(question.number)])
@@ -416,12 +451,18 @@ function SlotQuestions({ group }: Props) {
   )
 }
 
+/** A choice group's body (e.g. the worked example) has no answer slots. */
+const noSlot = () => null
+
 /**
  * A question group as the learner sees it: "Questions 1-6", the instruction
- * in English, then the widget its type maps to.
+ * in English, an optional intro such as the worked example, then the widget
+ * its type maps to.
  */
 export const GroupBlock = memo(function GroupBlock({ group }: Props) {
-  const widget = IELTS_QUESTION_WIDGETS[group.type]
+  const widget = isPictureChoice(group)
+    ? 'dropdown'
+    : IELTS_QUESTION_WIDGETS[group.type]
 
   return (
     <section
@@ -440,6 +481,13 @@ export const GroupBlock = memo(function GroupBlock({ group }: Props) {
         </h3>
         <p className="text-manga-black leading-[1.6]">{group.instruction}</p>
       </header>
+      {widget === 'radio' && group.body ? (
+        <IeltsMarkdown
+          className="gap-1 pl-4"
+          renderSlot={noSlot}
+          source={group.body}
+        />
+      ) : null}
       {widget === 'slot' ? <SlotQuestions group={group} /> : null}
       {widget === 'radio' ? <RadioQuestions group={group} /> : null}
       {widget === 'checkbox' ? <CheckboxQuestions group={group} /> : null}

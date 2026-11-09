@@ -101,7 +101,7 @@ export function SectionPreview({
               <span className="text-muted-foreground font-sans text-xs tabular-nums">
                 {index}
               </span>{' '}
-              <strong className="font-sans">{line.speaker}:</strong> {line.text}
+              <strong className="font-sans uppercase">{line.speaker}:</strong> {line.text}
             </li>
           ))}
         </ol>
