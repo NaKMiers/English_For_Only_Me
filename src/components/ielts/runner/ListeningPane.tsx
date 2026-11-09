@@ -51,6 +51,17 @@ function Transcript({
   section: IeltsPublicSection
 }) {
   const lines = section.listening?.lines
+  const rootRef = useRef<HTMLOListElement>(null)
+  const evidence = highlight?.sectionKey === section.key ? highlight : null
+
+  // "Show evidence" lands on the quoted line, as the passage does.
+  useEffect(() => {
+    if (!evidence) return
+
+    rootRef.current
+      ?.querySelector('[data-ielts-evidence]')
+      ?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }, [evidence])
 
   if (!lines?.length) return null
 
@@ -59,6 +70,7 @@ function Transcript({
       aria-label="Transcript"
       data-highlight-scope={`transcript:${section.key}`}
       className="font-body grid gap-2 text-[17px] leading-[1.7]"
+      ref={rootRef}
     >
       {lines.map((line, index) => (
         <li key={index}>
@@ -66,77 +78,13 @@ function Transcript({
             {line.speaker}:
           </strong>{' '}
           <span>
-            {highlight?.sectionKey === section.key &&
-            highlight.blockIndex === index
-              ? highlightText(line.text, highlight.quote)
+            {evidence?.blockIndex === index
+              ? highlightText(line.text, evidence.quote)
               : line.text}
           </span>
         </li>
       ))}
     </ol>
-  )
-}
-
-/**
- * Practice: a normal player per part, seek allowed, and the transcript in a
- * section the learner can expand or collapse. A part without audio always
- * shows its transcript.
- */
-function PracticeAudio({
-  highlight,
-  onShowTranscriptChange,
-  section,
-  showTranscript,
-}: {
-  highlight: Props['highlight']
-  onShowTranscriptChange: (open: boolean) => void
-  section: IeltsPublicSection
-  showTranscript: boolean
-}) {
-  const audio = section.listening?.audio
-  const hasLines = Boolean(section.listening?.lines?.length)
-
-  return (
-    <div className="grid gap-4">
-      {audio ? (
-        // Captions are the collapsible transcript below.
-        <AudioPlayer
-          durationSec={audio.durationSec}
-          key={audio.url}
-          src={audio.url}
-        />
-      ) : (
-        <p className="border-manga-black bg-manga-pale-red rounded-control border-2 p-3 text-sm font-semibold">
-          This part has no audio yet. Read the transcript to practise.
-        </p>
-      )}
-      {!audio ? (
-        <Transcript
-          highlight={highlight}
-          section={section}
-        />
-      ) : hasLines ? (
-        <Collapsible
-          className="grid gap-3"
-          onOpenChange={onShowTranscriptChange}
-          open={showTranscript}
-        >
-          <CollapsibleTrigger className="group/transcript border-manga-black bg-manga-white hover:bg-manga-paper-soft rounded-control inline-flex min-h-10 items-center justify-between gap-2 border-2 px-3 font-sans text-sm font-black transition-colors">
-            Transcript
-            <ChevronDown
-              aria-hidden="true"
-              className="size-4 transition-transform group-data-[panel-open]/transcript:rotate-180"
-            />
-          </CollapsibleTrigger>
-          <CollapsiblePanel>
-            <Transcript
-              highlight={highlight}
-              section={section}
-            />
-          </CollapsiblePanel>
-        </Collapsible>
-      ) : null}
-    </div>
   )
 }
 
@@ -304,7 +252,7 @@ function MockAudio({
         : Lock
 
   return (
-    <div className="grid gap-4">
+    <div className="grid gap-2">
       {/* No controls: a mock cannot seek. Transcript is hidden in mock. */}
       <audio
         onEnded={onEnded}
@@ -400,14 +348,67 @@ function MockAudio({
   )
 }
 
-export function ListeningPane(props: Props) {
-  const section =
+function visibleSection(
+  props: Pick<Props, 'sections' | 'visiblePart'>
+): IeltsPublicSection | undefined {
+  return (
     props.sections.find(item => item.order === props.visiblePart) ??
     props.sections[0]
+  )
+}
+
+/**
+ * The audio bar the runner pins above the scrolling transcript and
+ * questions. Practice: a normal player per part, seek allowed. Mock: the
+ * play-once controls.
+ */
+export function ListeningPlayer(props: Props) {
+  const section = visibleSection(props)
 
   if (!section) return null
 
   if (props.attempt.mode === 'mock') return <MockAudio {...props} />
+
+  const audio = section.listening?.audio
+
+  return audio ? (
+    // The runner's bar is the frame, so the player drops its own box.
+    <AudioPlayer
+      className="border-0 bg-transparent p-0"
+      durationSec={audio.durationSec}
+      key={audio.url}
+      shortcuts
+      src={audio.url}
+    />
+  ) : (
+    <p className="border-manga-black bg-manga-pale-red rounded-control border-2 p-2 text-sm font-semibold">
+      This part has no audio yet. Read the transcript to practise.
+    </p>
+  )
+}
+
+/**
+ * Practice only: the part header and the transcript, in a section the
+ * learner can expand or collapse. A part without audio always shows its
+ * transcript. Mock has neither (the audio bar carries the part context).
+ */
+export function ListeningMaterial(
+  props: Pick<
+    Props,
+    | 'attempt'
+    | 'highlight'
+    | 'onShowTranscriptChange'
+    | 'sections'
+    | 'showTranscript'
+    | 'visiblePart'
+  >
+) {
+  const section = visibleSection(props)
+
+  if (!section || props.attempt.mode === 'mock') return null
+
+  const { highlight, onShowTranscriptChange, showTranscript } = props
+  const hasLines = Boolean(section.listening?.lines?.length)
 
   return (
     <div className="mx-auto grid max-w-[68ch] gap-4">
@@ -420,12 +421,32 @@ export function ListeningPane(props: Props) {
           <p className="font-semibold">{section.listening.context}</p>
         ) : null}
       </header>
-      <PracticeAudio
-        highlight={props.highlight}
-        onShowTranscriptChange={props.onShowTranscriptChange}
-        section={section}
-        showTranscript={props.showTranscript}
-      />
+      {!section.listening?.audio ? (
+        <Transcript
+          highlight={highlight}
+          section={section}
+        />
+      ) : hasLines ? (
+        <Collapsible
+          className="grid gap-3"
+          onOpenChange={onShowTranscriptChange}
+          open={showTranscript}
+        >
+          <CollapsibleTrigger className="group/transcript border-manga-black bg-manga-white hover:bg-manga-paper-soft rounded-control inline-flex min-h-10 items-center justify-between gap-2 border-2 px-3 font-sans text-sm font-black transition-colors">
+            Transcript
+            <ChevronDown
+              aria-hidden="true"
+              className="size-4 transition-transform group-data-[panel-open]/transcript:rotate-180"
+            />
+          </CollapsibleTrigger>
+          <CollapsiblePanel>
+            <Transcript
+              highlight={highlight}
+              section={section}
+            />
+          </CollapsiblePanel>
+        </Collapsible>
+      ) : null}
     </div>
   )
 }

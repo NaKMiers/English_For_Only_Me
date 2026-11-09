@@ -84,6 +84,16 @@ export const submitAttemptSchema = saveAnswersSchema
   .extend({ idempotencyKey })
   .strict()
 
+/** Practice: grade one part now, from the answers on screen. */
+export const checkPartSchema = z
+  .object({
+    answers: answersSchema,
+    part: z.number().int().min(1).max(4),
+  })
+  .strict()
+
+export type CheckPartInput = z.infer<typeof checkPartSchema>
+
 export const audioEventSchema = z.union([
   z
     .object({
@@ -136,6 +146,9 @@ export function parseStartAttempt(body: unknown) {
 
 export const parseStartDrill = (body: unknown) =>
   parseWith(startDrillSchema, body, 'Invalid drill request.')
+
+export const parseCheckPart = (body: unknown) =>
+  parseWith(checkPartSchema, body, 'Invalid check request.')
 
 export const parseAudioEvent = (body: unknown) =>
   parseWith(audioEventSchema, body, 'Invalid audio event.')

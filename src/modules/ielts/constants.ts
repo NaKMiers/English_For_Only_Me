@@ -194,6 +194,7 @@ export const IELTS_API_PATHS = {
   evidence: (attemptId: string, number: number) =>
     `/api/ielts/attempts/${attemptId}/evidence?number=${number}`,
   grade: (attemptId: string) => `/api/ielts/attempts/${attemptId}/grade`,
+  check: (attemptId: string) => `/api/ielts/attempts/${attemptId}/check`,
   adminTests: '/api/admin/ielts/tests',
   adminTest: (testId: string) => `/api/admin/ielts/tests/${testId}`,
   adminSection: (testId: string, key: string) =>

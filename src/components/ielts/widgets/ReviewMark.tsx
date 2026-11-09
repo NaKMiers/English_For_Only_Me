@@ -1,4 +1,4 @@
-import { Check, Minus, X } from 'lucide-react'
+import { Check, X } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 
@@ -6,7 +6,11 @@ import type { IeltsReviewMark } from './answerContext'
 
 const LABELS = { correct: 'Correct', wrong: 'Wrong', blank: 'Blank' } as const
 
-/** Colour always paired with an icon and a word (a11y rule). */
+/**
+ * Minimal mark: a green tick when right, a red cross plus the answer when
+ * wrong, and just the answer when blank (the empty box already says so).
+ * Screen readers still hear the outcome word.
+ */
 export function ReviewMark({
   className,
   mark,
@@ -16,31 +20,35 @@ export function ReviewMark({
   mark: IeltsReviewMark
   showAccepted?: boolean
 }) {
-  const Icon =
-    mark.outcome === 'correct' ? Check : mark.outcome === 'wrong' ? X : Minus
+  const answer =
+    showAccepted && mark.outcome !== 'correct' && mark.accepted.length
+      ? mark.accepted.join(' / ')
+      : ''
 
   return (
     <span
       className={cn(
-        'rounded-tag inline-flex flex-wrap items-center gap-1 px-1.5 py-0.5 text-sm font-semibold',
-        mark.outcome === 'correct'
-          ? 'bg-lesson-correct/10 text-lesson-correct'
-          : mark.outcome === 'wrong'
-            ? 'bg-manga-pale-red text-manga-red'
-            : 'bg-manga-pale-red text-muted-foreground',
+        'inline-flex flex-wrap items-center gap-1 text-sm font-semibold',
         className
       )}
     >
-      <Icon
-        aria-hidden="true"
-        className="size-4"
-      />
-      {LABELS[mark.outcome]}
-      {showAccepted && mark.outcome !== 'correct' && mark.accepted.length ? (
-        <span className="text-manga-black font-normal">
-          · Answer: {mark.accepted.join(' / ')}
-        </span>
+      <span className="sr-only">
+        {LABELS[mark.outcome]}
+        {answer ? '. Answer:' : ''}
+      </span>
+      {mark.outcome === 'correct' ? (
+        <Check
+          aria-hidden="true"
+          className="text-lesson-correct size-4"
+        />
       ) : null}
+      {mark.outcome === 'wrong' ? (
+        <X
+          aria-hidden="true"
+          className="text-manga-red size-4"
+        />
+      ) : null}
+      {answer ? <span className="text-lesson-correct">{answer}</span> : null}
     </span>
   )
 }

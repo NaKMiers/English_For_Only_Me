@@ -45,9 +45,9 @@ function timerAnnouncement(seconds: number) {
 
 /**
  * The exam header: exit and title on the left, then helpers and the clock,
- * then a quiet dark-mode switch and Submit. Below `lg` the pane switcher,
- * helpers (Guided, Transcript) and clock share one compact second row, so the
- * whole header stays two short rows on a phone.
+ * then a quiet dark-mode switch and Submit. Below `lg` the reading pane
+ * switcher, helpers (Guided) and clock share one compact second row; with no
+ * switcher (listening) the header is a single row on a phone.
  */
 export function RunnerToolbar({
   backHref,
@@ -156,7 +156,13 @@ export function RunnerToolbar({
       {panes || toggles || clock ? (
         // Own row below lg (switcher left, helpers and clock right); inline
         // from lg, where both panes are on screen and the switcher hides.
-        <div className="order-last flex basis-full items-center gap-2 lg:order-none lg:basis-auto">
+        // Without a switcher (listening) the helpers stay on the first row.
+        <div
+          className={cn(
+            'flex items-center gap-2',
+            panes && 'order-last basis-full lg:order-none lg:basis-auto'
+          )}
+        >
           {panes ? (
             <div className="min-w-0 flex-1 lg:hidden">{panes}</div>
           ) : null}

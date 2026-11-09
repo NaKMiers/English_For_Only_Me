@@ -43,6 +43,7 @@ const OWNER = 'user-1'
 const NOW = new Date('2026-10-29T10:00:00Z')
 
 import {
+  checkPracticePart,
   deleteAttemptForOwner,
   readPracticeEvidence,
   saveAttemptAnswers,
@@ -251,6 +252,78 @@ describe('readPracticeEvidence', () => {
         ownerId: OWNER,
       })
     ).toMatchObject({ ok: false, status: 403 })
+  })
+})
+
+describe('checkPracticePart', () => {
+  const listening2 = IELTS_SAMPLE_TEST.sections.find(
+    section => section.skill === 'listening' && section.order === 2
+  )!
+  const [first, second] = listening2.groups.flatMap(group => group.questions)
+  const partTotal = listening2.groups.reduce(
+    (sum, group) => sum + group.questions.length,
+    0
+  )
+
+  it('grades only the asked part from the answers sent', async () => {
+    mocks.findOne.mockReturnValue(
+      attempt({ mode: 'practice', skill: 'listening' })
+    )
+
+    const result = await checkPracticePart({
+      answers: {
+        [first.number]: first.answers[0],
+        [second.number]: 'definitely wrong',
+        // Another part's answer is ignored.
+        '1': 'anything',
+      },
+      attemptId: String(ATTEMPT_ID),
+      ownerId: OWNER,
+      part: 2,
+    })
+
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+
+    expect(result.data).toMatchObject({ part: 2, raw: 1, total: partTotal })
+    expect(result.data.questions).toHaveLength(partTotal)
+    expect(
+      result.data.questions.find(row => row.number === first.number)
+    ).toMatchObject({ outcome: 'correct' })
+    expect(
+      result.data.questions.find(row => row.number === second.number)
+    ).toMatchObject({ outcome: 'wrong', accepted: second.answers })
+    expect(result.data.questions.some(row => row.number === 1)).toBe(false)
+  })
+
+  it('refuses mock, and a part outside the attempt', async () => {
+    mocks.findOne.mockReturnValue(attempt({ skill: 'listening' }))
+
+    expect(
+      await checkPracticePart({
+        answers: {},
+        attemptId: String(ATTEMPT_ID),
+        ownerId: OWNER,
+        part: 2,
+      })
+    ).toMatchObject({ ok: false, status: 403 })
+
+    mocks.findOne.mockReturnValue(
+      attempt({
+        mode: 'practice',
+        scope: { kind: 'part', part: 1 },
+        skill: 'listening',
+      })
+    )
+
+    expect(
+      await checkPracticePart({
+        answers: {},
+        attemptId: String(ATTEMPT_ID),
+        ownerId: OWNER,
+        part: 2,
+      })
+    ).toMatchObject({ ok: false, status: 404 })
   })
 })
 

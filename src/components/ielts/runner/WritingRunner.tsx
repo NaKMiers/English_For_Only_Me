@@ -23,6 +23,11 @@ import { countEssayWords } from '@/modules/ielts/scoring/wordCount'
 import { TaskVisual } from '../visual/TaskVisual'
 import { WritingPrompt } from '../widgets/WritingPrompt'
 import { ExamButton, segmentClass } from '../ui'
+import {
+  PartSwitcher,
+  RunnerFooter,
+  type SkillLinkTarget,
+} from './RunnerFooter'
 import { RunnerToolbar } from './RunnerToolbar'
 import { useAttemptAnswers } from './useAttemptAnswers'
 import { useMockDeadline } from './useMockDeadline'
@@ -30,6 +35,9 @@ import { useMockDeadline } from './useMockDeadline'
 interface Props {
   attempt: IeltsAttemptRecord
   backHref: string
+  /** Practice only: the test's next and previous skills, for the bottom bar. */
+  next?: SkillLinkTarget | null
+  prev?: SkillLinkTarget | null
   sections: IeltsPublicSection[]
   /** Task to show first, from the test page's task links. */
   startPart?: number | null
@@ -38,18 +46,22 @@ interface Props {
 
 /**
  * Writing runner: the task (prompt and Task 1 visual) on the left, the essay
- * editor on the right. Essays autosave like objective answers (keys "1" and
+ * editor on the right, and the bottom bar with the task switcher between the
+ * skill links. Essays autosave like objective answers (keys "1" and
  * "2"); grading happens on the result page after submit.
  */
 export function WritingRunner({
   attempt,
   backHref,
+  next = null,
+  prev = null,
   sections,
   startPart = null,
   testTitle,
 }: Props) {
   const router = useRouter()
   const isMock = attempt.mode === 'mock'
+  const isPractice = attempt.mode === 'practice'
   const open = attempt.status === 'in_progress'
   const [submitting, setSubmitting] = useState(false)
   const locked = !open || submitting
@@ -183,38 +195,23 @@ export function WritingRunner({
       ) : null}
 
       {/* Segmented toggles (aria-pressed): the documented raw-button exception. */}
-      <div className="border-manga-black bg-manga-white flex shrink-0 flex-wrap gap-2 border-b-2 px-3 py-2">
-        {tasks.length > 1
-          ? tasks.map((section, index) => (
-              <button
-                aria-pressed={index === taskIndex}
-                className={segmentClass(index === taskIndex, 'min-h-10')}
-                key={section.key}
-                onClick={() => setTaskIndex(index)}
-                type="button"
-              >
-                Task {section.writing?.task}
-              </button>
-            ))
-          : null}
-        <div className="ml-auto flex gap-2 lg:hidden">
-          {(
-            [
-              ['task', 'Prompt'],
-              ['essay', 'Essay'],
-            ] as const
-          ).map(([value, label]) => (
-            <button
-              aria-pressed={mobileTab === value}
-              className={segmentClass(mobileTab === value, 'min-h-10')}
-              key={value}
-              onClick={() => setMobileTab(value)}
-              type="button"
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+      <div className="border-manga-black bg-manga-white flex shrink-0 justify-end gap-2 border-b-2 px-3 py-2 lg:hidden">
+        {(
+          [
+            ['task', 'Prompt'],
+            ['essay', 'Essay'],
+          ] as const
+        ).map(([value, label]) => (
+          <button
+            aria-pressed={mobileTab === value}
+            className={segmentClass(mobileTab === value, 'min-h-10')}
+            key={value}
+            onClick={() => setMobileTab(value)}
+            type="button"
+          >
+            {label}
+          </button>
+        ))}
       </div>
 
       <div className="grid min-h-0 flex-1 lg:grid-cols-[1fr_1fr]">
@@ -275,6 +272,36 @@ export function WritingRunner({
           </p>
         </section>
       </div>
+
+      {tasks.length > 1 || (isPractice && (prev || next)) ? (
+        <RunnerFooter
+          next={isPractice ? next : null}
+          prev={isPractice ? prev : null}
+        >
+          {tasks.length > 1 ? (
+            <PartSwitcher
+              current={taskIndex}
+              items={tasks.map((section, index) => {
+                const item = section.writing
+                const text = item ? answers[String(item.task)] : ''
+                const count = countEssayWords(
+                  typeof text === 'string' ? text : ''
+                )
+                const name = `Task ${item?.task ?? index + 1}`
+
+                return {
+                  done: Boolean(item && count >= item.minWords),
+                  label: `${name}, ${count} words`,
+                  part: index,
+                  text: name,
+                  title: `${name}: ${count} words`,
+                }
+              })}
+              onChange={setTaskIndex}
+            />
+          ) : null}
+        </RunnerFooter>
+      ) : null}
 
       <Dialog
         onOpenChange={next => (next ? null : setConfirm(null))}

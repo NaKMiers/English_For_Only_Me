@@ -4,7 +4,10 @@ import type {
   IeltsSkill,
   IeltsTrack,
 } from '../constants'
-import type { IeltsObjectiveResult } from '../scoring/scoreObjective'
+import type {
+  IeltsAnswerOutcome,
+  IeltsObjectiveResult,
+} from '../scoring/scoreObjective'
 import type { IeltsAttemptScope, IeltsAudioEvent } from './deadline'
 
 export interface IeltsWritingCorrection {
@@ -114,4 +117,17 @@ export function toIeltsAttemptRecord(raw: LeanAttempt): IeltsAttemptRecord {
       (raw.writingFeedback as IeltsAttemptRecord['writingFeedback']) ?? null,
     writingBand: (raw.writingBand as number | null) ?? null,
   }
+}
+
+/** One part graded on demand: the score and each question's outcome. */
+export interface IeltsPartCheck {
+  part: number
+  raw: number
+  total: number
+  questions: {
+    number: number
+    outcome: IeltsAnswerOutcome
+    accepted: string[]
+    overLimit: boolean
+  }[]
 }

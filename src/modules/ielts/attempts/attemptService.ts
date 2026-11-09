@@ -24,10 +24,12 @@ import type { IeltsTestRecord } from '../tests/testRecords'
 import {
   type IeltsAttemptRecord,
   type IeltsDrillItem,
+  type IeltsPartCheck,
   toIeltsAttemptRecord,
 } from './attemptRecords'
 import {
   type AudioEventInput,
+  type CheckPartInput,
   ieltsError,
   type IeltsDecision,
   shouldAwardBand,
@@ -679,4 +681,58 @@ export async function readPracticeEvidence({
     }
 
   return ieltsError(404, 'That question is not in this attempt.')
+}
+
+/**
+ * Practice: grades one part from the answers on screen, so the learner can
+ * check Part 1 before moving on. Nothing is stored; the attempt is still
+ * scored as a whole on submit. Mock never reveals answers early.
+ */
+export async function checkPracticePart({
+  answers,
+  attemptId,
+  ownerId,
+  part,
+}: CheckPartInput & {
+  attemptId: string
+  ownerId: string
+}): Promise<IeltsDecision<IeltsPartCheck>> {
+  const attempt = await readOwnedAttempt(ownerId, attemptId)
+
+  if (!attempt) return ieltsError(404, 'Attempt not found.')
+
+  if (attempt.mode !== 'practice')
+    return ieltsError(403, 'Checking a part is only available in practice.')
+
+  if (attempt.skill === 'writing')
+    return ieltsError(400, 'Writing is graded per task, not per part.')
+
+  const lengths = validateAnswerLengths(answers, false)
+
+  if (!lengths.ok) return lengths
+
+  const section = (await loadAttemptSections(attempt)).find(
+    item => item.order === part
+  )
+
+  if (!section) return ieltsError(404, 'That part is not in this attempt.')
+
+  const result = scoreObjective(buildAnswerKey([section]), answers)
+
+  return {
+    ok: true,
+    data: {
+      part,
+      raw: result.raw,
+      total: result.total,
+      questions: result.perQuestion.map(
+        ({ accepted, number, outcome, overLimit }) => ({
+          accepted,
+          number,
+          outcome,
+          overLimit,
+        })
+      ),
+    },
+  }
 }

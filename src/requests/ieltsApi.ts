@@ -1,5 +1,8 @@
 import type { OutboxEnqueueInput } from '@/lib/sync/outbox'
-import type { IeltsAttemptRecord } from '@/modules/ielts/attempts/attemptRecords'
+import type {
+  IeltsAttemptRecord,
+  IeltsPartCheck,
+} from '@/modules/ielts/attempts/attemptRecords'
 import {
   IELTS_API_PATHS,
   IELTS_OUTBOX_LANE_PREFIX,
@@ -119,6 +122,21 @@ export async function postIeltsAudioEventApi(
 ): Promise<{ attempt: IeltsAttemptRecord }> {
   const response = await fetch(IELTS_API_PATHS.audioEvents(attemptId), {
     body: JSON.stringify(body),
+    headers: { 'content-type': 'application/json' },
+    method: 'POST',
+  })
+
+  return readJson(response)
+}
+
+/** Practice: grade one part now from the answers on screen. */
+export async function checkIeltsPartApi(
+  attemptId: string,
+  body: { answers: IeltsAnswers; part: number }
+): Promise<IeltsPartCheck> {
+  const response = await fetch(IELTS_API_PATHS.check(attemptId), {
+    body: JSON.stringify(body),
+    cache: 'no-store',
     headers: { 'content-type': 'application/json' },
     method: 'POST',
   })

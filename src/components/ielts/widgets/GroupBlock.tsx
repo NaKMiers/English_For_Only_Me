@@ -1,6 +1,6 @@
 'use client'
 
-import { memo, useCallback } from 'react'
+import { Fragment, memo, useCallback } from 'react'
 
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
@@ -18,6 +18,7 @@ import {
   TFNG_OPTIONS,
   YNNG_OPTIONS,
 } from '@/modules/ielts/constants'
+import { toJudgementInstruction } from '@/modules/ielts/judgementInstruction'
 import {
   type IeltsPublicGroup,
   optionsInBody,
@@ -118,7 +119,7 @@ function RadioQuestions({ group }: Props) {
               aria-labelledby={promptId}
               className={cn(
                 'gap-0.5 pl-10',
-                isJudgement && 'flex flex-wrap gap-2'
+                isJudgement && 'flex flex-wrap gap-1'
               )}
               onValueChange={next => setAnswer(question.number, String(next))}
               readOnly={readOnly}
@@ -134,7 +135,8 @@ function RadioQuestions({ group }: Props) {
                   <Label
                     className={cn(
                       'rounded-control flex min-h-9 cursor-pointer items-start gap-3 border-2 px-3 py-1 text-[16px] font-normal transition-colors',
-                      isJudgement && 'whitespace-nowrap',
+                      isJudgement &&
+                        'min-h-8 items-center gap-2 px-2 py-0.5 text-sm whitespace-nowrap',
                       value === option.key
                         ? 'border-manga-red bg-manga-paper-soft'
                         : 'hover:bg-manga-pale-red border-transparent'
@@ -143,13 +145,18 @@ function RadioQuestions({ group }: Props) {
                     key={option.key}
                   >
                     <RadioGroupItem
-                      className="mt-1"
+                      className={isJudgement ? 'size-4' : 'mt-1'}
                       id={id}
                       onFocus={() => onFocusQuestion(question.number)}
                       value={option.key}
                     />
                     <span className="leading-[1.6]">
-                      <strong className="font-sans font-black">
+                      <strong
+                        className={cn(
+                          'font-sans',
+                          isJudgement ? 'font-bold' : 'font-black'
+                        )}
+                      >
                         {option.key}
                       </strong>
                       {option.text ? ` ${option.text}` : ''}
@@ -451,6 +458,39 @@ function SlotQuestions({ group }: Props) {
   )
 }
 
+/**
+ * The group instruction. TRUE/FALSE/NOT GIVEN and YES/NO/NOT GIVEN show as
+ * on the paper: the question, then a legend of the answer words, instead of
+ * one long sentence.
+ */
+function GroupInstruction({ group }: Props) {
+  const judgement = toJudgementInstruction(group.type, group.instruction)
+
+  if (!judgement)
+    return <p className="text-manga-black leading-[1.6]">{group.instruction}</p>
+
+  return (
+    <div className="text-manga-black grid gap-2 leading-[1.6]">
+      <p>{judgement.lead}</p>
+      <p>
+        In boxes {group.from}
+        {group.to > group.from ? `-${group.to}` : ''} on your answer sheet,
+        choose
+      </p>
+      <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-1 pl-3">
+        {judgement.legend.map(row => (
+          <Fragment key={row.key}>
+            <dt className="font-sans font-black whitespace-nowrap">
+              {row.key}
+            </dt>
+            <dd className="italic">{row.meaning}</dd>
+          </Fragment>
+        ))}
+      </dl>
+    </div>
+  )
+}
+
 /** A choice group's body (e.g. the worked example) has no answer slots. */
 const noSlot = () => null
 
@@ -479,7 +519,7 @@ export const GroupBlock = memo(function GroupBlock({ group }: Props) {
             ? `Question ${group.from}`
             : `Questions ${group.from}-${group.to}`}
         </h3>
-        <p className="text-manga-black leading-[1.6]">{group.instruction}</p>
+        <GroupInstruction group={group} />
       </header>
       {widget === 'radio' && group.body ? (
         <IeltsMarkdown
