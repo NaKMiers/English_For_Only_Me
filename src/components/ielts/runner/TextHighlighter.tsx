@@ -1,8 +1,13 @@
 'use client'
 
-import { Eraser, Highlighter, X } from 'lucide-react'
+import { Eraser, Highlighter, LoaderCircle, Search, X } from 'lucide-react'
 import { type RefObject, useCallback, useEffect, useRef, useState } from 'react'
 
+import {
+  QuickVocabDialog,
+  useQuickVocabEntry,
+} from '@/components/vocabulary/QuickVocabLookup'
+import type { VocabMarkStatus } from '@/components/vocabulary/vocabItemWrites'
 import { cn } from '@/lib/utils'
 
 import {
@@ -10,6 +15,8 @@ import {
   type HighlightSpan,
   mergeSpans,
   removeOverlapping,
+  sentenceAround,
+  singleWordAt,
   spansOverlap,
 } from './highlightRanges'
 import { boxBreaks, offsetWithin, rangeFromOffsets } from './textOffsets'
@@ -25,11 +32,23 @@ interface Picked {
   span: HighlightSpan
 }
 
+/** A selection of exactly one word, ready for a vocabulary lookup. */
+interface PickedWord {
+  context: string
+  term: string
+}
+
 interface MenuState {
   canClear: boolean
   left: number
   picked: Picked[]
   top: number
+  word: PickedWord | null
+}
+
+interface Selected {
+  picked: Picked[]
+  word: PickedWord | null
 }
 
 function supportsHighlights() {
@@ -38,9 +57,10 @@ function supportsHighlights() {
 
 /**
  * The current selection as whole-word spans per highlight scope inside
- * `root`, or null when nothing highlightable is selected.
+ * `root`, plus the word itself when exactly one word is selected, or null
+ * when nothing highlightable is selected.
  */
-function pickSelection(root: HTMLElement): Picked[] | null {
+function pickSelection(root: HTMLElement): Selected | null {
   const selection = window.getSelection()
 
   if (!selection || selection.isCollapsed || !selection.rangeCount) return null
@@ -49,7 +69,7 @@ function pickSelection(root: HTMLElement): Picked[] | null {
 
   if (!root.contains(range.commonAncestorContainer)) return null
 
-  const picked: Picked[] = []
+  const picked: (Picked & { breaks: Set<number>; text: string })[] = []
 
   for (const scope of root.querySelectorAll<HTMLElement>(`[${SCOPE_ATTR}]`)) {
     if (!range.intersectsNode(scope)) continue
@@ -61,19 +81,32 @@ function pickSelection(root: HTMLElement): Picked[] | null {
     const end = scope.contains(range.endContainer)
       ? offsetWithin(scope, range.endContainer, range.endOffset)
       : text.length
-    const span = expandToWords(text, start, end, boxBreaks(scope))
+    const breaks = boxBreaks(scope)
+    const span = expandToWords(text, start, end, breaks)
     const key = scope.getAttribute(SCOPE_ATTR)
 
-    if (span && key) picked.push({ key, span })
+    if (span && key) picked.push({ breaks, key, span, text })
   }
 
-  return picked.length ? picked : null
+  if (!picked.length) return null
+
+  const [only] = picked
+  const term =
+    picked.length === 1 ? singleWordAt(only.text, only.span, only.breaks) : null
+
+  return {
+    picked: picked.map(({ key, span }) => ({ key, span })),
+    word: term
+      ? { context: sentenceAround(only.text, only.span, only.breaks), term }
+      : null,
+  }
 }
 
 /**
  * Select text in the exam and a small menu offers Highlight, Clear (when the
- * selection touches a highlight) and Clear all. Highlights always cover whole
- * words. They are painted with the CSS Custom Highlight API, so the text
+ * selection touches a highlight), Clear all and, for a single word only, Look
+ * up (the Vocabulary word card, where it can be saved). Highlights always
+ * cover whole words. They are painted with the CSS Custom Highlight API, so the text
  * nodes React owns are never touched; areas opt in with
  * `data-highlight-scope="<unique key>"`. Kept for this page visit only.
  */
@@ -84,8 +117,18 @@ export function TextHighlighter({
 }) {
   const [spans, setSpans] = useState<SpansByScope>({})
   const [menu, setMenu] = useState<MenuState | null>(null)
+  const [lookupBusy, setLookupBusy] = useState(false)
+  const [lookupError, setLookupError] = useState<string | null>(null)
+  const [markError, setMarkError] = useState<string | null>(null)
   const pointerDownRef = useRef(false)
   const hasAny = Object.values(spans).some(list => list.length > 0)
+  const vocab = useQuickVocabEntry({
+    onMarkFailed: message => {
+      // The error line lives in the word card, so bring it back to show it.
+      setMarkError(message)
+      vocab.setOpen(true)
+    },
+  })
 
   // Paint: rebuild the ranges from offsets whenever the spans change or the
   // DOM under the root does (a part switch remounts the passage).
@@ -136,12 +179,16 @@ export function TextHighlighter({
 
   const update = useCallback(() => {
     const root = rootRef.current
-    const picked = root ? pickSelection(root) : null
+    const selected = root ? pickSelection(root) : null
 
-    if (!picked) {
+    setLookupError(null)
+
+    if (!selected) {
       setMenu(null)
       return
     }
+
+    const { picked, word } = selected
 
     const rect = window.getSelection()?.getRangeAt(0).getBoundingClientRect()
 
@@ -150,7 +197,8 @@ export function TextHighlighter({
     // Touch browsers put their own copy menu above the text: go below there.
     const below =
       window.matchMedia('(pointer: coarse)').matches || rect.top < 64
-    const half = 130
+    // Half the menu's width plus an 8px margin from the screen edge.
+    const half = word ? 185 : 140
 
     setMenu({
       canClear: picked.some(({ key, span }) =>
@@ -162,6 +210,7 @@ export function TextHighlighter({
       ),
       picked,
       top: below ? rect.bottom + 10 : rect.top - 50,
+      word,
     })
   }, [rootRef, spans])
 
@@ -200,7 +249,20 @@ export function TextHighlighter({
     }
   }, [update])
 
-  if (!menu) return null
+  const dialog = (
+    <QuickVocabDialog
+      entry={vocab.entry}
+      error={markError}
+      onMark={(status: VocabMarkStatus) => {
+        setMarkError(null)
+        void vocab.mark(status)
+      }}
+      onOpenChange={vocab.setOpen}
+      open={vocab.open}
+    />
+  )
+
+  if (!menu) return dialog
 
   const finish = (next: SpansByScope) => {
     setSpans(next)
@@ -226,41 +288,101 @@ export function TextHighlighter({
     finish(next)
   }
 
+  const lookUp = async (word: PickedWord) => {
+    setLookupBusy(true)
+    setLookupError(null)
+    setMarkError(null)
+
+    try {
+      await vocab.lookup({
+        occurrence: {
+          contextSentence: word.context || null,
+          reason: 'dictionaryLookup',
+          selectedText: word.term,
+        },
+        term: word.term,
+      })
+      setMenu(null)
+      window.getSelection()?.removeAllRanges()
+    } catch (error) {
+      setLookupError(
+        error instanceof Error ? error.message : 'Could not look up this word.'
+      )
+    } finally {
+      setLookupBusy(false)
+    }
+  }
+
+  const { word } = menu
   const actions = [
     { Icon: Highlighter, disabled: false, label: 'Highlight', run: highlight },
     { Icon: Eraser, disabled: !menu.canClear, label: 'Clear', run: clear },
     { Icon: X, disabled: !hasAny, label: 'Clear all', run: () => finish({}) },
+    ...(word
+      ? [
+          {
+            Icon: lookupBusy ? LoaderCircle : Search,
+            disabled: lookupBusy,
+            label: 'Look up',
+            run: () => void lookUp(word),
+          },
+        ]
+      : []),
   ]
 
   return (
-    <div
-      aria-label="Highlight"
-      className="border-manga-black bg-manga-white rounded-control fixed z-10 flex -translate-x-1/2 overflow-hidden border-2 shadow-[3px_3px_0_var(--manga-black)]"
-      // Keep the text selected while a menu button is pressed.
-      onPointerDown={event => event.preventDefault()}
-      role="toolbar"
-      style={{ left: menu.left, top: menu.top }}
-    >
-      {actions.map(({ Icon, disabled, label, run }) => (
-        <button
-          className={cn(
-            'border-manga-black flex h-9 items-center gap-1.5 border-l-2 px-2.5 font-sans text-xs font-black whitespace-nowrap transition-colors first:border-l-0',
-            disabled
-              ? 'text-manga-ink-soft cursor-not-allowed opacity-50'
-              : 'hover:bg-manga-paper-soft'
-          )}
-          disabled={disabled}
-          key={label}
-          onClick={run}
-          type="button"
+    <>
+      {dialog}
+      <div
+        className="fixed z-10 grid -translate-x-1/2 justify-items-center gap-1.5"
+        style={{ left: menu.left, top: menu.top }}
+      >
+        <div
+          aria-label="Highlight"
+          className="border-manga-black bg-manga-white rounded-control flex overflow-hidden border-2 shadow-[3px_3px_0_var(--manga-black)]"
+          // Keep the text selected while a menu button is pressed.
+          onPointerDown={event => event.preventDefault()}
+          role="toolbar"
         >
-          <Icon
-            aria-hidden="true"
-            className={cn('size-4', label === 'Highlight' && 'text-amber-600')}
-          />
-          {label}
-        </button>
-      ))}
-    </div>
+          {actions.map(({ Icon, disabled, label, run }) => (
+            <button
+              className={cn(
+                'border-manga-black flex h-9 items-center gap-1.5 border-l-2 px-2.5 font-sans text-xs font-black whitespace-nowrap transition-colors first:border-l-0',
+                disabled
+                  ? 'text-manga-ink-soft cursor-not-allowed opacity-50'
+                  : 'hover:bg-manga-paper-soft'
+              )}
+              aria-label={
+                label === 'Look up' && word
+                  ? `Look up "${word.term}" in Vocabulary`
+                  : undefined
+              }
+              disabled={disabled}
+              key={label}
+              onClick={run}
+              type="button"
+            >
+              <Icon
+                aria-hidden="true"
+                className={cn(
+                  'size-4',
+                  label === 'Highlight' && 'text-amber-600',
+                  Icon === LoaderCircle && 'animate-spin'
+                )}
+              />
+              {label}
+            </button>
+          ))}
+        </div>
+        {lookupError ? (
+          <p
+            className="border-manga-black bg-manga-white text-manga-red rounded-tag border-2 px-2 py-1 font-sans text-xs font-black"
+            role="alert"
+          >
+            {lookupError}
+          </p>
+        ) : null}
+      </div>
+    </>
   )
 }

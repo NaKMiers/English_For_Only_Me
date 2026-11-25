@@ -84,6 +84,16 @@ export const submitAttemptSchema = saveAnswersSchema
   .extend({ idempotencyKey })
   .strict()
 
+/** Practice: grade one part now, from the answers on screen. */
+export const checkPartSchema = z
+  .object({
+    answers: answersSchema,
+    part: z.number().int().min(1).max(4),
+  })
+  .strict()
+
+export type CheckPartInput = z.infer<typeof checkPartSchema>
+
 export const audioEventSchema = z.union([
   z
     .object({
@@ -105,28 +115,16 @@ export const gradeWritingSchema = z
   .object({ task: z.union([z.literal(1), z.literal(2)]) })
   .strict()
 
-/**
- * Practice "check": a Listening/Reading part with the answers on screen
- * (possibly newer than the last autosave), or one Writing task's essay.
- */
-export const checkPracticeSchema = z.union([
-  z
-    .object({
-      kind: z.literal('part'),
-      part: z.number().int().min(1).max(4),
-      answers: answersSchema,
-    })
-    .strict(),
-  z
-    .object({
-      kind: z.literal('task'),
-      task: z.union([z.literal(1), z.literal(2)]),
-      essay: z.string().max(IELTS_ESSAY_MAX_LENGTH),
-    })
-    .strict(),
-])
+/** Practice: AI feedback on one Writing task, from the essay on screen. */
+export const checkTaskSchema = z
+  .object({
+    essay: z.string().max(IELTS_ESSAY_MAX_LENGTH),
+    task: z.union([z.literal(1), z.literal(2)]),
+  })
+  .strict()
 
-export type CheckPracticeInput = z.infer<typeof checkPracticeSchema>
+/** The check route takes a part (Listening, Reading) or a task (Writing). */
+export const checkPracticeSchema = z.union([checkPartSchema, checkTaskSchema])
 
 function parseWith<T>(
   schema: z.ZodType<T>,
@@ -159,6 +157,9 @@ export function parseStartAttempt(body: unknown) {
 
 export const parseStartDrill = (body: unknown) =>
   parseWith(startDrillSchema, body, 'Invalid drill request.')
+
+export const parseCheckPart = (body: unknown) =>
+  parseWith(checkPartSchema, body, 'Invalid check request.')
 
 export const parseAudioEvent = (body: unknown) =>
   parseWith(audioEventSchema, body, 'Invalid audio event.')

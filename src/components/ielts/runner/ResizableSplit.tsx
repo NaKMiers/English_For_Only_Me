@@ -54,6 +54,8 @@ interface Options {
   storageKey: string
   /** Width of the first pane, in percent of the split. */
   defaultPercent: number
+  /** Grid placement for layouts with explicit rows (listening). */
+  dividerClassName?: string
 }
 
 /**
@@ -65,7 +67,11 @@ interface Options {
  * Put `gridClassName` and `style` on the grid, then render `divider` between
  * the two panes.
  */
-export function useResizableSplit({ defaultPercent, storageKey }: Options) {
+export function useResizableSplit({
+  defaultPercent,
+  dividerClassName,
+  storageKey,
+}: Options) {
   const stored = useSyncExternalStore(
     subscribe,
     () => readStored(storageKey),
@@ -132,7 +138,8 @@ export function useResizableSplit({ defaultPercent, storageKey }: Options) {
       className={cn(
         'group bg-manga-black relative hidden w-[3px] cursor-col-resize touch-none outline-none lg:block',
         // A wider invisible hit area than the 3px line.
-        'before:absolute before:inset-y-0 before:-right-2 before:-left-2 before:content-[""]'
+        'before:absolute before:inset-y-0 before:-right-2 before:-left-2 before:content-[""]',
+        dividerClassName
       )}
       onDoubleClick={() => writeStored(storageKey, defaultPercent)}
       onKeyDown={onKeyDown}

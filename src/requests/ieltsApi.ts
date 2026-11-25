@@ -130,12 +130,14 @@ export async function postIeltsAudioEventApi(
   return readJson(response)
 }
 
-export async function gradeIeltsWritingApi(
+/** Practice: grade one part now from the answers on screen. */
+export async function checkIeltsPartApi(
   attemptId: string,
-  task: 1 | 2
-): Promise<{ attempt: IeltsAttemptRecord }> {
-  const response = await fetch(IELTS_API_PATHS.grade(attemptId), {
-    body: JSON.stringify({ task }),
+  body: { answers: IeltsAnswers; part: number }
+): Promise<IeltsPartCheck> {
+  const response = await fetch(IELTS_API_PATHS.check(attemptId), {
+    body: JSON.stringify(body),
+    cache: 'no-store',
     headers: { 'content-type': 'application/json' },
     method: 'POST',
   })
@@ -143,14 +145,12 @@ export async function gradeIeltsWritingApi(
   return readJson(response)
 }
 
-/** Practice: score one Listening/Reading part without submitting. */
-export async function checkIeltsPartApi(
+export async function gradeIeltsWritingApi(
   attemptId: string,
-  part: number,
-  answers: IeltsAnswers
-): Promise<{ check: IeltsPartCheck }> {
-  const response = await fetch(IELTS_API_PATHS.check(attemptId), {
-    body: JSON.stringify({ kind: 'part', part, answers }),
+  task: 1 | 2
+): Promise<{ attempt: IeltsAttemptRecord }> {
+  const response = await fetch(IELTS_API_PATHS.grade(attemptId), {
+    body: JSON.stringify({ task }),
     headers: { 'content-type': 'application/json' },
     method: 'POST',
   })
@@ -165,7 +165,7 @@ export async function checkIeltsTaskApi(
   essay: string
 ): Promise<{ feedback: IeltsWritingTaskFeedback }> {
   const response = await fetch(IELTS_API_PATHS.check(attemptId), {
-    body: JSON.stringify({ kind: 'task', task, essay }),
+    body: JSON.stringify({ task, essay }),
     headers: { 'content-type': 'application/json' },
     method: 'POST',
   })

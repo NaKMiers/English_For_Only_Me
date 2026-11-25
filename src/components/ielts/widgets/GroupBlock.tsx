@@ -1,6 +1,6 @@
 'use client'
 
-import { memo, type ReactNode, useCallback } from 'react'
+import { Fragment, memo, type ReactNode, useCallback } from 'react'
 
 import { Checkbox } from '@/components/ui/checkbox'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
@@ -17,6 +17,7 @@ import {
   TFNG_OPTIONS,
   YNNG_OPTIONS,
 } from '@/modules/ielts/constants'
+import { toJudgementInstruction } from '@/modules/ielts/judgementInstruction'
 import {
   type IeltsPublicGroup,
   optionsInBody,
@@ -36,6 +37,26 @@ import { SlotInput } from './SlotInput'
 
 interface Props {
   group: IeltsPublicGroup
+}
+
+/**
+ * Picture multiple choice ("Which picture shows ..."): the letters live in
+ * the image, so it renders as the image plus a letter dropdown, with no
+ * options box. The option texts stay for the editor and review.
+ */
+export function isPictureChoice(group: IeltsPublicGroup): boolean {
+  return group.type === 'multiple-choice' && Boolean(group.imageUrl)
+}
+
+/**
+ * Groups whose letters are printed on the image (a labelled plan or map, or
+ * pictures A-D): the image replaces the options box, as on the real test.
+ */
+function lettersInImage(group: IeltsPublicGroup): boolean {
+  return (
+    Boolean(group.imageUrl) &&
+    (group.type === 'plan-map-labelling' || group.type === 'multiple-choice')
+  )
 }
 
 function optionsFor(group: IeltsPublicGroup): IeltsOption[] {
@@ -88,7 +109,8 @@ function OptionRow({
     <div
       className={cn(
         'rounded-control flex items-start gap-3 border-2 px-2 py-0.5',
-        nowrap && 'whitespace-nowrap',
+        // TRUE / FALSE / NOT GIVEN chips: one compact row.
+        nowrap && 'items-center gap-2 px-1.5 text-sm whitespace-nowrap',
         selected ? 'border-manga-red bg-manga-paper-soft' : 'border-transparent'
       )}
       data-option
@@ -137,7 +159,7 @@ function RadioQuestions({ group }: Props) {
               aria-labelledby={promptId}
               className={cn(
                 'gap-1 pl-8',
-                isJudgement && 'flex flex-wrap gap-x-2'
+                isJudgement && 'flex flex-wrap gap-1'
               )}
               onValueChange={next => setAnswer(question.number, String(next))}
               readOnly={readOnly}
@@ -154,7 +176,10 @@ function RadioQuestions({ group }: Props) {
                     control={
                       <RadioGroupItem
                         aria-labelledby={`${id}-text`}
-                        className={OPTION_CONTROL_CLASS}
+                        className={cn(
+                          OPTION_CONTROL_CLASS,
+                          isJudgement && 'mt-0 size-4'
+                        )}
                         id={id}
                         onFocus={() => onFocusQuestion(question.number)}
                         value={option.key}
@@ -307,25 +332,37 @@ function OptionsBox({
   )
 }
 
-/** Matching and labelling: a box of options, then one dropdown per item. */
+/**
+ * Matching and labelling: a box of options (or the labelled image instead),
+ * then one dropdown per item.
+ */
 function DropdownQuestions({ group }: Props) {
   const { answers, onFocusQuestion, readOnly, review, setAnswer } =
     useIeltsAnswers()
+  const isPicture = isPictureChoice(group)
+  const hideOptions = lettersInImage(group)
 
   return (
     <div className="grid gap-3">
+      {hideOptions && group.title ? (
+        <p className="text-center font-sans text-lg font-black">
+          {group.title}
+        </p>
+      ) : null}
       {group.imageUrl ? (
         // eslint-disable-next-line @next/next/no-img-element -- admin-uploaded Cloudinary image of any size
         <img
-          alt={group.title || 'Plan'}
-          className="border-manga-black rounded-control max-h-[420px] w-full border-2 object-contain"
+          alt={group.title || (isPicture ? 'Pictures A to D' : 'Plan')}
+          className="border-manga-black rounded-control bg-manga-white max-h-[420px] w-full border-2 object-contain"
           src={group.imageUrl}
         />
       ) : null}
-      <OptionsBox
-        options={group.options}
-        title={group.title}
-      />
+      {hideOptions ? null : (
+        <OptionsBox
+          options={group.options}
+          title={group.title}
+        />
+      )}
       <ol className="grid gap-2">
         {group.questions.map(question => {
           const value = answerText(answers[String(question.number)])
@@ -451,11 +488,50 @@ function SlotQuestions({ group }: Props) {
 }
 
 /**
+ * The group instruction. TRUE/FALSE/NOT GIVEN and YES/NO/NOT GIVEN show as
+ * on the paper: the question, then a legend of the answer words, instead of
+ * one long sentence.
+ */
+function GroupInstruction({ group }: Props) {
+  const judgement = toJudgementInstruction(group.type, group.instruction)
+
+  if (!judgement)
+    return <p className="text-manga-black leading-[1.6]">{group.instruction}</p>
+
+  return (
+    <div className="text-manga-black grid gap-2 leading-[1.6]">
+      <p>{judgement.lead}</p>
+      <p>
+        In boxes {group.from}
+        {group.to > group.from ? `-${group.to}` : ''} on your answer sheet,
+        choose
+      </p>
+      <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-1 pl-3">
+        {judgement.legend.map(row => (
+          <Fragment key={row.key}>
+            <dt className="font-sans font-black whitespace-nowrap">
+              {row.key}
+            </dt>
+            <dd className="italic">{row.meaning}</dd>
+          </Fragment>
+        ))}
+      </dl>
+    </div>
+  )
+}
+
+/** A choice group's body (e.g. the worked example) has no answer slots. */
+const noSlot = () => null
+
+/**
  * A question group as the learner sees it: "Questions 1-6", the instruction
- * in English, then the widget its type maps to.
+ * in English, an optional intro such as the worked example, then the widget
+ * its type maps to.
  */
 export const GroupBlock = memo(function GroupBlock({ group }: Props) {
-  const widget = IELTS_QUESTION_WIDGETS[group.type]
+  const widget = isPictureChoice(group)
+    ? 'dropdown'
+    : IELTS_QUESTION_WIDGETS[group.type]
 
   return (
     <section
@@ -472,8 +548,15 @@ export const GroupBlock = memo(function GroupBlock({ group }: Props) {
             ? `Question ${group.from}`
             : `Questions ${group.from}-${group.to}`}
         </h3>
-        <p className="text-manga-black leading-[1.5]">{group.instruction}</p>
+        <GroupInstruction group={group} />
       </header>
+      {widget === 'radio' && group.body ? (
+        <IeltsMarkdown
+          className="gap-1 pl-4"
+          renderSlot={noSlot}
+          source={group.body}
+        />
+      ) : null}
       {widget === 'slot' ? <SlotQuestions group={group} /> : null}
       {widget === 'radio' ? <RadioQuestions group={group} /> : null}
       {widget === 'checkbox' ? <CheckboxQuestions group={group} /> : null}

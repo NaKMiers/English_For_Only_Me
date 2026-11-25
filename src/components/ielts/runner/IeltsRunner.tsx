@@ -1,12 +1,6 @@
 'use client'
 
-import {
-  BookOpen,
-  FileText,
-  Headphones,
-  Lightbulb,
-  ListChecks,
-} from 'lucide-react'
+import { BookOpen, Lightbulb, ListChecks } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import {
   type ReactNode,
@@ -26,10 +20,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
-import type {
-  IeltsAttemptRecord,
-  IeltsPartCheck,
-} from '@/modules/ielts/attempts/attemptRecords'
+import type { IeltsAttemptRecord } from '@/modules/ielts/attempts/attemptRecords'
 import { IELTS_SKILL_LABELS } from '@/modules/ielts/constants'
 import type { IeltsPublicSection } from '@/modules/ielts/publicView'
 import { checkIeltsPartApi, readIeltsEvidenceApi } from '@/requests/ieltsApi'
@@ -37,14 +28,16 @@ import { checkIeltsPartApi, readIeltsEvidenceApi } from '@/requests/ieltsApi'
 import {
   IeltsAnswerContext,
   type IeltsAnswerContextValue,
+  type IeltsAnswerValue,
   type IeltsReviewMark,
   questionBlockId,
   questionControlId,
 } from '../widgets/answerContext'
 import { GroupBlock } from '../widgets/GroupBlock'
-import { ListeningPane } from './ListeningPane'
-import { PassagePane, type IeltsHighlight } from './PassagePane'
+import { CheckPartPanel } from './CheckPartPanel'
 import { CheckButton, ResetPartButton } from './PracticeActions'
+import { ListeningMaterial, ListeningPlayer } from './ListeningPane'
+import { PassagePane, type IeltsHighlight } from './PassagePane'
 import { QuestionNavigator } from './QuestionNavigator'
 import { useResizableSplit } from './ResizableSplit'
 import {
@@ -72,6 +65,12 @@ interface Props {
 
 const MODE_LABELS = { practice: 'Practice', mock: 'Mock', drill: 'Drill' }
 
+/** The two panes a phone switches between. */
+type PaneTab = 'material' | 'questions'
+
+/** Alt+Q swaps panes; `code` so Option+Q on a Mac still matches. */
+const PANE_SHORTCUT_CODE = 'KeyQ'
+
 function partName(skill: string, part: number, mode?: string) {
   if (mode === 'drill') return `Group ${part}`
 
@@ -91,7 +90,8 @@ function focusQuestion(number: number) {
 /**
  * Listening and Reading runner (practice, mock, drill). Focus mode: manga
  * chrome on the toolbar, navigator and widgets; the passage and questions
- * sit on plain paper. Resizable split pane from 1024px, two tabs below.
+ * sit on plain paper. Resizable split pane from 1024px; below it, reading switches
+ * between two tabs and listening is one column under a pinned audio bar.
  */
 export function IeltsRunner({
   attempt,
@@ -105,6 +105,7 @@ export function IeltsRunner({
   const router = useRouter()
   const isMock = attempt.mode === 'mock'
   const isPractice = attempt.mode === 'practice'
+  const isListening = attempt.skill === 'listening'
   const open = attempt.status === 'in_progress'
   const [submitting, setSubmitting] = useState(false)
   const locked = !open || submitting
@@ -112,17 +113,12 @@ export function IeltsRunner({
   const finishRef = useRef<() => void>(() => undefined)
   // Passage, transcript and questions: where text can be highlighted.
   const stageRef = useRef<HTMLDivElement>(null)
-  const {
-    answers,
-    clearAnswers,
-    saveState,
-    setAnswer: saveAnswer,
-    submit,
-  } = useAttemptAnswers({
-    attempt,
-    enabled: !locked,
-    onTimeUp: () => finishRef.current(),
-  })
+  const { answers, clearAnswers, saveState, setAnswer, submit } =
+    useAttemptAnswers({
+      attempt,
+      enabled: !locked,
+      onTimeUp: () => finishRef.current(),
+    })
   const index = useMemo(() => buildQuestionIndex(sections), [sections])
   const parts = useMemo(
     () => [...new Set(sections.map(section => section.order))],
@@ -138,17 +134,21 @@ export function IeltsRunner({
       (index.find(entry => entry.part === currentPart) ?? index[0])?.number ??
       null
   )
-  const [mobileTab, setMobileTab] = useState<'material' | 'questions'>(
-    'material'
-  )
+  const [mobileTab, setMobileTab] = useState<PaneTab>('material')
   // Off by default: hints are opt-in so practice starts like the real test.
   const [guided, setGuided] = useState(false)
   const split = useResizableSplit({
     defaultPercent: 55,
+    // Listening's grid has the audio bar row: the divider spans both rows.
+    dividerClassName: isListening
+      ? 'lg:col-start-2 lg:row-span-2 lg:row-start-1'
+      : undefined,
     storageKey: 'ielts-runner-split',
   })
-  // Practice opens with the transcript showing; mock never shows it.
-  const [showTranscript, setShowTranscript] = useState(true)
+  // Practice opens with the transcript collapsed, so the questions sit right
+  // under the audio; the learner (or "show evidence") expands it. Mock never
+  // shows it.
+  const [showTranscript, setShowTranscript] = useState(false)
   const [highlight, setHighlight] = useState<
     (IeltsHighlight & { sectionKey: string }) | null
   >(null)
@@ -161,94 +161,12 @@ export function IeltsRunner({
       ? `Continue from question ${next.number}`
       : ''
   })
-  // Practice checks per part: the score and marks shown until an answer in
-  // that part changes (its mark goes) or the part is reset (all go).
-  const [checks, setChecks] = useState<Record<number, IeltsPartCheck>>({})
-  const [checking, setChecking] = useState(false)
   const [confirmBlanks, setConfirmBlanks] = useState<number | null>(null)
   const [exitOpen, setExitOpen] = useState(false)
   const [deadlineAt, setDeadlineAt] = useState(attempt.deadlineAt)
   const section =
     sections.find(item => item.order === currentPart) ?? sections[0]
   const skillLabel = IELTS_SKILL_LABELS[attempt.skill]
-  const currentPartName = partName(attempt.skill, currentPart, attempt.mode)
-  const canCheck = isPractice && !locked
-
-  // A changed answer drops its own check mark (a choose-TWO set drops the
-  // marks of every number it covers); the part's score stays as checked.
-  const setAnswer = useCallback(
-    (number: number, value: Parameters<typeof saveAnswer>[1]) => {
-      saveAnswer(number, value)
-      setChecks(current => {
-        const covered = new Set(
-          index
-            .filter(
-              entry => entry.number === number || entry.setStart === number
-            )
-            .map(entry => entry.number)
-        )
-        const part = index.find(entry => covered.has(entry.number))?.part
-        const check = part === undefined ? undefined : current[part]
-
-        if (!check || !check.marks.some(mark => covered.has(mark.number)))
-          return current
-
-        return {
-          ...current,
-          [check.part]: {
-            ...check,
-            marks: check.marks.filter(mark => !covered.has(mark.number)),
-          },
-        }
-      })
-    },
-    [index, saveAnswer]
-  )
-
-  const review = useMemo(() => {
-    const marks: Record<number, IeltsReviewMark> = {}
-
-    for (const check of Object.values(checks))
-      for (const mark of check.marks)
-        marks[mark.number] = { outcome: mark.outcome, accepted: mark.accepted }
-
-    return Object.keys(marks).length ? marks : null
-  }, [checks])
-
-  const checkPart = async () => {
-    const part = currentPart
-    const name = partName(attempt.skill, part, attempt.mode)
-
-    setChecking(true)
-
-    try {
-      const { check } = await checkIeltsPartApi(attempt.id, part, answers)
-
-      setChecks(current => ({ ...current, [part]: check }))
-      setNotice(`${name}: ${check.raw}/${check.total} correct.`)
-    } catch (error) {
-      setNotice(
-        `Could not check ${name}: ${error instanceof Error ? error.message : 'try again.'}`
-      )
-    } finally {
-      setChecking(false)
-    }
-  }
-
-  const resetPart = () => {
-    const numbers = index
-      .filter(entry => entry.part === currentPart)
-      .flatMap(entry =>
-        entry.setStart === null
-          ? [entry.number]
-          : [entry.number, entry.setStart]
-      )
-
-    clearAnswers(numbers)
-    setChecks(({ [currentPart]: _dropped, ...rest }) => rest)
-    setHighlight(null)
-    setNotice(`${currentPartName} reset.`)
-  }
 
   const finish = useCallback(async () => {
     setSubmitting(true)
@@ -277,6 +195,72 @@ export function IeltsRunner({
     },
     onWarning: () => setNotice('5 minutes remaining.'),
   })
+
+  // Alt+Q (Option+Q on Mac) swaps between the material and the questions:
+  // on a phone it flips the tab, on desktop (both panes showing) it moves
+  // focus to the other pane. Matched on `code`, so it works while typing in
+  // an answer box and whatever character the layout makes.
+  const materialRef = useRef<HTMLElement>(null)
+  const questionsRef = useRef<HTMLElement>(null)
+  const pendingFocusRef = useRef<PaneTab | null>(null)
+  // Listening below lg: the one column that holds both panes.
+  const scrollerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (
+        event.code !== PANE_SHORTCUT_CODE ||
+        !event.altKey ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.shiftKey ||
+        event.repeat
+      )
+        return
+
+      event.preventDefault()
+
+      const active = document.activeElement
+      const target: PaneTab = questionsRef.current?.contains(active)
+        ? 'material'
+        : materialRef.current?.contains(active)
+          ? 'questions'
+          : mobileTab === 'material'
+            ? 'questions'
+            : 'material'
+      const pane =
+        target === 'material' ? materialRef.current : questionsRef.current
+
+      setMobileTab(target)
+
+      // Hidden on a phone until the tab flips: focus it after the render.
+      if (!pane?.checkVisibility()) {
+        pendingFocusRef.current = target
+        return
+      }
+
+      pane.focus({ preventScroll: true })
+
+      // Listening on a phone stacks both panes in one column: scroll to it.
+      const scroller = scrollerRef.current
+
+      if (scroller && getComputedStyle(scroller).display !== 'contents')
+        scroller.scrollTo({ behavior: 'smooth', top: pane.offsetTop })
+    }
+
+    window.addEventListener('keydown', onKey)
+
+    return () => window.removeEventListener('keydown', onKey)
+  }, [mobileTab])
+
+  useEffect(() => {
+    if (pendingFocusRef.current !== mobileTab) return
+
+    pendingFocusRef.current = null
+    ;(mobileTab === 'material' ? materialRef : questionsRef).current?.focus({
+      preventScroll: true,
+    })
+  }, [mobileTab])
 
   // A mock cannot be paused: warn before the tab closes.
   useEffect(() => {
@@ -333,12 +317,112 @@ export function IeltsRunner({
     [attempt.id, attempt.skill, sections]
   )
 
+  // Practice "check this part": the marks shown under each question, and
+  // each checked part's score. Editing an answer drops the marks of its
+  // group (a Choose TWO set shares one answer), so no mark goes stale.
+  const [marks, setMarks] = useState<Record<number, IeltsReviewMark>>({})
+  const [partChecks, setPartChecks] = useState<
+    Record<number, { raw: number; total: number }>
+  >({})
+  const [checkingPart, setCheckingPart] = useState<number | null>(null)
+  const groupNumbers = useMemo(() => {
+    const map = new Map<number, number[]>()
+
+    for (const item of sections)
+      for (const group of item.groups) {
+        const numbers = group.questions.map(question => question.number)
+
+        for (const number of numbers) map.set(number, numbers)
+      }
+
+    return map
+  }, [sections])
+
+  const editAnswer = useCallback(
+    (number: number, value: IeltsAnswerValue) => {
+      setAnswer(number, value)
+      setMarks(current => {
+        const stale = (groupNumbers.get(number) ?? [number]).filter(
+          item => item in current
+        )
+
+        if (!stale.length) return current
+
+        const next = { ...current }
+
+        for (const item of stale) delete next[item]
+
+        return next
+      })
+    },
+    [groupNumbers, setAnswer]
+  )
+
+  const checkPart = useCallback(
+    async (part: number) => {
+      const partAnswers = Object.fromEntries(
+        index
+          .filter(entry => entry.part === part && entry.number in answers)
+          .map(entry => [entry.number, answers[String(entry.number)]])
+      )
+
+      setCheckingPart(part)
+
+      try {
+        const result = await checkIeltsPartApi(attempt.id, {
+          answers: partAnswers,
+          part,
+        })
+
+        setMarks(current => ({
+          ...current,
+          ...Object.fromEntries(
+            result.questions.map(row => [
+              row.number,
+              { accepted: row.accepted, outcome: row.outcome },
+            ])
+          ),
+        }))
+        setPartChecks(current => ({
+          ...current,
+          [part]: { raw: result.raw, total: result.total },
+        }))
+      } catch (caught) {
+        setNotice(
+          `Could not check the answers: ${caught instanceof Error ? caught.message : 'try again.'}`
+        )
+      } finally {
+        setCheckingPart(null)
+      }
+    },
+    [answers, attempt.id, index]
+  )
+
+  const resetPart = (part: number) => {
+    const entries = index.filter(entry => entry.part === part)
+    const numbers = entries.flatMap(entry =>
+      entry.setStart === null ? [entry.number] : [entry.number, entry.setStart]
+    )
+
+    clearAnswers(numbers)
+    setMarks(current =>
+      Object.fromEntries(
+        Object.entries(current).filter(
+          ([number]) => !entries.some(entry => entry.number === Number(number))
+        )
+      )
+    )
+    setPartChecks(({ [part]: _dropped, ...rest }) => rest)
+    setHighlight(null)
+    setNotice(`${partName(attempt.skill, part, attempt.mode)} reset.`)
+  }
+
   const context = useMemo<IeltsAnswerContextValue>(
     () => ({
       answers,
       readOnly: locked,
-      review,
-      setAnswer,
+      review: Object.keys(marks).length ? marks : null,
+      setAnswer: editAnswer,
       currentNumber,
       onFocusQuestion: number => {
         setCurrentNumber(number)
@@ -351,48 +435,73 @@ export function IeltsRunner({
     [
       answers,
       currentNumber,
+      editAnswer,
       guided,
       index,
       isPractice,
       locked,
-      review,
-      setAnswer,
+      marks,
       showEvidence,
     ]
   )
 
-  const checkScore = checks[currentPart]
-    ? `${checks[currentPart].raw}/${checks[currentPart].total}`
-    : null
   const total = index.length
   const answeredCount = total - countBlanks(index, answers)
-  const material: ReactNode =
-    attempt.skill === 'listening' ? (
-      <ListeningPane
-        attempt={attempt}
-        highlight={highlight}
-        locked={locked}
-        onAttemptChange={next => setDeadlineAt(next.deadlineAt)}
-        onPartChange={setCurrentPart}
-        onNotice={setNotice}
-        sections={sections}
-        showTranscript={isPractice && showTranscript}
-        visiblePart={currentPart}
-      />
-    ) : section?.reading ? (
-      <PassagePane
-        highlight={highlight?.sectionKey === section.key ? highlight : null}
-        material={section.reading}
-        partLabel={`${testTitle} · ${partName(attempt.skill, section.order, attempt.mode)}`}
-      />
-    ) : null
+  const listeningProps = {
+    attempt,
+    highlight,
+    locked,
+    onAttemptChange: (next: IeltsAttemptRecord) =>
+      setDeadlineAt(next.deadlineAt),
+    onNotice: setNotice,
+    onPartChange: setCurrentPart,
+    onShowTranscriptChange: setShowTranscript,
+    sections,
+    showTranscript: isPractice && showTranscript,
+    visiblePart: currentPart,
+  }
+  const material: ReactNode = isListening ? (
+    <ListeningMaterial {...listeningProps} />
+  ) : section?.reading ? (
+    <PassagePane
+      highlight={highlight?.sectionKey === section.key ? highlight : null}
+      material={section.reading}
+      partLabel={`${testTitle} · ${partName(attempt.skill, section.order, attempt.mode)}`}
+    />
+  ) : null
+  const currentPartName = partName(attempt.skill, currentPart, attempt.mode)
+  const canCheck = isPractice && open && Boolean(section)
+  const currentCheck = section ? (partChecks[section.order] ?? null) : null
+  const questions = (
+    <div className="text-manga-black mx-auto grid max-w-[70ch] gap-7 text-[16px] leading-[1.6]">
+      {section?.groups.map(group => (
+        <GroupBlock
+          group={group}
+          key={group.id}
+        />
+      ))}
+      {/* Phones and tablets: the check closes the questions. From lg it
+          sits at the right end of the footer instead. */}
+      {canCheck && section ? (
+        <CheckPartPanel
+          check={partChecks[section.order] ?? null}
+          className="lg:hidden"
+          checking={checkingPart === section.order}
+          label={partName(attempt.skill, section.order, attempt.mode)}
+          onCheck={() => void checkPart(section.order)}
+        />
+      ) : null}
+    </div>
+  )
+  const questionsPaneClass =
+    'border-manga-black bg-manga-white in-data-[theme=lightup]:bg-manga-pale-red/60 px-4 py-4 outline-none sm:px-6 lg:min-h-0 lg:overflow-y-auto'
 
   const toggles = isPractice ? (
     <div className="flex items-center gap-2">
       <ResetPartButton
         disabled={locked}
         name={currentPartName}
-        onReset={resetPart}
+        onReset={() => resetPart(currentPart)}
       />
       <ToolbarToggle
         checked={guided}
@@ -404,18 +513,11 @@ export function IeltsRunner({
           if (!checked) setHighlight(null)
         }}
       />
-      {attempt.skill === 'listening' ? (
-        <ToolbarToggle
-          checked={showTranscript}
-          icon={<FileText aria-hidden="true" />}
-          label="Transcript"
-          onCheckedChange={setShowTranscript}
-        />
-      ) : null}
     </div>
   ) : null
 
-  // Segmented toggle (aria-pressed): the documented raw-button exception.
+  // Reading only (listening is one column). Segmented toggle (aria-pressed):
+  // the documented raw-button exception.
   const panes = (
     <div
       aria-label="Choose panel"
@@ -424,11 +526,7 @@ export function IeltsRunner({
     >
       {(
         [
-          [
-            'material',
-            attempt.skill === 'listening' ? 'Audio' : 'Passage',
-            attempt.skill === 'listening' ? Headphones : BookOpen,
-          ],
+          ['material', 'Passage', BookOpen],
           ['questions', 'Questions', ListChecks],
         ] as const
       ).map(([value, label, Icon]) => {
@@ -436,6 +534,7 @@ export function IeltsRunner({
 
         return (
           <button
+            aria-keyshortcuts="Alt+Q"
             aria-pressed={active}
             className={cn(
               'rounded-tag flex min-w-0 flex-auto items-center justify-center gap-1.5 px-2 font-sans text-[13px] font-black transition-colors',
@@ -445,6 +544,7 @@ export function IeltsRunner({
             )}
             key={value}
             onClick={() => setMobileTab(value)}
+            title={`${label} (Alt+Q to switch)`}
             type="button"
           >
             <Icon
@@ -476,7 +576,7 @@ export function IeltsRunner({
           modeLabel={MODE_LABELS[attempt.mode]}
           onBack={isMock && open ? () => setExitOpen(true) : undefined}
           onSubmit={requestSubmit}
-          panes={panes}
+          panes={isListening ? undefined : panes}
           saveState={open ? saveState : 'saved'}
           secondsLeft={secondsLeft}
           submitDisabled={!open}
@@ -501,66 +601,105 @@ export function IeltsRunner({
           </p>
         ) : null}
 
-        <div
-          className={cn(
-            'grid min-h-0 flex-1',
-            split.gridClassName,
-            split.dragging && 'select-none'
-          )}
-          ref={stageRef}
-          style={split.style}
-        >
-          <section
-            aria-label={
-              attempt.skill === 'listening' ? 'Audio' : 'Reading passage'
-            }
+        {isListening ? (
+          // Listening: one column on a phone (the audio bar pinned on top,
+          // the transcript and questions scrolling under it); from lg the
+          // scroller dissolves (`contents`) into the usual two panes.
+          <div
             className={cn(
-              'bg-manga-white min-h-0 overflow-y-auto px-4 py-4 sm:px-6 lg:block',
-              mobileTab === 'material' ? 'block' : 'hidden'
+              'grid min-h-0 flex-1 grid-rows-[auto_minmax(0,1fr)]',
+              split.gridClassName,
+              split.dragging && 'select-none'
             )}
+            ref={stageRef}
+            style={split.style}
           >
-            {material}
-          </section>
-          {split.divider}
-          <section
-            aria-label="Questions"
-            className={cn(
-              'bg-manga-pale-red/60 min-h-0 overflow-y-auto px-4 py-4 sm:px-6 lg:block',
-              mobileTab === 'questions' ? 'block' : 'hidden'
-            )}
-          >
-            <div className="text-manga-black mx-auto grid max-w-[70ch] gap-7 text-[16px] leading-[1.6]">
-              {section?.groups.map(group => (
-                <GroupBlock
-                  group={group}
-                  key={group.id}
-                />
-              ))}
-              {/* Phones and tablets: the footer has no room, so the check
-                  closes the questions instead. */}
-              {canCheck ? (
-                <CheckButton
-                  busy={checking}
-                  className="w-full lg:hidden"
-                  label={`Check ${currentPartName}`}
-                  onCheck={() => void checkPart()}
-                  score={checkScore}
-                />
-              ) : null}
+            <div className="border-manga-black bg-manga-paper-soft border-b-2 px-4 py-1.5 sm:px-6 lg:col-start-1 lg:row-start-1">
+              <div className="mx-auto max-w-[68ch]">
+                <ListeningPlayer {...listeningProps} />
+              </div>
             </div>
-          </section>
-        </div>
+            {/* A direct child of the grid: it measures the grid to resize. */}
+            {split.divider}
+            <div
+              className="relative min-h-0 overflow-y-auto lg:contents"
+              ref={scrollerRef}
+            >
+              {material ? (
+                <section
+                  aria-label="Audio"
+                  className="bg-manga-white px-4 pt-4 pb-6 outline-none sm:px-6 lg:col-start-1 lg:row-start-2 lg:min-h-0 lg:overflow-y-auto"
+                  ref={materialRef}
+                  tabIndex={-1}
+                >
+                  {material}
+                </section>
+              ) : null}
+              <section
+                aria-label="Questions"
+                className={cn(
+                  questionsPaneClass,
+                  'lg:col-start-3 lg:row-span-2 lg:row-start-1',
+                  material && 'max-lg:border-t-2'
+                )}
+                ref={questionsRef}
+                tabIndex={-1}
+              >
+                {questions}
+              </section>
+            </div>
+          </div>
+        ) : (
+          <div
+            className={cn(
+              'grid min-h-0 flex-1',
+              split.gridClassName,
+              split.dragging && 'select-none'
+            )}
+            ref={stageRef}
+            style={split.style}
+          >
+            <section
+              aria-label="Reading passage"
+              className={cn(
+                'bg-manga-white min-h-0 overflow-y-auto px-4 py-4 outline-none sm:px-6 lg:block',
+                mobileTab === 'material' ? 'block' : 'hidden'
+              )}
+              ref={materialRef}
+              tabIndex={-1}
+            >
+              {material}
+            </section>
+            {split.divider}
+            <section
+              aria-label="Questions"
+              className={cn(
+                questionsPaneClass,
+                'min-h-0 overflow-y-auto lg:block',
+                mobileTab === 'questions' ? 'block' : 'hidden'
+              )}
+              ref={questionsRef}
+              tabIndex={-1}
+            >
+              {questions}
+            </section>
+          </div>
+        )}
 
         <TextHighlighter rootRef={stageRef} />
 
         <QuestionNavigator
           action={
-            canCheck ? (
+            canCheck && section ? (
               <CheckButton
-                busy={checking}
+                busy={checkingPart === section.order}
                 label={`Check ${currentPartName}`}
-                onCheck={() => void checkPart()}
-                score={checkScore}
+                onCheck={() => void checkPart(section.order)}
+                score={
+                  currentCheck
+                    ? `${currentCheck.raw}/${currentCheck.total}`
+                    : null
+                }
               />
             ) : null
           }

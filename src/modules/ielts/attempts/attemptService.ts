@@ -29,6 +29,7 @@ import {
 } from './attemptRecords'
 import {
   type AudioEventInput,
+  type CheckPartInput,
   ieltsError,
   type IeltsDecision,
   shouldAwardBand,
@@ -46,8 +47,7 @@ import {
 /*
  * Learner attempts. Every query is scoped by ownerId (no IDOR), every write
  * is idempotent or guarded by a condition, and no answer key leaves this file
- * before the attempt is submitted, except one part at a time when the
- * learner asks to check it in practice.
+ * before the attempt is submitted.
  */
 
 type LeanAttempt = Record<string, unknown> & {
@@ -684,21 +684,18 @@ export async function readPracticeEvidence({
 }
 
 /**
- * Practice "check part": scores one Listening/Reading part against the
- * answers on screen without submitting. The learner asked to see this part's
- * key, so the accepted answers come back with the marks. Practice only, and
- * only while the attempt is open; nothing is written.
+ * Practice: grades one part from the answers on screen, so the learner can
+ * check Part 1 before moving on. Nothing is stored; the attempt is still
+ * scored as a whole on submit. Mock never reveals answers early.
  */
 export async function checkPracticePart({
   answers,
   attemptId,
   ownerId,
   part,
-}: {
-  answers: IeltsAnswers
+}: CheckPartInput & {
   attemptId: string
   ownerId: string
-  part: number
 }): Promise<IeltsDecision<IeltsPartCheck>> {
   const attempt = await readOwnedAttempt(ownerId, attemptId)
 
@@ -708,10 +705,7 @@ export async function checkPracticePart({
     return ieltsError(403, 'Checking a part is only available in practice.')
 
   if (attempt.skill === 'writing')
-    return ieltsError(400, 'Writing tasks are checked with AI grading.')
-
-  if (attempt.status !== 'in_progress')
-    return ieltsError(409, 'This attempt is already submitted.')
+    return ieltsError(400, 'Writing is graded per task, not per part.')
 
   const lengths = validateAnswerLengths(answers, false)
 
@@ -731,11 +725,14 @@ export async function checkPracticePart({
       part,
       raw: result.raw,
       total: result.total,
-      marks: result.perQuestion.map(row => ({
-        number: row.number,
-        outcome: row.outcome,
-        accepted: row.accepted,
-      })),
+      questions: result.perQuestion.map(
+        ({ accepted, number, outcome, overLimit }) => ({
+          accepted,
+          number,
+          outcome,
+          overLimit,
+        })
+      ),
     },
   }
 }

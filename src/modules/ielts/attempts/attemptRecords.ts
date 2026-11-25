@@ -31,18 +31,6 @@ export interface IeltsWritingTaskFeedback {
   improved: string
 }
 
-/** One part checked in practice: the score and a mark per question. */
-export interface IeltsPartCheck {
-  part: number
-  raw: number
-  total: number
-  marks: {
-    number: number
-    outcome: IeltsAnswerOutcome
-    accepted: string[]
-  }[]
-}
-
 export interface IeltsDrillItem {
   testId: string
   testSlug: string
@@ -129,4 +117,17 @@ export function toIeltsAttemptRecord(raw: LeanAttempt): IeltsAttemptRecord {
       (raw.writingFeedback as IeltsAttemptRecord['writingFeedback']) ?? null,
     writingBand: (raw.writingBand as number | null) ?? null,
   }
+}
+
+/** One part graded on demand: the score and each question's outcome. */
+export interface IeltsPartCheck {
+  part: number
+  raw: number
+  total: number
+  questions: {
+    number: number
+    outcome: IeltsAnswerOutcome
+    accepted: string[]
+    overLimit: boolean
+  }[]
 }

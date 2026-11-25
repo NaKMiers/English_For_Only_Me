@@ -3,6 +3,20 @@
 Preserve a polished, practical product feel: calm layout, strong hierarchy,
 clear actions, responsive by default, and reusable component primitives.
 
+## Simple And Minimal (always)
+
+Always show things in the simplest, most minimal way that still reads clearly.
+
+- Say it with an icon when the icon is unambiguous: a green tick for right, a
+  red cross for wrong. No "Correct" / "Wrong" word beside it (keep the word
+  as `sr-only` text for screen readers).
+- Do not state what the learner can already see: an empty box needs no
+  "Blank" label, a score needs no sentence around it.
+- One control, one short label. Drop helper sentences, intros, and repeated
+  explanations unless the action is unclear without them.
+- Prefer removing chrome (extra boxes, borders, badges, backgrounds) over
+  adding it. Add a visual element only when it carries meaning.
+
 ## Visual Foundation
 
 - Use Tailwind/CSS tokens before one-off colors.

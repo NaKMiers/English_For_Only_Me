@@ -172,6 +172,8 @@ export function AttemptLoader({
       <WritingRunner
         attempt={attempt}
         backHref={backHref}
+        next={next}
+        prev={prev}
         sections={sections}
         startPart={startPart}
         testTitle={testTitle}

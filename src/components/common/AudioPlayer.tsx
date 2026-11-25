@@ -9,7 +9,7 @@ import {
   SkipBack,
   SkipForward,
 } from 'lucide-react'
-import { useRef, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 
 import { cn } from '@/lib/utils'
 
@@ -21,19 +21,32 @@ interface Props {
   durationSec?: number
   /**
    * Start time of each script line. With markers the skip buttons step line by
-   * line and the bar marks every line; without them skips jump 10 s.
+   * line and the bar marks every line; without them skips jump 5 s.
    */
   markers?: number[]
+  /**
+   * Listen for the player's keyboard shortcuts page-wide (Alt+K play/pause,
+   * Alt+J back, Alt+L forward). Only one player on a page should turn it on.
+   */
+  shortcuts?: boolean
   /** Optional row under the controls, given the current marker index (-1 before the first). */
   renderCaption?: (markerIndex: number) => ReactNode
   src: string
 }
 
 const RATES = [1, 1.25, 1.5, 0.75]
-const SKIP_SEC = 10
 
-const SMALL_BUTTON_CLASS =
-  'border-manga-black bg-manga-white hover:bg-manga-paper-soft rounded-control sticker-press grid size-9 shrink-0 place-items-center border-2 shadow-[2px_2px_0_var(--manga-black)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:opacity-50'
+/**
+ * Alt + the YouTube keys (K play, J back, L forward). Matched on `code`, so
+ * Option+key on a Mac still works, and with Alt it never types into an
+ * answer box.
+ */
+const SHORTCUT_CODES = { back: 'KeyJ', forward: 'KeyL', toggle: 'KeyK' }
+const SKIP_SEC = 5
+
+/** Skip and speed keys: flat icons, so the one-line player stays light. */
+const GHOST_BUTTON_CLASS =
+  'text-manga-black hover:bg-manga-white focus-visible:ring-manga-red rounded-tag grid h-7 shrink-0 place-items-center outline-none focus-visible:ring-2 disabled:opacity-50'
 
 /** The big black play/pause key, shared with read-only players (mock tests). */
 export const AUDIO_PLAY_BUTTON_CLASS =
@@ -88,16 +101,23 @@ export function AudioMeter({
   )
 }
 
+/** The play key shrunk to fit the one-line player. */
+const COMPACT_PLAY_BUTTON_CLASS = cn(
+  AUDIO_PLAY_BUTTON_CLASS,
+  'size-8 shadow-[2px_2px_0_var(--manga-red)] active:translate-x-[2px] active:translate-y-[2px]'
+)
+
 /**
- * The app's audio player, in the manga sticker style: play/pause, two skip
- * keys, a seek bar, the clock and a speed toggle. Key it by `src` so a new
- * file starts from zero.
+ * The app's audio player, in the manga sticker style, on one line:
+ * play/pause, two skip keys, a seek bar, the clock and a speed toggle. Key it
+ * by `src` so a new file starts from zero.
  */
 export function AudioPlayer({
   className,
   durationSec = 0,
   markers = [],
   renderCaption,
+  shortcuts = false,
   src,
 }: Props) {
   const ref = useRef<HTMLAudioElement>(null)
@@ -143,13 +163,52 @@ export function AudioPlayer({
     setRate(next)
   }
 
+  // The listener reads the latest handlers, so it registers once.
+  const actionsRef = useRef({ step, toggle })
+
+  useEffect(() => {
+    actionsRef.current = { step, toggle }
+  })
+
+  useEffect(() => {
+    if (!shortcuts) return
+
+    const onKey = (event: KeyboardEvent) => {
+      if (
+        !event.altKey ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.shiftKey ||
+        event.repeat
+      )
+        return
+
+      const actions = actionsRef.current
+
+      if (event.code === SHORTCUT_CODES.toggle) actions.toggle()
+      else if (event.code === SHORTCUT_CODES.back) actions.step(-1)
+      else if (event.code === SHORTCUT_CODES.forward) actions.step(1)
+      else return
+
+      event.preventDefault()
+    }
+
+    window.addEventListener('keydown', onKey)
+
+    return () => window.removeEventListener('keydown', onKey)
+  }, [shortcuts])
+
+  /** "Play (Alt+K)" when the shortcuts are on. */
+  const hint = (label: string, key: string) =>
+    shortcuts ? `${label} (Alt+${key})` : label
+
   const BackIcon = timed ? SkipBack : RotateCcw
   const ForwardIcon = timed ? SkipForward : RotateCw
 
   return (
     <div
       className={cn(
-        'border-manga-black bg-manga-paper-soft rounded-control grid gap-2 border-2 p-2',
+        'border-manga-black bg-manga-paper-soft rounded-control grid gap-1.5 border-2 p-1.5',
         className
       )}
     >
@@ -167,33 +226,35 @@ export function AudioPlayer({
         ref={ref}
         src={src}
       />
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex min-w-0 items-center gap-1">
         {/* Player transport (aria-pressed toggle): documented raw exception. */}
         <button
+          aria-keyshortcuts={shortcuts ? 'Alt+K' : undefined}
           aria-label={playing ? 'Pause' : 'Play'}
           aria-pressed={playing}
-          className={AUDIO_PLAY_BUTTON_CLASS}
+          className={COMPACT_PLAY_BUTTON_CLASS}
           onClick={toggle}
-          title={playing ? 'Pause' : 'Play'}
+          title={hint(playing ? 'Pause' : 'Play', 'K')}
           type="button"
         >
           {playing ? (
             <Pause
               aria-hidden="true"
-              className="size-5 fill-current"
+              className="size-4 fill-current"
             />
           ) : (
             <Play
               aria-hidden="true"
-              className="size-5 translate-x-px fill-current"
+              className="size-4 translate-x-px fill-current"
             />
           )}
         </button>
         <button
+          aria-keyshortcuts={shortcuts ? 'Alt+J' : undefined}
           aria-label={timed ? 'Previous line' : `Back ${SKIP_SEC} seconds`}
-          className={SMALL_BUTTON_CLASS}
+          className={cn(GHOST_BUTTON_CLASS, 'ml-0.5 w-7')}
           onClick={() => step(-1)}
-          title={timed ? 'Previous line' : `Back ${SKIP_SEC} s`}
+          title={hint(timed ? 'Previous line' : `Back ${SKIP_SEC} s`, 'J')}
           type="button"
         >
           <BackIcon
@@ -202,10 +263,11 @@ export function AudioPlayer({
           />
         </button>
         <button
+          aria-keyshortcuts={shortcuts ? 'Alt+L' : undefined}
           aria-label={timed ? 'Next line' : `Forward ${SKIP_SEC} seconds`}
-          className={SMALL_BUTTON_CLASS}
+          className={cn(GHOST_BUTTON_CLASS, 'w-7')}
           onClick={() => step(1)}
-          title={timed ? 'Next line' : `Forward ${SKIP_SEC} s`}
+          title={hint(timed ? 'Next line' : `Forward ${SKIP_SEC} s`, 'L')}
           type="button"
         >
           <ForwardIcon
@@ -215,14 +277,14 @@ export function AudioPlayer({
         </button>
 
         <Slider.Root
-          className="order-last basis-full sm:order-none sm:min-w-32 sm:flex-1 sm:basis-auto"
+          className="mx-1 min-w-0 flex-1"
           max={total}
           min={0}
           onValueChange={value => seek(value)}
           step={0.1}
           value={Math.min(time, total)}
         >
-          <Slider.Control className="relative flex h-6 w-full cursor-pointer touch-none items-center select-none">
+          <Slider.Control className="relative flex h-5 w-full cursor-pointer touch-none items-center select-none">
             <Slider.Track className={TRACK_CLASS}>
               <Slider.Indicator className="bg-manga-red h-full" />
               {markers.slice(1).map(marker => (
@@ -244,18 +306,13 @@ export function AudioPlayer({
           </Slider.Control>
         </Slider.Root>
 
-        <span className="ml-auto sm:ml-0">
-          <AudioClock
-            duration={duration}
-            time={time}
-          />
-        </span>
+        <AudioClock
+          duration={duration}
+          time={time}
+        />
         <button
           aria-label={`Playback speed ${rate}x`}
-          className={cn(
-            SMALL_BUTTON_CLASS,
-            'w-12 font-sans text-xs font-black'
-          )}
+          className={cn(GHOST_BUTTON_CLASS, 'w-9 font-sans text-xs font-black')}
           onClick={cycleRate}
           title="Change speed"
           type="button"

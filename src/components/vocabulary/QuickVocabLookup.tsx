@@ -86,7 +86,7 @@ function normalizeLookupTerm(term: string) {
  * dialog at once and shows the new status; the write goes through the outbox
  * and a rejected write puts the old status back and reports the error.
  */
-function useQuickVocabEntry({
+export function useQuickVocabEntry({
   onMarkFailed,
 }: {
   onMarkFailed: (message: string) => void
@@ -156,6 +156,84 @@ function useQuickVocabEntry({
   }
 
   return { entry, lookup, mark, open, setOpen }
+}
+
+interface QuickVocabDialogProps {
+  entry: VocabEntryWithUserStateRecord | null
+  error?: string | null
+  onMark: (status: VocabMarkStatus) => void
+  onOpenChange: (open: boolean) => void
+  open: boolean
+}
+
+/** The word card shared by every quick lookup surface. */
+export function QuickVocabDialog({
+  entry,
+  error = null,
+  onMark,
+  onOpenChange,
+  open,
+}: QuickVocabDialogProps) {
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={onOpenChange}
+    >
+      <DialogContent className="border-manga-black bg-manga-white border-3 shadow-[6px_6px_0_var(--manga-black)]">
+        {entry ? (
+          <>
+            <DialogHeader>
+              <DialogTitle className="sr-only">{entry.entry.term}</DialogTitle>
+              <DialogDescription className="text-manga-ink-soft text-sm font-semibold">
+                {entry.entry.enrichmentStatus}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-3">
+              <VocabTermHeader entry={entry.entry} />
+              <div className="border-manga-black bg-manga-paper-soft rounded-control border-2 p-3 text-right text-base leading-7 font-black">
+                {getVietnamese(entry)}
+              </div>
+              <div className="border-manga-black bg-manga-white rounded-control border-2 p-3 text-base leading-7 font-semibold">
+                {getDefinition(entry)}
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <MangaButton
+                  className="[&>span:last-child]:whitespace-nowrap"
+                  disabled={!hasVietnameseMeaning(entry.entry)}
+                  icon={<BookOpen className="size-4" />}
+                  onClick={() => onMark('shouldLearn')}
+                >
+                  Should Learn
+                </MangaButton>
+                <MangaButton
+                  className="[&>span:last-child]:whitespace-nowrap"
+                  disabled={!hasVietnameseMeaning(entry.entry)}
+                  icon={<Check className="size-4" />}
+                  onClick={() => onMark('alreadyKnow')}
+                  tone="paper"
+                >
+                  Already Know
+                </MangaButton>
+              </div>
+              <p className="text-manga-ink-soft flex items-center gap-2 text-xs font-black uppercase">
+                <Search className="size-4" />
+                {entry.userItem?.status ?? 'Not picked yet'}
+              </p>
+              {error ? (
+                <p className="text-manga-red text-sm font-black">{error}</p>
+              ) : null}
+              {!hasVietnameseMeaning(entry.entry) ? (
+                <p className="text-manga-red text-sm font-black">
+                  Vietnamese meaning is required before this word can be
+                  learned.
+                </p>
+              ) : null}
+            </div>
+          </>
+        ) : null}
+      </DialogContent>
+    </Dialog>
+  )
 }
 
 export function QuickVocabWordButton({
@@ -232,66 +310,13 @@ export function QuickVocabWordButton({
         {children ?? term}
       </button>
 
-      <Dialog
-        open={open}
+      <QuickVocabDialog
+        entry={entry}
+        error={error}
+        onMark={markWord}
         onOpenChange={setOpen}
-      >
-        <DialogContent className="border-manga-black bg-manga-white border-3 shadow-[6px_6px_0_var(--manga-black)]">
-          {entry ? (
-            <>
-              <DialogHeader>
-                <DialogTitle className="sr-only">
-                  {entry.entry.term}
-                </DialogTitle>
-                <DialogDescription className="text-manga-ink-soft text-sm font-semibold">
-                  {entry.entry.enrichmentStatus}
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-3">
-                <VocabTermHeader entry={entry.entry} />
-                <div className="border-manga-black bg-manga-paper-soft rounded-control border-2 p-3 text-right text-base leading-7 font-black">
-                  {getVietnamese(entry)}
-                </div>
-                <div className="border-manga-black bg-manga-white rounded-control border-2 p-3 text-base leading-7 font-semibold">
-                  {getDefinition(entry)}
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <MangaButton
-                    className="[&>span:last-child]:whitespace-nowrap"
-                    disabled={!hasVietnameseMeaning(entry.entry)}
-                    icon={<BookOpen className="size-4" />}
-                    onClick={() => markWord('shouldLearn')}
-                  >
-                    Should Learn
-                  </MangaButton>
-                  <MangaButton
-                    className="[&>span:last-child]:whitespace-nowrap"
-                    disabled={!hasVietnameseMeaning(entry.entry)}
-                    icon={<Check className="size-4" />}
-                    onClick={() => markWord('alreadyKnow')}
-                    tone="paper"
-                  >
-                    Already Know
-                  </MangaButton>
-                </div>
-                <p className="text-manga-ink-soft flex items-center gap-2 text-xs font-black uppercase">
-                  <Search className="size-4" />
-                  {entry.userItem?.status ?? 'Not picked yet'}
-                </p>
-                {error ? (
-                  <p className="text-manga-red text-sm font-black">{error}</p>
-                ) : null}
-                {!hasVietnameseMeaning(entry.entry) ? (
-                  <p className="text-manga-red text-sm font-black">
-                    Vietnamese meaning is required before this word can be
-                    learned.
-                  </p>
-                ) : null}
-              </div>
-            </>
-          ) : null}
-        </DialogContent>
-      </Dialog>
+        open={open}
+      />
     </>
   )
 }
@@ -366,63 +391,12 @@ export function QuickVocabLookup({
         <p className="text-manga-red mt-2 text-sm font-black">{error}</p>
       ) : null}
 
-      <Dialog
-        open={open}
+      <QuickVocabDialog
+        entry={entry}
+        onMark={markWord}
         onOpenChange={setOpen}
-      >
-        <DialogContent className="border-manga-black bg-manga-white border-3 shadow-[6px_6px_0_var(--manga-black)]">
-          {entry ? (
-            <>
-              <DialogHeader>
-                <DialogTitle className="sr-only">
-                  {entry.entry.term}
-                </DialogTitle>
-                <DialogDescription className="text-manga-ink-soft text-sm font-semibold">
-                  {entry.entry.enrichmentStatus}
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-3">
-                <VocabTermHeader entry={entry.entry} />
-                <div className="border-manga-black bg-manga-paper-soft rounded-control border-2 p-3 text-right text-base leading-7 font-black">
-                  {getVietnamese(entry)}
-                </div>
-                <div className="border-manga-black bg-manga-white rounded-control border-2 p-3 text-base leading-7 font-semibold">
-                  {getDefinition(entry)}
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <MangaButton
-                    className="[&>span:last-child]:whitespace-nowrap"
-                    disabled={!hasVietnameseMeaning(entry.entry)}
-                    icon={<BookOpen className="size-4" />}
-                    onClick={() => markWord('shouldLearn')}
-                  >
-                    Should Learn
-                  </MangaButton>
-                  <MangaButton
-                    className="[&>span:last-child]:whitespace-nowrap"
-                    disabled={!hasVietnameseMeaning(entry.entry)}
-                    icon={<Check className="size-4" />}
-                    onClick={() => markWord('alreadyKnow')}
-                    tone="paper"
-                  >
-                    Already Know
-                  </MangaButton>
-                </div>
-                <p className="text-manga-ink-soft flex items-center gap-2 text-xs font-black uppercase">
-                  <Search className="size-4" />
-                  {entry.userItem?.status ?? 'Not picked yet'}
-                </p>
-                {!hasVietnameseMeaning(entry.entry) ? (
-                  <p className="text-manga-red text-sm font-black">
-                    Vietnamese meaning is required before this word can be
-                    learned.
-                  </p>
-                ) : null}
-              </div>
-            </>
-          ) : null}
-        </DialogContent>
-      </Dialog>
+        open={open}
+      />
     </div>
   )
 }

@@ -368,9 +368,25 @@ export function GroupEditor({ group, index, onChange, onRemove }: Props) {
               value={group.body}
             />
           ) : null}
+          {widget === 'radio' ? (
+            <AreaField
+              hint="Optional text above the questions, such as the worked example. Markdown: **bold**, *italic*. No HTML."
+              label="Intro / example"
+              onChange={body => update({ body })}
+              rows={6}
+              value={group.body}
+            />
+          ) : null}
           {group.type === 'plan-map-labelling' ? (
             <ImageUploadField
               label="Plan / map image"
+              onChange={imageUrl => update({ imageUrl })}
+              value={group.imageUrl}
+            />
+          ) : null}
+          {group.type === 'multiple-choice' ? (
+            <ImageUploadField
+              label="Pictures A-D (optional: shows the image with a letter dropdown)"
               onChange={imageUrl => update({ imageUrl })}
               value={group.imageUrl}
             />

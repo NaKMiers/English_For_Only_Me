@@ -28,6 +28,11 @@ import { WritingFeedbackDetails } from '../review/WritingResult'
 import { TaskVisual } from '../visual/TaskVisual'
 import { WritingPrompt } from '../widgets/WritingPrompt'
 import { ExamButton, segmentClass } from '../ui'
+import {
+  PartSwitcher,
+  RunnerFooter,
+  type SkillLinkTarget,
+} from './RunnerFooter'
 import { CheckButton, ResetPartButton } from './PracticeActions'
 import { useResizableSplit } from './ResizableSplit'
 import { RunnerToolbar } from './RunnerToolbar'
@@ -37,6 +42,9 @@ import { useMockDeadline } from './useMockDeadline'
 interface Props {
   attempt: IeltsAttemptRecord
   backHref: string
+  /** Practice only: the test's next and previous skills, for the bottom bar. */
+  next?: SkillLinkTarget | null
+  prev?: SkillLinkTarget | null
   sections: IeltsPublicSection[]
   /** Task to show first, from the test page's task links. */
   startPart?: number | null
@@ -45,13 +53,16 @@ interface Props {
 
 /**
  * Writing runner: the task (prompt and Task 1 visual) on the left, the essay
- * editor on the right. Essays autosave like objective answers (keys "1" and
+ * editor on the right, and the bottom bar with the task switcher between the
+ * skill links. Essays autosave like objective answers (keys "1" and
  * "2"); grading happens on the result page after submit. In practice the
  * learner can also ask the AI examiner about one task before submitting.
  */
 export function WritingRunner({
   attempt,
   backHref,
+  next = null,
+  prev = null,
   sections,
   startPart = null,
   testTitle,
@@ -85,16 +96,16 @@ export function WritingRunner({
   const [notice, setNotice] = useState('')
   const [confirm, setConfirm] = useState<string | null>(null)
   const [exitOpen, setExitOpen] = useState(false)
+  const split = useResizableSplit({
+    defaultPercent: 50,
+    storageKey: 'ielts-writing-split',
+  })
   // Practice checks per task, with the essay as it was when checked: the
   // marked quotes point into that text, not the one being edited.
   const [checks, setChecks] = useState<
     Record<string, { essay: string; feedback: IeltsWritingTaskFeedback }>
   >({})
   const [checkingTask, setCheckingTask] = useState<string | null>(null)
-  const split = useResizableSplit({
-    defaultPercent: 50,
-    storageKey: 'ielts-writing-split',
-  })
   const current = tasks[taskIndex] ?? tasks[0]
   const writing = current?.writing
   const taskKey = String(writing?.task ?? 1)
@@ -257,48 +268,23 @@ export function WritingRunner({
       ) : null}
 
       {/* Segmented toggles (aria-pressed): the documented raw-button exception. */}
-      <div className="border-manga-black bg-manga-white flex shrink-0 flex-wrap gap-2 border-b-2 px-3 py-2">
-        {tasks.length > 1
-          ? tasks.map((section, index) => (
-              <button
-                aria-pressed={index === taskIndex}
-                className={segmentClass(index === taskIndex, 'min-h-10')}
-                key={section.key}
-                onClick={() => setTaskIndex(index)}
-                type="button"
-              >
-                Task {section.writing?.task}
-              </button>
-            ))
-          : null}
-        {canCheck ? (
-          <div className="ml-auto flex items-center max-lg:hidden">
-            <CheckButton
-              busy={checkingTask === taskKey}
-              label={`Check Task ${writing.task}`}
-              onCheck={() => void checkTask()}
-              score={checkScore}
-            />
-          </div>
-        ) : null}
-        <div className="ml-auto flex gap-2 lg:hidden">
-          {(
-            [
-              ['task', 'Prompt'],
-              ['essay', 'Essay'],
-            ] as const
-          ).map(([value, label]) => (
-            <button
-              aria-pressed={mobileTab === value}
-              className={segmentClass(mobileTab === value, 'min-h-10')}
-              key={value}
-              onClick={() => setMobileTab(value)}
-              type="button"
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+      <div className="border-manga-black bg-manga-white flex shrink-0 justify-end gap-2 border-b-2 px-3 py-2 lg:hidden">
+        {(
+          [
+            ['task', 'Prompt'],
+            ['essay', 'Essay'],
+          ] as const
+        ).map(([value, label]) => (
+          <button
+            aria-pressed={mobileTab === value}
+            className={segmentClass(mobileTab === value, 'min-h-10')}
+            key={value}
+            onClick={() => setMobileTab(value)}
+            type="button"
+          >
+            {label}
+          </button>
+        ))}
       </div>
 
       <div
@@ -365,7 +351,7 @@ export function WritingRunner({
           >
             {words} words · minimum {writing.minWords}
           </p>
-          {/* Phones and tablets: the task bar has no room for it. */}
+          {/* Phones and tablets: the footer has no room for it. */}
           {canCheck ? (
             <CheckButton
               busy={checkingTask === taskKey}
@@ -398,6 +384,46 @@ export function WritingRunner({
           ) : null}
         </section>
       </div>
+
+      {tasks.length > 1 || (isPractice && (prev || next)) || canCheck ? (
+        <RunnerFooter
+          action={
+            canCheck ? (
+              <CheckButton
+                busy={checkingTask === taskKey}
+                label={`Check Task ${writing.task}`}
+                onCheck={() => void checkTask()}
+                score={checkScore}
+              />
+            ) : null
+          }
+          next={isPractice ? next : null}
+          prev={isPractice ? prev : null}
+        >
+          {tasks.length > 1 ? (
+            <PartSwitcher
+              current={taskIndex}
+              items={tasks.map((section, index) => {
+                const item = section.writing
+                const text = item ? answers[String(item.task)] : ''
+                const count = countEssayWords(
+                  typeof text === 'string' ? text : ''
+                )
+                const name = `Task ${item?.task ?? index + 1}`
+
+                return {
+                  done: Boolean(item && count >= item.minWords),
+                  label: `${name}, ${count} words`,
+                  part: index,
+                  text: name,
+                  title: `${name}: ${count} words`,
+                }
+              })}
+              onChange={setTaskIndex}
+            />
+          ) : null}
+        </RunnerFooter>
+      ) : null}
 
       <Dialog
         onOpenChange={next => (next ? null : setConfirm(null))}

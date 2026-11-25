@@ -256,58 +256,74 @@ describe('readPracticeEvidence', () => {
 })
 
 describe('checkPracticePart', () => {
-  const reading1 = IELTS_SAMPLE_TEST.sections.find(
-    section => section.key === 'reading-1'
+  const listening2 = IELTS_SAMPLE_TEST.sections.find(
+    section => section.skill === 'listening' && section.order === 2
   )!
-  const firstQuestion = reading1.groups[0].questions[0]
-  const input = (answers: Record<string, string>) => ({
-    answers,
-    attemptId: String(ATTEMPT_ID),
-    ownerId: OWNER,
-    part: reading1.order,
-  })
+  const [first, second] = listening2.groups.flatMap(group => group.questions)
+  const partTotal = listening2.groups.reduce(
+    (sum, group) => sum + group.questions.length,
+    0
+  )
 
-  it('scores only the asked part and writes nothing', async () => {
-    mocks.findOne.mockReturnValue(attempt({ mode: 'practice' }))
-
-    const result = await checkPracticePart(
-      input({ [String(firstQuestion.number)]: firstQuestion.answers[0] })
+  it('grades only the asked part from the answers sent', async () => {
+    mocks.findOne.mockReturnValue(
+      attempt({ mode: 'practice', skill: 'listening' })
     )
+
+    const result = await checkPracticePart({
+      answers: {
+        [first.number]: first.answers[0],
+        [second.number]: 'definitely wrong',
+        // Another part's answer is ignored.
+        '1': 'anything',
+      },
+      attemptId: String(ATTEMPT_ID),
+      ownerId: OWNER,
+      part: 2,
+    })
 
     expect(result.ok).toBe(true)
     if (!result.ok) return
 
-    const partSize = reading1.groups.reduce(
-      (sum, group) => sum + group.questions.length,
-      0
-    )
-
-    expect(result.data).toMatchObject({ part: reading1.order, raw: 1 })
-    expect(result.data.total).toBe(partSize)
-    expect(result.data.marks).toHaveLength(partSize)
+    expect(result.data).toMatchObject({ part: 2, raw: 1, total: partTotal })
+    expect(result.data.questions).toHaveLength(partTotal)
     expect(
-      result.data.marks.find(mark => mark.number === firstQuestion.number)
+      result.data.questions.find(row => row.number === first.number)
     ).toMatchObject({ outcome: 'correct' })
-    expect(mocks.findOneAndUpdate).not.toHaveBeenCalled()
-    expect(mocks.updateOne).not.toHaveBeenCalled()
+    expect(
+      result.data.questions.find(row => row.number === second.number)
+    ).toMatchObject({ outcome: 'wrong', accepted: second.answers })
+    expect(result.data.questions.some(row => row.number === 1)).toBe(false)
   })
 
-  it('refuses mock attempts and submitted attempts', async () => {
-    mocks.findOne.mockReturnValue(attempt({ mode: 'mock' }))
+  it('refuses mock, and a part outside the attempt', async () => {
+    mocks.findOne.mockReturnValue(attempt({ skill: 'listening' }))
 
-    expect(await checkPracticePart(input({}))).toMatchObject({
-      ok: false,
-      status: 403,
-    })
+    expect(
+      await checkPracticePart({
+        answers: {},
+        attemptId: String(ATTEMPT_ID),
+        ownerId: OWNER,
+        part: 2,
+      })
+    ).toMatchObject({ ok: false, status: 403 })
 
     mocks.findOne.mockReturnValue(
-      attempt({ mode: 'practice', status: 'submitted' })
+      attempt({
+        mode: 'practice',
+        scope: { kind: 'part', part: 1 },
+        skill: 'listening',
+      })
     )
 
-    expect(await checkPracticePart(input({}))).toMatchObject({
-      ok: false,
-      status: 409,
-    })
+    expect(
+      await checkPracticePart({
+        answers: {},
+        attemptId: String(ATTEMPT_ID),
+        ownerId: OWNER,
+        part: 2,
+      })
+    ).toMatchObject({ ok: false, status: 404 })
   })
 })
 

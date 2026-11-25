@@ -23,8 +23,9 @@ interface RouteContext {
 }
 
 /**
- * Practice check without submitting: one Listening/Reading part scored
- * against the answers on screen, or AI feedback on one Writing task.
+ * Practice check before the whole test is submitted: one Listening/Reading
+ * part graded from the answers on screen (`{ answers, part }`), or AI
+ * feedback on one Writing task (`{ task, essay }`).
  */
 export async function POST(request: Request, context: RouteContext) {
   const missing = ieltsMissingMongo()
@@ -49,15 +50,13 @@ export async function POST(request: Request, context: RouteContext) {
 
     await connectDatabase()
 
-    if (input.kind === 'part')
+    if ('part' in input)
       return ieltsDecisionResponse(
         await checkPracticePart({
-          answers: input.answers,
+          ...input,
           attemptId: id.data,
           ownerId: actor.id,
-          part: input.part,
-        }),
-        check => ({ check })
+        })
       )
 
     return ieltsDecisionResponse(
