@@ -24,6 +24,7 @@ import type { IeltsTestRecord } from '../tests/testRecords'
 import {
   type IeltsAttemptRecord,
   type IeltsDrillItem,
+  type IeltsPartCheck,
   toIeltsAttemptRecord,
 } from './attemptRecords'
 import {
@@ -45,7 +46,8 @@ import {
 /*
  * Learner attempts. Every query is scoped by ownerId (no IDOR), every write
  * is idempotent or guarded by a condition, and no answer key leaves this file
- * before the attempt is submitted.
+ * before the attempt is submitted, except one part at a time when the
+ * learner asks to check it in practice.
  */
 
 type LeanAttempt = Record<string, unknown> & {
@@ -679,4 +681,61 @@ export async function readPracticeEvidence({
     }
 
   return ieltsError(404, 'That question is not in this attempt.')
+}
+
+/**
+ * Practice "check part": scores one Listening/Reading part against the
+ * answers on screen without submitting. The learner asked to see this part's
+ * key, so the accepted answers come back with the marks. Practice only, and
+ * only while the attempt is open; nothing is written.
+ */
+export async function checkPracticePart({
+  answers,
+  attemptId,
+  ownerId,
+  part,
+}: {
+  answers: IeltsAnswers
+  attemptId: string
+  ownerId: string
+  part: number
+}): Promise<IeltsDecision<IeltsPartCheck>> {
+  const attempt = await readOwnedAttempt(ownerId, attemptId)
+
+  if (!attempt) return ieltsError(404, 'Attempt not found.')
+
+  if (attempt.mode !== 'practice')
+    return ieltsError(403, 'Checking a part is only available in practice.')
+
+  if (attempt.skill === 'writing')
+    return ieltsError(400, 'Writing tasks are checked with AI grading.')
+
+  if (attempt.status !== 'in_progress')
+    return ieltsError(409, 'This attempt is already submitted.')
+
+  const lengths = validateAnswerLengths(answers, false)
+
+  if (!lengths.ok) return lengths
+
+  const section = (await loadAttemptSections(attempt)).find(
+    item => item.order === part
+  )
+
+  if (!section) return ieltsError(404, 'That part is not in this attempt.')
+
+  const result = scoreObjective(buildAnswerKey([section]), answers)
+
+  return {
+    ok: true,
+    data: {
+      part,
+      raw: result.raw,
+      total: result.total,
+      marks: result.perQuestion.map(row => ({
+        number: row.number,
+        outcome: row.outcome,
+        accepted: row.accepted,
+      })),
+    },
+  }
 }

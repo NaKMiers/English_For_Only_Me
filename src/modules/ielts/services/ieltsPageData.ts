@@ -11,7 +11,9 @@ import {
   type IeltsAttemptSummary,
   listIeltsAttempts,
   readIeltsOverall,
+  readIeltsTestBands,
 } from '../attempts/attemptQueries'
+import type { IeltsTestBands } from '../attempts/testBands'
 import type { IeltsOverallEstimate } from '../scoring/overall'
 import {
   type IeltsWeaknessStats,
@@ -23,6 +25,8 @@ export interface IeltsHomeData {
   catalog: IeltsCatalogEntry[]
   attempts: IeltsAttemptSummary[]
   overall: IeltsOverallEstimate | null
+  /** Best band per skill for tests the learner has done, keyed by test id. */
+  testBands: IeltsTestBands
   weakness: IeltsWeaknessStats | null
   isAdmin: boolean
   error: string
@@ -34,6 +38,7 @@ export async function loadIeltsHomeData(): Promise<IeltsHomeData> {
     catalog: [],
     attempts: [],
     overall: null,
+    testBands: {},
     weakness: null,
     isAdmin: false,
     error: '',
@@ -47,17 +52,21 @@ export async function loadIeltsHomeData(): Promise<IeltsHomeData> {
       getOptionalUser(),
       connectDatabaseWhen(getPracticeActorId()),
     ])
-    const [catalog, attempts, overall, weakness] = await Promise.all([
-      readIeltsCatalog(),
-      actorId ? listIeltsAttempts(actorId) : Promise.resolve([]),
-      actorId ? readIeltsOverall(actorId) : Promise.resolve(null),
-      actorId ? readWeaknessStats(actorId) : Promise.resolve(null),
-    ])
+    const [catalog, attempts, overall, testBands, weakness] = await Promise.all(
+      [
+        readIeltsCatalog(),
+        actorId ? listIeltsAttempts(actorId) : Promise.resolve([]),
+        actorId ? readIeltsOverall(actorId) : Promise.resolve(null),
+        actorId ? readIeltsTestBands(actorId) : Promise.resolve({}),
+        actorId ? readWeaknessStats(actorId) : Promise.resolve(null),
+      ]
+    )
 
     return {
       catalog,
       attempts,
       overall,
+      testBands,
       weakness,
       isAdmin: user?.role === 'admin',
       error: '',

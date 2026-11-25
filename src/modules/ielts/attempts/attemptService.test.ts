@@ -43,6 +43,7 @@ const OWNER = 'user-1'
 const NOW = new Date('2026-10-29T10:00:00Z')
 
 import {
+  checkPracticePart,
   deleteAttemptForOwner,
   readPracticeEvidence,
   saveAttemptAnswers,
@@ -251,6 +252,62 @@ describe('readPracticeEvidence', () => {
         ownerId: OWNER,
       })
     ).toMatchObject({ ok: false, status: 403 })
+  })
+})
+
+describe('checkPracticePart', () => {
+  const reading1 = IELTS_SAMPLE_TEST.sections.find(
+    section => section.key === 'reading-1'
+  )!
+  const firstQuestion = reading1.groups[0].questions[0]
+  const input = (answers: Record<string, string>) => ({
+    answers,
+    attemptId: String(ATTEMPT_ID),
+    ownerId: OWNER,
+    part: reading1.order,
+  })
+
+  it('scores only the asked part and writes nothing', async () => {
+    mocks.findOne.mockReturnValue(attempt({ mode: 'practice' }))
+
+    const result = await checkPracticePart(
+      input({ [String(firstQuestion.number)]: firstQuestion.answers[0] })
+    )
+
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+
+    const partSize = reading1.groups.reduce(
+      (sum, group) => sum + group.questions.length,
+      0
+    )
+
+    expect(result.data).toMatchObject({ part: reading1.order, raw: 1 })
+    expect(result.data.total).toBe(partSize)
+    expect(result.data.marks).toHaveLength(partSize)
+    expect(
+      result.data.marks.find(mark => mark.number === firstQuestion.number)
+    ).toMatchObject({ outcome: 'correct' })
+    expect(mocks.findOneAndUpdate).not.toHaveBeenCalled()
+    expect(mocks.updateOne).not.toHaveBeenCalled()
+  })
+
+  it('refuses mock attempts and submitted attempts', async () => {
+    mocks.findOne.mockReturnValue(attempt({ mode: 'mock' }))
+
+    expect(await checkPracticePart(input({}))).toMatchObject({
+      ok: false,
+      status: 403,
+    })
+
+    mocks.findOne.mockReturnValue(
+      attempt({ mode: 'practice', status: 'submitted' })
+    )
+
+    expect(await checkPracticePart(input({}))).toMatchObject({
+      ok: false,
+      status: 409,
+    })
   })
 })
 

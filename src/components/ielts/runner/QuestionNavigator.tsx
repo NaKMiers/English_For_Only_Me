@@ -2,7 +2,7 @@
 
 import { ArrowLeft, ArrowRight, ChevronUp, ListChecks } from 'lucide-react'
 import Link from 'next/link'
-import { memo, useState } from 'react'
+import { memo, type ReactNode, useState } from 'react'
 
 import { cn } from '@/lib/utils'
 import type { IeltsAnswers } from '@/modules/ielts/scoring/scoreObjective'
@@ -10,6 +10,8 @@ import type { IeltsAnswers } from '@/modules/ielts/scoring/scoreObjective'
 import { type IeltsQuestionEntry, isAnswered } from './questionIndex'
 
 interface Props {
+  /** Pinned to the right end of the bar from 1024px (Check part). */
+  action?: ReactNode
   answers: IeltsAnswers
   currentNumber: number | null
   currentPart: number
@@ -62,8 +64,10 @@ function SkillLink({
  * answered count that folds out the current part's question numbers, a joined
  * 1 2 3 4 part switcher, then the next skill. Answered numbers are soft red,
  * the current one solid red; a part with every question answered gets a dot.
+ * From 1024px an optional action sits at the right end.
  */
 export const QuestionNavigator = memo(function QuestionNavigator({
+  action = null,
   answers,
   currentNumber,
   currentPart,
@@ -119,91 +123,102 @@ export const QuestionNavigator = memo(function QuestionNavigator({
         </div>
       ) : null}
 
-      <div className="flex items-center justify-center gap-1.5 sm:gap-2">
-        {prev ? (
-          <SkillLink
-            compact={compact}
-            direction="prev"
-            link={prev}
-          />
-        ) : null}
-        {/* Disclosure toggle (aria-expanded): a plain button by design. */}
-        <button
-          aria-controls="question-numbers"
-          aria-expanded={open}
-          className="border-manga-black bg-manga-white hover:bg-manga-paper-soft rounded-control inline-flex h-9 items-center gap-2 border-2 px-2.5 font-sans text-sm font-black transition-colors sm:px-3"
-          onClick={() => setOpen(value => !value)}
-          type="button"
-        >
-          {/* Icon-only label on phones, so the next-skill link still fits. */}
-          <ListChecks
-            aria-hidden="true"
-            className="size-4 sm:hidden"
-          />
-          <span className="max-sm:sr-only">Questions</span>
-          <span className="text-manga-ink-soft text-xs tabular-nums">
-            {answeredTotal}/{index.length}
-          </span>
-          <ChevronUp
-            aria-hidden="true"
-            className={cn(
-              'size-4 transition-transform max-sm:hidden',
-              !open && 'rotate-180'
-            )}
-          />
-        </button>
-
-        {parts.length > 1 ? (
-          // Segmented part switcher (aria-pressed): documented raw exception.
-          <div
-            aria-label="Choose part"
-            className="border-manga-black rounded-control flex overflow-hidden border-2"
-            role="group"
+      <div
+        className={cn(
+          'grid items-center gap-2',
+          action && 'lg:grid-cols-[1fr_auto_1fr]'
+        )}
+      >
+        {action ? <span className="max-lg:hidden" /> : null}
+        <div className="flex items-center justify-center gap-1.5 sm:gap-2">
+          {prev ? (
+            <SkillLink
+              compact={compact}
+              direction="prev"
+              link={prev}
+            />
+          ) : null}
+          {/* Disclosure toggle (aria-expanded): a plain button by design. */}
+          <button
+            aria-controls="question-numbers"
+            aria-expanded={open}
+            className="border-manga-black bg-manga-white hover:bg-manga-paper-soft rounded-control inline-flex h-9 items-center gap-2 border-2 px-2.5 font-sans text-sm font-black transition-colors sm:px-3"
+            onClick={() => setOpen(value => !value)}
+            type="button"
           >
-            {parts.map(part => {
-              const entries = index.filter(entry => entry.part === part)
-              const done = entries.filter(entry =>
-                isAnswered(entry, answers)
-              ).length
-              const active = part === currentPart
+            {/* Icon-only label on phones, so the next-skill link still fits. */}
+            <ListChecks
+              aria-hidden="true"
+              className="size-4 sm:hidden"
+            />
+            <span className="max-sm:sr-only">Questions</span>
+            <span className="text-manga-ink-soft text-xs tabular-nums">
+              {answeredTotal}/{index.length}
+            </span>
+            <ChevronUp
+              aria-hidden="true"
+              className={cn(
+                'size-4 transition-transform max-sm:hidden',
+                !open && 'rotate-180'
+              )}
+            />
+          </button>
 
-              return (
-                <button
-                  aria-label={`${partLabel(part)}, ${done} of ${entries.length} answered`}
-                  aria-pressed={active}
-                  className={cn(
-                    'border-manga-black relative grid h-8 min-w-8 place-items-center border-l-2 px-1.5 font-sans text-sm font-black tabular-nums transition-colors first:border-l-0',
-                    active
-                      ? 'bg-manga-black text-manga-white'
-                      : 'bg-manga-white hover:bg-manga-paper-soft'
-                  )}
-                  key={part}
-                  onClick={() => onPartChange(part)}
-                  title={`${partLabel(part)}: ${done}/${entries.length} answered`}
-                  type="button"
-                >
-                  {part}
-                  {done === entries.length && entries.length > 0 ? (
-                    <span
-                      aria-hidden="true"
-                      className={cn(
-                        'absolute top-1 right-1 size-1.5 rounded-full',
-                        active ? 'bg-manga-white' : 'bg-manga-red'
-                      )}
-                    />
-                  ) : null}
-                </button>
-              )
-            })}
-          </div>
-        ) : null}
+          {parts.length > 1 ? (
+            // Segmented part switcher (aria-pressed): documented raw exception.
+            <div
+              aria-label="Choose part"
+              className="border-manga-black rounded-control flex overflow-hidden border-2"
+              role="group"
+            >
+              {parts.map(part => {
+                const entries = index.filter(entry => entry.part === part)
+                const done = entries.filter(entry =>
+                  isAnswered(entry, answers)
+                ).length
+                const active = part === currentPart
 
-        {next ? (
-          <SkillLink
-            compact={compact}
-            direction="next"
-            link={next}
-          />
+                return (
+                  <button
+                    aria-label={`${partLabel(part)}, ${done} of ${entries.length} answered`}
+                    aria-pressed={active}
+                    className={cn(
+                      'border-manga-black relative grid h-8 min-w-8 place-items-center border-l-2 px-1.5 font-sans text-sm font-black tabular-nums transition-colors first:border-l-0',
+                      active
+                        ? 'bg-manga-black text-manga-white'
+                        : 'bg-manga-white hover:bg-manga-paper-soft'
+                    )}
+                    key={part}
+                    onClick={() => onPartChange(part)}
+                    title={`${partLabel(part)}: ${done}/${entries.length} answered`}
+                    type="button"
+                  >
+                    {part}
+                    {done === entries.length && entries.length > 0 ? (
+                      <span
+                        aria-hidden="true"
+                        className={cn(
+                          'absolute top-1 right-1 size-1.5 rounded-full',
+                          active ? 'bg-manga-white' : 'bg-manga-red'
+                        )}
+                      />
+                    ) : null}
+                  </button>
+                )
+              })}
+            </div>
+          ) : null}
+
+          {next ? (
+            <SkillLink
+              compact={compact}
+              direction="next"
+              link={next}
+            />
+          ) : null}
+        </div>
+        {action ? (
+          <div className="flex justify-end max-lg:hidden">{action}</div>
         ) : null}
       </div>
     </nav>

@@ -1,5 +1,9 @@
 import type { OutboxEnqueueInput } from '@/lib/sync/outbox'
-import type { IeltsAttemptRecord } from '@/modules/ielts/attempts/attemptRecords'
+import type {
+  IeltsAttemptRecord,
+  IeltsPartCheck,
+  IeltsWritingTaskFeedback,
+} from '@/modules/ielts/attempts/attemptRecords'
 import {
   IELTS_API_PATHS,
   IELTS_OUTBOX_LANE_PREFIX,
@@ -132,6 +136,36 @@ export async function gradeIeltsWritingApi(
 ): Promise<{ attempt: IeltsAttemptRecord }> {
   const response = await fetch(IELTS_API_PATHS.grade(attemptId), {
     body: JSON.stringify({ task }),
+    headers: { 'content-type': 'application/json' },
+    method: 'POST',
+  })
+
+  return readJson(response)
+}
+
+/** Practice: score one Listening/Reading part without submitting. */
+export async function checkIeltsPartApi(
+  attemptId: string,
+  part: number,
+  answers: IeltsAnswers
+): Promise<{ check: IeltsPartCheck }> {
+  const response = await fetch(IELTS_API_PATHS.check(attemptId), {
+    body: JSON.stringify({ kind: 'part', part, answers }),
+    headers: { 'content-type': 'application/json' },
+    method: 'POST',
+  })
+
+  return readJson(response)
+}
+
+/** Practice: AI feedback on one Writing task without submitting. */
+export async function checkIeltsTaskApi(
+  attemptId: string,
+  task: 1 | 2,
+  essay: string
+): Promise<{ feedback: IeltsWritingTaskFeedback }> {
+  const response = await fetch(IELTS_API_PATHS.check(attemptId), {
+    body: JSON.stringify({ kind: 'task', task, essay }),
     headers: { 'content-type': 'application/json' },
     method: 'POST',
   })

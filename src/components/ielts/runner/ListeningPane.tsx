@@ -45,7 +45,7 @@ function Transcript({
     <ol
       aria-label="Transcript"
       data-highlight-scope={`transcript:${section.key}`}
-      className="font-body grid gap-2 text-[17px] leading-[1.7]"
+      className="font-body grid gap-1.5 text-[17px] leading-[1.65]"
     >
       {lines.map((line, index) => (
         <li
@@ -83,12 +83,18 @@ function PracticeAudio({
   return (
     <div className="grid gap-4">
       {audio ? (
+        // Sticks to the top of the pane so the controls stay in reach while
+        // the transcript scrolls. `-top-4` cancels the pane's 16px top
+        // padding so no text shows above it; the 8px paper band (py-2) is
+        // the gap and hides text sliding under it.
         // Captions are the transcript toggle below.
-        <AudioPlayer
-          durationSec={audio.durationSec}
-          key={audio.url}
-          src={audio.url}
-        />
+        <div className="bg-manga-white sticky -top-4 z-10 -my-2 py-2">
+          <AudioPlayer
+            durationSec={audio.durationSec}
+            key={audio.url}
+            src={audio.url}
+          />
+        </div>
       ) : (
         <p className="border-manga-black bg-manga-pale-red rounded-control border-2 p-3 text-sm font-semibold">
           This part has no audio yet. Read the transcript to practise.
@@ -374,8 +380,8 @@ export function ListeningPane(props: Props) {
   if (props.attempt.mode === 'mock') return <MockAudio {...props} />
 
   return (
-    <div className="mx-auto grid max-w-[68ch] gap-4">
-      <header className="grid gap-1">
+    <div className="mx-auto grid max-w-[68ch] gap-3">
+      <header className="grid gap-0.5">
         <p className="text-muted-foreground font-sans text-xs font-black uppercase">
           Part {section.order}
         </p>

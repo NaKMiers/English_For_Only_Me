@@ -4,6 +4,7 @@ import { BookOpen, ChevronRight, Headphones, PenLine } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
 
+import type { IeltsTestBands } from '@/modules/ielts/attempts/testBands'
 import { IELTS_SKILL_LABELS, IELTS_SKILLS } from '@/modules/ielts/constants'
 import type { IeltsCatalogEntry } from '@/modules/ielts/tests/testReaders'
 
@@ -16,6 +17,8 @@ import {
 import { groupCatalogue, TRACK_LABELS } from './catalogueGroups'
 
 interface Props {
+  /** Best band per skill for tests already done, keyed by test id. */
+  bands: IeltsTestBands
   catalog: IeltsCatalogEntry[]
 }
 
@@ -33,9 +36,10 @@ const SORT_OPTIONS: CatalogueSort[] = ['newest', 'oldest', 'title']
  * Academic"), then one card per test. The whole card is one link to the test
  * page, where the learner picks a skill and practice or timed mode; the skill
  * icons only show what the test contains. Newest tests come first; the
- * toolbar searches, re-sorts and filters by type and skill.
+ * toolbar searches, re-sorts and filters by type and skill. A skill the
+ * learner already has a band on shows that best band next to its icon.
  */
-export function TestCards({ catalog }: Props) {
+export function TestCards({ bands, catalog }: Props) {
   const [query, setQuery] = useState('')
   const [sort, setSort] = useState<CatalogueSort>('newest')
   const [track, setTrack] = useState('all')
@@ -102,9 +106,9 @@ export function TestCards({ catalog }: Props) {
           className="grid gap-3"
           key={group.heading}
         >
-          <h2 className="text-manga-red font-sans text-lg font-black">
-            {group.heading}
-          </h2>
+          {/* No colour class: it inherits the shell's ink (cream on the dark
+              light-up room). Red reads as an error here. */}
+          <h2 className="font-sans text-lg font-black">{group.heading}</h2>
           <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
             {group.tests.map(({ entry, label }) => (
               <li key={entry.id}>
@@ -120,16 +124,35 @@ export function TestCards({ catalog }: Props) {
                       className="size-4 shrink-0"
                     />
                   </span>
-                  <span className="text-manga-ink-soft flex items-center gap-2">
+                  <span className="text-manga-ink-soft flex flex-wrap items-center gap-x-3 gap-y-1">
                     {entry.skills.map(({ skill }) => {
                       const Icon = SKILL_ICONS[skill]
+                      const band = bands[entry.id]?.[skill]
+
+                      if (band === undefined)
+                        return (
+                          <Icon
+                            aria-label={IELTS_SKILL_LABELS[skill]}
+                            className="size-4"
+                            key={skill}
+                          />
+                        )
 
                       return (
-                        <Icon
-                          aria-label={IELTS_SKILL_LABELS[skill]}
-                          className="size-4"
+                        <span
+                          aria-label={`${IELTS_SKILL_LABELS[skill]}: best band ${band.toFixed(1)}`}
+                          className="bg-manga-black text-manga-white rounded-tag inline-flex items-center gap-1 px-1.5 py-0.5"
                           key={skill}
-                        />
+                          title={`${IELTS_SKILL_LABELS[skill]}: best band ${band.toFixed(1)}`}
+                        >
+                          <Icon
+                            aria-hidden="true"
+                            className="size-3.5"
+                          />
+                          <span className="font-sans text-xs font-black tabular-nums">
+                            {band.toFixed(1)}
+                          </span>
+                        </span>
                       )
                     })}
                   </span>

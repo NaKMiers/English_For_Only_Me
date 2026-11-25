@@ -186,6 +186,26 @@ export function useAttemptAnswers({ attempt, enabled, onTimeUp }: Options) {
     [attempt.id, enabled, schedule]
   )
 
+  /** Reset: drops the answers to these questions in one save. */
+  const clearAnswers = useCallback(
+    (numbers: number[]) => {
+      if (!enabled || timeUpRef.current) return
+
+      const next = { ...answersRef.current }
+
+      for (const number of numbers) delete next[String(number)]
+
+      answersRef.current = next
+      seqRef.current += 1
+      dirtyRef.current = true
+      writeLocal(attempt.id, { answers: next, seq: seqRef.current })
+      setAnswers(next)
+      setSaveState('pending')
+      schedule()
+    },
+    [attempt.id, enabled, schedule]
+  )
+
   /** Final snapshot; resolves with the scored attempt or an error message. */
   const submit = useCallback(async (): Promise<
     | { ok: true; attempt: IeltsAttemptRecord }
@@ -214,5 +234,5 @@ export function useAttemptAnswers({ attempt, enabled, onTimeUp }: Options) {
     }
   }, [attempt.id, outbox])
 
-  return { answers, saveState, setAnswer, submit }
+  return { answers, clearAnswers, saveState, setAnswer, submit }
 }

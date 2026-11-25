@@ -1,0 +1,80 @@
+import { connectDatabase } from '@/lib/db/connectDatabase'
+import {
+  parseAttemptId,
+  parseCheckPractice,
+} from '@/modules/ielts/attempts/attemptRouteDecisions'
+import { checkPracticePart } from '@/modules/ielts/attempts/attemptService'
+import {
+  ieltsDecisionError,
+  ieltsDecisionResponse,
+  ieltsMissingMongo,
+  ieltsRouteFailure,
+  readJsonBody,
+} from '@/modules/ielts/http'
+import { checkPracticeWriting } from '@/modules/ielts/writing/gradeWritingService'
+import { requirePracticeActor } from '@/modules/dictation/services/getCurrentUser'
+
+export const runtime = 'nodejs'
+// A writing check is one examiner request (aborted at 240 s).
+export const maxDuration = 300
+
+interface RouteContext {
+  params: Promise<{ attemptId: string }>
+}
+
+/**
+ * Practice check without submitting: one Listening/Reading part scored
+ * against the answers on screen, or AI feedback on one Writing task.
+ */
+export async function POST(request: Request, context: RouteContext) {
+  const missing = ieltsMissingMongo()
+
+  if (missing) return missing
+
+  const id = parseAttemptId((await context.params).attemptId)
+
+  if (!id.ok) return ieltsDecisionError(id)
+
+  const body = await readJsonBody(request)
+
+  if (!body.ok) return ieltsDecisionError(body)
+
+  const parsed = parseCheckPractice(body.data)
+
+  if (!parsed.ok) return ieltsDecisionError(parsed)
+
+  try {
+    const actor = await requirePracticeActor()
+    const input = parsed.data
+
+    await connectDatabase()
+
+    if (input.kind === 'part')
+      return ieltsDecisionResponse(
+        await checkPracticePart({
+          answers: input.answers,
+          attemptId: id.data,
+          ownerId: actor.id,
+          part: input.part,
+        }),
+        check => ({ check })
+      )
+
+    return ieltsDecisionResponse(
+      await checkPracticeWriting({
+        attemptId: id.data,
+        essay: input.essay,
+        isGuest: actor.isGuest,
+        ownerId: actor.id,
+        task: input.task,
+      }),
+      feedback => ({ feedback })
+    )
+  } catch (error) {
+    return ieltsRouteFailure(
+      error,
+      'ielts practice check failed',
+      'Could not check. Try again later.'
+    )
+  }
+}

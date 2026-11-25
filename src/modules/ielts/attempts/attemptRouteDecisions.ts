@@ -105,6 +105,29 @@ export const gradeWritingSchema = z
   .object({ task: z.union([z.literal(1), z.literal(2)]) })
   .strict()
 
+/**
+ * Practice "check": a Listening/Reading part with the answers on screen
+ * (possibly newer than the last autosave), or one Writing task's essay.
+ */
+export const checkPracticeSchema = z.union([
+  z
+    .object({
+      kind: z.literal('part'),
+      part: z.number().int().min(1).max(4),
+      answers: answersSchema,
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal('task'),
+      task: z.union([z.literal(1), z.literal(2)]),
+      essay: z.string().max(IELTS_ESSAY_MAX_LENGTH),
+    })
+    .strict(),
+])
+
+export type CheckPracticeInput = z.infer<typeof checkPracticeSchema>
+
 function parseWith<T>(
   schema: z.ZodType<T>,
   body: unknown,
@@ -139,6 +162,9 @@ export const parseStartDrill = (body: unknown) =>
 
 export const parseAudioEvent = (body: unknown) =>
   parseWith(audioEventSchema, body, 'Invalid audio event.')
+
+export const parseCheckPractice = (body: unknown) =>
+  parseWith(checkPracticeSchema, body, 'Invalid check request.')
 
 export const parseGradeWriting = (body: unknown) =>
   parseWith(gradeWritingSchema, body, 'Invalid grading request.')

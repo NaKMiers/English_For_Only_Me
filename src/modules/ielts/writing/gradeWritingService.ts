@@ -266,3 +266,97 @@ export async function gradeWritingTask({
     ? { ok: true, data: toIeltsAttemptRecord(updated) }
     : ieltsError(404, 'Attempt not found.')
 }
+
+/**
+ * Practice "check task": AI feedback on one task's essay before the attempt
+ * is submitted. The essay comes from the screen (it may be newer than the
+ * last autosave). The feedback goes back to the runner only, nothing on the
+ * attempt changes except the grading count, which keeps the daily limit
+ * honest. Same guest, configuration and limit rules as graded results.
+ */
+export async function checkPracticeWriting({
+  attemptId,
+  essay,
+  fetcher,
+  isGuest,
+  now = new Date(),
+  ownerId,
+  task,
+}: {
+  attemptId: string
+  essay: string
+  fetcher?: typeof fetch
+  isGuest: boolean
+  now?: Date
+  ownerId: string
+  task: 1 | 2
+}): Promise<IeltsDecision<IeltsWritingTaskFeedback>> {
+  if (isGuest) return ieltsError(401, 'Sign in to get AI grading.')
+
+  const attempt = await IeltsAttemptModel.findOne({
+    _id: attemptId,
+    ownerId,
+  }).lean()
+
+  if (!attempt) return ieltsError(404, 'Attempt not found.')
+
+  if (attempt.skill !== 'writing')
+    return ieltsError(400, 'Only writing tasks are graded with AI.')
+
+  if (attempt.mode !== 'practice')
+    return ieltsError(403, 'Checking a task is only available in practice.')
+
+  if (attempt.status !== 'in_progress')
+    return ieltsError(409, 'This attempt is already submitted.')
+
+  if (!essay.trim()) return ieltsError(400, 'Write the essay first.')
+
+  const sections = await loadAttemptSections(
+    attempt as unknown as Parameters<typeof loadAttemptSections>[0]
+  )
+  const material = sections.find(
+    section => section.writing?.task === task
+  )?.writing
+
+  if (!material) return ieltsError(404, 'That task is not in this attempt.')
+
+  if (!getOpenAiApiKey()) return ieltsError(503, 'OpenAI is not configured.')
+
+  const limit = getIeltsWritingDailyLimit()
+
+  if ((await countGradingsToday(ownerId, now)) >= limit)
+    return ieltsError(429, `No gradings left today (limit ${limit}).`)
+
+  const result = await runExaminer({
+    apiKey: getOpenAiApiKey(),
+    fetcher,
+    model: getOpenAiIeltsGradingModel(),
+    input: {
+      task,
+      track: attempt.track === 'general' ? 'general' : 'academic',
+      prompt: material.prompt,
+      visual: material.visual,
+      minWords: material.minWords,
+      essay,
+      wordCount: countEssayWords(essay),
+      lessons: examinerLessons(),
+    },
+  })
+
+  if (!result.ok) {
+    console.warn('ielts writing check failed', {
+      attemptId,
+      message: result.message,
+      task,
+    })
+
+    return ieltsError(500, `Could not grade: ${result.message}`)
+  }
+
+  await IeltsAttemptModel.updateOne(
+    { _id: attempt._id, ownerId },
+    { $push: { gradings: { task, at: now } } }
+  )
+
+  return { ok: true, data: { ...result.feedback, startedAt: null } }
+}

@@ -1,9 +1,8 @@
 'use client'
 
-import { memo, useCallback } from 'react'
+import { memo, type ReactNode, useCallback } from 'react'
 
 import { Checkbox } from '@/components/ui/checkbox'
-import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import {
   Select,
@@ -67,6 +66,46 @@ function QuestionNumber({ number }: { number: number }) {
   )
 }
 
+/**
+ * One answer choice: only the radio or checkbox picks it. The text is plain,
+ * selectable copy (it names the control through `aria-labelledby`) so the
+ * learner can select and highlight it like the passage.
+ */
+function OptionRow({
+  children,
+  control,
+  nowrap = false,
+  selected,
+  textId,
+}: {
+  children: ReactNode
+  control: ReactNode
+  nowrap?: boolean
+  selected: boolean
+  textId: string
+}) {
+  return (
+    <div
+      className={cn(
+        'rounded-control flex items-start gap-3 border-2 px-2 py-0.5',
+        nowrap && 'whitespace-nowrap',
+        selected ? 'border-manga-red bg-manga-paper-soft' : 'border-transparent'
+      )}
+      data-option
+    >
+      {control}
+      <span
+        className="cursor-text leading-[1.55]"
+        id={textId}
+      >
+        {children}
+      </span>
+    </div>
+  )
+}
+
+const OPTION_CONTROL_CLASS = 'hover:bg-manga-pale-red mt-[3px]'
+
 /** One question, one letter: MC with a single answer, TFNG, YNNG. */
 function RadioQuestions({ group }: Props) {
   const { answers, onFocusQuestion, readOnly, review, setAnswer } =
@@ -75,7 +114,7 @@ function RadioQuestions({ group }: Props) {
   const isJudgement = group.type !== 'multiple-choice'
 
   return (
-    <ol className="grid gap-6">
+    <ol className="grid gap-4">
       {group.questions.map(question => {
         const value = answerText(answers[String(question.number)])
         const promptId = `${questionControlId(question.number)}-prompt`
@@ -83,7 +122,7 @@ function RadioQuestions({ group }: Props) {
 
         return (
           <li
-            className="grid gap-3"
+            className="grid gap-1.5"
             id={questionBlockId(question.number)}
             key={question.number}
           >
@@ -96,7 +135,10 @@ function RadioQuestions({ group }: Props) {
             </div>
             <RadioGroup
               aria-labelledby={promptId}
-              className={cn('pl-10', isJudgement && 'flex flex-wrap')}
+              className={cn(
+                'gap-1 pl-8',
+                isJudgement && 'flex flex-wrap gap-x-2'
+              )}
               onValueChange={next => setAnswer(question.number, String(next))}
               readOnly={readOnly}
               value={value || null}
@@ -108,30 +150,26 @@ function RadioQuestions({ group }: Props) {
                     : `${questionControlId(question.number)}-${option.key}`
 
                 return (
-                  <Label
-                    className={cn(
-                      'rounded-control flex min-h-10 cursor-pointer items-start gap-3 border-2 px-3 py-2 text-[16px] font-normal transition-colors',
-                      isJudgement && 'whitespace-nowrap',
-                      value === option.key
-                        ? 'border-manga-red bg-manga-paper-soft'
-                        : 'hover:bg-manga-pale-red border-transparent'
-                    )}
-                    htmlFor={id}
+                  <OptionRow
+                    control={
+                      <RadioGroupItem
+                        aria-labelledby={`${id}-text`}
+                        className={OPTION_CONTROL_CLASS}
+                        id={id}
+                        onFocus={() => onFocusQuestion(question.number)}
+                        value={option.key}
+                      />
+                    }
                     key={option.key}
+                    nowrap={isJudgement}
+                    selected={value === option.key}
+                    textId={`${id}-text`}
                   >
-                    <RadioGroupItem
-                      className="mt-1"
-                      id={id}
-                      onFocus={() => onFocusQuestion(question.number)}
-                      value={option.key}
-                    />
-                    <span className="leading-[1.6]">
-                      <strong className="font-sans font-black">
-                        {option.key}
-                      </strong>
-                      {option.text ? ` ${option.text}` : ''}
-                    </span>
-                  </Label>
+                    <strong className="font-sans font-black">
+                      {option.key}
+                    </strong>
+                    {option.text ? ` ${option.text}` : ''}
+                  </OptionRow>
                 )
               })}
             </RadioGroup>
@@ -168,7 +206,7 @@ function CheckboxQuestions({ group }: Props) {
 
   return (
     <div
-      className="grid gap-3"
+      className="grid gap-1.5"
       id={questionBlockId(first)}
     >
       <div className="flex items-start gap-3">
@@ -188,7 +226,7 @@ function CheckboxQuestions({ group }: Props) {
         Chosen {chosen.length}/{size}
         {full && !readOnly ? '. Remove a choice to change it.' : ''}
       </p>
-      <div className="grid gap-1 pl-10">
+      <div className="grid gap-1 pl-8">
         {group.options.map((option, index) => {
           const checked = chosen.includes(option.key)
           const id =
@@ -197,29 +235,25 @@ function CheckboxQuestions({ group }: Props) {
               : `${questionControlId(first)}-${option.key}`
 
           return (
-            <Label
-              className={cn(
-                'rounded-control flex min-h-10 cursor-pointer items-start gap-3 border-2 px-3 py-2 text-[16px] font-normal transition-colors',
-                checked
-                  ? 'border-manga-red bg-manga-paper-soft'
-                  : 'hover:bg-manga-pale-red border-transparent'
-              )}
-              htmlFor={id}
+            <OptionRow
+              control={
+                <Checkbox
+                  aria-labelledby={`${id}-text`}
+                  checked={checked}
+                  className={OPTION_CONTROL_CLASS}
+                  disabled={readOnly || (full && !checked)}
+                  id={id}
+                  onCheckedChange={next => toggle(option.key, next === true)}
+                  onFocus={() => onFocusQuestion(first)}
+                />
+              }
               key={option.key}
+              selected={checked}
+              textId={`${id}-text`}
             >
-              <Checkbox
-                checked={checked}
-                className="mt-1"
-                disabled={readOnly || (full && !checked)}
-                id={id}
-                onCheckedChange={next => toggle(option.key, next === true)}
-                onFocus={() => onFocusQuestion(first)}
-              />
-              <span className="leading-[1.6]">
-                <strong className="font-sans font-black">{option.key}</strong>{' '}
-                {option.text}
-              </span>
-            </Label>
+              <strong className="font-sans font-black">{option.key}</strong>{' '}
+              {option.text}
+            </OptionRow>
           )
         })}
       </div>
@@ -254,12 +288,12 @@ function OptionsBox({
   title?: string
 }) {
   return (
-    <div className="border-manga-black bg-manga-pale-red rounded-control grid gap-1.5 border-2 p-3">
+    <div className="border-manga-black bg-manga-pale-red rounded-control grid gap-1 border-2 px-3 py-2">
       {title ? <p className="text-sm font-bold">{title}</p> : null}
       <ul className="grid gap-1">
         {options.map(option => (
           <li
-            className="flex gap-2 leading-[1.6]"
+            className="flex gap-2 leading-[1.5]"
             key={option.key}
           >
             <strong className="min-w-8 font-sans font-black">
@@ -279,7 +313,7 @@ function DropdownQuestions({ group }: Props) {
     useIeltsAnswers()
 
   return (
-    <div className="grid gap-4">
+    <div className="grid gap-3">
       {group.imageUrl ? (
         // eslint-disable-next-line @next/next/no-img-element -- admin-uploaded Cloudinary image of any size
         <img
@@ -292,7 +326,7 @@ function DropdownQuestions({ group }: Props) {
         options={group.options}
         title={group.title}
       />
-      <ol className="grid gap-3">
+      <ol className="grid gap-2">
         {group.questions.map(question => {
           const value = answerText(answers[String(question.number)])
           const promptId = `${questionControlId(question.number)}-prompt`
@@ -300,13 +334,13 @@ function DropdownQuestions({ group }: Props) {
 
           return (
             <li
-              className="grid gap-2"
+              className="grid gap-1"
               id={questionBlockId(question.number)}
               key={question.number}
             >
               <div className="flex flex-wrap items-center gap-3">
                 <QuestionNumber number={question.number} />
-                <span className="min-w-0 flex-1 font-medium">
+                <span className="min-w-0 font-medium">
                   <span id={promptId}>{question.prompt}</span>{' '}
                   <EvidenceIconButton number={question.number} />
                 </span>
@@ -376,14 +410,14 @@ function SlotQuestions({ group }: Props) {
   )
 
   return (
-    <div className="grid gap-4">
+    <div className="grid gap-3">
       {group.body ? (
         <div
-          className="border-manga-black rounded-control bg-manga-white border-2 p-4"
+          className="border-manga-black rounded-control bg-manga-white border-2 px-4 py-3"
           id={bodyId}
         >
           {group.title ? (
-            <p className="mb-3 text-center font-sans font-black">
+            <p className="mb-2 text-center font-sans font-black">
               {group.title}
             </p>
           ) : null}
@@ -397,7 +431,7 @@ function SlotQuestions({ group }: Props) {
         <OptionsBox options={letters} />
       ) : null}
       {promptQuestions.length ? (
-        <ol className="grid gap-3">
+        <ol className="grid gap-2">
           {promptQuestions.map(question => (
             <li
               className="leading-[1.9]"
@@ -429,7 +463,7 @@ export const GroupBlock = memo(function GroupBlock({ group }: Props) {
       data-highlight-scope={`group:${group.id}`}
       className="grid gap-3"
     >
-      <header className="grid gap-1">
+      <header className="grid gap-0.5">
         <h3
           className="font-sans text-base font-black"
           id={`ielts-group-${group.id}-title`}
@@ -438,7 +472,7 @@ export const GroupBlock = memo(function GroupBlock({ group }: Props) {
             ? `Question ${group.from}`
             : `Questions ${group.from}-${group.to}`}
         </h3>
-        <p className="text-manga-black leading-[1.6]">{group.instruction}</p>
+        <p className="text-manga-black leading-[1.5]">{group.instruction}</p>
       </header>
       {widget === 'slot' ? <SlotQuestions group={group} /> : null}
       {widget === 'radio' ? <RadioQuestions group={group} /> : null}

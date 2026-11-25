@@ -15,14 +15,21 @@ import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
-import type { IeltsAttemptRecord } from '@/modules/ielts/attempts/attemptRecords'
+import type {
+  IeltsAttemptRecord,
+  IeltsWritingTaskFeedback,
+} from '@/modules/ielts/attempts/attemptRecords'
 import { IELTS_ESSAY_MAX_LENGTH } from '@/modules/ielts/constants'
 import type { IeltsPublicSection } from '@/modules/ielts/publicView'
 import { countEssayWords } from '@/modules/ielts/scoring/wordCount'
+import { checkIeltsTaskApi } from '@/requests/ieltsApi'
 
+import { WritingFeedbackDetails } from '../review/WritingResult'
 import { TaskVisual } from '../visual/TaskVisual'
 import { WritingPrompt } from '../widgets/WritingPrompt'
 import { ExamButton, segmentClass } from '../ui'
+import { CheckButton, ResetPartButton } from './PracticeActions'
+import { useResizableSplit } from './ResizableSplit'
 import { RunnerToolbar } from './RunnerToolbar'
 import { useAttemptAnswers } from './useAttemptAnswers'
 import { useMockDeadline } from './useMockDeadline'
@@ -39,7 +46,8 @@ interface Props {
 /**
  * Writing runner: the task (prompt and Task 1 visual) on the left, the essay
  * editor on the right. Essays autosave like objective answers (keys "1" and
- * "2"); grading happens on the result page after submit.
+ * "2"); grading happens on the result page after submit. In practice the
+ * learner can also ask the AI examiner about one task before submitting.
  */
 export function WritingRunner({
   attempt,
@@ -50,16 +58,18 @@ export function WritingRunner({
 }: Props) {
   const router = useRouter()
   const isMock = attempt.mode === 'mock'
+  const isPractice = attempt.mode === 'practice'
   const open = attempt.status === 'in_progress'
   const [submitting, setSubmitting] = useState(false)
   const locked = !open || submitting
   // Filled in below once `finish` exists; the hook calls it on a late save.
   const finishRef = useRef<() => void>(() => undefined)
-  const { answers, saveState, setAnswer, submit } = useAttemptAnswers({
-    attempt,
-    enabled: !locked,
-    onTimeUp: () => finishRef.current(),
-  })
+  const { answers, clearAnswers, saveState, setAnswer, submit } =
+    useAttemptAnswers({
+      attempt,
+      enabled: !locked,
+      onTimeUp: () => finishRef.current(),
+    })
   const tasks = useMemo(
     () => sections.filter(section => section.writing),
     [sections]
@@ -75,11 +85,68 @@ export function WritingRunner({
   const [notice, setNotice] = useState('')
   const [confirm, setConfirm] = useState<string | null>(null)
   const [exitOpen, setExitOpen] = useState(false)
+  // Practice checks per task, with the essay as it was when checked: the
+  // marked quotes point into that text, not the one being edited.
+  const [checks, setChecks] = useState<
+    Record<string, { essay: string; feedback: IeltsWritingTaskFeedback }>
+  >({})
+  const [checkingTask, setCheckingTask] = useState<string | null>(null)
+  const split = useResizableSplit({
+    defaultPercent: 50,
+    storageKey: 'ielts-writing-split',
+  })
   const current = tasks[taskIndex] ?? tasks[0]
   const writing = current?.writing
   const taskKey = String(writing?.task ?? 1)
   const essay = typeof answers[taskKey] === 'string' ? answers[taskKey] : ''
   const words = countEssayWords(essay)
+  const canCheck = isPractice && !locked
+  const check = checks[taskKey]
+  const checkScore =
+    check?.feedback.band != null
+      ? `Band ${check.feedback.band.toFixed(1)}`
+      : null
+
+  const checkTask = async () => {
+    const key = taskKey
+    const text = essay
+
+    if (!text.trim()) {
+      setNotice(`Write Task ${key} before checking it.`)
+      return
+    }
+
+    setCheckingTask(key)
+
+    try {
+      const { feedback } = await checkIeltsTaskApi(
+        attempt.id,
+        Number(key) as 1 | 2,
+        text
+      )
+
+      setChecks(current => ({ ...current, [key]: { essay: text, feedback } }))
+      setNotice(
+        feedback.band != null
+          ? `Task ${key}: band ${feedback.band.toFixed(1)} (estimate).`
+          : `Task ${key} checked.`
+      )
+    } catch (error) {
+      setNotice(
+        `Could not check Task ${key}: ${error instanceof Error ? error.message : 'try again.'}`
+      )
+    } finally {
+      setCheckingTask(null)
+    }
+  }
+
+  const resetTask = () => {
+    const key = taskKey
+
+    clearAnswers([Number(key)])
+    setChecks(({ [key]: _dropped, ...rest }) => rest)
+    setNotice(`Task ${key} reset.`)
+  }
 
   const finish = useCallback(async () => {
     setSubmitting(true)
@@ -155,13 +222,20 @@ export function WritingRunner({
         title={`${testTitle} · Writing`}
         toggles={
           isMock ? null : (
-            <Label className="text-manga-black flex items-center gap-2 text-xs font-semibold">
-              <Switch
-                checked={spellCheck}
-                onCheckedChange={setSpellCheck}
+            <div className="flex items-center gap-3">
+              <ResetPartButton
+                disabled={locked}
+                name={`Task ${writing.task}`}
+                onReset={resetTask}
               />
-              Spell check
-            </Label>
+              <Label className="text-manga-black flex items-center gap-2 text-xs font-semibold">
+                <Switch
+                  checked={spellCheck}
+                  onCheckedChange={setSpellCheck}
+                />
+                Spell check
+              </Label>
+            </div>
           )
         }
       />
@@ -197,6 +271,16 @@ export function WritingRunner({
               </button>
             ))
           : null}
+        {canCheck ? (
+          <div className="ml-auto flex items-center max-lg:hidden">
+            <CheckButton
+              busy={checkingTask === taskKey}
+              label={`Check Task ${writing.task}`}
+              onCheck={() => void checkTask()}
+              score={checkScore}
+            />
+          </div>
+        ) : null}
         <div className="ml-auto flex gap-2 lg:hidden">
           {(
             [
@@ -217,11 +301,18 @@ export function WritingRunner({
         </div>
       </div>
 
-      <div className="grid min-h-0 flex-1 lg:grid-cols-[1fr_1fr]">
+      <div
+        className={cn(
+          'grid min-h-0 flex-1',
+          split.gridClassName,
+          split.dragging && 'select-none'
+        )}
+        style={split.style}
+      >
         <section
           aria-label="Prompt"
           className={cn(
-            'bg-manga-white min-h-0 overflow-y-auto px-4 py-6 sm:px-8 lg:block',
+            'bg-manga-white min-h-0 overflow-y-auto px-4 py-4 sm:px-6 lg:block',
             mobileTab === 'task' ? 'block' : 'hidden'
           )}
         >
@@ -238,10 +329,11 @@ export function WritingRunner({
             ) : null}
           </div>
         </section>
+        {split.divider}
         <section
           aria-label="Essay"
           className={cn(
-            'border-manga-black bg-manga-pale-red/60 min-h-0 overflow-y-auto px-4 py-6 sm:px-8 lg:flex lg:border-l-3',
+            'bg-manga-pale-red/60 min-h-0 overflow-y-auto px-4 py-4 sm:px-6 lg:flex',
             mobileTab === 'essay' ? 'flex' : 'hidden',
             'flex-col gap-2'
           )}
@@ -273,6 +365,37 @@ export function WritingRunner({
           >
             {words} words · minimum {writing.minWords}
           </p>
+          {/* Phones and tablets: the task bar has no room for it. */}
+          {canCheck ? (
+            <CheckButton
+              busy={checkingTask === taskKey}
+              className="w-full lg:hidden"
+              label={`Check Task ${writing.task}`}
+              onCheck={() => void checkTask()}
+              score={checkScore}
+            />
+          ) : null}
+          {check ? (
+            <div className="border-manga-black rounded-control bg-manga-paper-soft mt-2 grid gap-3 border-2 p-3">
+              <p className="font-sans text-base font-black">
+                AI check, Task {writing.task}
+                {check.feedback.band != null
+                  ? ` · Band ${check.feedback.band.toFixed(1)}`
+                  : ''}
+              </p>
+              {check.essay !== essay ? (
+                <p className="text-muted-foreground text-sm">
+                  The essay changed since this check. Check again for fresh
+                  feedback.
+                </p>
+              ) : null}
+              <WritingFeedbackDetails
+                essay={check.essay}
+                feedback={check.feedback}
+                task={writing.task}
+              />
+            </div>
+          ) : null}
         </section>
       </div>
 

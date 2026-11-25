@@ -69,6 +69,85 @@ const CRITERIA = (task: 1 | 2) =>
     ['gra', 'Grammatical Range & Accuracy'],
   ] as const
 
+/**
+ * A graded task's details: the four criteria, the summary, the essay with
+ * its corrections marked, the correction list and the rewritten paragraph.
+ * Shared by the result page and the practice runner's "check task".
+ */
+export function WritingFeedbackDetails({
+  essay,
+  feedback,
+  task,
+}: {
+  essay: string
+  feedback: IeltsWritingTaskFeedback
+  task: 1 | 2
+}) {
+  const criteria = feedback.criteria
+
+  if (!criteria) return null
+
+  return (
+    <>
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {CRITERIA(task).map(([key, label]) => (
+          <StatTile
+            className="min-h-24"
+            key={key}
+            label={label}
+            value={criteria[key].toFixed(1)}
+          />
+        ))}
+      </div>
+      <p className="leading-[1.7]">{feedback.summary}</p>
+      <MarkedEssay
+        corrections={feedback.corrections}
+        essay={essay}
+      />
+      {feedback.corrections.length ? (
+        <ol className="grid gap-3">
+          {feedback.corrections.map((item, index) => (
+            <li
+              className="border-manga-black/20 grid gap-1 border-b pb-2"
+              key={index}
+            >
+              <p>
+                <span className="font-sans text-xs font-black">
+                  {index + 1}.
+                </span>{' '}
+                <s className="text-manga-red">{item.quote}</s>{' '}
+                <span aria-hidden="true">→</span>{' '}
+                <strong className="text-lesson-correct">
+                  {item.suggestion}
+                </strong>
+              </p>
+              <p className="text-sm">{item.reason}</p>
+              {item.grammarLessonId ? (
+                <Link
+                  className="w-fit font-sans text-sm font-black underline"
+                  href={`/grammar/lessons/${item.grammarLessonId}`}
+                >
+                  Study: {item.grammarLessonTitle}
+                </Link>
+              ) : null}
+            </li>
+          ))}
+        </ol>
+      ) : null}
+      {feedback.improved ? (
+        <div className="grid gap-1">
+          <p className="font-sans text-sm font-black">
+            Rewritten paragraph (about 1 band higher)
+          </p>
+          <p className="font-body border-manga-black rounded-control bg-manga-white border-2 p-3 leading-[1.7]">
+            {feedback.improved}
+          </p>
+        </div>
+      ) : null}
+    </>
+  )
+}
+
 function TaskFeedback({
   busy,
   feedback,
@@ -105,63 +184,11 @@ function TaskFeedback({
       </details>
 
       {status === 'done' && feedback?.criteria ? (
-        <>
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            {CRITERIA(task.task).map(([key, label]) => (
-              <StatTile
-                className="min-h-24"
-                key={key}
-                label={label}
-                value={feedback.criteria![key].toFixed(1)}
-              />
-            ))}
-          </div>
-          <p className="leading-[1.7]">{feedback.summary}</p>
-          <MarkedEssay
-            corrections={feedback.corrections}
-            essay={task.essay}
-          />
-          {feedback.corrections.length ? (
-            <ol className="grid gap-3">
-              {feedback.corrections.map((item, index) => (
-                <li
-                  className="border-manga-black/20 grid gap-1 border-b pb-2"
-                  key={index}
-                >
-                  <p>
-                    <span className="font-sans text-xs font-black">
-                      {index + 1}.
-                    </span>{' '}
-                    <s className="text-manga-red">{item.quote}</s>{' '}
-                    <span aria-hidden="true">→</span>{' '}
-                    <strong className="text-lesson-correct">
-                      {item.suggestion}
-                    </strong>
-                  </p>
-                  <p className="text-sm">{item.reason}</p>
-                  {item.grammarLessonId ? (
-                    <Link
-                      className="w-fit font-sans text-sm font-black underline"
-                      href={`/grammar/lessons/${item.grammarLessonId}`}
-                    >
-                      Study: {item.grammarLessonTitle}
-                    </Link>
-                  ) : null}
-                </li>
-              ))}
-            </ol>
-          ) : null}
-          {feedback.improved ? (
-            <div className="grid gap-1">
-              <p className="font-sans text-sm font-black">
-                Rewritten paragraph (about 1 band higher)
-              </p>
-              <p className="font-body border-manga-black rounded-control bg-manga-white border-2 p-3 leading-[1.7]">
-                {feedback.improved}
-              </p>
-            </div>
-          ) : null}
-        </>
+        <WritingFeedbackDetails
+          essay={task.essay}
+          feedback={feedback}
+          task={task.task}
+        />
       ) : (
         <>
           <p role="status">

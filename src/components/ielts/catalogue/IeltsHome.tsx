@@ -77,6 +77,7 @@ export function IeltsHome({
   error,
   isAdmin,
   overall,
+  testBands,
   weakness,
 }: IeltsHomeData) {
   return (
@@ -133,7 +134,10 @@ export function IeltsHome({
           </ExamButton>
         </ExamCard>
       ) : catalog.length ? (
-        <TestCards catalog={catalog} />
+        <TestCards
+          bands={testBands}
+          catalog={catalog}
+        />
       ) : (
         <ExamCard title="No tests yet">
           <p>

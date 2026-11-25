@@ -8,6 +8,11 @@ import type {
   IeltsSkill,
 } from '../constants'
 import { type IeltsBandedAttempt, overallEstimate } from '../scoring/overall'
+import {
+  bestBandsByTest,
+  type IeltsTestBandRow,
+  type IeltsTestBands,
+} from './testBands'
 
 /** One row of the learner's history (no answers, no key). */
 export interface IeltsAttemptSummary {
@@ -153,4 +158,39 @@ export async function readIeltsOverall(ownerId: string) {
   }
 
   return overallEstimate(banded)
+}
+
+/**
+ * Best band per skill for every test the owner has a full-skill band on, so
+ * the catalogue can mark tests already done. Part and drill attempts carry no
+ * band and are left out.
+ */
+export async function readIeltsTestBands(
+  ownerId: string
+): Promise<IeltsTestBands> {
+  const rows = await IeltsAttemptModel.find(
+    {
+      ownerId,
+      testId: { $ne: null },
+      status: { $in: ['scored', 'submitted'] },
+      mode: { $in: ['practice', 'mock'] },
+      'scope.kind': 'skill',
+    },
+    { testId: 1, skill: 1, 'result.band': 1, writingBand: 1 }
+  ).lean()
+
+  const banded: IeltsTestBandRow[] = []
+
+  for (const row of rows as LeanRow[]) {
+    const skill = row.skill as IeltsSkill
+    const band =
+      skill === 'writing'
+        ? (row.writingBand as number | null)
+        : ((row.result as { band?: number | null } | null)?.band ?? null)
+
+    if (typeof band === 'number')
+      banded.push({ testId: String(row.testId), skill, band })
+  }
+
+  return bestBandsByTest(banded)
 }

@@ -114,7 +114,7 @@ describe('GroupBlock covers every IELTS question type', () => {
 
           expect(picked).toHaveLength(1)
           expect(
-            picked[0].closest('label')?.querySelector('strong')
+            picked[0].closest('[data-option]')?.querySelector('strong')
           ).toHaveTextContent(new RegExp(`^${answer}$`))
         }
       }

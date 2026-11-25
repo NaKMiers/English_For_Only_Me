@@ -26,21 +26,27 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
-import type { IeltsAttemptRecord } from '@/modules/ielts/attempts/attemptRecords'
+import type {
+  IeltsAttemptRecord,
+  IeltsPartCheck,
+} from '@/modules/ielts/attempts/attemptRecords'
 import { IELTS_SKILL_LABELS } from '@/modules/ielts/constants'
 import type { IeltsPublicSection } from '@/modules/ielts/publicView'
-import { readIeltsEvidenceApi } from '@/requests/ieltsApi'
+import { checkIeltsPartApi, readIeltsEvidenceApi } from '@/requests/ieltsApi'
 
 import {
   IeltsAnswerContext,
   type IeltsAnswerContextValue,
+  type IeltsReviewMark,
   questionBlockId,
   questionControlId,
 } from '../widgets/answerContext'
 import { GroupBlock } from '../widgets/GroupBlock'
 import { ListeningPane } from './ListeningPane'
 import { PassagePane, type IeltsHighlight } from './PassagePane'
+import { CheckButton, ResetPartButton } from './PracticeActions'
 import { QuestionNavigator } from './QuestionNavigator'
+import { useResizableSplit } from './ResizableSplit'
 import {
   buildQuestionIndex,
   countBlanks,
@@ -85,7 +91,7 @@ function focusQuestion(number: number) {
 /**
  * Listening and Reading runner (practice, mock, drill). Focus mode: manga
  * chrome on the toolbar, navigator and widgets; the passage and questions
- * sit on plain paper. Split pane from 1024px, two tabs below.
+ * sit on plain paper. Resizable split pane from 1024px, two tabs below.
  */
 export function IeltsRunner({
   attempt,
@@ -106,7 +112,13 @@ export function IeltsRunner({
   const finishRef = useRef<() => void>(() => undefined)
   // Passage, transcript and questions: where text can be highlighted.
   const stageRef = useRef<HTMLDivElement>(null)
-  const { answers, saveState, setAnswer, submit } = useAttemptAnswers({
+  const {
+    answers,
+    clearAnswers,
+    saveState,
+    setAnswer: saveAnswer,
+    submit,
+  } = useAttemptAnswers({
     attempt,
     enabled: !locked,
     onTimeUp: () => finishRef.current(),
@@ -129,7 +141,12 @@ export function IeltsRunner({
   const [mobileTab, setMobileTab] = useState<'material' | 'questions'>(
     'material'
   )
-  const [guided, setGuided] = useState(isPractice)
+  // Off by default: hints are opt-in so practice starts like the real test.
+  const [guided, setGuided] = useState(false)
+  const split = useResizableSplit({
+    defaultPercent: 55,
+    storageKey: 'ielts-runner-split',
+  })
   // Practice opens with the transcript showing; mock never shows it.
   const [showTranscript, setShowTranscript] = useState(true)
   const [highlight, setHighlight] = useState<
@@ -144,12 +161,94 @@ export function IeltsRunner({
       ? `Continue from question ${next.number}`
       : ''
   })
+  // Practice checks per part: the score and marks shown until an answer in
+  // that part changes (its mark goes) or the part is reset (all go).
+  const [checks, setChecks] = useState<Record<number, IeltsPartCheck>>({})
+  const [checking, setChecking] = useState(false)
   const [confirmBlanks, setConfirmBlanks] = useState<number | null>(null)
   const [exitOpen, setExitOpen] = useState(false)
   const [deadlineAt, setDeadlineAt] = useState(attempt.deadlineAt)
   const section =
     sections.find(item => item.order === currentPart) ?? sections[0]
   const skillLabel = IELTS_SKILL_LABELS[attempt.skill]
+  const currentPartName = partName(attempt.skill, currentPart, attempt.mode)
+  const canCheck = isPractice && !locked
+
+  // A changed answer drops its own check mark (a choose-TWO set drops the
+  // marks of every number it covers); the part's score stays as checked.
+  const setAnswer = useCallback(
+    (number: number, value: Parameters<typeof saveAnswer>[1]) => {
+      saveAnswer(number, value)
+      setChecks(current => {
+        const covered = new Set(
+          index
+            .filter(
+              entry => entry.number === number || entry.setStart === number
+            )
+            .map(entry => entry.number)
+        )
+        const part = index.find(entry => covered.has(entry.number))?.part
+        const check = part === undefined ? undefined : current[part]
+
+        if (!check || !check.marks.some(mark => covered.has(mark.number)))
+          return current
+
+        return {
+          ...current,
+          [check.part]: {
+            ...check,
+            marks: check.marks.filter(mark => !covered.has(mark.number)),
+          },
+        }
+      })
+    },
+    [index, saveAnswer]
+  )
+
+  const review = useMemo(() => {
+    const marks: Record<number, IeltsReviewMark> = {}
+
+    for (const check of Object.values(checks))
+      for (const mark of check.marks)
+        marks[mark.number] = { outcome: mark.outcome, accepted: mark.accepted }
+
+    return Object.keys(marks).length ? marks : null
+  }, [checks])
+
+  const checkPart = async () => {
+    const part = currentPart
+    const name = partName(attempt.skill, part, attempt.mode)
+
+    setChecking(true)
+
+    try {
+      const { check } = await checkIeltsPartApi(attempt.id, part, answers)
+
+      setChecks(current => ({ ...current, [part]: check }))
+      setNotice(`${name}: ${check.raw}/${check.total} correct.`)
+    } catch (error) {
+      setNotice(
+        `Could not check ${name}: ${error instanceof Error ? error.message : 'try again.'}`
+      )
+    } finally {
+      setChecking(false)
+    }
+  }
+
+  const resetPart = () => {
+    const numbers = index
+      .filter(entry => entry.part === currentPart)
+      .flatMap(entry =>
+        entry.setStart === null
+          ? [entry.number]
+          : [entry.number, entry.setStart]
+      )
+
+    clearAnswers(numbers)
+    setChecks(({ [currentPart]: _dropped, ...rest }) => rest)
+    setHighlight(null)
+    setNotice(`${currentPartName} reset.`)
+  }
 
   const finish = useCallback(async () => {
     setSubmitting(true)
@@ -238,7 +337,7 @@ export function IeltsRunner({
     () => ({
       answers,
       readOnly: locked,
-      review: null,
+      review,
       setAnswer,
       currentNumber,
       onFocusQuestion: number => {
@@ -256,11 +355,15 @@ export function IeltsRunner({
       index,
       isPractice,
       locked,
+      review,
       setAnswer,
       showEvidence,
     ]
   )
 
+  const checkScore = checks[currentPart]
+    ? `${checks[currentPart].raw}/${checks[currentPart].total}`
+    : null
   const total = index.length
   const answeredCount = total - countBlanks(index, answers)
   const material: ReactNode =
@@ -286,6 +389,11 @@ export function IeltsRunner({
 
   const toggles = isPractice ? (
     <div className="flex items-center gap-2">
+      <ResetPartButton
+        disabled={locked}
+        name={currentPartName}
+        onReset={resetPart}
+      />
       <ToolbarToggle
         checked={guided}
         icon={<Lightbulb aria-hidden="true" />}
@@ -394,34 +502,51 @@ export function IeltsRunner({
         ) : null}
 
         <div
-          className="grid min-h-0 flex-1 lg:grid-cols-[55fr_45fr]"
+          className={cn(
+            'grid min-h-0 flex-1',
+            split.gridClassName,
+            split.dragging && 'select-none'
+          )}
           ref={stageRef}
+          style={split.style}
         >
           <section
             aria-label={
               attempt.skill === 'listening' ? 'Audio' : 'Reading passage'
             }
             className={cn(
-              'bg-manga-white min-h-0 overflow-y-auto px-4 py-6 sm:px-8 lg:block',
+              'bg-manga-white min-h-0 overflow-y-auto px-4 py-4 sm:px-6 lg:block',
               mobileTab === 'material' ? 'block' : 'hidden'
             )}
           >
             {material}
           </section>
+          {split.divider}
           <section
             aria-label="Questions"
             className={cn(
-              'border-manga-black bg-manga-pale-red/60 min-h-0 overflow-y-auto px-4 py-6 sm:px-8 lg:block lg:border-l-3',
+              'bg-manga-pale-red/60 min-h-0 overflow-y-auto px-4 py-4 sm:px-6 lg:block',
               mobileTab === 'questions' ? 'block' : 'hidden'
             )}
           >
-            <div className="text-manga-black mx-auto grid max-w-[70ch] gap-10 text-[16px] leading-[1.7]">
+            <div className="text-manga-black mx-auto grid max-w-[70ch] gap-7 text-[16px] leading-[1.6]">
               {section?.groups.map(group => (
                 <GroupBlock
                   group={group}
                   key={group.id}
                 />
               ))}
+              {/* Phones and tablets: the footer has no room, so the check
+                  closes the questions instead. */}
+              {canCheck ? (
+                <CheckButton
+                  busy={checking}
+                  className="w-full lg:hidden"
+                  label={`Check ${currentPartName}`}
+                  onCheck={() => void checkPart()}
+                  score={checkScore}
+                />
+              ) : null}
             </div>
           </section>
         </div>
@@ -429,6 +554,16 @@ export function IeltsRunner({
         <TextHighlighter rootRef={stageRef} />
 
         <QuestionNavigator
+          action={
+            canCheck ? (
+              <CheckButton
+                busy={checking}
+                label={`Check ${currentPartName}`}
+                onCheck={() => void checkPart()}
+                score={checkScore}
+              />
+            ) : null
+          }
           answers={answers}
           currentNumber={currentNumber}
           currentPart={currentPart}
