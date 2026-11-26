@@ -1,0 +1,562 @@
+[
+  {
+    "part": "listening-1",
+    "term": "counsellor",
+    "pos": "noun",
+    "vi": "cố vấn (hỗ trợ sinh viên)",
+    "en": "A person trained to give advice and help with personal or study problems.",
+    "example": "I'm a counselor here at the Student Services section of the university."
+  },
+  {
+    "part": "listening-1",
+    "term": "draw up",
+    "pos": "phrase",
+    "vi": "soạn thảo, lập ra",
+    "en": "To prepare a plan or document in written form.",
+    "example": "I'm interviewing overseas students to help me draw up a guide for new students."
+  },
+  {
+    "part": "listening-1",
+    "term": "accommodation",
+    "pos": "noun",
+    "vi": "chỗ ở",
+    "en": "A place to live or stay.",
+    "example": "I went straight into student accommodation."
+  },
+  {
+    "part": "listening-1",
+    "term": "hostel",
+    "pos": "noun",
+    "vi": "ký túc xá, nhà trọ giá rẻ",
+    "en": "A cheap place where students or travellers can stay.",
+    "example": "It was a kind of student hostel."
+  },
+  {
+    "part": "listening-1",
+    "term": "keep to oneself",
+    "pos": "phrase",
+    "vi": "sống khép kín, ít giao du",
+    "en": "To avoid talking or mixing with other people.",
+    "example": "People seem to keep to themselves."
+  },
+  {
+    "part": "listening-1",
+    "term": "master's",
+    "pos": "noun",
+    "vi": "bằng thạc sĩ",
+    "en": "A postgraduate degree taken after a first degree.",
+    "example": "I'm doing a master's by course work in environmental studies."
+  },
+  {
+    "part": "listening-1",
+    "term": "field trip",
+    "pos": "noun",
+    "vi": "chuyến đi thực địa",
+    "en": "A study visit made outside the classroom to observe things first-hand.",
+    "example": "The only chance I've really had to talk to them was on the field trip."
+  },
+  {
+    "part": "listening-1",
+    "term": "fortnight",
+    "pos": "noun",
+    "vi": "hai tuần",
+    "en": "A period of two weeks.",
+    "example": "say once a fortnight - something like that."
+  },
+  {
+    "part": "listening-1",
+    "term": "practical work",
+    "pos": "phrase",
+    "vi": "bài thực hành",
+    "en": "Hands-on tasks done as part of a course rather than reading or listening.",
+    "example": "this makes it very hard to do my practical work."
+  },
+  {
+    "part": "listening-1",
+    "term": "reserve",
+    "pos": "verb",
+    "vi": "đặt trước",
+    "en": "To book something in advance so it is kept for you.",
+    "example": "Can you reserve time in the computer room?"
+  },
+  {
+    "part": "listening-2",
+    "term": "vary",
+    "pos": "verb",
+    "vi": "khác nhau, thay đổi",
+    "en": "To be different from one another.",
+    "example": "They vary enormously in two basic ways, price and quality."
+  },
+  {
+    "part": "listening-2",
+    "term": "compromise",
+    "pos": "noun",
+    "vi": "sự dung hòa, giải pháp thỏa hiệp",
+    "en": "An agreement in which each side gives up something.",
+    "example": "or a compromise of all three things."
+  },
+  {
+    "part": "listening-2",
+    "term": "gear",
+    "pos": "noun",
+    "vi": "số (líp, bộ chuyển số xe đạp)",
+    "en": "One of the settings on a bicycle that changes how hard it is to pedal.",
+    "example": "that is bikes with no gears"
+  },
+  {
+    "part": "listening-2",
+    "term": "neglect",
+    "pos": "noun",
+    "vi": "sự bỏ bê, không bảo dưỡng",
+    "en": "Failure to look after something properly.",
+    "example": "After years of neglect, they still manage to function"
+  },
+  {
+    "part": "listening-2",
+    "term": "terrain",
+    "pos": "noun",
+    "vi": "địa hình",
+    "en": "An area of land and its natural features.",
+    "example": "best suited to riding over long distances or hilly terrain"
+  },
+  {
+    "part": "listening-2",
+    "term": "touring",
+    "pos": "noun",
+    "vi": "đi du lịch đường dài (bằng xe đạp)",
+    "en": "Travelling around for pleasure, often over long distances.",
+    "example": "and to serious touring."
+  },
+  {
+    "part": "listening-2",
+    "term": "component",
+    "pos": "noun",
+    "vi": "bộ phận, linh kiện",
+    "en": "One of the parts that make up a machine.",
+    "example": "However, you'll be getting better quality components."
+  },
+  {
+    "part": "listening-2",
+    "term": "frame",
+    "pos": "noun",
+    "vi": "khung (xe)",
+    "en": "The main structure of a bicycle that holds the other parts.",
+    "example": "but by the size of the frame."
+  },
+  {
+    "part": "listening-3",
+    "term": "domesticate",
+    "pos": "verb",
+    "vi": "thuần hóa, trồng trọt (cây, vật nuôi)",
+    "en": "To bring a wild plant or animal under human care for use.",
+    "example": "bananas were among the first plants ever to be domesticated."
+  },
+  {
+    "part": "listening-3",
+    "term": "nourishing",
+    "pos": "adjective",
+    "vi": "bổ dưỡng",
+    "en": "Containing substances that are good for health and growth.",
+    "example": "they're an extremely nourishing food."
+  },
+  {
+    "part": "listening-3",
+    "term": "cultivate",
+    "pos": "verb",
+    "vi": "trồng trọt",
+    "en": "To grow plants or crops.",
+    "example": "he used to cultivate them in his hothouse"
+  },
+  {
+    "part": "listening-3",
+    "term": "originate",
+    "pos": "verb",
+    "vi": "bắt nguồn từ",
+    "en": "To begin or come from a particular place.",
+    "example": "actually originated in China"
+  },
+  {
+    "part": "listening-3",
+    "term": "roundabout",
+    "pos": "adjective",
+    "vi": "vòng vèo, không trực tiếp",
+    "en": "Not direct; taking a long way.",
+    "example": "but they had a fairly roundabout route before they got to Australia."
+  },
+  {
+    "part": "listening-3",
+    "term": "hothouse",
+    "pos": "noun",
+    "vi": "nhà kính ấm",
+    "en": "A heated glass building for growing plants.",
+    "example": "he used to cultivate them in his hothouse"
+  },
+  {
+    "part": "listening-3",
+    "term": "bear fruit",
+    "pos": "phrase",
+    "vi": "ra quả, cho trái",
+    "en": "To produce fruit.",
+    "example": "it can take up to 3 years for a tree to bear fruit"
+  },
+  {
+    "part": "listening-3",
+    "term": "plantation",
+    "pos": "noun",
+    "vi": "đồn điền",
+    "en": "A large farm where crops such as bananas or tea are grown.",
+    "example": "Particularly in plantations where you have perfect tropical conditions."
+  },
+  {
+    "part": "listening-3",
+    "term": "sucker",
+    "pos": "noun",
+    "vi": "chồi non mọc từ gốc",
+    "en": "A new shoot that grows from the base of a plant.",
+    "example": "bananas are normally grown from suckers which spring up around the parent plant"
+  },
+  {
+    "part": "listening-3",
+    "term": "ripe",
+    "pos": "adjective",
+    "vi": "chín",
+    "en": "Fully grown and ready to eat.",
+    "example": "the banana bunches are picked well before the fruit is ripe."
+  },
+  {
+    "part": "listening-3",
+    "term": "domestic market",
+    "pos": "phrase",
+    "vi": "thị trường nội địa",
+    "en": "Customers inside the producing country rather than overseas.",
+    "example": "they're mostly grown for the domestic market"
+  },
+  {
+    "part": "listening-4",
+    "term": "cope with",
+    "pos": "phrase",
+    "vi": "đương đầu, xoay xở với",
+    "en": "To deal successfully with a difficult situation.",
+    "example": "to stay healthy while coping with study and social life at the same time."
+  },
+  {
+    "part": "listening-4",
+    "term": "dietician",
+    "pos": "noun",
+    "vi": "chuyên gia dinh dưỡng",
+    "en": "A person who is trained to advise people on healthy eating.",
+    "example": "Who is a professional dietician"
+  },
+  {
+    "part": "listening-4",
+    "term": "hectic",
+    "pos": "adjective",
+    "vi": "bận rộn, dồn dập",
+    "en": "Very busy and full of activity.",
+    "example": "in what I know is a very hectic schedule"
+  },
+  {
+    "part": "listening-4",
+    "term": "adequate",
+    "pos": "adjective",
+    "vi": "đầy đủ, vừa đủ",
+    "en": "Enough in quantity or quality for a purpose.",
+    "example": "to ensure that your diet is adequate."
+  },
+  {
+    "part": "listening-4",
+    "term": "soluble",
+    "pos": "adjective",
+    "vi": "tan được (trong nước hoặc chất béo)",
+    "en": "Able to dissolve in a liquid.",
+    "example": "And there are water soluble vitamins which are removed more rapidly from the body"
+  },
+  {
+    "part": "listening-4",
+    "term": "intake",
+    "pos": "noun",
+    "vi": "lượng hấp thụ, lượng ăn vào",
+    "en": "The amount of food or drink taken into the body.",
+    "example": "so a regular daily intake of these ones is needed."
+  },
+  {
+    "part": "listening-4",
+    "term": "in moderation",
+    "pos": "phrase",
+    "vi": "vừa phải, có chừng mực",
+    "en": "In reasonable amounts, not too much.",
+    "example": "the things that we can eat in moderation"
+  },
+  {
+    "part": "reading-1",
+    "term": "lateral asymmetry",
+    "pos": "phrase",
+    "vi": "sự bất đối xứng hai bên (thuận tay trái hay phải)",
+    "en": "A difference between the left and right sides of the body or brain.",
+    "example": "Not even our closest relatives among the apes possess such decided lateral asymmetry"
+  },
+  {
+    "part": "reading-1",
+    "term": "offspring",
+    "pos": "noun",
+    "vi": "con cái, thế hệ sau",
+    "en": "The young of a person or animal.",
+    "example": "neither left nor right handers will automatically produce offspring with the same handedness"
+  },
+  {
+    "part": "reading-1",
+    "term": "hemisphere",
+    "pos": "noun",
+    "vi": "bán cầu (não)",
+    "en": "One half of the brain.",
+    "example": "the left hemisphere of the brain controls the right half of the body"
+  },
+  {
+    "part": "reading-1",
+    "term": "paralysis",
+    "pos": "noun",
+    "vi": "chứng liệt",
+    "en": "Loss of the ability to move part of the body.",
+    "example": "had paralysis of the right half of their body."
+  },
+  {
+    "part": "reading-1",
+    "term": "stroke",
+    "pos": "noun",
+    "vi": "đột quỵ",
+    "en": "A sudden loss of brain function caused by a blocked blood vessel.",
+    "example": "as a result of a stroke (a blood clot in the brain)"
+  },
+  {
+    "part": "reading-1",
+    "term": "vice versa",
+    "pos": "phrase",
+    "vi": "ngược lại",
+    "en": "The other way round.",
+    "example": "and vice versa"
+  },
+  {
+    "part": "reading-1",
+    "term": "bilateral",
+    "pos": "adjective",
+    "vi": "hai bên, song phương",
+    "en": "Involving both sides.",
+    "example": "left-handers have a more bilateral speech function."
+  },
+  {
+    "part": "reading-1",
+    "term": "embryo",
+    "pos": "noun",
+    "vi": "phôi thai",
+    "en": "An unborn baby in the earliest stages of development.",
+    "example": "studied the brains of human embryos"
+  },
+  {
+    "part": "reading-1",
+    "term": "secrete",
+    "pos": "verb",
+    "vi": "tiết ra (hoóc môn)",
+    "en": "To produce and release a substance such as a hormone.",
+    "example": "when the male foetus begins to secrete hormones."
+  },
+  {
+    "part": "reading-1",
+    "term": "subliminally",
+    "pos": "adverb",
+    "vi": "một cách tiềm thức",
+    "en": "In a way that affects the mind without people noticing.",
+    "example": "Subliminally he says, language tells people to think"
+  },
+  {
+    "part": "reading-1",
+    "term": "sinister",
+    "pos": "adjective",
+    "vi": "gở, đáng ngờ, mang điềm xấu",
+    "en": "Seeming evil or harmful.",
+    "example": "anything on the left is dangerous or even sinister."
+  },
+  {
+    "part": "reading-2",
+    "term": "pollinate",
+    "pos": "verb",
+    "vi": "thụ phấn",
+    "en": "To carry pollen so that plants can produce seeds and fruit.",
+    "example": "these hardworking insects also pollinate crops for farmers"
+  },
+  {
+    "part": "reading-2",
+    "term": "migrate",
+    "pos": "verb",
+    "vi": "di cư, di chuyển theo mùa",
+    "en": "To move from one region to another, often with the seasons.",
+    "example": "migrating north to find more flowers for their bees."
+  },
+  {
+    "part": "reading-2",
+    "term": "nectar",
+    "pos": "noun",
+    "vi": "mật hoa",
+    "en": "The sweet liquid in flowers that bees collect.",
+    "example": "Besides turning floral nectar into honey"
+  },
+  {
+    "part": "reading-2",
+    "term": "pay off",
+    "pos": "phrase",
+    "vi": "mang lại kết quả, đáng công",
+    "en": "To bring a good result.",
+    "example": "This pays off in two ways."
+  },
+  {
+    "part": "reading-2",
+    "term": "bonanza",
+    "pos": "noun",
+    "vi": "món hời lớn, mùa bội thu",
+    "en": "A sudden source of great profit or luck.",
+    "example": "It's a bonanza for the bees too."
+  },
+  {
+    "part": "reading-2",
+    "term": "pacify",
+    "pos": "verb",
+    "vi": "làm dịu, trấn an",
+    "en": "To make someone or something calm and quiet.",
+    "example": "bees can be pacified with a few puffs of smoke"
+  },
+  {
+    "part": "reading-2",
+    "term": "brood chamber",
+    "pos": "noun",
+    "vi": "ngăn nuôi ấu trùng (trong tổ ong)",
+    "en": "The lower part of a beehive where eggs and young bees are kept.",
+    "example": "In the brood chamber below, the bees will stash honey to eat later."
+  },
+  {
+    "part": "reading-2",
+    "term": "centrifugal force",
+    "pos": "phrase",
+    "vi": "lực ly tâm",
+    "en": "The outward force felt by something spinning in a circle.",
+    "example": "centrifugal force throws the honey out of the combs."
+  },
+  {
+    "part": "reading-2",
+    "term": "colony",
+    "pos": "noun",
+    "vi": "đàn, bầy (ong)",
+    "en": "A group of insects living together.",
+    "example": "To create new colonies, a healthy double hive"
+  },
+  {
+    "part": "reading-3",
+    "term": "trivial",
+    "pos": "adjective",
+    "vi": "tầm thường, nhỏ nhặt",
+    "en": "Of little value or importance.",
+    "example": "there could not be a more trivial subject for a book."
+  },
+  {
+    "part": "reading-3",
+    "term": "deviance",
+    "pos": "noun",
+    "vi": "hành vi lệch chuẩn",
+    "en": "Behaviour that differs from what a society considers normal.",
+    "example": "there are interesting parallels with the study of deviance."
+  },
+  {
+    "part": "reading-3",
+    "term": "idiosyncratic",
+    "pos": "adjective",
+    "vi": "đặc dị, mang nét riêng lạ",
+    "en": "Peculiar to one person or group; unusual in an individual way.",
+    "example": "the investigation of bizarre and idiosyncratic social practices"
+  },
+  {
+    "part": "reading-3",
+    "term": "presuppose",
+    "pos": "verb",
+    "vi": "tiền giả định, đòi hỏi phải có trước",
+    "en": "To require something else to exist or be true first.",
+    "example": "Tourism is a leisure activity which presupposes its opposite"
+  },
+  {
+    "part": "reading-3",
+    "term": "gaze",
+    "pos": "noun",
+    "vi": "cái nhìn chăm chú (của du khách)",
+    "en": "A long, steady look at something.",
+    "example": "the mass character of the gazes of tourists"
+  },
+  {
+    "part": "reading-3",
+    "term": "linger",
+    "pos": "verb",
+    "vi": "nán lại, đứng lâu",
+    "en": "To stay somewhere longer than necessary.",
+    "example": "People linger over these sights"
+  },
+  {
+    "part": "reading-3",
+    "term": "pseudo event",
+    "pos": "noun",
+    "vi": "sự kiện giả tạo (dàn dựng)",
+    "en": "An event staged for show rather than being genuine.",
+    "example": "Boorstins analysis of the pseudo event (1964)"
+  },
+  {
+    "part": "reading-3",
+    "term": "gullibly",
+    "pos": "adverb",
+    "vi": "một cách cả tin, dễ bị lừa",
+    "en": "In a way that shows one believes things too easily.",
+    "example": "gullibly enjoying the pseudo events"
+  },
+  {
+    "part": "reading-3",
+    "term": "burgeoning",
+    "pos": "adjective",
+    "vi": "đang phát triển nhanh",
+    "en": "Growing or developing rapidly.",
+    "example": "To service the burgeoning tourist industry"
+  },
+  {
+    "part": "writing-1",
+    "term": "consolidate",
+    "pos": "verb",
+    "vi": "tổng hợp, hợp nhất",
+    "en": "To combine things into one effective whole.",
+    "example": "by consolidating the analyzed data."
+  },
+  {
+    "part": "writing-2",
+    "term": "affluent",
+    "pos": "adjective",
+    "vi": "giàu có, phồn vinh",
+    "en": "Having a lot of money and a high standard of living.",
+    "example": "whether affluent countries should redistribute resources to poorer nations"
+  },
+  {
+    "part": "writing-2",
+    "term": "redistribute",
+    "pos": "verb",
+    "vi": "phân phối lại",
+    "en": "To share something out in a different way.",
+    "example": "whether affluent countries should redistribute resources to poorer nations"
+  },
+  {
+    "part": "writing-2",
+    "term": "contingent",
+    "pos": "adjective",
+    "vi": "có điều kiện, phụ thuộc vào",
+    "en": "Depending on something else happening or being done.",
+    "example": "offering market access contingent on labor rights improvements"
+  },
+  {
+    "part": "writing-2",
+    "term": "sovereignty",
+    "pos": "noun",
+    "vi": "chủ quyền quốc gia",
+    "en": "The power of a country to rule itself.",
+    "example": "while respecting national sovereignty."
+  }
+]

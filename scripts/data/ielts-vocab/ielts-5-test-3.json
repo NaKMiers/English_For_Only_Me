@@ -1,0 +1,562 @@
+[
+  {
+    "part": "listening-1",
+    "term": "automatic",
+    "pos": "adjective",
+    "vi": "(xe) số tự động",
+    "en": "A car with gears that change by themselves.",
+    "example": "I'd want automatic."
+  },
+  {
+    "part": "listening-1",
+    "term": "manual",
+    "pos": "adjective",
+    "vi": "(xe) số sàn",
+    "en": "A car in which the driver changes gears by hand.",
+    "example": "I presume you want a manual."
+  },
+  {
+    "part": "listening-1",
+    "term": "part exchange",
+    "pos": "noun",
+    "vi": "đổi xe cũ lấy xe mới (trừ vào giá)",
+    "en": "An arrangement in which you give your old item as part of the payment for a new one.",
+    "example": "would you be interested in us taking your present car as part exchange?"
+  },
+  {
+    "part": "listening-1",
+    "term": "valuation",
+    "pos": "noun",
+    "vi": "sự định giá, thẩm định giá",
+    "en": "An official judgement of how much something is worth.",
+    "example": "and then we can do a valuation."
+  },
+  {
+    "part": "listening-1",
+    "term": "mileage",
+    "pos": "noun",
+    "vi": "số dặm đã đi (số km trên đồng hồ)",
+    "en": "The distance a vehicle has travelled.",
+    "example": "Mileage? Roughly?"
+  },
+  {
+    "part": "listening-1",
+    "term": "metallic",
+    "pos": "adjective",
+    "vi": "ánh kim",
+    "en": "Having a shiny colour like metal.",
+    "example": "It's grey, metallic grey."
+  },
+  {
+    "part": "listening-1",
+    "term": "get hold of",
+    "pos": "phrase",
+    "vi": "liên lạc được với",
+    "en": "To manage to contact someone.",
+    "example": "it's a bit difficult to get hold of me."
+  },
+  {
+    "part": "listening-2",
+    "term": "research assessment",
+    "pos": "noun",
+    "vi": "đánh giá nghiên cứu (xếp hạng trường)",
+    "en": "An official review of how good a university's research is.",
+    "example": "We came seventh out of 101 universities in last year's research assessment"
+  },
+  {
+    "part": "listening-2",
+    "term": "referee",
+    "pos": "noun",
+    "vi": "người giới thiệu (viết thư tham chiếu)",
+    "en": "A person who writes a letter saying you are suitable for a job or course.",
+    "example": "The people you give as referees, uh, shall we say, take their time to reply."
+  },
+  {
+    "part": "listening-2",
+    "term": "reassure",
+    "pos": "verb",
+    "vi": "trấn an, làm yên lòng",
+    "en": "To say or do something to stop someone worrying.",
+    "example": "keep in touch with you and reassure you that things are moving along."
+  },
+  {
+    "part": "listening-2",
+    "term": "liaise",
+    "pos": "verb",
+    "vi": "làm cầu nối, phối hợp",
+    "en": "To work together and exchange information with another person or group.",
+    "example": "We will, of course, liaise between you"
+  },
+  {
+    "part": "listening-2",
+    "term": "objective",
+    "pos": "adjective",
+    "vi": "khách quan",
+    "en": "Based on facts rather than personal feelings.",
+    "example": "you can get an objective opinion of what you can expect"
+  },
+  {
+    "part": "listening-2",
+    "term": "independent learning",
+    "pos": "noun",
+    "vi": "học tự lập, tự học",
+    "en": "Studying on your own with little direct help from a teacher.",
+    "example": "an environment where independent learning is the norm"
+  },
+  {
+    "part": "listening-2",
+    "term": "adjust",
+    "pos": "verb",
+    "vi": "thích nghi",
+    "en": "To get used to a new situation.",
+    "example": "which takes most students a while to adjust to"
+  },
+  {
+    "part": "listening-2",
+    "term": "allocation",
+    "pos": "noun",
+    "vi": "sự phân bổ",
+    "en": "The act of giving something officially to particular people.",
+    "example": "give priority in the allocation of residence places"
+  },
+  {
+    "part": "listening-2",
+    "term": "exchange student",
+    "pos": "noun",
+    "vi": "sinh viên trao đổi",
+    "en": "A student who studies abroad for a period as part of an agreement between schools.",
+    "example": "visiting students, exchange students, and new postgraduate students."
+  },
+  {
+    "part": "listening-2",
+    "term": "demand exceeds supply",
+    "pos": "phrase",
+    "vi": "cầu vượt cung",
+    "en": "More people want something than is available.",
+    "example": "However, demand exceeds supply"
+  },
+  {
+    "part": "listening-2",
+    "term": "snap up",
+    "pos": "phrase",
+    "vi": "giành lấy nhanh, chộp ngay",
+    "en": "To buy or get something quickly because it is a good offer.",
+    "example": "the good accommodation gets snapped up months before the beginning of term."
+  },
+  {
+    "part": "listening-2",
+    "term": "make allowance for",
+    "pos": "phrase",
+    "vi": "châm chước, du di cho",
+    "en": "To consider someone's special difficulties and treat them more leniently.",
+    "example": "the lecturers will make little or no allowance for the presence of non-native speakers"
+  },
+  {
+    "part": "listening-3",
+    "term": "course outline",
+    "pos": "noun",
+    "vi": "đề cương khóa học",
+    "en": "A summary of what will be taught in a course.",
+    "example": "It was a good thing he gave us the course outline at the beginning"
+  },
+  {
+    "part": "listening-3",
+    "term": "delivery",
+    "pos": "noun",
+    "vi": "cách truyền đạt, cách giảng dạy",
+    "en": "The way in which something such as a course is presented.",
+    "example": "now course delivery. Does that mean teaching?"
+  },
+  {
+    "part": "listening-3",
+    "term": "handout",
+    "pos": "noun",
+    "vi": "tài liệu phát tay",
+    "en": "A printed sheet given to students in class.",
+    "example": "I thought all the handouts were good, actually"
+  },
+  {
+    "part": "listening-3",
+    "term": "key text",
+    "pos": "noun",
+    "vi": "giáo trình, sách trọng tâm",
+    "en": "An important book that students are expected to read for a course.",
+    "example": "One problem though with materials was the key texts."
+  },
+  {
+    "part": "listening-3",
+    "term": "on reserve",
+    "pos": "phrase",
+    "vi": "được giữ lại trong thư viện (chỉ đọc hoặc mượn ngắn hạn)",
+    "en": "Kept aside in a library for students on a course to use.",
+    "example": "There just weren't enough copies on reserve in the library."
+  },
+  {
+    "part": "listening-3",
+    "term": "assignment",
+    "pos": "noun",
+    "vi": "bài tập, bài luận được giao",
+    "en": "A piece of work that a student is given to do.",
+    "example": "It's hard to say until we got our written assignments back."
+  },
+  {
+    "part": "listening-3",
+    "term": "oral presentation",
+    "pos": "noun",
+    "vi": "bài thuyết trình miệng",
+    "en": "A spoken talk given to a class or audience.",
+    "example": "at least we've done the oral presentation."
+  },
+  {
+    "part": "listening-3",
+    "term": "criteria",
+    "pos": "noun",
+    "vi": "tiêu chí",
+    "en": "Standards used for judging or deciding something.",
+    "example": "We knew the criteria, so we knew we had to think about clarity, organization"
+  },
+  {
+    "part": "listening-3",
+    "term": "stressful",
+    "pos": "adjective",
+    "vi": "gây căng thẳng",
+    "en": "Causing a lot of worry or pressure.",
+    "example": "One thing I think is that there's just too much. It's really stressful."
+  },
+  {
+    "part": "listening-4",
+    "term": "household waste",
+    "pos": "noun",
+    "vi": "rác thải sinh hoạt",
+    "en": "Rubbish produced by people at home.",
+    "example": "how household waste is recycled in Britain."
+  },
+  {
+    "part": "listening-4",
+    "term": "recycle",
+    "pos": "verb",
+    "vi": "tái chế",
+    "en": "To process used materials so that they can be used again.",
+    "example": "only 9% of people here in the UK make an effort to recycle their household waste."
+  },
+  {
+    "part": "listening-4",
+    "term": "emissions",
+    "pos": "noun",
+    "vi": "khí thải",
+    "en": "Gases released into the air.",
+    "example": "we must reduce our carbon dioxide emissions by 12.5% compared with 1990."
+  },
+  {
+    "part": "listening-4",
+    "term": "virgin materials",
+    "pos": "noun",
+    "vi": "nguyên liệu thô (chưa qua tái chế)",
+    "en": "Raw materials that have never been used before.",
+    "example": "uses much less energy than producing them from virgin materials."
+  },
+  {
+    "part": "listening-4",
+    "term": "landfill",
+    "pos": "noun",
+    "vi": "bãi chôn lấp rác",
+    "en": "A place where rubbish is buried in the ground.",
+    "example": "reduces greenhouse gas emissions from landfill sites and incineration plants."
+  },
+  {
+    "part": "listening-4",
+    "term": "incineration",
+    "pos": "noun",
+    "vi": "việc đốt rác",
+    "en": "The burning of waste until it is destroyed.",
+    "example": "landfill sites and incineration plants."
+  },
+  {
+    "part": "listening-4",
+    "term": "bale",
+    "pos": "verb",
+    "vi": "ép thành kiện",
+    "en": "To press and tie material into large compact bundles.",
+    "example": "taken to places called bring banks for sorting and baling into loads."
+  },
+  {
+    "part": "listening-4",
+    "term": "stationery",
+    "pos": "noun",
+    "vi": "văn phòng phẩm",
+    "en": "Paper, pens and other writing materials.",
+    "example": "produces a range of office stationery which is 100% recycled"
+  },
+  {
+    "part": "listening-4",
+    "term": "soil conditioner",
+    "pos": "noun",
+    "vi": "chất cải tạo đất",
+    "en": "A substance added to soil to improve its quality.",
+    "example": "currently sells this to farmers as a soil conditioner"
+  },
+  {
+    "part": "listening-4",
+    "term": "scheme",
+    "pos": "noun",
+    "vi": "chương trình, kế hoạch",
+    "en": "An organised plan to achieve something.",
+    "example": "The Save-a-Cup scheme was set up by the vending and plastics industries"
+  },
+  {
+    "part": "reading-1",
+    "term": "equity",
+    "pos": "noun",
+    "vi": "sự công bằng",
+    "en": "Fairness in the way people are treated.",
+    "example": "The report argued for enhanced equity of access"
+  },
+  {
+    "part": "reading-1",
+    "term": "suppress",
+    "pos": "verb",
+    "vi": "kìm nén, dập tắt",
+    "en": "To stop something from developing or being expressed.",
+    "example": "it can be suppressed dramatically during the second and third years of life."
+  },
+  {
+    "part": "reading-1",
+    "term": "socio-economic",
+    "pos": "adjective",
+    "vi": "thuộc kinh tế xã hội",
+    "en": "Relating to a mix of social and financial factors.",
+    "example": "young people from poorer socio-economic backgrounds tend to do less well"
+  },
+  {
+    "part": "reading-1",
+    "term": "under-achievement",
+    "pos": "noun",
+    "vi": "kết quả học tập kém hơn khả năng",
+    "en": "Doing less well than you are able to.",
+    "example": "In an attempt to overcome that educational under-achievement"
+  },
+  {
+    "part": "reading-1",
+    "term": "peer",
+    "pos": "noun",
+    "vi": "bạn đồng trang lứa",
+    "en": "A person of the same age or status as another.",
+    "example": "were already behind their peers in language and measurable intelligence."
+  },
+  {
+    "part": "reading-1",
+    "term": "disadvantaged",
+    "pos": "adjective",
+    "vi": "thiệt thòi, có hoàn cảnh khó khăn",
+    "en": "Lacking the money or opportunities that most people have.",
+    "example": "returned to the same disadvantaged home environment."
+  },
+  {
+    "part": "reading-1",
+    "term": "pilot",
+    "pos": "adjective",
+    "vi": "thí điểm",
+    "en": "Done on a small scale first to test an idea.",
+    "example": "a pilot programme was launched in Missouri in the US"
+  },
+  {
+    "part": "reading-1",
+    "term": "predicated on",
+    "pos": "phrase",
+    "vi": "dựa trên (một giả định hay cơ sở)",
+    "en": "Based on a particular idea or belief.",
+    "example": "The 'Missouri' programme was predicated on research"
+  },
+  {
+    "part": "reading-1",
+    "term": "foster",
+    "pos": "verb",
+    "vi": "thúc đẩy, nuôi dưỡng (sự phát triển)",
+    "en": "To encourage something to develop.",
+    "example": "guidance in fostering the child's intellectual, language, social and motor-skill development."
+  },
+  {
+    "part": "reading-1",
+    "term": "perpetuate",
+    "pos": "verb",
+    "vi": "duy trì, kéo dài mãi",
+    "en": "To make something continue for a long time.",
+    "example": "our school system tends to perpetuate that disadvantage."
+  },
+  {
+    "part": "reading-2",
+    "term": "delta",
+    "pos": "noun",
+    "vi": "đồng bằng châu thổ",
+    "en": "A flat area of land where a river splits and meets the sea.",
+    "example": "The fertile land of the Nile delta is being eroded"
+  },
+  {
+    "part": "reading-2",
+    "term": "erode",
+    "pos": "verb",
+    "vi": "xói mòn",
+    "en": "To wear away gradually by water, wind or ice.",
+    "example": "is being eroded along Egypt's Mediterranean coast at an astounding rate"
+  },
+  {
+    "part": "reading-2",
+    "term": "sediment",
+    "pos": "noun",
+    "vi": "trầm tích, phù sa",
+    "en": "Sand, mud or small stones carried by water and left on the bottom.",
+    "example": "replaced by sediment brought down to the delta by the River Nile"
+  },
+  {
+    "part": "reading-2",
+    "term": "silt",
+    "pos": "noun",
+    "vi": "phù sa, bùn mịn",
+    "en": "Very fine soil carried by a river.",
+    "example": "covering a region of over 22,000 square kilometres with layers of fertile silt."
+  },
+  {
+    "part": "reading-2",
+    "term": "irrigation",
+    "pos": "noun",
+    "vi": "sự tưới tiêu",
+    "en": "Supplying land with water through channels or pipes.",
+    "example": "to provide electricity and irrigation"
+  },
+  {
+    "part": "reading-2",
+    "term": "replenish",
+    "pos": "verb",
+    "vi": "bổ sung lại, bù đắp",
+    "en": "To fill something up again.",
+    "example": "virtually no sediment comes out into the Mediterranean to replenish the coastline."
+  },
+  {
+    "part": "reading-2",
+    "term": "lagoon",
+    "pos": "noun",
+    "vi": "đầm phá",
+    "en": "A shallow area of water separated from the sea.",
+    "example": "the four large freshwater lagoons that are located near the outer edges of the delta."
+  },
+  {
+    "part": "reading-2",
+    "term": "laden with",
+    "pos": "phrase",
+    "vi": "chứa đầy, mang nặng (chất độc, rác)",
+    "en": "Carrying a large amount of something.",
+    "example": "it is laden with municipal, industrial and agricultural waste"
+  },
+  {
+    "part": "reading-2",
+    "term": "concur",
+    "pos": "verb",
+    "vi": "đồng ý, đồng quan điểm",
+    "en": "To agree with someone.",
+    "example": "Frederic Siegel of George Washington University concurs."
+  },
+  {
+    "part": "reading-2",
+    "term": "desalination",
+    "pos": "noun",
+    "vi": "khử muối (từ nước biển)",
+    "en": "Removing salt from sea water so that it can be used.",
+    "example": "an alternative process such as desalination may have to be used"
+  },
+  {
+    "part": "reading-3",
+    "term": "poised",
+    "pos": "adjective",
+    "vi": "sẵn sàng, chuẩn bị (làm gì)",
+    "en": "Ready to do something very soon.",
+    "example": "seems poised to make a comeback."
+  },
+  {
+    "part": "reading-3",
+    "term": "hype",
+    "pos": "noun",
+    "vi": "sự thổi phồng quảng cáo",
+    "en": "Exaggerated publicity to make something seem better than it is.",
+    "example": "And it is not always hype."
+  },
+  {
+    "part": "reading-3",
+    "term": "coin",
+    "pos": "verb",
+    "vi": "đặt ra (một thuật ngữ mới)",
+    "en": "To invent a new word or expression.",
+    "example": "the term 'artificial intelligence' coined, at a conference in 1956"
+  },
+  {
+    "part": "reading-3",
+    "term": "backlash",
+    "pos": "noun",
+    "vi": "phản ứng dữ dội, sự phản đối",
+    "en": "A strong negative reaction to a recent event or trend.",
+    "example": "Thinking computers and household robots failed to materialise, and a backlash ensued."
+  },
+  {
+    "part": "reading-3",
+    "term": "retrenchment",
+    "pos": "noun",
+    "vi": "sự thu hẹp, cắt giảm",
+    "en": "A reduction in activity or spending to cope with difficulties.",
+    "example": "Then when people realised these were hard problems, there was retrenchment."
+  },
+  {
+    "part": "reading-3",
+    "term": "mundane",
+    "pos": "adjective",
+    "vi": "tầm thường, bình thường",
+    "en": "Ordinary and not exciting.",
+    "example": "Whenever an apparently mundane problem was solved"
+  },
+  {
+    "part": "reading-3",
+    "term": "blue-sky",
+    "pos": "adjective",
+    "vi": "mang tính ý tưởng viển vông, chưa thực tế",
+    "en": "Theoretical and not yet practical or profitable.",
+    "example": "AI came to refer to 'blue-sky' research"
+  },
+  {
+    "part": "reading-3",
+    "term": "exacerbate",
+    "pos": "verb",
+    "vi": "làm trầm trọng thêm",
+    "en": "To make a bad situation worse.",
+    "example": "the problem of information overload, exacerbated by the growth of e-mail"
+  },
+  {
+    "part": "reading-3",
+    "term": "elusive",
+    "pos": "adjective",
+    "vi": "khó nắm bắt, khó đạt được",
+    "en": "Difficult to find, achieve or catch.",
+    "example": "a general theory of machine intelligence still remains elusive."
+  },
+  {
+    "part": "writing-1",
+    "term": "proximity",
+    "pos": "noun",
+    "vi": "sự gần, vị trí gần",
+    "en": "Nearness in distance.",
+    "example": "benefits from proximity to the main road linking Garlsdon with Hindon"
+  },
+  {
+    "part": "writing-2",
+    "term": "rivalry",
+    "pos": "noun",
+    "vi": "sự ganh đua, cạnh tranh",
+    "en": "A situation in which people compete with each other.",
+    "example": "While healthy rivalry can drive personal growth"
+  },
+  {
+    "part": "writing-2",
+    "term": "resilience",
+    "pos": "noun",
+    "vi": "khả năng phục hồi, sức bền tinh thần",
+    "en": "The ability to recover quickly from difficulties.",
+    "example": "Proponents of competition argue that it builds resilience and ambition."
+  }
+]

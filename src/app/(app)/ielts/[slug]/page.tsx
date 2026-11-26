@@ -6,7 +6,7 @@ import { AppTopbar } from '@/components/common/AppTopbar'
 import { AuthControl } from '@/components/common/AuthControl'
 import { MangaPageShell } from '@/components/common/MangaPageShell'
 import { hasMongoDbUri } from '@/constants/environments'
-import { connectDatabaseWhen } from '@/lib/db/connectDatabase'
+import { connectDatabase, connectDatabaseWhen } from '@/lib/db/connectDatabase'
 import { getPracticeActorId } from '@/modules/dictation/services/getCurrentUser'
 import {
   type IeltsAttemptSummary,
@@ -20,7 +20,9 @@ import {
 } from '@/modules/ielts/constants'
 import type { IeltsSection } from '@/modules/ielts/schema'
 import { readPublishedIeltsTest } from '@/modules/ielts/tests/testReaders'
+import { listIeltsTestVocabForLearner } from '@/modules/ielts/vocab/testVocabService'
 import { SkillLauncher } from '@/components/ielts/catalogue/SkillLauncher'
+import { TestVocabPanel } from '@/components/ielts/catalogue/TestVocabPanel'
 import { ExamBadge, ExamSheet, ExamHero } from '@/components/ielts/ui'
 
 export const dynamic = 'force-dynamic'
@@ -77,11 +79,16 @@ export default async function IeltsTestPage({ params }: Props) {
   if (!hasMongoDbUri() || !/^[a-z0-9-]{1,80}$/.test(slug)) notFound()
 
   const actorId = await connectDatabaseWhen(getPracticeActorId())
-  const [test, attempts] = await Promise.all([
+  const [test, attempts, vocab] = await Promise.all([
     readPublishedIeltsTest(slug),
     actorId
       ? listIeltsAttempts(actorId, { testSlug: slug, limit: 20 })
       : Promise.resolve([]),
+    // Guests without an id yet skip the connect above; the word list is not
+    // cached, so it always needs the connection.
+    connectDatabase().then(() =>
+      listIeltsTestVocabForLearner({ slug, userId: actorId })
+    ),
   ])
 
   if (!test) notFound()
@@ -177,6 +184,8 @@ export default async function IeltsTestPage({ params }: Props) {
             )
           })}
         </div>
+
+        <TestVocabPanel entries={vocab} />
       </ExamSheet>
     </MangaPageShell>
   )

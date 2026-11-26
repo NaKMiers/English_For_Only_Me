@@ -1,0 +1,546 @@
+[
+ {
+  "part": "listening-1",
+  "term": "backup",
+  "pos": "noun",
+  "vi": "phương án dự phòng",
+  "en": "A second choice that you can use if the first one fails.",
+  "example": "have some backups"
+ },
+ {
+  "part": "listening-1",
+  "term": "fit in",
+  "pos": "phrase",
+  "vi": "sắp xếp chỗ cho, nhận (đặt chỗ)",
+  "en": "To find time or space for someone.",
+  "example": "they can fit us in"
+ },
+ {
+  "part": "listening-1",
+  "term": "deposit",
+  "pos": "noun",
+  "vi": "tiền đặt cọc",
+  "en": "Money paid first to secure a booking.",
+  "example": "they'd like a 50 pound deposit"
+ },
+ {
+  "part": "listening-1",
+  "term": "in advance",
+  "pos": "phrase",
+  "vi": "trước, từ trước",
+  "en": "Before something happens.",
+  "example": "We have to choose the menu in advance."
+ },
+ {
+  "part": "listening-1",
+  "term": "confirm",
+  "pos": "verb",
+  "vi": "xác nhận",
+  "en": "To say officially that something is certain.",
+  "example": "Right to confirm."
+ },
+ {
+  "part": "listening-2",
+  "term": "entitled",
+  "pos": "adjective",
+  "vi": "có quyền, đủ tư cách",
+  "en": "Having the right to do or receive something.",
+  "example": "All students at the college are entitled to become members of the Sports Center"
+ },
+ {
+  "part": "listening-2",
+  "term": "annual",
+  "pos": "adjective",
+  "vi": "hằng năm",
+  "en": "Happening once a year.",
+  "example": "for an annual fee of £9.50"
+ },
+ {
+  "part": "listening-2",
+  "term": "issue",
+  "pos": "verb",
+  "vi": "cấp (thẻ)",
+  "en": "To officially give something to someone.",
+  "example": "We can't issue your card"
+ },
+ {
+  "part": "listening-2",
+  "term": "underused",
+  "pos": "adjective",
+  "vi": "ít được sử dụng",
+  "en": "Not used as much as it could be.",
+  "example": "the facilities tended to be underused in the mornings last year"
+ },
+ {
+  "part": "listening-2",
+  "term": "intimate",
+  "pos": "adjective",
+  "vi": "nhỏ ấm cúng, thân mật",
+  "en": "Small and creating a warm, private feeling.",
+  "example": "This provides a smaller, more intimate space"
+ },
+ {
+  "part": "listening-2",
+  "term": "martial arts",
+  "pos": "noun",
+  "vi": "võ thuật",
+  "en": "Sports that are fighting skills, such as judo or karate.",
+  "example": "ballet, modern dance and martial arts"
+ },
+ {
+  "part": "listening-3",
+  "term": "jigsaw",
+  "pos": "noun",
+  "vi": "trò ghép hình",
+  "en": "A puzzle made of many pieces that fit together.",
+  "example": "you've made the jigsaw for blind children with the bleeper"
+ },
+ {
+  "part": "listening-3",
+  "term": "bleeper",
+  "pos": "noun",
+  "vi": "thiết bị phát tiếng bíp",
+  "en": "A small device that makes a short electronic sound.",
+  "example": "you've made the jigsaw for blind children with the bleeper"
+ },
+ {
+  "part": "listening-3",
+  "term": "approximate",
+  "pos": "adjective",
+  "vi": "xấp xỉ, gần đúng",
+  "en": "Close to the correct amount but not exact.",
+  "example": "I think you can be approximate."
+ },
+ {
+  "part": "listening-3",
+  "term": "mains",
+  "pos": "noun",
+  "vi": "nguồn điện lưới",
+  "en": "The main electricity supply to a building.",
+  "example": "is it mains operated?"
+ },
+ {
+  "part": "listening-3",
+  "term": "envisage",
+  "pos": "verb",
+  "vi": "hình dung, dự kiến",
+  "en": "To imagine that something will happen in the future.",
+  "example": "problems you envisage"
+ },
+ {
+  "part": "listening-4",
+  "term": "rear",
+  "pos": "verb",
+  "vi": "nuôi (gia súc, gia cầm)",
+  "en": "To raise animals on a farm.",
+  "example": "who used to rear sheep and poultry"
+ },
+ {
+  "part": "listening-4",
+  "term": "poultry",
+  "pos": "noun",
+  "vi": "gia cầm",
+  "en": "Birds such as chickens kept for meat or eggs.",
+  "example": "who used to rear sheep and poultry"
+ },
+ {
+  "part": "listening-4",
+  "term": "livestock",
+  "pos": "noun",
+  "vi": "vật nuôi, gia súc",
+  "en": "Animals kept on a farm.",
+  "example": "a rather unusual type of livestock"
+ },
+ {
+  "part": "listening-4",
+  "term": "tender",
+  "pos": "adjective",
+  "vi": "mềm (thịt)",
+  "en": "Easy to cut and chew.",
+  "example": "pale and tender"
+ },
+ {
+  "part": "listening-4",
+  "term": "texture",
+  "pos": "noun",
+  "vi": "kết cấu (của thức ăn)",
+  "en": "The way something feels, especially food in the mouth.",
+  "example": "a similar taste and texture to beef"
+ },
+ {
+  "part": "listening-4",
+  "term": "hide",
+  "pos": "noun",
+  "vi": "da (thú) thô",
+  "en": "The skin of an animal, especially after it has been removed.",
+  "example": "this time for their hide"
+ },
+ {
+  "part": "listening-4",
+  "term": "cholesterol",
+  "pos": "noun",
+  "vi": "cholesterol",
+  "en": "A fatty substance in the body that can be bad for the heart if levels are high.",
+  "example": "much lower in fats and cholesterol"
+ },
+ {
+  "part": "listening-4",
+  "term": "embark on",
+  "pos": "phrase",
+  "vi": "bắt tay vào (việc lớn)",
+  "en": "To start a new and important activity.",
+  "example": "isn't something to embark on lightly"
+ },
+ {
+  "part": "listening-4",
+  "term": "incubator",
+  "pos": "noun",
+  "vi": "máy ấp trứng",
+  "en": "A machine that keeps eggs warm until they hatch.",
+  "example": "special equipment such as incubators for the eggs"
+ },
+ {
+  "part": "listening-4",
+  "term": "intensively",
+  "pos": "adverb",
+  "vi": "một cách thâm canh (nuôi nhốt mật độ cao)",
+  "en": "In a way that uses a lot of animals or crops on a small area.",
+  "example": "ostriches can't be intensively farmed"
+ },
+ {
+  "part": "listening-4",
+  "term": "hatch",
+  "pos": "verb",
+  "vi": "nở (trứng)",
+  "en": "To break out of an egg.",
+  "example": "almost all the fertilized eggs will hatch out into chicks"
+ },
+ {
+  "part": "listening-4",
+  "term": "outlay",
+  "pos": "noun",
+  "vi": "khoản chi ban đầu",
+  "en": "Money spent to start something.",
+  "example": "once the initial outlay has been made"
+ },
+ {
+  "part": "listening-4",
+  "term": "profit margin",
+  "pos": "noun",
+  "vi": "tỷ suất lợi nhuận",
+  "en": "The difference between the cost of making something and the price it sells for.",
+  "example": "very good profit margins indeed"
+ },
+ {
+  "part": "reading-1",
+  "term": "mundane",
+  "pos": "adjective",
+  "vi": "tầm thường, thường nhật",
+  "en": "Ordinary and not exciting.",
+  "example": "the extraordinary and the mundane"
+ },
+ {
+  "part": "reading-1",
+  "term": "banal",
+  "pos": "adjective",
+  "vi": "nhàm chán, tầm thường",
+  "en": "Boring and ordinary because it has no original idea.",
+  "example": "the beautiful and the banal"
+ },
+ {
+  "part": "reading-1",
+  "term": "artefact",
+  "pos": "noun",
+  "vi": "hiện vật (đồ vật do con người làm ra)",
+  "en": "An object made by people, especially of historical interest.",
+  "example": "approximately 300,000 artefacts"
+ },
+ {
+  "part": "reading-1",
+  "term": "anthropological",
+  "pos": "adjective",
+  "vi": "thuộc nhân chủng học",
+  "en": "Relating to the study of human societies and cultures.",
+  "example": "general anthropological projects"
+ },
+ {
+  "part": "reading-1",
+  "term": "collaboration",
+  "pos": "noun",
+  "vi": "sự hợp tác",
+  "en": "Working together with others on something.",
+  "example": "in collaboration with a wide variety of national governments"
+ },
+ {
+  "part": "reading-1",
+  "term": "textile",
+  "pos": "noun",
+  "vi": "hàng dệt, vải",
+  "en": "Cloth or fabric.",
+  "example": "of textiles from Bolivia, Guatemala, Indonesia"
+ },
+ {
+  "part": "reading-1",
+  "term": "ingenuity",
+  "pos": "noun",
+  "vi": "sự khéo léo, óc sáng tạo",
+  "en": "The ability to think of clever new ways to solve problems.",
+  "example": "traditional practices draw on a continuing wealth of technological ingenuity"
+ },
+ {
+  "part": "reading-1",
+  "term": "assimilation",
+  "pos": "noun",
+  "vi": "sự đồng hóa, hòa nhập",
+  "en": "The process of a group becoming part of a larger society.",
+  "example": "the disappearance or assimilation of many small-scale societies"
+ },
+ {
+  "part": "reading-1",
+  "term": "irrevocable",
+  "pos": "adjective",
+  "vi": "không thể đảo ngược",
+  "en": "Impossible to change or undo.",
+  "example": "on the point of irrevocable change"
+ },
+ {
+  "part": "reading-1",
+  "term": "marginal",
+  "pos": "adjective",
+  "vi": "bị gạt ra bên lề",
+  "en": "Small, or not part of the main group.",
+  "example": "marginal communities can survive and adapt"
+ },
+ {
+  "part": "reading-1",
+  "term": "fickle",
+  "pos": "adjective",
+  "vi": "thất thường, hay thay đổi",
+  "en": "Changing often and unpredictably.",
+  "example": "a notoriously fickle world economy"
+ },
+ {
+  "part": "reading-1",
+  "term": "advent",
+  "pos": "noun",
+  "vi": "sự ra đời, sự xuất hiện",
+  "en": "The arrival of something important.",
+  "example": "with the advent of trading companies"
+ },
+ {
+  "part": "reading-1",
+  "term": "indigenous",
+  "pos": "adjective",
+  "vi": "bản địa",
+  "en": "Belonging to the original people of a place.",
+  "example": "the destruction of local skills and indigenous markets"
+ },
+ {
+  "part": "reading-1",
+  "term": "utilitarian",
+  "pos": "adjective",
+  "vi": "mang tính thực dụng",
+  "en": "Made to be useful rather than beautiful.",
+  "example": "What are utilitarian objects to a Westerner"
+ },
+ {
+  "part": "reading-1",
+  "term": "aesthetic",
+  "pos": "adjective",
+  "vi": "thuộc thẩm mỹ",
+  "en": "Relating to beauty and art.",
+  "example": "principally for aesthetic value"
+ },
+ {
+  "part": "reading-2",
+  "term": "venture",
+  "pos": "verb",
+  "vi": "mạo hiểm đi sâu vào",
+  "en": "To go somewhere that is dangerous or unknown.",
+  "example": "ventured deep into the jungle of Bolivian Amazonia"
+ },
+ {
+  "part": "reading-2",
+  "term": "thatched",
+  "pos": "adjective",
+  "vi": "lợp bằng tranh, rơm",
+  "en": "Having a roof made of dried straw or reeds.",
+  "example": "clusters of thatched huts"
+ },
+ {
+  "part": "reading-2",
+  "term": "perpetual",
+  "pos": "adjective",
+  "vi": "liên miên, không dứt",
+  "en": "Continuing without stopping.",
+  "example": "a perpetual and punishing search for food"
+ },
+ {
+  "part": "reading-2",
+  "term": "scour",
+  "pos": "verb",
+  "vi": "lùng sục",
+  "en": "To search a place very carefully.",
+  "example": "scoured the country for small game"
+ },
+ {
+  "part": "reading-2",
+  "term": "deplete",
+  "pos": "verb",
+  "vi": "làm cạn kiệt",
+  "en": "To reduce the amount of something so little is left.",
+  "example": "When local resources became depleted"
+ },
+ {
+  "part": "reading-2",
+  "term": "epitomize",
+  "pos": "verb",
+  "vi": "là hình mẫu điển hình của",
+  "en": "To be a perfect example of something.",
+  "example": "the Siriono epitomize the popular conception of life in Amazonia"
+ },
+ {
+  "part": "reading-2",
+  "term": "luxuriant",
+  "pos": "adjective",
+  "vi": "um tùm, tươi tốt",
+  "en": "Growing thickly and healthily.",
+  "example": "the luxuriant forests of Amazonia"
+ },
+ {
+  "part": "reading-2",
+  "term": "hostile",
+  "pos": "adjective",
+  "vi": "khắc nghiệt, không thân thiện",
+  "en": "Unfriendly or very difficult to live in.",
+  "example": "a habitat totally hostile to human civilization"
+ },
+ {
+  "part": "reading-2",
+  "term": "thrive",
+  "pos": "verb",
+  "vi": "phát triển mạnh",
+  "en": "To grow or develop very well.",
+  "example": "thrived there for more than 1,000 years before the arrival of Europeans"
+ },
+ {
+  "part": "reading-2",
+  "term": "tenable",
+  "pos": "adjective",
+  "vi": "có thể bảo vệ được (về quan điểm)",
+  "en": "Able to be defended as reasonable.",
+  "example": "an approach that leaves people out of the equation is no longer tenable"
+ },
+ {
+  "part": "reading-2",
+  "term": "casualty",
+  "pos": "noun",
+  "vi": "nạn nhân, thiệt hại",
+  "en": "A person or thing that suffers harm because of an event.",
+  "example": "one major casualty of that extreme position has been the environment itself"
+ },
+ {
+  "part": "reading-2",
+  "term": "apace",
+  "pos": "adverb",
+  "vi": "nhanh chóng, không ngừng",
+  "en": "Quickly.",
+  "example": "development of the most destructive kind has continued apace"
+ },
+ {
+  "part": "reading-2",
+  "term": "judicious",
+  "pos": "adjective",
+  "vi": "khôn ngoan, sáng suốt",
+  "en": "Showing good judgement.",
+  "example": "with judicious management selected parts of the region"
+ },
+ {
+  "part": "reading-3",
+  "term": "gloomy",
+  "pos": "adjective",
+  "vi": "u ám",
+  "en": "Dark and unpleasant.",
+  "example": "Gloomy weather can cause depression"
+ },
+ {
+  "part": "reading-3",
+  "term": "muggy",
+  "pos": "adjective",
+  "vi": "oi bức, nóng ẩm",
+  "en": "Warm and damp in an uncomfortable way.",
+  "example": "tempers grow shorter in hot, muggy weather"
+ },
+ {
+  "part": "reading-3",
+  "term": "impair",
+  "pos": "verb",
+  "vi": "làm suy giảm",
+  "en": "To damage something so that it works less well.",
+  "example": "their performance was impaired as soon as they were put into the cold water"
+ },
+ {
+  "part": "reading-3",
+  "term": "sceptical",
+  "pos": "adjective",
+  "vi": "hoài nghi",
+  "en": "Doubting that something is true or useful.",
+  "example": "people become less sceptical and more optimistic"
+ },
+ {
+  "part": "reading-3",
+  "term": "trigger",
+  "pos": "verb",
+  "vi": "gây ra, kích hoạt",
+  "en": "To cause something to start.",
+  "example": "These changes seem to be triggered by varying melatonin levels."
+ },
+ {
+  "part": "reading-3",
+  "term": "murky",
+  "pos": "adjective",
+  "vi": "u ám, đục",
+  "en": "Dark and unclear.",
+  "example": "rain and murky weather make people more unhappy"
+ },
+ {
+  "part": "reading-3",
+  "term": "bear out",
+  "pos": "phrase",
+  "vi": "chứng minh là đúng",
+  "en": "To show that something is true.",
+  "example": "is borne out by a study in Belgium"
+ },
+ {
+  "part": "reading-3",
+  "term": "brew",
+  "pos": "verb",
+  "vi": "đang hình thành, sắp xảy ra (cơn bão)",
+  "en": "To begin to develop.",
+  "example": "When there is a thunderstorm brewing"
+ },
+ {
+  "part": "reading-3",
+  "term": "irritable",
+  "pos": "adjective",
+  "vi": "dễ cáu gắt",
+  "en": "Easily annoyed.",
+  "example": "feeling irritable, moody and on edge"
+ },
+ {
+  "part": "reading-3",
+  "term": "on edge",
+  "pos": "phrase",
+  "vi": "căng thẳng, bồn chồn",
+  "en": "Nervous and unable to relax.",
+  "example": "feeling irritable, moody and on edge"
+ },
+ {
+  "part": "writing-1",
+  "term": "industrialised",
+  "pos": "adjective",
+  "vi": "đã công nghiệp hóa",
+  "en": "Having many factories and developed industry.",
+  "example": "developing and industrialised countries"
+ }
+]

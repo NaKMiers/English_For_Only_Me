@@ -1,0 +1,562 @@
+[
+  {
+    "part": "listening-1",
+    "term": "taster day",
+    "pos": "noun",
+    "vi": "ngày học thử",
+    "en": "A short session that lets beginners try an activity before committing to a full course.",
+    "example": "OK, well you might be interested in our taster days."
+  },
+  {
+    "part": "listening-1",
+    "term": "dinghy",
+    "pos": "noun",
+    "vi": "xuồng nhỏ, thuyền buồm nhỏ",
+    "en": "A small open boat, often used for sailing or as a lifeboat.",
+    "example": "You go out into the harbour in special training dinghies for beginners."
+  },
+  {
+    "part": "listening-1",
+    "term": "tide",
+    "pos": "noun",
+    "vi": "thủy triều",
+    "en": "The regular rise and fall of the sea level.",
+    "example": "And also the tides, as well as learning basic sailing skills."
+  },
+  {
+    "part": "listening-1",
+    "term": "harbour",
+    "pos": "noun",
+    "vi": "bến cảng, vịnh neo thuyền",
+    "en": "A sheltered area of water where boats are kept safe.",
+    "example": "You go out into the harbour in special training dinghies for beginners."
+  },
+  {
+    "part": "listening-1",
+    "term": "discount",
+    "pos": "noun",
+    "vi": "giảm giá",
+    "en": "A reduction in the usual price.",
+    "example": "There's a discount for members."
+  },
+  {
+    "part": "listening-1",
+    "term": "terminology",
+    "pos": "noun",
+    "vi": "hệ thuật ngữ chuyên ngành",
+    "en": "The special words used in a particular subject or activity.",
+    "example": "And you also get a really good dictionary explaining all the sailing terminology."
+  },
+  {
+    "part": "listening-1",
+    "term": "certificate",
+    "pos": "noun",
+    "vi": "chứng chỉ",
+    "en": "An official document that proves you have completed a course or passed a test.",
+    "example": "And on completion of the course you get a certificate."
+  },
+  {
+    "part": "listening-1",
+    "term": "valuables",
+    "pos": "noun",
+    "vi": "đồ có giá trị",
+    "en": "Personal items worth a lot of money, such as a phone or wallet.",
+    "example": "I'll be cycling to the club, and will need somewhere to put valuables."
+  },
+  {
+    "part": "listening-2",
+    "term": "trainee",
+    "pos": "noun",
+    "vi": "thực tập sinh, người học việc",
+    "en": "A person who is learning a job by doing it.",
+    "example": "you have to spend about two years working as a makeup trainee."
+  },
+  {
+    "part": "listening-2",
+    "term": "catering",
+    "pos": "noun",
+    "vi": "dịch vụ ăn uống (cung cấp đồ ăn)",
+    "en": "The food and drink provided for a group of people at an event or workplace.",
+    "example": "And remember, there's very unlikely to be any catering provided, so bring plenty of food."
+  },
+  {
+    "part": "listening-2",
+    "term": "ethnicity",
+    "pos": "noun",
+    "vi": "sắc tộc, nhóm dân tộc",
+    "en": "The ethnic group that a person belongs to.",
+    "example": "you're likely to get the opportunity to work with a range of age groups as well as different ethnicities."
+  },
+  {
+    "part": "listening-2",
+    "term": "in awe",
+    "pos": "phrase",
+    "vi": "kính nể, sửng sốt ngưỡng mộ",
+    "en": "Feeling great respect and admiration, often mixed with a little fear.",
+    "example": "I was so in awe."
+  },
+  {
+    "part": "listening-2",
+    "term": "overwhelming",
+    "pos": "adjective",
+    "vi": "choáng ngợp, quá tải",
+    "en": "So strong or intense that it is hard to deal with.",
+    "example": "At first, I found it overwhelming and could hardly speak."
+  },
+  {
+    "part": "listening-2",
+    "term": "portfolio",
+    "pos": "noun",
+    "vi": "hồ sơ năng lực, tập sản phẩm",
+    "en": "A collection of examples of your work that you show to employers.",
+    "example": "It's very important to build your portfolio."
+  },
+  {
+    "part": "listening-2",
+    "term": "cleanse",
+    "pos": "verb",
+    "vi": "làm sạch (da)",
+    "en": "To clean something, especially skin, thoroughly.",
+    "example": "Some actors will arrive having already cleansed and moisturized their skin."
+  },
+  {
+    "part": "listening-2",
+    "term": "continuity",
+    "pos": "noun",
+    "vi": "tính liên tục, nhất quán (giữa các cảnh quay)",
+    "en": "Making sure that details stay the same from one scene or shot to the next.",
+    "example": "Trainees play a useful role in continuity."
+  },
+  {
+    "part": "listening-2",
+    "term": "reshoot",
+    "pos": "noun",
+    "vi": "việc quay lại cảnh",
+    "en": "An occasion when a scene of a film is filmed again.",
+    "example": "as a reshoot can mean replicating makeup months later."
+  },
+  {
+    "part": "listening-2",
+    "term": "replicate",
+    "pos": "verb",
+    "vi": "tái tạo y hệt, sao chép",
+    "en": "To copy something exactly.",
+    "example": "as a reshoot can mean replicating makeup months later."
+  },
+  {
+    "part": "listening-2",
+    "term": "principal cast",
+    "pos": "phrase",
+    "vi": "dàn diễn viên chính",
+    "en": "The main actors in a film or play.",
+    "example": "You won't be asked to apply makeup to any of the principal cast, only the extras."
+  },
+  {
+    "part": "listening-2",
+    "term": "swift",
+    "pos": "adjective",
+    "vi": "nhanh chóng",
+    "en": "Happening or moving quickly.",
+    "example": "you'll need to keep up a swift pace, and not spend too long on each person."
+  },
+  {
+    "part": "listening-3",
+    "term": "biodiversity",
+    "pos": "noun",
+    "vi": "đa dạng sinh học",
+    "en": "The variety of living things found in a particular place or in the world.",
+    "example": "I learned a lot from her about ocean biodiversity."
+  },
+  {
+    "part": "listening-3",
+    "term": "conservation",
+    "pos": "noun",
+    "vi": "bảo tồn",
+    "en": "The protection of nature and the environment from damage.",
+    "example": "Two marine biology students discuss a lecture on marine biodiversity and conservation from a visiting speaker."
+  },
+  {
+    "part": "listening-3",
+    "term": "widespread",
+    "pos": "adjective",
+    "vi": "phổ biến, lan rộng",
+    "en": "Existing or happening in many places or among many people.",
+    "example": "things that aren't currently receiving widespread attention"
+  },
+  {
+    "part": "listening-3",
+    "term": "bombard",
+    "pos": "verb",
+    "vi": "dồn dập, \"dội bom\" (bằng thông tin)",
+    "en": "To give someone a very large amount of something, such as information, all at once.",
+    "example": "I liked the way she didn't bombard us with figures."
+  },
+  {
+    "part": "listening-3",
+    "term": "invasive",
+    "pos": "adjective",
+    "vi": "xâm lấn (loài ngoại lai)",
+    "en": "Describing a plant or animal that spreads into a new area and causes harm.",
+    "example": "What did you think of that article on invasive lionfish?"
+  },
+  {
+    "part": "listening-3",
+    "term": "habitat",
+    "pos": "noun",
+    "vi": "môi trường sống",
+    "en": "The natural place where an animal or plant lives.",
+    "example": "The one claiming they were expanding their habitat throughout the Mediterranean Sea."
+  },
+  {
+    "part": "listening-3",
+    "term": "microplastics",
+    "pos": "noun",
+    "vi": "vi nhựa (hạt nhựa siêu nhỏ)",
+    "en": "Very small pieces of plastic that pollute the environment.",
+    "example": "I watched the documentary on microplastics, at least I started to"
+  },
+  {
+    "part": "listening-3",
+    "term": "state the obvious",
+    "pos": "phrase",
+    "vi": "nói điều hiển nhiên",
+    "en": "To say something that everyone already knows.",
+    "example": "Most of it was stating the obvious."
+  },
+  {
+    "part": "listening-3",
+    "term": "hard going",
+    "pos": "phrase",
+    "vi": "khó đọc, khó theo dõi",
+    "en": "Difficult and tiring to read or deal with.",
+    "example": "I found it hard going at first."
+  },
+  {
+    "part": "listening-3",
+    "term": "toxicity",
+    "pos": "noun",
+    "vi": "độc tính",
+    "en": "The degree to which a substance is poisonous.",
+    "example": "The article on metal toxicity was way above my head."
+  },
+  {
+    "part": "listening-3",
+    "term": "emission",
+    "pos": "noun",
+    "vi": "khí thải",
+    "en": "A gas or other substance released into the air.",
+    "example": "how metals from industrial emissions react in the ocean."
+  },
+  {
+    "part": "listening-3",
+    "term": "one-sided",
+    "pos": "adjective",
+    "vi": "phiến diện, thiên lệch",
+    "en": "Showing only one point of view and ignoring others.",
+    "example": "Though it presented a rather one-sided picture, I thought."
+  },
+  {
+    "part": "listening-4",
+    "term": "fossil fuel",
+    "pos": "noun",
+    "vi": "nhiên liệu hóa thạch",
+    "en": "A fuel such as coal, oil or gas formed from the remains of ancient living things.",
+    "example": "Another is fossil fuels, which we need to power those machines."
+  },
+  {
+    "part": "listening-4",
+    "term": "plantation",
+    "pos": "noun",
+    "vi": "đồn điền",
+    "en": "A large farm where crops such as rubber, tea or sugar are grown.",
+    "example": "but is now cultivated on plantations in Southeast Asia."
+  },
+  {
+    "part": "listening-4",
+    "term": "cultivate",
+    "pos": "verb",
+    "vi": "trồng trọt, canh tác",
+    "en": "To grow plants or crops.",
+    "example": "but is now cultivated on plantations in Southeast Asia."
+  },
+  {
+    "part": "listening-4",
+    "term": "latex",
+    "pos": "noun",
+    "vi": "mủ cao su",
+    "en": "The milky liquid from rubber trees that is used to make rubber.",
+    "example": "and putting a little cup there to catch the latex, as the rubber is called."
+  },
+  {
+    "part": "listening-4",
+    "term": "labour-intensive",
+    "pos": "adjective",
+    "vi": "đòi hỏi nhiều sức lao động",
+    "en": "Needing a lot of workers or a lot of human effort.",
+    "example": "It's very labour-intensive."
+  },
+  {
+    "part": "listening-4",
+    "term": "genetic diversity",
+    "pos": "phrase",
+    "vi": "đa dạng di truyền",
+    "en": "The variety of genes within a species.",
+    "example": "This means that there's very little genetic diversity among the trees"
+  },
+  {
+    "part": "listening-4",
+    "term": "vulnerable",
+    "pos": "adjective",
+    "vi": "dễ bị tổn thương, dễ mắc (bệnh)",
+    "en": "Easily harmed or attacked.",
+    "example": "which in turn makes them very vulnerable to disease."
+  },
+  {
+    "part": "listening-4",
+    "term": "fungus",
+    "pos": "noun",
+    "vi": "nấm",
+    "en": "A type of organism, such as a mushroom or mould, that can cause plant diseases.",
+    "example": "The most dangerous threat is a fungus which destroyed large numbers of rubber trees in Brazil"
+  },
+  {
+    "part": "listening-4",
+    "term": "synthetically",
+    "pos": "adverb",
+    "vi": "bằng cách tổng hợp, nhân tạo",
+    "en": "In a way that is made by people using chemicals rather than found in nature.",
+    "example": "it's also possible to make rubber synthetically."
+  },
+  {
+    "part": "listening-4",
+    "term": "adaptable",
+    "pos": "adjective",
+    "vi": "dễ thích nghi",
+    "en": "Able to change to suit new conditions.",
+    "example": "But unlike rubber trees, they're very adaptable."
+  },
+  {
+    "part": "reading-1",
+    "term": "amass",
+    "pos": "verb",
+    "vi": "tích lũy, thu gom (số lượng lớn)",
+    "en": "To collect a large amount of something over time.",
+    "example": "a Welshman who amassed a fortune in the shipping and mining industries."
+  },
+  {
+    "part": "reading-1",
+    "term": "inheritance",
+    "pos": "noun",
+    "vi": "tài sản thừa kế",
+    "en": "Money or property received from someone after they die.",
+    "example": "In 1907, when Gwendoline came into her inheritance"
+  },
+  {
+    "part": "reading-1",
+    "term": "philanthropic",
+    "pos": "adjective",
+    "vi": "từ thiện, nhân ái",
+    "en": "Aiming to help others, especially by giving money to good causes.",
+    "example": "they chose to use their inheritance for cultural and philanthropic* purposes."
+  },
+  {
+    "part": "reading-1",
+    "term": "humanitarian",
+    "pos": "adjective",
+    "vi": "mang tính nhân đạo",
+    "en": "Concerned with reducing suffering and improving people's lives.",
+    "example": "as a humanitarian act"
+  },
+  {
+    "part": "reading-1",
+    "term": "canteen",
+    "pos": "noun",
+    "vi": "căn tin (nhà ăn tập thể)",
+    "en": "A place in a workplace or camp where meals are served.",
+    "example": "both sisters decided to volunteer at a canteen for troops at Troyes"
+  },
+  {
+    "part": "reading-1",
+    "term": "upheaval",
+    "pos": "noun",
+    "vi": "biến động, xáo trộn lớn",
+    "en": "A sudden big change or disruption, especially in society.",
+    "example": "faced with the poverty and social upheaval created by the First World War."
+  },
+  {
+    "part": "reading-1",
+    "term": "legacy",
+    "pos": "noun",
+    "vi": "di sản",
+    "en": "Something valuable that remains after a person is gone.",
+    "example": "the sisters created a lasting and meaningful cultural legacy for the people of Wales and beyond."
+  },
+  {
+    "part": "reading-2",
+    "term": "attuned",
+    "pos": "adjective",
+    "vi": "nhạy bén, thích ứng với",
+    "en": "Sensitive to, and able to notice or respond to, something.",
+    "example": "Humans are finely attuned to noise, and for good reason."
+  },
+  {
+    "part": "reading-2",
+    "term": "cardiovascular",
+    "pos": "adjective",
+    "vi": "thuộc tim mạch",
+    "en": "Relating to the heart and blood vessels.",
+    "example": "from sleep disturbance to even cardiovascular disease."
+  },
+  {
+    "part": "reading-2",
+    "term": "designate",
+    "pos": "verb",
+    "vi": "chính thức xác định, phân loại là",
+    "en": "To officially name or describe something as a particular thing.",
+    "example": "has recently designated excessive noise as an 'underestimated threat' to public health"
+  },
+  {
+    "part": "reading-2",
+    "term": "muffle",
+    "pos": "verb",
+    "vi": "làm giảm âm, làm êm",
+    "en": "To make a sound quieter or less clear.",
+    "example": "alongside greenery that muffles sound."
+  },
+  {
+    "part": "reading-2",
+    "term": "benign",
+    "pos": "adjective",
+    "vi": "vô hại, lành tính",
+    "en": "Not harmful.",
+    "example": "these effects are benign and do not detract from the benefits of the experience"
+  },
+  {
+    "part": "reading-2",
+    "term": "volition",
+    "pos": "noun",
+    "vi": "ý chí tự nguyện",
+    "en": "The power to choose or decide something by yourself.",
+    "example": "volition and intentionality is important,"
+  },
+  {
+    "part": "reading-2",
+    "term": "therapeutic",
+    "pos": "adjective",
+    "vi": "có tác dụng trị liệu",
+    "en": "Helping to treat or heal a physical or mental problem.",
+    "example": "To further explore flotation tanks as a therapeutic tool"
+  },
+  {
+    "part": "reading-2",
+    "term": "concede",
+    "pos": "verb",
+    "vi": "thừa nhận (điều không mong muốn)",
+    "en": "To admit that something is true, often reluctantly.",
+    "example": "also concedes that some people may not benefit from silence"
+  },
+  {
+    "part": "reading-3",
+    "term": "subsidise",
+    "pos": "verb",
+    "vi": "trợ cấp",
+    "en": "To pay part of the cost of something so that it can be sold more cheaply.",
+    "example": "It has also been massively subsidised and sold at artificially low prices on world markets"
+  },
+  {
+    "part": "reading-3",
+    "term": "abolition",
+    "pos": "noun",
+    "vi": "sự bãi bỏ",
+    "en": "The official ending of a law, system or practice.",
+    "example": "Following the abolition of slavery in the British Empire"
+  },
+  {
+    "part": "reading-3",
+    "term": "dynasty",
+    "pos": "noun",
+    "vi": "dòng họ quyền lực, triều đại (gia tộc kinh doanh)",
+    "en": "A powerful family that keeps its influence over a long time.",
+    "example": "This is also a history of capitalists and sugar dynasties"
+  },
+  {
+    "part": "reading-3",
+    "term": "ubiquitous",
+    "pos": "adjective",
+    "vi": "có mặt ở khắp nơi",
+    "en": "Seeming to be present everywhere.",
+    "example": "have turned gleaming white sugar into a ubiquitous chemical."
+  },
+  {
+    "part": "reading-3",
+    "term": "obesity",
+    "pos": "noun",
+    "vi": "bệnh béo phì",
+    "en": "A medical condition of being very overweight.",
+    "example": "and, when it comes to obesity, of trying to blame fats"
+  },
+  {
+    "part": "reading-3",
+    "term": "irrigation",
+    "pos": "noun",
+    "vi": "hệ thống tưới tiêu",
+    "en": "The supply of water to land so that crops can grow.",
+    "example": "new techniques, varieties, fertilisers, irrigation systems and much more"
+  },
+  {
+    "part": "writing-1",
+    "term": "sector",
+    "pos": "noun",
+    "vi": "ngành, lĩnh vực (kinh tế)",
+    "en": "One part of the economy, such as manufacturing or healthcare.",
+    "example": "In 1960, manufacturing was by far the largest sector, with 15 million jobs."
+  },
+  {
+    "part": "writing-1",
+    "term": "overtake",
+    "pos": "verb",
+    "vi": "vượt qua",
+    "en": "To become greater than something else that was previously ahead.",
+    "example": "both having overtaken manufacturing between 2000 and 2020."
+  },
+  {
+    "part": "writing-2",
+    "term": "high-rise",
+    "pos": "adjective",
+    "vi": "cao tầng",
+    "en": "Describing a tall building with many floors.",
+    "example": "constructing high-rise apartment blocks is the optimal solution to urban housing shortages"
+  },
+  {
+    "part": "writing-2",
+    "term": "urban sprawl",
+    "pos": "phrase",
+    "vi": "sự đô thị hóa lan rộng",
+    "en": "The uncontrolled spread of a city into the surrounding countryside.",
+    "example": "curbing urban sprawl that consumes agricultural land."
+  },
+  {
+    "part": "writing-2",
+    "term": "exacerbate",
+    "pos": "verb",
+    "vi": "làm trầm trọng thêm",
+    "en": "To make a problem worse.",
+    "example": "Sole reliance on vertical density often exacerbates social isolation"
+  },
+  {
+    "part": "writing-2",
+    "term": "zoning",
+    "pos": "noun",
+    "vi": "quy hoạch phân khu (đất đai)",
+    "en": "Rules that control how land in an area can be used.",
+    "example": "and reforming zoning laws to allow mixed-use neighbourhoods"
+  },
+  {
+    "part": "writing-2",
+    "term": "equitable",
+    "pos": "adjective",
+    "vi": "công bằng",
+    "en": "Fair and treating everyone equally.",
+    "example": "integrate diverse housing typologies with equitable policies"
+  }
+]

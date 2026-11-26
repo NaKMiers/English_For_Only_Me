@@ -52,6 +52,7 @@ import { SectionForm } from './SectionForm'
 import { isDone, SectionPicker, statusOf } from './SectionPicker'
 import { SectionPreview, ShowAnswersSwitch } from './SectionPreview'
 import { TestDetailsDialog, type TestMeta } from './TestDetailsDialog'
+import { TestVocabDialog } from './TestVocabDialog'
 import { ExamButton, ExamIconButton, segmentClass } from '@/components/ielts/ui'
 
 function toInput(section: IeltsSection): IeltsSectionInput {
@@ -120,9 +121,9 @@ export function TestEditor({
   const [confirmWarnings, setConfirmWarnings] = useState(false)
   const [pane, setPane] = useState<Pane>('split')
   const [showAnswers, setShowAnswers] = useState(true)
-  const [dialog, setDialog] = useState<'details' | 'checks' | 'log' | null>(
-    null
-  )
+  const [dialog, setDialog] = useState<
+    'details' | 'checks' | 'log' | 'vocab' | null
+  >(null)
   const stopLoopRef = useRef(false)
   const section = test.sections.find(item => item.key === selectedKey)
   const draft = section ? (drafts[section.key] ?? toInput(section)) : null
@@ -546,6 +547,7 @@ export function TestEditor({
           onGenerateMissing={() => void generateMissing()}
           onOpenChecks={() => setDialog('checks')}
           onOpenLog={() => setDialog('log')}
+          onOpenVocab={() => setDialog('vocab')}
           onPublish={() => void publish(false)}
           onStop={() => {
             stopLoopRef.current = true
@@ -825,6 +827,12 @@ export function TestEditor({
         onSave={() => void saveMeta()}
         open={dialog === 'details'}
         seriesOptions={seriesOptions}
+      />
+
+      <TestVocabDialog
+        onOpenChange={open => setDialog(open ? 'vocab' : null)}
+        open={dialog === 'vocab'}
+        testId={test.id}
       />
 
       <Dialog

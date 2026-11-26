@@ -1,0 +1,554 @@
+[
+  {
+    "part": "listening-1",
+    "term": "check-up",
+    "pos": "noun",
+    "vi": "buổi khám sức khỏe tổng quát",
+    "en": "A routine medical or dental examination to make sure everything is fine.",
+    "example": "No, it was just a check-up."
+  },
+  {
+    "part": "listening-1",
+    "term": "convenient",
+    "pos": "adjective",
+    "vi": "thuận tiện",
+    "en": "Easy to use or suitable for your needs, saving time or effort.",
+    "example": "The bus is much more convenient too."
+  },
+  {
+    "part": "listening-1",
+    "term": "timetable",
+    "pos": "noun",
+    "vi": "lịch trình chạy xe",
+    "en": "A list showing the times when buses or trains arrive and leave.",
+    "example": "And what about the timetable?"
+  },
+  {
+    "part": "listening-1",
+    "term": "keen on",
+    "pos": "phrase",
+    "vi": "thích, hứng thú với",
+    "en": "Interested in something or enjoying it.",
+    "example": "I'm not keen on cycling there because of all the pollution."
+  },
+  {
+    "part": "listening-1",
+    "term": "storage",
+    "pos": "noun",
+    "vi": "chỗ cất giữ đồ",
+    "en": "Space where things can be kept until they are needed.",
+    "example": "And it doesn't have any storage"
+  },
+  {
+    "part": "listening-2",
+    "term": "volunteer",
+    "pos": "noun",
+    "vi": "tình nguyện viên",
+    "en": "A person who does work without being paid, because they want to help.",
+    "example": "we're now looking for more volunteers to help us do this."
+  },
+  {
+    "part": "listening-2",
+    "term": "reliability",
+    "pos": "noun",
+    "vi": "sự đáng tin cậy",
+    "en": "The quality of being dependable and doing what you promised.",
+    "example": "Other considerations such as reliability are crucial in voluntary work."
+  },
+  {
+    "part": "listening-2",
+    "term": "crucial",
+    "pos": "adjective",
+    "vi": "then chốt, vô cùng quan trọng",
+    "en": "Extremely important for success.",
+    "example": "Other considerations such as reliability are crucial in voluntary work."
+  },
+  {
+    "part": "listening-2",
+    "term": "dedication",
+    "pos": "noun",
+    "vi": "sự tận tâm, cống hiến",
+    "en": "Great commitment to a task or cause.",
+    "example": "What we value is dedication."
+  },
+  {
+    "part": "listening-2",
+    "term": "loyal",
+    "pos": "adjective",
+    "vi": "trung thành, gắn bó lâu dài",
+    "en": "Staying faithful and supportive over a long time.",
+    "example": "Some of our most loyal volunteers earn very little themselves."
+  },
+  {
+    "part": "listening-2",
+    "term": "fundraising",
+    "pos": "noun",
+    "vi": "gây quỹ",
+    "en": "The activity of collecting money for a charity or cause.",
+    "example": "an imaginative or novel way of fundraising"
+  },
+  {
+    "part": "listening-2",
+    "term": "novel",
+    "pos": "adjective",
+    "vi": "mới lạ, độc đáo",
+    "en": "New and different from what is usual.",
+    "example": "If you have the creativity to come up with an imaginative or novel way of fundraising, we'd be delighted."
+  },
+  {
+    "part": "listening-2",
+    "term": "litter",
+    "pos": "noun",
+    "vi": "rác vứt bừa bãi",
+    "en": "Rubbish left lying on the ground in public places.",
+    "example": "One outdoor activity that we need volunteers for is litter collection"
+  },
+  {
+    "part": "listening-2",
+    "term": "vacancy",
+    "pos": "noun",
+    "vi": "vị trí còn trống (cần tuyển)",
+    "en": "A job or place that is available for someone to fill.",
+    "example": "we have three vacancies for what are called playmates."
+  },
+  {
+    "part": "listening-2",
+    "term": "nutrition",
+    "pos": "noun",
+    "vi": "dinh dưỡng",
+    "en": "The food a person eats and how it affects their health.",
+    "example": "it's good if you know something about nutrition"
+  },
+  {
+    "part": "listening-2",
+    "term": "first aid",
+    "pos": "noun",
+    "vi": "sơ cứu",
+    "en": "Basic medical help given to an injured person before a doctor arrives.",
+    "example": "The last area I'll mention today is first aid."
+  },
+  {
+    "part": "listening-2",
+    "term": "vulnerable",
+    "pos": "adjective",
+    "vi": "dễ bị tổn thương, yếu thế",
+    "en": "Easily harmed or at risk.",
+    "example": "teaching others in vulnerable groups who may be at risk of injury."
+  },
+  {
+    "part": "listening-3",
+    "term": "competitive",
+    "pos": "adjective",
+    "vi": "cạnh tranh khốc liệt",
+    "en": "Involving many people trying hard to win the same jobs or prizes.",
+    "example": "we know we're going into a really competitive field"
+  },
+  {
+    "part": "listening-3",
+    "term": "narrow-minded",
+    "pos": "adjective",
+    "vi": "hẹp hòi, thiển cận",
+    "en": "Unwilling to accept new ideas or other points of view.",
+    "example": "Perhaps she thinks students are a bit narrow-minded about the industry."
+  },
+  {
+    "part": "listening-3",
+    "term": "retail",
+    "pos": "noun",
+    "vi": "ngành bán lẻ",
+    "en": "The business of selling goods to the public in shops.",
+    "example": "it was really brave the way she picked herself up and took that job in retail."
+  },
+  {
+    "part": "listening-3",
+    "term": "gap in the market",
+    "pos": "phrase",
+    "vi": "khoảng trống thị trường",
+    "en": "A product or service that customers want but no one is selling yet.",
+    "example": "it would be useful to know if there's a gap in the market, you know."
+  },
+  {
+    "part": "listening-3",
+    "term": "fall apart",
+    "pos": "phrase",
+    "vi": "bung ra, hỏng tan nát",
+    "en": "To break into pieces because of poor quality or damage.",
+    "example": "because they fell apart in the wash."
+  },
+  {
+    "part": "listening-4",
+    "term": "translocation",
+    "pos": "noun",
+    "vi": "việc di dời (động vật) sang nơi mới",
+    "en": "Moving animals or plants from one place to settle in another.",
+    "example": "This is known as translocation, and has been carried out in Malawi in Africa in recent years."
+  },
+  {
+    "part": "listening-4",
+    "term": "overpopulation",
+    "pos": "noun",
+    "vi": "tình trạng quá đông (số lượng quá mức)",
+    "en": "Having more animals or people than an area can support.",
+    "example": "The reason this is being done is because of overpopulation of elephants in some areas."
+  },
+  {
+    "part": "listening-4",
+    "term": "poacher",
+    "pos": "noun",
+    "vi": "kẻ săn trộm",
+    "en": "A person who illegally hunts or catches wild animals.",
+    "example": "The elephant population had been wiped out by poachers"
+  },
+  {
+    "part": "listening-4",
+    "term": "ivory",
+    "pos": "noun",
+    "vi": "ngà voi",
+    "en": "The hard white material that forms the tusks of elephants.",
+    "example": "who killed the elephants for their ivory"
+  },
+  {
+    "part": "listening-4",
+    "term": "law enforcement",
+    "pos": "noun",
+    "vi": "việc thực thi pháp luật",
+    "en": "The work of making sure people obey the law.",
+    "example": "And effective law enforcement was introduced."
+  },
+  {
+    "part": "listening-4",
+    "term": "immobilize",
+    "pos": "verb",
+    "vi": "làm bất động",
+    "en": "To stop a person or animal from moving.",
+    "example": "The vets then used darts to immobilize the elephants."
+  },
+  {
+    "part": "listening-4",
+    "term": "tranquilizer",
+    "pos": "noun",
+    "vi": "thuốc an thần, thuốc mê",
+    "en": "A drug that makes a person or animal calm or sleepy.",
+    "example": "they not only had to select the right dose of tranquilizer."
+  },
+  {
+    "part": "listening-4",
+    "term": "suffocation",
+    "pos": "noun",
+    "vi": "sự ngạt thở",
+    "en": "Death or harm caused by being unable to breathe.",
+    "example": "To avoid the risk of suffocation, the team had to make sure none of the elephants were lying on their chests"
+  },
+  {
+    "part": "listening-4",
+    "term": "matriarch",
+    "pos": "noun",
+    "vi": "con cái đầu đàn",
+    "en": "The oldest or leading female in a family or animal group.",
+    "example": "Collars were fitted to the matriarch in each group"
+  },
+  {
+    "part": "listening-4",
+    "term": "tusk",
+    "pos": "noun",
+    "vi": "ngà (của voi)",
+    "en": "One of the two long pointed teeth that stick out of an elephant's mouth.",
+    "example": "Elephants with large tusks would be at greater risk from poachers"
+  },
+  {
+    "part": "listening-4",
+    "term": "ecosystem",
+    "pos": "noun",
+    "vi": "hệ sinh thái",
+    "en": "All the living things in an area and the way they depend on each other.",
+    "example": "Their presence is also helping to rebalance Nkhotakota's damaged ecosystem."
+  },
+  {
+    "part": "listening-4",
+    "term": "replicate",
+    "pos": "verb",
+    "vi": "nhân rộng, sao chép lại",
+    "en": "To copy something so it can be done again elsewhere.",
+    "example": "providing a sustainable conservation model, which could be replicated in other parks."
+  },
+  {
+    "part": "reading-1",
+    "term": "aeroponic",
+    "pos": "adjective",
+    "vi": "(thuộc) khí canh, trồng cây không dùng đất",
+    "en": "Describing a way of growing plants in air with nutrients sprayed on the roots, without soil.",
+    "example": "aeroponic growing towers - as the soil-free plastic tubes are known"
+  },
+  {
+    "part": "reading-1",
+    "term": "punnet",
+    "pos": "noun",
+    "vi": "khay nhỏ đựng quả (dâu, v.v.)",
+    "en": "A small container for fruit such as strawberries.",
+    "example": "picked, in one day, 3,000 lettuces and 150 punnets of strawberries."
+  },
+  {
+    "part": "reading-1",
+    "term": "constraint",
+    "pos": "noun",
+    "vi": "hạn chế, ràng buộc",
+    "en": "Something that limits what you can do.",
+    "example": "you're working with very significant practical constraints"
+  },
+  {
+    "part": "reading-1",
+    "term": "pesticide",
+    "pos": "noun",
+    "vi": "thuốc trừ sâu",
+    "en": "A chemical used to kill insects that damage crops.",
+    "example": "have been treated with something like 17 different pesticides"
+  },
+  {
+    "part": "reading-1",
+    "term": "greenhouse gas",
+    "pos": "noun",
+    "vi": "khí nhà kính",
+    "en": "A gas such as carbon dioxide that traps heat in the atmosphere.",
+    "example": "the intensive farming techniques that produced them are such huge generators of greenhouse gases."
+  },
+  {
+    "part": "reading-1",
+    "term": "wholesaler",
+    "pos": "noun",
+    "vi": "nhà bán buôn",
+    "en": "A business that sells goods in large amounts to shops.",
+    "example": "80% of the price I pay goes to wholesalers and transport companies"
+  },
+  {
+    "part": "reading-1",
+    "term": "withstand",
+    "pos": "verb",
+    "vi": "chịu đựng được",
+    "en": "To survive something difficult without being damaged.",
+    "example": "selected for their capacity to withstand such substantial journeys"
+  },
+  {
+    "part": "reading-1",
+    "term": "yield",
+    "pos": "noun",
+    "vi": "sản lượng thu hoạch",
+    "en": "The amount of crops produced.",
+    "example": "so the method uses 90% less water than a classic intensive farm for the same yield."
+  },
+  {
+    "part": "reading-2",
+    "term": "timber",
+    "pos": "noun",
+    "vi": "gỗ xẻ, gỗ xây dựng",
+    "en": "Wood that is cut and used for building or making things.",
+    "example": "A large, straight black cherry tree has high value as timber"
+  },
+  {
+    "part": "reading-2",
+    "term": "habitat",
+    "pos": "noun",
+    "vi": "môi trường sống",
+    "en": "The natural home of an animal or plant.",
+    "example": "for a landowner more interested in wildlife habitat"
+  },
+  {
+    "part": "reading-2",
+    "term": "regeneration",
+    "pos": "noun",
+    "vi": "sự tái sinh (của cây rừng)",
+    "en": "The growth of new young trees in a forest.",
+    "example": "shade out desirable regeneration and decrease the health of a stand"
+  },
+  {
+    "part": "reading-2",
+    "term": "combustion",
+    "pos": "noun",
+    "vi": "sự đốt cháy",
+    "en": "The process of burning.",
+    "example": "Most wood used for energy in Pennsylvania is used to produce heat or electricity through combustion."
+  },
+  {
+    "part": "reading-2",
+    "term": "invasive",
+    "pos": "adjective",
+    "vi": "xâm lấn (loài cây)",
+    "en": "Spreading quickly and harming the area where it grows.",
+    "example": "Removing invasive plants might be another primary goal of a TSI Cut."
+  },
+  {
+    "part": "reading-2",
+    "term": "pathogen",
+    "pos": "noun",
+    "vi": "mầm bệnh",
+    "en": "A tiny organism that causes disease.",
+    "example": "With the many pests and pathogens visiting forests"
+  },
+  {
+    "part": "reading-2",
+    "term": "vigorous",
+    "pos": "adjective",
+    "vi": "khỏe mạnh, sung sức",
+    "en": "Strong and healthy.",
+    "example": "They leave vigorous trees that have stayed healthy enough to survive the outbreak."
+  },
+  {
+    "part": "reading-2",
+    "term": "seedling",
+    "pos": "noun",
+    "vi": "cây con, cây giống",
+    "en": "A young plant grown from a seed.",
+    "example": "involves removing all the mature trees when other seedlings have become established."
+  },
+  {
+    "part": "reading-2",
+    "term": "resilience",
+    "pos": "noun",
+    "vi": "khả năng phục hồi",
+    "en": "The ability to recover quickly from damage or difficulty.",
+    "example": "They help control problem insects and increase the health and resilience of the forest."
+  },
+  {
+    "part": "reading-3",
+    "term": "debris",
+    "pos": "noun",
+    "vi": "mảnh vỡ, rác (không gian)",
+    "en": "Broken pieces left after something is destroyed.",
+    "example": "Just a few uncontrolled space crashes could generate enough debris"
+  },
+  {
+    "part": "reading-3",
+    "term": "orbit",
+    "pos": "noun",
+    "vi": "quỹ đạo",
+    "en": "The curved path of an object moving around a planet.",
+    "example": "an accurate catalogue that lists the orbits of all known space debris"
+  },
+  {
+    "part": "reading-3",
+    "term": "taxonomy",
+    "pos": "noun",
+    "vi": "hệ thống phân loại",
+    "en": "A system for sorting things into groups.",
+    "example": "Others are developing taxonomies of space debris"
+  },
+  {
+    "part": "reading-3",
+    "term": "cascade",
+    "pos": "noun",
+    "vi": "chuỗi phản ứng dây chuyền",
+    "en": "A series of events where each one causes the next.",
+    "example": "to set off a runaway cascade of fragments"
+  },
+  {
+    "part": "reading-3",
+    "term": "abide by",
+    "pos": "phrase",
+    "vi": "tuân thủ",
+    "en": "To follow a rule or agreement.",
+    "example": "only about half of all missions have abided by this 25-year goal"
+  },
+  {
+    "part": "reading-3",
+    "term": "steward",
+    "pos": "noun",
+    "vi": "người quản lý có trách nhiệm (bảo vệ tài sản chung)",
+    "en": "A person who looks after something that belongs to everyone.",
+    "example": "say they will be responsible stewards in their enterprises in space"
+  },
+  {
+    "part": "reading-3",
+    "term": "alleviate",
+    "pos": "verb",
+    "vi": "làm giảm bớt",
+    "en": "To make a problem less serious.",
+    "example": "That would alleviate the need for many of the unnecessary manoeuvres"
+  },
+  {
+    "part": "reading-3",
+    "term": "manoeuvre",
+    "pos": "noun",
+    "vi": "động tác điều khiển, cơ động",
+    "en": "A planned movement to change direction or position.",
+    "example": "That would alleviate the need for many of the unnecessary manoeuvres that are carried out to avoid potential collisions."
+  },
+  {
+    "part": "reading-3",
+    "term": "authoritative",
+    "pos": "adjective",
+    "vi": "đáng tin cậy, có thẩm quyền",
+    "en": "Trusted as accurate and reliable.",
+    "example": "there is no authoritative catalogue that accurately lists the orbits of all known space debris."
+  },
+  {
+    "part": "writing-1",
+    "term": "proportion",
+    "pos": "noun",
+    "vi": "tỷ lệ",
+    "en": "A part of a whole, often given as a percentage.",
+    "example": "The line graph presents the proportion of the urban population in four Asian countries"
+  },
+  {
+    "part": "writing-1",
+    "term": "reside",
+    "pos": "verb",
+    "vi": "cư trú, sinh sống",
+    "en": "To live in a particular place.",
+    "example": "approximately 30% of its populace residing in urban areas."
+  },
+  {
+    "part": "writing-1",
+    "term": "erratic",
+    "pos": "adjective",
+    "vi": "thất thường, không ổn định",
+    "en": "Changing in an unpredictable way.",
+    "example": "endured a more erratic journey."
+  },
+  {
+    "part": "writing-1",
+    "term": "surge",
+    "pos": "noun",
+    "vi": "sự tăng vọt",
+    "en": "A sudden large increase.",
+    "example": "has undergone a remarkable surge."
+  },
+  {
+    "part": "writing-1",
+    "term": "soar",
+    "pos": "verb",
+    "vi": "tăng vọt",
+    "en": "To rise quickly to a high level.",
+    "example": "By 2040, it is anticipated to soar to over 80%"
+  },
+  {
+    "part": "writing-2",
+    "term": "eradicate",
+    "pos": "verb",
+    "vi": "xóa sổ, loại trừ hoàn toàn",
+    "en": "To get rid of something completely.",
+    "example": "Smallpox, for instance, has been eradicated globally"
+  },
+  {
+    "part": "writing-2",
+    "term": "mitigate",
+    "pos": "verb",
+    "vi": "giảm nhẹ (tác động)",
+    "en": "To make something harmful less severe.",
+    "example": "Scientists study climate change and develop solutions to mitigate its effects."
+  },
+  {
+    "part": "writing-2",
+    "term": "profound",
+    "pos": "adjective",
+    "vi": "sâu sắc, to lớn",
+    "en": "Very great or deep.",
+    "example": "Another area where science has had a profound impact on people's lives is in technology."
+  },
+  {
+    "part": "writing-2",
+    "term": "renewable",
+    "pos": "adjective",
+    "vi": "tái tạo được",
+    "en": "Able to be replaced naturally, such as solar or wind energy.",
+    "example": "Renewable energy sources, such as solar and wind power, are being developed and implemented"
+  }
+]

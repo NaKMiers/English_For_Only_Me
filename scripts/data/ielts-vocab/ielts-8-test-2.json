@@ -1,0 +1,722 @@
+[
+  {
+    "part": "listening-1",
+    "term": "take out",
+    "pos": "phrase",
+    "vi": "mua (bảo hiểm), ký hợp đồng (bảo hiểm)",
+    "en": "To buy an insurance policy or arrange a loan.",
+    "example": "I took out insurance with your company."
+  },
+  {
+    "part": "listening-1",
+    "term": "make a claim",
+    "pos": "phrase",
+    "vi": "đòi bồi thường bảo hiểm, yêu cầu bồi thường",
+    "en": "To ask an insurance company to pay for a loss or damage.",
+    "example": "Some items were damaged during the move, so I need to make a claim."
+  },
+  {
+    "part": "listening-1",
+    "term": "documentation",
+    "pos": "noun",
+    "vi": "giấy tờ, hồ sơ",
+    "en": "Official papers that give information or proof about something.",
+    "example": "all of that information will be in the documentation."
+  },
+  {
+    "part": "listening-1",
+    "term": "replacement value",
+    "pos": "noun phrase",
+    "vi": "giá trị thay thế",
+    "en": "The amount of money needed to buy a new item to replace a damaged one.",
+    "example": "can you tell me the replacement value of these?"
+  },
+  {
+    "part": "listening-2",
+    "term": "remit",
+    "pos": "noun",
+    "vi": "phạm vi nhiệm vụ, chức năng được giao",
+    "en": "The official area of responsibility of a person or organisation.",
+    "example": "Our remit is to give educational opportunities to the wider public"
+  },
+  {
+    "part": "listening-2",
+    "term": "grazing",
+    "pos": "noun",
+    "vi": "khu chăn thả, việc gặm cỏ",
+    "en": "Land where farm animals feed on grass.",
+    "example": "is the large grazing area for the rare breeds."
+  },
+  {
+    "part": "listening-2",
+    "term": "marsh",
+    "pos": "noun",
+    "vi": "đầm lầy",
+    "en": "Soft, wet land, often with water and reeds.",
+    "example": "To the east of those is the marsh area"
+  },
+  {
+    "part": "listening-2",
+    "term": "migrant",
+    "pos": "adjective",
+    "vi": "di cư",
+    "en": "Moving from one region to another at certain times of year.",
+    "example": "which attracts a great many migrant birds"
+  },
+  {
+    "part": "listening-2",
+    "term": "out of bounds",
+    "pos": "phrase",
+    "vi": "bị cấm vào, không được phép vào",
+    "en": "Not allowed to be entered.",
+    "example": "are therefore temporarily out of bounds to the public."
+  },
+  {
+    "part": "listening-2",
+    "term": "poultry",
+    "pos": "noun",
+    "vi": "gia cầm",
+    "en": "Birds such as chickens and ducks kept for eggs or meat.",
+    "example": "We keep goats, sheep, and hens, and other kinds of poultry."
+  },
+  {
+    "part": "listening-2",
+    "term": "gene pool",
+    "pos": "noun",
+    "vi": "vốn gen, nguồn gen",
+    "en": "All the different genes in a group of animals or plants.",
+    "example": "to broaden the gene pool for agricultural development."
+  },
+  {
+    "part": "listening-2",
+    "term": "blossom",
+    "pos": "noun",
+    "vi": "hoa (trên cây ăn quả)",
+    "en": "The flowers that appear on a tree before the fruit.",
+    "example": "when our fruit trees will be in full blossom"
+  },
+  {
+    "part": "listening-2",
+    "term": "orchard",
+    "pos": "noun",
+    "vi": "vườn cây ăn quả",
+    "en": "A piece of land where fruit trees are grown.",
+    "example": "And the final section, as we return to the Reception block, is the orchard."
+  },
+  {
+    "part": "listening-2",
+    "term": "diversify",
+    "pos": "verb",
+    "vi": "đa dạng hóa, mở rộng sang lĩnh vực mới",
+    "en": "To add new types of activity or products.",
+    "example": "something which the park will be diversifying into in the coming months."
+  },
+  {
+    "part": "listening-3",
+    "term": "quarantine",
+    "pos": "noun",
+    "vi": "kiểm dịch",
+    "en": "A system of control to stop diseases or pests from entering a country.",
+    "example": "I'm sure that you know that the quarantine service regulates all food brought into Australia."
+  },
+  {
+    "part": "listening-3",
+    "term": "eradicate",
+    "pos": "verb",
+    "vi": "tiêu diệt, loại trừ hoàn toàn",
+    "en": "To destroy something completely.",
+    "example": "We discovered a few of them in Queensland once and eradicated them."
+  },
+  {
+    "part": "listening-3",
+    "term": "infest",
+    "pos": "verb",
+    "vi": "(bị) nhiễm, đầy (ký sinh trùng, sâu bọ)",
+    "en": "To be present in large numbers and cause damage.",
+    "example": "they are infested with mites, microscopic creatures which live on them"
+  },
+  {
+    "part": "listening-3",
+    "term": "mite",
+    "pos": "noun",
+    "vi": "con ve, ký sinh trùng nhỏ",
+    "en": "A very small creature that lives on plants, animals or food.",
+    "example": "they are infested with mites, microscopic creatures which live on them"
+  },
+  {
+    "part": "listening-3",
+    "term": "wipe out",
+    "pos": "phrase",
+    "vi": "xóa sổ, tiêu diệt hoàn toàn",
+    "en": "To destroy something completely.",
+    "example": "which can seriously damage our own homegrown bees, or could even wipe them out."
+  },
+  {
+    "part": "listening-3",
+    "term": "pollinate",
+    "pos": "verb",
+    "vi": "thụ phấn",
+    "en": "To carry pollen from one flower to another so that seeds can form.",
+    "example": "they were also too big to pollinate many of our native flowers"
+  },
+  {
+    "part": "listening-3",
+    "term": "devastating",
+    "pos": "adjective",
+    "vi": "tàn phá, gây hậu quả nặng nề",
+    "en": "Causing great damage or harm.",
+    "example": "That must have had a devastating effect on the natural flora."
+  },
+  {
+    "part": "listening-3",
+    "term": "allergic reaction",
+    "pos": "noun phrase",
+    "vi": "phản ứng dị ứng",
+    "en": "A harmful response of the body to something such as a sting.",
+    "example": "it can produce an allergic reaction in some people"
+  },
+  {
+    "part": "listening-3",
+    "term": "digest",
+    "pos": "verb",
+    "vi": "tiêu hóa",
+    "en": "To break down food in the stomach.",
+    "example": "so the Bee Eaters digest the meat from the inside."
+  },
+  {
+    "part": "listening-3",
+    "term": "indigestible",
+    "pos": "adjective",
+    "vi": "không tiêu hóa được",
+    "en": "Impossible or very hard for the body to digest.",
+    "example": "Then they bring up all the indigestible bits of skeleton"
+  },
+  {
+    "part": "listening-3",
+    "term": "pellet",
+    "pos": "noun",
+    "vi": "viên nhỏ (chất thải chim nhả ra)",
+    "en": "A small hard ball of material.",
+    "example": "in a pellet, a small ball of waste material which they cough up."
+  },
+  {
+    "part": "listening-4",
+    "term": "rationale",
+    "pos": "noun",
+    "vi": "cơ sở lý luận, lý do căn bản",
+    "en": "The reasons behind a decision or plan.",
+    "example": "I want to talk about the rationale behind what I decided to do."
+  },
+  {
+    "part": "listening-4",
+    "term": "sample population",
+    "pos": "noun phrase",
+    "vi": "nhóm mẫu (đối tượng khảo sát)",
+    "en": "The group of people chosen for a study.",
+    "example": "what kind of sample population I wanted them to use."
+  },
+  {
+    "part": "listening-4",
+    "term": "focus group",
+    "pos": "noun",
+    "vi": "nhóm thảo luận (để lấy ý kiến)",
+    "en": "A small group of people asked to discuss a topic so researchers can learn their opinions.",
+    "example": "I specifically wanted to do a questionnaire and interviews with a focus group"
+  },
+  {
+    "part": "listening-4",
+    "term": "counteract",
+    "pos": "verb",
+    "vi": "chống lại, bù trừ tác động",
+    "en": "To reduce or cancel the effect of something.",
+    "example": "I thought I could do taped interviews later on to counteract the effects of this"
+  },
+  {
+    "part": "listening-4",
+    "term": "collate",
+    "pos": "verb",
+    "vi": "đối chiếu, tập hợp và sắp xếp (dữ liệu)",
+    "en": "To collect information and put it together in order.",
+    "example": "So I'm just collating the results now."
+  },
+  {
+    "part": "listening-4",
+    "term": "far-reaching",
+    "pos": "adjective",
+    "vi": "sâu rộng, có phạm vi rộng",
+    "en": "Having wide effects or covering a lot of ground.",
+    "example": "I will need to do more far-reaching research than I had anticipated"
+  },
+  {
+    "part": "listening-4",
+    "term": "revert",
+    "pos": "verb",
+    "vi": "quay lại (tình trạng cũ)",
+    "en": "To go back to a previous state or way of doing things.",
+    "example": "or if they want care to revert to fewer but larger key medical units."
+  },
+  {
+    "part": "listening-4",
+    "term": "taken aback",
+    "pos": "phrase",
+    "vi": "sửng sốt, ngạc nhiên",
+    "en": "Shocked or surprised by something unexpected.",
+    "example": "But I was taken aback and rather concerned"
+  },
+  {
+    "part": "listening-4",
+    "term": "reassurance",
+    "pos": "noun",
+    "vi": "sự trấn an, lời đảm bảo",
+    "en": "Words or actions that remove someone's worries.",
+    "example": "wanted reassurance that no names would be traceable from the answers."
+  },
+  {
+    "part": "listening-4",
+    "term": "bizarre",
+    "pos": "adjective",
+    "vi": "kỳ quặc",
+    "en": "Very strange and unusual.",
+    "example": "The most bizarre case was a telephone interview"
+  },
+  {
+    "part": "reading-1",
+    "term": "molten",
+    "pos": "adjective",
+    "vi": "nóng chảy, ở dạng lỏng do nhiệt",
+    "en": "Melted into a liquid by great heat.",
+    "example": "this becomes a molten mass that hardens when slowly cooled."
+  },
+  {
+    "part": "reading-1",
+    "term": "unblemished",
+    "pos": "adjective",
+    "vi": "không tì vết",
+    "en": "Without any marks or faults.",
+    "example": "so it stayed perfectly unblemished, with a 'fire finish'."
+  },
+  {
+    "part": "reading-1",
+    "term": "labour intensive",
+    "pos": "adjective phrase",
+    "vi": "tốn nhiều nhân công",
+    "en": "Needing a lot of workers or effort.",
+    "example": "the process took a long time and was labour intensive."
+  },
+  {
+    "part": "reading-1",
+    "term": "tinted",
+    "pos": "adjective",
+    "vi": "có pha màu nhẹ",
+    "en": "Slightly coloured.",
+    "example": "clear, tinted and coated glass for buildings"
+  },
+  {
+    "part": "reading-1",
+    "term": "surface tension",
+    "pos": "noun",
+    "vi": "sức căng bề mặt",
+    "en": "The force that makes the surface of a liquid pull together like a skin.",
+    "example": "because of surface tension interactions between the glass and the tin."
+  },
+  {
+    "part": "reading-1",
+    "term": "pilot plant",
+    "pos": "noun",
+    "vi": "nhà máy thử nghiệm",
+    "en": "A small factory built to test a new process before full production.",
+    "example": "Pilkington built a pilot plant in 1953"
+  },
+  {
+    "part": "reading-1",
+    "term": "marketable",
+    "pos": "adjective",
+    "vi": "đủ tiêu chuẩn để bán",
+    "en": "Good enough to be sold.",
+    "example": "once they succeeded in making marketable flat glass"
+  },
+  {
+    "part": "reading-1",
+    "term": "marred",
+    "pos": "adjective",
+    "vi": "bị làm hỏng, có khuyết điểm",
+    "en": "Spoiled by marks or faults.",
+    "example": "from a ribbon frequently marred by inclusions and bubbles"
+  },
+  {
+    "part": "reading-1",
+    "term": "refine",
+    "pos": "verb",
+    "vi": "tinh chế, làm sạch (thủy tinh nóng chảy)",
+    "en": "To remove impurities from a substance.",
+    "example": "a bubble is not removed during refining"
+  },
+  {
+    "part": "reading-1",
+    "term": "ripple",
+    "pos": "noun",
+    "vi": "gợn sóng",
+    "en": "A small wave on the surface of a liquid.",
+    "example": "a tremor in the tin puts ripples into the glass ribbon."
+  },
+  {
+    "part": "reading-1",
+    "term": "upstream",
+    "pos": "adverb",
+    "vi": "ở công đoạn trước (trong dây chuyền)",
+    "en": "At an earlier stage in a process.",
+    "example": "Firstly, it reveals process faults upstream that can be corrected."
+  },
+  {
+    "part": "reading-1",
+    "term": "flaw",
+    "pos": "noun",
+    "vi": "khuyết điểm, lỗi",
+    "en": "A mistake or fault that spoils something.",
+    "example": "locating flaws the unaided eye would be unable to see."
+  },
+  {
+    "part": "reading-2",
+    "term": "embark on",
+    "pos": "phrase",
+    "vi": "bắt đầu (một việc lớn)",
+    "en": "To start a new and important activity.",
+    "example": "but, before I embark on that, let me provide a historical context."
+  },
+  {
+    "part": "reading-2",
+    "term": "at the mercy of",
+    "pos": "phrase",
+    "vi": "chịu sự chi phối của, bị phó mặc cho",
+    "en": "Having no power to resist something stronger.",
+    "example": "humanity has been at the mercy of climate change for its entire existence"
+  },
+  {
+    "part": "reading-2",
+    "term": "drought",
+    "pos": "noun",
+    "vi": "hạn hán",
+    "en": "A long period with very little rain.",
+    "example": "strategies for surviving harsh drought cycles"
+  },
+  {
+    "part": "reading-2",
+    "term": "famine",
+    "pos": "noun",
+    "vi": "nạn đói",
+    "en": "A serious shortage of food that causes many people to starve.",
+    "example": "But the price of sudden climate change, in famine, disease and suffering, was often high."
+  },
+  {
+    "part": "reading-2",
+    "term": "unprecedented",
+    "pos": "adjective",
+    "vi": "chưa từng có tiền lệ",
+    "en": "Never having happened before.",
+    "example": "They are the deeply important context for the current unprecedented global warming."
+  },
+  {
+    "part": "reading-2",
+    "term": "abrupt",
+    "pos": "adjective",
+    "vi": "đột ngột",
+    "en": "Sudden and unexpected.",
+    "example": "then switched abruptly to years of heavy spring and early summer rains"
+  },
+  {
+    "part": "reading-2",
+    "term": "reconstruct",
+    "pos": "verb",
+    "vi": "tái dựng, khôi phục lại",
+    "en": "To build up a picture of the past from evidence.",
+    "example": "Reconstructing the climate changes of the past is extremely difficult"
+  },
+  {
+    "part": "reading-2",
+    "term": "proxy",
+    "pos": "adjective",
+    "vi": "gián tiếp, thay thế",
+    "en": "Used as an indirect substitute for direct evidence.",
+    "example": "we have only 'proxy records' reconstructed largely from tree rings and ice cores"
+  },
+  {
+    "part": "reading-2",
+    "term": "amplify",
+    "pos": "verb",
+    "vi": "bổ sung, làm đầy đủ thêm",
+    "en": "To make something fuller or stronger.",
+    "example": "amplified with a growing body of temperature data from ice cores"
+  },
+  {
+    "part": "reading-2",
+    "term": "perish",
+    "pos": "verb",
+    "vi": "chết, thiệt mạng",
+    "en": "To die, especially in large numbers.",
+    "example": "when thousands perished in a continent-wide famine."
+  },
+  {
+    "part": "reading-2",
+    "term": "culminate",
+    "pos": "verb",
+    "vi": "lên đến đỉnh điểm",
+    "en": "To reach the highest or final point.",
+    "example": "sudden shifts and lower temperatures that culminated in the cold decades of the late sixteenth century."
+  },
+  {
+    "part": "reading-2",
+    "term": "staple",
+    "pos": "noun",
+    "vi": "mặt hàng chủ lực, thực phẩm chính",
+    "en": "A basic food or product that people always need.",
+    "example": "Dried cod and herring were already the staples of the European fish trade"
+  },
+  {
+    "part": "reading-2",
+    "term": "stem from",
+    "pos": "phrasal verb",
+    "vi": "bắt nguồn từ",
+    "en": "To come from a particular cause.",
+    "example": "A gradual agricultural revolution in northern Europe stemmed from concerns over food supplies"
+  },
+  {
+    "part": "reading-2",
+    "term": "fodder",
+    "pos": "noun",
+    "vi": "thức ăn gia súc",
+    "en": "Food for farm animals.",
+    "example": "the growing of animal fodder on land not previously used for crops."
+  },
+  {
+    "part": "reading-2",
+    "term": "self-sufficient",
+    "pos": "adjective",
+    "vi": "tự cung tự cấp",
+    "en": "Able to produce everything one needs without outside help.",
+    "example": "The increased productivity from farmland made some countries self-sufficient in grain and livestock"
+  },
+  {
+    "part": "reading-2",
+    "term": "livestock",
+    "pos": "noun",
+    "vi": "gia súc, vật nuôi",
+    "en": "Animals kept on a farm.",
+    "example": "made some countries self-sufficient in grain and livestock"
+  },
+  {
+    "part": "reading-2",
+    "term": "blight",
+    "pos": "noun",
+    "vi": "bệnh tàn lụi (cây trồng)",
+    "en": "A plant disease that destroys crops.",
+    "example": "the famine caused by the Irish potato blight"
+  },
+  {
+    "part": "reading-2",
+    "term": "proliferate",
+    "pos": "verb",
+    "vi": "tăng nhanh, nhân rộng",
+    "en": "To increase quickly in number.",
+    "example": "as the use of fossil fuels proliferated"
+  },
+  {
+    "part": "reading-2",
+    "term": "fossil fuel",
+    "pos": "noun phrase",
+    "vi": "nhiên liệu hóa thạch",
+    "en": "Coal, oil or gas formed from ancient living things.",
+    "example": "as the use of fossil fuels proliferated"
+  },
+  {
+    "part": "reading-2",
+    "term": "soar",
+    "pos": "verb",
+    "vi": "tăng vọt",
+    "en": "To rise quickly to a high level.",
+    "example": "greenhouse gas levels continued to soar."
+  },
+  {
+    "part": "reading-3",
+    "term": "olfaction",
+    "pos": "noun",
+    "vi": "khứu giác",
+    "en": "The sense of smell.",
+    "example": "The sense of smell, or olfaction, is powerful."
+  },
+  {
+    "part": "reading-3",
+    "term": "impair",
+    "pos": "verb",
+    "vi": "làm suy giảm, làm hư hại (chức năng)",
+    "en": "To damage something so that it does not work as well.",
+    "example": "It is only when the faculty of smell is impaired for some reason"
+  },
+  {
+    "part": "reading-3",
+    "term": "faculty",
+    "pos": "noun",
+    "vi": "năng lực, giác quan",
+    "en": "A natural ability of the body or mind.",
+    "example": "when the faculty of smell is impaired"
+  },
+  {
+    "part": "reading-3",
+    "term": "evoke",
+    "pos": "verb",
+    "vi": "gợi lên, khơi dậy",
+    "en": "To bring a feeling or memory into the mind.",
+    "example": "It became apparent that smell can evoke strong emotional responses."
+  },
+  {
+    "part": "reading-3",
+    "term": "foul",
+    "pos": "adjective",
+    "vi": "hôi thối, khó chịu",
+    "en": "Having a very unpleasant smell or taste.",
+    "example": "while a foul odour or one associated with a bad memory may make us grimace with disgust."
+  },
+  {
+    "part": "reading-3",
+    "term": "grimace",
+    "pos": "verb",
+    "vi": "nhăn mặt",
+    "en": "To twist the face to show pain or disgust.",
+    "example": "may make us grimace with disgust."
+  },
+  {
+    "part": "reading-3",
+    "term": "olfactory",
+    "pos": "adjective",
+    "vi": "thuộc khứu giác",
+    "en": "Relating to the sense of smell.",
+    "example": "many of their olfactory likes and dislikes were based on emotional associations."
+  },
+  {
+    "part": "reading-3",
+    "term": "cue",
+    "pos": "noun",
+    "vi": "tín hiệu, dấu hiệu gợi nhắc",
+    "en": "A signal that helps someone recognise or react to something.",
+    "example": "Odours are also essential cues in social bonding."
+  },
+  {
+    "part": "reading-3",
+    "term": "undervalued",
+    "pos": "adjective",
+    "vi": "bị đánh giá thấp",
+    "en": "Not given as much importance as it deserves.",
+    "example": "smell is probably the most undervalued sense in many cultures."
+  },
+  {
+    "part": "reading-3",
+    "term": "feeble",
+    "pos": "adjective",
+    "vi": "yếu ớt",
+    "en": "Weak and lacking power.",
+    "example": "the human sense of smell is feeble and undeveloped."
+  },
+  {
+    "part": "reading-3",
+    "term": "acute",
+    "pos": "adjective",
+    "vi": "nhạy bén, tinh nhạy",
+    "en": "Very sharp and sensitive.",
+    "example": "they are still remarkably acute."
+  },
+  {
+    "part": "reading-3",
+    "term": "elusive",
+    "pos": "adjective",
+    "vi": "khó nắm bắt",
+    "en": "Difficult to find, describe or catch.",
+    "example": "Smell, however, is a highly elusive phenomenon."
+  },
+  {
+    "part": "reading-3",
+    "term": "recollection",
+    "pos": "noun",
+    "vi": "hồi ức, sự nhớ lại",
+    "en": "A memory of something from the past.",
+    "example": "we must make do with descriptions and recollections."
+  },
+  {
+    "part": "writing-1",
+    "term": "expenditure",
+    "pos": "noun",
+    "vi": "khoản chi tiêu",
+    "en": "The total amount of money spent.",
+    "example": "Teachers' salaries remained the largest expenditure category across all three years"
+  },
+  {
+    "part": "writing-1",
+    "term": "fluctuate",
+    "pos": "verb",
+    "vi": "dao động, lên xuống thất thường",
+    "en": "To rise and fall in an irregular way.",
+    "example": "though their proportion fluctuated."
+  },
+  {
+    "part": "writing-1",
+    "term": "surge",
+    "pos": "verb",
+    "vi": "tăng vọt",
+    "en": "To rise suddenly and strongly.",
+    "example": "but surged to 23% in 2001."
+  },
+  {
+    "part": "writing-1",
+    "term": "reallocate",
+    "pos": "verb",
+    "vi": "phân bổ lại",
+    "en": "To share out money or resources again in a different way.",
+    "example": "the school reallocated funds to furniture and equipment in 2001"
+  },
+  {
+    "part": "writing-2",
+    "term": "proximity",
+    "pos": "noun",
+    "vi": "sự gần gũi về khoảng cách",
+    "en": "Nearness in space or time.",
+    "example": "While traditional interactions relied on physical proximity"
+  },
+  {
+    "part": "writing-2",
+    "term": "instantaneous",
+    "pos": "adjective",
+    "vi": "tức thời",
+    "en": "Happening immediately.",
+    "example": "modern technology enables instantaneous communication across continents"
+  },
+  {
+    "part": "writing-2",
+    "term": "fragmentation",
+    "pos": "noun",
+    "vi": "sự phân mảnh, chia nhỏ",
+    "en": "The process of breaking something into small separate parts.",
+    "example": "However, this connectivity comes with fragmentation risks."
+  },
+  {
+    "part": "writing-2",
+    "term": "correlate",
+    "pos": "verb",
+    "vi": "có mối tương quan",
+    "en": "To have a close link, so that one thing changes along with another.",
+    "example": "excessive social media use correlates with increased loneliness"
+  },
+  {
+    "part": "writing-2",
+    "term": "hybrid",
+    "pos": "adjective",
+    "vi": "kết hợp, lai",
+    "en": "Combining two different kinds of things.",
+    "example": "This hybrid approach harnesses technology's connective power"
+  },
+  {
+    "part": "writing-2",
+    "term": "harness",
+    "pos": "verb",
+    "vi": "tận dụng, khai thác",
+    "en": "To control and use something for a purpose.",
+    "example": "harnesses technology's connective power without sacrificing relationship depth"
+  }
+]

@@ -1,6 +1,7 @@
 'use client'
 
 import { BookOpen, ChevronLeft, ChevronRight, X } from 'lucide-react'
+import { useEffect, useEffectEvent, useRef } from 'react'
 
 import { MangaPanel } from '@/components/common/MangaPanel'
 import { Button } from '@/components/ui/button'
@@ -10,6 +11,7 @@ import { cn } from '@/lib/utils'
 import type {
   VocabEntryApiRecord,
   VocabEntryWithUserStateRecord,
+  VocabLearningSource,
 } from '@/modules/vocabulary/types'
 import {
   getEnglishDefinition,
@@ -23,14 +25,25 @@ export type ExploreDecision = 'shouldLearn' | 'alreadyKnow'
 interface Props {
   activeIndex: number
   decisions: Record<string, ExploreDecision>
+  /** Shown when there is nothing to explore. */
+  emptyMessage?: string
   entries: VocabEntryWithUserStateRecord[]
+  eyebrow?: string
   markEntry: (input: {
     entry: VocabEntryWithUserStateRecord
-    source: 'explore'
+    source: VocabLearningSource
     status: 'shouldLearn' | 'alreadyKnow'
   }) => void
   moveExplore: (delta: number) => void
+  /**
+   * The card's #number: the word's frequency rank (Vocab page), or its place
+   * in a fixed list such as the words of one IELTS test.
+   */
+  numbering?: 'frequency' | 'position'
   showExploreIndex: (index: number) => void
+  /** Recorded on the learner's word when they press a button. */
+  source?: VocabLearningSource
+  title?: string
 }
 
 function getVietnamesePreview(entry: VocabEntryApiRecord) {
@@ -83,21 +96,105 @@ function getExploreStackCardClassName({
   )
 }
 
+function isTypingTarget(target: EventTarget | null) {
+  if (!(target instanceof HTMLElement)) return false
+  if (target.isContentEditable) return true
+
+  return ['INPUT', 'SELECT', 'TEXTAREA'].includes(target.tagName)
+}
+
+function isOnScreen(element: HTMLElement | null) {
+  if (!element) return false
+
+  const rect = element.getBoundingClientRect()
+
+  return rect.bottom > 0 && rect.top < window.innerHeight
+}
+
+/**
+ * Left / Right arrow keys move through the deck while the panel is on screen;
+ * holding a key keeps moving. Ignored while typing in a field, with a
+ * modifier held, or while a dialog is open (the recall modal and the IELTS
+ * editor dialogs own the keyboard then).
+ */
+function useExploreArrowKeys({
+  activeIndex,
+  count,
+  panelRef,
+  showExploreIndex,
+}: {
+  activeIndex: number
+  count: number
+  panelRef: React.RefObject<HTMLDivElement | null>
+  showExploreIndex: (index: number) => void
+}) {
+  // Presses faster than a render would all start from the same stale index;
+  // the last requested one is the base until the new index arrives.
+  const pendingRef = useRef<number | null>(null)
+
+  useEffect(() => {
+    pendingRef.current = null
+  }, [activeIndex])
+
+  const onKeyDown = useEffectEvent((event: KeyboardEvent) => {
+    const delta =
+      event.key === 'ArrowLeft' ? -1 : event.key === 'ArrowRight' ? 1 : 0
+
+    if (!delta || count === 0) return
+    if (event.defaultPrevented) return
+    if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return
+    if (isTypingTarget(event.target)) return
+    if (document.querySelector('[role="dialog"], [role="alertdialog"]')) return
+    if (!isOnScreen(panelRef.current)) return
+
+    const next = (pendingRef.current ?? activeIndex) + delta
+
+    if (next < 0 || next >= count) return
+
+    event.preventDefault()
+    pendingRef.current = next
+    showExploreIndex(next)
+  })
+
+  useEffect(() => {
+    window.addEventListener('keydown', onKeyDown)
+
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [])
+}
+
 export function VocabularyExplorePanel({
   activeIndex,
   decisions,
+  emptyMessage = 'No enriched words are ready to explore yet. Ask an admin to enrich a small batch, then refresh this page.',
   entries,
+  eyebrow = 'Explore',
   markEntry,
   moveExplore,
+  numbering = 'frequency',
   showExploreIndex,
+  source = 'explore',
+  title = 'Explore Words',
 }: Props) {
+  const deckRef = useRef<HTMLDivElement>(null)
+
+  useExploreArrowKeys({
+    activeIndex,
+    count: entries.length,
+    panelRef: deckRef,
+    showExploreIndex,
+  })
+
   return (
     <MangaPanel
-      eyebrow="Explore"
-      title="Explore Words"
+      eyebrow={eyebrow}
+      title={title}
     >
       {entries.length > 0 ? (
-        <div className="grid gap-4">
+        <div
+          className="grid gap-4"
+          ref={deckRef}
+        >
           <div className="flex items-center justify-between gap-3">
             <Button
               aria-label="Previous explore word"
@@ -113,7 +210,10 @@ export function VocabularyExplorePanel({
                 className="size-5"
               />
             </Button>
-            <span className="text-manga-ink-soft text-xs font-black uppercase">
+            <span
+              className="text-manga-ink-soft text-xs font-black uppercase"
+              title="Use the Left and Right arrow keys to move"
+            >
               {activeIndex + 1}/{entries.length}
             </span>
             <Button
@@ -183,7 +283,10 @@ export function VocabularyExplorePanel({
                         </p>
                       </div>
                       <PageTag tone="pale">
-                        #{entry.entry.frequencyRank ?? index + 1}
+                        #
+                        {numbering === 'position'
+                          ? index + 1
+                          : (entry.entry.frequencyRank ?? index + 1)}
                       </PageTag>
                     </div>
                     <p className="text-manga-ink-soft ml-auto max-w-2xl text-right text-base leading-7 font-semibold">
@@ -202,7 +305,7 @@ export function VocabularyExplorePanel({
                         onClick={() =>
                           markEntry({
                             entry,
-                            source: 'explore',
+                            source,
                             status: 'shouldLearn',
                           })
                         }
@@ -216,7 +319,7 @@ export function VocabularyExplorePanel({
                         onClick={() =>
                           markEntry({
                             entry,
-                            source: 'explore',
+                            source,
                             status: 'alreadyKnow',
                           })
                         }
@@ -285,8 +388,7 @@ export function VocabularyExplorePanel({
         </div>
       ) : (
         <p className="text-manga-ink-soft text-sm leading-6 font-semibold">
-          No enriched words are ready to explore yet. Ask an admin to enrich a
-          small batch, then refresh this page.
+          {emptyMessage}
         </p>
       )}
     </MangaPanel>

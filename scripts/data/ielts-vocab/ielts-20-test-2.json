@@ -1,0 +1,522 @@
+[
+  {
+    "part": "listening-1",
+    "term": "carer",
+    "pos": "noun",
+    "vi": "người chăm sóc (người thân ốm yếu)",
+    "en": "A person who looks after a sick, elderly or disabled relative.",
+    "example": "They realize that carers sometimes need time for all the other responsibilities they have"
+  },
+  {
+    "part": "listening-1",
+    "term": "assessment",
+    "pos": "noun",
+    "vi": "sự đánh giá (nhu cầu)",
+    "en": "An official judgement of someone's needs or situation.",
+    "example": "you'd have to have an assessment of your mother's needs."
+  },
+  {
+    "part": "listening-1",
+    "term": "cope",
+    "pos": "verb",
+    "vi": "xoay xở, đối phó được",
+    "en": "To deal successfully with a difficult situation or task.",
+    "example": "whether she can cope using money."
+  },
+  {
+    "part": "listening-1",
+    "term": "eligible",
+    "pos": "adjective",
+    "vi": "đủ điều kiện",
+    "en": "Having the right to receive something because you meet the requirements.",
+    "example": "if I'm eligible, what happens next?"
+  },
+  {
+    "part": "listening-1",
+    "term": "claim",
+    "pos": "verb",
+    "vi": "yêu cầu hoàn lại (chi phí)",
+    "en": "To ask for money you are officially entitled to.",
+    "example": "So could I claim for the petrol?"
+  },
+  {
+    "part": "listening-1",
+    "term": "minimize",
+    "pos": "verb",
+    "vi": "giảm đến mức tối thiểu",
+    "en": "To reduce something to the smallest possible amount.",
+    "example": "they may be able to give you some advice on how to minimize it."
+  },
+  {
+    "part": "listening-2",
+    "term": "volunteer scheme",
+    "pos": "noun",
+    "vi": "chương trình tình nguyện",
+    "en": "An organised programme in which people work without pay.",
+    "example": "I organize the town's volunteer scheme."
+  },
+  {
+    "part": "listening-2",
+    "term": "venue",
+    "pos": "noun",
+    "vi": "địa điểm tổ chức",
+    "en": "A place where an event takes place.",
+    "example": "uses several venues, which all need volunteers."
+  },
+  {
+    "part": "listening-2",
+    "term": "flexible",
+    "pos": "adjective",
+    "vi": "linh hoạt",
+    "en": "Able to change or adapt easily.",
+    "example": "We try to use volunteers who are flexible though"
+  },
+  {
+    "part": "listening-2",
+    "term": "at short notice",
+    "pos": "phrase",
+    "vi": "vào phút chót, báo trước rất ít",
+    "en": "With very little warning.",
+    "example": "So there can be changes at short notice."
+  },
+  {
+    "part": "listening-2",
+    "term": "timetable",
+    "pos": "verb",
+    "vi": "xếp lịch, lên thời gian biểu",
+    "en": "To arrange when something will happen.",
+    "example": "we'll be timetabling you for duties the following week"
+  },
+  {
+    "part": "listening-2",
+    "term": "sign up",
+    "pos": "phrase",
+    "vi": "đăng ký tham gia",
+    "en": "To put your name down to take part in something.",
+    "example": "you can sign up once you start work."
+  },
+  {
+    "part": "listening-3",
+    "term": "narrow down",
+    "pos": "phrase",
+    "vi": "thu hẹp (phạm vi)",
+    "en": "To reduce the number of possibilities.",
+    "example": "see if we can narrow the topic down a bit to help us decide."
+  },
+  {
+    "part": "listening-3",
+    "term": "cholera",
+    "pos": "noun",
+    "vi": "bệnh tả",
+    "en": "A serious disease spread through dirty water.",
+    "example": "Professor Lee gave us that lecture on cholera."
+  },
+  {
+    "part": "listening-3",
+    "term": "syllabus",
+    "pos": "noun",
+    "vi": "đề cương môn học",
+    "en": "The list of topics covered in a course.",
+    "example": "I thought that had been taken off the syllabus for this year."
+  },
+  {
+    "part": "listening-3",
+    "term": "manipulate",
+    "pos": "verb",
+    "vi": "thao túng, làm sai lệch",
+    "en": "To control or change something in a clever or dishonest way.",
+    "example": "they're sometimes deliberately manipulated."
+  },
+  {
+    "part": "listening-3",
+    "term": "urbanization",
+    "pos": "noun",
+    "vi": "đô thị hóa",
+    "en": "The growth of towns and cities as more people move to them.",
+    "example": "one of the possibilities we haven't discussed is urbanization"
+  },
+  {
+    "part": "listening-3",
+    "term": "outskirts",
+    "pos": "noun",
+    "vi": "vùng ngoại ô",
+    "en": "The areas at the edge of a city.",
+    "example": "some of the new developments on the outskirts of cities."
+  },
+  {
+    "part": "listening-3",
+    "term": "disused",
+    "pos": "adjective",
+    "vi": "bị bỏ hoang, không còn sử dụng",
+    "en": "No longer used.",
+    "example": "developing disused industrial sites."
+  },
+  {
+    "part": "listening-3",
+    "term": "pedestrianize",
+    "pos": "verb",
+    "vi": "biến thành khu chỉ dành cho người đi bộ",
+    "en": "To make an area suitable only for people on foot.",
+    "example": "It was designed to be totally pedestrianized too"
+  },
+  {
+    "part": "listening-3",
+    "term": "sustainability",
+    "pos": "noun",
+    "vi": "tính bền vững",
+    "en": "Using resources in a way that does not harm the environment in the long term.",
+    "example": "sustainability and so on."
+  },
+  {
+    "part": "listening-4",
+    "term": "obsessed",
+    "pos": "adjective",
+    "vi": "ám ảnh, bị cuốn vào",
+    "en": "Thinking about something too much.",
+    "example": "The food industry in the UK in particular is obsessed with finding and exploiting the next big food trend."
+  },
+  {
+    "part": "listening-4",
+    "term": "influencer",
+    "pos": "noun",
+    "vi": "người có sức ảnh hưởng trên mạng xã hội",
+    "en": "A person who affects what others buy by posting on social media.",
+    "example": "using social media influencers as brand ambassadors."
+  },
+  {
+    "part": "listening-4",
+    "term": "pioneer",
+    "pos": "noun",
+    "vi": "người tiên phong",
+    "en": "A person or group that is first to do something new.",
+    "example": "Companies which sell vegan produce were pioneers"
+  },
+  {
+    "part": "listening-4",
+    "term": "stimulate",
+    "pos": "verb",
+    "vi": "kích thích",
+    "en": "To make something more active.",
+    "example": "to raise its profile and stimulate demand."
+  },
+  {
+    "part": "listening-4",
+    "term": "staple",
+    "pos": "noun",
+    "vi": "thực phẩm chủ yếu, thường dùng",
+    "en": "A basic food that is eaten regularly.",
+    "example": "the daily staple it's since become."
+  },
+  {
+    "part": "listening-4",
+    "term": "provocation",
+    "pos": "noun",
+    "vi": "sự khiêu khích",
+    "en": "Something said or done to deliberately make people react.",
+    "example": "used provocation as a way of getting their message across effectively."
+  },
+  {
+    "part": "listening-4",
+    "term": "aggravate",
+    "pos": "verb",
+    "vi": "làm phật ý, chọc tức",
+    "en": "To make someone angry or annoyed.",
+    "example": "this campaign aggravated competitors"
+  },
+  {
+    "part": "listening-4",
+    "term": "carbon footprint",
+    "pos": "noun",
+    "vi": "lượng khí thải carbon",
+    "en": "The amount of carbon dioxide produced by an activity or product.",
+    "example": "it also has a relatively low carbon footprint."
+  },
+  {
+    "part": "listening-4",
+    "term": "delicacy",
+    "pos": "noun",
+    "vi": "món ngon, đặc sản",
+    "en": "A rare or expensive food considered especially tasty.",
+    "example": "a rarely available seasonal fish delicacy"
+  },
+  {
+    "part": "listening-4",
+    "term": "fertility",
+    "pos": "noun",
+    "vi": "độ màu mỡ (của đất)",
+    "en": "The ability of soil to produce good crops.",
+    "example": "the fertility of the soil decreased dramatically"
+  },
+  {
+    "part": "listening-4",
+    "term": "desertification",
+    "pos": "noun",
+    "vi": "sa mạc hóa",
+    "en": "The process by which fertile land becomes desert.",
+    "example": "could potentially lead to desertification in some areas."
+  },
+  {
+    "part": "reading-1",
+    "term": "aquatic",
+    "pos": "adjective",
+    "vi": "sống dưới nước",
+    "en": "Living in or near water.",
+    "example": "are aquatic mammals that belong to a group of animals called Sirenia."
+  },
+  {
+    "part": "reading-1",
+    "term": "propulsion",
+    "pos": "noun",
+    "vi": "lực đẩy, sự đẩy tới",
+    "en": "The force that moves something forward.",
+    "example": "only a tail for propulsion."
+  },
+  {
+    "part": "reading-1",
+    "term": "graze",
+    "pos": "verb",
+    "vi": "gặm cỏ, ăn thực vật",
+    "en": "To eat plants growing in a place.",
+    "example": "grazing and uprooting plants."
+  },
+  {
+    "part": "reading-1",
+    "term": "omnivorous",
+    "pos": "adjective",
+    "vi": "ăn tạp",
+    "en": "Eating both plants and animals.",
+    "example": "African manatees are omnivorous"
+  },
+  {
+    "part": "reading-1",
+    "term": "herbivore",
+    "pos": "noun",
+    "vi": "động vật ăn cỏ, ăn thực vật",
+    "en": "An animal that eats only plants.",
+    "example": "are both herbivores."
+  },
+  {
+    "part": "reading-1",
+    "term": "abrasive",
+    "pos": "adjective",
+    "vi": "mài mòn",
+    "en": "Rough and able to wear a surface away.",
+    "example": "Due to manatees' abrasive aquatic plant diet"
+  },
+  {
+    "part": "reading-1",
+    "term": "buoyancy",
+    "pos": "noun",
+    "vi": "sức nổi",
+    "en": "The ability to float in water.",
+    "example": "to adjust their buoyancy."
+  },
+  {
+    "part": "reading-1",
+    "term": "take refuge",
+    "pos": "phrase",
+    "vi": "trú ẩn",
+    "en": "To go somewhere safe from danger or bad conditions.",
+    "example": "it takes refuge in naturally and artificially warmed water"
+  },
+  {
+    "part": "reading-1",
+    "term": "landlocked",
+    "pos": "adjective",
+    "vi": "không giáp biển",
+    "en": "Surrounded by land with no coast.",
+    "example": "seen in landlocked countries such as Mali and Niger."
+  },
+  {
+    "part": "reading-1",
+    "term": "entanglement",
+    "pos": "noun",
+    "vi": "sự mắc kẹt, vướng vào",
+    "en": "The state of becoming caught in something such as a net.",
+    "example": "A review of almost 1,800 cases of entanglement in fishing nets"
+  },
+  {
+    "part": "reading-2",
+    "term": "procrastination",
+    "pos": "noun",
+    "vi": "sự trì hoãn",
+    "en": "The habit of delaying things that need to be done.",
+    "example": "Procrastination is the habit of delaying a necessary task"
+  },
+  {
+    "part": "reading-2",
+    "term": "berate",
+    "pos": "verb",
+    "vi": "mắng nhiếc, trách móc gay gắt",
+    "en": "To criticise someone angrily.",
+    "example": "berating ourselves won't stop us procrastinating again."
+  },
+  {
+    "part": "reading-2",
+    "term": "put off",
+    "pos": "phrase",
+    "vi": "trì hoãn",
+    "en": "To delay doing something.",
+    "example": "people are more likely to put off starting or completing tasks"
+  },
+  {
+    "part": "reading-2",
+    "term": "chronically",
+    "pos": "adverb",
+    "vi": "một cách kinh niên, thường xuyên",
+    "en": "In a way that lasts for a long time or keeps happening.",
+    "example": "in people who chronically procrastinate"
+  },
+  {
+    "part": "reading-2",
+    "term": "self-esteem",
+    "pos": "noun",
+    "vi": "lòng tự trọng",
+    "en": "Confidence in your own worth.",
+    "example": "People with low self-esteem are more likely to procrastinate."
+  },
+  {
+    "part": "reading-2",
+    "term": "reinforce",
+    "pos": "verb",
+    "vi": "củng cố, làm mạnh thêm",
+    "en": "To make something stronger.",
+    "example": "also reinforces their tendency to procrastinate."
+  },
+  {
+    "part": "reading-2",
+    "term": "misconduct",
+    "pos": "noun",
+    "vi": "hành vi sai phạm",
+    "en": "Behaviour that is dishonest or breaks the rules.",
+    "example": "study-related misconduct, such as cheating and plagiarism."
+  },
+  {
+    "part": "reading-2",
+    "term": "fraudulent",
+    "pos": "adjective",
+    "vi": "gian lận, lừa dối",
+    "en": "Dishonest and intended to deceive.",
+    "example": "using fraudulent excuses to get deadline extensions."
+  },
+  {
+    "part": "reading-2",
+    "term": "correlate",
+    "pos": "verb",
+    "vi": "có tương quan",
+    "en": "To be closely connected so that one changes with the other.",
+    "example": "Procrastination also correlates with serious health and well-being problems."
+  },
+  {
+    "part": "reading-2",
+    "term": "prone",
+    "pos": "adjective",
+    "vi": "dễ bị, có xu hướng",
+    "en": "Likely to suffer from or do something.",
+    "example": "people prone to procrastination had a 63% greater risk"
+  },
+  {
+    "part": "reading-2",
+    "term": "vicious cycle",
+    "pos": "noun",
+    "vi": "vòng luẩn quẩn",
+    "en": "A situation where a problem causes more of the same problem.",
+    "example": "one route out of the vicious cycle of procrastination."
+  },
+  {
+    "part": "reading-2",
+    "term": "fend off",
+    "pos": "phrase",
+    "vi": "chống đỡ, ngăn chặn",
+    "en": "To defend yourself against something unwanted.",
+    "example": "help us fend off distractions"
+  },
+  {
+    "part": "reading-3",
+    "term": "umpire",
+    "pos": "noun",
+    "vi": "trọng tài (bóng chày)",
+    "en": "An official who makes decisions in some sports.",
+    "example": "became the first umpire in a minor league baseball game"
+  },
+  {
+    "part": "reading-3",
+    "term": "commission",
+    "pos": "verb",
+    "vi": "đặt hàng, ủy thác thực hiện",
+    "en": "To officially ask someone to create or do something.",
+    "example": "who had commissioned the system"
+  },
+  {
+    "part": "reading-3",
+    "term": "heckling",
+    "pos": "noun",
+    "vi": "sự la ó, chế giễu (ở sân đấu)",
+    "en": "Shouting rude comments at someone performing.",
+    "example": "there was no heckling and no shouted disagreement."
+  },
+  {
+    "part": "reading-3",
+    "term": "tweak",
+    "pos": "verb",
+    "vi": "chỉnh nhẹ",
+    "en": "To change something slightly to improve it.",
+    "example": "MLB decided to tweak the dimensions of the zone"
+  },
+  {
+    "part": "reading-3",
+    "term": "consensus",
+    "pos": "noun",
+    "vi": "sự đồng thuận",
+    "en": "General agreement among a group.",
+    "example": "the consensus was that ABS is profoundly consistent."
+  },
+  {
+    "part": "reading-3",
+    "term": "pedantic",
+    "pos": "adjective",
+    "vi": "câu nệ chi tiết, cứng nhắc",
+    "en": "Too concerned with small details and strict rules.",
+    "example": "it was also unforgiving and pedantic, almost legalistic."
+  },
+  {
+    "part": "reading-3",
+    "term": "discretion",
+    "pos": "noun",
+    "vi": "quyền tự quyết, sự linh hoạt",
+    "en": "The freedom to decide what is the best thing to do.",
+    "example": "Historically, a certain discretion has been appreciated."
+  },
+  {
+    "part": "reading-3",
+    "term": "delineate",
+    "pos": "verb",
+    "vi": "vạch rõ, phân định ranh giới",
+    "en": "To describe or mark something precisely.",
+    "example": "delineated like the keys of a piano."
+  },
+  {
+    "part": "reading-3",
+    "term": "dissenting",
+    "pos": "adjective",
+    "vi": "bất đồng, phản đối",
+    "en": "Expressing disagreement with an official or common opinion.",
+    "example": "take a dissenting stance toward the robots too"
+  },
+  {
+    "part": "writing-2",
+    "term": "rejuvenation",
+    "pos": "noun",
+    "vi": "sự hồi phục sức sống",
+    "en": "The process of making someone feel young and full of energy again.",
+    "example": "promoting physical and mental rejuvenation."
+  },
+  {
+    "part": "writing-2",
+    "term": "exacerbate",
+    "pos": "verb",
+    "vi": "làm trầm trọng thêm",
+    "en": "To make a bad situation worse.",
+    "example": "exacerbating educational inequalities during long breaks."
+  }
+]

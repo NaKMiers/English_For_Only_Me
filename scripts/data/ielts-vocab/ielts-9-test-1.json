@@ -1,0 +1,546 @@
+[
+  {
+    "part": "listening-1",
+    "term": "vacancy",
+    "pos": "noun",
+    "vi": "vị trí còn trống (cần tuyển người)",
+    "en": "A job that is available because nobody is doing it at the moment.",
+    "example": "I understand you have a vacancy."
+  },
+  {
+    "part": "listening-1",
+    "term": "work permit",
+    "pos": "noun",
+    "vi": "giấy phép lao động",
+    "en": "An official document that allows a foreigner to work in a country.",
+    "example": "And because I'm not an EU national, would I need a work permit?"
+  },
+  {
+    "part": "listening-1",
+    "term": "fringe benefit",
+    "pos": "noun",
+    "vi": "phúc lợi phụ (ngoài lương)",
+    "en": "An extra thing an employer gives besides the normal pay.",
+    "example": "We also offer some good fringe benefits."
+  },
+  {
+    "part": "listening-1",
+    "term": "perk",
+    "pos": "noun",
+    "vi": "đặc quyền, lợi ích thêm từ công việc",
+    "en": "An extra advantage you get because of your job.",
+    "example": "Oh, that's a really good perk, isn't it?"
+  },
+  {
+    "part": "listening-1",
+    "term": "referee",
+    "pos": "noun",
+    "vi": "người giới thiệu (viết thư tham khảo cho ứng viên)",
+    "en": "A person who gives information about your character and work to a possible employer.",
+    "example": "And could you bring along the names of two referees?"
+  },
+  {
+    "part": "listening-2",
+    "term": "custom",
+    "pos": "noun",
+    "vi": "lượng khách hàng (của cửa hiệu)",
+    "en": "The business a shop gets from its customers.",
+    "example": "It's attracted a lot of custom."
+  },
+  {
+    "part": "listening-2",
+    "term": "preview",
+    "pos": "noun",
+    "vi": "buổi xem trước (trước khi khai trương)",
+    "en": "A chance to see something before it is open to the public.",
+    "example": "I was invited to a special preview."
+  },
+  {
+    "part": "listening-2",
+    "term": "minimalist",
+    "pos": "adjective",
+    "vi": "tối giản",
+    "en": "Very simple in design, with only the most basic features.",
+    "example": "The whole place has been given a new minimalist look."
+  },
+  {
+    "part": "listening-2",
+    "term": "signature",
+    "pos": "adjective",
+    "vi": "đặc trưng (của thương hiệu)",
+    "en": "Typical of a person or company and easy to recognise as theirs.",
+    "example": "The company's signature colours of black and red."
+  },
+  {
+    "part": "listening-2",
+    "term": "in stock",
+    "pos": "phrase",
+    "vi": "có sẵn trong kho",
+    "en": "Available in a shop to buy now.",
+    "example": "If they haven't got exactly what you want in stock, they promise to get it for you in 10 days."
+  },
+  {
+    "part": "listening-2",
+    "term": "devoted to",
+    "pos": "phrase",
+    "vi": "dành riêng cho",
+    "en": "Used only for one purpose or subject.",
+    "example": "A whole section of the third floor is devoted to sports bags."
+  },
+  {
+    "part": "listening-2",
+    "term": "entrant",
+    "pos": "noun",
+    "vi": "người dự thi, thí sinh",
+    "en": "A person who takes part in a competition.",
+    "example": "All entrants will receive a special sports calendar."
+  },
+  {
+    "part": "listening-2",
+    "term": "fixture",
+    "pos": "noun",
+    "vi": "trận đấu theo lịch",
+    "en": "A sports match that has been arranged for a particular date.",
+    "example": "With details of all Bradcaster fixtures in the coming year."
+  },
+  {
+    "part": "listening-2",
+    "term": "cardiac",
+    "pos": "adjective",
+    "vi": "thuộc tim",
+    "en": "Relating to the heart.",
+    "example": "A complete review of your cardiac fitness and muscle tone."
+  },
+  {
+    "part": "listening-3",
+    "term": "seminar",
+    "pos": "noun",
+    "vi": "buổi hội thảo chuyên đề (ở đại học)",
+    "en": "A class where a small group discusses a topic with a teacher.",
+    "example": "I think that having to do a seminar presentation really helped me."
+  },
+  {
+    "part": "listening-3",
+    "term": "tutorial",
+    "pos": "noun",
+    "vi": "giờ học nhóm nhỏ với giảng viên",
+    "en": "A small university class in which students discuss their work with a tutor.",
+    "example": "I am not so pleased with my actual performance right now in the tutorials."
+  },
+  {
+    "part": "listening-3",
+    "term": "colloquialism",
+    "pos": "noun",
+    "vi": "từ ngữ khẩu ngữ, lối nói thông tục",
+    "en": "An informal word or phrase used in everyday speech.",
+    "example": "They use so many colloquialisms."
+  },
+  {
+    "part": "listening-3",
+    "term": "speak out",
+    "pos": "phrase",
+    "vi": "mạnh dạn phát biểu",
+    "en": "To say what you think openly and with confidence.",
+    "example": "It's mostly because I have had no confidence to speak out."
+  },
+  {
+    "part": "listening-3",
+    "term": "jump in",
+    "pos": "phrase",
+    "vi": "chen vào nói, xen vào cuộc thảo luận",
+    "en": "To join a conversation suddenly and quickly.",
+    "example": "But recently, I've been trying to speak up more, and I just jump in."
+  },
+  {
+    "part": "listening-3",
+    "term": "journal",
+    "pos": "noun",
+    "vi": "tạp chí khoa học",
+    "en": "A magazine that publishes academic articles on a subject.",
+    "example": "So I had to turn to the books and journals."
+  },
+  {
+    "part": "listening-3",
+    "term": "reference",
+    "pos": "noun",
+    "vi": "tài liệu tham khảo",
+    "en": "A book or article mentioned as a source of information.",
+    "example": "Using the lists of references that were given."
+  },
+  {
+    "part": "listening-3",
+    "term": "frustrated",
+    "pos": "adjective",
+    "vi": "bực bội, nản lòng",
+    "en": "Feeling annoyed because you cannot do or achieve what you want.",
+    "example": "Sometimes in the English class, I felt frustrated when I had to read articles about the environment."
+  },
+  {
+    "part": "listening-3",
+    "term": "motivated",
+    "pos": "adjective",
+    "vi": "có động lực",
+    "en": "Feeling a strong wish to do something.",
+    "example": "That would have helped my confidence too, and I would have been more motivated."
+  },
+  {
+    "part": "listening-4",
+    "term": "stranding",
+    "pos": "noun",
+    "vi": "hiện tượng mắc cạn (của cá voi, cá heo)",
+    "en": "The event of sea animals being left on a beach and unable to return to the water.",
+    "example": "Most often die in what are known as 'mass strandings'."
+  },
+  {
+    "part": "listening-4",
+    "term": "parasite",
+    "pos": "noun",
+    "vi": "ký sinh trùng",
+    "en": "A small animal or plant that lives on or in another and feeds from it.",
+    "example": "The first is that the behaviour is linked to parasites."
+  },
+  {
+    "part": "listening-4",
+    "term": "infest",
+    "pos": "verb",
+    "vi": "lây nhiễm, sống ký sinh với số lượng lớn",
+    "en": "To be present in large numbers and cause damage or disease.",
+    "example": "Stranded animals were infested with large numbers of parasites."
+  },
+  {
+    "part": "listening-4",
+    "term": "navigate",
+    "pos": "verb",
+    "vi": "định hướng, tìm đường",
+    "en": "To find the right direction to travel.",
+    "example": "Since marine animals rely heavily on their hearing to navigate."
+  },
+  {
+    "part": "listening-4",
+    "term": "toxin",
+    "pos": "noun",
+    "vi": "độc tố",
+    "en": "A poisonous substance produced by a plant or animal.",
+    "example": "Another theory is related to toxins or poisons."
+  },
+  {
+    "part": "listening-4",
+    "term": "ingest",
+    "pos": "verb",
+    "vi": "ăn vào, nuốt vào cơ thể",
+    "en": "To take food or another substance into the body.",
+    "example": "The whale ingests these toxins in its normal feeding behaviour."
+  },
+  {
+    "part": "listening-4",
+    "term": "prey",
+    "pos": "noun",
+    "vi": "con mồi",
+    "en": "An animal that is hunted and eaten by another animal.",
+    "example": "Some animals strand accidentally by following their prey ashore."
+  },
+  {
+    "part": "listening-4",
+    "term": "pinpoint",
+    "pos": "verb",
+    "vi": "xác định chính xác (nguyên nhân)",
+    "en": "To find or show exactly what something is or where it is.",
+    "example": "Have been pinpointed as the cause of some strandings of late."
+  },
+  {
+    "part": "listening-4",
+    "term": "coincide",
+    "pos": "verb",
+    "vi": "trùng khớp về thời điểm",
+    "en": "To happen at the same time as something else.",
+    "example": "One of these, a mass stranding of whales in 2000 in the Bahamas, coincided closely with experiments using a new submarine detection system."
+  },
+  {
+    "part": "listening-4",
+    "term": "distinguish",
+    "pos": "verb",
+    "vi": "phân biệt",
+    "en": "To see or understand the difference between two things.",
+    "example": "Sea mammals cannot distinguish between sick and healthy leaders."
+  },
+  {
+    "part": "listening-4",
+    "term": "inevitable",
+    "pos": "adjective",
+    "vi": "không thể tránh khỏi",
+    "en": "Certain to happen and impossible to avoid.",
+    "example": "Will follow sick leaders even to an inevitable death."
+  },
+  {
+    "part": "reading-1",
+    "term": "synthetic",
+    "pos": "adjective",
+    "vi": "tổng hợp, nhân tạo",
+    "en": "Made by a chemical process rather than found in nature.",
+    "example": "Thus making it the world's first synthetic dye."
+  },
+  {
+    "part": "reading-1",
+    "term": "dye",
+    "pos": "noun",
+    "vi": "thuốc nhuộm",
+    "en": "A substance used to change the colour of cloth or other material.",
+    "example": "Perkin quickly grasped that his purple solution could be used to colour fabric, thus making it the world's first synthetic dye."
+  },
+  {
+    "part": "reading-1",
+    "term": "eminent",
+    "pos": "adjective",
+    "vi": "lỗi lạc, có tiếng tăm",
+    "en": "Famous and highly respected, especially in a profession.",
+    "example": "Lectures given by the eminent scientist Michael Faraday."
+  },
+  {
+    "part": "reading-1",
+    "term": "breakthrough",
+    "pos": "noun",
+    "vi": "bước đột phá",
+    "en": "An important discovery or achievement that solves a problem.",
+    "example": "Perkin made the scientific breakthrough that would bring him both fame and fortune."
+  },
+  {
+    "part": "reading-1",
+    "term": "derive",
+    "pos": "verb",
+    "vi": "chiết xuất, lấy từ",
+    "en": "To obtain something from a particular source.",
+    "example": "The drug is derived from the bark of the cinchona tree."
+  },
+  {
+    "part": "reading-1",
+    "term": "textile",
+    "pos": "noun",
+    "vi": "vải vóc, hàng dệt",
+    "en": "Any cloth or fabric that is woven or knitted.",
+    "example": "Historically, textile dyes were made from such natural sources as plants and animal excretions."
+  },
+  {
+    "part": "reading-1",
+    "term": "hue",
+    "pos": "noun",
+    "vi": "sắc thái màu",
+    "en": "A colour or a shade of a colour.",
+    "example": "Natural dyes tended to be muddy in hue and fade quickly."
+  },
+  {
+    "part": "reading-1",
+    "term": "fade",
+    "pos": "verb",
+    "vi": "phai màu",
+    "en": "To lose colour or become less bright.",
+    "example": "Natural dyes tended to be muddy in hue and fade quickly."
+  },
+  {
+    "part": "reading-1",
+    "term": "patent",
+    "pos": "verb",
+    "vi": "đăng ký bằng sáng chế",
+    "en": "To get an official right that stops others from making or selling your invention.",
+    "example": "Realising the importance of this breakthrough, he lost no time in patenting it."
+  },
+  {
+    "part": "reading-1",
+    "term": "fast",
+    "pos": "adjective",
+    "vi": "bền màu (không phai)",
+    "en": "Describes a colour that does not fade or wash out.",
+    "example": "If the colour remained fast and the cost was relatively low."
+  },
+  {
+    "part": "reading-1",
+    "term": "flatter",
+    "pos": "verb",
+    "vi": "làm cho trông đẹp hơn (hợp với)",
+    "en": "To make someone look more attractive.",
+    "example": "When she decided the new colour flattered her."
+  },
+  {
+    "part": "reading-1",
+    "term": "all the rage",
+    "pos": "phrase",
+    "vi": "rất thịnh hành, là mốt",
+    "en": "Very fashionable at a particular time.",
+    "example": "Thus making it all the rage in England as well."
+  },
+  {
+    "part": "reading-2",
+    "term": "haunt",
+    "pos": "verb",
+    "vi": "ám ảnh, đeo đẳng",
+    "en": "To stay in the mind and cause worry or sadness for a long time.",
+    "example": "The question of whether we are alone in the Universe has haunted humanity for centuries."
+  },
+  {
+    "part": "reading-2",
+    "term": "acronym",
+    "pos": "noun",
+    "vi": "từ viết tắt (ghép từ chữ cái đầu)",
+    "en": "A word made from the first letters of several words.",
+    "example": "This search, often known by the acronym SETI, is a difficult one."
+  },
+  {
+    "part": "reading-2",
+    "term": "on the brink of",
+    "pos": "phrase",
+    "vi": "đứng bên bờ vực của, sắp sửa",
+    "en": "Very close to a big change or discovery.",
+    "example": "We may now stand poised on the brink of the answer to that question."
+  },
+  {
+    "part": "reading-2",
+    "term": "conservative",
+    "pos": "adjective",
+    "vi": "thận trọng, dè dặt (ước lượng)",
+    "en": "Careful and cautious, not taking risks.",
+    "example": "We make a very conservative assumption that we are looking for a life form that is pretty well like us."
+  },
+  {
+    "part": "reading-2",
+    "term": "radically",
+    "pos": "adverb",
+    "vi": "một cách triệt để, hoàn toàn",
+    "en": "In a very big and basic way.",
+    "example": "Since if it differs radically from us we may well not recognize it as a life form."
+  },
+  {
+    "part": "reading-2",
+    "term": "inconceivable",
+    "pos": "adjective",
+    "vi": "không thể tưởng tượng nổi",
+    "en": "Impossible to imagine or believe.",
+    "example": "It seems inconceivable that at least one of these planets does not have a life form on it."
+  },
+  {
+    "part": "reading-2",
+    "term": "detection",
+    "pos": "noun",
+    "vi": "sự phát hiện",
+    "en": "The act of noticing or finding something.",
+    "example": "Until now there have not been any detections from the few hundred stars which have been searched."
+  },
+  {
+    "part": "reading-2",
+    "term": "ethical",
+    "pos": "adjective",
+    "vi": "thuộc đạo đức",
+    "en": "Connected with what is right and wrong.",
+    "example": "It raises a host of ethical questions."
+  },
+  {
+    "part": "reading-3",
+    "term": "parched",
+    "pos": "adjective",
+    "vi": "khô cằn",
+    "en": "Very dry because of a lack of water.",
+    "example": "Sometimes even to the most parched deserts."
+  },
+  {
+    "part": "reading-3",
+    "term": "terrestrial",
+    "pos": "adjective",
+    "vi": "sống trên cạn",
+    "en": "Living or existing on land rather than in water.",
+    "example": "There is evidence that all modern turtles are descended from a terrestrial ancestor."
+  },
+  {
+    "part": "reading-3",
+    "term": "aquatic",
+    "pos": "adjective",
+    "vi": "sống dưới nước",
+    "en": "Living or growing in water.",
+    "example": "If you draw out the family tree of all modern turtles and tortoises, nearly all the branches are aquatic."
+  },
+  {
+    "part": "reading-3",
+    "term": "revert",
+    "pos": "verb",
+    "vi": "quay trở lại (trạng thái cũ)",
+    "en": "To go back to an earlier state or way of living.",
+    "example": "Reverted to the full marine habits of their remote ancestors."
+  },
+  {
+    "part": "reading-3",
+    "term": "amphibious",
+    "pos": "adjective",
+    "vi": "lưỡng cư (sống cả trên cạn lẫn dưới nước)",
+    "en": "Able to live both on land and in water.",
+    "example": "Sure enough, these amphibious species show up on the triangular graph approximately half way between the 'wet cluster' and the 'dry cluster'."
+  },
+  {
+    "part": "reading-3",
+    "term": "streamlined",
+    "pos": "adjective",
+    "vi": "có dáng thuôn dài (giảm sức cản nước)",
+    "en": "Having a smooth shape that moves easily through water or air.",
+    "example": "Ichthyosaurs were reptilian contemporaries of the dinosaurs, with fins and streamlined bodies."
+  },
+  {
+    "part": "reading-3",
+    "term": "cluster",
+    "pos": "noun",
+    "vi": "cụm, nhóm điểm tập trung",
+    "en": "A group of similar things close together.",
+    "example": "All the land tortoise species formed a tight cluster of points in the upper part of the triangle."
+  },
+  {
+    "part": "reading-3",
+    "term": "primeval",
+    "pos": "adjective",
+    "vi": "nguyên thủy, thuở sơ khai",
+    "en": "Belonging to the earliest period of the Earth's history.",
+    "example": "Stretching back, still in the sea, to the primeval bacteria."
+  },
+  {
+    "part": "writing-1",
+    "term": "pier",
+    "pos": "noun",
+    "vi": "cầu tàu",
+    "en": "A long structure built out into the sea where boats can stop.",
+    "example": "A pier extends into the sea on the southern coast."
+  },
+  {
+    "part": "writing-1",
+    "term": "amenity",
+    "pos": "noun",
+    "vi": "tiện nghi, cơ sở tiện ích",
+    "en": "A useful or pleasant facility in a place.",
+    "example": "After development, it became a tourist hub with various amenities."
+  },
+  {
+    "part": "writing-2",
+    "term": "plasticity",
+    "pos": "noun",
+    "vi": "tính mềm dẻo (khả năng thích nghi của não)",
+    "en": "The ability to change and adapt easily.",
+    "example": "The brain demonstrates remarkable plasticity in phonetic recognition and pattern detection."
+  },
+  {
+    "part": "writing-2",
+    "term": "cognitive",
+    "pos": "adjective",
+    "vi": "thuộc nhận thức, tư duy",
+    "en": "Connected with thinking and understanding.",
+    "example": "Early bilingual exposure also enhances cognitive flexibility."
+  },
+  {
+    "part": "writing-2",
+    "term": "literacy",
+    "pos": "noun",
+    "vi": "khả năng đọc viết",
+    "en": "The ability to read and write.",
+    "example": "Primary schools often struggle with basic literacy instruction."
+  },
+  {
+    "part": "writing-2",
+    "term": "dilute",
+    "pos": "verb",
+    "vi": "làm loãng, làm giảm chất lượng",
+    "en": "To make something weaker or less effective.",
+    "example": "Adding foreign languages might dilute core competencies."
+  }
+]

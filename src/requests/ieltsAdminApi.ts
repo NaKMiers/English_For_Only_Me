@@ -1,6 +1,7 @@
 import type { IeltsConsistencyReport } from '@/modules/ielts/consistency/checkTest'
 import { IELTS_API_PATHS } from '@/modules/ielts/constants'
 import type { IeltsSectionInput, IeltsTestMeta } from '@/modules/ielts/schema'
+import type { VocabEntryApiRecord } from '@/modules/vocabulary/types'
 import type {
   IeltsAdminTest,
   IeltsAdminTestRow,
@@ -128,6 +129,15 @@ export const unarchiveIeltsTestApi = (testId: string) =>
   )
 
 export type IeltsGenerateStep = 'draft' | 'repair' | 'script' | 'questions'
+
+export const readIeltsTestVocabApi = (testId: string) =>
+  send<{ entries: VocabEntryApiRecord[] }>(IELTS_API_PATHS.adminVocab(testId))
+
+export const saveIeltsTestVocabApi = (testId: string, entryIds: string[]) =>
+  send<{ entries: VocabEntryApiRecord[] }>(IELTS_API_PATHS.adminVocab(testId), {
+    method: 'PUT',
+    json: { entryIds },
+  })
 
 export const generateIeltsSectionApi = (
   testId: string,

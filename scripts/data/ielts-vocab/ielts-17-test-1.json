@@ -1,0 +1,562 @@
+[
+  {
+    "part": "listening-1",
+    "term": "conservation",
+    "pos": "noun",
+    "vi": "bảo tồn (thiên nhiên)",
+    "en": "The protection of nature and wildlife.",
+    "example": "Are you the right person to talk to about the Buckworth Conservation Group?"
+  },
+  {
+    "part": "listening-1",
+    "term": "litter",
+    "pos": "noun",
+    "vi": "rác (vứt bừa bãi)",
+    "en": "Rubbish left lying around in public places.",
+    "example": "One of the regular ones is trying to keep the beach free of litter."
+  },
+  {
+    "part": "listening-1",
+    "term": "banned",
+    "pos": "adjective",
+    "vi": "bị cấm",
+    "en": "Not allowed by a rule or law.",
+    "example": "I'm afraid not, as they're banned from the beach itself."
+  },
+  {
+    "part": "listening-1",
+    "term": "nature reserve",
+    "pos": "noun",
+    "vi": "khu bảo tồn thiên nhiên",
+    "en": "An area of land protected for its wildlife.",
+    "example": "We also manage a nature reserve, and there's a lot to do there all year round."
+  },
+  {
+    "part": "listening-1",
+    "term": "habitat",
+    "pos": "noun",
+    "vi": "môi trường sống (của động thực vật)",
+    "en": "The natural home of a plant or animal.",
+    "example": "And we have a program of creating new habitats there."
+  },
+  {
+    "part": "listening-1",
+    "term": "biodiversity",
+    "pos": "noun",
+    "vi": "đa dạng sinh học",
+    "en": "The variety of plant and animal life in an area.",
+    "example": "They're important for the biodiversity of the reserve."
+  },
+  {
+    "part": "listening-1",
+    "term": "species",
+    "pos": "noun",
+    "vi": "loài (sinh vật)",
+    "en": "A group of living things of the same kind.",
+    "example": "We're also running a project to identify the different species of butterflies that visit the reserve."
+  },
+  {
+    "part": "listening-1",
+    "term": "low tide",
+    "pos": "noun",
+    "vi": "thủy triều xuống",
+    "en": "The time when the sea is at its lowest level.",
+    "example": "We'll be meeting in the car park at Dunsmore Beach at low tide."
+  },
+  {
+    "part": "listening-1",
+    "term": "waterproof",
+    "pos": "adjective",
+    "vi": "chống thấm nước",
+    "en": "Not allowing water to pass through.",
+    "example": "Make sure your boots are waterproof."
+  },
+  {
+    "part": "listening-2",
+    "term": "lighthouse",
+    "pos": "noun",
+    "vi": "ngọn hải đăng",
+    "en": "A tall tower with a bright light that warns ships of danger.",
+    "example": "This area is famous for its ancient lighthouse, which you'll see from the boat."
+  },
+  {
+    "part": "listening-2",
+    "term": "shipwreck",
+    "pos": "noun",
+    "vi": "vụ đắm tàu",
+    "en": "The destruction of a ship at sea.",
+    "example": "It was built in 1838 to protect sailors, as a number of shipwrecks had led to significant loss of life."
+  },
+  {
+    "part": "listening-2",
+    "term": "isolated",
+    "pos": "adjective",
+    "vi": "biệt lập, hẻo lánh",
+    "en": "Far away from other places or people.",
+    "example": "It sits right on top of the cliffs in a very isolated spot."
+  },
+  {
+    "part": "listening-2",
+    "term": "convict",
+    "pos": "noun",
+    "vi": "tù nhân, phạm nhân",
+    "en": "A person who is in prison for a crime.",
+    "example": "These workers were mainly prison convicts until the middle of that century."
+  },
+  {
+    "part": "listening-2",
+    "term": "inquisitive",
+    "pos": "adjective",
+    "vi": "tò mò, hay tìm hiểu",
+    "en": "Curious and eager to find out about things.",
+    "example": "They're inquisitive creatures, so don't be surprised if one pops up right in front of you."
+  },
+  {
+    "part": "listening-2",
+    "term": "predator",
+    "pos": "noun",
+    "vi": "động vật săn mồi, kẻ săn mồi",
+    "en": "An animal that hunts and eats other animals.",
+    "example": "Their predators, orca whales, hunt along the coastline too."
+  },
+  {
+    "part": "listening-2",
+    "term": "lost for words",
+    "pos": "phrase",
+    "vi": "không nói nên lời (vì quá ngạc nhiên)",
+    "en": "So surprised or impressed that you cannot speak.",
+    "example": "The ones we'll pass by are so amazing that people are lost for words when they see them."
+  },
+  {
+    "part": "listening-3",
+    "term": "work experience",
+    "pos": "noun",
+    "vi": "thực tập, kinh nghiệm làm việc thực tế",
+    "en": "A short period of working to learn about a job.",
+    "example": "We have to do a short summary of our work experience on a farm."
+  },
+  {
+    "part": "listening-3",
+    "term": "placement",
+    "pos": "noun",
+    "vi": "đợt thực tập (tại nơi làm việc)",
+    "en": "A temporary job done as part of a course.",
+    "example": "I'd really wanted a placement for a month, but I could only get one for two weeks."
+  },
+  {
+    "part": "listening-3",
+    "term": "livestock",
+    "pos": "noun",
+    "vi": "gia súc, vật nuôi trong trang trại",
+    "en": "Animals kept on a farm for food or other products.",
+    "example": "My farm was mostly livestock, especially sheep."
+  },
+  {
+    "part": "listening-3",
+    "term": "straightforward",
+    "pos": "adjective",
+    "vi": "đơn giản, dễ dàng",
+    "en": "Easy to do or understand, with no complications.",
+    "example": "It wasn't a straightforward birth."
+  },
+  {
+    "part": "listening-3",
+    "term": "breed",
+    "pos": "noun",
+    "vi": "giống (vật nuôi)",
+    "en": "A particular type of farm animal or pet.",
+    "example": "They had a lowland breed called Suffolks."
+  },
+  {
+    "part": "listening-3",
+    "term": "sought after",
+    "pos": "phrase",
+    "vi": "được săn đón, được ưa chuộng",
+    "en": "Wanted by many people because it is valuable.",
+    "example": "I heard their wool's really sought after."
+  },
+  {
+    "part": "listening-3",
+    "term": "hard wearing",
+    "pos": "adjective",
+    "vi": "bền, chịu mài mòn",
+    "en": "Able to last a long time without being damaged.",
+    "example": "Yes, it's very hard wearing, and they use it for carpets."
+  },
+  {
+    "part": "listening-3",
+    "term": "supplement",
+    "pos": "noun",
+    "vi": "chất bổ sung (dinh dưỡng)",
+    "en": "Something added to food to provide extra nutrients.",
+    "example": "I was interested in the amount of supplements they add to animals' feed nowadays."
+  },
+  {
+    "part": "listening-3",
+    "term": "overpriced",
+    "pos": "adjective",
+    "vi": "đắt quá mức, bị đội giá",
+    "en": "Costing more than it is worth.",
+    "example": "But my farmer said some are overpriced for what they are."
+  },
+  {
+    "part": "listening-3",
+    "term": "antibiotic",
+    "pos": "noun",
+    "vi": "thuốc kháng sinh",
+    "en": "A medicine that kills bacteria and cures infections.",
+    "example": "Some cows had been treated with antibiotics, so their milk wasn't suitable for human consumption."
+  },
+  {
+    "part": "listening-3",
+    "term": "contaminated",
+    "pos": "adjective",
+    "vi": "bị nhiễm bẩn, bị ô nhiễm",
+    "en": "Made dirty or harmful by a poisonous substance.",
+    "example": "There's such limited checking into whether or not it's contaminated."
+  },
+  {
+    "part": "listening-3",
+    "term": "eradicate",
+    "pos": "verb",
+    "vi": "diệt trừ, loại bỏ hoàn toàn (bệnh)",
+    "en": "To get rid of something completely.",
+    "example": "I thought they'd know a lot about ways of controlling and eradicating those diseases."
+  },
+  {
+    "part": "listening-3",
+    "term": "dissertation",
+    "pos": "noun",
+    "vi": "luận văn",
+    "en": "A long piece of academic writing for a university degree.",
+    "example": "I thought I might write my dissertation on something connected with that."
+  },
+  {
+    "part": "listening-4",
+    "term": "labyrinth",
+    "pos": "noun",
+    "vi": "mê cung xoắn ốc (chỉ có một lối đi duy nhất)",
+    "en": "A winding path that leads to a centre, with only one route.",
+    "example": "Labyrinths have existed for well over 4,000 years."
+  },
+  {
+    "part": "listening-4",
+    "term": "maze",
+    "pos": "noun",
+    "vi": "mê cung (có nhiều ngã rẽ, dễ lạc)",
+    "en": "A puzzle made of many paths where it is easy to get lost.",
+    "example": "In modern times, the word labyrinth has taken on a different meaning, and is often used as a synonym for a maze."
+  },
+  {
+    "part": "listening-4",
+    "term": "intricate",
+    "pos": "adjective",
+    "vi": "phức tạp, rối rắm",
+    "en": "Having many small parts that are closely connected.",
+    "example": "As it is a kind of puzzle with an intricate network of paths."
+  },
+  {
+    "part": "listening-4",
+    "term": "dead end",
+    "pos": "noun",
+    "vi": "ngõ cụt",
+    "en": "A path or road that is closed at one end.",
+    "example": "There are lots of dead ends and paths which lead you back to where you started."
+  },
+  {
+    "part": "listening-4",
+    "term": "metaphor",
+    "pos": "noun",
+    "vi": "phép ẩn dụ",
+    "en": "A way of describing one thing by comparing it to another.",
+    "example": "The winding spiral of the labyrinth has been used for centuries as a metaphor for life's journey."
+  },
+  {
+    "part": "listening-4",
+    "term": "meditation",
+    "pos": "noun",
+    "vi": "thiền, sự tĩnh tâm",
+    "en": "Quiet thinking or focus used to relax the mind.",
+    "example": "Labyrinths are thought to encourage a feeling of calm, and have been used as a meditation and prayer tool."
+  },
+  {
+    "part": "listening-4",
+    "term": "carved",
+    "pos": "adjective",
+    "vi": "được chạm khắc",
+    "en": "Cut into a hard surface such as stone or wood.",
+    "example": "The earliest examples of the labyrinth spiral pattern have been found carved into stone."
+  },
+  {
+    "part": "listening-4",
+    "term": "turf",
+    "pos": "noun",
+    "vi": "thảm cỏ, lớp đất mặt có cỏ",
+    "en": "Short grass with the soil beneath it.",
+    "example": "These were cut into the turf or grass, usually in a circular pattern."
+  },
+  {
+    "part": "listening-4",
+    "term": "fertility",
+    "pos": "noun",
+    "vi": "khả năng sinh sản, sự màu mỡ",
+    "en": "The ability to produce children, young animals or crops.",
+    "example": "They were probably used for fertility rites, which may date back thousands of years."
+  },
+  {
+    "part": "listening-4",
+    "term": "revival",
+    "pos": "noun",
+    "vi": "sự hồi sinh, sự phục hưng",
+    "en": "A new period of popularity for something old.",
+    "example": "More recently, labyrinths have experienced something of a revival."
+  },
+  {
+    "part": "listening-4",
+    "term": "mindfulness",
+    "pos": "noun",
+    "vi": "chánh niệm, sự tỉnh thức",
+    "en": "A calm state of focusing on the present moment.",
+    "example": "Some believe that walking a labyrinth promotes healing and mindfulness."
+  },
+  {
+    "part": "listening-4",
+    "term": "sketchy",
+    "pos": "adjective",
+    "vi": "sơ sài, thiếu chắc chắn",
+    "en": "Not detailed or reliable enough.",
+    "example": "The science behind the theory is a little sketchy."
+  },
+  {
+    "part": "reading-1",
+    "term": "congested",
+    "pos": "adjective",
+    "vi": "tắc nghẽn, quá đông đúc",
+    "en": "Too crowded or full of traffic.",
+    "example": "The central area became increasingly congested."
+  },
+  {
+    "part": "reading-1",
+    "term": "slum",
+    "pos": "noun",
+    "vi": "khu ổ chuột",
+    "en": "A poor, crowded and dirty area of a city.",
+    "example": "The area within consisted of poorly built, overcrowded slums."
+  },
+  {
+    "part": "reading-1",
+    "term": "advocate",
+    "pos": "noun",
+    "vi": "người ủng hộ, người đề xướng",
+    "en": "A person who publicly supports an idea or plan.",
+    "example": "Amongst the most vocal advocates for a solution to London's traffic problems was Charles Pearson."
+  },
+  {
+    "part": "reading-1",
+    "term": "relocate",
+    "pos": "verb",
+    "vi": "di dời, chuyển chỗ ở",
+    "en": "To move someone or something to a new place.",
+    "example": "His idea was to relocate the poor workers who lived in the inner-city slums to newly constructed suburbs."
+  },
+  {
+    "part": "reading-1",
+    "term": "emissions",
+    "pos": "noun",
+    "vi": "khí thải",
+    "en": "Gases or other substances sent out into the air.",
+    "example": "Passengers would be poisoned by the emissions from the train engines."
+  },
+  {
+    "part": "reading-1",
+    "term": "persist",
+    "pos": "verb",
+    "vi": "kiên trì, bền bỉ",
+    "en": "To continue doing something despite difficulties.",
+    "example": "However, Pearson and his partners persisted."
+  },
+  {
+    "part": "reading-1",
+    "term": "trench",
+    "pos": "noun",
+    "vi": "rãnh đào, hào",
+    "en": "A long narrow hole dug in the ground.",
+    "example": "A trench about ten metres wide and six metres deep was dug."
+  },
+  {
+    "part": "reading-1",
+    "term": "ventilation",
+    "pos": "noun",
+    "vi": "hệ thống thông gió",
+    "en": "The way fresh air is allowed to move through a space.",
+    "example": "Smoke and fumes remained a problem, even though ventilation shafts were added to the tunnels."
+  },
+  {
+    "part": "reading-1",
+    "term": "fumes",
+    "pos": "noun",
+    "vi": "khói độc, khí thải",
+    "en": "Strong-smelling smoke or gas that can be harmful.",
+    "example": "However, smoke and fumes remained a problem."
+  },
+  {
+    "part": "reading-1",
+    "term": "unreliable",
+    "pos": "adjective",
+    "vi": "không đáng tin cậy, không ổn định",
+    "en": "Not working well or consistently.",
+    "example": "The line was not without its problems, mainly caused by an unreliable power supply."
+  },
+  {
+    "part": "reading-2",
+    "term": "scepticism",
+    "pos": "noun",
+    "vi": "sự hoài nghi",
+    "en": "A doubtful attitude towards something.",
+    "example": "Today, however, stadiums are regarded with growing scepticism."
+  },
+  {
+    "part": "reading-2",
+    "term": "disrepair",
+    "pos": "noun",
+    "vi": "tình trạng xuống cấp, hư hỏng",
+    "en": "A condition of being in bad shape because it has not been looked after.",
+    "example": "Stadiums finished for major events have notably fallen into disuse and disrepair."
+  },
+  {
+    "part": "reading-2",
+    "term": "emblematic",
+    "pos": "adjective",
+    "vi": "mang tính biểu tượng, tiêu biểu",
+    "en": "Serving as a typical symbol of something.",
+    "example": "Architects and planners are finding new ways to adapt the mono-functional sports arenas which became emblematic of modernisation during the 20th century."
+  },
+  {
+    "part": "reading-2",
+    "term": "versatile",
+    "pos": "adjective",
+    "vi": "đa năng, linh hoạt",
+    "en": "Able to be used in many different ways.",
+    "example": "Is perhaps the best example of just how versatile stadiums can be."
+  },
+  {
+    "part": "reading-2",
+    "term": "regenerate",
+    "pos": "verb",
+    "vi": "tái tạo, phục hồi (khu đô thị)",
+    "en": "To give new life or activity to a place.",
+    "example": "Making more efficient use of land and helping to regenerate urban spaces."
+  },
+  {
+    "part": "reading-2",
+    "term": "blueprint",
+    "pos": "noun",
+    "vi": "mô hình mẫu, bản thiết kế",
+    "en": "A plan or model that others can copy.",
+    "example": "The mixed-use facilities at Wembley and Old Trafford have become a blueprint for many other stadiums in the world."
+  },
+  {
+    "part": "reading-2",
+    "term": "photovoltaic",
+    "pos": "adjective",
+    "vi": "quang điện (biến ánh sáng thành điện)",
+    "en": "Producing electricity from sunlight.",
+    "example": "Their canopies have a large surface area for fitting photovoltaic panels."
+  },
+  {
+    "part": "reading-3",
+    "term": "pre-emptive",
+    "pos": "adjective",
+    "vi": "mang tính đánh phủ đầu, ra tay trước",
+    "en": "Done first to stop an expected attack or action.",
+    "example": "His arrival in Edinburgh prompted the English Parliamentary army to invade Scotland in a pre-emptive strike."
+  },
+  {
+    "part": "reading-3",
+    "term": "evade",
+    "pos": "verb",
+    "vi": "trốn tránh, lẩn tránh",
+    "en": "To avoid being caught or dealt with.",
+    "example": "He managed, through a series of heart-poundingly close escapes, to evade the Parliamentarians."
+  },
+  {
+    "part": "reading-3",
+    "term": "fugitive",
+    "pos": "noun",
+    "vi": "kẻ đào tẩu, người đang bỏ trốn",
+    "en": "A person who is running away from capture.",
+    "example": "The king related to him his personal recollections of the six weeks he had spent as a fugitive."
+  },
+  {
+    "part": "reading-3",
+    "term": "disguise",
+    "pos": "noun",
+    "vi": "sự cải trang",
+    "en": "A change of appearance used to hide who you are.",
+    "example": "The preposterous refusal of Charles's friend Henry Wilmot to adopt disguise on the grounds that it was beneath his dignity."
+  },
+  {
+    "part": "reading-3",
+    "term": "memorialise",
+    "pos": "verb",
+    "vi": "tưởng niệm, lưu danh",
+    "en": "To create something that keeps a past event in memory.",
+    "example": "He set in train a series of initiatives to memorialise it."
+  },
+  {
+    "part": "reading-3",
+    "term": "subterfuge",
+    "pos": "noun",
+    "vi": "mánh khóe, thủ đoạn lừa gạt",
+    "en": "A secret trick used to escape or achieve something.",
+    "example": "To use trickery and subterfuge to escape from tight corners."
+  },
+  {
+    "part": "reading-3",
+    "term": "niggle",
+    "pos": "noun",
+    "vi": "điều phiền nhỏ, điểm chưa ưng ý",
+    "en": "A small worry or minor criticism.",
+    "example": "But this one niggle aside, To Catch a King is an excellent read."
+  },
+  {
+    "part": "writing-2",
+    "term": "catalyst",
+    "pos": "noun",
+    "vi": "chất xúc tác, nhân tố thúc đẩy",
+    "en": "Something that causes change or progress.",
+    "example": "Calculated risk-taking serves as a catalyst for growth across life domains."
+  },
+  {
+    "part": "writing-2",
+    "term": "outweigh",
+    "pos": "verb",
+    "vi": "lớn hơn, quan trọng hơn (so với)",
+    "en": "To be greater or more important than something else.",
+    "example": "Do you think the advantages of taking risks outweigh the disadvantages?"
+  },
+  {
+    "part": "writing-2",
+    "term": "reckless",
+    "pos": "adjective",
+    "vi": "liều lĩnh, thiếu thận trọng",
+    "en": "Careless about danger or the results of your actions.",
+    "example": "Critics rightly note that reckless risk-taking can lead to financial loss or emotional distress."
+  },
+  {
+    "part": "writing-2",
+    "term": "contingency plan",
+    "pos": "noun",
+    "vi": "kế hoạch dự phòng",
+    "en": "A plan for what to do if something goes wrong.",
+    "example": "When individuals analyze possible scenarios and prepare contingency plans, even unsuccessful attempts provide valuable learning experiences."
+  },
+  {
+    "part": "writing-2",
+    "term": "prudent",
+    "pos": "adjective",
+    "vi": "thận trọng, khôn ngoan",
+    "en": "Careful and sensible when making decisions.",
+    "example": "The advantages of prudent risk-taking outweigh its disadvantages."
+  }
+]

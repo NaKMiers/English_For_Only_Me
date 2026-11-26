@@ -1,0 +1,554 @@
+[
+  {
+    "part": "listening-1",
+    "term": "coordinator",
+    "pos": "noun",
+    "vi": "người điều phối, người phụ trách",
+    "en": "A person who organises a group or activity.",
+    "example": "He's called a coordinator."
+  },
+  {
+    "part": "listening-1",
+    "term": "chord",
+    "pos": "noun",
+    "vi": "hợp âm",
+    "en": "Several musical notes played together.",
+    "example": "I knew a few chords, but that's all."
+  },
+  {
+    "part": "listening-1",
+    "term": "reassuring",
+    "pos": "adjective",
+    "vi": "làm yên tâm",
+    "en": "Making you feel less worried.",
+    "example": "Oh, that's reassuring."
+  },
+  {
+    "part": "listening-1",
+    "term": "by ear",
+    "pos": "phrase",
+    "vi": "chơi bằng tai nghe (không cần xem bản nhạc)",
+    "en": "Playing music by listening rather than reading notes.",
+    "example": "Some people have an app they use, but others do it by ear."
+  },
+  {
+    "part": "listening-1",
+    "term": "strum",
+    "pos": "verb",
+    "vi": "gảy đàn (quét các dây đàn)",
+    "en": "To play a guitar by brushing the strings with the fingers.",
+    "example": "First, we usually spend about 10 minutes doing some strumming."
+  },
+  {
+    "part": "listening-1",
+    "term": "pick out",
+    "pos": "phrase",
+    "vi": "gảy từng nốt, tìm ra",
+    "en": "To play single notes one by one.",
+    "example": "When we pick out the individual notes from a tune he's made up."
+  },
+  {
+    "part": "listening-2",
+    "term": "pursue",
+    "pos": "verb",
+    "vi": "theo đuổi",
+    "en": "To follow an interest or goal in a determined way.",
+    "example": "I might be able to pursue that interest a bit more in my free time."
+  },
+  {
+    "part": "listening-2",
+    "term": "charity",
+    "pos": "noun",
+    "vi": "tổ chức từ thiện",
+    "en": "An organisation that raises money to help people or causes.",
+    "example": "As the Lifeboat Institution is a charity that relies on that kind of donation, rather than funding provided by the government, that was a huge help to us."
+  },
+  {
+    "part": "listening-2",
+    "term": "short sighted",
+    "pos": "adjective",
+    "vi": "cận thị",
+    "en": "Unable to see things clearly when they are far away.",
+    "example": "I used to be short sighted, so I'd had to wear glasses, but I'd had laser eye surgery two years earlier, so that was OK."
+  },
+  {
+    "part": "listening-2",
+    "term": "coastguard",
+    "pos": "noun",
+    "vi": "lực lượng cảnh sát biển",
+    "en": "A service that watches the coast and helps ships in danger.",
+    "example": "When the coastguard gets an alert, all the volunteers are contacted and rush to the lifeboat station."
+  },
+  {
+    "part": "listening-2",
+    "term": "helmsman",
+    "pos": "noun",
+    "vi": "người cầm lái (tàu thuyền)",
+    "en": "The person who steers a boat.",
+    "example": "I've recently qualified as what's called a helmsman, which means I have the ultimate responsibility for the lifeboat."
+  },
+  {
+    "part": "listening-2",
+    "term": "launch",
+    "pos": "verb",
+    "vi": "hạ thủy, đưa (tàu thuyền) ra biển",
+    "en": "To put a boat into the water.",
+    "example": "It's ultimately my decision whether it's safe to launch the boat."
+  },
+  {
+    "part": "listening-2",
+    "term": "underestimate",
+    "pos": "verb",
+    "vi": "đánh giá thấp",
+    "en": "To think something is smaller or less serious than it is.",
+    "example": "A lot of people underestimate how quickly conditions can change at sea."
+  },
+  {
+    "part": "listening-2",
+    "term": "competence",
+    "pos": "noun",
+    "vi": "năng lực, trình độ chuyên môn",
+    "en": "The ability to do something well.",
+    "example": "The training we get is a continuous process, focusing on technical competence and safe handling techniques."
+  },
+  {
+    "part": "listening-2",
+    "term": "casualty",
+    "pos": "noun",
+    "vi": "nạn nhân (người bị thương)",
+    "en": "A person who is injured or killed in an accident.",
+    "example": "I was glad I'd done a first aid course before I started, as that's a big help with the casualty care activities we do."
+  },
+  {
+    "part": "listening-2",
+    "term": "residential course",
+    "pos": "noun",
+    "vi": "khóa học nội trú",
+    "en": "A course where students live at the place where they study.",
+    "example": "After a year, I did a one-week residential course."
+  },
+  {
+    "part": "listening-2",
+    "term": "expertise",
+    "pos": "noun",
+    "vi": "chuyên môn, kỹ năng chuyên sâu",
+    "en": "Special skill or knowledge in a subject.",
+    "example": "My background in IT's been useful here, and I can use my expertise to help other volunteers."
+  },
+  {
+    "part": "listening-2",
+    "term": "rewarding",
+    "pos": "adjective",
+    "vi": "đáng giá, mang lại thỏa mãn",
+    "en": "Giving you satisfaction because it is worthwhile.",
+    "example": "But actually, it's the colder months that can be the most rewarding time."
+  },
+  {
+    "part": "listening-3",
+    "term": "recycle",
+    "pos": "verb",
+    "vi": "tái chế",
+    "en": "To process used things so they can be used again.",
+    "example": "Did you get the copy of the article on recycling footwear that I emailed you?"
+  },
+  {
+    "part": "listening-3",
+    "term": "hard wearing",
+    "pos": "adjective",
+    "vi": "bền, chịu mài mòn",
+    "en": "Able to last a long time without being damaged.",
+    "example": "I know, I guess they are very hard wearing."
+  },
+  {
+    "part": "listening-3",
+    "term": "scruffy",
+    "pos": "adjective",
+    "vi": "luộm thuộm, tồi tàn",
+    "en": "Untidy and in poor condition.",
+    "example": "Actually, I think some of them look quite smart on pupils, better than a scruffy old pair of shoes."
+  },
+  {
+    "part": "listening-3",
+    "term": "suede",
+    "pos": "noun",
+    "vi": "da lộn",
+    "en": "Soft leather with a rough surface.",
+    "example": "The material was suede, and they were beige in colour."
+  },
+  {
+    "part": "listening-3",
+    "term": "beige",
+    "pos": "adjective",
+    "vi": "màu be",
+    "en": "Of a pale sandy-brown colour.",
+    "example": "The material was suede, and they were beige in colour."
+  },
+  {
+    "part": "listening-3",
+    "term": "stained",
+    "pos": "adjective",
+    "vi": "bị dính bẩn, ố",
+    "en": "Marked with dirt that is hard to remove.",
+    "example": "So the heels were too stained with mud and grass to resell them."
+  },
+  {
+    "part": "listening-3",
+    "term": "shade",
+    "pos": "noun",
+    "vi": "sắc độ (của màu)",
+    "en": "A particular degree of a colour, lighter or darker.",
+    "example": "One of the shoes was a much lighter shade than the other one."
+  },
+  {
+    "part": "listening-3",
+    "term": "sole",
+    "pos": "noun",
+    "vi": "đế giày",
+    "en": "The bottom part of a shoe.",
+    "example": "One of the soles was so worn under the foot that you could put your finger through it."
+  },
+  {
+    "part": "listening-3",
+    "term": "landfill",
+    "pos": "noun",
+    "vi": "bãi chôn lấp rác",
+    "en": "A place where rubbish is buried in the ground.",
+    "example": "Get thrown into landfill."
+  },
+  {
+    "part": "listening-3",
+    "term": "identical",
+    "pos": "adjective",
+    "vi": "giống hệt nhau",
+    "en": "Exactly the same.",
+    "example": "It was because the pairs of shoes weren't identical."
+  },
+  {
+    "part": "listening-4",
+    "term": "invertebrate",
+    "pos": "noun",
+    "vi": "động vật không xương sống",
+    "en": "An animal without a backbone.",
+    "example": "For my project on invertebrates, I chose to study tardigrades."
+  },
+  {
+    "part": "listening-4",
+    "term": "microscopic",
+    "pos": "adjective",
+    "vi": "cực nhỏ, chỉ nhìn được bằng kính hiển vi",
+    "en": "So small that it can only be seen with a microscope.",
+    "example": "These are microscopic, or to be more precise, near microscopic animals."
+  },
+  {
+    "part": "listening-4",
+    "term": "thrive",
+    "pos": "verb",
+    "vi": "phát triển mạnh",
+    "en": "To grow or live very well.",
+    "example": "Water because that's where they thrive best."
+  },
+  {
+    "part": "listening-4",
+    "term": "suction",
+    "pos": "noun",
+    "vi": "lực hút",
+    "en": "The force that pulls something onto a surface by removing air.",
+    "example": "And these work by means of suction."
+  },
+  {
+    "part": "listening-4",
+    "term": "cling",
+    "pos": "verb",
+    "vi": "bám chặt",
+    "en": "To hold tightly onto something.",
+    "example": "They enable the tardigrade to cling on to surfaces or to grip its prey."
+  },
+  {
+    "part": "listening-4",
+    "term": "cavity",
+    "pos": "noun",
+    "vi": "khoang (trong cơ thể)",
+    "en": "A hollow space inside something.",
+    "example": "Oxygen and also blood are transported in a fluid that fills the cavity of the body."
+  },
+  {
+    "part": "listening-4",
+    "term": "pierce",
+    "pos": "verb",
+    "vi": "đâm xuyên",
+    "en": "To make a hole in something with a sharp point.",
+    "example": "These are sharp enough to pierce plant or animal cells."
+  },
+  {
+    "part": "listening-4",
+    "term": "withstand",
+    "pos": "verb",
+    "vi": "chịu đựng được",
+    "en": "To survive a difficult condition without being damaged.",
+    "example": "They're also able to withstand temperatures as cold as minus 200 degrees centigrade."
+  },
+  {
+    "part": "listening-4",
+    "term": "cryptobiosis",
+    "pos": "noun",
+    "vi": "trạng thái ngủ đông sinh học (sự sống tạm ngưng)",
+    "en": "A state in which an animal's life processes almost stop.",
+    "example": "They enter a state called cryptobiosis."
+  },
+  {
+    "part": "listening-4",
+    "term": "retract",
+    "pos": "verb",
+    "vi": "co lại, rụt vào",
+    "en": "To pull something back inside.",
+    "example": "By retracting their head and legs."
+  },
+  {
+    "part": "listening-4",
+    "term": "metabolism",
+    "pos": "noun",
+    "vi": "sự trao đổi chất",
+    "en": "The chemical processes that keep a body alive.",
+    "example": "Their metabolism drops to less than 1% of normal levels."
+  },
+  {
+    "part": "listening-4",
+    "term": "revive",
+    "pos": "verb",
+    "vi": "làm hồi sinh",
+    "en": "To bring back to life or activity.",
+    "example": "In 2016, scientists revived two tardigrades that had been tuns for more than 30 years."
+  },
+  {
+    "part": "listening-4",
+    "term": "prey on",
+    "pos": "phrase",
+    "vi": "săn mồi, ăn thịt",
+    "en": "To hunt and eat other animals.",
+    "example": "But some species prey on other tardigrades, from other species or within their own."
+  },
+  {
+    "part": "listening-4",
+    "term": "extinction",
+    "pos": "noun",
+    "vi": "sự tuyệt chủng",
+    "en": "The dying out of a whole species.",
+    "example": "They have survived five mass extinctions."
+  },
+  {
+    "part": "reading-1",
+    "term": "agrarian",
+    "pos": "adjective",
+    "vi": "thuộc nông nghiệp",
+    "en": "Relating to farming and farmland.",
+    "example": "In Britain, it was a period when a largely rural, agrarian society was transformed into an industrialised, urban one."
+  },
+  {
+    "part": "reading-1",
+    "term": "locomotive",
+    "pos": "noun",
+    "vi": "đầu máy xe lửa",
+    "en": "A railway engine that pulls trains.",
+    "example": "The English engineer Richard Trevithick built a steam-powered locomotive."
+  },
+  {
+    "part": "reading-1",
+    "term": "cottage industry",
+    "pos": "noun",
+    "vi": "ngành thủ công tại gia",
+    "en": "Production done at home or in small workshops.",
+    "example": "The British textile business was a true \"cottage industry\"."
+  },
+  {
+    "part": "reading-1",
+    "term": "mechanised",
+    "pos": "adjective",
+    "vi": "được cơ giới hóa",
+    "en": "Using machines instead of people.",
+    "example": "The new, mechanised textile factories that opened around the country were quickly able to meet customer demand for cloth both at home and abroad."
+  },
+  {
+    "part": "reading-1",
+    "term": "smelting",
+    "pos": "noun",
+    "vi": "sự nấu chảy quặng",
+    "en": "Heating ore to get metal from it.",
+    "example": "Chief among the new techniques was the smelting of iron ore with coke."
+  },
+  {
+    "part": "reading-1",
+    "term": "patent",
+    "pos": "verb",
+    "vi": "đăng ký bằng sáng chế",
+    "en": "To get official legal rights to an invention.",
+    "example": "In 1837, British inventors William Cooke and Charles Wheatstone patented the first commercial telegraphy system."
+  },
+  {
+    "part": "reading-1",
+    "term": "sanitation",
+    "pos": "noun",
+    "vi": "hệ thống vệ sinh",
+    "en": "Systems that keep places clean, such as drains and toilets.",
+    "example": "Overcrowded cities suffered from pollution and inadequate sanitation."
+  },
+  {
+    "part": "reading-1",
+    "term": "livelihood",
+    "pos": "noun",
+    "vi": "kế sinh nhai",
+    "en": "The way a person earns money to live.",
+    "example": "They feared that unskilled machine operators were robbing them of their livelihood."
+  },
+  {
+    "part": "reading-2",
+    "term": "regulate",
+    "pos": "verb",
+    "vi": "điều tiết, kiểm soát",
+    "en": "To control something so that it works correctly.",
+    "example": "She began having difficulty regulating her breathing and heart rate during a match."
+  },
+  {
+    "part": "reading-2",
+    "term": "accumulation",
+    "pos": "noun",
+    "vi": "sự tích tụ",
+    "en": "A gradual build-up of something.",
+    "example": "Which she later attributed to \"the accumulation of the excitement and the buzz\"."
+  },
+  {
+    "part": "reading-2",
+    "term": "cope with",
+    "pos": "phrase",
+    "vi": "đối phó, xoay xở với",
+    "en": "To deal successfully with a difficult situation.",
+    "example": "Resources, on the other hand, are a person's ability to cope with these demands."
+  },
+  {
+    "part": "reading-2",
+    "term": "adrenaline",
+    "pos": "noun",
+    "vi": "adrenaline (hormone khi căng thẳng)",
+    "en": "A hormone that prepares the body for action.",
+    "example": "During a challenge state, adrenaline increases the amount of blood pumped from the heart and expands the blood vessels."
+  },
+  {
+    "part": "reading-2",
+    "term": "inhibit",
+    "pos": "verb",
+    "vi": "kìm hãm, ức chế",
+    "en": "To prevent or slow something.",
+    "example": "But during a threat state, cortisol inhibits the positive effect of adrenaline."
+  },
+  {
+    "part": "reading-2",
+    "term": "palpitation",
+    "pos": "noun",
+    "vi": "chứng tim đập nhanh, hồi hộp",
+    "en": "A fast or irregular heartbeat you can feel.",
+    "example": "Anxiety can increase heart rate and perspiration, cause heart palpitations, muscle tremors and shortness of breath."
+  },
+  {
+    "part": "reading-2",
+    "term": "manifest",
+    "pos": "verb",
+    "vi": "biểu hiện ra",
+    "en": "To show itself clearly.",
+    "example": "Anxiety may also manifest itself in the form of excitement or nervousness depending on the stress response."
+  },
+  {
+    "part": "reading-2",
+    "term": "visualisation",
+    "pos": "noun",
+    "vi": "kỹ thuật hình dung trong đầu",
+    "en": "Forming a clear mental picture of something.",
+    "example": "Developing psychological skills, such as visualisation, can also help decrease physiological responses to threat."
+  },
+  {
+    "part": "reading-3",
+    "term": "innate",
+    "pos": "adjective",
+    "vi": "bẩm sinh",
+    "en": "Present from birth rather than learned.",
+    "example": "While the jury is out on giftedness being innate and other factors potentially making the difference."
+  },
+  {
+    "part": "reading-3",
+    "term": "resolute",
+    "pos": "adjective",
+    "vi": "kiên quyết, bền chí",
+    "en": "Determined and not giving up.",
+    "example": "In adult life it is clear that she was curious, excited by what she did and also resolute in the face of setbacks."
+  },
+  {
+    "part": "reading-3",
+    "term": "plug away",
+    "pos": "phrase",
+    "vi": "kiên trì làm việc (dù khó)",
+    "en": "To keep working at something steadily.",
+    "example": "He struggled at work initially, but he kept plugging away."
+  },
+  {
+    "part": "reading-3",
+    "term": "replicable",
+    "pos": "adjective",
+    "vi": "có thể lặp lại, tái tạo được",
+    "en": "Able to be copied or repeated.",
+    "example": "What is certain is that the behaviours associated with high levels of performance are replicable and most can be taught."
+  },
+  {
+    "part": "reading-3",
+    "term": "eminent",
+    "pos": "adjective",
+    "vi": "lỗi lạc, xuất chúng",
+    "en": "Famous and respected in a particular field.",
+    "example": "Prof Anders Ericsson, an eminent education psychologist at Florida State University, US."
+  },
+  {
+    "part": "reading-3",
+    "term": "deliberate practice",
+    "pos": "noun",
+    "vi": "luyện tập có chủ đích",
+    "en": "Focused practice designed to improve a specific skill.",
+    "example": "Deliberate practice, that stretches you every step of the way, and around 10,000 hours of it, is what produces the goods."
+  },
+  {
+    "part": "reading-3",
+    "term": "undeterred",
+    "pos": "adjective",
+    "vi": "không nản lòng",
+    "en": "Not discouraged by difficulties.",
+    "example": "He struggled against rejection in early life but was undeterred."
+  },
+  {
+    "part": "reading-3",
+    "term": "epitome",
+    "pos": "noun",
+    "vi": "hình mẫu điển hình",
+    "en": "A perfect example of a quality or type.",
+    "example": "Let us end with Einstein, the epitome of a genius."
+  },
+  {
+    "part": "writing-1",
+    "term": "moor",
+    "pos": "verb",
+    "vi": "neo, buộc (tàu thuyền)",
+    "en": "To fasten a boat to a fixed place.",
+    "example": "Fishing boats were moored in the southwest part."
+  },
+  {
+    "part": "writing-1",
+    "term": "adjacent",
+    "pos": "adjective",
+    "vi": "liền kề",
+    "en": "Next to or very near something.",
+    "example": "One of which was adjacent to the showers and toilets."
+  },
+  {
+    "part": "writing-1",
+    "term": "disused",
+    "pos": "adjective",
+    "vi": "bị bỏ hoang, không còn sử dụng",
+    "en": "No longer used.",
+    "example": "A lifeboat station was set on the road close to the disused castle."
+  }
+]

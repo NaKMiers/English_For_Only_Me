@@ -1,0 +1,562 @@
+[
+  {
+    "part": "listening-1",
+    "term": "queue",
+    "pos": "noun",
+    "vi": "hàng người xếp chờ",
+    "en": "A line of people waiting for something.",
+    "example": "Oh, there must be at least 50 people in the queue."
+  },
+  {
+    "part": "listening-1",
+    "term": "register",
+    "pos": "verb",
+    "vi": "đăng ký (nhập học)",
+    "en": "To officially put your name on a list, for example for a course.",
+    "example": "so I can register for my course."
+  },
+  {
+    "part": "listening-1",
+    "term": "canteen",
+    "pos": "noun",
+    "vi": "căng tin",
+    "en": "A place in a school or workplace where food is served.",
+    "example": "I was on my way to the canteen to get something for lunch."
+  },
+  {
+    "part": "listening-1",
+    "term": "on second thoughts",
+    "pos": "phrase",
+    "vi": "nghĩ lại thì",
+    "en": "Used when you change your mind after thinking again.",
+    "example": "No, no, on second thoughts, I'll have a cheese and tomato sandwich."
+  },
+  {
+    "part": "listening-1",
+    "term": "stamp",
+    "pos": "verb",
+    "vi": "đóng dấu",
+    "en": "To mark a document with an official stamp.",
+    "example": "and get this card stamped"
+  },
+  {
+    "part": "listening-1",
+    "term": "union fee",
+    "pos": "phrase",
+    "vi": "phí hội sinh viên",
+    "en": "Money paid to join the students' union.",
+    "example": "and pay your union fee."
+  },
+  {
+    "part": "listening-2",
+    "term": "unfamiliar",
+    "pos": "adjective",
+    "vi": "lạ lẫm, chưa quen",
+    "en": "Not known or not experienced before.",
+    "example": "Many of you are unfamiliar with the way banks work in this country"
+  },
+  {
+    "part": "listening-2",
+    "term": "eligible",
+    "pos": "adjective",
+    "vi": "đủ điều kiện",
+    "en": "Having the right to do or receive something.",
+    "example": "you'll not necessarily be eligible for all the facilities offered to resident students."
+  },
+  {
+    "part": "listening-2",
+    "term": "fund",
+    "pos": "verb",
+    "vi": "tự chi trả, tài trợ",
+    "en": "To provide the money for something.",
+    "example": "you will need to provide evidence that you can fund yourself"
+  },
+  {
+    "part": "listening-2",
+    "term": "discretion",
+    "pos": "noun",
+    "vi": "quyền tự quyết định",
+    "en": "The freedom to decide what should be done.",
+    "example": "and on the discretion of the bank manager involved."
+  },
+  {
+    "part": "listening-2",
+    "term": "documentation",
+    "pos": "noun",
+    "vi": "giấy tờ, hồ sơ",
+    "en": "Official papers that prove something.",
+    "example": "you should take some documentation with you."
+  },
+  {
+    "part": "listening-2",
+    "term": "enrolment",
+    "pos": "noun",
+    "vi": "việc ghi danh nhập học",
+    "en": "The act of officially joining a course or school.",
+    "example": "your letter or certificate of enrolment."
+  },
+  {
+    "part": "listening-2",
+    "term": "current account",
+    "pos": "phrase",
+    "vi": "tài khoản vãng lai",
+    "en": "A bank account for everyday payments and withdrawals.",
+    "example": "By far the most useful type of account to open is a current account."
+  },
+  {
+    "part": "listening-2",
+    "term": "concession",
+    "pos": "noun",
+    "vi": "ưu đãi, giảm giá đặc biệt",
+    "en": "A special lower price or benefit for a certain group.",
+    "example": "which is a current account with special concessions for students."
+  },
+  {
+    "part": "listening-2",
+    "term": "cheque",
+    "pos": "noun",
+    "vi": "séc",
+    "en": "A written order telling a bank to pay money from your account.",
+    "example": "if you need to write cheques in shops."
+  },
+  {
+    "part": "listening-2",
+    "term": "honour",
+    "pos": "verb",
+    "vi": "chấp nhận thanh toán",
+    "en": "To accept and pay a cheque or agreement as promised.",
+    "example": "will be honoured by the bank."
+  },
+  {
+    "part": "listening-2",
+    "term": "withdraw",
+    "pos": "verb",
+    "vi": "rút (tiền)",
+    "en": "To take money out of a bank account.",
+    "example": "You can also withdraw cash from a cash point machine with a cash card."
+  },
+  {
+    "part": "listening-2",
+    "term": "overdraft",
+    "pos": "noun",
+    "vi": "khoản thấu chi (rút quá số dư)",
+    "en": "An arrangement that lets you spend more money than you have in your account.",
+    "example": "This is called having an overdraft."
+  },
+  {
+    "part": "listening-2",
+    "term": "incur",
+    "pos": "verb",
+    "vi": "phải chịu (chi phí, khoản phí)",
+    "en": "To become responsible for paying an extra cost.",
+    "example": "Overdrafts usually incur charges"
+  },
+  {
+    "part": "listening-2",
+    "term": "branch",
+    "pos": "noun",
+    "vi": "chi nhánh",
+    "en": "A local office of a bank or other large organisation.",
+    "example": "But many main branches are now open until 4.30 or 5.00 pm on weekdays"
+  },
+  {
+    "part": "listening-3",
+    "term": "bump into",
+    "pos": "phrase",
+    "vi": "tình cờ gặp",
+    "en": "To meet someone by chance.",
+    "example": "I'm glad I bumped into you."
+  },
+  {
+    "part": "listening-3",
+    "term": "outstrip",
+    "pos": "verb",
+    "vi": "vượt xa, nhiều hơn",
+    "en": "To be greater than something else.",
+    "example": "It says here it outstrips the production of nails or paper clips."
+  },
+  {
+    "part": "listening-3",
+    "term": "precision",
+    "pos": "noun",
+    "vi": "độ chính xác",
+    "en": "The quality of being exact and accurate.",
+    "example": "exercise as much attention and precision in producing them"
+  },
+  {
+    "part": "listening-3",
+    "term": "reflective",
+    "pos": "adjective",
+    "vi": "phản chiếu, bóng loáng",
+    "en": "Able to send back light, like a mirror.",
+    "example": "A reflective surface suitable for decoration."
+  },
+  {
+    "part": "listening-3",
+    "term": "dome",
+    "pos": "noun",
+    "vi": "hình vòm, mái vòm",
+    "en": "A rounded shape like half a ball.",
+    "example": "the bottom of the can is shaped like a dome"
+  },
+  {
+    "part": "listening-3",
+    "term": "resist",
+    "pos": "verb",
+    "vi": "chịu được, chống lại",
+    "en": "To withstand the force of something.",
+    "example": "so that it can resist the internal pressure."
+  },
+  {
+    "part": "listening-3",
+    "term": "rim",
+    "pos": "noun",
+    "vi": "vành, mép",
+    "en": "The outer edge of a round object.",
+    "example": "There's the rim around the edge which seals the can."
+  },
+  {
+    "part": "listening-3",
+    "term": "flange",
+    "pos": "noun",
+    "vi": "mép gờ nhô ra (dùng để ghép nối)",
+    "en": "A raised edge on an object used for fixing or sealing.",
+    "example": "Yes, it's a flange."
+  },
+  {
+    "part": "listening-3",
+    "term": "trim",
+    "pos": "verb",
+    "vi": "cắt tỉa (phần thừa)",
+    "en": "To cut off the extra parts to make something neat.",
+    "example": "the top of the can is trimmed, and then bent over to secure the lid."
+  },
+  {
+    "part": "listening-3",
+    "term": "seam",
+    "pos": "noun",
+    "vi": "đường ghép nối",
+    "en": "A line where two edges are joined together.",
+    "example": "It looks like a seam."
+  },
+  {
+    "part": "listening-3",
+    "term": "scored",
+    "pos": "adjective",
+    "vi": "được rạch sẵn (một đường mờ để dễ xé, dễ bật)",
+    "en": "Marked with a cut or line so that it breaks or bends easily.",
+    "example": "the opening is scored, so that it pushes in easily"
+  },
+  {
+    "part": "listening-4",
+    "term": "two-fold",
+    "pos": "adjective",
+    "vi": "gồm hai phần, có hai mục đích",
+    "en": "Having two parts or purposes.",
+    "example": "The purpose of this lecture is two-fold."
+  },
+  {
+    "part": "listening-4",
+    "term": "discipline",
+    "pos": "noun",
+    "vi": "ngành học, lĩnh vực",
+    "en": "A particular branch of study.",
+    "example": "sports studies as a discipline is still comparatively new."
+  },
+  {
+    "part": "listening-4",
+    "term": "strand",
+    "pos": "noun",
+    "vi": "nhánh, hướng chuyên môn",
+    "en": "One part or thread of a larger subject.",
+    "example": "there are three distinct strands to sports studies"
+  },
+  {
+    "part": "listening-4",
+    "term": "physiology",
+    "pos": "noun",
+    "vi": "sinh lý học",
+    "en": "The study of how the body of a living thing works.",
+    "example": "and last but not least, there's the sports physiology strand."
+  },
+  {
+    "part": "listening-4",
+    "term": "integral",
+    "pos": "adjective",
+    "vi": "không thể thiếu, thiết yếu",
+    "en": "Necessary and forming an essential part of something.",
+    "example": "and becomes an integral part of the team."
+  },
+  {
+    "part": "listening-4",
+    "term": "go hand in hand",
+    "pos": "phrase",
+    "vi": "đi đôi với nhau",
+    "en": "To be closely connected and happen together.",
+    "example": "and this goes hand in hand with the area of sports marketing"
+  },
+  {
+    "part": "listening-4",
+    "term": "spectator",
+    "pos": "noun",
+    "vi": "khán giả (xem thể thao)",
+    "en": "A person who watches a sporting event.",
+    "example": "The spectators go to sport to be entertained rather than out of loyalty to a team."
+  },
+  {
+    "part": "reading-1",
+    "term": "versatile",
+    "pos": "adjective",
+    "vi": "đa năng, linh hoạt",
+    "en": "Able to be used for many different purposes.",
+    "example": "it is certainly the most versatile"
+  },
+  {
+    "part": "reading-1",
+    "term": "dispose of",
+    "pos": "phrase",
+    "vi": "xử lý, vứt bỏ",
+    "en": "To get rid of something you no longer want.",
+    "example": "in order to dispose of that unwanted material."
+  },
+  {
+    "part": "reading-1",
+    "term": "molten",
+    "pos": "adjective",
+    "vi": "nóng chảy",
+    "en": "Made liquid by very great heat.",
+    "example": "a narrow ribbon of molten glass travels over a moving belt of steel"
+  },
+  {
+    "part": "reading-1",
+    "term": "compressed",
+    "pos": "adjective",
+    "vi": "được nén",
+    "en": "Squeezed into a smaller space under pressure.",
+    "example": "Puffs of compressed air then shape the glass."
+  },
+  {
+    "part": "reading-1",
+    "term": "rigid",
+    "pos": "adjective",
+    "vi": "cứng, không uốn được",
+    "en": "Stiff and not easily bent.",
+    "example": "Although it is rigid, and thus like a solid"
+  },
+  {
+    "part": "reading-1",
+    "term": "tailor",
+    "pos": "verb",
+    "vi": "điều chỉnh cho phù hợp nhu cầu",
+    "en": "To make or adapt something for a particular need.",
+    "example": "which allows technicians to tailor glass to whatever they need."
+  },
+  {
+    "part": "reading-1",
+    "term": "opaque",
+    "pos": "adjective",
+    "vi": "đục, không trong suốt",
+    "en": "Not able to be seen through.",
+    "example": "glass that will change from clear to opaque at the push of a button"
+  },
+  {
+    "part": "reading-1",
+    "term": "exorbitant",
+    "pos": "adjective",
+    "vi": "quá đắt, cắt cổ",
+    "en": "Much too high, especially of a price.",
+    "example": "but the cost is exorbitant."
+  },
+  {
+    "part": "reading-2",
+    "term": "shortlist",
+    "pos": "noun",
+    "vi": "danh sách rút gọn (ứng viên)",
+    "en": "A small list of the best candidates chosen from a larger group.",
+    "example": "one in six men who appear on interview shortlists get jobs"
+  },
+  {
+    "part": "reading-2",
+    "term": "recruitment",
+    "pos": "noun",
+    "vi": "việc tuyển dụng",
+    "en": "The process of finding and hiring new employees.",
+    "example": "The study, by recruitment consultants NB Selection"
+  },
+  {
+    "part": "reading-2",
+    "term": "counterpart",
+    "pos": "noun",
+    "vi": "người ở vị trí tương đương",
+    "en": "A person or thing with the same role as another in a different group.",
+    "example": "they tend to be better qualified than their male counterparts"
+  },
+  {
+    "part": "reading-2",
+    "term": "shortcoming",
+    "pos": "noun",
+    "vi": "khuyết điểm, nhược điểm",
+    "en": "A fault or weakness.",
+    "example": "any shortcomings they have will not prevent them from doing a good job."
+  },
+  {
+    "part": "reading-2",
+    "term": "delayering",
+    "pos": "noun",
+    "vi": "việc cắt giảm tầng nấc quản lý",
+    "en": "Removing levels of management from a company.",
+    "example": "has been the delayering of management structures."
+  },
+  {
+    "part": "reading-2",
+    "term": "aspire to",
+    "pos": "phrase",
+    "vi": "khao khát đạt tới",
+    "en": "To strongly hope to reach a goal or position.",
+    "example": "or in layers they aspire to."
+  },
+  {
+    "part": "reading-2",
+    "term": "demographic",
+    "pos": "adjective",
+    "vi": "thuộc nhân khẩu học",
+    "en": "Relating to the structure and statistics of a population.",
+    "example": "Demographic trends suggest that the number of women going into employment is steadily increasing."
+  },
+  {
+    "part": "reading-2",
+    "term": "anecdotal",
+    "pos": "adjective",
+    "vi": "mang tính giai thoại (chưa có số liệu chắc chắn)",
+    "en": "Based on personal stories rather than reliable facts or research.",
+    "example": "there is only anecdotal evidence of changes in recruitment patterns."
+  },
+  {
+    "part": "reading-2",
+    "term": "hurdle",
+    "pos": "noun",
+    "vi": "rào cản, trở ngại",
+    "en": "A difficulty that must be overcome.",
+    "example": "as there are so many hurdles and barriers."
+  },
+  {
+    "part": "reading-3",
+    "term": "viability",
+    "pos": "noun",
+    "vi": "khả năng tồn tại, sinh tồn",
+    "en": "The ability to live and survive successfully.",
+    "example": "population viability analysis (PVA)"
+  },
+  {
+    "part": "reading-3",
+    "term": "extinct",
+    "pos": "adjective",
+    "vi": "tuyệt chủng",
+    "en": "No longer existing; having died out completely.",
+    "example": "A species becomes extinct when the last individual dies."
+  },
+  {
+    "part": "reading-3",
+    "term": "exploitation",
+    "pos": "noun",
+    "vi": "sự khai thác",
+    "en": "The use of natural resources, often for profit.",
+    "example": "to provide input into resource exploitation decisions"
+  },
+  {
+    "part": "reading-3",
+    "term": "fluctuate",
+    "pos": "verb",
+    "vi": "biến động, dao động",
+    "en": "To change often and by a large amount.",
+    "example": "Small populations will fluctuate enormously because of the random nature of birth and death"
+  },
+  {
+    "part": "reading-3",
+    "term": "inbreeding",
+    "pos": "noun",
+    "vi": "giao phối cận huyết",
+    "en": "Reproduction between closely related individuals.",
+    "example": "Small populations cannot avoid a certain amount of inbreeding."
+  },
+  {
+    "part": "reading-3",
+    "term": "descended from",
+    "pos": "phrase",
+    "vi": "là hậu duệ của",
+    "en": "Having an animal or person as an ancestor.",
+    "example": "all future individuals in the species must be descended from that one male."
+  },
+  {
+    "part": "reading-3",
+    "term": "natural selection",
+    "pos": "phrase",
+    "vi": "chọn lọc tự nhiên",
+    "en": "The process by which the best-suited living things survive and reproduce.",
+    "example": "is the raw material upon which natural selection acts."
+  },
+  {
+    "part": "reading-3",
+    "term": "catastrophe",
+    "pos": "noun",
+    "vi": "thảm họa",
+    "en": "A sudden event that causes great damage.",
+    "example": "Catastrophes such as fire, flood, drought or epidemic"
+  },
+  {
+    "part": "reading-3",
+    "term": "epidemic",
+    "pos": "noun",
+    "vi": "dịch bệnh",
+    "en": "A disease that spreads quickly among many people or animals.",
+    "example": "Catastrophes such as fire, flood, drought or epidemic"
+  },
+  {
+    "part": "reading-3",
+    "term": "persistence",
+    "pos": "noun",
+    "vi": "sự tồn tại lâu dài",
+    "en": "The state of continuing to exist.",
+    "example": "to be confident of persistence for a few hundred years"
+  },
+  {
+    "part": "reading-3",
+    "term": "logging",
+    "pos": "noun",
+    "vi": "khai thác gỗ, đốn rừng",
+    "en": "The cutting down of trees for timber.",
+    "example": "Where logging occurs, that is, the cutting down of forests for timber"
+  },
+  {
+    "part": "reading-3",
+    "term": "arboreal",
+    "pos": "adjective",
+    "vi": "sống trên cây",
+    "en": "Living in trees.",
+    "example": "However, arboreal marsupials, that is animals which live in trees"
+  },
+  {
+    "part": "writing-1",
+    "term": "intersection",
+    "pos": "noun",
+    "vi": "giao lộ, ngã tư",
+    "en": "A place where two roads cross.",
+    "example": "located to the southeast of the intersection of two main roads."
+  },
+  {
+    "part": "writing-2",
+    "term": "obsolescence",
+    "pos": "noun",
+    "vi": "sự lỗi thời",
+    "en": "The state of becoming out of date and no longer used.",
+    "example": "This flexibility not only mitigates the risk of job obsolescence"
+  },
+  {
+    "part": "writing-2",
+    "term": "mitigate",
+    "pos": "verb",
+    "vi": "giảm nhẹ, hạn chế",
+    "en": "To make something bad less serious.",
+    "example": "This flexibility not only mitigates the risk of job obsolescence"
+  }
+]

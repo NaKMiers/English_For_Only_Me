@@ -1,0 +1,562 @@
+[
+  {
+    "part": "listening-1",
+    "term": "seasonal",
+    "pos": "adjective",
+    "vi": "thuộc theo mùa",
+    "en": "Relating to a particular season of the year.",
+    "example": "they focus on seasonal products"
+  },
+  {
+    "part": "listening-1",
+    "term": "specialist",
+    "pos": "adjective",
+    "vi": "chuyên biệt, chuyên môn",
+    "en": "Having or needing expert knowledge of one subject.",
+    "example": "they have quite a lot of specialist staff"
+  },
+  {
+    "part": "listening-1",
+    "term": "turn up",
+    "pos": "phrase",
+    "vi": "đến, xuất hiện (không cần đặt trước)",
+    "en": "To arrive somewhere, often without being invited or booking.",
+    "example": "you don't need to book or anything, just turn up at 7:30"
+  },
+  {
+    "part": "listening-1",
+    "term": "reputation",
+    "pos": "noun",
+    "vi": "danh tiếng",
+    "en": "The opinion that people generally have about someone or something.",
+    "example": "they've got a very good reputation"
+  },
+  {
+    "part": "listening-1",
+    "term": "specialize in",
+    "pos": "phrase",
+    "vi": "chuyên về",
+    "en": "To focus on one particular subject or activity.",
+    "example": "they mostly specialize in vegetarian dishes"
+  },
+  {
+    "part": "listening-1",
+    "term": "vegetarian",
+    "pos": "adjective",
+    "vi": "chay (không ăn thịt)",
+    "en": "Containing no meat or fish.",
+    "example": "they mostly specialize in vegetarian dishes"
+  },
+  {
+    "part": "listening-1",
+    "term": "sharpen",
+    "pos": "verb",
+    "vi": "mài sắc",
+    "en": "To make a blade sharp.",
+    "example": "buying them, sharpening, chopping techniques"
+  },
+  {
+    "part": "listening-2",
+    "term": "regulation",
+    "pos": "noun",
+    "vi": "quy định",
+    "en": "An official rule made by an authority.",
+    "example": "the new regulations for traffic and parking"
+  },
+  {
+    "part": "listening-2",
+    "term": "visibility",
+    "pos": "noun",
+    "vi": "tầm nhìn",
+    "en": "How far or how clearly you can see.",
+    "example": "the lack of visibility on some roads"
+  },
+  {
+    "part": "listening-2",
+    "term": "congestion",
+    "pos": "noun",
+    "vi": "tắc nghẽn (giao thông)",
+    "en": "A situation in which roads are blocked by too much traffic.",
+    "example": "a lot of traffic congestion"
+  },
+  {
+    "part": "listening-2",
+    "term": "obey",
+    "pos": "verb",
+    "vi": "tuân theo",
+    "en": "To do what a rule or law says you must do.",
+    "example": "a way of making sure that everyone obeys them"
+  },
+  {
+    "part": "listening-2",
+    "term": "junction",
+    "pos": "noun",
+    "vi": "ngã giao nhau",
+    "en": "A place where two or more roads meet.",
+    "example": "at the junction with Station Road"
+  },
+  {
+    "part": "listening-2",
+    "term": "pedestrian crossing",
+    "pos": "noun",
+    "vi": "vạch qua đường cho người đi bộ",
+    "en": "A marked place where people on foot can cross the road.",
+    "example": "we definitely need a pedestrian crossing"
+  },
+  {
+    "part": "listening-2",
+    "term": "regulate",
+    "pos": "verb",
+    "vi": "điều tiết",
+    "en": "To control something so it works in an orderly way.",
+    "example": "To regulate the flow of traffic along the High Street"
+  },
+  {
+    "part": "listening-2",
+    "term": "forbid",
+    "pos": "verb",
+    "vi": "cấm",
+    "en": "To say officially that something must not be done.",
+    "example": "forbidding parking for 25 meters"
+  },
+  {
+    "part": "listening-2",
+    "term": "lorry",
+    "pos": "noun",
+    "vi": "xe tải",
+    "en": "A large vehicle for carrying goods by road.",
+    "example": "lorries also use those spaces"
+  },
+  {
+    "part": "listening-2",
+    "term": "widen",
+    "pos": "verb",
+    "vi": "mở rộng",
+    "en": "To make something wider.",
+    "example": "We also plan to widen the pavement on School Road"
+  },
+  {
+    "part": "listening-2",
+    "term": "restriction",
+    "pos": "noun",
+    "vi": "hạn chế, quy định cấm",
+    "en": "A rule that limits what people can do.",
+    "example": "new restrictions on loading and unloading"
+  },
+  {
+    "part": "listening-3",
+    "term": "germination",
+    "pos": "noun",
+    "vi": "sự nảy mầm",
+    "en": "The process by which a seed begins to grow into a plant.",
+    "example": "seed germination, how a seed begins to grow"
+  },
+  {
+    "part": "listening-3",
+    "term": "dissertation",
+    "pos": "noun",
+    "vi": "luận văn",
+    "en": "A long piece of academic writing for a university degree.",
+    "example": "I don't have to do a dissertation module"
+  },
+  {
+    "part": "listening-3",
+    "term": "ambitious",
+    "pos": "adjective",
+    "vi": "đầy tham vọng, khó khăn lớn",
+    "en": "Needing a lot of effort or skill to achieve.",
+    "example": "it's not very ambitious"
+  },
+  {
+    "part": "listening-3",
+    "term": "genetically modified",
+    "pos": "adjective",
+    "vi": "biến đổi gen",
+    "en": "Having had its genes changed artificially.",
+    "example": "recent findings on genetically modified seeds"
+  },
+  {
+    "part": "listening-3",
+    "term": "proportion",
+    "pos": "noun",
+    "vi": "tỷ lệ",
+    "en": "A part of a whole, often given as a percentage.",
+    "example": "the proportion of seeds that germinated"
+  },
+  {
+    "part": "listening-3",
+    "term": "illustration",
+    "pos": "noun",
+    "vi": "hình minh họa",
+    "en": "A picture or diagram that explains a text.",
+    "example": "the illustrations of early stages of plant development"
+  },
+  {
+    "part": "listening-3",
+    "term": "procedure",
+    "pos": "noun",
+    "vi": "quy trình, các bước tiến hành",
+    "en": "The set of steps for doing an experiment or task.",
+    "example": "have a look at the procedure for our experiment"
+  },
+  {
+    "part": "listening-4",
+    "term": "adapt",
+    "pos": "verb",
+    "vi": "thích nghi",
+    "en": "To change in order to cope with a new situation.",
+    "example": "how animals are adapting to urban environments"
+  },
+  {
+    "part": "listening-4",
+    "term": "upheaval",
+    "pos": "noun",
+    "vi": "biến động lớn",
+    "en": "A sudden and great change or disturbance.",
+    "example": "urban environments represent huge upheavals"
+  },
+  {
+    "part": "listening-4",
+    "term": "perch",
+    "pos": "verb",
+    "vi": "đậu (trên cành, gờ)",
+    "en": "To sit on a high narrow place such as a branch or ledge.",
+    "example": "they're able to perch on ledges on the walls"
+  },
+  {
+    "part": "listening-4",
+    "term": "specimen",
+    "pos": "noun",
+    "vi": "mẫu vật",
+    "en": "An animal or plant collected as an example for study.",
+    "example": "looked at specimens of urbanized small mammals"
+  },
+  {
+    "part": "listening-4",
+    "term": "rural",
+    "pos": "adjective",
+    "vi": "thuộc nông thôn",
+    "en": "Relating to the countryside rather than towns.",
+    "example": "compared to rural mammals"
+  },
+  {
+    "part": "listening-4",
+    "term": "cognitive",
+    "pos": "adjective",
+    "vi": "thuộc nhận thức",
+    "en": "Connected with thinking and understanding.",
+    "example": "something cognitive was going on"
+  },
+  {
+    "part": "listening-4",
+    "term": "bold",
+    "pos": "adjective",
+    "vi": "táo bạo, liều lĩnh",
+    "en": "Not afraid of danger or of taking risks.",
+    "example": "the urban blackbirds tend to be quite bold"
+  },
+  {
+    "part": "listening-4",
+    "term": "counterpart",
+    "pos": "noun",
+    "vi": "đối tượng tương ứng",
+    "en": "A person or thing that has the same role in another group.",
+    "example": "frighten away their country counterparts"
+  },
+  {
+    "part": "listening-4",
+    "term": "hormone",
+    "pos": "noun",
+    "vi": "hoóc-môn",
+    "en": "A chemical made in the body that controls a function.",
+    "example": "reducing the amount of hormones such as corticosterone"
+  },
+  {
+    "part": "listening-4",
+    "term": "prevalent",
+    "pos": "adjective",
+    "vi": "phổ biến, thường gặp",
+    "en": "Happening or existing widely in a particular place.",
+    "example": "it's much more prevalent in cities"
+  },
+  {
+    "part": "listening-4",
+    "term": "implication",
+    "pos": "noun",
+    "vi": "hệ quả, tác động",
+    "en": "A possible effect or result of something.",
+    "example": "what are the long-term implications of this"
+  },
+  {
+    "part": "listening-4",
+    "term": "accustomed to",
+    "pos": "phrase",
+    "vi": "quen với",
+    "en": "Used to something so that it no longer seems strange.",
+    "example": "Once the animals got accustomed to its new environment"
+  },
+  {
+    "part": "reading-1",
+    "term": "gross domestic product",
+    "pos": "noun",
+    "vi": "tổng sản phẩm quốc nội (GDP)",
+    "en": "The total value of goods and services a country produces in a year.",
+    "example": "Tourism currently makes up 9% of the country's gross domestic product"
+  },
+  {
+    "part": "reading-1",
+    "term": "exhilarating",
+    "pos": "adjective",
+    "vi": "phấn khích, kích thích",
+    "en": "Making you feel very happy, excited and full of energy.",
+    "example": "exhilarating outdoor activities"
+  },
+  {
+    "part": "reading-1",
+    "term": "authentic",
+    "pos": "adjective",
+    "vi": "chân thực, đích thực",
+    "en": "Genuine and true to the original.",
+    "example": "authentic Maori culture"
+  },
+  {
+    "part": "reading-1",
+    "term": "itinerary",
+    "pos": "noun",
+    "vi": "lịch trình chuyến đi",
+    "en": "A detailed plan of a journey.",
+    "example": "devise their own customised itineraries"
+  },
+  {
+    "part": "reading-1",
+    "term": "devise",
+    "pos": "verb",
+    "vi": "nghĩ ra, thiết kế",
+    "en": "To invent or plan something using your own ideas.",
+    "example": "devise their own customised itineraries"
+  },
+  {
+    "part": "reading-1",
+    "term": "expenditure",
+    "pos": "noun",
+    "vi": "chi tiêu",
+    "en": "The total amount of money spent.",
+    "example": "Overall tourism expenditure increased by an average of 6.9% per year"
+  },
+  {
+    "part": "reading-1",
+    "term": "infrastructure",
+    "pos": "noun",
+    "vi": "cơ sở hạ tầng",
+    "en": "The basic systems such as roads and transport a country needs.",
+    "example": "a reliable transport infrastructure"
+  },
+  {
+    "part": "reading-1",
+    "term": "user-friendly",
+    "pos": "adjective",
+    "vi": "dễ sử dụng",
+    "en": "Easy for people to use or understand.",
+    "example": "a comprehensive and user-friendly website"
+  },
+  {
+    "part": "reading-2",
+    "term": "apathy",
+    "pos": "noun",
+    "vi": "sự thờ ơ",
+    "en": "A feeling of not being interested in or enthusiastic about anything.",
+    "example": "frustration, apathy, depression and indifference"
+  },
+  {
+    "part": "reading-2",
+    "term": "arousal",
+    "pos": "noun",
+    "vi": "mức độ kích thích, hưng phấn",
+    "en": "A state of being mentally alert and excited.",
+    "example": "measures low to high arousal"
+  },
+  {
+    "part": "reading-2",
+    "term": "adaptive",
+    "pos": "adjective",
+    "vi": "có tính thích nghi (có lợi cho sự sống)",
+    "en": "Helping a living thing to cope with its environment.",
+    "example": "That doesn't necessarily mean that it isn't adaptive"
+  },
+  {
+    "part": "reading-2",
+    "term": "fester",
+    "pos": "verb",
+    "vi": "để mưng mủ, ngày càng tệ đi",
+    "en": "To become worse because it is left without attention.",
+    "example": "it can still be toxic if allowed to fester"
+  },
+  {
+    "part": "reading-2",
+    "term": "toxic",
+    "pos": "adjective",
+    "vi": "độc hại",
+    "en": "Harmful or poisonous.",
+    "example": "it can still be toxic if allowed to fester"
+  },
+  {
+    "part": "reading-2",
+    "term": "proneness",
+    "pos": "noun",
+    "vi": "xu hướng dễ bị (chán)",
+    "en": "The tendency to be likely to experience something.",
+    "example": "Boredom proneness has been linked with a variety of traits"
+  },
+  {
+    "part": "reading-2",
+    "term": "detrimental",
+    "pos": "adjective",
+    "vi": "có hại",
+    "en": "Causing harm or damage.",
+    "example": "boredom has detrimental effects"
+  },
+  {
+    "part": "reading-2",
+    "term": "overstimulation",
+    "pos": "noun",
+    "vi": "sự kích thích quá mức",
+    "en": "Too much stimulation, so that the mind becomes tired.",
+    "example": "there is a lot of overstimulation"
+  },
+  {
+    "part": "reading-3",
+    "term": "enraptured",
+    "pos": "adjective",
+    "vi": "say mê, mê mẩn",
+    "en": "Filled with great delight and fascination.",
+    "example": "Classical music by an artificial composer has had audiences enraptured"
+  },
+  {
+    "part": "reading-3",
+    "term": "prestigious",
+    "pos": "adjective",
+    "vi": "có uy tín, danh giá",
+    "en": "Respected and admired because of high quality or status.",
+    "example": "hung in prestigious galleries"
+  },
+  {
+    "part": "reading-3",
+    "term": "exhibit",
+    "pos": "verb",
+    "vi": "trưng bày",
+    "en": "To show something publicly in a gallery or museum.",
+    "example": "a robot that has had paintings exhibited in London's Tate Modern"
+  },
+  {
+    "part": "reading-3",
+    "term": "trawl",
+    "pos": "verb",
+    "vi": "lục soát, rà tìm kỹ",
+    "en": "To search through a large amount of material.",
+    "example": "trawls through social media sites"
+  },
+  {
+    "part": "reading-3",
+    "term": "double standard",
+    "pos": "noun",
+    "vi": "tiêu chuẩn kép",
+    "en": "A rule applied more strictly to one group than to another.",
+    "example": "people's double standards towards software-produced and human-produced art"
+  },
+  {
+    "part": "reading-3",
+    "term": "revered",
+    "pos": "adjective",
+    "vi": "được tôn kính",
+    "en": "Greatly respected and admired.",
+    "example": "the most revered classical composers"
+  },
+  {
+    "part": "reading-3",
+    "term": "recoil",
+    "pos": "verb",
+    "vi": "giật mình, ghê sợ quay đi",
+    "en": "To react with shock or disgust and move away.",
+    "example": "recoil when they discovered how it was composed"
+  },
+  {
+    "part": "reading-3",
+    "term": "prejudice",
+    "pos": "noun",
+    "vi": "định kiến",
+    "en": "An unfair opinion formed without good reason.",
+    "example": "Where does this prejudice come from"
+  },
+  {
+    "part": "reading-3",
+    "term": "objective",
+    "pos": "adjective",
+    "vi": "khách quan",
+    "en": "Based on facts rather than personal feelings.",
+    "example": "who might have been expected to be more objective in their analyses"
+  },
+  {
+    "part": "writing-1",
+    "term": "intersect",
+    "pos": "verb",
+    "vi": "giao nhau, cắt nhau",
+    "en": "To cross or meet at a point.",
+    "example": "Hospital Road intersected with City Road"
+  },
+  {
+    "part": "writing-1",
+    "term": "roundabout",
+    "pos": "noun",
+    "vi": "bùng binh, vòng xoay",
+    "en": "A circular junction where traffic moves around a central island.",
+    "example": "A roundabout was added at the junction of Hospital Road and City Road"
+  },
+  {
+    "part": "writing-1",
+    "term": "convert",
+    "pos": "verb",
+    "vi": "chuyển đổi (công năng)",
+    "en": "To change something into a different use or form.",
+    "example": "The original car park was converted into staff-only parking"
+  },
+  {
+    "part": "writing-2",
+    "term": "nuanced",
+    "pos": "adjective",
+    "vi": "tinh tế, nhiều sắc thái",
+    "en": "Showing small and subtle differences in meaning.",
+    "example": "forming meaningful relationships requires nuanced communication"
+  },
+  {
+    "part": "writing-2",
+    "term": "isolation",
+    "pos": "noun",
+    "vi": "sự cô lập, cô đơn",
+    "en": "The state of being alone and separate from others.",
+    "example": "leading to isolation"
+  },
+  {
+    "part": "writing-2",
+    "term": "compound",
+    "pos": "verb",
+    "vi": "làm trầm trọng thêm",
+    "en": "To make a problem worse by adding to it.",
+    "example": "particularly when cultural differences compound language gaps"
+  },
+  {
+    "part": "writing-2",
+    "term": "hazard",
+    "pos": "noun",
+    "vi": "mối nguy hiểm",
+    "en": "Something that may cause danger or harm.",
+    "example": "become potential hazards without language proficiency"
+  },
+  {
+    "part": "writing-2",
+    "term": "proficiency",
+    "pos": "noun",
+    "vi": "trình độ thành thạo",
+    "en": "A high level of skill in something.",
+    "example": "without language proficiency"
+  }
+]

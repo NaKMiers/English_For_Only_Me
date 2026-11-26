@@ -1,0 +1,562 @@
+[
+  {
+    "part": "listening-1",
+    "term": "survey",
+    "pos": "noun",
+    "vi": "cuộc khảo sát",
+    "en": "A set of questions asked to many people to find out their opinions or habits.",
+    "example": "I'm doing a survey of shoppers in Broadbeach."
+  },
+  {
+    "part": "listening-1",
+    "term": "council",
+    "pos": "noun",
+    "vi": "hội đồng thành phố, chính quyền địa phương",
+    "en": "The group of elected people who run a town or local area.",
+    "example": "I have a job interview at the council in a few days."
+  },
+  {
+    "part": "listening-1",
+    "term": "spare part",
+    "pos": "phrase",
+    "vi": "phụ tùng thay thế",
+    "en": "A replacement piece for a machine or device.",
+    "example": "They had to order a spare part"
+  },
+  {
+    "part": "listening-1",
+    "term": "entertainment facilities",
+    "pos": "phrase",
+    "vi": "cơ sở giải trí",
+    "en": "Places and equipment where people can enjoy themselves, such as a cinema.",
+    "example": "And what about the entertainment facilities?"
+  },
+  {
+    "part": "listening-2",
+    "term": "exhibition",
+    "pos": "noun",
+    "vi": "triển lãm",
+    "en": "A public show where products or works are displayed.",
+    "example": "telling you about our annual business exhibition."
+  },
+  {
+    "part": "listening-2",
+    "term": "exhibit",
+    "pos": "verb",
+    "vi": "trưng bày, tham gia triển lãm",
+    "en": "To show something publicly at an event.",
+    "example": "who's exhibited with us for the past two years."
+  },
+  {
+    "part": "listening-2",
+    "term": "innovation",
+    "pos": "noun",
+    "vi": "sự đổi mới, sáng kiến",
+    "en": "A new idea, method or product.",
+    "example": "the very best speakers, features and innovations."
+  },
+  {
+    "part": "listening-2",
+    "term": "sponsor",
+    "pos": "verb",
+    "vi": "tài trợ",
+    "en": "To pay for an event or activity in return for publicity.",
+    "example": "we also sponsored the innovative Business Connections Zone"
+  },
+  {
+    "part": "listening-2",
+    "term": "corporate profile",
+    "pos": "phrase",
+    "vi": "mức độ nhận diện của công ty",
+    "en": "How well known and how highly regarded a company is.",
+    "example": "And that also effectively raised our corporate profile."
+  },
+  {
+    "part": "listening-2",
+    "term": "publicize",
+    "pos": "verb",
+    "vi": "quảng bá, công khai",
+    "en": "To tell the public about something so that it gets attention.",
+    "example": "a unique chance to publicize your company."
+  },
+  {
+    "part": "listening-2",
+    "term": "keynote speaker",
+    "pos": "phrase",
+    "vi": "diễn giả chính",
+    "en": "The main speaker at a conference, who sets the theme.",
+    "example": "Now let me tell you about some of our keynote speakers for this year's exhibition."
+  },
+  {
+    "part": "listening-2",
+    "term": "sensation",
+    "pos": "noun",
+    "vi": "hiện tượng gây xôn xao",
+    "en": "Something that causes great excitement or interest.",
+    "example": "Rather to his surprise, this became a bit of a sensation"
+  },
+  {
+    "part": "listening-2",
+    "term": "inspirational",
+    "pos": "adjective",
+    "vi": "truyền cảm hứng",
+    "en": "Giving people the wish to do something good or ambitious.",
+    "example": "will be giving an inspirational talk"
+  },
+  {
+    "part": "listening-2",
+    "term": "go from strength to strength",
+    "pos": "phrase",
+    "vi": "ngày càng phát triển, thành công hơn",
+    "en": "To become more and more successful.",
+    "example": "David's company has gone from strength to strength"
+  },
+  {
+    "part": "listening-2",
+    "term": "down-to-earth",
+    "pos": "adjective",
+    "vi": "thực tế, giản dị",
+    "en": "Practical and sensible, not pretending to be special.",
+    "example": "who's known for her down-to-earth attitude."
+  },
+  {
+    "part": "listening-2",
+    "term": "turn around",
+    "pos": "phrase",
+    "vi": "xoay chuyển (tình hình kinh doanh)",
+    "en": "To make a failing or changing business successful in a new way.",
+    "example": "has turned around this business from a major publishing business"
+  },
+  {
+    "part": "listening-2",
+    "term": "obstacle",
+    "pos": "noun",
+    "vi": "trở ngại",
+    "en": "Something that makes it difficult to achieve a goal.",
+    "example": "an interactive look at different obstacles in people's own lives"
+  },
+  {
+    "part": "listening-3",
+    "term": "evaluate",
+    "pos": "verb",
+    "vi": "đánh giá",
+    "en": "To judge how good or useful something is.",
+    "example": "It's more a matter of reporting and evaluating possible developments."
+  },
+  {
+    "part": "listening-3",
+    "term": "intergenerational",
+    "pos": "adjective",
+    "vi": "liên thế hệ",
+    "en": "Involving people of different age groups, such as grandparents and grandchildren.",
+    "example": "But I think your suggestion about intergenerational living might be more interesting."
+  },
+  {
+    "part": "listening-3",
+    "term": "urban",
+    "pos": "adjective",
+    "vi": "thuộc đô thị",
+    "en": "Relating to towns and cities.",
+    "example": "the future demand is mainly going to be for accommodation in urban areas."
+  },
+  {
+    "part": "listening-3",
+    "term": "multi-storey",
+    "pos": "adjective",
+    "vi": "nhiều tầng",
+    "en": "Having many floors.",
+    "example": "But I think the solution is to design multi-storey apartment blocks."
+  },
+  {
+    "part": "listening-3",
+    "term": "high-rise",
+    "pos": "noun",
+    "vi": "tòa nhà cao tầng",
+    "en": "A very tall building with many floors.",
+    "example": "increased use of roof space on high-rise buildings for gardens?"
+  },
+  {
+    "part": "listening-3",
+    "term": "suburb",
+    "pos": "noun",
+    "vi": "vùng ngoại ô",
+    "en": "An area on the edge of a city where many people live.",
+    "example": "You can do it on a one-story building in a suburb."
+  },
+  {
+    "part": "listening-3",
+    "term": "balcony",
+    "pos": "noun",
+    "vi": "ban công",
+    "en": "A platform on the outside wall of a building, with a rail around it.",
+    "example": "Especially if you don't have a balcony."
+  },
+  {
+    "part": "listening-3",
+    "term": "movable",
+    "pos": "adjective",
+    "vi": "có thể di chuyển được",
+    "en": "Able to be moved from one place to another.",
+    "example": "where the internal walls of an apartment are movable."
+  },
+  {
+    "part": "listening-3",
+    "term": "pedestrianized",
+    "pos": "adjective",
+    "vi": "dành riêng cho người đi bộ",
+    "en": "Closed to traffic so that only people on foot can use it.",
+    "example": "So the center was all a pedestrianized area."
+  },
+  {
+    "part": "listening-3",
+    "term": "communal",
+    "pos": "adjective",
+    "vi": "chung, cộng đồng",
+    "en": "Shared by a group of people.",
+    "example": "I saw a scheme for communal vegetable plots"
+  },
+  {
+    "part": "listening-4",
+    "term": "surgery",
+    "pos": "noun",
+    "vi": "phẫu thuật",
+    "en": "Medical treatment in which a doctor cuts open the body.",
+    "example": "how music therapy can be used to help patients who undergo surgery."
+  },
+  {
+    "part": "listening-4",
+    "term": "undergo",
+    "pos": "verb",
+    "vi": "trải qua (ca phẫu thuật, điều trị)",
+    "en": "To experience something, especially a medical treatment.",
+    "example": "most people undergo a surgical procedure at some point in their lives."
+  },
+  {
+    "part": "listening-4",
+    "term": "physiotherapy",
+    "pos": "noun",
+    "vi": "vật lý trị liệu",
+    "en": "Treatment of injury or illness using exercise and massage.",
+    "example": "such as physiotherapy to aid their recovery."
+  },
+  {
+    "part": "listening-4",
+    "term": "administer",
+    "pos": "verb",
+    "vi": "cho dùng (thuốc), thực hiện",
+    "en": "To give a medicine to someone.",
+    "example": "And this can be administered to patients in the short, medium or longer term"
+  },
+  {
+    "part": "listening-4",
+    "term": "post-operative",
+    "pos": "adjective",
+    "vi": "sau phẫu thuật",
+    "en": "Happening or done after a surgical operation.",
+    "example": "who were played recorded music as part of their post-operative care."
+  },
+  {
+    "part": "listening-4",
+    "term": "anxiety",
+    "pos": "noun",
+    "vi": "sự lo âu",
+    "en": "A feeling of worry or nervousness.",
+    "example": "either they had no feelings of anxiety at any point"
+  },
+  {
+    "part": "listening-4",
+    "term": "general anesthetic",
+    "pos": "phrase",
+    "vi": "thuốc gây mê toàn thân",
+    "en": "A drug that makes a patient unconscious during an operation.",
+    "example": "it even worked when patients were played music under general anesthetic"
+  },
+  {
+    "part": "listening-4",
+    "term": "distraction",
+    "pos": "noun",
+    "vi": "sự đánh lạc hướng, xao nhãng",
+    "en": "Something that takes your attention away from something else.",
+    "example": "But the researchers came to the conclusion that it worked on patients by distraction."
+  },
+  {
+    "part": "listening-4",
+    "term": "ward",
+    "pos": "noun",
+    "vi": "phòng bệnh, khu điều trị",
+    "en": "A room in a hospital with beds for patients.",
+    "example": "or as soon as they arrive back onto the ward."
+  },
+  {
+    "part": "reading-1",
+    "term": "aquatic",
+    "pos": "adjective",
+    "vi": "sống dưới nước, thủy sinh",
+    "en": "Living or growing in water.",
+    "example": "an aquatic plant native to South America"
+  },
+  {
+    "part": "reading-1",
+    "term": "obstruct",
+    "pos": "verb",
+    "vi": "gây tắc nghẽn, cản trở",
+    "en": "To block something so that it is hard to pass through or move.",
+    "example": "started obstructing major dams and rivers."
+  },
+  {
+    "part": "reading-1",
+    "term": "predator",
+    "pos": "noun",
+    "vi": "kẻ săn mồi, thiên địch",
+    "en": "An animal that hunts and eats other animals.",
+    "example": "with no natural predators and perfect temperature conditions"
+  },
+  {
+    "part": "reading-1",
+    "term": "decaying",
+    "pos": "adjective",
+    "vi": "đang phân hủy, mục nát",
+    "en": "Slowly rotting or breaking down.",
+    "example": "But buried in those decaying waxy leaves was a renewable energy gold mine."
+  },
+  {
+    "part": "reading-1",
+    "term": "biofuel",
+    "pos": "noun",
+    "vi": "nhiên liệu sinh học",
+    "en": "Fuel made from plants or other living material.",
+    "example": "they began to explore its potential as a biofuel."
+  },
+  {
+    "part": "reading-1",
+    "term": "manure",
+    "pos": "noun",
+    "vi": "phân chuồng",
+    "en": "Animal waste used to help plants grow.",
+    "example": "manure worked to improve the process of converting the weed into gas."
+  },
+  {
+    "part": "reading-1",
+    "term": "digester",
+    "pos": "noun",
+    "vi": "bể ủ khí sinh học",
+    "en": "A machine in which waste breaks down to produce gas.",
+    "example": "The community received a pair of donated biogas digesters"
+  },
+  {
+    "part": "reading-1",
+    "term": "fermentation",
+    "pos": "noun",
+    "vi": "quá trình lên men",
+    "en": "A chemical change in which organic matter breaks down, often producing gas.",
+    "example": "it goes through a fermentation process and breaks down"
+  },
+  {
+    "part": "reading-1",
+    "term": "respiratory",
+    "pos": "adjective",
+    "vi": "thuộc hô hấp",
+    "en": "Relating to breathing.",
+    "example": "families who switch to the smokeless cooking method could expect fewer respiratory diseases."
+  },
+  {
+    "part": "reading-1",
+    "term": "affordability",
+    "pos": "noun",
+    "vi": "khả năng chi trả",
+    "en": "How easy it is for people to pay for something.",
+    "example": "Kanyiva says affordability is a challenge worth addressing"
+  },
+  {
+    "part": "reading-2",
+    "term": "multilingualism",
+    "pos": "noun",
+    "vi": "đa ngôn ngữ",
+    "en": "The ability to use several languages, or a society where many are spoken.",
+    "example": "How could multilingualism benefit India's poorest schoolchildren?"
+  },
+  {
+    "part": "reading-2",
+    "term": "fluently",
+    "pos": "adverb",
+    "vi": "một cách trôi chảy",
+    "en": "Smoothly and easily, without stopping.",
+    "example": "cannot read a Standard 2 [seven-year-olds] task fluently"
+  },
+  {
+    "part": "reading-2",
+    "term": "drop out",
+    "pos": "phrase",
+    "vi": "bỏ học giữa chừng",
+    "en": "To leave school or a course before finishing.",
+    "example": "low educational achievement can lead to many of these students dropping out of school"
+  },
+  {
+    "part": "reading-2",
+    "term": "disproportionately",
+    "pos": "adverb",
+    "vi": "không cân xứng, ở mức cao hơn tỷ lệ",
+    "en": "To a greater or smaller degree than is fair or expected.",
+    "example": "a problem disproportionately affecting female students."
+  },
+  {
+    "part": "reading-2",
+    "term": "slum",
+    "pos": "noun",
+    "vi": "khu ổ chuột",
+    "en": "A very crowded, poor area of a city with bad living conditions.",
+    "example": "They are so poor they have to live in slums"
+  },
+  {
+    "part": "reading-2",
+    "term": "medium of instruction",
+    "pos": "phrase",
+    "vi": "ngôn ngữ giảng dạy",
+    "en": "The language that teachers use to teach in a school.",
+    "example": "the medium of instruction used in schools, especially English"
+  },
+  {
+    "part": "reading-2",
+    "term": "tailoring",
+    "pos": "noun",
+    "vi": "việc điều chỉnh cho phù hợp",
+    "en": "Adapting something to suit a particular person or need.",
+    "example": "There is perhaps too much uniformity in teaching and less tailoring to the children's language abilities and needs"
+  },
+  {
+    "part": "reading-2",
+    "term": "lag behind",
+    "pos": "phrase",
+    "vi": "tụt hậu so với",
+    "en": "To progress more slowly than others.",
+    "example": "do not seem to lag behind children from other urban poor backgrounds"
+  },
+  {
+    "part": "reading-2",
+    "term": "deprivation",
+    "pos": "noun",
+    "vi": "sự thiếu thốn",
+    "en": "A lack of the basic things people need, such as money or food.",
+    "example": "the challenging context of deprivation"
+  },
+  {
+    "part": "reading-2",
+    "term": "detriment",
+    "pos": "noun",
+    "vi": "sự thiệt hại, bất lợi",
+    "en": "Harm or damage.",
+    "example": "to the potential detriment of children unfamiliar with those languages"
+  },
+  {
+    "part": "reading-3",
+    "term": "obsessive",
+    "pos": "adjective",
+    "vi": "ám ảnh, đam mê quá mức",
+    "en": "Thinking about or doing something too much, as if you cannot stop.",
+    "example": "triggered an almost obsessive, decade-long journey"
+  },
+  {
+    "part": "reading-3",
+    "term": "bespoke",
+    "pos": "adjective",
+    "vi": "làm riêng theo yêu cầu",
+    "en": "Made specially for a particular customer.",
+    "example": "the world's only bespoke globemaking company."
+  },
+  {
+    "part": "reading-3",
+    "term": "shoddy",
+    "pos": "adjective",
+    "vi": "kém chất lượng, làm ẩu",
+    "en": "Badly made or of poor quality.",
+    "example": "Bellerby came across shoddy commercial versions designed for school classrooms"
+  },
+  {
+    "part": "reading-3",
+    "term": "thwart",
+    "pos": "verb",
+    "vi": "ngăn cản, làm thất bại",
+    "en": "To stop someone from doing what they planned.",
+    "example": "Not one to be easily thwarted"
+  },
+  {
+    "part": "reading-3",
+    "term": "abortive",
+    "pos": "adjective",
+    "vi": "thất bại, không đi đến đâu",
+    "en": "Failing to achieve the intended result.",
+    "example": "This series of abortive experiments taught Bellerby a lot"
+  },
+  {
+    "part": "reading-3",
+    "term": "painstaking",
+    "pos": "adjective",
+    "vi": "tỉ mỉ, công phu",
+    "en": "Done with great care and effort.",
+    "example": "Bellerby's frustration at the painstaking process of attaching the gores"
+  },
+  {
+    "part": "reading-3",
+    "term": "interspersed",
+    "pos": "adjective",
+    "vi": "xen kẽ",
+    "en": "Placed here and there among other things.",
+    "example": "is interspersed with a series of interludes on great globemakers of the past"
+  },
+  {
+    "part": "reading-3",
+    "term": "lament",
+    "pos": "noun",
+    "vi": "lời than tiếc, sự tiếc nuối",
+    "en": "An expression of sadness about something lost.",
+    "example": "Bellerby's book is also a lament for the fading away of centuries-old traditions."
+  },
+  {
+    "part": "reading-3",
+    "term": "serendipitously",
+    "pos": "adverb",
+    "vi": "một cách tình cờ may mắn",
+    "en": "By a happy accident.",
+    "example": "some simply dropping in, serendipitously, to his workshop"
+  },
+  {
+    "part": "reading-3",
+    "term": "moribund",
+    "pos": "adjective",
+    "vi": "gần như tàn lụi, sắp mai một",
+    "en": "Close to ending or dying out.",
+    "example": "who revived their almost moribund art."
+  },
+  {
+    "part": "writing-1",
+    "term": "constitute",
+    "pos": "verb",
+    "vi": "chiếm, cấu thành",
+    "en": "To form or make up a part of a whole.",
+    "example": "full-time undergraduates constitute the largest user group (44%)"
+  },
+  {
+    "part": "writing-1",
+    "term": "elicit",
+    "pos": "verb",
+    "vi": "gợi ra, thu được (phản hồi)",
+    "en": "To get a reaction or answer from someone.",
+    "example": "journal availability elicits the most negative response"
+  },
+  {
+    "part": "writing-2",
+    "term": "rote",
+    "pos": "noun",
+    "vi": "học vẹt",
+    "en": "Learning by repeating something many times without understanding it.",
+    "example": "far more effectively than rote memorisation."
+  },
+  {
+    "part": "writing-2",
+    "term": "marginalise",
+    "pos": "verb",
+    "vi": "gạt ra bên lề, coi nhẹ",
+    "en": "To treat something as unimportant.",
+    "example": "often marginalises play, which is equally critical for holistic child development."
+  }
+]

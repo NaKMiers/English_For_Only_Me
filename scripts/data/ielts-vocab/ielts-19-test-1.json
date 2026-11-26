@@ -1,0 +1,538 @@
+[
+  {
+    "part": "listening-1",
+    "term": "habitat",
+    "pos": "noun",
+    "vi": "môi trường sống (của động thực vật)",
+    "en": "The natural home of a plant or animal.",
+    "example": "There are three main types of habitat, wetland, grassland, and woodland."
+  },
+  {
+    "part": "listening-1",
+    "term": "extract",
+    "pos": "verb",
+    "vi": "khai thác, lấy ra (từ lòng đất)",
+    "en": "To take something out of the ground or another source.",
+    "example": "The original farmland was dug up around 40 years ago to extract gravel."
+  },
+  {
+    "part": "listening-1",
+    "term": "gravel",
+    "pos": "noun",
+    "vi": "sỏi",
+    "en": "Small stones used for paths and building.",
+    "example": "The original farmland was dug up around 40 years ago to extract gravel."
+  },
+  {
+    "part": "listening-1",
+    "term": "species",
+    "pos": "noun",
+    "vi": "loài (sinh vật)",
+    "en": "A group of living things of the same kind.",
+    "example": "A lot of different species of birds and insects, and also animals like deer and rabbits."
+  },
+  {
+    "part": "listening-1",
+    "term": "adapt",
+    "pos": "verb",
+    "vi": "điều chỉnh cho phù hợp",
+    "en": "To change something so that it suits a new purpose or situation.",
+    "example": "We can organize a wide range of activities, and adapt them to suit all ages."
+  },
+  {
+    "part": "listening-1",
+    "term": "navigate",
+    "pos": "verb",
+    "vi": "định hướng, tìm đường",
+    "en": "To find the way from one place to another.",
+    "example": "And using a compass to navigate around the park."
+  },
+  {
+    "part": "listening-1",
+    "term": "compass",
+    "pos": "noun",
+    "vi": "la bàn",
+    "en": "A tool with a needle that shows direction.",
+    "example": "And using a compass to navigate around the park."
+  },
+  {
+    "part": "listening-2",
+    "term": "twinning",
+    "pos": "noun",
+    "vi": "kết nghĩa (giữa hai thành phố)",
+    "en": "A formal link between two towns in different countries.",
+    "example": "Since the twinning link between our two towns, Stanthorpe here in England, and Malatte in France was established, the relationship between the towns has gone from strength to strength."
+  },
+  {
+    "part": "listening-2",
+    "term": "go from strength to strength",
+    "pos": "phrase",
+    "vi": "ngày càng thành công, phát triển mạnh",
+    "en": "To become more and more successful.",
+    "example": "The relationship between the towns has gone from strength to strength."
+  },
+  {
+    "part": "listening-2",
+    "term": "fund raising",
+    "pos": "noun",
+    "vi": "gây quỹ",
+    "en": "The activity of collecting money for a cause or group.",
+    "example": "In terms of fund raising to support our activities, we've done very well."
+  },
+  {
+    "part": "listening-2",
+    "term": "venue",
+    "pos": "noun",
+    "vi": "địa điểm tổ chức (sự kiện)",
+    "en": "The place where an event happens.",
+    "example": "Numbers for our film show were limited because of the venue, so we're looking for somewhere bigger next year."
+  },
+  {
+    "part": "listening-2",
+    "term": "host",
+    "pos": "verb",
+    "vi": "tiếp đón, làm chủ nhà",
+    "en": "To receive guests and look after them.",
+    "example": "I know that many of you here will be hosting individuals or families."
+  },
+  {
+    "part": "listening-2",
+    "term": "mobile",
+    "pos": "adjective",
+    "vi": "đi lại được, vận động được",
+    "en": "Able to move around easily.",
+    "example": "I know that one or two of our visitors may not be all that mobile."
+  },
+  {
+    "part": "listening-2",
+    "term": "kitchen garden",
+    "pos": "noun",
+    "vi": "vườn rau và cây ăn quả",
+    "en": "A garden where vegetables, fruit and herbs are grown for the house.",
+    "example": "The kitchen gardens are rectangular and surrounded by a wall."
+  },
+  {
+    "part": "listening-3",
+    "term": "vegan",
+    "pos": "adjective",
+    "vi": "thuần chay (không dùng sản phẩm động vật)",
+    "en": "Not using any animal products.",
+    "example": "You're making a vegan alternative to eggs, aren't you?"
+  },
+  {
+    "part": "listening-3",
+    "term": "stale",
+    "pos": "adjective",
+    "vi": "cũ, không còn tươi (bánh mì)",
+    "en": "No longer fresh, especially of bread.",
+    "example": "The basic process was quite straightforward, breaking the stale bread down to a paste, then reforming it."
+  },
+  {
+    "part": "listening-3",
+    "term": "appetizing",
+    "pos": "adjective",
+    "vi": "hấp dẫn, ngon mắt",
+    "en": "Looking or smelling good to eat.",
+    "example": "It must have been a great feeling to make something appetizing out of bits of old bread that would have been thrown away otherwise."
+  },
+  {
+    "part": "listening-3",
+    "term": "sensor",
+    "pos": "noun",
+    "vi": "cảm biến",
+    "en": "A device that detects physical changes such as touch or heat.",
+    "example": "It was a company that's developed touch sensitive sensors for food labels."
+  },
+  {
+    "part": "listening-3",
+    "term": "visually impaired",
+    "pos": "adjective",
+    "vi": "khiếm thị",
+    "en": "Having poor sight or being unable to see.",
+    "example": "It started off as a project to help visually impaired people."
+  },
+  {
+    "part": "listening-3",
+    "term": "proactive",
+    "pos": "adjective",
+    "vi": "chủ động",
+    "en": "Taking action to make things happen rather than waiting.",
+    "example": "Yes, they need to be more proactive to address that, and somehow motivate consumers to change, yes."
+  },
+  {
+    "part": "listening-3",
+    "term": "intolerance",
+    "pos": "noun",
+    "vi": "chứng không dung nạp (thực phẩm)",
+    "en": "A medical condition in which the body reacts badly to a certain food.",
+    "example": "For people with allergies or food intolerances."
+  },
+  {
+    "part": "listening-3",
+    "term": "diagnose",
+    "pos": "verb",
+    "vi": "chẩn đoán",
+    "en": "To identify an illness by examining a patient.",
+    "example": "Yes, even if they haven't been diagnosed with an allergy."
+  },
+  {
+    "part": "listening-3",
+    "term": "ghost kitchen",
+    "pos": "noun",
+    "vi": "bếp ma (bếp chỉ nấu đồ giao đi)",
+    "en": "A cooking facility that makes meals only for delivery, not for customers to visit.",
+    "example": "Did the article mention ghost kitchens used to produce takeaway food?"
+  },
+  {
+    "part": "listening-4",
+    "term": "neolithic",
+    "pos": "adjective",
+    "vi": "thuộc thời kỳ đồ đá mới",
+    "en": "Relating to the later Stone Age, when farming began.",
+    "example": "I'm going to talk about the Céide Fields in the northwest of Ireland, one of the largest Neolithic sites in the world."
+  },
+  {
+    "part": "listening-4",
+    "term": "bog",
+    "pos": "noun",
+    "vi": "đầm lầy than bùn",
+    "en": "Wet, spongy ground made of dead plants.",
+    "example": "He noticed that when local people were digging in the bog, they were constantly hitting against what seemed to be rows of stones."
+  },
+  {
+    "part": "listening-4",
+    "term": "predate",
+    "pos": "verb",
+    "vi": "có trước, xuất hiện sớm hơn",
+    "en": "To exist or happen before something else.",
+    "example": "They must be thousands of years old for them to predate the bog which subsequently grew over them."
+  },
+  {
+    "part": "listening-4",
+    "term": "carbon dating",
+    "pos": "noun",
+    "vi": "xác định niên đại bằng carbon",
+    "en": "A method of finding the age of old objects by measuring carbon.",
+    "example": "Carbon dating later proved that the site was over 5,000 years old,"
+  },
+  {
+    "part": "listening-4",
+    "term": "saturated",
+    "pos": "adjective",
+    "vi": "bão hòa, thấm đẫm nước",
+    "en": "Completely full of water.",
+    "example": "A bog is 90% water, its soil so saturated that when the grasses and heathers that grow on its surface die, they don't fully decay, but accumulate in layers."
+  },
+  {
+    "part": "listening-4",
+    "term": "accumulate",
+    "pos": "verb",
+    "vi": "tích tụ",
+    "en": "To gradually build up in amount.",
+    "example": "They don't fully decay, but accumulate in layers."
+  },
+  {
+    "part": "listening-4",
+    "term": "peat",
+    "pos": "noun",
+    "vi": "than bùn",
+    "en": "Dark soil made of partly rotted plants, found in bogs.",
+    "example": "Objects remain so well preserved in these conditions because of the acidity of the peat, and the deficiency of oxygen."
+  },
+  {
+    "part": "listening-4",
+    "term": "deficiency",
+    "pos": "noun",
+    "vi": "sự thiếu hụt",
+    "en": "A lack of something that is needed.",
+    "example": "Objects remain so well preserved in these conditions because of the acidity of the peat, and the deficiency of oxygen."
+  },
+  {
+    "part": "listening-4",
+    "term": "innovation",
+    "pos": "noun",
+    "vi": "sự đổi mới, phát minh mới",
+    "en": "A new idea, method or invention.",
+    "example": "This is one of many innovations, and indicates that the Neolithic farmers were the first people to cook indoors."
+  },
+  {
+    "part": "listening-4",
+    "term": "paddock",
+    "pos": "noun",
+    "vi": "bãi quây nuôi gia súc",
+    "en": "A small field where animals are kept.",
+    "example": "It's thought that the Céide fields were mainly used as paddocks for animals to graze in."
+  },
+  {
+    "part": "listening-4",
+    "term": "graze",
+    "pos": "verb",
+    "vi": "gặm cỏ, chăn thả",
+    "en": "To eat grass in a field.",
+    "example": "It's thought that the Céide fields were mainly used as paddocks for animals to graze in."
+  },
+  {
+    "part": "listening-4",
+    "term": "rotational grazing",
+    "pos": "noun",
+    "vi": "chăn thả luân phiên",
+    "en": "Moving animals between fields in turn so that grass can regrow.",
+    "example": "They may have used a system of rotational grazing in order to prevent overgrazing and to allow for plant recovery and regrowth."
+  },
+  {
+    "part": "listening-4",
+    "term": "sustainable",
+    "pos": "adjective",
+    "vi": "bền vững",
+    "en": "Able to continue over a long time without causing damage.",
+    "example": "The crop rotation system was partly responsible for this, as it would have been very intensive and was not sustainable."
+  },
+  {
+    "part": "reading-1",
+    "term": "tweak",
+    "pos": "verb",
+    "vi": "chỉnh nhẹ, tinh chỉnh",
+    "en": "To make a small change to improve something.",
+    "example": "The modification that Murray made is just one of a number of options available to players looking to tweak their rackets in order to improve their games."
+  },
+  {
+    "part": "reading-1",
+    "term": "customise",
+    "pos": "verb",
+    "vi": "tùy chỉnh theo yêu cầu riêng",
+    "en": "To change something to fit a person's needs.",
+    "example": "Touring professionals have their rackets customised to their specific needs."
+  },
+  {
+    "part": "reading-1",
+    "term": "synthetic",
+    "pos": "adjective",
+    "vi": "tổng hợp, nhân tạo",
+    "en": "Made by people from chemicals, not natural.",
+    "example": "In 2012 he switched to a synthetic string for the mains."
+  },
+  {
+    "part": "reading-1",
+    "term": "durable",
+    "pos": "adjective",
+    "vi": "bền",
+    "en": "Lasting a long time without being damaged.",
+    "example": "This all changed in the early 1990s with the development of synthetic strings that were cheaper and more durable."
+  },
+  {
+    "part": "reading-1",
+    "term": "topspin",
+    "pos": "noun",
+    "vi": "cú xoáy lên (xoáy tiến của bóng)",
+    "en": "Forward spin on a ball that makes it dip as it flies.",
+    "example": "It created a string bed that generated so much topspin that it was quickly banned by the International Tennis Federation."
+  },
+  {
+    "part": "reading-1",
+    "term": "revolutionise",
+    "pos": "verb",
+    "vi": "tạo ra cuộc cách mạng cho",
+    "en": "To change something completely and fundamentally.",
+    "example": "In a sense, the development of co-polyester strings has revolutionised the game."
+  },
+  {
+    "part": "reading-2",
+    "term": "prowl",
+    "pos": "verb",
+    "vi": "rình rập, lảng vảng (để săn mồi)",
+    "en": "To move around quietly in search of prey or a victim.",
+    "example": "Pirates prowled the Mediterranean, raiding merchant ships and threatening vital trade routes."
+  },
+  {
+    "part": "reading-2",
+    "term": "raid",
+    "pos": "verb",
+    "vi": "tập kích, cướp phá",
+    "en": "To make a sudden attack on a place or ship.",
+    "example": "Pirates prowled the Mediterranean, raiding merchant ships and threatening vital trade routes."
+  },
+  {
+    "part": "reading-2",
+    "term": "eradicate",
+    "pos": "verb",
+    "vi": "xóa bỏ hoàn toàn, diệt trừ",
+    "en": "To get rid of something completely.",
+    "example": "Rome eradicated piracy, transforming the Mediterranean into \"Mare Nostrum\" (Our Sea)."
+  },
+  {
+    "part": "reading-2",
+    "term": "rugged",
+    "pos": "adjective",
+    "vi": "gồ ghề, hiểm trở",
+    "en": "Rough and uneven, with rocks.",
+    "example": "While the Mediterranean region is predominantly fertile, some parts are rugged and hilly, even mountainous."
+  },
+  {
+    "part": "reading-2",
+    "term": "cove",
+    "pos": "noun",
+    "vi": "vịnh nhỏ",
+    "en": "A small sheltered bay on the coast.",
+    "example": "Geography itself further benefited the pirates, with the numerous coves along the coast providing places for them to hide their boats and strike undetected."
+  },
+  {
+    "part": "reading-2",
+    "term": "laden",
+    "pos": "adjective",
+    "vi": "chất đầy, chở nặng",
+    "en": "Carrying a heavy load.",
+    "example": "Caught in a trap, a slow merchant ship laden with goods had no other option but to surrender."
+  },
+  {
+    "part": "reading-2",
+    "term": "retaliation",
+    "pos": "noun",
+    "vi": "sự trả đũa",
+    "en": "Harm done to someone in return for harm they caused.",
+    "example": "Knowledge of the local area helped the pirates to avoid retaliation once a state fleet arrived."
+  },
+  {
+    "part": "reading-2",
+    "term": "condone",
+    "pos": "verb",
+    "vi": "chấp nhận, bỏ qua (hành vi sai trái)",
+    "en": "To accept or allow behaviour that is wrong.",
+    "example": "Homer not only condones, but praises the lifestyle and actions of pirates."
+  },
+  {
+    "part": "reading-2",
+    "term": "curtail",
+    "pos": "verb",
+    "vi": "hạn chế, cắt giảm",
+    "en": "To reduce or limit something.",
+    "example": "Attempts to curtail piracy were hampered by the large number of pirates operating in the Mediterranean."
+  },
+  {
+    "part": "reading-2",
+    "term": "ransom",
+    "pos": "noun",
+    "vi": "tiền chuộc",
+    "en": "Money paid to free a kidnapped person.",
+    "example": "By the 1st century BCE, emboldened pirates kidnapped prominent Roman dignitaries, asking for a large ransom to be paid."
+  },
+  {
+    "part": "reading-2",
+    "term": "concerted",
+    "pos": "adjective",
+    "vi": "có phối hợp, đồng lòng",
+    "en": "Done together and with strong effort.",
+    "example": "The time had come for concerted action."
+  },
+  {
+    "part": "reading-3",
+    "term": "misinformation",
+    "pos": "noun",
+    "vi": "thông tin sai lệch",
+    "en": "False or wrong information, often spread without intent to deceive.",
+    "example": "Misinformation - both deliberately promoted and accidentally shared - is perhaps an inevitable part of the world in which we live, but it is not a new problem."
+  },
+  {
+    "part": "reading-3",
+    "term": "inadvertently",
+    "pos": "adverb",
+    "vi": "vô ý, không cố tình",
+    "en": "Without meaning to.",
+    "example": "Moreover, people inadvertently have been sharing inaccurate information with one another for thousands of years."
+  },
+  {
+    "part": "reading-3",
+    "term": "detrimental",
+    "pos": "adjective",
+    "vi": "có hại",
+    "en": "Causing harm or damage.",
+    "example": "These misperceptions, especially when they occur among large groups of people, may have detrimental, downstream consequences for health, social harmony, and the political climate."
+  },
+  {
+    "part": "reading-3",
+    "term": "empirical",
+    "pos": "adjective",
+    "vi": "dựa trên thực nghiệm, quan sát",
+    "en": "Based on observation or experiment rather than theory.",
+    "example": "In recent decades, empirical evidence from the research teams of Erik Asp of the University of Chicago and Daniel Gilbert at Harvard University, among others, has supported Spinoza's account."
+  },
+  {
+    "part": "reading-3",
+    "term": "by default",
+    "pos": "phrase",
+    "vi": "theo mặc định",
+    "en": "Automatically, unless something else is chosen.",
+    "example": "Spinoza argued that people accept all encountered information (or misinformation) by default and then subsequently verify or reject it through a separate cognitive process."
+  },
+  {
+    "part": "reading-3",
+    "term": "skepticism",
+    "pos": "noun",
+    "vi": "sự hoài nghi",
+    "en": "A doubting attitude toward claims.",
+    "example": "A pattern that seems consistent with the observation that mental resources for skepticism physically reside in a different part of the brain than the resources used in perceiving and encoding."
+  },
+  {
+    "part": "reading-3",
+    "term": "preemptive",
+    "pos": "adjective",
+    "vi": "phòng ngừa trước, đi trước một bước",
+    "en": "Done in advance to stop something happening.",
+    "example": "These roles typically do not involve preemptive censoring."
+  },
+  {
+    "part": "reading-3",
+    "term": "laudable",
+    "pos": "adjective",
+    "vi": "đáng khen",
+    "en": "Deserving praise.",
+    "example": "Such programs, although laudable and useful, do not keep false advertising off the airwaves."
+  },
+  {
+    "part": "reading-3",
+    "term": "fallibility",
+    "pos": "noun",
+    "vi": "tính dễ sai lầm",
+    "en": "The quality of being able to make mistakes.",
+    "example": "Misinformation arises as a result of human fallibility and human information needs."
+  },
+  {
+    "part": "reading-3",
+    "term": "panacea",
+    "pos": "noun",
+    "vi": "phương thuốc chữa bách bệnh",
+    "en": "A single solution believed to solve all problems.",
+    "example": "Rather than any singular one-time panacea we could hope to offer."
+  },
+  {
+    "part": "writing-1",
+    "term": "fluctuation",
+    "pos": "noun",
+    "vi": "sự dao động",
+    "en": "A change up and down in amount.",
+    "example": "Martial arts participation was characterized by fluctuations."
+  },
+  {
+    "part": "writing-2",
+    "term": "advocate",
+    "pos": "noun",
+    "vi": "người ủng hộ",
+    "en": "A person who publicly supports an idea.",
+    "example": "Advocates for competition highlight its ability to motivate excellence."
+  },
+  {
+    "part": "writing-2",
+    "term": "resilience",
+    "pos": "noun",
+    "vi": "khả năng phục hồi, sức bền tinh thần",
+    "en": "The ability to recover quickly from difficulties.",
+    "example": "In schools, healthy academic competition encourages students to strive for better grades and develop resilience."
+  },
+  {
+    "part": "writing-2",
+    "term": "accountability",
+    "pos": "noun",
+    "vi": "trách nhiệm giải trình",
+    "en": "Being responsible for your actions and having to explain them.",
+    "example": "Yet, unstructured cooperation may cause inefficiencies if roles are unclear, leading to unequal contributions or reduced accountability."
+  }
+]

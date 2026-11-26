@@ -1,0 +1,722 @@
+[
+  {
+    "part": "listening-1",
+    "term": "tight budget",
+    "pos": "noun",
+    "vi": "ngân sách eo hẹp",
+    "en": "A small amount of money available to spend.",
+    "example": "I think they're on quite a tight budget"
+  },
+  {
+    "part": "listening-1",
+    "term": "fort",
+    "pos": "noun",
+    "vi": "pháo đài, thành lũy",
+    "en": "A strong building used in the past for defence.",
+    "example": "visit the old fort."
+  },
+  {
+    "part": "listening-1",
+    "term": "stall",
+    "pos": "noun",
+    "vi": "quầy hàng",
+    "en": "A small table or counter where goods are sold, often at a market.",
+    "example": "I really like all the food stalls at Clacton Market."
+  },
+  {
+    "part": "listening-1",
+    "term": "spend a fortune",
+    "pos": "phrase",
+    "vi": "tiêu rất nhiều tiền",
+    "en": "To spend a very large amount of money.",
+    "example": "No need to spend a fortune."
+  },
+  {
+    "part": "listening-2",
+    "term": "wander off",
+    "pos": "phrase",
+    "vi": "đi lang thang, lạc đi",
+    "en": "To walk away without anyone knowing where you have gone.",
+    "example": "Please don't let your children wander off on their own"
+  },
+  {
+    "part": "listening-2",
+    "term": "pitch",
+    "pos": "noun",
+    "vi": "sân bóng",
+    "en": "The field on which a game such as football is played.",
+    "example": "It's very hot and sunny out on the pitch today."
+  },
+  {
+    "part": "listening-2",
+    "term": "redevelopment",
+    "pos": "noun",
+    "vi": "sự tái phát triển, xây dựng lại",
+    "en": "The process of rebuilding or improving an area or building.",
+    "example": "as part of a three-year redevelopment project."
+  },
+  {
+    "part": "listening-2",
+    "term": "referee",
+    "pos": "noun",
+    "vi": "trọng tài",
+    "en": "The official who controls a football match.",
+    "example": "referees were allowed to send players off"
+  },
+  {
+    "part": "listening-2",
+    "term": "send off",
+    "pos": "phrasal verb",
+    "vi": "đuổi khỏi sân",
+    "en": "to order a player to leave the field as punishment",
+    "example": "referees were allowed to send players off"
+  },
+  {
+    "part": "listening-2",
+    "term": "admission",
+    "pos": "noun",
+    "vi": "tiền vào cửa, sự cho vào",
+    "en": "Permission or payment to enter a place.",
+    "example": "clubs began to charge fans for admission to games"
+  },
+  {
+    "part": "listening-2",
+    "term": "amateur",
+    "pos": "noun",
+    "vi": "tay chơi nghiệp dư",
+    "en": "a person who does something without being paid",
+    "example": "even though players were still amateurs"
+  },
+  {
+    "part": "listening-3",
+    "term": "spatial awareness",
+    "pos": "noun",
+    "vi": "nhận thức về không gian",
+    "en": "The ability to understand where things are in relation to each other.",
+    "example": "I've never associated spatial awareness with handwriting either."
+  },
+  {
+    "part": "listening-3",
+    "term": "fine motor skills",
+    "pos": "noun",
+    "vi": "kỹ năng vận động tinh",
+    "en": "The ability to make small, precise hand movements.",
+    "example": "It's not just fine motor skills that improve through writing"
+  },
+  {
+    "part": "listening-3",
+    "term": "dyspraxia",
+    "pos": "noun",
+    "vi": "chứng rối loạn vận động phối hợp",
+    "en": "A condition that makes it hard to coordinate movement.",
+    "example": "handwriting is so much harder for children with dyspraxia"
+  },
+  {
+    "part": "listening-3",
+    "term": "letter formation",
+    "pos": "noun",
+    "vi": "cách viết hình dạng chữ cái",
+    "en": "the way the shapes of letters are written",
+    "example": "They need so much more support with letter formation"
+  },
+  {
+    "part": "listening-3",
+    "term": "legibility",
+    "pos": "noun",
+    "vi": "độ dễ đọc",
+    "en": "How easy it is to read something written.",
+    "example": "That's more important for legibility than trying to get them to write in a straight line."
+  },
+  {
+    "part": "listening-3",
+    "term": "fluency",
+    "pos": "noun",
+    "vi": "sự trôi chảy, thành thạo",
+    "en": "The ability to do something smoothly and easily.",
+    "example": "developing fluency isn't any faster."
+  },
+  {
+    "part": "listening-3",
+    "term": "cursive",
+    "pos": "adjective",
+    "vi": "(chữ) viết liền nét",
+    "en": "Written with the letters joined together.",
+    "example": "cursive is more difficult to learn"
+  },
+  {
+    "part": "listening-3",
+    "term": "touch typing",
+    "pos": "noun",
+    "vi": "gõ phím bằng mười ngón không nhìn bàn phím",
+    "en": "typing quickly without looking at the keys",
+    "example": "Touch typing still isn't taught in most schools"
+  },
+  {
+    "part": "listening-3",
+    "term": "inconsistent",
+    "pos": "adjective",
+    "vi": "không nhất quán",
+    "en": "Not staying the same; changing without a clear pattern.",
+    "example": "my punctuation is really inconsistent."
+  },
+  {
+    "part": "listening-3",
+    "term": "put down to",
+    "pos": "phrasal verb",
+    "vi": "quy cho, cho là do",
+    "en": "to explain something by naming its cause",
+    "example": "I think you can put that down to lack of practice"
+  },
+  {
+    "part": "listening-4",
+    "term": "sanctuary",
+    "pos": "noun",
+    "vi": "khu bảo tồn, nơi trú ẩn",
+    "en": "A protected area where wild animals are kept safe.",
+    "example": "in the area around the Chembe Bird Sanctuary."
+  },
+  {
+    "part": "listening-4",
+    "term": "bird of prey",
+    "pos": "noun",
+    "vi": "chim săn mồi",
+    "en": "A bird that hunts and kills other animals for food.",
+    "example": "These include a number of birds of prey such as eagles, hawks and owls"
+  },
+  {
+    "part": "listening-4",
+    "term": "rodent",
+    "pos": "noun",
+    "vi": "loài gặm nhấm",
+    "en": "A small animal with sharp front teeth, such as a rat.",
+    "example": "crops by rodents such as rats"
+  },
+  {
+    "part": "listening-4",
+    "term": "predatory",
+    "pos": "adjective",
+    "vi": "săn mồi",
+    "en": "Hunting and killing other animals for food.",
+    "example": "the predatory habits of these birds also protect farmers"
+  },
+  {
+    "part": "listening-4",
+    "term": "fatal",
+    "pos": "adj",
+    "vi": "gây tử vong",
+    "en": "causing death",
+    "example": "whose bite may be dangerous or even fatal"
+  },
+  {
+    "part": "listening-4",
+    "term": "alight",
+    "pos": "verb",
+    "vi": "đậu xuống",
+    "en": "(of a bird) to land on something",
+    "example": "when birds alight on roads to catch and eat their prey"
+  },
+  {
+    "part": "listening-4",
+    "term": "electrocute",
+    "pos": "verb",
+    "vi": "bị điện giật chết",
+    "en": "To injure or kill with an electric shock.",
+    "example": "as they may be electrocuted."
+  },
+  {
+    "part": "listening-4",
+    "term": "ecosystem",
+    "pos": "noun",
+    "vi": "hệ sinh thái",
+    "en": "all the living things in an area and their environment",
+    "example": "negative effects on the ecosystem"
+  },
+  {
+    "part": "listening-4",
+    "term": "counterproductive",
+    "pos": "adjective",
+    "vi": "phản tác dụng",
+    "en": "Having the opposite effect to the one intended.",
+    "example": "in fact this is counterproductive"
+  },
+  {
+    "part": "listening-4",
+    "term": "frighten off",
+    "pos": "phrasal verb",
+    "vi": "xua đuổi, dọa cho bỏ đi",
+    "en": "to scare an animal so that it goes away",
+    "example": "trying to frighten off the birds of prey"
+  },
+  {
+    "part": "listening-4",
+    "term": "seize",
+    "pos": "verb",
+    "vi": "chộp lấy, bắt lấy",
+    "en": "To take hold of something suddenly and firmly.",
+    "example": "birds that were trying to seize the young chicks."
+  },
+  {
+    "part": "reading-1",
+    "term": "finesse",
+    "pos": "noun",
+    "vi": "sự tinh tế, khéo léo",
+    "en": "Delicate skill in doing something.",
+    "example": "great finesse with a paintbrush"
+  },
+  {
+    "part": "reading-1",
+    "term": "nuance",
+    "pos": "noun",
+    "vi": "sắc thái tinh tế",
+    "en": "A very small difference in meaning, colour or feeling.",
+    "example": "she recorded subtle nuances of colour, shape, and light"
+  },
+  {
+    "part": "reading-1",
+    "term": "avant-garde",
+    "pos": "adjective",
+    "vi": "tiên phong, đi trước thời đại",
+    "en": "Very new and experimental, especially in the arts.",
+    "example": "the works of many avant-garde artists and photographers"
+  },
+  {
+    "part": "reading-1",
+    "term": "botanical",
+    "pos": "adjective",
+    "vi": "thuộc thực vật",
+    "en": "Relating to plants.",
+    "example": "she painted botanical subjects"
+  },
+  {
+    "part": "reading-1",
+    "term": "solitude",
+    "pos": "noun",
+    "vi": "sự cô độc, tĩnh lặng",
+    "en": "the state of being alone",
+    "example": "painting in relative solitude"
+  },
+  {
+    "part": "reading-1",
+    "term": "rugged",
+    "pos": "adjective",
+    "vi": "gồ ghề, hiểm trở",
+    "en": "Having a rough, uneven surface.",
+    "example": "the state's rugged terrain"
+  },
+  {
+    "part": "reading-1",
+    "term": "terrain",
+    "pos": "noun",
+    "vi": "địa hình",
+    "en": "an area of land and its natural features",
+    "example": "the state's rugged terrain"
+  },
+  {
+    "part": "reading-1",
+    "term": "monumental",
+    "pos": "adjective",
+    "vi": "đồ sộ, hoành tráng",
+    "en": "Very large and impressive.",
+    "example": "translated one of her cloud motifs to a monumental canvas"
+  },
+  {
+    "part": "reading-1",
+    "term": "motif",
+    "pos": "noun",
+    "vi": "họa tiết chủ đạo",
+    "en": "a repeated image or design in a work of art",
+    "example": "one of her cloud motifs"
+  },
+  {
+    "part": "reading-1",
+    "term": "feat",
+    "pos": "noun",
+    "vi": "kỳ tích, thành tựu đáng kể",
+    "en": "An impressive act that needs great skill or strength.",
+    "example": "a special feat for an artist nearing eighty years of age."
+  },
+  {
+    "part": "reading-1",
+    "term": "hinder",
+    "pos": "verb",
+    "vi": "cản trở",
+    "en": "to make it difficult for something to happen",
+    "example": "ill health and blindness hindered her ability to work"
+  },
+  {
+    "part": "reading-1",
+    "term": "legacy",
+    "pos": "noun",
+    "vi": "di sản",
+    "en": "something valuable left behind for later generations",
+    "example": "her rich legacy of some 900 paintings"
+  },
+  {
+    "part": "reading-2",
+    "term": "breach",
+    "pos": "verb",
+    "vi": "xuyên thủng, phá vỡ",
+    "en": "To break through a barrier.",
+    "example": "seawater isn't just breaching the island city's walls"
+  },
+  {
+    "part": "reading-2",
+    "term": "seep",
+    "pos": "verb",
+    "vi": "thấm, rỉ ra",
+    "en": "To flow slowly through a small opening.",
+    "example": "it's seeping up through the ground"
+  },
+  {
+    "part": "reading-2",
+    "term": "vulnerable",
+    "pos": "adjective",
+    "vi": "dễ bị tổn thương",
+    "en": "Easily harmed or damaged.",
+    "example": "the lowest and most vulnerable neighbourhoods"
+  },
+  {
+    "part": "reading-2",
+    "term": "mitigation",
+    "pos": "noun",
+    "vi": "sự giảm nhẹ (tác động)",
+    "en": "Action to make something less harmful or severe.",
+    "example": "climate-mitigation strategies have often been overlooked"
+  },
+  {
+    "part": "reading-2",
+    "term": "exacerbate",
+    "pos": "verb",
+    "vi": "làm trầm trọng thêm",
+    "en": "To make a bad situation worse.",
+    "example": "further exacerbating coastal erosion."
+  },
+  {
+    "part": "reading-2",
+    "term": "coastal erosion",
+    "pos": "noun",
+    "vi": "xói mòn bờ biển",
+    "en": "the wearing away of land along the coast",
+    "example": "further exacerbating coastal erosion"
+  },
+  {
+    "part": "reading-2",
+    "term": "mangrove",
+    "pos": "noun",
+    "vi": "rừng ngập mặn, cây đước",
+    "en": "A tropical tree that grows in salty water along coasts.",
+    "example": "to restore the island's coastal mangroves"
+  },
+  {
+    "part": "reading-2",
+    "term": "sediment",
+    "pos": "noun",
+    "vi": "phù sa, trầm tích",
+    "en": "Solid material such as sand or mud that settles at the bottom of water.",
+    "example": "by trapping sediment in their net-like root systems"
+  },
+  {
+    "part": "reading-2",
+    "term": "elevate",
+    "pos": "verb",
+    "vi": "nâng cao lên",
+    "en": "to raise something to a higher level",
+    "example": "elevating the sea bed"
+  },
+  {
+    "part": "reading-2",
+    "term": "semi-permeable",
+    "pos": "adj",
+    "vi": "bán thấm",
+    "en": "letting some water or material pass through but not all",
+    "example": "building semi-permeable dams"
+  },
+  {
+    "part": "reading-2",
+    "term": "subsidence",
+    "pos": "noun",
+    "vi": "sự sụt lún đất",
+    "en": "The sinking of land to a lower level.",
+    "example": "mainly in areas with less subsidence."
+  },
+  {
+    "part": "reading-2",
+    "term": "retrofit",
+    "pos": "verb",
+    "vi": "cải tạo, lắp thêm vào công trình có sẵn",
+    "en": "To add new features to an existing building.",
+    "example": "researching and retrofitting amphibious houses since 2006."
+  },
+  {
+    "part": "reading-2",
+    "term": "amphibious",
+    "pos": "adj",
+    "vi": "lưỡng cư, có thể nổi trên nước",
+    "en": "able to float on water and sit on land",
+    "example": "researching and retrofitting amphibious houses"
+  },
+  {
+    "part": "reading-2",
+    "term": "floodplain",
+    "pos": "noun",
+    "vi": "vùng đồng bằng ngập lụt",
+    "en": "flat land beside a river that often floods",
+    "example": "80 per cent of its land lies on floodplains"
+  },
+  {
+    "part": "reading-2",
+    "term": "salinity",
+    "pos": "noun",
+    "vi": "độ mặn",
+    "en": "The amount of salt in water or soil.",
+    "example": "affected by soil and water salinity"
+  },
+  {
+    "part": "reading-2",
+    "term": "barren",
+    "pos": "adjective",
+    "vi": "cằn cỗi, khô cằn",
+    "en": "Unable to support plant growth.",
+    "example": "comparing a barren plot of land"
+  },
+  {
+    "part": "reading-2",
+    "term": "pilot project",
+    "pos": "noun",
+    "vi": "dự án thí điểm",
+    "en": "a small trial scheme to test an idea",
+    "example": "a series of pilot projects"
+  },
+  {
+    "part": "reading-2",
+    "term": "canopy",
+    "pos": "noun",
+    "vi": "tán cây",
+    "en": "The layer of branches and leaves at the top of trees.",
+    "example": "streets with low tree canopy cover"
+  },
+  {
+    "part": "reading-3",
+    "term": "predator",
+    "pos": "noun",
+    "vi": "động vật săn mồi",
+    "en": "an animal that hunts and kills other animals",
+    "example": "protect their sheep, goats and cattle from predators"
+  },
+  {
+    "part": "reading-3",
+    "term": "exterminate",
+    "pos": "verb",
+    "vi": "tiêu diệt hoàn toàn",
+    "en": "To kill all of a group of animals.",
+    "example": "when such predators were largely exterminated"
+  },
+  {
+    "part": "reading-3",
+    "term": "livestock",
+    "pos": "noun",
+    "vi": "gia súc",
+    "en": "Farm animals such as sheep and cattle.",
+    "example": "farmers once more need to protect their livestock"
+  },
+  {
+    "part": "reading-3",
+    "term": "revival",
+    "pos": "noun",
+    "vi": "sự hồi sinh, sự trở lại",
+    "en": "A new period of life or popularity after a decline.",
+    "example": "guard dogs are enjoying an unexpected revival."
+  },
+  {
+    "part": "reading-3",
+    "term": "predation",
+    "pos": "noun",
+    "vi": "sự săn mồi",
+    "en": "the hunting and killing of animals by other animals",
+    "example": "predation stopped completely after they got the dogs"
+  },
+  {
+    "part": "reading-3",
+    "term": "tolerant",
+    "pos": "adjective",
+    "vi": "khoan dung, chấp nhận được",
+    "en": "Willing to accept something you may not like.",
+    "example": "can make farmers more tolerant of predators"
+  },
+  {
+    "part": "reading-3",
+    "term": "conservation",
+    "pos": "noun",
+    "vi": "bảo tồn",
+    "en": "the protection of nature and wildlife",
+    "example": "from the conservation perspective"
+  },
+  {
+    "part": "reading-3",
+    "term": "pinch of salt",
+    "pos": "phrase",
+    "vi": "(xem xét) một cách dè dặt, không tin hoàn toàn",
+    "en": "A saying meaning you should not completely believe something.",
+    "example": "such self-reported results must be taken with a pinch of salt."
+  },
+  {
+    "part": "reading-3",
+    "term": "displace",
+    "pos": "verb",
+    "vi": "đẩy sang nơi khác",
+    "en": "To force something to move from its usual place.",
+    "example": "livestock guard dogs merely displace predators to unprotected neighbouring properties"
+  },
+  {
+    "part": "reading-3",
+    "term": "endangered",
+    "pos": "adj",
+    "vi": "có nguy cơ tuyệt chủng",
+    "en": "at risk of dying out completely",
+    "example": "including endangered Ethiopian wolves"
+  },
+  {
+    "part": "reading-3",
+    "term": "carnivore",
+    "pos": "noun",
+    "vi": "động vật ăn thịt",
+    "en": "an animal that eats meat",
+    "example": "compete with other carnivores for food"
+  },
+  {
+    "part": "reading-3",
+    "term": "raid",
+    "pos": "verb",
+    "vi": "đột kích, tấn công cướp mồi",
+    "en": "To make a sudden attack to steal something.",
+    "example": "where foxes would normally raid them."
+  },
+  {
+    "part": "reading-3",
+    "term": "biodiversity",
+    "pos": "noun",
+    "vi": "đa dạng sinh học",
+    "en": "The variety of plant and animal life in a place.",
+    "example": "now using dogs to enhance biodiversity"
+  },
+  {
+    "part": "reading-3",
+    "term": "coexistence",
+    "pos": "noun",
+    "vi": "sự cùng tồn tại",
+    "en": "Living together peacefully in the same place.",
+    "example": "promoting harmonious coexistence between humans and wildlife."
+  },
+  {
+    "part": "reading-3",
+    "term": "harmonious",
+    "pos": "adj",
+    "vi": "hài hòa",
+    "en": "peaceful and working well together",
+    "example": "promoting harmonious coexistence between humans and wildlife"
+  },
+  {
+    "part": "writing-1",
+    "term": "harvest",
+    "pos": "verb",
+    "vi": "thu hoạch",
+    "en": "to gather a crop when it is ready",
+    "example": "it is carefully harvested"
+  },
+  {
+    "part": "writing-1",
+    "term": "crush",
+    "pos": "verb",
+    "vi": "nghiền nát",
+    "en": "to press something hard until it breaks into small pieces",
+    "example": "these strips are then crushed mechanically"
+  },
+  {
+    "part": "writing-1",
+    "term": "pulp",
+    "pos": "noun",
+    "vi": "bột giấy, hỗn hợp nhão",
+    "en": "A soft wet mass made by crushing a material.",
+    "example": "crushed mechanically to form a liquid pulp."
+  },
+  {
+    "part": "writing-1",
+    "term": "fibre",
+    "pos": "noun",
+    "vi": "sợi",
+    "en": "a thin thread used to make cloth",
+    "example": "separate long, usable fibres from the liquid"
+  },
+  {
+    "part": "writing-1",
+    "term": "yarn",
+    "pos": "noun",
+    "vi": "sợi (để dệt)",
+    "en": "Thread made from fibres and used for weaving or knitting.",
+    "example": "the softened fibres are spun into continuous yarn"
+  },
+  {
+    "part": "writing-1",
+    "term": "loom",
+    "pos": "noun",
+    "vi": "khung cửi, máy dệt",
+    "en": "A machine used for weaving cloth.",
+    "example": "The yarn is then woven on looms to create fabric"
+  },
+  {
+    "part": "writing-2",
+    "term": "dissemination",
+    "pos": "noun",
+    "vi": "sự lan truyền",
+    "en": "the spreading of information or ideas widely",
+    "example": "enable instantaneous dissemination of styles"
+  },
+  {
+    "part": "writing-2",
+    "term": "viral",
+    "pos": "adj",
+    "vi": "lan truyền nhanh chóng",
+    "en": "spreading very quickly online",
+    "example": "into a viral trend within hours"
+  },
+  {
+    "part": "writing-2",
+    "term": "blur",
+    "pos": "verb",
+    "vi": "làm mờ đi",
+    "en": "to make a clear line or difference less distinct",
+    "example": "globalization has blurred cultural boundaries"
+  },
+  {
+    "part": "writing-2",
+    "term": "transcend",
+    "pos": "verb",
+    "vi": "vượt qua, vượt lên trên",
+    "en": "to go beyond the limits of something",
+    "example": "that transcends local traditions"
+  },
+  {
+    "part": "writing-2",
+    "term": "double-edged sword",
+    "pos": "noun",
+    "vi": "con dao hai lưỡi",
+    "en": "something that has both good and bad effects",
+    "example": "This development is a double-edged sword"
+  },
+  {
+    "part": "writing-2",
+    "term": "overconsumption",
+    "pos": "noun",
+    "vi": "tiêu dùng quá mức",
+    "en": "buying and using far more than is needed",
+    "example": "encourages overconsumption"
+  },
+  {
+    "part": "writing-2",
+    "term": "homogenization",
+    "pos": "noun",
+    "vi": "sự đồng nhất hóa",
+    "en": "The process of making things all the same.",
+    "example": "the homogenization of style risks eroding local sartorial traditions"
+  }
+]

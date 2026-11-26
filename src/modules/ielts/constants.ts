@@ -204,8 +204,12 @@ export const IELTS_API_PATHS = {
   adminAudio: (testId: string, key: string) =>
     `/api/admin/ielts/tests/${testId}/sections/${key}/audio`,
   adminPublish: (testId: string) => `/api/admin/ielts/tests/${testId}/publish`,
+  adminVocab: (testId: string) => `/api/admin/ielts/tests/${testId}/vocab`,
   adminAssist: '/api/admin/ielts/assist',
   adminUploadSign: '/api/admin/ielts/uploads/sign',
 } as const
 
 export const IELTS_OUTBOX_LANE_PREFIX = 'ielts:'
+
+/** Words under a test's skill cards: every useful word of a full test. */
+export const IELTS_TEST_VOCAB_MAX = 150

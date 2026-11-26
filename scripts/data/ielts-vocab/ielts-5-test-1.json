@@ -1,0 +1,562 @@
+[
+  {
+    "part": "listening-1",
+    "term": "provisional",
+    "pos": "adjective",
+    "vi": "tạm thời, chưa chính thức",
+    "en": "Arranged for now but likely to be changed or confirmed later.",
+    "example": "So I'll make a provisional booking, shall I?"
+  },
+  {
+    "part": "listening-1",
+    "term": "deposit",
+    "pos": "noun",
+    "vi": "tiền đặt cọc",
+    "en": "A part of the total price paid in advance to secure a booking.",
+    "example": "And you also need to pay a 20% deposit, at the time of booking."
+  },
+  {
+    "part": "listening-1",
+    "term": "facilities",
+    "pos": "noun",
+    "vi": "tiện nghi, cơ sở vật chất",
+    "en": "Buildings, equipment or services provided for a particular use.",
+    "example": "the hotel itself where you stay has great facilities."
+  },
+  {
+    "part": "listening-1",
+    "term": "bush walk",
+    "pos": "noun",
+    "vi": "chuyến đi bộ xuyên rừng bụi (kiểu Úc)",
+    "en": "A walk through wild, uncultivated countryside.",
+    "example": "either on a bush walk, through the national park near the hotel"
+  },
+  {
+    "part": "listening-1",
+    "term": "reptile",
+    "pos": "noun",
+    "vi": "loài bò sát",
+    "en": "A cold-blooded animal such as a snake or lizard that has scaly skin.",
+    "example": "And there's also a reptile park in town"
+  },
+  {
+    "part": "listening-1",
+    "term": "cancellation",
+    "pos": "noun",
+    "vi": "việc hủy (chuyến, đặt chỗ)",
+    "en": "The act of deciding that something planned will not take place.",
+    "example": "to avoid cancellations of tours"
+  },
+  {
+    "part": "listening-1",
+    "term": "peak",
+    "pos": "adjective",
+    "vi": "cao điểm",
+    "en": "At the busiest or highest point.",
+    "example": "in peak times like the summer holidays"
+  },
+  {
+    "part": "listening-2",
+    "term": "cot",
+    "pos": "noun",
+    "vi": "cũi em bé",
+    "en": "A small bed with high sides for a baby.",
+    "example": "Let's start by looking at baby cots."
+  },
+  {
+    "part": "listening-2",
+    "term": "verdict",
+    "pos": "noun",
+    "vi": "kết luận, đánh giá cuối cùng",
+    "en": "A final judgement or decision about something.",
+    "example": "so they've given this one a verdict of satisfactory."
+  },
+  {
+    "part": "listening-2",
+    "term": "trap",
+    "pos": "verb",
+    "vi": "kẹt (tay, đầu)",
+    "en": "To catch a part of the body so that it cannot move freely.",
+    "example": "they felt babies could trap their fingers in it."
+  },
+  {
+    "part": "listening-2",
+    "term": "put together",
+    "pos": "phrase",
+    "vi": "lắp ráp",
+    "en": "To assemble the parts of something.",
+    "example": "a cot which is simple to put together"
+  },
+  {
+    "part": "listening-2",
+    "term": "hazard",
+    "pos": "noun",
+    "vi": "mối nguy hiểm",
+    "en": "Something that could cause danger or harm.",
+    "example": "We felt this was a real safety hazard"
+  },
+  {
+    "part": "listening-2",
+    "term": "niggle",
+    "pos": "noun",
+    "vi": "điều phiền toái nhỏ, điểm khó chịu nhỏ",
+    "en": "A small worry or minor complaint.",
+    "example": "The only niggle everyone had was the fact that it has no wheels."
+  },
+  {
+    "part": "listening-2",
+    "term": "discontinue",
+    "pos": "verb",
+    "vi": "ngừng (sản xuất, làm)",
+    "en": "To stop doing or making something.",
+    "example": "The makers have now promised to discontinue this practice"
+  },
+  {
+    "part": "listening-3",
+    "term": "prospectus",
+    "pos": "noun",
+    "vi": "tài liệu giới thiệu khóa học, cẩm nang tuyển sinh",
+    "en": "A booklet giving details of a college or course.",
+    "example": "have you seen our diploma course prospectus yet?"
+  },
+  {
+    "part": "listening-3",
+    "term": "personnel management",
+    "pos": "noun",
+    "vi": "quản lý nhân sự",
+    "en": "The area of management that deals with employees.",
+    "example": "what I'm hoping to focus on is personnel management."
+  },
+  {
+    "part": "listening-3",
+    "term": "unpaid leave",
+    "pos": "noun",
+    "vi": "nghỉ không lương",
+    "en": "Time away from work for which the employer does not pay you.",
+    "example": "I would have to take unpaid leave if I want to study full-time"
+  },
+  {
+    "part": "listening-3",
+    "term": "modular",
+    "pos": "adjective",
+    "vi": "theo học phần (chia thành các mô-đun)",
+    "en": "Made up of separate units that can be studied one at a time.",
+    "example": "you could do what we call a modular course."
+  },
+  {
+    "part": "listening-3",
+    "term": "seminar",
+    "pos": "noun",
+    "vi": "buổi thảo luận chuyên đề (nhóm nhỏ)",
+    "en": "A class in which a small group discusses a topic with a tutor.",
+    "example": "Then you'd have to attend a seminar or discussion workshop one weekend a month."
+  },
+  {
+    "part": "listening-3",
+    "term": "coursework",
+    "pos": "noun",
+    "vi": "bài tập, bài làm trong quá trình học",
+    "en": "Work done by students during a course, not in the final exam.",
+    "example": "what kind of coursework would I have to do?"
+  },
+  {
+    "part": "listening-3",
+    "term": "case study",
+    "pos": "noun",
+    "vi": "nghiên cứu tình huống",
+    "en": "A detailed study of one particular example or situation.",
+    "example": "You have a case study to do by the end of the course"
+  },
+  {
+    "part": "listening-3",
+    "term": "hand in",
+    "pos": "phrase",
+    "vi": "nộp (bài)",
+    "en": "To give a piece of work to a teacher or authority.",
+    "example": "you need to hand in a short report every four weeks."
+  },
+  {
+    "part": "listening-3",
+    "term": "intensive",
+    "pos": "adjective",
+    "vi": "cường độ cao, tập trung",
+    "en": "Involving a lot of work or effort in a short time.",
+    "example": "you can study in a much more intensive way"
+  },
+  {
+    "part": "listening-4",
+    "term": "gender",
+    "pos": "noun",
+    "vi": "giới tính (xã hội), vấn đề giới",
+    "en": "Being male or female, especially in a social or cultural sense.",
+    "example": "One aspect that we haven't yet considered is gender."
+  },
+  {
+    "part": "listening-4",
+    "term": "retirement",
+    "pos": "noun",
+    "vi": "việc nghỉ hưu, tuổi hưu",
+    "en": "The time of life when a person stops working because of age.",
+    "example": "the other main priority for men when saving money is their retirement."
+  },
+  {
+    "part": "listening-4",
+    "term": "nursing care",
+    "pos": "noun",
+    "vi": "chăm sóc điều dưỡng",
+    "en": "Medical and personal help given to someone who cannot look after themselves.",
+    "example": "they may therefore have to pay for nursing care"
+  },
+  {
+    "part": "listening-4",
+    "term": "poverty cycle",
+    "pos": "noun",
+    "vi": "vòng luẩn quẩn nghèo đói",
+    "en": "A situation in which poor people stay poor from one generation or stage to the next.",
+    "example": "the high divorce rates in North America are creating a poverty cycle for women."
+  },
+  {
+    "part": "listening-4",
+    "term": "pension",
+    "pos": "noun",
+    "vi": "lương hưu",
+    "en": "Regular money paid to a person after they retire.",
+    "example": "Even women in their early 20s need to think about pensions"
+  },
+  {
+    "part": "listening-4",
+    "term": "enrol",
+    "pos": "verb",
+    "vi": "đăng ký học",
+    "en": "To officially join a course or school.",
+    "example": "increasing numbers of women are enrolling on such courses."
+  },
+  {
+    "part": "listening-4",
+    "term": "stocks and shares",
+    "pos": "noun",
+    "vi": "cổ phiếu và chứng khoán",
+    "en": "Parts of a company that people buy as an investment.",
+    "example": "Many women are unwilling to invest in stocks and shares for instance"
+  },
+  {
+    "part": "reading-1",
+    "term": "compile",
+    "pos": "verb",
+    "vi": "biên soạn, tập hợp",
+    "en": "To produce a book or list by collecting material from many sources.",
+    "example": "compiled by a certain Robert Cawdray, published in 1604"
+  },
+  {
+    "part": "reading-1",
+    "term": "circumscribe",
+    "pos": "verb",
+    "vi": "giới hạn, khoanh vùng",
+    "en": "To limit or set boundaries around something.",
+    "example": "anxious to define and circumscribe the various worlds to conquer"
+  },
+  {
+    "part": "reading-1",
+    "term": "heyday",
+    "pos": "noun",
+    "vi": "thời hoàng kim, thời kỳ đỉnh cao",
+    "en": "The period of greatest success or popularity.",
+    "example": "at the very beginning of the heyday of the middle class."
+  },
+  {
+    "part": "reading-1",
+    "term": "single-handed",
+    "pos": "adverb",
+    "vi": "một mình, không ai giúp",
+    "en": "Without help from anyone else.",
+    "example": "he would write a dictionary himself; and he would do it single-handed."
+  },
+  {
+    "part": "reading-1",
+    "term": "synthesis",
+    "pos": "noun",
+    "vi": "sự tổng hợp",
+    "en": "The combining of different ideas or sources into a single whole.",
+    "example": "to make his work one of heroic synthesis."
+  },
+  {
+    "part": "reading-1",
+    "term": "precedent",
+    "pos": "noun",
+    "vi": "tiền lệ",
+    "en": "An earlier example or decision that is used as a guide for later ones.",
+    "example": "according to precedent."
+  },
+  {
+    "part": "reading-1",
+    "term": "vicissitudes",
+    "pos": "noun",
+    "vi": "những thăng trầm, biến cố",
+    "en": "Unwelcome changes and difficulties in a situation or life.",
+    "example": "After many vicissitudes the Dictionary was finally published"
+  },
+  {
+    "part": "reading-1",
+    "term": "patronage",
+    "pos": "noun",
+    "vi": "sự bảo trợ, tài trợ",
+    "en": "Financial or other support given by a rich or powerful person.",
+    "example": "without any patronage of the great"
+  },
+  {
+    "part": "reading-1",
+    "term": "prevail upon",
+    "pos": "phrase",
+    "vi": "thuyết phục (ai làm gì)",
+    "en": "To persuade someone to do something.",
+    "example": "his friends were able to prevail upon King George III to offer him a pension."
+  },
+  {
+    "part": "reading-2",
+    "term": "obey",
+    "pos": "verb",
+    "vi": "tuân theo, vâng lời",
+    "en": "To do what you are told by a person in authority.",
+    "example": "tested 40 subjects from all walks of life for their willingness to obey instructions"
+  },
+  {
+    "part": "reading-2",
+    "term": "distaste",
+    "pos": "noun",
+    "vi": "sự ghê tởm, không ưa",
+    "en": "A feeling of dislike for something unpleasant.",
+    "example": "in which the subjects might feel a personal distaste for the actions they were called upon to perform."
+  },
+  {
+    "part": "reading-2",
+    "term": "administer",
+    "pos": "verb",
+    "vi": "thực hiện, áp dụng (hình phạt, cú sốc)",
+    "en": "To give or apply something such as a punishment or medicine.",
+    "example": "a shock was to be administered, beginning at the lowest level"
+  },
+  {
+    "part": "reading-2",
+    "term": "balk at",
+    "pos": "phrase",
+    "vi": "chùn bước, miễn cưỡng không chịu làm",
+    "en": "To refuse or hesitate to do something because it is unpleasant.",
+    "example": "Many of the teacher-subjects balked at administering the higher levels of punishment"
+  },
+  {
+    "part": "reading-2",
+    "term": "revulsion",
+    "pos": "noun",
+    "vi": "sự ghê tởm, phản cảm mạnh",
+    "en": "A strong feeling of disgust.",
+    "example": "strong personal and moral revulsion against the rules and conditions of the experiment."
+  },
+  {
+    "part": "reading-2",
+    "term": "consensus",
+    "pos": "noun",
+    "vi": "sự đồng thuận",
+    "en": "General agreement among a group of people.",
+    "example": "The overwhelming consensus was that virtually all the teacher-subjects would refuse to obey the experimenter."
+  },
+  {
+    "part": "reading-2",
+    "term": "discrepancy",
+    "pos": "noun",
+    "vi": "sự chênh lệch, khác biệt",
+    "en": "A difference between two things that should be the same.",
+    "example": "How can we possibly account for this vast discrepancy"
+  },
+  {
+    "part": "reading-2",
+    "term": "instinct",
+    "pos": "noun",
+    "vi": "bản năng",
+    "en": "A natural way of behaving that does not have to be learned.",
+    "example": "some sort of built-in animal aggression instinct"
+  },
+  {
+    "part": "reading-2",
+    "term": "malevolent",
+    "pos": "adjective",
+    "vi": "độc ác, có ác ý",
+    "en": "Wishing to do harm to others.",
+    "example": "to the service of malevolent systems of authority."
+  },
+  {
+    "part": "reading-2",
+    "term": "sociobiology",
+    "pos": "noun",
+    "vi": "xã hội sinh học (ngành nghiên cứu cơ sở sinh học của hành vi xã hội)",
+    "en": "The study of the biological basis of social behaviour.",
+    "example": "This, in essence, is the problem of modern sociobiology"
+  },
+  {
+    "part": "reading-3",
+    "term": "abundant",
+    "pos": "adjective",
+    "vi": "dồi dào, phong phú",
+    "en": "Existing in large quantities.",
+    "example": "energy and other natural resources have become more abundant, not less so"
+  },
+  {
+    "part": "reading-3",
+    "term": "extinct",
+    "pos": "adjective",
+    "vi": "tuyệt chủng",
+    "en": "No longer existing, used of a species.",
+    "example": "that species are becoming extinct in vast numbers"
+  },
+  {
+    "part": "reading-3",
+    "term": "transient",
+    "pos": "adjective",
+    "vi": "nhất thời, thoáng qua",
+    "en": "Lasting only for a short time.",
+    "example": "either appear to have been exaggerated, or are transient"
+  },
+  {
+    "part": "reading-3",
+    "term": "lopsidedness",
+    "pos": "noun",
+    "vi": "sự mất cân đối, lệch lạc",
+    "en": "The quality of being unbalanced, with one side larger or stronger than the other.",
+    "example": "One is the lopsidedness built into scientific research."
+  },
+  {
+    "part": "reading-3",
+    "term": "lobby group",
+    "pos": "noun",
+    "vi": "nhóm vận động hành lang",
+    "en": "An organised group that tries to influence politicians and public opinion.",
+    "example": "they nevertheless share many of the characteristics of other lobby groups."
+  },
+  {
+    "part": "reading-3",
+    "term": "altruistic",
+    "pos": "adjective",
+    "vi": "vị tha",
+    "en": "Caring about the needs of others rather than yourself.",
+    "example": "Yet a green organisation opposing such a weakening is seen as altruistic"
+  },
+  {
+    "part": "reading-3",
+    "term": "impartial",
+    "pos": "adjective",
+    "vi": "vô tư, khách quan",
+    "en": "Not favouring any side.",
+    "example": "even if an impartial view of the controls in question might suggest"
+  },
+  {
+    "part": "reading-3",
+    "term": "distortion",
+    "pos": "noun",
+    "vi": "sự bóp méo, xuyên tạc",
+    "en": "A change that makes something appear different from the truth.",
+    "example": "That, however, can lead to significant distortions of perception."
+  },
+  {
+    "part": "reading-3",
+    "term": "emissions",
+    "pos": "noun",
+    "vi": "khí thải",
+    "en": "Gases or other substances released into the air.",
+    "example": "carbon dioxide emissions are causing the planet to warm."
+  },
+  {
+    "part": "reading-3",
+    "term": "sanitation",
+    "pos": "noun",
+    "vi": "hệ thống vệ sinh (nước thải, rác)",
+    "en": "Systems that keep places clean and protect public health, such as sewage disposal.",
+    "example": "providing universal access to clean drinking water and sanitation."
+  },
+  {
+    "part": "writing-1",
+    "term": "proportion",
+    "pos": "noun",
+    "vi": "tỷ lệ",
+    "en": "A part of a whole, often expressed as a percentage.",
+    "example": "The line graph illustrates the proportion of the population aged 65 and over"
+  },
+  {
+    "part": "writing-1",
+    "term": "trajectory",
+    "pos": "noun",
+    "vi": "xu hướng diễn biến, quỹ đạo",
+    "en": "The path or development of something over time.",
+    "example": "Japan's trajectory was the most striking."
+  },
+  {
+    "part": "writing-1",
+    "term": "surge",
+    "pos": "verb",
+    "vi": "tăng vọt",
+    "en": "To rise suddenly and strongly.",
+    "example": "but surged dramatically afterward"
+  },
+  {
+    "part": "writing-1",
+    "term": "demographic",
+    "pos": "adjective",
+    "vi": "thuộc nhân khẩu học",
+    "en": "Relating to the structure of a population, such as age or gender.",
+    "example": "highlighting distinct demographic aging patterns across the nations."
+  },
+  {
+    "part": "writing-2",
+    "term": "quota",
+    "pos": "noun",
+    "vi": "hạn ngạch, chỉ tiêu bắt buộc",
+    "en": "A fixed number or share of something that must be included.",
+    "example": "I firmly disagree with imposing rigid gender quotas in every discipline"
+  },
+  {
+    "part": "writing-2",
+    "term": "merit",
+    "pos": "noun",
+    "vi": "năng lực, giá trị thực (xét theo thành tích)",
+    "en": "The quality of being good enough to deserve praise or reward.",
+    "example": "compromising educational standards and individual merit."
+  },
+  {
+    "part": "writing-2",
+    "term": "aptitude",
+    "pos": "noun",
+    "vi": "năng khiếu, khả năng",
+    "en": "A natural ability to do something well.",
+    "example": "candidates with the strongest scientific aptitude, regardless of gender."
+  },
+  {
+    "part": "writing-2",
+    "term": "compulsion",
+    "pos": "noun",
+    "vi": "sự ép buộc",
+    "en": "The act of forcing someone to do something.",
+    "example": "should be achieved through encouragement rather than compulsion."
+  },
+  {
+    "part": "writing-2",
+    "term": "stereotype",
+    "pos": "noun",
+    "vi": "định kiến, khuôn mẫu",
+    "en": "A fixed and oversimplified idea about a type of person.",
+    "example": "True progress comes from dismantling societal stereotypes"
+  },
+  {
+    "part": "writing-2",
+    "term": "meritocracy",
+    "pos": "noun",
+    "vi": "chế độ trọng dụng người tài, xét theo năng lực",
+    "en": "A system in which people succeed because of their ability, not their background.",
+    "example": "universities must uphold meritocracy as their guiding principle."
+  },
+  {
+    "part": "writing-2",
+    "term": "disparity",
+    "pos": "noun",
+    "vi": "sự chênh lệch, bất bình đẳng",
+    "en": "A noticeable and often unfair difference.",
+    "example": "significant gender disparities in certain disciplines deserve attention."
+  }
+]

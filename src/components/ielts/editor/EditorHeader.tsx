@@ -3,6 +3,7 @@
 import {
   Archive,
   ArchiveRestore,
+  BookOpen,
   CircleAlert,
   CircleCheck,
   EllipsisVertical,
@@ -48,6 +49,7 @@ interface Props {
   onGenerateMissing: () => void
   onOpenChecks: () => void
   onOpenLog: () => void
+  onOpenVocab: () => void
   onPublish: () => void
   onStop: () => void
   onUnarchive: () => void
@@ -70,6 +72,7 @@ export function EditorHeader({
   onGenerateMissing,
   onOpenChecks,
   onOpenLog,
+  onOpenVocab,
   onPublish,
   onStop,
   onUnarchive,
@@ -274,6 +277,10 @@ export function EditorHeader({
                 View as learner
               </DropdownMenuItem>
             ) : null}
+            <DropdownMenuItem onClick={onOpenVocab}>
+              <BookOpen aria-hidden="true" />
+              Vocabulary
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={onOpenLog}>
               <ScrollText aria-hidden="true" />
               AI log ({test.generationLog.length})

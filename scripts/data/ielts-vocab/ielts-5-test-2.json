@@ -1,0 +1,658 @@
+[
+  {
+    "part": "listening-1",
+    "term": "external member",
+    "pos": "noun",
+    "vi": "thành viên bên ngoài (không phải sinh viên của trường)",
+    "en": "A person who joins a library or club but does not belong to the college that runs it.",
+    "example": "That's why you have to pay to be an external member."
+  },
+  {
+    "part": "listening-1",
+    "term": "reference book",
+    "pos": "noun",
+    "vi": "sách tham khảo",
+    "en": "A book such as a dictionary or encyclopaedia that you look things up in.",
+    "example": "they don't have the range of reference books or facilities which we buy for our students."
+  },
+  {
+    "part": "listening-1",
+    "term": "fine",
+    "pos": "noun",
+    "vi": "tiền phạt",
+    "en": "Money you must pay as a punishment, for example for returning a book late.",
+    "example": "there's a fine system in place."
+  },
+  {
+    "part": "listening-1",
+    "term": "renew",
+    "pos": "verb",
+    "vi": "gia hạn",
+    "en": "To extend the time you may keep or use something.",
+    "example": "You can always renew items if they're not required by anyone else"
+  },
+  {
+    "part": "listening-1",
+    "term": "nominal",
+    "pos": "adjective",
+    "vi": "tượng trưng, rất nhỏ (về mức phí)",
+    "en": "Very small and only symbolic compared with the real value.",
+    "example": "then we make a nominal charge of £1 per hour thereafter."
+  },
+  {
+    "part": "listening-1",
+    "term": "advisable",
+    "pos": "adjective",
+    "vi": "nên làm, được khuyên",
+    "en": "Recommended as a sensible thing to do.",
+    "example": "Oh, yes, it's advisable."
+  },
+  {
+    "part": "listening-1",
+    "term": "photocopying facilities",
+    "pos": "noun",
+    "vi": "thiết bị photo",
+    "en": "Machines or services for making copies of documents.",
+    "example": "I assume you have photocopying facilities."
+  },
+  {
+    "part": "listening-1",
+    "term": "resident",
+    "pos": "adjective",
+    "vi": "thường trú, làm việc tại chỗ",
+    "en": "Living or working permanently in a particular place.",
+    "example": "He's our resident author, he runs the creative writing classes."
+  },
+  {
+    "part": "listening-2",
+    "term": "charity",
+    "pos": "noun",
+    "vi": "tổ chức từ thiện",
+    "en": "An organisation that raises money to help people in need.",
+    "example": "a small charity based mainly in the UK."
+  },
+  {
+    "part": "listening-2",
+    "term": "developing country",
+    "pos": "noun",
+    "vi": "nước đang phát triển",
+    "en": "A poor country that is working to improve its economy.",
+    "example": "exporting bicycles to developing countries"
+  },
+  {
+    "part": "listening-2",
+    "term": "rural",
+    "pos": "adjective",
+    "vi": "thuộc nông thôn",
+    "en": "Relating to the countryside rather than towns.",
+    "example": "Where I lived in Ecuador was a very rural area."
+  },
+  {
+    "part": "listening-2",
+    "term": "radius",
+    "pos": "noun",
+    "vi": "bán kính, phạm vi quanh một điểm",
+    "en": "The distance from the centre of a circle to its edge, or the area within a certain distance.",
+    "example": "Other local carpenters could only accept jobs in a 3 kilometer radius."
+  },
+  {
+    "part": "listening-2",
+    "term": "second-hand",
+    "pos": "adjective",
+    "vi": "đã qua sử dụng",
+    "en": "Previously owned by someone else.",
+    "example": "we collect second-hand bikes in the UK"
+  },
+  {
+    "part": "listening-2",
+    "term": "distribute",
+    "pos": "verb",
+    "vi": "phân phối",
+    "en": "To give out or supply things to different people or places.",
+    "example": "When we distribute bikes overseas, we don't give them away for free."
+  },
+  {
+    "part": "listening-2",
+    "term": "container",
+    "pos": "noun",
+    "vi": "công-ten-nơ (thùng hàng vận chuyển)",
+    "en": "A large metal box used for transporting goods by ship or lorry.",
+    "example": "It was the first place I sent a full container of bicycles to."
+  },
+  {
+    "part": "listening-2",
+    "term": "ran out of money",
+    "pos": "phrase",
+    "vi": "cạn tiền, hết tiền",
+    "en": "To have no money left.",
+    "example": "In August 2000 we simply ran out of money."
+  },
+  {
+    "part": "listening-2",
+    "term": "profile",
+    "pos": "noun",
+    "vi": "mức độ được biết đến, danh tiếng",
+    "en": "The degree to which the public notices a person or organisation.",
+    "example": "Winning the award helped raise our profile"
+  },
+  {
+    "part": "listening-2",
+    "term": "shipping costs",
+    "pos": "noun",
+    "vi": "chi phí vận chuyển (bằng tàu)",
+    "en": "The money needed to transport goods by sea.",
+    "example": "the money enabled us to pay all our shipping costs, which represent our greatest expense."
+  },
+  {
+    "part": "listening-2",
+    "term": "standard of living",
+    "pos": "noun",
+    "vi": "mức sống",
+    "en": "The level of comfort and wealth that a person or group has.",
+    "example": "people in a number of countries now have a better standard of living."
+  },
+  {
+    "part": "listening-2",
+    "term": "strip down",
+    "pos": "phrase",
+    "vi": "tháo rời (để lấy linh kiện)",
+    "en": "To take something apart into its separate pieces.",
+    "example": "we'll strip it down for spare parts."
+  },
+  {
+    "part": "listening-2",
+    "term": "sponsored",
+    "pos": "adjective",
+    "vi": "được tài trợ, quyên góp theo thành tích (để gây quỹ)",
+    "en": "Done to raise money, with people paying for each part you complete.",
+    "example": "including of course sponsored bike rides."
+  },
+  {
+    "part": "listening-2",
+    "term": "consignment",
+    "pos": "noun",
+    "vi": "lô hàng gửi đi",
+    "en": "A batch of goods sent together to someone.",
+    "example": "that would benefit from receiving a consignment of bikes"
+  },
+  {
+    "part": "listening-3",
+    "term": "feedback",
+    "pos": "noun",
+    "vi": "phản hồi, nhận xét",
+    "en": "Comments about how well someone has done something.",
+    "example": "I'd like to use this tutorial as a feedback session"
+  },
+  {
+    "part": "listening-3",
+    "term": "reflect on",
+    "pos": "phrase",
+    "vi": "suy ngẫm về",
+    "en": "To think carefully about something that has happened.",
+    "example": "where you reflect on the experience of doing the project."
+  },
+  {
+    "part": "listening-3",
+    "term": "maintain contact",
+    "pos": "phrase",
+    "vi": "duy trì liên lạc",
+    "en": "To stay in touch with someone.",
+    "example": "Do you think you'll maintain the contact now?"
+  },
+  {
+    "part": "listening-3",
+    "term": "edit",
+    "pos": "verb",
+    "vi": "biên tập, dựng (phim)",
+    "en": "To prepare a film or text by cutting and arranging it.",
+    "example": "when we were being shown how to edit the film"
+  },
+  {
+    "part": "listening-3",
+    "term": "slang",
+    "pos": "noun",
+    "vi": "tiếng lóng",
+    "en": "Very informal words used by a particular group of people.",
+    "example": "and they use a lot of slang."
+  },
+  {
+    "part": "listening-3",
+    "term": "compromise",
+    "pos": "verb",
+    "vi": "thỏa hiệp",
+    "en": "To accept less than you wanted in order to reach agreement.",
+    "example": "we had to find ways of cooperating, um, and compromising"
+  },
+  {
+    "part": "listening-3",
+    "term": "persuade",
+    "pos": "verb",
+    "vi": "thuyết phục",
+    "en": "To make someone agree to do or believe something.",
+    "example": "and sometimes persuading people when they don't agree with you."
+  },
+  {
+    "part": "listening-3",
+    "term": "ambitious",
+    "pos": "adjective",
+    "vi": "tham vọng, đầy hoài bão",
+    "en": "Aiming to do something difficult or large.",
+    "example": "So you should have been more ambitious."
+  },
+  {
+    "part": "listening-3",
+    "term": "inexperienced",
+    "pos": "adjective",
+    "vi": "thiếu kinh nghiệm",
+    "en": "Having little knowledge or practice of something.",
+    "example": "We were inexperienced, and we didn't have a lot of time"
+  },
+  {
+    "part": "listening-4",
+    "term": "hostile",
+    "pos": "adjective",
+    "vi": "khắc nghiệt, không thuận lợi cho sự sống",
+    "en": "Very unfriendly or harsh and difficult to live in.",
+    "example": "Remote, hostile, and at present uninhabited on a permanent basis."
+  },
+  {
+    "part": "listening-4",
+    "term": "ice cap",
+    "pos": "noun",
+    "vi": "chỏm băng, lớp băng phủ",
+    "en": "A thick layer of ice covering a large area of land.",
+    "example": "The ice cap contains almost 70% of the world's fresh water"
+  },
+  {
+    "part": "listening-4",
+    "term": "iceberg",
+    "pos": "noun",
+    "vi": "tảng băng trôi",
+    "en": "A huge mass of ice floating in the sea.",
+    "example": "Huge icebergs break off the continent each year"
+  },
+  {
+    "part": "listening-4",
+    "term": "cost-effective",
+    "pos": "adjective",
+    "vi": "hiệu quả về chi phí, tiết kiệm",
+    "en": "Giving good results for the money spent.",
+    "example": "science and technical support have been integrated in a very cost-effective way."
+  },
+  {
+    "part": "listening-4",
+    "term": "self-contained",
+    "pos": "adjective",
+    "vi": "tự cung tự cấp, khép kín",
+    "en": "Having everything needed and not depending on outside help.",
+    "example": "The research stations are really self-contained communities of about 20 people."
+  },
+  {
+    "part": "listening-4",
+    "term": "ice-shelf",
+    "pos": "noun",
+    "vi": "thềm băng",
+    "en": "A thick floating platform of ice attached to the coast.",
+    "example": "It wasn't built on land, but on an ice-shelf, hundreds of meters thick."
+  },
+  {
+    "part": "listening-4",
+    "term": "sledge",
+    "pos": "noun",
+    "vi": "xe trượt tuyết",
+    "en": "A vehicle without wheels used for travelling or carrying loads over snow.",
+    "example": "Supplies were brought to us on large sledges"
+  },
+  {
+    "part": "listening-4",
+    "term": "extendable",
+    "pos": "adjective",
+    "vi": "có thể kéo dài ra",
+    "en": "Able to be made longer.",
+    "example": "can be raised above the changing snow level on legs which are extendable."
+  },
+  {
+    "part": "listening-4",
+    "term": "carbohydrate",
+    "pos": "noun",
+    "vi": "tinh bột, chất đường bột",
+    "en": "A food substance such as bread or rice that gives the body energy.",
+    "example": "foods which are high in carbohydrate and fat."
+  },
+  {
+    "part": "listening-4",
+    "term": "rations",
+    "pos": "noun",
+    "vi": "khẩu phần lương thực",
+    "en": "A fixed amount of food given to each person.",
+    "example": "Rations for field work present an additional problem."
+  },
+  {
+    "part": "listening-4",
+    "term": "freeze-drying",
+    "pos": "noun",
+    "vi": "sấy đông khô",
+    "en": "A method of preserving food by freezing it and removing the water.",
+    "example": "You may be familiar with coffee processed by freeze-drying."
+  },
+  {
+    "part": "listening-4",
+    "term": "ozone layer",
+    "pos": "noun",
+    "vi": "tầng ôzôn",
+    "en": "A layer of gas high above the Earth that protects it from harmful sun rays.",
+    "example": "monitoring the size of the hole in the ozone layer above Antarctica"
+  },
+  {
+    "part": "listening-4",
+    "term": "pollution",
+    "pos": "noun",
+    "vi": "sự ô nhiễm",
+    "en": "Harmful substances that damage air, water or land.",
+    "example": "provide an index of pollution"
+  },
+  {
+    "part": "reading-1",
+    "term": "synthetic",
+    "pos": "adjective",
+    "vi": "tổng hợp, nhân tạo",
+    "en": "Made artificially by chemical processes, not found in nature.",
+    "example": "discovered and patented a revolutionary new synthetic material."
+  },
+  {
+    "part": "reading-1",
+    "term": "mould",
+    "pos": "noun",
+    "vi": "khuôn đúc",
+    "en": "A hollow container used to give a shape to a soft or liquid material.",
+    "example": "the heated Bakelite was poured into a hollow mould of the required shape"
+  },
+  {
+    "part": "reading-1",
+    "term": "thermosetting",
+    "pos": "adjective",
+    "vi": "nhiệt rắn (cứng lại vĩnh viễn sau khi gia nhiệt)",
+    "en": "Becoming permanently hard after being heated once.",
+    "example": "Others are 'thermosetting'"
+  },
+  {
+    "part": "reading-1",
+    "term": "impetus",
+    "pos": "noun",
+    "vi": "động lực thúc đẩy",
+    "en": "A force or influence that makes something develop faster.",
+    "example": "The impetus behind the development of these early plastics"
+  },
+  {
+    "part": "reading-1",
+    "term": "dwindling",
+    "pos": "adjective",
+    "vi": "ngày càng cạn kiệt",
+    "en": "Becoming smaller or fewer over time.",
+    "example": "substitutes for dwindling supplies of 'luxury' materials"
+  },
+  {
+    "part": "reading-1",
+    "term": "soluble",
+    "pos": "adjective",
+    "vi": "có thể hòa tan",
+    "en": "Able to be dissolved in a liquid.",
+    "example": "which became soluble and malleable when heated."
+  },
+  {
+    "part": "reading-1",
+    "term": "malleable",
+    "pos": "adjective",
+    "vi": "dễ uốn, dễ nhào nặn",
+    "en": "Soft enough to be shaped without breaking.",
+    "example": "which became soluble and malleable when heated."
+  },
+  {
+    "part": "reading-1",
+    "term": "catalyst",
+    "pos": "noun",
+    "vi": "chất xúc tác",
+    "en": "A substance that speeds up a chemical reaction without being changed itself.",
+    "example": "catalysts (substances to speed up the reaction between two chemicals without joining to either)"
+  },
+  {
+    "part": "reading-1",
+    "term": "granular",
+    "pos": "adjective",
+    "vi": "dạng hạt",
+    "en": "Made up of small grains.",
+    "example": "The resulting granular powder was raw Bakelite"
+  },
+  {
+    "part": "reading-1",
+    "term": "taper",
+    "pos": "verb",
+    "vi": "thon dần, vuốt nhỏ dần",
+    "en": "To become gradually narrower towards one end.",
+    "example": "objects should taper towards the deepest part of the mould"
+  },
+  {
+    "part": "reading-1",
+    "term": "streamlined",
+    "pos": "adjective",
+    "vi": "có dáng khí động học, thon gọn mượt",
+    "en": "Having a smooth shape that moves easily through air or water.",
+    "example": "giving rise to the smooth, 'streamlined' style popular in the 1930s."
+  },
+  {
+    "part": "reading-1",
+    "term": "disdain",
+    "pos": "noun",
+    "vi": "sự khinh thường",
+    "en": "A feeling that something is not good enough to deserve respect.",
+    "example": "Baekeland's invention, although treated with disdain in its early years"
+  },
+  {
+    "part": "reading-1",
+    "term": "renaissance",
+    "pos": "noun",
+    "vi": "sự phục hưng, sự hồi sinh",
+    "en": "A new growth of interest in something.",
+    "example": "it has been experiencing something of a renaissance"
+  },
+  {
+    "part": "reading-2",
+    "term": "punchline",
+    "pos": "noun",
+    "vi": "câu chốt của truyện cười",
+    "en": "The last part of a joke that makes it funny.",
+    "example": "The punchline is silly yet fitting, tempting a smile"
+  },
+  {
+    "part": "reading-2",
+    "term": "incongruity",
+    "pos": "noun",
+    "vi": "sự không hòa hợp, sự phi lý",
+    "en": "A strange mismatch between things that do not fit together.",
+    "example": "jokes are based on a reaction to or resolution of incongruity"
+  },
+  {
+    "part": "reading-2",
+    "term": "apt",
+    "pos": "adjective",
+    "vi": "thích hợp, đúng chỗ",
+    "en": "Suitable for the situation.",
+    "example": "followed by an unexpected interpretation that is also apt."
+  },
+  {
+    "part": "reading-2",
+    "term": "appeasement",
+    "pos": "noun",
+    "vi": "sự xoa dịu, làm nguôi",
+    "en": "The act of calming someone to avoid conflict.",
+    "example": "the laughter of social appeasement"
+  },
+  {
+    "part": "reading-2",
+    "term": "cognitive",
+    "pos": "adjective",
+    "vi": "thuộc nhận thức",
+    "en": "Relating to thinking and understanding.",
+    "example": "rather than cognitive events such as jokes"
+  },
+  {
+    "part": "reading-2",
+    "term": "instinctual",
+    "pos": "adjective",
+    "vi": "theo bản năng",
+    "en": "Done naturally without being taught.",
+    "example": "trigger these instinctual markers of play or appeasement."
+  },
+  {
+    "part": "reading-2",
+    "term": "arousal",
+    "pos": "noun",
+    "vi": "sự kích thích, mức độ hưng phấn",
+    "en": "A state of being mentally or physically excited and alert.",
+    "example": "Energy and arousal levels may need to be retuned in the blink of an eye."
+  },
+  {
+    "part": "reading-2",
+    "term": "evaluate",
+    "pos": "verb",
+    "vi": "đánh giá",
+    "en": "To judge the value or quality of something.",
+    "example": "This patch of brain tucked behind the orbits of the eyes is associated with evaluating information."
+  },
+  {
+    "part": "reading-3",
+    "term": "prominence",
+    "pos": "noun",
+    "vi": "sự nổi bật, vị thế quan trọng",
+    "en": "The state of being important, well known or easy to notice.",
+    "example": "Given the prominence of scientific English today, it may seem surprising that no one really knew how to write science in English before the 17th century."
+  },
+  {
+    "part": "reading-3",
+    "term": "lingua franca",
+    "pos": "phrase",
+    "vi": "ngôn ngữ chung (giữa những người nói tiếng mẹ đẻ khác nhau)",
+    "en": "A language used for communication between people whose first languages are different.",
+    "example": "Latin was regarded as the lingua franca for European intellectuals."
+  },
+  {
+    "part": "reading-3",
+    "term": "cartography",
+    "pos": "noun",
+    "vi": "ngành vẽ bản đồ",
+    "en": "The science or skill of making maps.",
+    "example": "Improvements in cartography."
+  },
+  {
+    "part": "reading-3",
+    "term": "empirical",
+    "pos": "adjective",
+    "vi": "dựa trên thực nghiệm, quan sát",
+    "en": "Based on observation and experiment rather than theory.",
+    "example": "Helped found the Royal Society in 1660 in order to promote empirical scientific research."
+  },
+  {
+    "part": "reading-3",
+    "term": "treatise",
+    "pos": "noun",
+    "vi": "chuyên luận (công trình viết chuyên sâu về một chủ đề)",
+    "en": "A long, serious piece of writing on one subject.",
+    "example": "Newton published his mathematical treatise, known as the Principia, in Latin."
+  },
+  {
+    "part": "reading-3",
+    "term": "preliminary",
+    "pos": "adjective",
+    "vi": "sơ bộ, ban đầu",
+    "en": "Coming before the main or final part, often as preparation.",
+    "example": "Putting into the public domain preliminary ideas which had not yet been fully exploited."
+  },
+  {
+    "part": "reading-3",
+    "term": "cipher",
+    "pos": "noun",
+    "vi": "mật mã",
+    "en": "A secret system of writing that hides the meaning of a message.",
+    "example": "By writing them in cipher, in obscure languages, or in private messages."
+  },
+  {
+    "part": "reading-3",
+    "term": "inadequacy",
+    "pos": "noun",
+    "vi": "sự không đầy đủ, sự thiếu sót",
+    "en": "The state of not being good enough or not having enough of something.",
+    "example": "The linguistic inadequacy of English in the early modern period."
+  },
+  {
+    "part": "reading-3",
+    "term": "hypothetical",
+    "pos": "adjective",
+    "vi": "mang tính giả định",
+    "en": "Imagined or suggested as possible, rather than known to be true.",
+    "example": "Relations, such as cause and effect, that might hold between complex and hypothetical entities."
+  },
+  {
+    "part": "reading-3",
+    "term": "foster",
+    "pos": "verb",
+    "vi": "thúc đẩy, khuyến khích phát triển",
+    "en": "To encourage something to develop.",
+    "example": "The society's members did a great deal to foster the publication of science in English."
+  },
+  {
+    "part": "reading-3",
+    "term": "inaugurate",
+    "pos": "verb",
+    "vi": "khai trương, ra mắt (chính thức bắt đầu)",
+    "en": "To officially start or introduce something new.",
+    "example": "In 1665 a new scientific journal, Philosophical Transactions, was inaugurated."
+  },
+  {
+    "part": "reading-3",
+    "term": "formative",
+    "pos": "adjective",
+    "vi": "mang tính hình thành, định hình",
+    "en": "Having a strong influence on how something develops.",
+    "example": "The 17th century was thus a formative period in the establishment of scientific English."
+  },
+  {
+    "part": "writing-1",
+    "term": "prioritise",
+    "pos": "verb",
+    "vi": "ưu tiên",
+    "en": "To treat something as more important than other things.",
+    "example": "while older individuals prioritise personal interest."
+  },
+  {
+    "part": "writing-1",
+    "term": "rebound",
+    "pos": "verb",
+    "vi": "tăng trở lại, phục hồi",
+    "en": "To increase again after falling.",
+    "example": "before rebounding slightly to approximately 45% for those over 49."
+  },
+  {
+    "part": "writing-2",
+    "term": "gap year",
+    "pos": "noun",
+    "vi": "năm nghỉ giữa chừng (giữa phổ thông và đại học)",
+    "en": "A year taken out between school and university to work or travel.",
+    "example": "Taking a gap year between secondary education and university has become increasingly popular"
+  },
+  {
+    "part": "writing-2",
+    "term": "momentum",
+    "pos": "noun",
+    "vi": "đà, động lực tiến triển",
+    "en": "The force that keeps progress going once it has started.",
+    "example": "Some students find it difficult to regain their study momentum"
+  },
+  {
+    "part": "writing-2",
+    "term": "outweigh",
+    "pos": "verb",
+    "vi": "lớn hơn, vượt trội hơn",
+    "en": "To be greater or more important than something else.",
+    "example": "its benefits for personal development clearly outweigh its drawbacks."
+  }
+]

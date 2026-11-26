@@ -1,0 +1,562 @@
+[
+  {
+    "part": "listening-1",
+    "term": "domestic",
+    "pos": "adjective",
+    "vi": "(thuộc) gia đình, dọn dẹp nhà ở",
+    "en": "Relating to the home rather than to business.",
+    "example": "Do you do domestic cleaning?"
+  },
+  {
+    "part": "listening-1",
+    "term": "thorough",
+    "pos": "adjective",
+    "vi": "kỹ lưỡng, triệt để",
+    "en": "Complete and careful, leaving nothing out.",
+    "example": "So we'd do a thorough clean of all surfaces in each room."
+  },
+  {
+    "part": "listening-1",
+    "term": "grubby",
+    "pos": "adjective",
+    "vi": "bẩn thỉu, dơ dáy",
+    "en": "Rather dirty.",
+    "example": "The outside gets done regularly by specialists, but the inside does get a bit grubby."
+  },
+  {
+    "part": "listening-1",
+    "term": "pressure washer",
+    "pos": "noun",
+    "vi": "máy rửa áp lực cao",
+    "en": "A machine that cleans surfaces with a strong jet of water.",
+    "example": "Yes, we can get the pressure washer onto that."
+  },
+  {
+    "part": "listening-1",
+    "term": "maintenance",
+    "pos": "noun",
+    "vi": "bảo trì, sửa chữa",
+    "en": "Work done to keep something in good condition.",
+    "example": "We do offer some other possibilities to do with general maintenance."
+  },
+  {
+    "part": "listening-1",
+    "term": "plumber",
+    "pos": "noun",
+    "vi": "thợ sửa ống nước",
+    "en": "A person who fits and repairs water pipes.",
+    "example": "If you have a problem with water, and you need a plumber in a hurry."
+  },
+  {
+    "part": "listening-1",
+    "term": "undergo",
+    "pos": "verb",
+    "vi": "trải qua, chịu (kiểm tra)",
+    "en": "To experience something, especially a check or treatment.",
+    "example": "They have to undergo a security check with the police."
+  },
+  {
+    "part": "listening-2",
+    "term": "staff turnover",
+    "pos": "noun",
+    "vi": "tỷ lệ nhân viên nghỉ việc, thay đổi nhân sự",
+    "en": "The rate at which employees leave and are replaced.",
+    "example": "I'm sure you have experienced the problem of high staff turnover in your hotels."
+  },
+  {
+    "part": "listening-2",
+    "term": "loyal",
+    "pos": "adjective",
+    "vi": "trung thành, gắn bó",
+    "en": "Staying faithful and supportive to a person or organisation.",
+    "example": "Every hotel relies on having loyal and experienced members of staff."
+  },
+  {
+    "part": "listening-2",
+    "term": "recruit",
+    "pos": "verb",
+    "vi": "tuyển dụng",
+    "en": "To find and employ new people.",
+    "example": "Having to recruit new staff all the time can be very time consuming."
+  },
+  {
+    "part": "listening-2",
+    "term": "resentful",
+    "pos": "adjective",
+    "vi": "bực bội, uất ức",
+    "en": "Feeling angry because you were treated unfairly.",
+    "example": "Which leave their staff feeling upset and resentful."
+  },
+  {
+    "part": "listening-2",
+    "term": "preferential treatment",
+    "pos": "noun",
+    "vi": "sự ưu ái, đối xử đặc biệt",
+    "en": "Treating one person better than others.",
+    "example": "Make sure you never give certain staff preferential treatment."
+  },
+  {
+    "part": "listening-2",
+    "term": "tangible",
+    "pos": "adjective",
+    "vi": "hữu hình, thực tế, rõ ràng",
+    "en": "Real and clear enough to be seen or measured.",
+    "example": "Keeping staff happy has other tangible benefits for the business."
+  },
+  {
+    "part": "listening-2",
+    "term": "retention",
+    "pos": "noun",
+    "vi": "việc giữ chân (nhân viên)",
+    "en": "The act of keeping something, such as employees.",
+    "example": "A year ago, The Portland recognized the need to invest in staff retention."
+  },
+  {
+    "part": "listening-2",
+    "term": "all-expenses-paid",
+    "pos": "adjective",
+    "vi": "được trả toàn bộ chi phí",
+    "en": "With every cost covered by someone else.",
+    "example": "They're sent on an all-expenses-paid trip abroad every year."
+  },
+  {
+    "part": "listening-2",
+    "term": "prospects",
+    "pos": "noun",
+    "vi": "triển vọng nghề nghiệp",
+    "en": "The chances of future success.",
+    "example": "Working in a hotel could be worthwhile and rewarding, with good prospects."
+  },
+  {
+    "part": "listening-2",
+    "term": "voucher",
+    "pos": "noun",
+    "vi": "phiếu hỗ trợ, phiếu giảm giá",
+    "en": "A paper or card that can be used instead of money.",
+    "example": "The hotel began issuing vouchers to help cover the cost of childcare."
+  },
+  {
+    "part": "listening-2",
+    "term": "co-operative",
+    "pos": "adjective",
+    "vi": "hợp tác, biết phối hợp",
+    "en": "Working together helpfully.",
+    "example": "By creating a co-operative and supportive environment."
+  },
+  {
+    "part": "listening-3",
+    "term": "assume",
+    "pos": "verb",
+    "vi": "mặc nhiên cho rằng, cho là đương nhiên",
+    "en": "To believe something is true without checking.",
+    "example": "All my classmates assumed I would achieve it."
+  },
+  {
+    "part": "listening-3",
+    "term": "fortunate",
+    "pos": "adjective",
+    "vi": "may mắn",
+    "en": "Lucky.",
+    "example": "I just kept thinking how fortunate I was, what a great chance this was."
+  },
+  {
+    "part": "listening-3",
+    "term": "innovative",
+    "pos": "adjective",
+    "vi": "mang tính đổi mới, sáng tạo",
+    "en": "Using new and original ideas.",
+    "example": "That's had a few innovative changes, maybe the pads they wear on their legs."
+  },
+  {
+    "part": "listening-3",
+    "term": "pimpled",
+    "pos": "adjective",
+    "vi": "có nốt lồi nhỏ (như mụn) trên bề mặt",
+    "en": "Covered with small round bumps.",
+    "example": "How they ended up being covered with pimpled rubber."
+  },
+  {
+    "part": "listening-3",
+    "term": "in bulk",
+    "pos": "phrase",
+    "vi": "với số lượng lớn",
+    "en": "In large quantities.",
+    "example": "A factory was making rolls of the rubber in bulk."
+  },
+  {
+    "part": "listening-3",
+    "term": "harness",
+    "pos": "noun",
+    "vi": "bộ dây cương, dây yên (ngựa)",
+    "en": "Straps put around a horse to control it or attach it to a cart.",
+    "example": "For something like horse harnesses."
+  },
+  {
+    "part": "listening-3",
+    "term": "booed",
+    "pos": "verb",
+    "vi": "la ó, huýt sáo chê",
+    "en": "Shouted to show strong disapproval.",
+    "example": "The Australian batsman who first wore it was booed and jeered by people watching."
+  },
+  {
+    "part": "listening-3",
+    "term": "stitched",
+    "pos": "adjective",
+    "vi": "được khâu lại",
+    "en": "Joined together with a needle and thread.",
+    "example": "They covered them with pieces of leather that were stitched together."
+  },
+  {
+    "part": "listening-4",
+    "term": "sap",
+    "pos": "noun",
+    "vi": "nhựa cây",
+    "en": "The liquid that carries food through a plant.",
+    "example": "It's produced from the plant fluid or sap."
+  },
+  {
+    "part": "listening-4",
+    "term": "preservative",
+    "pos": "noun",
+    "vi": "chất bảo quản",
+    "en": "A substance added to food to stop it going bad.",
+    "example": "It contains no preservatives or added ingredients."
+  },
+  {
+    "part": "listening-4",
+    "term": "refined",
+    "pos": "adjective",
+    "vi": "đã tinh luyện, qua tinh chế",
+    "en": "Processed to remove natural impurities.",
+    "example": "It provides a healthy alternative to refined sugar."
+  },
+  {
+    "part": "listening-4",
+    "term": "fertilizer",
+    "pos": "noun",
+    "vi": "phân bón",
+    "en": "A substance added to soil to help plants grow.",
+    "example": "And they'll grow without fertilizer in areas where there's plenty of moisture in the soil."
+  },
+  {
+    "part": "listening-4",
+    "term": "criterion",
+    "pos": "noun",
+    "vi": "tiêu chí, điều kiện",
+    "en": "A standard or condition used to judge something.",
+    "example": "However, they'll only do this if another important criterion is fulfilled."
+  },
+  {
+    "part": "listening-4",
+    "term": "indigenous",
+    "pos": "adjective",
+    "vi": "bản địa",
+    "en": "Originally living in a particular place.",
+    "example": "The indigenous communities had started producing maple sugar."
+  },
+  {
+    "part": "listening-4",
+    "term": "scorching",
+    "pos": "adjective",
+    "vi": "nóng như thiêu đốt",
+    "en": "Extremely hot.",
+    "example": "Pieces of rock that had become scorching hot from the sun."
+  },
+  {
+    "part": "listening-4",
+    "term": "diameter",
+    "pos": "noun",
+    "vi": "đường kính",
+    "en": "The width of a circle or round object, measured through its centre.",
+    "example": "They cannot be used to make syrup until the trunks reach a diameter of around 25 cm."
+  },
+  {
+    "part": "listening-4",
+    "term": "vascular system",
+    "pos": "noun",
+    "vi": "hệ mạch dẫn (của cây)",
+    "en": "The tubes in a plant that carry water and nutrients.",
+    "example": "The tree absorbs water from the soil, and that rises through the tree's vascular system."
+  },
+  {
+    "part": "listening-4",
+    "term": "tap",
+    "pos": "verb",
+    "vi": "khai thác nhựa (khoan lỗ vào thân cây)",
+    "en": "To make a hole in a tree to draw out its sap.",
+    "example": "When the tree is ready, it can be tapped."
+  },
+  {
+    "part": "listening-4",
+    "term": "evaporate",
+    "pos": "verb",
+    "vi": "bay hơi",
+    "en": "To change from a liquid into a gas.",
+    "example": "It has to be boiled, so that much of that water evaporates."
+  },
+  {
+    "part": "listening-4",
+    "term": "gritty",
+    "pos": "adjective",
+    "vi": "có sạn, lợn cợn",
+    "en": "Containing small hard pieces like sand.",
+    "example": "Gives the syrup a cloudy appearance and a slightly gritty taste."
+  },
+  {
+    "part": "reading-1",
+    "term": "strained",
+    "pos": "adjective",
+    "vi": "căng thẳng (về quan hệ)",
+    "en": "Not friendly or relaxed because of tension.",
+    "example": "There are few places in the world where relations between agriculture and conservation are more strained."
+  },
+  {
+    "part": "reading-1",
+    "term": "subsistence",
+    "pos": "adjective",
+    "vi": "tự cung tự cấp, đủ sống",
+    "en": "Producing only enough food to live on.",
+    "example": "Insect pests are destroying vast quantities of what is grown by local subsistence farmers."
+  },
+  {
+    "part": "reading-1",
+    "term": "paddy field",
+    "pos": "noun",
+    "vi": "ruộng lúa nước",
+    "en": "A flooded field where rice is grown.",
+    "example": "Leading them to clear forest to create new paddy fields."
+  },
+  {
+    "part": "reading-1",
+    "term": "insectivorous",
+    "pos": "adjective",
+    "vi": "ăn côn trùng",
+    "en": "Feeding on insects.",
+    "example": "Some of the island's insectivorous bats are currently thriving."
+  },
+  {
+    "part": "reading-1",
+    "term": "feast on",
+    "pos": "phrase",
+    "vi": "ăn ngấu nghiến, săn bắt dồi dào",
+    "en": "To eat a large amount of something with enjoyment.",
+    "example": "Several species of bats are giving Madagascar's rice farmers a vital pest control service by feasting on plagues of insects."
+  },
+  {
+    "part": "reading-1",
+    "term": "prey on",
+    "pos": "phrase",
+    "vi": "săn mồi, ăn thịt (con mồi)",
+    "en": "To hunt and eat another animal.",
+    "example": "We found that six species of bat are preying on rice pests."
+  },
+  {
+    "part": "reading-1",
+    "term": "forage",
+    "pos": "verb",
+    "vi": "kiếm ăn",
+    "en": "To search for food.",
+    "example": "Leaving no doubt that the animals are preferentially foraging in these man-made ecosystems."
+  },
+  {
+    "part": "reading-1",
+    "term": "susceptible",
+    "pos": "adjective",
+    "vi": "dễ bị ảnh hưởng, dễ mắc phải",
+    "en": "Easily harmed or affected by something.",
+    "example": "Make these crops more susceptible to insect pest infestations."
+  },
+  {
+    "part": "reading-1",
+    "term": "infestation",
+    "pos": "noun",
+    "vi": "sự phá hoại hàng loạt (của côn trùng, sâu bệnh)",
+    "en": "A large number of pests in a place, causing damage.",
+    "example": "Make these crops more susceptible to insect pest infestations."
+  },
+  {
+    "part": "reading-1",
+    "term": "roost",
+    "pos": "verb",
+    "vi": "đậu ngủ, trú (chim, dơi)",
+    "en": "To rest or sleep, as birds and bats do.",
+    "example": "And as well as roosting in trees, the bats sometimes roost in buildings."
+  },
+  {
+    "part": "reading-1",
+    "term": "mutually beneficial",
+    "pos": "adjective",
+    "vi": "đôi bên cùng có lợi",
+    "en": "Good for both sides.",
+    "example": "We hope that farmers can promote this mutually beneficial relationship by installing bat houses."
+  },
+  {
+    "part": "reading-1",
+    "term": "regeneration",
+    "pos": "noun",
+    "vi": "sự tái sinh, phục hồi",
+    "en": "The growing back of something that was damaged or lost.",
+    "example": "If we give nature a hand, we can speed up the process of regeneration."
+  },
+  {
+    "part": "reading-2",
+    "term": "conundrum",
+    "pos": "noun",
+    "vi": "câu đố hóc búa, vấn đề nan giải",
+    "en": "A confusing problem that is hard to solve.",
+    "example": "They may hold the answer to a conundrum that has long puzzled economists."
+  },
+  {
+    "part": "reading-2",
+    "term": "causal",
+    "pos": "adjective",
+    "vi": "mang tính nhân quả",
+    "en": "Relating to a cause and its effect.",
+    "example": "The lack of evidence for a causal link between education and a country's economic growth."
+  },
+  {
+    "part": "reading-2",
+    "term": "literacy",
+    "pos": "noun",
+    "vi": "khả năng đọc viết",
+    "en": "The ability to read and write.",
+    "example": "There's no evidence that having a high literacy rate made a country industrialise earlier."
+  },
+  {
+    "part": "reading-2",
+    "term": "mediocre",
+    "pos": "adjective",
+    "vi": "tầm thường, chỉ ở mức trung bình",
+    "en": "Not very good; of only average quality.",
+    "example": "England had only mediocre literacy rates by European standards."
+  },
+  {
+    "part": "reading-2",
+    "term": "inventory",
+    "pos": "noun",
+    "vi": "bản kê khai tài sản",
+    "en": "A detailed list of all the items someone owns.",
+    "example": "9,000 handwritten inventories listing over a million personal possessions."
+  },
+  {
+    "part": "reading-2",
+    "term": "stifle",
+    "pos": "verb",
+    "vi": "kìm hãm, bóp nghẹt",
+    "en": "To stop something from developing.",
+    "example": "Court records reveal obstacles that stifled industry."
+  },
+  {
+    "part": "reading-2",
+    "term": "numeracy",
+    "pos": "noun",
+    "vi": "khả năng tính toán cơ bản",
+    "en": "The ability to understand and use numbers.",
+    "example": "Signatures and people's estimates of their age indicate literacy and numeracy levels."
+  },
+  {
+    "part": "reading-2",
+    "term": "chastise",
+    "pos": "verb",
+    "vi": "khiển trách, quở phạt",
+    "en": "To criticise or punish someone severely.",
+    "example": "Who were chastised in 1707 for reading books in church instead of listening to the sermon."
+  },
+  {
+    "part": "reading-2",
+    "term": "reprimand",
+    "pos": "verb",
+    "vi": "khiển trách (chính thức)",
+    "en": "To tell someone officially that they have done wrong.",
+    "example": "Who was reprimanded in 1752 by the local weavers' guild."
+  },
+  {
+    "part": "reading-2",
+    "term": "defiance",
+    "pos": "noun",
+    "vi": "sự thách thức, sự bất tuân",
+    "en": "Open refusal to obey a rule or authority.",
+    "example": "It was a small act of defiance by today's standards."
+  },
+  {
+    "part": "reading-2",
+    "term": "monopoly",
+    "pos": "noun",
+    "vi": "sự độc quyền",
+    "en": "Complete control of a trade or industry by one group.",
+    "example": "Legislated against anything that undermined their monopolies."
+  },
+  {
+    "part": "reading-3",
+    "term": "blindfold",
+    "pos": "noun",
+    "vi": "khăn bịt mắt",
+    "en": "A cloth tied over the eyes so a person cannot see.",
+    "example": "Gareyev himself will be blindfolded."
+  },
+  {
+    "part": "reading-3",
+    "term": "prowess",
+    "pos": "noun",
+    "vi": "tài năng xuất chúng, kỹ năng điêu luyện",
+    "en": "Great skill at doing something.",
+    "example": "But Gareyev's prowess has drawn interest from beyond the chess-playing community."
+  },
+  {
+    "part": "reading-3",
+    "term": "astonishing",
+    "pos": "adjective",
+    "vi": "đáng kinh ngạc",
+    "en": "Extremely surprising.",
+    "example": "To me it is simply astonishing."
+  },
+  {
+    "part": "reading-3",
+    "term": "obsessed",
+    "pos": "adjective",
+    "vi": "ám ảnh, mê mẩn",
+    "en": "Unable to stop thinking about something.",
+    "example": "He entered his first tournament aged eight and soon became obsessed with competitions."
+  },
+  {
+    "part": "reading-3",
+    "term": "uninitiated",
+    "pos": "noun",
+    "vi": "người ngoại đạo, người chưa biết gì về lĩnh vực đó",
+    "en": "People who have no knowledge or experience of something.",
+    "example": "To the uninitiated, blindfold chess seems to call for superhuman skill."
+  },
+  {
+    "part": "reading-3",
+    "term": "taxing",
+    "pos": "adjective",
+    "vi": "gây mệt mỏi, đòi hỏi nhiều sức",
+    "en": "Demanding and tiring.",
+    "example": "But the ends of games are taxing too, as exhaustion sets in."
+  },
+  {
+    "part": "reading-3",
+    "term": "tentative",
+    "pos": "adjective",
+    "vi": "dè dặt, chưa chắc chắn",
+    "en": "Not yet certain or final.",
+    "example": "Though the results are tentative and as yet unpublished."
+  },
+  {
+    "part": "reading-3",
+    "term": "allocate",
+    "pos": "verb",
+    "vi": "phân bổ (sự chú ý)",
+    "en": "To give out a share of something for a purpose.",
+    "example": "It helps you to allocate attention, keep rules in mind, and work out whether you should be responding or not."
+  },
+  {
+    "part": "writing-2",
+    "term": "alternative medicine",
+    "pos": "noun",
+    "vi": "y học thay thế",
+    "en": "Medical treatment that is not part of standard science-based medicine.",
+    "example": "Nowadays, a growing number of people with health problems are trying alternative medicines and treatments instead of visiting their usual doctor."
+  }
+]

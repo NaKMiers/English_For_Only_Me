@@ -1,0 +1,562 @@
+[
+  {
+    "part": "listening-1",
+    "term": "attic",
+    "pos": "noun",
+    "vi": "gác mái",
+    "en": "A room or space under the roof of a house.",
+    "example": "I've got a box full of old family photos that's been up in the attic for years."
+  },
+  {
+    "part": "listening-1",
+    "term": "restriction",
+    "pos": "noun",
+    "vi": "sự hạn chế, giới hạn",
+    "en": "A rule or limit on what is allowed.",
+    "example": "The photos are all sorts of sizes. Are there any restrictions?"
+  },
+  {
+    "part": "listening-1",
+    "term": "touch up",
+    "pos": "phrase",
+    "vi": "chỉnh sửa nhẹ cho đẹp hơn",
+    "en": "To make small improvements to something.",
+    "example": "We can sometimes touch up the color a bit, or improve the contrast."
+  },
+  {
+    "part": "listening-1",
+    "term": "contrast",
+    "pos": "noun",
+    "vi": "độ tương phản",
+    "en": "The difference between light and dark areas in a picture.",
+    "example": "Or improve the contrast, that can make a big difference."
+  },
+  {
+    "part": "listening-1",
+    "term": "fragile",
+    "pos": "adjective",
+    "vi": "dễ vỡ, mỏng manh",
+    "en": "Easily damaged or broken.",
+    "example": "Some of the photos are actually quite fragile."
+  },
+  {
+    "part": "listening-1",
+    "term": "precious",
+    "pos": "adjective",
+    "vi": "quý giá",
+    "en": "Very valuable or important to you.",
+    "example": "We do realize how precious these old photos can be."
+  },
+  {
+    "part": "listening-1",
+    "term": "alter",
+    "pos": "verb",
+    "vi": "thay đổi, chỉnh sửa",
+    "en": "To change something slightly.",
+    "example": "Or maybe alter the background, we can do that."
+  },
+  {
+    "part": "listening-1",
+    "term": "in focus",
+    "pos": "phrase",
+    "vi": "nét, rõ nét (ảnh)",
+    "en": "Clear and sharp, not blurred.",
+    "example": "I've got a few that aren't properly in focus."
+  },
+  {
+    "part": "listening-2",
+    "term": "commission",
+    "pos": "verb",
+    "vi": "đặt xây dựng, đặt làm",
+    "en": "To officially ask someone to build or create something.",
+    "example": "It was commissioned by a businessman, Neville Richards."
+  },
+  {
+    "part": "listening-2",
+    "term": "heir",
+    "pos": "noun",
+    "vi": "người thừa kế",
+    "en": "A person who receives property after someone dies.",
+    "example": "His heir chose to sell it to the local council."
+  },
+  {
+    "part": "listening-2",
+    "term": "nucleus",
+    "pos": "noun",
+    "vi": "hạt nhân, phần cốt lõi ban đầu",
+    "en": "The central part around which something grows.",
+    "example": "It formed the nucleus of this school when it opened 40 years ago."
+  },
+  {
+    "part": "listening-2",
+    "term": "planning permission",
+    "pos": "noun",
+    "vi": "giấy phép xây dựng",
+    "en": "Official approval to build or change a building.",
+    "example": "Planning permission has been granted for development of both sites."
+  },
+  {
+    "part": "listening-2",
+    "term": "imminent",
+    "pos": "adjective",
+    "vi": "sắp xảy ra",
+    "en": "About to happen very soon.",
+    "example": "A more imminent change concerns the catering facilities and the canteen."
+  },
+  {
+    "part": "listening-2",
+    "term": "catering",
+    "pos": "noun",
+    "vi": "dịch vụ ăn uống",
+    "en": "The job of providing food for a group of people.",
+    "example": "A more imminent change concerns the catering facilities and the canteen."
+  },
+  {
+    "part": "listening-2",
+    "term": "capacity",
+    "pos": "noun",
+    "vi": "sức chứa",
+    "en": "The maximum number of people or things that fit in a space.",
+    "example": "In fact, it's often full to capacity."
+  },
+  {
+    "part": "listening-2",
+    "term": "top up",
+    "pos": "phrase",
+    "vi": "nạp thêm tiền (vào thẻ)",
+    "en": "To add more money to an account or card.",
+    "example": "Topping up your child's electronic payment card online."
+  },
+  {
+    "part": "listening-2",
+    "term": "cuisine",
+    "pos": "noun",
+    "vi": "ẩm thực",
+    "en": "A style of cooking typical of a country or region.",
+    "example": "This will serve a different country's cuisine each day."
+  },
+  {
+    "part": "listening-2",
+    "term": "cater for",
+    "pos": "phrase",
+    "vi": "phục vụ nhu cầu của",
+    "en": "To provide what a particular group of people needs.",
+    "example": "Will cater particularly for the many pupils who don't eat meat or fish."
+  },
+  {
+    "part": "listening-2",
+    "term": "waiting list",
+    "pos": "noun",
+    "vi": "danh sách chờ",
+    "en": "A list of people waiting for something to become available.",
+    "example": "In fact, there's a waiting list for lessons."
+  },
+  {
+    "part": "listening-3",
+    "term": "coincidence",
+    "pos": "noun",
+    "vi": "sự trùng hợp ngẫu nhiên",
+    "en": "When two things happen together by chance.",
+    "example": "Right. So it's just a coincidence really."
+  },
+  {
+    "part": "listening-3",
+    "term": "trigger",
+    "pos": "verb",
+    "vi": "kích hoạt, gợi lên",
+    "en": "To cause something to start or happen.",
+    "example": "Happens to trigger a dream memory."
+  },
+  {
+    "part": "listening-3",
+    "term": "segmented sleeping",
+    "pos": "noun",
+    "vi": "giấc ngủ chia đoạn (ngủ hai lần mỗi đêm)",
+    "en": "Sleeping in two parts with a period awake in between.",
+    "example": "Something else I read about is what they call segmented sleeping."
+  },
+  {
+    "part": "listening-3",
+    "term": "nap",
+    "pos": "noun",
+    "vi": "giấc ngủ ngắn",
+    "en": "A short sleep during the day.",
+    "example": "To see at what age kids should stop having naps."
+  },
+  {
+    "part": "listening-3",
+    "term": "methodology",
+    "pos": "noun",
+    "vi": "phương pháp nghiên cứu",
+    "en": "The set of methods used to carry out a study.",
+    "example": "They spent a lot of time working out the most appropriate methodology."
+  },
+  {
+    "part": "listening-3",
+    "term": "justify",
+    "pos": "verb",
+    "vi": "giải thích, biện minh",
+    "en": "To give good reasons for a decision or action.",
+    "example": "Where we had to describe and justify how successful we thought we'd been."
+  },
+  {
+    "part": "listening-3",
+    "term": "self assessment",
+    "pos": "noun",
+    "vi": "tự đánh giá",
+    "en": "Judging your own work or performance.",
+    "example": "But I got marked down for the self assessment as well."
+  },
+  {
+    "part": "listening-3",
+    "term": "statistical",
+    "pos": "adjective",
+    "vi": "thuộc thống kê",
+    "en": "Relating to numbers and data analysis.",
+    "example": "And I had big problems with the statistical stuff."
+  },
+  {
+    "part": "listening-3",
+    "term": "self reporting",
+    "pos": "noun",
+    "vi": "tự báo cáo (người tham gia tự ghi lại)",
+    "en": "A method where participants record information about themselves.",
+    "example": "No, it needs to be self reporting, I think."
+  },
+  {
+    "part": "listening-3",
+    "term": "ethical guidelines",
+    "pos": "noun",
+    "vi": "nguyên tắc đạo đức (nghiên cứu)",
+    "en": "Rules about what is morally acceptable in research.",
+    "example": "And we'll have to check the ethical guidelines for this sort of research."
+  },
+  {
+    "part": "listening-3",
+    "term": "correlation",
+    "pos": "noun",
+    "vi": "mối tương quan",
+    "en": "A connection between two sets of data.",
+    "example": "Calculate the correlation between our two variables."
+  },
+  {
+    "part": "listening-3",
+    "term": "variable",
+    "pos": "noun",
+    "vi": "biến số",
+    "en": "A factor that can change in an experiment.",
+    "example": "Calculate the correlation between our two variables."
+  },
+  {
+    "part": "listening-4",
+    "term": "hormone",
+    "pos": "noun",
+    "vi": "hoóc-môn",
+    "en": "A chemical in the body that affects how it works.",
+    "example": "Dancing, like other forms of exercise, releases hormones."
+  },
+  {
+    "part": "listening-4",
+    "term": "cognitive",
+    "pos": "adjective",
+    "vi": "thuộc nhận thức, trí tuệ",
+    "en": "Relating to thinking and understanding.",
+    "example": "All were given cognitive tasks to perform before and after."
+  },
+  {
+    "part": "listening-4",
+    "term": "prescribe",
+    "pos": "verb",
+    "vi": "kê đơn, chỉ định (như một liệu pháp)",
+    "en": "To officially recommend a treatment.",
+    "example": "He thinks dance should be prescribed as therapy."
+  },
+  {
+    "part": "listening-4",
+    "term": "adolescent",
+    "pos": "adjective",
+    "vi": "thuộc tuổi thiếu niên",
+    "en": "Relating to young people between childhood and adulthood.",
+    "example": "It's well established that dance is a good way of encouraging adolescent girls to take exercise."
+  },
+  {
+    "part": "listening-4",
+    "term": "barrier",
+    "pos": "noun",
+    "vi": "rào cản",
+    "en": "Something that stops people from doing something.",
+    "example": "One of the great things about dance is that there are no barriers to participation."
+  },
+  {
+    "part": "listening-4",
+    "term": "balance",
+    "pos": "noun",
+    "vi": "sự thăng bằng",
+    "en": "The ability to stay steady without falling.",
+    "example": "By helping people to improve their balance."
+  },
+  {
+    "part": "listening-4",
+    "term": "retain",
+    "pos": "verb",
+    "vi": "ghi nhớ, giữ lại",
+    "en": "To keep or remember something.",
+    "example": "And to retain more information."
+  },
+  {
+    "part": "listening-4",
+    "term": "well-being",
+    "pos": "noun",
+    "vi": "sức khỏe và sự dễ chịu",
+    "en": "A state of feeling healthy and happy.",
+    "example": "Dance promotes a general sense of well-being in older participants."
+  },
+  {
+    "part": "listening-4",
+    "term": "isolation",
+    "pos": "noun",
+    "vi": "sự cô lập, cô đơn",
+    "en": "The feeling of being alone and separate from others.",
+    "example": "Can reduce older people's sense of isolation."
+  },
+  {
+    "part": "listening-4",
+    "term": "aerobic",
+    "pos": "adjective",
+    "vi": "(tập) aerobic, thuộc vận động hiếu khí",
+    "en": "Describing exercise that raises your heart rate and breathing.",
+    "example": "An aerobic workout based on Latin American dance moves."
+  },
+  {
+    "part": "reading-1",
+    "term": "geoglyph",
+    "pos": "noun",
+    "vi": "hình khắc khổng lồ trên mặt đất",
+    "en": "A large design made on the ground, often on a hillside.",
+    "example": "The cutting of huge figures or 'geoglyphs' into the earth of English hillsides."
+  },
+  {
+    "part": "reading-1",
+    "term": "chalk",
+    "pos": "noun",
+    "vi": "đá phấn",
+    "en": "A soft white rock found in some hills.",
+    "example": "With the vast majority on the chalk downlands of the country's southern counties."
+  },
+  {
+    "part": "reading-1",
+    "term": "enigmatic",
+    "pos": "adjective",
+    "vi": "bí ẩn, khó hiểu",
+    "en": "Mysterious and difficult to understand.",
+    "example": "More controversial is the date of the enigmatic Long Man of Wilmington in Sussex."
+  },
+  {
+    "part": "reading-1",
+    "term": "scour",
+    "pos": "verb",
+    "vi": "cọ rửa, làm sạch cỏ",
+    "en": "To clean a surface by rubbing or clearing it hard.",
+    "example": "Unless it was regularly cleaned or scoured by a fairly large team of people."
+  },
+  {
+    "part": "reading-1",
+    "term": "stylised",
+    "pos": "adjective",
+    "vi": "được cách điệu",
+    "en": "Drawn in a simplified, artistic way rather than realistic.",
+    "example": "The Uffington White Horse is a unique, stylised representation of a horse."
+  },
+  {
+    "part": "reading-1",
+    "term": "burial mound",
+    "pos": "noun",
+    "vi": "gò mộ",
+    "en": "A small hill of earth built over a grave.",
+    "example": "The Uffington Horse is also surrounded by Bronze Age burial mounds."
+  },
+  {
+    "part": "reading-1",
+    "term": "ritual",
+    "pos": "noun",
+    "vi": "nghi lễ",
+    "en": "A set of actions done as part of a religious ceremony.",
+    "example": "Alternatively, the carving may have been carried out during a Bronze or Iron Age ritual."
+  },
+  {
+    "part": "reading-1",
+    "term": "emblem",
+    "pos": "noun",
+    "vi": "biểu tượng, huy hiệu",
+    "en": "A symbol that represents a group or idea.",
+    "example": "Indicating that it may represent a tribal emblem marking the land of the inhabitants."
+  },
+  {
+    "part": "reading-1",
+    "term": "fertility",
+    "pos": "noun",
+    "vi": "khả năng sinh sản, sự màu mỡ",
+    "en": "The ability to produce children, young or crops.",
+    "example": "And for her associations with fertility."
+  },
+  {
+    "part": "reading-1",
+    "term": "attest",
+    "pos": "verb",
+    "vi": "chứng thực, chứng minh",
+    "en": "To show or prove that something is true.",
+    "example": "As attested by its depictions on jewellery and other metal objects."
+  },
+  {
+    "part": "reading-2",
+    "term": "microbe",
+    "pos": "noun",
+    "vi": "vi sinh vật",
+    "en": "A tiny living thing that can only be seen with a microscope.",
+    "example": "Microbes, most of them bacteria, have populated this planet since long before animal life developed."
+  },
+  {
+    "part": "reading-2",
+    "term": "ubiquitous",
+    "pos": "adjective",
+    "vi": "có mặt khắp nơi",
+    "en": "Found everywhere.",
+    "example": "Invisible to the naked eye, they are ubiquitous."
+  },
+  {
+    "part": "reading-2",
+    "term": "adept",
+    "pos": "adjective",
+    "vi": "thành thạo, khéo léo",
+    "en": "Very good at something that needs skill.",
+    "example": "Yong, a young British science journalist, is an extraordinarily adept guide."
+  },
+  {
+    "part": "reading-2",
+    "term": "panache",
+    "pos": "noun",
+    "vi": "phong thái hào hứng, sự phô diễn tài tình",
+    "en": "A stylish and confident way of doing something.",
+    "example": "Writing with lightness and panache."
+  },
+  {
+    "part": "reading-2",
+    "term": "enthralling",
+    "pos": "adjective",
+    "vi": "cực kỳ cuốn hút",
+    "en": "Holding your attention completely.",
+    "example": "In terms that are both easy to understand and totally enthralling."
+  },
+  {
+    "part": "reading-2",
+    "term": "potent",
+    "pos": "adjective",
+    "vi": "mạnh mẽ, có sức ảnh hưởng lớn",
+    "en": "Having a strong effect or power.",
+    "example": "The first man to see these extraordinarily potent creatures."
+  },
+  {
+    "part": "reading-2",
+    "term": "symbiotic",
+    "pos": "adjective",
+    "vi": "cộng sinh",
+    "en": "Describing a relationship where two living things depend on each other.",
+    "example": "Instead we should realise we have a symbiotic relationship."
+  },
+  {
+    "part": "reading-2",
+    "term": "unravel",
+    "pos": "verb",
+    "vi": "làm sáng tỏ, gỡ rối",
+    "en": "To work out the explanation for something complicated.",
+    "example": "New research is now unravelling the ways in which bacteria aid digestion."
+  },
+  {
+    "part": "reading-2",
+    "term": "toxin",
+    "pos": "noun",
+    "vi": "độc tố",
+    "en": "A poisonous substance made by a living thing.",
+    "example": "Regulate our immune systems, eliminate toxins, produce vitamins."
+  },
+  {
+    "part": "reading-2",
+    "term": "antibiotic",
+    "pos": "noun",
+    "vi": "thuốc kháng sinh",
+    "en": "A medicine that kills bacteria.",
+    "example": "Our overuse of antibiotics and our unhealthy, low-fibre diets."
+  },
+  {
+    "part": "reading-2",
+    "term": "detergent",
+    "pos": "noun",
+    "vi": "chất tẩy rửa",
+    "en": "A liquid or powder used for cleaning.",
+    "example": "The excessive use of household detergents and antibacterial products."
+  },
+  {
+    "part": "reading-3",
+    "term": "revered",
+    "pos": "adjective",
+    "vi": "được tôn kính",
+    "en": "Respected and admired very much.",
+    "example": "Wisdom has been considered one of the most revered human qualities."
+  },
+  {
+    "part": "reading-3",
+    "term": "empirical",
+    "pos": "adjective",
+    "vi": "dựa trên thực nghiệm",
+    "en": "Based on observation and experiment rather than theory.",
+    "example": "Empirical research examining wisdom suggests that it isn't an exceptional trait."
+  },
+  {
+    "part": "reading-3",
+    "term": "humility",
+    "pos": "noun",
+    "vi": "sự khiêm tốn",
+    "en": "Not thinking that you are better than others.",
+    "example": "One is intellectual humility or recognition of the limits of our own knowledge."
+  },
+  {
+    "part": "reading-3",
+    "term": "compromise",
+    "pos": "noun",
+    "vi": "sự thỏa hiệp",
+    "en": "An agreement where each side gives up something.",
+    "example": "Along with compromise or integration of different attitudes and beliefs."
+  },
+  {
+    "part": "reading-3",
+    "term": "impartiality",
+    "pos": "noun",
+    "vi": "sự công bằng, không thiên vị",
+    "en": "Treating all sides fairly without favouring any.",
+    "example": "Interpersonal and moral ideals such as justice and impartiality."
+  },
+  {
+    "part": "reading-3",
+    "term": "egocentric",
+    "pos": "adjective",
+    "vi": "vị kỷ, lấy mình làm trung tâm",
+    "en": "Thinking only about yourself.",
+    "example": "Compared to the couples in the egocentric condition."
+  },
+  {
+    "part": "reading-3",
+    "term": "retaliate",
+    "pos": "verb",
+    "vi": "trả đũa",
+    "en": "To hurt someone because they hurt you.",
+    "example": "Their emotions or likelihood to forgive [or] retaliate."
+  },
+  {
+    "part": "writing-2",
+    "term": "emphasise",
+    "pos": "verb",
+    "vi": "nhấn mạnh",
+    "en": "To give special importance to something.",
+    "example": "Businesses nowadays usually emphasise that their products are new in some way."
+  }
+]

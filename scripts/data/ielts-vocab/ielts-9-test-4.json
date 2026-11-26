@@ -1,0 +1,554 @@
+[
+  {
+    "part": "listening-1",
+    "term": "register",
+    "pos": "verb",
+    "vi": "đăng ký (với bác sĩ, cơ sở y tế)",
+    "en": "To put your name on an official list.",
+    "example": "I'd like to know where we can all register with a doctor at a health center."
+  },
+  {
+    "part": "listening-1",
+    "term": "clinic",
+    "pos": "noun",
+    "vi": "phòng khám",
+    "en": "A place where people go for medical advice or treatment.",
+    "example": "There's Doctor Green at the Harvey clinic."
+  },
+  {
+    "part": "listening-1",
+    "term": "reputation",
+    "pos": "noun",
+    "vi": "danh tiếng",
+    "en": "The general opinion that people have about someone or something.",
+    "example": "He's new there, but the center has a very good reputation."
+  },
+  {
+    "part": "listening-1",
+    "term": "vaccinate",
+    "pos": "verb",
+    "vi": "tiêm chủng",
+    "en": "To give a medicine that protects against a disease.",
+    "example": "If you need to be vaccinated before any trips abroad, you won't have to pay for this."
+  },
+  {
+    "part": "listening-1",
+    "term": "nutritional",
+    "pos": "adjective",
+    "vi": "thuộc dinh dưỡng",
+    "en": "Connected with the food you eat and how it affects health.",
+    "example": "As does the nutritional therapy service."
+  },
+  {
+    "part": "listening-1",
+    "term": "therapy",
+    "pos": "noun",
+    "vi": "liệu pháp",
+    "en": "A treatment for an illness or health problem.",
+    "example": "As does the nutritional therapy service."
+  },
+  {
+    "part": "listening-1",
+    "term": "pilot scheme",
+    "pos": "noun",
+    "vi": "chương trình thí điểm",
+    "en": "A small test of a plan before it is used widely.",
+    "example": "The center is running a pilot scheme of talks for patients."
+  },
+  {
+    "part": "listening-1",
+    "term": "asthma",
+    "pos": "noun",
+    "vi": "bệnh hen suyễn",
+    "en": "A lung condition that makes breathing difficult.",
+    "example": "The talk will stress the health benefits particularly for people with asthma or heart disease."
+  },
+  {
+    "part": "listening-2",
+    "term": "radiator",
+    "pos": "noun",
+    "vi": "lò sưởi, bộ tản nhiệt",
+    "en": "A metal device on a wall that heats a room using hot water.",
+    "example": "The middle one of these three controls controls the radiators."
+  },
+  {
+    "part": "listening-2",
+    "term": "maximum",
+    "pos": "noun",
+    "vi": "mức tối đa",
+    "en": "The greatest amount possible.",
+    "example": "If you feel cold while you're there, and need the radiators on, this needs to be turned to maximum."
+  },
+  {
+    "part": "listening-2",
+    "term": "reset",
+    "pos": "verb",
+    "vi": "cài đặt lại, khởi động lại",
+    "en": "To set a machine to its starting position.",
+    "example": "You'll need to press this button to reset the heater."
+  },
+  {
+    "part": "listening-2",
+    "term": "indicator",
+    "pos": "noun",
+    "vi": "đèn báo",
+    "en": "A light or sign that shows the state of something.",
+    "example": "Then there's a little square indicator under the third knob."
+  },
+  {
+    "part": "listening-2",
+    "term": "washing powder",
+    "pos": "noun",
+    "vi": "bột giặt",
+    "en": "Powder used to wash clothes.",
+    "example": "We haven't managed to find a few things we need, like extra pillows for the beds and some washing powder."
+  },
+  {
+    "part": "listening-2",
+    "term": "spare",
+    "pos": "adjective",
+    "vi": "dự phòng",
+    "en": "Kept in addition to what is being used, in case it is needed.",
+    "example": "The spare key to the back door is hanging on a hook on the wall by the sitting room window."
+  },
+  {
+    "part": "listening-2",
+    "term": "bulb",
+    "pos": "noun",
+    "vi": "bóng đèn",
+    "en": "The glass part of a lamp that produces light.",
+    "example": "You'll find some spare bulbs in a large cardboard box."
+  },
+  {
+    "part": "listening-2",
+    "term": "takeaway",
+    "pos": "noun",
+    "vi": "đồ ăn mang đi",
+    "en": "Food that you buy in a restaurant and eat elsewhere.",
+    "example": "If you want a takeaway, the Italian one does really good pasta and pizzas."
+  },
+  {
+    "part": "listening-3",
+    "term": "enrol",
+    "pos": "verb",
+    "vi": "đăng ký học, ghi danh",
+    "en": "To officially join a course or school.",
+    "example": "What course did you enroll in?"
+  },
+  {
+    "part": "listening-3",
+    "term": "credit",
+    "pos": "verb",
+    "vi": "công nhận tín chỉ",
+    "en": "To count previous study towards a new qualification.",
+    "example": "They credited me with 2 years."
+  },
+  {
+    "part": "listening-3",
+    "term": "assignment",
+    "pos": "noun",
+    "vi": "bài tập lớn, bài luận",
+    "en": "A piece of work given to a student as part of a course.",
+    "example": "I found it very difficult to write assignments."
+  },
+  {
+    "part": "listening-3",
+    "term": "critical",
+    "pos": "adjective",
+    "vi": "có tư duy phản biện",
+    "en": "Judging the good and bad points of something carefully.",
+    "example": "The main problem is that the lecturers expect you to be critical."
+  },
+  {
+    "part": "listening-3",
+    "term": "approachable",
+    "pos": "adjective",
+    "vi": "dễ gần",
+    "en": "Friendly and easy to talk to.",
+    "example": "Here they're much easier to approach."
+  },
+  {
+    "part": "listening-3",
+    "term": "assertive",
+    "pos": "adjective",
+    "vi": "quyết đoán, tự tin bày tỏ ý kiến",
+    "en": "Confident and willing to say what you want or think.",
+    "example": "You were younger and not so assertive."
+  },
+  {
+    "part": "listening-3",
+    "term": "faculty",
+    "pos": "noun",
+    "vi": "khoa (trong trường đại học)",
+    "en": "A department of a university that teaches a group of subjects.",
+    "example": "In my faculty, they all seem to make appointments."
+  },
+  {
+    "part": "listening-3",
+    "term": "specialise",
+    "pos": "verb",
+    "vi": "chuyên về",
+    "en": "To focus on one particular subject or area.",
+    "example": "Something they might want to specialize in."
+  },
+  {
+    "part": "listening-3",
+    "term": "dispensary",
+    "pos": "noun",
+    "vi": "quầy phát thuốc (ở bệnh viện)",
+    "en": "A place where medicines are prepared and given out.",
+    "example": "Then in 2nd semester, we had to get experience in hospital dispensaries."
+  },
+  {
+    "part": "listening-3",
+    "term": "familiarity",
+    "pos": "noun",
+    "vi": "sự quen thuộc",
+    "en": "Knowledge of something because you have met it before.",
+    "example": "The biggest problem for me was lack of familiarity with the education system here."
+  },
+  {
+    "part": "listening-4",
+    "term": "interim",
+    "pos": "adjective",
+    "vi": "tạm thời, sơ bộ",
+    "en": "Temporary, for the time between two events.",
+    "example": "Then talk a little bit about our research techniques, and then indicate some of our interim findings."
+  },
+  {
+    "part": "listening-4",
+    "term": "bird of prey",
+    "pos": "noun",
+    "vi": "chim săn mồi",
+    "en": "A bird that hunts and eats other animals.",
+    "example": "One of Britain's most interesting birds of prey."
+  },
+  {
+    "part": "listening-4",
+    "term": "proportion",
+    "pos": "noun",
+    "vi": "tỷ lệ",
+    "en": "A part of a whole.",
+    "example": "We estimated that it was about 1/5."
+  },
+  {
+    "part": "listening-4",
+    "term": "endorse",
+    "pos": "verb",
+    "vi": "xác nhận, ủng hộ",
+    "en": "To confirm that something is true or correct.",
+    "example": "This was endorsed by looking at large scale usage maps."
+  },
+  {
+    "part": "listening-4",
+    "term": "species",
+    "pos": "noun",
+    "vi": "loài",
+    "en": "A group of animals or plants of the same kind.",
+    "example": "Ticking off species they had seen."
+  },
+  {
+    "part": "listening-4",
+    "term": "norm",
+    "pos": "noun",
+    "vi": "cái bình thường, chuẩn mực",
+    "en": "What is usual and expected.",
+    "example": "The whole point of the project was to look at the norm, not the exception."
+  },
+  {
+    "part": "listening-4",
+    "term": "comprehensive",
+    "pos": "adjective",
+    "vi": "toàn diện, chi tiết",
+    "en": "Including everything that is necessary.",
+    "example": "If you're interested in reading our more comprehensive findings."
+  },
+  {
+    "part": "listening-4",
+    "term": "proliferate",
+    "pos": "verb",
+    "vi": "sinh sôi nhanh",
+    "en": "To increase quickly in number.",
+    "example": "They proliferate where there is suitable water."
+  },
+  {
+    "part": "listening-4",
+    "term": "predator",
+    "pos": "noun",
+    "vi": "kẻ săn mồi, thiên địch",
+    "en": "An animal that hunts and kills other animals.",
+    "example": "Their predators are not finding it quite so attractive to leave their rural environment."
+  },
+  {
+    "part": "listening-4",
+    "term": "resurgence",
+    "pos": "noun",
+    "vi": "sự hồi sinh, phục hồi",
+    "en": "A new increase after a period of decline.",
+    "example": "They are experiencing a resurgence in urban gardens."
+  },
+  {
+    "part": "reading-1",
+    "term": "prodigious",
+    "pos": "adjective",
+    "vi": "phi thường, kỳ diệu",
+    "en": "Amazing because of being very great.",
+    "example": "Marie was remarkable for her prodigious memory."
+  },
+  {
+    "part": "reading-1",
+    "term": "finance",
+    "pos": "verb",
+    "vi": "tài trợ",
+    "en": "To provide the money for something.",
+    "example": "She was able to finance her sister Bronia's medical studies in Paris."
+  },
+  {
+    "part": "reading-1",
+    "term": "phenomenon",
+    "pos": "noun",
+    "vi": "hiện tượng",
+    "en": "Something that exists and can be observed.",
+    "example": "Following Henry Becquerel's discovery in 1896 of a new phenomenon."
+  },
+  {
+    "part": "reading-1",
+    "term": "ore",
+    "pos": "noun",
+    "vi": "quặng",
+    "en": "Rock or earth from which metal can be taken.",
+    "example": "Could be explained only by the presence in the ore of small quantities of an unknown substance of very high activity."
+  },
+  {
+    "part": "reading-1",
+    "term": "henceforth",
+    "pos": "adverb",
+    "vi": "từ nay về sau",
+    "en": "From this time on.",
+    "example": "Henceforth she was to devote all her energy to completing alone the scientific work that they had undertaken."
+  },
+  {
+    "part": "reading-1",
+    "term": "vacant",
+    "pos": "adjective",
+    "vi": "bỏ trống",
+    "en": "Not filled or occupied.",
+    "example": "The professorship that had been left vacant on her husband's death."
+  },
+  {
+    "part": "reading-1",
+    "term": "in earnest",
+    "pos": "phrase",
+    "vi": "một cách nghiêm túc, thực sự",
+    "en": "In a serious and determined way.",
+    "example": "In 1918 the Radium Institute began to operate in earnest."
+  },
+  {
+    "part": "reading-1",
+    "term": "inauguration",
+    "pos": "noun",
+    "vi": "lễ khánh thành",
+    "en": "The official opening of a new organisation or building.",
+    "example": "The inauguration in 1932 in Warsaw of the Radium Institute."
+  },
+  {
+    "part": "reading-1",
+    "term": "accumulate",
+    "pos": "verb",
+    "vi": "tích lũy",
+    "en": "To gather together a large amount over time.",
+    "example": "Understood the need to accumulate intense radioactive sources."
+  },
+  {
+    "part": "reading-1",
+    "term": "leukaemia",
+    "pos": "noun",
+    "vi": "bệnh bạch cầu",
+    "en": "A serious disease of the blood.",
+    "example": "Marie Curie died as a result of leukaemia caused by exposure to radiation."
+  },
+  {
+    "part": "reading-2",
+    "term": "agency",
+    "pos": "noun",
+    "vi": "khả năng chủ động hành động",
+    "en": "The power to act and make things happen.",
+    "example": "An awareness of one's own agency (i.e. one's power to act)."
+  },
+  {
+    "part": "reading-2",
+    "term": "distinctiveness",
+    "pos": "noun",
+    "vi": "tính khác biệt",
+    "en": "The quality of being clearly different from others.",
+    "example": "An awareness of one's distinctiveness from other people."
+  },
+  {
+    "part": "reading-2",
+    "term": "mimic",
+    "pos": "verb",
+    "vi": "bắt chước",
+    "en": "To copy the way someone speaks or behaves.",
+    "example": "Another powerful source of information for infants is provided when other mimic them."
+  },
+  {
+    "part": "reading-2",
+    "term": "contingent",
+    "pos": "adjective",
+    "vi": "phụ thuộc vào",
+    "en": "Depending on something else.",
+    "example": "Understanding that the movements they see in the mirror are contingent on their own."
+  },
+  {
+    "part": "reading-2",
+    "term": "empirical",
+    "pos": "adjective",
+    "vi": "dựa trên quan sát, thực nghiệm",
+    "en": "Based on observation and experiment, not just theory.",
+    "example": "Empirical investigations of the self-as-subject in young children are, however, rather scarce."
+  },
+  {
+    "part": "reading-2",
+    "term": "inextricably",
+    "pos": "adverb",
+    "vi": "không thể tách rời",
+    "en": "In a way that cannot be separated.",
+    "example": "Saw the self and the social world as inextricably bound together."
+  },
+  {
+    "part": "reading-2",
+    "term": "milestone",
+    "pos": "noun",
+    "vi": "cột mốc",
+    "en": "An important stage in development.",
+    "example": "An important development milestone is reached when children become able to recognize themselves visually."
+  },
+  {
+    "part": "reading-2",
+    "term": "cue",
+    "pos": "noun",
+    "vi": "tín hiệu, manh mối",
+    "en": "A signal that helps someone understand or act.",
+    "example": "Unless other cues such as movement are present."
+  },
+  {
+    "part": "reading-2",
+    "term": "longitudinal",
+    "pos": "adjective",
+    "vi": "theo dõi dài hạn",
+    "en": "Carried out over a long period of time.",
+    "example": "In a longitudinal study of groups of three or four children."
+  },
+  {
+    "part": "reading-2",
+    "term": "tug-of-war",
+    "pos": "noun",
+    "vi": "cuộc giằng co",
+    "en": "A struggle between two sides pulling in different directions.",
+    "example": "None of them had played with before or after the tug-of-war."
+  },
+  {
+    "part": "reading-3",
+    "term": "relic",
+    "pos": "noun",
+    "vi": "di vật",
+    "en": "An object from the past that has historical value.",
+    "example": "The conviction that historical relics provide infallible testimony about the past."
+  },
+  {
+    "part": "reading-3",
+    "term": "infallible",
+    "pos": "adjective",
+    "vi": "không thể sai, hoàn toàn đáng tin",
+    "en": "Never wrong.",
+    "example": "Historical relics provide infallible testimony about the past."
+  },
+  {
+    "part": "reading-3",
+    "term": "veracity",
+    "pos": "noun",
+    "vi": "tính xác thực",
+    "en": "The quality of being true.",
+    "example": "Public faith in their veracity endures."
+  },
+  {
+    "part": "reading-3",
+    "term": "tangible",
+    "pos": "adjective",
+    "vi": "hữu hình, sờ thấy được",
+    "en": "Real and able to be touched.",
+    "example": "A tangible relic seems 'ipso facto' real."
+  },
+  {
+    "part": "reading-3",
+    "term": "lay",
+    "pos": "adjective",
+    "vi": "không chuyên, thường dân",
+    "en": "Not trained in a particular subject.",
+    "example": "The information accompanying the objects often made little sense to the lay visitor."
+  },
+  {
+    "part": "reading-3",
+    "term": "heritage",
+    "pos": "noun",
+    "vi": "di sản",
+    "en": "The history and traditions of a country that have lasted a long time.",
+    "example": "The key word in heritage display is now 'experience'."
+  },
+  {
+    "part": "reading-3",
+    "term": "re-enactment",
+    "pos": "noun",
+    "vi": "sự tái hiện (sự kiện lịch sử)",
+    "en": "The acting out of a past event.",
+    "example": "The re-enactment of historical events is increasingly popular."
+  },
+  {
+    "part": "reading-3",
+    "term": "evaporate",
+    "pos": "verb",
+    "vi": "biến mất dần",
+    "en": "To slowly disappear.",
+    "example": "The sharp distinction between museum and heritage sites on the one hand, and theme parks on the other, is gradually evaporating."
+  },
+  {
+    "part": "reading-3",
+    "term": "authenticity",
+    "pos": "noun",
+    "vi": "tính xác thực, chân thực",
+    "en": "The quality of being real and not copied.",
+    "example": "Theme parks are moving towards more authenticity and research-based presentations."
+  },
+  {
+    "part": "reading-3",
+    "term": "misconception",
+    "pos": "noun",
+    "vi": "quan niệm sai lầm",
+    "en": "A wrong idea or belief.",
+    "example": "Based on their own ideas, misconceptions and prejudices."
+  },
+  {
+    "part": "reading-3",
+    "term": "transitory",
+    "pos": "adjective",
+    "vi": "tạm thời, ngắn ngủi",
+    "en": "Lasting only a short time.",
+    "example": "The transitory nature of the materials themselves."
+  },
+  {
+    "part": "reading-3",
+    "term": "dwelling",
+    "pos": "noun",
+    "vi": "nơi ở",
+    "en": "A house or other place where people live.",
+    "example": "Castles, palaces and cathedrals have a longer lifespan than the dwellings of ordinary people."
+  },
+  {
+    "part": "writing-2",
+    "term": "die out",
+    "pos": "phrase",
+    "vi": "tuyệt chủng, biến mất dần",
+    "en": "To disappear completely.",
+    "example": "Every year several languages die out."
+  }
+]

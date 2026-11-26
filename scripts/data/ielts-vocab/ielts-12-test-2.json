@@ -1,0 +1,706 @@
+[
+  {
+    "part": "listening-1",
+    "term": "councillor",
+    "pos": "noun",
+    "vi": "ủy viên hội đồng thành phố",
+    "en": "A member of a local council.",
+    "example": "All the town councillors will be there"
+  },
+  {
+    "part": "listening-1",
+    "term": "choir",
+    "pos": "noun",
+    "vi": "dàn hợp xướng",
+    "en": "A group of people who sing together.",
+    "example": "Most years we have a children's choir"
+  },
+  {
+    "part": "listening-1",
+    "term": "cadet",
+    "pos": "noun",
+    "vi": "học viên quân sự, thiếu sinh quân",
+    "en": "A young person training to join the army or police.",
+    "example": "the local army cadets offered to perform"
+  },
+  {
+    "part": "listening-1",
+    "term": "centenary",
+    "pos": "noun",
+    "vi": "lễ kỷ niệm 100 năm",
+    "en": "The hundredth anniversary of an event or birth.",
+    "example": "so we're celebrating her centenary."
+  },
+  {
+    "part": "listening-1",
+    "term": "firework display",
+    "pos": "noun",
+    "vi": "màn bắn pháo hoa",
+    "en": "A show in which fireworks are set off in the sky.",
+    "example": "there'll be a firework display."
+  },
+  {
+    "part": "listening-2",
+    "term": "finalize",
+    "pos": "verb",
+    "vi": "hoàn tất, chốt kế hoạch",
+    "en": "To complete the last details of a plan.",
+    "example": "I've now almost succeeded in finalizing plans for our tour"
+  },
+  {
+    "part": "listening-2",
+    "term": "tour operator",
+    "pos": "noun",
+    "vi": "công ty tổ chức tour",
+    "en": "A company that organises and sells package holidays.",
+    "example": "Claus works for a tour operator"
+  },
+  {
+    "part": "listening-2",
+    "term": "liaise",
+    "pos": "verb",
+    "vi": "liên lạc, phối hợp",
+    "en": "To communicate with another person or group to work together.",
+    "example": "He's already liaised with the managers of the theatres we're going to visit"
+  },
+  {
+    "part": "listening-2",
+    "term": "rehearsal",
+    "pos": "noun",
+    "vi": "buổi tập dượt",
+    "en": "A practice of a play or performance before the real one.",
+    "example": "I had hoped we could sit in on a rehearsal at one of the theatres"
+  },
+  {
+    "part": "listening-2",
+    "term": "sit in on",
+    "pos": "verb",
+    "vi": "dự thính, ngồi xem",
+    "en": "To attend a meeting or class as an observer.",
+    "example": "I had hoped we could sit in on a rehearsal at one of the theatres"
+  },
+  {
+    "part": "listening-2",
+    "term": "playwright",
+    "pos": "noun",
+    "vi": "nhà viết kịch",
+    "en": "A person who writes plays.",
+    "example": "how she worked with the playwright."
+  },
+  {
+    "part": "listening-2",
+    "term": "premiere",
+    "pos": "noun",
+    "vi": "buổi công diễn đầu tiên",
+    "en": "The first public performance of a play or film.",
+    "example": "and we're going to the premiere."
+  },
+  {
+    "part": "listening-2",
+    "term": "revival",
+    "pos": "noun",
+    "vi": "bản dựng lại (vở diễn cũ)",
+    "en": "A new production of an old play.",
+    "example": "We're going to see a revival of that production"
+  },
+  {
+    "part": "listening-2",
+    "term": "aroused",
+    "pos": "verb",
+    "vi": "gợi lên, khơi dậy",
+    "en": "Caused a feeling or reaction in people.",
+    "example": "which aroused a lot of interest"
+  },
+  {
+    "part": "listening-2",
+    "term": "dignitary",
+    "pos": "noun",
+    "vi": "chức sắc, quan khách",
+    "en": "A person of high official rank.",
+    "example": "And the mayor and all the other dignitaries of the town will be attending."
+  },
+  {
+    "part": "listening-2",
+    "term": "reception",
+    "pos": "noun",
+    "vi": "tiệc chiêu đãi",
+    "en": "A formal party to welcome guests.",
+    "example": "the mayor is hosting a reception for all the audience."
+  },
+  {
+    "part": "listening-2",
+    "term": "stunning",
+    "pos": "adjective",
+    "vi": "tuyệt đẹp, ấn tượng",
+    "en": "Extremely beautiful or impressive.",
+    "example": "it's in the stunning setting of the Old Town Hall"
+  },
+  {
+    "part": "listening-3",
+    "term": "tutorial",
+    "pos": "noun",
+    "vi": "buổi học nhóm nhỏ với giảng viên",
+    "en": "A small class where students discuss work with a teacher.",
+    "example": "this is your first tutorial since you started on the Scandinavian Studies course"
+  },
+  {
+    "part": "listening-3",
+    "term": "get by",
+    "pos": "phrase",
+    "vi": "đủ dùng, xoay xở được",
+    "en": "To manage with a basic level of ability.",
+    "example": "I can get by when I talk to people"
+  },
+  {
+    "part": "listening-3",
+    "term": "undergraduate",
+    "pos": "noun",
+    "vi": "bậc đại học (chương trình cử nhân)",
+    "en": "A university course leading to a first degree.",
+    "example": "I think the 4 years of the undergraduate course will be enough for me."
+  },
+  {
+    "part": "listening-3",
+    "term": "specialized",
+    "pos": "adjective",
+    "vi": "chuyên sâu",
+    "en": "Focused on one particular subject or area.",
+    "example": "will be replaced by more specialized courses"
+  },
+  {
+    "part": "listening-3",
+    "term": "saga",
+    "pos": "noun",
+    "vi": "sử thi, truyện cổ (Bắc Âu)",
+    "en": "A long traditional story about heroes, especially from Norse history.",
+    "example": "my first choice would be to do something on the Icelandic sagas."
+  },
+  {
+    "part": "listening-3",
+    "term": "get hold of",
+    "pos": "phrasal verb",
+    "vi": "kiếm được, tìm được",
+    "en": "To manage to obtain something.",
+    "example": "it can be difficult to get hold of the books you'll need"
+  },
+  {
+    "part": "listening-3",
+    "term": "fruitful",
+    "pos": "adjective",
+    "vi": "có hiệu quả, bổ ích",
+    "en": "Producing good or useful results.",
+    "example": "I also think that's more fruitful than placing it within the history of the genre."
+  },
+  {
+    "part": "listening-3",
+    "term": "genre",
+    "pos": "noun",
+    "vi": "thể loại",
+    "en": "A type of art, writing or film with shared features.",
+    "example": "than placing it within the history of the genre"
+  },
+  {
+    "part": "listening-3",
+    "term": "provocative",
+    "pos": "adjective",
+    "vi": "gây tranh luận, kích thích suy nghĩ",
+    "en": "Intended to make people think or argue.",
+    "example": "It makes some interesting and provocative points"
+  },
+  {
+    "part": "listening-3",
+    "term": "draw on",
+    "pos": "phrase",
+    "vi": "tận dụng, dựa vào (nguồn tư liệu)",
+    "en": "To use knowledge or sources as a basis.",
+    "example": "start looking for suitable articles and books to draw on."
+  },
+  {
+    "part": "listening-3",
+    "term": "bullet point",
+    "pos": "noun",
+    "vi": "gạch đầu dòng",
+    "en": "A short note in a list, marked with a dot.",
+    "example": "Then put short phrases and sentences as bullet points under each heading."
+  },
+  {
+    "part": "listening-4",
+    "term": "appalling",
+    "pos": "adjective",
+    "vi": "tồi tệ kinh khủng",
+    "en": "Extremely bad or shocking.",
+    "example": "laboured in appalling conditions."
+  },
+  {
+    "part": "listening-4",
+    "term": "bullying",
+    "pos": "noun",
+    "vi": "sự bắt nạt",
+    "en": "Repeatedly hurting or frightening someone weaker.",
+    "example": "Much of this is covered by the term bullying."
+  },
+  {
+    "part": "listening-4",
+    "term": "abusive",
+    "pos": "adjective",
+    "vi": "lăng mạ, xúc phạm",
+    "en": "Using cruel or insulting words or actions.",
+    "example": "one or more people behaving abusively or aggressively"
+  },
+  {
+    "part": "listening-4",
+    "term": "aggressively",
+    "pos": "adverb",
+    "vi": "một cách hung hăng",
+    "en": "In an angry way that shows a wish to attack or dominate.",
+    "example": "one or more people behaving abusively or aggressively against another"
+  },
+  {
+    "part": "listening-4",
+    "term": "superiority",
+    "pos": "noun",
+    "vi": "sự vượt trội, vị thế cao hơn",
+    "en": "The state of being better or higher than others.",
+    "example": "someone who feels the need to show their superiority over someone else"
+  },
+  {
+    "part": "listening-4",
+    "term": "hierarchy",
+    "pos": "noun",
+    "vi": "hệ thống thứ bậc",
+    "en": "A system in which people are ranked by level of importance.",
+    "example": "they aren't at the lowest level in a hierarchy"
+  },
+  {
+    "part": "listening-4",
+    "term": "incompatible",
+    "pos": "adjective",
+    "vi": "không hợp nhau",
+    "en": "Unable to exist or work together because of differences.",
+    "example": "the personality of one is in some way incompatible with that of the other person."
+  },
+  {
+    "part": "listening-4",
+    "term": "intolerant",
+    "pos": "adjective",
+    "vi": "không khoan dung",
+    "en": "Unwilling to accept people or ideas that are different.",
+    "example": "could make them intolerant of a colleague who's constantly pessimistic"
+  },
+  {
+    "part": "listening-4",
+    "term": "pessimistic",
+    "pos": "adjective",
+    "vi": "bi quan",
+    "en": "Expecting bad things to happen.",
+    "example": "a colleague who's constantly pessimistic"
+  },
+  {
+    "part": "listening-4",
+    "term": "spiral out of control",
+    "pos": "phrase",
+    "vi": "leo thang mất kiểm soát",
+    "en": "To get worse and worse until it cannot be managed.",
+    "example": "it can spiral out of control"
+  },
+  {
+    "part": "listening-4",
+    "term": "breakdown",
+    "pos": "noun",
+    "vi": "sự sụp đổ",
+    "en": "The failure or collapse of something.",
+    "example": "and even lead to the breakdown of the business"
+  },
+  {
+    "part": "listening-4",
+    "term": "autocratic",
+    "pos": "adjective",
+    "vi": "độc đoán, chuyên quyền",
+    "en": "Ruling with total power and not asking others for opinions.",
+    "example": "it might seem that an autocratic form of management"
+  },
+  {
+    "part": "listening-4",
+    "term": "mediator",
+    "pos": "noun",
+    "vi": "người hoà giải",
+    "en": "A neutral person who helps two sides settle a dispute.",
+    "example": "then an external mediator might be able to help"
+  },
+  {
+    "part": "reading-1",
+    "term": "vulnerable",
+    "pos": "adjective",
+    "vi": "dễ bị tổn thương",
+    "en": "Easily harmed or affected by problems.",
+    "example": "make food production highly vulnerable and different from any other business."
+  },
+  {
+    "part": "reading-1",
+    "term": "entrenched",
+    "pos": "adjective",
+    "vi": "ăn sâu, khó thay đổi",
+    "en": "Firmly established and difficult to change.",
+    "example": "cultural values are highly entrenched in food and agricultural systems worldwide."
+  },
+  {
+    "part": "reading-1",
+    "term": "volatility",
+    "pos": "noun",
+    "vi": "sự biến động thất thường (giá cả)",
+    "en": "Frequent and unpredictable change, especially in prices.",
+    "example": "price volatility in input and product markets."
+  },
+  {
+    "part": "reading-1",
+    "term": "smallholder",
+    "pos": "noun",
+    "vi": "nông hộ nhỏ",
+    "en": "A farmer who owns or rents a small piece of land.",
+    "example": "smallholder farmers in developing countries must in addition deal with adverse environments"
+  },
+  {
+    "part": "reading-1",
+    "term": "adverse",
+    "pos": "adjective",
+    "vi": "bất lợi",
+    "en": "Harmful or unfavourable.",
+    "example": "smallholder farmers in developing countries must in addition deal with adverse environments"
+  },
+  {
+    "part": "reading-1",
+    "term": "counter-intuitive",
+    "pos": "adjective",
+    "vi": "trái với lẽ thường",
+    "en": "Different from what you would normally expect.",
+    "example": "Counter-intuitively, hunger is prevalent among many smallholder farmers"
+  },
+  {
+    "part": "reading-1",
+    "term": "prevalent",
+    "pos": "adjective",
+    "vi": "phổ biến, thịnh hành",
+    "en": "Common in a particular place or group.",
+    "example": "hunger is prevalent among many smallholder farmers"
+  },
+  {
+    "part": "reading-1",
+    "term": "intervention",
+    "pos": "noun",
+    "vi": "sự can thiệp",
+    "en": "Action taken to change or improve a situation.",
+    "example": "most essayists called for greater state intervention."
+  },
+  {
+    "part": "reading-1",
+    "term": "alleviate",
+    "pos": "verb",
+    "vi": "làm dịu bớt, giảm nhẹ",
+    "en": "To make a problem less serious.",
+    "example": "by alleviating uncertainties about market supply"
+  },
+  {
+    "part": "reading-1",
+    "term": "subsidy",
+    "pos": "noun",
+    "vi": "khoản trợ cấp",
+    "en": "Money given by the government to help an industry or group.",
+    "example": "Regarding state subsidies for agriculture"
+  },
+  {
+    "part": "reading-1",
+    "term": "mitigate",
+    "pos": "verb",
+    "vi": "giảm nhẹ",
+    "en": "To make something less harmful or severe.",
+    "example": "can help small-scale producers mitigate risk"
+  },
+  {
+    "part": "reading-1",
+    "term": "resilient",
+    "pos": "adjective",
+    "vi": "có khả năng chống chịu",
+    "en": "Able to recover quickly from difficulties.",
+    "example": "crop varieties that are more resilient to new climate trends"
+  },
+  {
+    "part": "reading-1",
+    "term": "diversify",
+    "pos": "verb",
+    "vi": "đa dạng hóa",
+    "en": "To increase the variety of what you grow or do.",
+    "example": "let peasants diversify the plant and animal species"
+  },
+  {
+    "part": "reading-1",
+    "term": "autonomous",
+    "pos": "adjective",
+    "vi": "tự chủ, độc lập",
+    "en": "Able to act and make decisions without outside control.",
+    "example": "community-based and autonomous risk management strategies"
+  },
+  {
+    "part": "reading-1",
+    "term": "stakeholder",
+    "pos": "noun",
+    "vi": "bên liên quan",
+    "en": "A person or group with an interest in a project or business.",
+    "example": "all stakeholders, including business, government, scientists and civil society"
+  },
+  {
+    "part": "reading-1",
+    "term": "intermediary",
+    "pos": "adjective",
+    "vi": "trung gian",
+    "en": "Acting as a link between two parties.",
+    "example": "the presence of intermediary purchasers who, taking advantage of farmers' vulnerability, dictate prices."
+  },
+  {
+    "part": "reading-2",
+    "term": "hinterland",
+    "pos": "noun",
+    "vi": "vùng nội địa hẻo lánh",
+    "en": "Remote land far from the coast or main towns.",
+    "example": "the exploration of the remote hinterland to the west of Cusco"
+  },
+  {
+    "part": "reading-2",
+    "term": "plateau",
+    "pos": "noun",
+    "vi": "cao nguyên",
+    "en": "A large area of high, flat land.",
+    "example": "Cusco lies on a high plateau at an elevation of more than 3,000 metres"
+  },
+  {
+    "part": "reading-2",
+    "term": "circuitous",
+    "pos": "adjective",
+    "vi": "quanh co, vòng vèo",
+    "en": "Longer and less direct than necessary.",
+    "example": "which takes a circuitous route down to the Amazon"
+  },
+  {
+    "part": "reading-2",
+    "term": "ascent",
+    "pos": "noun",
+    "vi": "chuyến leo lên",
+    "en": "The act of climbing or going up.",
+    "example": "he made the ascent without having the least expectation"
+  },
+  {
+    "part": "reading-2",
+    "term": "terrace",
+    "pos": "noun",
+    "vi": "ruộng bậc thang",
+    "en": "A flat step cut into a hillside, often for farming.",
+    "example": "he comes across great sweeps of terraces"
+  },
+  {
+    "part": "reading-2",
+    "term": "spellbound",
+    "pos": "adjective",
+    "vi": "bị mê hoặc, say mê",
+    "en": "So interested or amazed that you cannot look away.",
+    "example": "the sight held me spellbound"
+  },
+  {
+    "part": "reading-2",
+    "term": "hindsight",
+    "pos": "noun",
+    "vi": "nhận thức muộn (nhìn lại sau sự việc)",
+    "en": "Understanding something only after it has happened.",
+    "example": "Lost City of the Incas is a work of hindsight"
+  },
+  {
+    "part": "reading-2",
+    "term": "perplex",
+    "pos": "verb",
+    "vi": "làm bối rối, khó hiểu",
+    "en": "To confuse someone by being difficult to understand.",
+    "example": "One question that has perplexed visitors, historians and archaeologists alike"
+  },
+  {
+    "part": "reading-2",
+    "term": "chronicler",
+    "pos": "noun",
+    "vi": "nhà ký sự, người ghi chép sử",
+    "en": "A person who writes down historical events.",
+    "example": "There are no references to it by any of the Spanish chroniclers"
+  },
+  {
+    "part": "reading-2",
+    "term": "elite",
+    "pos": "noun",
+    "vi": "tầng lớp tinh hoa",
+    "en": "The most powerful or privileged group in a society.",
+    "example": "where the elite could enjoy monumental architecture"
+  },
+  {
+    "part": "reading-3",
+    "term": "bilingual",
+    "pos": "adjective",
+    "vi": "song ngữ",
+    "en": "Able to speak two languages.",
+    "example": "the majority of the world's population is now bilingual or multilingual"
+  },
+  {
+    "part": "reading-3",
+    "term": "monolingual",
+    "pos": "adjective",
+    "vi": "chỉ nói một ngôn ngữ",
+    "en": "Speaking only one language.",
+    "example": "compared with their monolingual peers."
+  },
+  {
+    "part": "reading-3",
+    "term": "cognitive",
+    "pos": "adjective",
+    "vi": "thuộc nhận thức",
+    "en": "Relating to thinking, understanding and remembering.",
+    "example": "bilingualism interacts with and changes the cognitive and neurological systems"
+  },
+  {
+    "part": "reading-3",
+    "term": "sequential",
+    "pos": "adjective",
+    "vi": "theo thứ tự nối tiếp",
+    "en": "Following one after another in order.",
+    "example": "the sounds arrive in sequential order."
+  },
+  {
+    "part": "reading-3",
+    "term": "compelling",
+    "pos": "adjective",
+    "vi": "thuyết phục",
+    "en": "Strong enough to make you believe or accept it.",
+    "example": "Some of the most compelling evidence for this phenomenon"
+  },
+  {
+    "part": "reading-3",
+    "term": "excel",
+    "pos": "verb",
+    "vi": "xuất sắc, vượt trội",
+    "en": "To do something very well.",
+    "example": "Bilingual people often excel at tasks such as this"
+  },
+  {
+    "part": "reading-3",
+    "term": "adolescent",
+    "pos": "noun",
+    "vi": "thanh thiếu niên",
+    "en": "A young person who is developing into an adult.",
+    "example": "When monolingual and bilingual adolescents listen to simple speech sounds"
+  },
+  {
+    "part": "reading-3",
+    "term": "interference",
+    "pos": "noun",
+    "vi": "sự nhiễu, sự cản trở",
+    "en": "Something that gets in the way and disturbs a process.",
+    "example": "while reducing interference from the languages they already know."
+  },
+  {
+    "part": "reading-3",
+    "term": "degenerative",
+    "pos": "adjective",
+    "vi": "thoái hoá, suy giảm dần",
+    "en": "Getting worse gradually over time.",
+    "example": "Alzheimer's disease, a degenerative brain disease"
+  },
+  {
+    "part": "reading-3",
+    "term": "counterpart",
+    "pos": "noun",
+    "vi": "đối tượng tương ứng",
+    "en": "A person or thing that has the same role as another.",
+    "example": "than their monolingual counterparts"
+  },
+  {
+    "part": "reading-3",
+    "term": "impart",
+    "pos": "verb",
+    "vi": "mang lại, truyền đạt",
+    "en": "To give a quality or benefit to something.",
+    "example": "navigating a multilingual environment imparts advantages"
+  },
+  {
+    "part": "writing-1",
+    "term": "encircle",
+    "pos": "verb",
+    "vi": "bao quanh",
+    "en": "To surround something completely.",
+    "example": "encircling the town centre"
+  },
+  {
+    "part": "writing-1",
+    "term": "pedestrian",
+    "pos": "adjective",
+    "vi": "dành cho người đi bộ",
+    "en": "Meant for people walking, not vehicles.",
+    "example": "the area inside becomes a pedestrian-only zone"
+  },
+  {
+    "part": "writing-2",
+    "term": "demographic",
+    "pos": "adjective",
+    "vi": "thuộc nhân khẩu học, dân số",
+    "en": "Relating to the structure and statistics of a population.",
+    "example": "The demographic structure favoring younger populations"
+  },
+  {
+    "part": "writing-2",
+    "term": "vitality",
+    "pos": "noun",
+    "vi": "sức sống, sự năng động",
+    "en": "Energy and liveliness.",
+    "example": "this situation brings economic vitality"
+  },
+  {
+    "part": "writing-2",
+    "term": "aspiration",
+    "pos": "noun",
+    "vi": "khát vọng",
+    "en": "A strong hope of achieving something.",
+    "example": "capacity to manage youthful aspirations"
+  },
+  {
+    "part": "writing-2",
+    "term": "workforce",
+    "pos": "noun",
+    "vi": "lực lượng lao động",
+    "en": "All the people who work in a company or country.",
+    "example": "A youthful population primarily benefits economic growth through workforce expansion."
+  },
+  {
+    "part": "writing-2",
+    "term": "infrastructure",
+    "pos": "noun",
+    "vi": "cơ sở hạ tầng",
+    "en": "The basic systems and buildings a country needs, such as schools and roads.",
+    "example": "Educational infrastructure often struggles to meet demand"
+  },
+  {
+    "part": "writing-2",
+    "term": "unrest",
+    "pos": "noun",
+    "vi": "bất ổn xã hội",
+    "en": "A situation in which people are angry and protest.",
+    "example": "These factors combined may fuel social unrest"
+  },
+  {
+    "part": "writing-2",
+    "term": "vocational",
+    "pos": "adjective",
+    "vi": "thuộc dạy nghề",
+    "en": "Teaching practical skills for a particular job.",
+    "example": "Indonesia's vocational training programs"
+  },
+  {
+    "part": "writing-2",
+    "term": "proactive",
+    "pos": "adjective",
+    "vi": "chủ động",
+    "en": "Acting early to deal with a problem before it grows.",
+    "example": "demonstrate the critical need for proactive measures"
+  }
+]

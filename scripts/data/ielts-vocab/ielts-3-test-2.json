@@ -1,0 +1,530 @@
+[
+ {
+  "part": "listening-1",
+  "term": "gather",
+  "pos": "verb",
+  "vi": "tập trung, tề tựu",
+  "en": "To come together in one place.",
+  "example": "all the new students will gather in the Main Hall"
+ },
+ {
+  "part": "listening-1",
+  "term": "placement test",
+  "pos": "noun",
+  "vi": "bài kiểm tra xếp lớp",
+  "en": "A test used to decide which class or level a student should join.",
+  "example": "It's just a placement test to help us find your level of English"
+ },
+ {
+  "part": "listening-1",
+  "term": "requirement",
+  "pos": "noun",
+  "vi": "yêu cầu (của khóa học)",
+  "en": "Something that is needed or compulsory.",
+  "example": "the different requirements for each"
+ },
+ {
+  "part": "listening-1",
+  "term": "corridor",
+  "pos": "noun",
+  "vi": "hành lang",
+  "en": "A long passage in a building with rooms on each side.",
+  "example": "you walk on to the end of this corridor in front of you"
+ },
+ {
+  "part": "listening-1",
+  "term": "facilities",
+  "pos": "noun",
+  "vi": "tiện nghi, thiết bị phục vụ",
+  "en": "Equipment or rooms provided for a particular use.",
+  "example": "There's tea and coffee facilities there."
+ },
+ {
+  "part": "listening-2",
+  "term": "helpline",
+  "pos": "noun",
+  "vi": "đường dây hỗ trợ",
+  "en": "A telephone service that gives advice or information.",
+  "example": "welcome to this informal meeting about the University helpline"
+ },
+ {
+  "part": "listening-2",
+  "term": "grant",
+  "pos": "noun",
+  "vi": "học bổng, tiền trợ cấp",
+  "en": "Money given by an organisation to pay for education or a project.",
+  "example": "you may feel that your grant is insufficient to see you through college life"
+ },
+ {
+  "part": "listening-2",
+  "term": "insufficient",
+  "pos": "adjective",
+  "vi": "không đủ",
+  "en": "Not enough.",
+  "example": "you may feel that your grant is insufficient to see you through college life"
+ },
+ {
+  "part": "listening-2",
+  "term": "query",
+  "pos": "noun",
+  "vi": "thắc mắc, câu hỏi",
+  "en": "A question asking for information or checking something.",
+  "example": "you may have some queries regarding the fees you're paying"
+ },
+ {
+  "part": "listening-2",
+  "term": "domestic",
+  "pos": "adjective",
+  "vi": "thuộc gia đình, sinh hoạt gia đình",
+  "en": "Relating to home and family life.",
+  "example": "what we generally term the domestic area"
+ },
+ {
+  "part": "listening-2",
+  "term": "participate",
+  "pos": "verb",
+  "vi": "tham gia",
+  "en": "To take part in an activity.",
+  "example": "you may wish to participate in outings or trips"
+ },
+ {
+  "part": "listening-2",
+  "term": "welfare",
+  "pos": "noun",
+  "vi": "phúc lợi, sự chăm lo đời sống",
+  "en": "Support for people's health, comfort and general wellbeing.",
+  "example": "the office that deals with all matters related to student welfare"
+ },
+ {
+  "part": "listening-2",
+  "term": "waiting list",
+  "pos": "noun",
+  "vi": "danh sách chờ",
+  "en": "A list of people waiting for something to become available.",
+  "example": "you may have to go on the waiting list"
+ },
+ {
+  "part": "listening-3",
+  "term": "applicant",
+  "pos": "noun",
+  "vi": "ứng viên",
+  "en": "A person who formally asks for a job or a place.",
+  "example": "putting applicants through a short interview"
+ },
+ {
+  "part": "listening-3",
+  "term": "qualification",
+  "pos": "noun",
+  "vi": "bằng cấp, trình độ chuyên môn",
+  "en": "An exam passed or a course completed that shows you can do something.",
+  "example": "who has all the right qualifications, degree, certificates, whatever"
+ },
+ {
+  "part": "listening-3",
+  "term": "get along",
+  "pos": "phrase",
+  "vi": "hòa hợp, hòa thuận",
+  "en": "To have a friendly relationship with someone.",
+  "example": "they just don't get along with everybody else"
+ },
+ {
+  "part": "listening-3",
+  "term": "personality questionnaire",
+  "pos": "noun",
+  "vi": "bảng câu hỏi đánh giá tính cách",
+  "en": "A written set of questions used to find out what type of person someone is.",
+  "example": "are making use of what are called personality questionnaires"
+ },
+ {
+  "part": "listening-3",
+  "term": "civil servant",
+  "pos": "noun",
+  "vi": "công chức nhà nước",
+  "en": "A person who works for the government administration.",
+  "example": "for picking out clerks and civil servants"
+ },
+ {
+  "part": "listening-3",
+  "term": "see through",
+  "pos": "phrase",
+  "vi": "nhìn thấu, nhận ra mánh khóe",
+  "en": "To realise what someone is really trying to do and not be deceived.",
+  "example": "And what if people can see through them"
+ },
+ {
+  "part": "listening-3",
+  "term": "compile",
+  "pos": "verb",
+  "vi": "biên soạn, tập hợp",
+  "en": "To produce something by collecting and arranging information.",
+  "example": "These tests are compiled by experts"
+ },
+ {
+  "part": "listening-3",
+  "term": "forward-looking",
+  "pos": "adjective",
+  "vi": "có tầm nhìn xa, luôn hướng về phía trước",
+  "en": "Open to new ideas and thinking about the future.",
+  "example": "whether someone's say, forward-looking, a go-ahead type of person"
+ },
+ {
+  "part": "listening-3",
+  "term": "resistant",
+  "pos": "adjective",
+  "vi": "chống lại, kháng cự (sự thay đổi)",
+  "en": "Not willing to accept something.",
+  "example": "or resistant to change"
+ },
+ {
+  "part": "listening-4",
+  "term": "conical",
+  "pos": "adjective",
+  "vi": "hình nón",
+  "en": "Shaped like a cone.",
+  "example": "a conical hat, by cutting out a circle"
+ },
+ {
+  "part": "listening-4",
+  "term": "overlap",
+  "pos": "verb",
+  "vi": "chồng lên nhau, gối lên nhau",
+  "en": "To partly cover something so that the edges lie on top of each other.",
+  "example": "then overlapping the cut like this"
+ },
+ {
+  "part": "listening-4",
+  "term": "flap",
+  "pos": "noun",
+  "vi": "mép gấp, phần để gấp lại",
+  "en": "A flat piece of material attached along one edge that can be bent.",
+  "example": "Then you need a long piece with flaps on it."
+ },
+ {
+  "part": "listening-4",
+  "term": "adapt",
+  "pos": "verb",
+  "vi": "điều chỉnh cho phù hợp",
+  "en": "To change something so that it suits a new purpose.",
+  "example": "this project could easily be adapted to suit any age"
+ },
+ {
+  "part": "listening-4",
+  "term": "constraint",
+  "pos": "noun",
+  "vi": "giới hạn, ràng buộc",
+  "en": "A rule or limit that restricts what you can do.",
+  "example": "I imposed certain constraints on them to keep things simple"
+ },
+ {
+  "part": "listening-4",
+  "term": "pliable",
+  "pos": "adjective",
+  "vi": "dễ uốn, dễ gấp",
+  "en": "Easy to bend without breaking.",
+  "example": "because paper is more pliable and easier to handle"
+ },
+ {
+  "part": "listening-4",
+  "term": "turret",
+  "pos": "noun",
+  "vi": "tháp canh nhỏ (trên tòa lâu đài)",
+  "en": "A small tower on a castle or large building.",
+  "example": "to form a castle turret"
+ },
+ {
+  "part": "reading-1",
+  "term": "dung",
+  "pos": "noun",
+  "vi": "phân (của động vật)",
+  "en": "The solid waste of large animals.",
+  "example": "Some of the most remarkable beetles are the dung beetles"
+ },
+ {
+  "part": "reading-1",
+  "term": "species",
+  "pos": "noun",
+  "vi": "loài (sinh vật)",
+  "en": "A group of animals or plants of the same kind.",
+  "example": "More than 4,000 species of these remarkable creatures have evolved"
+ },
+ {
+  "part": "reading-1",
+  "term": "marsupial",
+  "pos": "noun",
+  "vi": "động vật có túi (như chuột túi)",
+  "en": "A mammal that carries its young in a pouch, such as a kangaroo.",
+  "example": "specialising in coarse marsupial droppings"
+ },
+ {
+  "part": "reading-1",
+  "term": "pasture",
+  "pos": "noun",
+  "vi": "đồng cỏ chăn thả",
+  "en": "Land covered with grass where farm animals feed.",
+  "example": "Introducing dung beetles into a pasture is a simple process"
+ },
+ {
+  "part": "reading-1",
+  "term": "predator",
+  "pos": "noun",
+  "vi": "động vật săn mồi, thiên địch",
+  "en": "An animal that hunts and eats other animals.",
+  "example": "so they are sheltered from predators such as birds and foxes"
+ },
+ {
+  "part": "reading-1",
+  "term": "burrow",
+  "pos": "verb",
+  "vi": "đào hang",
+  "en": "To dig a hole or tunnel in the ground.",
+  "example": "Most species burrow into the soil and bury dung in tunnels"
+ },
+ {
+  "part": "reading-1",
+  "term": "excavate",
+  "pos": "verb",
+  "vi": "đào (hầm, đường hầm)",
+  "en": "To dig out earth to make a hole or tunnel.",
+  "example": "Some large species originating from France excavate tunnels"
+ },
+ {
+  "part": "reading-1",
+  "term": "larva",
+  "pos": "noun",
+  "vi": "ấu trùng",
+  "en": "The young form of an insect after it comes out of the egg.",
+  "example": "Once the beetle larvae have finished pupation"
+ },
+ {
+  "part": "reading-1",
+  "term": "fertiliser",
+  "pos": "noun",
+  "vi": "phân bón",
+  "en": "A substance added to soil to help plants grow.",
+  "example": "the residue is a first-rate source of fertiliser"
+ },
+ {
+  "part": "reading-1",
+  "term": "aeration",
+  "pos": "noun",
+  "vi": "sự thông khí cho đất",
+  "en": "The process of letting air into soil.",
+  "example": "The tunnels abandoned by the beetles provide excellent aeration"
+ },
+ {
+  "part": "reading-1",
+  "term": "integral",
+  "pos": "adjective",
+  "vi": "không thể thiếu, thiết yếu",
+  "en": "Forming an essential part of something.",
+  "example": "Dung beetles have become an integral part of the successful management of dairy farms"
+ },
+ {
+  "part": "reading-1",
+  "term": "entomologist",
+  "pos": "noun",
+  "vi": "nhà côn trùng học",
+  "en": "A scientist who studies insects.",
+  "example": "most of whom were entomologists with the CSIRO's dung beetle unit"
+ },
+ {
+  "part": "reading-2",
+  "term": "exploitation",
+  "pos": "noun",
+  "vi": "sự khai thác (tài nguyên)",
+  "en": "The use of something, especially natural resources, for profit.",
+  "example": "They actually subsidise the exploitation and consumption of natural resources."
+ },
+ {
+  "part": "reading-2",
+  "term": "vested interest",
+  "pos": "noun",
+  "vi": "lợi ích riêng đã ăn sâu, nhóm hưởng lợi",
+  "en": "A strong personal reason to protect a system because you gain from it.",
+  "example": "confront the vested interest that subsidies create"
+ },
+ {
+  "part": "reading-2",
+  "term": "yield",
+  "pos": "noun",
+  "vi": "năng suất, sản lượng (cây trồng)",
+  "en": "The amount of crops produced on a piece of land.",
+  "example": "mainly as a result of increases in yields from land already in cultivation"
+ },
+ {
+  "part": "reading-2",
+  "term": "irrigation",
+  "pos": "noun",
+  "vi": "sự tưới tiêu",
+  "en": "Supplying land with water through pipes or channels.",
+  "example": "Higher yields have been achieved by increased irrigation"
+ },
+ {
+  "part": "reading-2",
+  "term": "pesticide",
+  "pos": "noun",
+  "vi": "thuốc trừ sâu",
+  "en": "A chemical used to kill insects and other pests that damage crops.",
+  "example": "a doubling in the use of pesticides and chemical fertilisers"
+ },
+ {
+  "part": "reading-2",
+  "term": "deforestation",
+  "pos": "noun",
+  "vi": "nạn phá rừng",
+  "en": "The cutting down of large areas of forest.",
+  "example": "land clearing for agriculture is the largest single cause of deforestation"
+ },
+ {
+  "part": "reading-2",
+  "term": "contaminate",
+  "pos": "verb",
+  "vi": "làm ô nhiễm",
+  "en": "To make something dirty or harmful by adding a poisonous substance.",
+  "example": "chemical fertilisers and pesticides may contaminate water supplies"
+ },
+ {
+  "part": "reading-2",
+  "term": "fallow",
+  "pos": "adjective",
+  "vi": "bỏ hoang (để đất nghỉ)",
+  "en": "Left without crops for a time so the soil can recover.",
+  "example": "or to leave it fallow"
+ },
+ {
+  "part": "reading-2",
+  "term": "soil erosion",
+  "pos": "noun",
+  "vi": "sự xói mòn đất",
+  "en": "The gradual wearing away of the top layer of soil.",
+  "example": "tend to exacerbate soil erosion"
+ },
+ {
+  "part": "reading-2",
+  "term": "monoculture",
+  "pos": "noun",
+  "vi": "độc canh",
+  "en": "The growing of only one type of crop on a large area.",
+  "example": "the spread of monoculture and use of high-yielding varieties of crops"
+ },
+ {
+  "part": "reading-2",
+  "term": "compound",
+  "pos": "verb",
+  "vi": "làm trầm trọng thêm",
+  "en": "To make a problem worse by adding to it.",
+  "example": "Government policies have frequently compounded the environmental damage"
+ },
+ {
+  "part": "reading-2",
+  "term": "diversify",
+  "pos": "verb",
+  "vi": "đa dạng hóa",
+  "en": "To develop a wider range of products or activities.",
+  "example": "Farms began to diversify."
+ },
+ {
+  "part": "reading-2",
+  "term": "aggravate",
+  "pos": "verb",
+  "vi": "làm tồi tệ thêm",
+  "en": "To make a bad situation worse.",
+  "example": "In poor countries, governments aggravate other sorts of damage."
+ },
+ {
+  "part": "reading-2",
+  "term": "sustainable",
+  "pos": "adjective",
+  "vi": "bền vững",
+  "en": "Able to continue over a long time without damaging the environment.",
+  "example": "to manage their land in ways that are sustainable in the long run"
+ },
+ {
+  "part": "reading-3",
+  "term": "trivial",
+  "pos": "adjective",
+  "vi": "nhỏ nhặt, không đáng kể",
+  "en": "Of little value or importance.",
+  "example": "all those with whom the individual has more than trivial interactions"
+ },
+ {
+  "part": "reading-3",
+  "term": "prescribed",
+  "pos": "adjective",
+  "vi": "được quy định sẵn",
+  "en": "Officially stated as required.",
+  "example": "allows you to do certain very prescribed things in certain situations"
+ },
+ {
+  "part": "reading-3",
+  "term": "role sign",
+  "pos": "noun",
+  "vi": "dấu hiệu vai trò (ký hiệu cho biết vai trò của một người)",
+  "en": "Something such as a uniform that shows what role a person has.",
+  "example": "The means of doing this are called, rather obviously, role signs."
+ },
+ {
+  "part": "reading-3",
+  "term": "blur",
+  "pos": "verb",
+  "vi": "làm mờ đi (ranh giới)",
+  "en": "To make the difference between two things less clear.",
+  "example": "The current trend towards blurring these role signs in dress"
+ },
+ {
+  "part": "reading-3",
+  "term": "ritual",
+  "pos": "noun",
+  "vi": "nghi lễ",
+  "en": "A fixed set of actions performed on a special occasion.",
+  "example": "the change of role has to have a very obvious sign, hence rituals"
+ },
+ {
+  "part": "reading-3",
+  "term": "perquisite",
+  "pos": "noun",
+  "vi": "đặc quyền, đãi ngộ đi kèm chức vụ",
+  "en": "A benefit that comes with a job or high position.",
+  "example": "These and other perquisites of status are often frowned upon"
+ },
+ {
+  "part": "reading-3",
+  "term": "frown upon",
+  "pos": "phrase",
+  "vi": "không tán thành, coi là không nên",
+  "en": "To disapprove of something.",
+  "example": "are often frowned upon"
+ },
+ {
+  "part": "reading-3",
+  "term": "ambiguity",
+  "pos": "noun",
+  "vi": "sự mơ hồ, không rõ ràng",
+  "en": "A situation where something can be understood in more than one way.",
+  "example": "Role ambiguity results when there is some uncertainty"
+ },
+ {
+  "part": "reading-3",
+  "term": "subtle",
+  "pos": "adjective",
+  "vi": "tinh tế, khó nhận thấy",
+  "en": "Not obvious and hard to notice.",
+  "example": "say little about the more subtle and informal expectations of the role"
+ },
+ {
+  "part": "writing-1",
+  "term": "consumer goods",
+  "pos": "noun",
+  "vi": "hàng tiêu dùng",
+  "en": "Products that people buy for their own use.",
+  "example": "The chart below shows the amount spent on six consumer goods"
+ },
+ {
+  "part": "writing-2",
+  "term": "die out",
+  "pos": "phrase",
+  "vi": "biến mất, mai một",
+  "en": "To disappear completely.",
+  "example": "the traditional skills and ways of life die out"
+ }
+]

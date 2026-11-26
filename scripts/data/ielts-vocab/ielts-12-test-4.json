@@ -1,0 +1,706 @@
+[
+  {
+    "part": "listening-1",
+    "term": "permanent",
+    "pos": "adjective",
+    "vi": "lâu dài, cố định",
+    "en": "Lasting for a long time or forever.",
+    "example": "Are you looking for a permanent job, Margaret?"
+  },
+  {
+    "part": "listening-1",
+    "term": "temporary",
+    "pos": "adjective",
+    "vi": "tạm thời",
+    "en": "Lasting for only a short time.",
+    "example": "No, temporary."
+  },
+  {
+    "part": "listening-1",
+    "term": "fortnight",
+    "pos": "noun",
+    "vi": "hai tuần",
+    "en": "A period of two weeks.",
+    "example": "Now the trip I mentioned is just for a fortnight"
+  },
+  {
+    "part": "listening-1",
+    "term": "allergy",
+    "pos": "noun",
+    "vi": "dị ứng",
+    "en": "A medical condition that makes you ill when you eat or touch certain things.",
+    "example": "or have some sort of food allergy."
+  },
+  {
+    "part": "listening-1",
+    "term": "certificate",
+    "pos": "noun",
+    "vi": "chứng chỉ",
+    "en": "An official document proving you have passed a course or have a skill.",
+    "example": "we'll need to see any certificates you've got"
+  },
+  {
+    "part": "listening-1",
+    "term": "first aid",
+    "pos": "noun",
+    "vi": "sơ cứu",
+    "en": "Basic emergency medical help given before a doctor arrives.",
+    "example": "any certificates you've got that are relevant in cycling, first aid or whatever."
+  },
+  {
+    "part": "listening-2",
+    "term": "redevelop",
+    "pos": "verb",
+    "vi": "tái phát triển, cải tạo (khu đô thị)",
+    "en": "To rebuild or improve an area, usually to give it a new use.",
+    "example": "now it's been redeveloped into a buzzing vibrant area of the city"
+  },
+  {
+    "part": "listening-2",
+    "term": "vibrant",
+    "pos": "adjective",
+    "vi": "sôi động",
+    "en": "Full of life, energy and excitement.",
+    "example": "now it's been redeveloped into a buzzing vibrant area of the city"
+  },
+  {
+    "part": "listening-2",
+    "term": "nightlife",
+    "pos": "noun",
+    "vi": "cuộc sống về đêm",
+    "en": "Entertainment available in the evening, such as clubs and bars.",
+    "example": "who come in to enjoy the lively nightlife."
+  },
+  {
+    "part": "listening-2",
+    "term": "embark on",
+    "pos": "phrase",
+    "vi": "bắt đầu (sự nghiệp, hành trình)",
+    "en": "To start something new, especially something important.",
+    "example": "graduates embarking on careers in the world of fashion and design"
+  },
+  {
+    "part": "listening-2",
+    "term": "ceramics",
+    "pos": "noun",
+    "vi": "đồ gốm sứ",
+    "en": "Objects made from baked clay, such as pots and bowls.",
+    "example": "great places for finding original pictures, jewelry, and ceramics"
+  },
+  {
+    "part": "listening-2",
+    "term": "produce",
+    "pos": "noun",
+    "vi": "nông sản",
+    "en": "Fruit, vegetables and other food grown on farms.",
+    "example": "as well as local produce like fruit and vegetables."
+  },
+  {
+    "part": "listening-2",
+    "term": "fiber",
+    "pos": "noun",
+    "vi": "sợi (vải)",
+    "en": "A thin thread of material used to make cloth.",
+    "example": "using both natural and man-made fibers"
+  },
+  {
+    "part": "listening-2",
+    "term": "garment",
+    "pos": "noun",
+    "vi": "trang phục, y phục",
+    "en": "A piece of clothing.",
+    "example": "The garments will be judged by a panel of experts"
+  },
+  {
+    "part": "listening-2",
+    "term": "sculpture",
+    "pos": "noun",
+    "vi": "tác phẩm điêu khắc",
+    "en": "A work of art made by carving or shaping a material.",
+    "example": "The area is particularly interesting for its unusual sculptures."
+  },
+  {
+    "part": "listening-2",
+    "term": "junction",
+    "pos": "noun",
+    "vi": "ngã ba, nút giao",
+    "en": "A place where two or more roads meet.",
+    "example": "immediately facing the junction with Hill Road."
+  },
+  {
+    "part": "listening-2",
+    "term": "contemporary",
+    "pos": "adjective",
+    "vi": "đương đại",
+    "en": "Belonging to the present time.",
+    "example": "The contemporary art gallery is on a little road that leads off Station Square"
+  },
+  {
+    "part": "listening-2",
+    "term": "specialise",
+    "pos": "verb",
+    "vi": "chuyên về",
+    "en": "To focus on one particular subject or activity.",
+    "example": "The Warner Gallery specializes in 19th century art"
+  },
+  {
+    "part": "listening-3",
+    "term": "adaptation",
+    "pos": "noun",
+    "vi": "tác phẩm chuyển thể",
+    "en": "A film or play made from a book or another work.",
+    "example": "It's about film adaptations of Shakespeare's plays."
+  },
+  {
+    "part": "listening-3",
+    "term": "classification",
+    "pos": "noun",
+    "vi": "sự phân loại",
+    "en": "A system of arranging things into groups by type.",
+    "example": "a straightforward classification of film adaptations"
+  },
+  {
+    "part": "listening-3",
+    "term": "faithful",
+    "pos": "adjective",
+    "vi": "trung thành (với nguyên tác)",
+    "en": "Staying very close to the original.",
+    "example": "based on how faithful they are to the original plays and novels."
+  },
+  {
+    "part": "listening-3",
+    "term": "patriotism",
+    "pos": "noun",
+    "vi": "lòng yêu nước",
+    "en": "Strong love and support for your own country.",
+    "example": "You mean things like patriotism, or the role of governments?"
+  },
+  {
+    "part": "listening-3",
+    "term": "loose",
+    "pos": "adjective",
+    "vi": "(chuyển thể) tự do, không bám sát",
+    "en": "Not closely following the original.",
+    "example": "It was a very loose adaptation"
+  },
+  {
+    "part": "listening-3",
+    "term": "feuding",
+    "pos": "adjective",
+    "vi": "thù oán nhau, có mối thù truyền kiếp",
+    "en": "Involved in a long and bitter quarrel.",
+    "example": "changing the two feuding families in the original to two competing business empires"
+  },
+  {
+    "part": "listening-3",
+    "term": "bizarre",
+    "pos": "adjective",
+    "vi": "kỳ lạ",
+    "en": "Very strange or unusual.",
+    "example": "You'd expect it would sound really bizarre"
+  },
+  {
+    "part": "listening-3",
+    "term": "special effects",
+    "pos": "noun",
+    "vi": "kỹ xảo điện ảnh",
+    "en": "Tricks used in films to create unreal scenes.",
+    "example": "There are loads of special effects, but no unifying interpretation of the play."
+  },
+  {
+    "part": "listening-3",
+    "term": "innovative",
+    "pos": "adjective",
+    "vi": "sáng tạo, đổi mới",
+    "en": "Using new and original ideas or methods.",
+    "example": "That was really innovative from a stylistic point of view."
+  },
+  {
+    "part": "listening-3",
+    "term": "documentary",
+    "pos": "noun",
+    "vi": "phim tài liệu",
+    "en": "A film that presents real facts about a subject.",
+    "example": "It was a blend of a documentary with a few scenes from Richard III"
+  },
+  {
+    "part": "listening-3",
+    "term": "blend",
+    "pos": "noun",
+    "vi": "sự pha trộn",
+    "en": "A mixture of different things.",
+    "example": "It was a blend of a documentary with a few scenes"
+  },
+  {
+    "part": "listening-4",
+    "term": "acoustics",
+    "pos": "noun",
+    "vi": "âm học",
+    "en": "The science of sound.",
+    "example": "the science of acoustics, the study of sound in relation to urban environments"
+  },
+  {
+    "part": "listening-4",
+    "term": "soundscape",
+    "pos": "noun",
+    "vi": "cảnh quan âm thanh",
+    "en": "All the sounds that make up the character of a place.",
+    "example": "researching urban soundscapes was simple."
+  },
+  {
+    "part": "listening-4",
+    "term": "decibel",
+    "pos": "noun",
+    "vi": "đề-xi-ben (đơn vị đo độ ồn)",
+    "en": "A unit for measuring how loud a sound is.",
+    "example": "We measured levels of sound in decibels."
+  },
+  {
+    "part": "listening-4",
+    "term": "perception",
+    "pos": "noun",
+    "vi": "cách cảm nhận",
+    "en": "The way you notice and understand something.",
+    "example": "people vary in their perceptions of noise."
+  },
+  {
+    "part": "listening-4",
+    "term": "crude",
+    "pos": "adjective",
+    "vi": "thô sơ, sơ sài",
+    "en": "Simple and not very exact.",
+    "example": "even though these noise maps are fairly crude"
+  },
+  {
+    "part": "listening-4",
+    "term": "regulation",
+    "pos": "noun",
+    "vi": "quy định",
+    "en": "An official rule made by an authority.",
+    "example": "We need rules and regulations"
+  },
+  {
+    "part": "listening-4",
+    "term": "dweller",
+    "pos": "noun",
+    "vi": "cư dân (sống ở nơi nào đó)",
+    "en": "A person who lives in a particular type of place.",
+    "example": "Those of you who are city dwellers know that things go on 24 hours a day"
+  },
+  {
+    "part": "listening-4",
+    "term": "composition",
+    "pos": "noun",
+    "vi": "thành phần, cấu tạo",
+    "en": "The parts or substances that something is made of.",
+    "example": "affecting the composition of the blood"
+  },
+  {
+    "part": "listening-4",
+    "term": "differentiate",
+    "pos": "verb",
+    "vi": "phân biệt",
+    "en": "To see or show the difference between things.",
+    "example": "it doesn't differentiate between different types of noise."
+  },
+  {
+    "part": "listening-4",
+    "term": "interdisciplinary",
+    "pos": "adjective",
+    "vi": "liên ngành",
+    "en": "Involving more than one area of study.",
+    "example": "Some recent interdisciplinary research has come out with results"
+  },
+  {
+    "part": "listening-4",
+    "term": "contradictory",
+    "pos": "adjective",
+    "vi": "mâu thuẫn",
+    "en": "Having ideas or facts that cannot both be true.",
+    "example": "results that at first sight seem contradictory."
+  },
+  {
+    "part": "listening-4",
+    "term": "intrusive",
+    "pos": "adjective",
+    "vi": "gây phiền nhiễu, xâm phạm",
+    "en": "Disturbing someone in an unwelcome way.",
+    "example": "But these mustn't be too intrusive"
+  },
+  {
+    "part": "listening-4",
+    "term": "aesthetic",
+    "pos": "adjective",
+    "vi": "thuộc thẩm mỹ",
+    "en": "Relating to beauty and art.",
+    "example": "noise in cities to be regarded as an aesthetic quality"
+  },
+  {
+    "part": "reading-1",
+    "term": "obsidian",
+    "pos": "noun",
+    "vi": "đá vỏ chai (thuỷ tinh núi lửa)",
+    "en": "A hard, dark glass-like rock formed by volcanoes.",
+    "example": "a type of natural glass - obsidian - formed in places such as the mouth of a volcano"
+  },
+  {
+    "part": "reading-1",
+    "term": "molten",
+    "pos": "adjective",
+    "vi": "nóng chảy",
+    "en": "Melted into liquid form by great heat.",
+    "example": "a layer of molten glass"
+  },
+  {
+    "part": "reading-1",
+    "term": "impurity",
+    "pos": "noun",
+    "vi": "tạp chất",
+    "en": "A substance that is mixed in and spoils the purity of something.",
+    "example": "due to the impurities of the raw material."
+  },
+  {
+    "part": "reading-1",
+    "term": "tint",
+    "pos": "verb",
+    "vi": "nhuộm màu nhạt",
+    "en": "To give a slight colour to something.",
+    "example": "which was then tinted by the addition of colouring materials."
+  },
+  {
+    "part": "reading-1",
+    "term": "milestone",
+    "pos": "noun",
+    "vi": "cột mốc quan trọng",
+    "en": "An important event in the development of something.",
+    "example": "A major milestone in the history of glass"
+  },
+  {
+    "part": "reading-1",
+    "term": "refractive index",
+    "pos": "noun",
+    "vi": "chiết suất",
+    "en": "A measure of how much a material bends light passing through it.",
+    "example": "had a higher refractive index"
+  },
+  {
+    "part": "reading-1",
+    "term": "repeal",
+    "pos": "noun",
+    "vi": "sự bãi bỏ (luật)",
+    "en": "The official ending of a law.",
+    "example": "after the repeal of the Excise Act in 1845."
+  },
+  {
+    "part": "reading-1",
+    "term": "levy",
+    "pos": "verb",
+    "vi": "thu (thuế)",
+    "en": "To officially demand a tax or payment.",
+    "example": "were levied continuously from 1745 to 1845."
+  },
+  {
+    "part": "reading-1",
+    "term": "landfill",
+    "pos": "noun",
+    "vi": "bãi chôn lấp rác",
+    "en": "A place where waste is buried in the ground.",
+    "example": "It saves used glass containers being sent to landfill."
+  },
+  {
+    "part": "reading-2",
+    "term": "lynx",
+    "pos": "noun",
+    "vi": "linh miêu",
+    "en": "A wild cat with spotted fur and tufted ears.",
+    "example": "the lynx - a large spotted cat with tasselled ears"
+  },
+  {
+    "part": "reading-2",
+    "term": "extinction",
+    "pos": "noun",
+    "vi": "sự tuyệt chủng",
+    "en": "The state of a species having died out completely.",
+    "example": "the tassel-eared cat's estimated extinction date"
+  },
+  {
+    "part": "reading-2",
+    "term": "rewilding",
+    "pos": "noun",
+    "vi": "tái hoang dã hoá",
+    "en": "Restoring land to its natural wild state, often by bringing back lost species.",
+    "example": "Rewilding means the mass restoration of damaged ecosystems."
+  },
+  {
+    "part": "reading-2",
+    "term": "ecosystem",
+    "pos": "noun",
+    "vi": "hệ sinh thái",
+    "en": "A community of living things and their environment.",
+    "example": "the mass restoration of damaged ecosystems."
+  },
+  {
+    "part": "reading-2",
+    "term": "denuded",
+    "pos": "adjective",
+    "vi": "bị phá trụi, trơ trụi",
+    "en": "Stripped of its natural covering such as trees.",
+    "example": "It involves letting trees return to places that have been denuded"
+  },
+  {
+    "part": "reading-2",
+    "term": "predator",
+    "pos": "noun",
+    "vi": "động vật săn mồi",
+    "en": "An animal that hunts and eats other animals.",
+    "example": "ecosystems without large predators behave in completely different ways"
+  },
+  {
+    "part": "reading-2",
+    "term": "niche",
+    "pos": "noun",
+    "vi": "ổ sinh thái, vị trí thích hợp",
+    "en": "A role or space in an environment suited to a particular species.",
+    "example": "creating niches for hundreds of species"
+  },
+  {
+    "part": "reading-2",
+    "term": "conservation",
+    "pos": "noun",
+    "vi": "sự bảo tồn",
+    "en": "The protection of nature and wildlife.",
+    "example": "Such findings present a big challenge to British conservation"
+  },
+  {
+    "part": "reading-2",
+    "term": "arbitrary",
+    "pos": "adjective",
+    "vi": "tuỳ tiện, không có cơ sở",
+    "en": "Chosen without a clear reason or system.",
+    "example": "which has often selected arbitrary assemblages of plants and animals"
+  },
+  {
+    "part": "reading-2",
+    "term": "shoal",
+    "pos": "noun",
+    "vi": "đàn cá",
+    "en": "A large group of fish swimming together.",
+    "example": "vast shoals of fish being chased by fin and sperm whales"
+  },
+  {
+    "part": "reading-2",
+    "term": "livestock",
+    "pos": "noun",
+    "vi": "gia súc, vật nuôi",
+    "en": "Farm animals such as sheep and cattle.",
+    "example": "little risk to sheep and other livestock"
+  },
+  {
+    "part": "reading-2",
+    "term": "subsidy",
+    "pos": "noun",
+    "vi": "trợ cấp",
+    "en": "Money given by a government to support an industry.",
+    "example": "as a condition of farm subsidies"
+  },
+  {
+    "part": "reading-2",
+    "term": "reintroduce",
+    "pos": "verb",
+    "vi": "tái thả về môi trường tự nhiên",
+    "en": "To bring a species back to a place where it died out.",
+    "example": "the lynx could be reintroduced there within 20 years."
+  },
+  {
+    "part": "reading-2",
+    "term": "lucrative",
+    "pos": "adjective",
+    "vi": "sinh lợi, có lợi nhuận cao",
+    "en": "Producing a lot of money.",
+    "example": "it is more lucrative to protect charismatic wildlife than to hunt it"
+  },
+  {
+    "part": "reading-2",
+    "term": "catalyse",
+    "pos": "verb",
+    "vi": "thúc đẩy, xúc tác",
+    "en": "To cause a process or change to start or speed up.",
+    "example": "An organisation is being set up that will seek to catalyse the rewilding of land and sea across Britain"
+  },
+  {
+    "part": "reading-3",
+    "term": "governance",
+    "pos": "noun",
+    "vi": "quản trị (doanh nghiệp)",
+    "en": "The way an organisation is controlled and managed at the highest level.",
+    "example": "After a number of serious failures of governance"
+  },
+  {
+    "part": "reading-3",
+    "term": "radical",
+    "pos": "adjective",
+    "vi": "triệt để, mang tính cải cách mạnh",
+    "en": "Very different from what is usual and having a big effect.",
+    "example": "companies in Britain, as well as elsewhere, should consider radical changes to their directors' roles."
+  },
+  {
+    "part": "reading-3",
+    "term": "meltdown",
+    "pos": "noun",
+    "vi": "sự sụp đổ (tài chính)",
+    "en": "A sudden and severe collapse, such as of a market.",
+    "example": "Following the 2008 financial meltdown"
+  },
+  {
+    "part": "reading-3",
+    "term": "downturn",
+    "pos": "noun",
+    "vi": "sự suy thoái",
+    "en": "A fall in economic activity.",
+    "example": "a deeper and more prolonged period of economic downturn"
+  },
+  {
+    "part": "reading-3",
+    "term": "scrutiny",
+    "pos": "noun",
+    "vi": "sự giám sát chặt chẽ",
+    "en": "Careful and critical examination.",
+    "example": "The knock-on effect of this scrutiny has been to make the governance of companies in general an issue of intense public debate"
+  },
+  {
+    "part": "reading-3",
+    "term": "devolve",
+    "pos": "verb",
+    "vi": "giao lại, phân quyền cho cấp dưới",
+    "en": "To pass a duty or power to a lower level.",
+    "example": "Often, board business is devolved to committees in order to cope with the workload"
+  },
+  {
+    "part": "reading-3",
+    "term": "sustainability",
+    "pos": "noun",
+    "vi": "tính bền vững",
+    "en": "The ability to continue over the long term without harm.",
+    "example": "longer-term matters of strategy, sustainability and governance"
+  },
+  {
+    "part": "reading-3",
+    "term": "insatiable",
+    "pos": "adjective",
+    "vi": "không thể thỏa mãn",
+    "en": "Impossible to satisfy.",
+    "example": "the insatiable appetite of the market for more data"
+  },
+  {
+    "part": "reading-3",
+    "term": "incentivise",
+    "pos": "verb",
+    "vi": "khuyến khích bằng lợi ích",
+    "en": "To encourage someone to act by offering a reward.",
+    "example": "management teams are largely incentivised to meet financial goals"
+  },
+  {
+    "part": "reading-3",
+    "term": "transparency",
+    "pos": "noun",
+    "vi": "sự minh bạch",
+    "en": "Openness, so that people can see how decisions are made.",
+    "example": "this is in the interest of transparency and good governance"
+  },
+  {
+    "part": "reading-3",
+    "term": "remuneration",
+    "pos": "noun",
+    "vi": "thù lao, tiền lương",
+    "en": "Payment for work done.",
+    "example": "vote down executive remuneration policies"
+  },
+  {
+    "part": "reading-3",
+    "term": "erode",
+    "pos": "verb",
+    "vi": "bị xói mòn dần",
+    "en": "To gradually reduce or destroy something.",
+    "example": "Trust in the corporation has been eroded"
+  },
+  {
+    "part": "writing-1",
+    "term": "geothermal",
+    "pos": "adjective",
+    "vi": "địa nhiệt",
+    "en": "Relating to heat from inside the Earth.",
+    "example": "The diagram illustrates the process of generating electricity using geothermal energy."
+  },
+  {
+    "part": "writing-1",
+    "term": "harness",
+    "pos": "verb",
+    "vi": "khai thác, tận dụng",
+    "en": "To control and use a natural source of power.",
+    "example": "the system harnesses heat from underground hot rocks"
+  },
+  {
+    "part": "writing-1",
+    "term": "turbine",
+    "pos": "noun",
+    "vi": "tua-bin",
+    "en": "A machine with blades that is turned by steam, water or wind to make power.",
+    "example": "which powers a turbine and generator."
+  },
+  {
+    "part": "writing-1",
+    "term": "condenser",
+    "pos": "noun",
+    "vi": "bộ ngưng tụ",
+    "en": "A device that turns gas or steam into liquid.",
+    "example": "the hot water enters a condenser"
+  },
+  {
+    "part": "writing-2",
+    "term": "autonomy",
+    "pos": "noun",
+    "vi": "quyền tự quyết, tính tự chủ",
+    "en": "The freedom to make your own decisions.",
+    "example": "The debate over children's autonomy in daily decisions reflects broader concerns about social values."
+  },
+  {
+    "part": "writing-2",
+    "term": "foster",
+    "pos": "verb",
+    "vi": "nuôi dưỡng, thúc đẩy",
+    "en": "To encourage something to develop.",
+    "example": "fosters self-centered attitudes"
+  },
+  {
+    "part": "writing-2",
+    "term": "entitlement",
+    "pos": "noun",
+    "vi": "tâm lý cho rằng mình đáng được hưởng",
+    "en": "A belief that you deserve special treatment.",
+    "example": "may develop entitlement"
+  },
+  {
+    "part": "writing-2",
+    "term": "instant gratification",
+    "pos": "noun",
+    "vi": "sự thỏa mãn tức thì",
+    "en": "Pleasure gained immediately without waiting.",
+    "example": "prioritizing instant gratification over collective well-being"
+  },
+  {
+    "part": "writing-2",
+    "term": "cultivate",
+    "pos": "verb",
+    "vi": "bồi dưỡng, rèn luyện",
+    "en": "To develop a quality or skill with care.",
+    "example": "they gradually cultivate responsibility and critical thinking."
+  },
+  {
+    "part": "writing-2",
+    "term": "nurture",
+    "pos": "verb",
+    "vi": "nuôi dưỡng, bồi dưỡng",
+    "en": "To care for and help someone grow.",
+    "example": "nurturing individuals who make informed choices"
+  }
+]

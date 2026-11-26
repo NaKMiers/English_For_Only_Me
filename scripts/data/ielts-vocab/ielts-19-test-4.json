@@ -1,0 +1,554 @@
+[
+  {
+    "part": "listening-1",
+    "term": "supervisor",
+    "pos": "noun",
+    "vi": "người giám sát, quản lý trực tiếp",
+    "en": "A person who manages and checks the work of others.",
+    "example": "I'm Kaeden, one of the supervisors."
+  },
+  {
+    "part": "listening-1",
+    "term": "sort out",
+    "pos": "phrase",
+    "vi": "giải quyết, thu xếp",
+    "en": "To deal with or arrange something.",
+    "example": "There are a few practical things you need to sort out this morning."
+  },
+  {
+    "part": "listening-1",
+    "term": "badge",
+    "pos": "noun",
+    "vi": "thẻ nhân viên",
+    "en": "A small card or pin that shows who you are.",
+    "example": "Show my letter of appointment and pick up my badge."
+  },
+  {
+    "part": "listening-1",
+    "term": "locker",
+    "pos": "noun",
+    "vi": "tủ khóa cá nhân",
+    "en": "A small cupboard with a lock for personal things.",
+    "example": "Put your coat and rucksack in one of the lockers there."
+  },
+  {
+    "part": "listening-1",
+    "term": "sell-by date",
+    "pos": "noun",
+    "vi": "hạn bán (hạn cuối để bán sản phẩm)",
+    "en": "The last date on which a shop should sell a food item.",
+    "example": "The first job is to check sell-by dates on the bread and cakes."
+  },
+  {
+    "part": "listening-1",
+    "term": "storeroom",
+    "pos": "noun",
+    "vi": "kho chứa hàng",
+    "en": "A room where goods are kept.",
+    "example": "So you should bring more from the storeroom."
+  },
+  {
+    "part": "listening-1",
+    "term": "thermal",
+    "pos": "adjective",
+    "vi": "giữ nhiệt, chống lạnh",
+    "en": "Designed to keep heat in.",
+    "example": "Make sure you put on thermal gloves when you take anything out of the cold-room."
+  },
+  {
+    "part": "listening-1",
+    "term": "frostbite",
+    "pos": "noun",
+    "vi": "tổn thương do tê cóng",
+    "en": "Damage to the body caused by extreme cold.",
+    "example": "The temperature's low enough in there to get frostbite from touching things."
+  },
+  {
+    "part": "listening-2",
+    "term": "asthma",
+    "pos": "noun",
+    "vi": "bệnh hen suyễn",
+    "en": "A lung condition that makes breathing difficult.",
+    "example": "Especially if you suffer from something like heart condition or asthma."
+  },
+  {
+    "part": "listening-2",
+    "term": "consistent",
+    "pos": "adjective",
+    "vi": "đều đặn, kiên định",
+    "en": "Doing something regularly in the same way.",
+    "example": "But you need to be consistent, so aim to train regularly."
+  },
+  {
+    "part": "listening-2",
+    "term": "put off",
+    "pos": "phrase",
+    "vi": "làm nản lòng, khiến mất hứng",
+    "en": "To make someone not want to do something.",
+    "example": "New members often say to me that they've been put off running."
+  },
+  {
+    "part": "listening-2",
+    "term": "demanding",
+    "pos": "adjective",
+    "vi": "đòi hỏi nhiều, áp lực",
+    "en": "Needing a lot of time, effort or skill.",
+    "example": "He never misses a training session, despite having a really demanding job."
+  },
+  {
+    "part": "listening-2",
+    "term": "commit",
+    "pos": "verb",
+    "vi": "cam kết, dành trọn",
+    "en": "To promise to give your time or effort to something.",
+    "example": "Leo was worried about having to commit himself to training sessions every week."
+  },
+  {
+    "part": "listening-2",
+    "term": "reassured",
+    "pos": "adjective",
+    "vi": "được trấn an, yên tâm",
+    "en": "Feeling less worried after being comforted.",
+    "example": "But he felt reassured immediately, as there were other people his age who were only just taking up running for the first time."
+  },
+  {
+    "part": "listening-2",
+    "term": "spectator",
+    "pos": "noun",
+    "vi": "khán giả",
+    "en": "A person who watches an event.",
+    "example": "It was only the support of the spectators that kept me going."
+  },
+  {
+    "part": "listening-2",
+    "term": "sense of achievement",
+    "pos": "phrase",
+    "vi": "cảm giác thành tựu",
+    "en": "A feeling of pride after completing something difficult.",
+    "example": "And it gives you a sense of achievement."
+  },
+  {
+    "part": "listening-3",
+    "term": "work placement",
+    "pos": "noun",
+    "vi": "đợt thực tập (làm việc thực tế)",
+    "en": "A period of working in a company as part of a course.",
+    "example": "You'll be off to Denmark soon to do your work placement."
+  },
+  {
+    "part": "listening-3",
+    "term": "spine",
+    "pos": "noun",
+    "vi": "gáy sách",
+    "en": "The part of a book where the pages are joined.",
+    "example": "He says you have to support the spine, otherwise the paper can come away from the cover."
+  },
+  {
+    "part": "listening-3",
+    "term": "deteriorate",
+    "pos": "verb",
+    "vi": "hư hỏng, xuống cấp",
+    "en": "To become worse in condition.",
+    "example": "I should dump them really, if they're going to deteriorate further, but I'd feel bad."
+  },
+  {
+    "part": "listening-3",
+    "term": "treasure",
+    "pos": "verb",
+    "vi": "trân trọng, quý trọng",
+    "en": "To value something very highly.",
+    "example": "Maybe it's because I was taught to treasure books."
+  },
+  {
+    "part": "listening-3",
+    "term": "paperback",
+    "pos": "noun",
+    "vi": "sách bìa mềm",
+    "en": "A book with a flexible paper cover.",
+    "example": "I hate seeing students force open the pages of paperbacks."
+  },
+  {
+    "part": "listening-3",
+    "term": "hardback",
+    "pos": "noun",
+    "vi": "sách bìa cứng",
+    "en": "A book with a stiff cover.",
+    "example": "Hardbacks aren't quite as weak."
+  },
+  {
+    "part": "listening-3",
+    "term": "eye-catching",
+    "pos": "adjective",
+    "vi": "bắt mắt",
+    "en": "Attractive and easy to notice.",
+    "example": "Some are really eye-catching."
+  },
+  {
+    "part": "listening-3",
+    "term": "first edition",
+    "pos": "noun",
+    "vi": "ấn bản đầu tiên",
+    "en": "The first printing of a book.",
+    "example": "I guess he treasures things like first editions and other rare books."
+  },
+  {
+    "part": "listening-3",
+    "term": "dedicated",
+    "pos": "adjective",
+    "vi": "dành riêng",
+    "en": "Set aside for one special purpose.",
+    "example": "He's got a dedicated area on the ground floor with cushions."
+  },
+  {
+    "part": "listening-3",
+    "term": "toddler",
+    "pos": "noun",
+    "vi": "trẻ mới biết đi",
+    "en": "A very young child who is learning to walk.",
+    "example": "So that parents can enter with their toddlers, go there, and spend some time reading to them."
+  },
+  {
+    "part": "listening-4",
+    "term": "offset",
+    "pos": "verb",
+    "vi": "bù đắp (lượng khí thải)",
+    "en": "To balance something harmful with something good.",
+    "example": "As well as a way for business corporations to offset their carbon emissions."
+  },
+  {
+    "part": "listening-4",
+    "term": "reforestation",
+    "pos": "noun",
+    "vi": "tái trồng rừng",
+    "en": "Planting trees again in an area that has lost its forest.",
+    "example": "Reforestation projects are currently being undertaken on a huge scale in many countries."
+  },
+  {
+    "part": "listening-4",
+    "term": "endangered",
+    "pos": "adjective",
+    "vi": "có nguy cơ tuyệt chủng",
+    "en": "At risk of dying out.",
+    "example": "Including rare and endangered species in order to create a rich ecosystem."
+  },
+  {
+    "part": "listening-4",
+    "term": "non-native",
+    "pos": "adjective",
+    "vi": "ngoại lai (không có nguồn gốc bản địa)",
+    "en": "Not originally from a place.",
+    "example": "It's important to avoid non-native species that could become invasive."
+  },
+  {
+    "part": "listening-4",
+    "term": "invasive",
+    "pos": "adjective",
+    "vi": "xâm lấn",
+    "en": "Spreading quickly and harming local species.",
+    "example": "Invasive species are a significant contributor to the current global biodiversity crisis."
+  },
+  {
+    "part": "listening-4",
+    "term": "vulnerable",
+    "pos": "adjective",
+    "vi": "dễ bị tổn thương",
+    "en": "Easily harmed or damaged.",
+    "example": "Which can make them vulnerable to disease."
+  },
+  {
+    "part": "listening-4",
+    "term": "genetic diversity",
+    "pos": "noun",
+    "vi": "đa dạng di truyền",
+    "en": "The range of different genes within a species.",
+    "example": "It's vital to use tree seeds with appropriate levels of genetic diversity."
+  },
+  {
+    "part": "listening-4",
+    "term": "intervention",
+    "pos": "noun",
+    "vi": "sự can thiệp",
+    "en": "Action taken to change a situation.",
+    "example": "Identifying high-priority areas for intervention is essential."
+  },
+  {
+    "part": "listening-4",
+    "term": "degraded",
+    "pos": "adjective",
+    "vi": "bị suy thoái",
+    "en": "Damaged and reduced in quality.",
+    "example": "Drone technology is a useful tool in helping to prioritize and monitor areas of degraded forest for restoration."
+  },
+  {
+    "part": "listening-4",
+    "term": "keystone species",
+    "pos": "noun",
+    "vi": "loài then chốt",
+    "en": "A species that many others in an ecosystem depend on.",
+    "example": "Figs are a keystone species, because of the critical role they play in maintaining wildlife populations."
+  },
+  {
+    "part": "listening-4",
+    "term": "disperse",
+    "pos": "verb",
+    "vi": "phát tán (hạt giống)",
+    "en": "To spread out over a wide area.",
+    "example": "Naturally dispersing seeds through defecation."
+  },
+  {
+    "part": "listening-4",
+    "term": "mangrove",
+    "pos": "noun",
+    "vi": "rừng ngập mặn, cây đước",
+    "en": "A tropical tree that grows in salty water along coasts.",
+    "example": "The restoration of mangrove forests in Madagascar is an example of a project which has succeeded in creating real benefits for the community."
+  },
+  {
+    "part": "reading-1",
+    "term": "conservationist",
+    "pos": "noun",
+    "vi": "nhà bảo tồn thiên nhiên",
+    "en": "A person who works to protect nature.",
+    "example": "According to conservationists, populations of around two thirds of butterfly species have declined in Britain over the past 40 years."
+  },
+  {
+    "part": "reading-1",
+    "term": "caterpillar",
+    "pos": "noun",
+    "vi": "sâu bướm",
+    "en": "The young stage of a butterfly, a long worm-like insect.",
+    "example": "Butterfly eggs develop into caterpillars."
+  },
+  {
+    "part": "reading-1",
+    "term": "prey",
+    "pos": "noun",
+    "vi": "con mồi",
+    "en": "An animal that is hunted and eaten by another.",
+    "example": "And in turn act as prey for birds as well as bats and other small mammals."
+  },
+  {
+    "part": "reading-1",
+    "term": "phenology",
+    "pos": "noun",
+    "vi": "vật hậu học (thời điểm các sự kiện sinh học theo mùa)",
+    "en": "The study of the timing of natural events such as breeding.",
+    "example": "Scientists refer to the timing of such lifecycle events as \"phenology\"."
+  },
+  {
+    "part": "reading-1",
+    "term": "abundance",
+    "pos": "noun",
+    "vi": "mật độ, số lượng dồi dào",
+    "en": "A large quantity of something.",
+    "example": "They then estimated the abundance and distribution of each species across this time."
+  },
+  {
+    "part": "reading-1",
+    "term": "emergence",
+    "pos": "noun",
+    "vi": "sự xuất hiện (của bướm trưởng thành)",
+    "en": "The act of coming out or appearing.",
+    "example": "Species with more flexible lifecycles were more likely to be able to benefit from an earlier emergence driven by climate change."
+  },
+  {
+    "part": "reading-1",
+    "term": "coppiced",
+    "pos": "adjective",
+    "vi": "được tỉa chồi (rừng cây được cắt tỉa thường xuyên)",
+    "en": "Cut back regularly so that new shoots grow.",
+    "example": "It is found only in coppiced woodland and limestone pavement habitats."
+  },
+  {
+    "part": "reading-2",
+    "term": "pathogenic",
+    "pos": "adjective",
+    "vi": "gây bệnh",
+    "en": "Able to cause disease.",
+    "example": "A microbe from a deep-sea sponge was killing pathogenic bugs in his laboratory."
+  },
+  {
+    "part": "reading-2",
+    "term": "breakthrough",
+    "pos": "noun",
+    "vi": "bước đột phá",
+    "en": "An important discovery or achievement.",
+    "example": "He realised it could be a breakthrough in the fight against antibiotic-resistant superbugs."
+  },
+  {
+    "part": "reading-2",
+    "term": "weigh up",
+    "pos": "phrase",
+    "vi": "cân nhắc",
+    "en": "To think carefully about the good and bad points of something.",
+    "example": "Asking for time to weigh up the pros and cons."
+  },
+  {
+    "part": "reading-2",
+    "term": "exploit",
+    "pos": "verb",
+    "vi": "khai thác (vì lợi ích)",
+    "en": "To use something fully for benefit or profit.",
+    "example": "In sustainability terms, this could be a better way of exploiting the economic potential of the deep sea."
+  },
+  {
+    "part": "reading-2",
+    "term": "ore",
+    "pos": "noun",
+    "vi": "quặng",
+    "en": "Rock from which metal is taken.",
+    "example": "They say that deep-sea mining could yield far superior ore to land mining with little, if any, waste."
+  },
+  {
+    "part": "reading-2",
+    "term": "terrestrial",
+    "pos": "adjective",
+    "vi": "thuộc về đất liền",
+    "en": "Relating to land rather than sea or air.",
+    "example": "Converted machinery previously used in terrestrial mining."
+  },
+  {
+    "part": "reading-2",
+    "term": "ramification",
+    "pos": "noun",
+    "vi": "hệ quả, hậu quả phức tạp",
+    "en": "A complicated result of an action.",
+    "example": "Arguing there are potentially massive and unknown ramifications for the environment and for nearby communities."
+  },
+  {
+    "part": "reading-2",
+    "term": "marginalisation",
+    "pos": "noun",
+    "vi": "sự gạt ra bên lề",
+    "en": "Treating a group as unimportant.",
+    "example": "And the marginalisation of indigenous peoples and their rights."
+  },
+  {
+    "part": "reading-2",
+    "term": "indigenous",
+    "pos": "adjective",
+    "vi": "bản địa",
+    "en": "Originally belonging to a place.",
+    "example": "And the marginalisation of indigenous peoples and their rights."
+  },
+  {
+    "part": "reading-2",
+    "term": "hydrothermal vent",
+    "pos": "noun",
+    "vi": "miệng phun thủy nhiệt (dưới đáy biển)",
+    "en": "An opening on the seabed that releases hot water.",
+    "example": "And hydrothermal vents, which are created when seawater meets volcanic magma."
+  },
+  {
+    "part": "reading-2",
+    "term": "untapped",
+    "pos": "adjective",
+    "vi": "chưa được khai thác",
+    "en": "Not yet used.",
+    "example": "It makes sense to explore this untapped potential in an environmentally sustainable way."
+  },
+  {
+    "part": "reading-2",
+    "term": "deplete",
+    "pos": "verb",
+    "vi": "làm cạn kiệt",
+    "en": "To use up so that little remains.",
+    "example": "Instead of continually looking at the fast depleting land resources of the planet to meet society's rising needs."
+  },
+  {
+    "part": "reading-3",
+    "term": "ruthless",
+    "pos": "adjective",
+    "vi": "tàn nhẫn, không khoan nhượng",
+    "en": "Hard and cruel, caring only about getting what you want.",
+    "example": "We're apparently ruthless, with strong impulses to compete against each other for resources and to accumulate power and possessions."
+  },
+  {
+    "part": "reading-3",
+    "term": "ulterior motive",
+    "pos": "noun",
+    "vi": "động cơ ẩn giấu",
+    "en": "A hidden reason for doing something.",
+    "example": "If we are kind to one another, it's usually because we have ulterior motives."
+  },
+  {
+    "part": "reading-3",
+    "term": "transcend",
+    "pos": "verb",
+    "vi": "vượt lên trên",
+    "en": "To go beyond a limit.",
+    "example": "If we are good, it's only because we have managed to control and transcend our innate selfishness and brutality."
+  },
+  {
+    "part": "reading-3",
+    "term": "ethos",
+    "pos": "noun",
+    "vi": "tinh thần, hệ giá trị (của một xã hội)",
+    "en": "The characteristic beliefs of a group or society.",
+    "example": "Helped to justify the competitive and individualistic ethos that was so prevalent in late 20th-century societies."
+  },
+  {
+    "part": "reading-3",
+    "term": "sparsely",
+    "pos": "adverb",
+    "vi": "thưa thớt",
+    "en": "In small numbers spread over a large area.",
+    "example": "It's important to remember that in the prehistoric era, the world was very sparsely populated."
+  },
+  {
+    "part": "reading-3",
+    "term": "hunter-gatherer",
+    "pos": "noun",
+    "vi": "người săn bắt hái lượm",
+    "en": "A person who lives by hunting animals and collecting wild plants.",
+    "example": "Humans at that time were hunter-gatherers: people who lived by hunting wild animals and collecting wild plants."
+  },
+  {
+    "part": "reading-3",
+    "term": "egalitarianism",
+    "pos": "noun",
+    "vi": "chủ nghĩa bình đẳng",
+    "en": "The belief that all people are equal.",
+    "example": "Hunter-gatherers are characterised by \"extreme political and sexual egalitarianism\"."
+  },
+  {
+    "part": "reading-3",
+    "term": "ostracise",
+    "pos": "verb",
+    "vi": "tẩy chay, cô lập",
+    "en": "To exclude someone from a group.",
+    "example": "And if a person becomes too domineering, the other members of the group ostracise them."
+  },
+  {
+    "part": "reading-3",
+    "term": "autonomy",
+    "pos": "noun",
+    "vi": "quyền tự chủ",
+    "en": "The freedom to make your own decisions.",
+    "example": "Women in hunter-gatherer groups worldwide often benefit from a high level of autonomy."
+  },
+  {
+    "part": "reading-3",
+    "term": "altruism",
+    "pos": "noun",
+    "vi": "lòng vị tha",
+    "en": "Caring about others without wanting a reward.",
+    "example": "It makes more sense, then, to see traits such as cooperation, egalitarianism, altruism and peacefulness as innate characteristics of human beings."
+  },
+  {
+    "part": "reading-3",
+    "term": "hierarchical",
+    "pos": "adjective",
+    "vi": "có thứ bậc, phân tầng",
+    "en": "Organised in ranks from high to low.",
+    "example": "They tend to become more violent and hierarchical."
+  },
+  {
+    "part": "reading-3",
+    "term": "feasible",
+    "pos": "adjective",
+    "vi": "khả thi, hợp lý",
+    "en": "Possible and likely to work.",
+    "example": "It doesn't seem feasible to explain them in adaptive or evolutionary terms."
+  }
+]

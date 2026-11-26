@@ -1,0 +1,546 @@
+[
+  {
+    "part": "listening-1",
+    "term": "recreational",
+    "pos": "adjective",
+    "vi": "giải trí, không chuyên (để vui, rèn luyện)",
+    "en": "Done for enjoyment in your free time rather than as a job or competition.",
+    "example": "you'd be better with the recreational membership"
+  },
+  {
+    "part": "listening-1",
+    "term": "membership",
+    "pos": "noun",
+    "vi": "tư cách hội viên, gói hội viên",
+    "en": "The state of belonging to a club or group.",
+    "example": "there are basically two types of adult membership"
+  },
+  {
+    "part": "listening-1",
+    "term": "quarterly",
+    "pos": "adverb",
+    "vi": "theo quý (mỗi ba tháng)",
+    "en": "Once every three months.",
+    "example": "It's paid quarterly"
+  },
+  {
+    "part": "listening-1",
+    "term": "upgrade",
+    "pos": "verb",
+    "vi": "nâng cấp",
+    "en": "To change to a better or higher level.",
+    "example": "you can upgrade it later to the full membership"
+  },
+  {
+    "part": "listening-1",
+    "term": "insurance",
+    "pos": "noun",
+    "vi": "bảo hiểm",
+    "en": "An arrangement that pays you money if something bad happens.",
+    "example": "They also provide insurance in case you have an accident"
+  },
+  {
+    "part": "listening-1",
+    "term": "kit",
+    "pos": "noun",
+    "vi": "đồng phục, trang phục thi đấu",
+    "en": "The clothes worn for a sport or team.",
+    "example": "you're also permitted to wear our kit"
+  },
+  {
+    "part": "listening-1",
+    "term": "made to order",
+    "pos": "phrase",
+    "vi": "làm theo đơn đặt hàng",
+    "en": "Produced only after a customer has asked for it.",
+    "example": "it's made to order by a company in Brisbane"
+  },
+  {
+    "part": "listening-1",
+    "term": "fitness",
+    "pos": "noun",
+    "vi": "thể lực, sức khỏe thể chất",
+    "en": "The condition of being physically strong and healthy.",
+    "example": "improving your cycling skills as well as your general level of fitness"
+  },
+  {
+    "part": "listening-1",
+    "term": "set out",
+    "pos": "phrase",
+    "vi": "khởi hành",
+    "en": "To begin a journey.",
+    "example": "it's well before sunrise when we set out"
+  },
+  {
+    "part": "listening-2",
+    "term": "volunteering",
+    "pos": "noun",
+    "vi": "hoạt động tình nguyện",
+    "en": "Working without pay to help others.",
+    "example": "our volunteering projects"
+  },
+  {
+    "part": "listening-2",
+    "term": "charity",
+    "pos": "noun",
+    "vi": "tổ chức từ thiện",
+    "en": "An organisation that raises money to help people in need.",
+    "example": "help on various charity projects"
+  },
+  {
+    "part": "listening-2",
+    "term": "commitment",
+    "pos": "noun",
+    "vi": "sự cam kết (thời gian, công sức)",
+    "en": "A promise or a duty that takes your time and effort.",
+    "example": "a huge time commitment"
+  },
+  {
+    "part": "listening-2",
+    "term": "overwhelmingly",
+    "pos": "adverb",
+    "vi": "áp đảo, vô cùng",
+    "en": "To a very great degree.",
+    "example": "Feedback from staff has been overwhelmingly positive"
+  },
+  {
+    "part": "listening-2",
+    "term": "unemployed",
+    "pos": "adjective",
+    "vi": "thất nghiệp",
+    "en": "Without a job.",
+    "example": "helping unemployed people in the area get back to work"
+  },
+  {
+    "part": "listening-2",
+    "term": "conservation",
+    "pos": "noun",
+    "vi": "bảo tồn",
+    "en": "The protection of nature and the environment.",
+    "example": "a conservation project in Redfern Park"
+  },
+  {
+    "part": "listening-2",
+    "term": "digital inclusion",
+    "pos": "noun",
+    "vi": "hòa nhập số",
+    "en": "Making sure everyone can use digital technology.",
+    "example": "annual Digital Inclusion Day"
+  },
+  {
+    "part": "listening-2",
+    "term": "outdated",
+    "pos": "adjective",
+    "vi": "lỗi thời",
+    "en": "No longer modern or useful.",
+    "example": "these tended to be outdated models"
+  },
+  {
+    "part": "listening-2",
+    "term": "come in handy",
+    "pos": "phrase",
+    "vi": "có ích, hữu dụng",
+    "en": "To be useful in some situation.",
+    "example": "it would come in handy if they were ill"
+  },
+  {
+    "part": "listening-3",
+    "term": "consult",
+    "pos": "verb",
+    "vi": "tham khảo ý kiến, hỏi ý kiến",
+    "en": "To ask an expert or adviser for advice.",
+    "example": "you wanted to consult me about your class presentation"
+  },
+  {
+    "part": "listening-3",
+    "term": "allocate",
+    "pos": "verb",
+    "vi": "phân bổ, ấn định",
+    "en": "To give an amount of time or money for a purpose.",
+    "example": "the 20 minutes I've been allocated"
+  },
+  {
+    "part": "listening-3",
+    "term": "overview",
+    "pos": "noun",
+    "vi": "cái nhìn tổng quan",
+    "en": "A short general description of a subject.",
+    "example": "I think I'll give an overview"
+  },
+  {
+    "part": "listening-3",
+    "term": "chronological",
+    "pos": "adjective",
+    "vi": "theo trình tự thời gian",
+    "en": "Arranged in the order in which things happened.",
+    "example": "work through developments in chronological order"
+  },
+  {
+    "part": "listening-3",
+    "term": "tailor",
+    "pos": "verb",
+    "vi": "điều chỉnh cho phù hợp",
+    "en": "To change something so it suits a particular need.",
+    "example": "a danger of tailoring what you say to fit whatever slides you can find"
+  },
+  {
+    "part": "listening-3",
+    "term": "modify",
+    "pos": "verb",
+    "vi": "sửa đổi, điều chỉnh",
+    "en": "To change something slightly.",
+    "example": "You can always modify"
+  },
+  {
+    "part": "listening-3",
+    "term": "abruptly",
+    "pos": "adverb",
+    "vi": "đột ngột",
+    "en": "Suddenly and without warning.",
+    "example": "you ended rather abruptly without rounding it off"
+  },
+  {
+    "part": "listening-3",
+    "term": "eye contact",
+    "pos": "noun",
+    "vi": "giao tiếp bằng mắt",
+    "en": "Looking directly into another person's eyes.",
+    "example": "you made very little eye contact with the audience"
+  },
+  {
+    "part": "listening-3",
+    "term": "handout",
+    "pos": "noun",
+    "vi": "tài liệu phát tay",
+    "en": "A printed sheet given to an audience.",
+    "example": "the handouts you prepared were well thought out"
+  },
+  {
+    "part": "listening-4",
+    "term": "episodic memory",
+    "pos": "noun",
+    "vi": "trí nhớ theo giai đoạn (sự kiện)",
+    "en": "The memory of particular events you have experienced.",
+    "example": "focusing on what is called episodic memory"
+  },
+  {
+    "part": "listening-4",
+    "term": "semantic memory",
+    "pos": "noun",
+    "vi": "trí nhớ ngữ nghĩa (kiến thức chung)",
+    "en": "The memory of general facts and knowledge.",
+    "example": "another type of memory called semantic memory"
+  },
+  {
+    "part": "listening-4",
+    "term": "encoding",
+    "pos": "noun",
+    "vi": "sự mã hóa (thông tin vào trí nhớ)",
+    "en": "The process of taking in information so it can be stored in memory.",
+    "example": "encoding, consolidation and retrieval"
+  },
+  {
+    "part": "listening-4",
+    "term": "consolidation",
+    "pos": "noun",
+    "vi": "sự củng cố (trí nhớ)",
+    "en": "The process of making a memory stronger and more stable.",
+    "example": "Memory consolidation, the next step in forming an episodic memory"
+  },
+  {
+    "part": "listening-4",
+    "term": "retrieval",
+    "pos": "noun",
+    "vi": "sự truy xuất (thông tin)",
+    "en": "The act of getting stored information back out of memory.",
+    "example": "encoding, consolidation and retrieval"
+  },
+  {
+    "part": "listening-4",
+    "term": "recollection",
+    "pos": "noun",
+    "vi": "sự hồi tưởng, ký ức",
+    "en": "The act of remembering something.",
+    "example": "Future recollection of Charlie's name is much easier"
+  },
+  {
+    "part": "listening-4",
+    "term": "impairment",
+    "pos": "noun",
+    "vi": "sự suy giảm chức năng",
+    "en": "Damage that makes something work less well.",
+    "example": "An impairment of episodic memory can have a profound effect"
+  },
+  {
+    "part": "listening-4",
+    "term": "profound",
+    "pos": "adjective",
+    "vi": "sâu sắc, nghiêm trọng",
+    "en": "Very great or serious.",
+    "example": "can have a profound effect on individuals' lives"
+  },
+  {
+    "part": "listening-4",
+    "term": "intimate",
+    "pos": "adjective",
+    "vi": "riêng tư, thân mật",
+    "en": "Very personal and private.",
+    "example": "sharing intimate details about their past"
+  },
+  {
+    "part": "reading-1",
+    "term": "fragrant",
+    "pos": "adjective",
+    "vi": "thơm",
+    "en": "Having a sweet, pleasant smell.",
+    "example": "Cinnamon is a sweet, fragrant spice"
+  },
+  {
+    "part": "reading-1",
+    "term": "bark",
+    "pos": "noun",
+    "vi": "vỏ cây",
+    "en": "The hard outer covering of a tree.",
+    "example": "produced from the inner bark of trees"
+  },
+  {
+    "part": "reading-1",
+    "term": "anoint",
+    "pos": "verb",
+    "vi": "xoa dầu thánh (lên người)",
+    "en": "To put oil on a person as part of a religious ceremony.",
+    "example": "for anointing people's bodies"
+  },
+  {
+    "part": "reading-1",
+    "term": "mourner",
+    "pos": "noun",
+    "vi": "người đi viếng tang",
+    "en": "A person who attends a funeral to show sadness.",
+    "example": "mourners attending funerals burnt cinnamon"
+  },
+  {
+    "part": "reading-1",
+    "term": "merchant",
+    "pos": "noun",
+    "vi": "thương nhân",
+    "en": "A person who buys and sells goods, often over long distances.",
+    "example": "cinnamon was transported by Arab merchants"
+  },
+  {
+    "part": "reading-1",
+    "term": "pliable",
+    "pos": "adjective",
+    "vi": "dễ uốn, mềm dẻo",
+    "en": "Easy to bend without breaking.",
+    "example": "when the wet bark was more pliable"
+  },
+  {
+    "part": "reading-1",
+    "term": "monopoly",
+    "pos": "noun",
+    "vi": "sự độc quyền",
+    "en": "Complete control of a trade by one person or group.",
+    "example": "the 150-year Portuguese monopoly"
+  },
+  {
+    "part": "reading-1",
+    "term": "expel",
+    "pos": "verb",
+    "vi": "trục xuất",
+    "en": "To force someone to leave a place.",
+    "example": "they had permanently expelled the Portuguese from the island"
+  },
+  {
+    "part": "reading-1",
+    "term": "lucrative",
+    "pos": "adjective",
+    "vi": "sinh lời cao",
+    "en": "Producing a lot of money.",
+    "example": "the lucrative cinnamon trade"
+  },
+  {
+    "part": "reading-1",
+    "term": "supplement",
+    "pos": "verb",
+    "vi": "bổ sung",
+    "en": "To add something to make an amount bigger.",
+    "example": "to supplement the diminishing number of wild trees"
+  },
+  {
+    "part": "reading-1",
+    "term": "supersede",
+    "pos": "verb",
+    "vi": "thay thế, thế chỗ",
+    "en": "To take the place of something older.",
+    "example": "was eventually superseded by the rise of trade in coffee"
+  },
+  {
+    "part": "reading-2",
+    "term": "hormone",
+    "pos": "noun",
+    "vi": "hoóc-môn",
+    "en": "A chemical made in the body that controls a function.",
+    "example": "a hormone produced in the pituitary gland in the brain"
+  },
+  {
+    "part": "reading-2",
+    "term": "reinforce",
+    "pos": "verb",
+    "vi": "củng cố, tăng cường",
+    "en": "To make something stronger.",
+    "example": "it helps reinforce the bonds between prairie voles"
+  },
+  {
+    "part": "reading-2",
+    "term": "placebo",
+    "pos": "noun",
+    "vi": "giả dược",
+    "en": "A harmless substance given instead of real medicine in a test.",
+    "example": "than those who received a placebo instead"
+  },
+  {
+    "part": "reading-2",
+    "term": "envy",
+    "pos": "noun",
+    "vi": "sự ghen tị",
+    "en": "An unhappy feeling of wanting what someone else has.",
+    "example": "felt more envy when others won"
+  },
+  {
+    "part": "reading-2",
+    "term": "disposition",
+    "pos": "noun",
+    "vi": "tính khí, khuynh hướng tính cách",
+    "en": "A person's natural character and way of reacting.",
+    "example": "depending on a person's disposition"
+  },
+  {
+    "part": "reading-2",
+    "term": "adept",
+    "pos": "adjective",
+    "vi": "khéo léo, thành thạo",
+    "en": "Very good at something.",
+    "example": "if they are not very socially adept to begin with"
+  },
+  {
+    "part": "reading-2",
+    "term": "favouritism",
+    "pos": "noun",
+    "vi": "sự thiên vị",
+    "en": "Unfairly treating one person or group better than others.",
+    "example": "volunteers given oxytocin showed favouritism"
+  },
+  {
+    "part": "reading-2",
+    "term": "pinpoint",
+    "pos": "verb",
+    "vi": "xác định chính xác",
+    "en": "To find or identify something exactly.",
+    "example": "lies in pinpointing its core function"
+  },
+  {
+    "part": "reading-2",
+    "term": "hypothesis",
+    "pos": "noun",
+    "vi": "giả thuyết",
+    "en": "An idea put forward to explain something, not yet proved.",
+    "example": "There are several hypotheses which are not mutually exclusive"
+  },
+  {
+    "part": "reading-2",
+    "term": "manifest",
+    "pos": "verb",
+    "vi": "biểu hiện ra",
+    "en": "To show itself clearly.",
+    "example": "these basic processes could manifest in different ways"
+  },
+  {
+    "part": "reading-3",
+    "term": "peripheral",
+    "pos": "adjective",
+    "vi": "ngoại vi, thứ yếu",
+    "en": "Not part of the main or central area.",
+    "example": "trends that managers view as peripheral to their core markets"
+  },
+  {
+    "part": "reading-3",
+    "term": "jeopardize",
+    "pos": "verb",
+    "vi": "gây nguy hại, đe dọa",
+    "en": "To put something in danger of being harmed or lost.",
+    "example": "they can jeopardize a company"
+  },
+  {
+    "part": "reading-3",
+    "term": "engender",
+    "pos": "verb",
+    "vi": "tạo ra, gây ra",
+    "en": "To cause a feeling or situation to exist.",
+    "example": "could engender new value propositions"
+  },
+  {
+    "part": "reading-3",
+    "term": "opulence",
+    "pos": "noun",
+    "vi": "sự xa hoa",
+    "en": "Great richness and luxury.",
+    "example": "a symbol of opulence and luxury"
+  },
+  {
+    "part": "reading-3",
+    "term": "tangible",
+    "pos": "adjective",
+    "vi": "hữu hình, cụ thể",
+    "en": "Clear enough to be seen or measured.",
+    "example": "that produce tangible results"
+  },
+  {
+    "part": "reading-3",
+    "term": "transcend",
+    "pos": "verb",
+    "vi": "vượt lên trên, vượt qua giới hạn",
+    "en": "To go beyond the limits of something.",
+    "example": "combine and transcend"
+  },
+  {
+    "part": "reading-3",
+    "term": "reinvigorate",
+    "pos": "verb",
+    "vi": "làm tái sinh lực, làm hồi sinh",
+    "en": "To give new energy or life to something.",
+    "example": "will allow you to reinvigorate the category"
+  },
+  {
+    "part": "reading-3",
+    "term": "disparity",
+    "pos": "noun",
+    "vi": "sự chênh lệch",
+    "en": "A noticeable difference between two things.",
+    "example": "an increasing disparity between your category and consumers' new focus"
+  },
+  {
+    "part": "writing-1",
+    "term": "household",
+    "pos": "noun",
+    "vi": "hộ gia đình",
+    "en": "A person or group of people living together in one home.",
+    "example": "households in owned and rented accommodation"
+  },
+  {
+    "part": "writing-2",
+    "term": "abundance",
+    "pos": "noun",
+    "vi": "sự dồi dào, sự phong phú",
+    "en": "A very large quantity of something.",
+    "example": "choice abundance becomes problematic"
+  },
+  {
+    "part": "writing-2",
+    "term": "proliferation",
+    "pos": "noun",
+    "vi": "sự gia tăng nhanh chóng",
+    "en": "A rapid increase in number.",
+    "example": "This proliferation often leads to decision fatigue"
+  }
+]

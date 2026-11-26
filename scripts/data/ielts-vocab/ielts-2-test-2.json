@@ -1,0 +1,562 @@
+[
+  {
+    "part": "listening-1",
+    "term": "insurance",
+    "pos": "noun",
+    "vi": "bảo hiểm",
+    "en": "An arrangement where you pay money so that you get compensation if something is lost or damaged.",
+    "example": "I'd like to get some insurance for the contents of my home."
+  },
+  {
+    "part": "listening-1",
+    "term": "contents",
+    "pos": "noun",
+    "vi": "đồ đạc, tài sản bên trong (nhà)",
+    "en": "The things that are inside a building or container.",
+    "example": "I'd like to get some insurance for the contents of my home."
+  },
+  {
+    "part": "listening-1",
+    "term": "landlord",
+    "pos": "noun",
+    "vi": "chủ nhà (cho thuê)",
+    "en": "A person who owns a property and rents it to others.",
+    "example": "I was told by the landlord that it would be a good idea to get some insurance"
+  },
+  {
+    "part": "listening-1",
+    "term": "break-in",
+    "pos": "noun",
+    "vi": "vụ đột nhập trộm cắp",
+    "en": "An act of entering a building illegally by force, usually to steal.",
+    "example": "And there's more chance of a break-in."
+  },
+  {
+    "part": "listening-1",
+    "term": "policy",
+    "pos": "noun",
+    "vi": "hợp đồng bảo hiểm",
+    "en": "A written agreement with an insurance company.",
+    "example": "OK, I'll take that policy."
+  },
+  {
+    "part": "listening-2",
+    "term": "orientation",
+    "pos": "noun",
+    "vi": "buổi định hướng (cho sinh viên mới)",
+    "en": "An introduction to a new place or situation for newcomers.",
+    "example": "when you receive your orientation pack shortly, that there are two keys."
+  },
+  {
+    "part": "listening-2",
+    "term": "residential",
+    "pos": "adjective",
+    "vi": "nội trú, có chỗ ở",
+    "en": "Providing places for people to live.",
+    "example": "is one of the oldest residential colleges of the university."
+  },
+  {
+    "part": "listening-2",
+    "term": "convert",
+    "pos": "verb",
+    "vi": "cải tạo, chuyển đổi (thành)",
+    "en": "To change something so that it has a different use.",
+    "example": "The original house was converted into a residential college for the university in 1940"
+  },
+  {
+    "part": "listening-2",
+    "term": "allocation",
+    "pos": "noun",
+    "vi": "sự phân bổ (phòng)",
+    "en": "The act of giving something to someone as their share.",
+    "example": "when you receive your room allocation in a few minutes"
+  },
+  {
+    "part": "listening-2",
+    "term": "wing",
+    "pos": "noun",
+    "vi": "dãy nhà, cánh (của tòa nhà)",
+    "en": "A section of a building that extends out from the main part.",
+    "example": "The first letter refers to the three wings of the college"
+  },
+  {
+    "part": "listening-2",
+    "term": "emergency",
+    "pos": "noun",
+    "vi": "tình huống khẩn cấp",
+    "en": "A sudden dangerous situation that needs immediate action.",
+    "example": "They should only be opened from the inside in case of emergency."
+  },
+  {
+    "part": "listening-2",
+    "term": "bedlinen",
+    "pos": "noun",
+    "vi": "ga giường, đồ vải trải giường",
+    "en": "Sheets and pillowcases used on a bed.",
+    "example": "which covers the cleaning of bedlinen and towels."
+  },
+  {
+    "part": "listening-2",
+    "term": "embossed",
+    "pos": "adjective",
+    "vi": "được in nổi, dập nổi",
+    "en": "Marked with a raised pattern or letters.",
+    "example": "All bedlinen and towels are clearly embossed with the name Smith House"
+  },
+  {
+    "part": "listening-2",
+    "term": "permitted",
+    "pos": "adjective",
+    "vi": "được phép",
+    "en": "Allowed by the rules.",
+    "example": "but smoking is permitted on the balconies."
+  },
+  {
+    "part": "listening-2",
+    "term": "floor senior",
+    "pos": "noun",
+    "vi": "sinh viên trưởng tầng (người được bầu để giúp đỡ sinh viên mới)",
+    "en": "An older student chosen to help the residents of one floor.",
+    "example": "each floor has an elected floor senior"
+  },
+  {
+    "part": "listening-3",
+    "term": "print media",
+    "pos": "noun",
+    "vi": "phương tiện in ấn (sách, báo)",
+    "en": "Communication through printed material such as books and newspapers.",
+    "example": "the different forms of media would be the print media."
+  },
+  {
+    "part": "listening-3",
+    "term": "pictorial",
+    "pos": "adjective",
+    "vi": "bằng hình ảnh, minh họa",
+    "en": "Using pictures to show something.",
+    "example": "the pictorial forms of print media, like maps."
+  },
+  {
+    "part": "listening-3",
+    "term": "audio-visual",
+    "pos": "adjective",
+    "vi": "nghe nhìn",
+    "en": "Using both sound and images.",
+    "example": "And this would lead into the audio-visual media, which can be seen as well as heard."
+  },
+  {
+    "part": "listening-3",
+    "term": "electronic media",
+    "pos": "noun",
+    "vi": "phương tiện điện tử",
+    "en": "Forms of communication that use electronic devices such as computers.",
+    "example": "Computers, that make up the so called electronic media."
+  },
+  {
+    "part": "listening-3",
+    "term": "draw up",
+    "pos": "phrase",
+    "vi": "lập ra, soạn thảo",
+    "en": "To prepare a document, list or plan.",
+    "example": "Maybe we could draw up a table and look at examples of each medium in turn."
+  },
+  {
+    "part": "listening-3",
+    "term": "imagination",
+    "pos": "noun",
+    "vi": "trí tưởng tượng",
+    "en": "The ability to form pictures or ideas in your mind.",
+    "example": "because they give them an opportunity to let their imaginations run wild."
+  },
+  {
+    "part": "listening-3",
+    "term": "isolated",
+    "pos": "adjective",
+    "vi": "cô lập, lẻ loi",
+    "en": "Feeling alone or separate from others.",
+    "example": "This way children don't feel isolated"
+  },
+  {
+    "part": "listening-3",
+    "term": "interact",
+    "pos": "verb",
+    "vi": "tương tác",
+    "en": "To communicate or work together with others.",
+    "example": "Give the children a chance to interact and to share ideas."
+  },
+  {
+    "part": "listening-4",
+    "term": "agriculture",
+    "pos": "noun",
+    "vi": "nông nghiệp",
+    "en": "The science and practice of farming.",
+    "example": "I've called an introduction to British Agriculture"
+  },
+  {
+    "part": "listening-4",
+    "term": "gross national product",
+    "pos": "noun",
+    "vi": "tổng sản phẩm quốc dân (GNP)",
+    "en": "The total value of goods and services produced by a country in a year.",
+    "example": "still account for around 20% of our gross national product."
+  },
+  {
+    "part": "listening-4",
+    "term": "workforce",
+    "pos": "noun",
+    "vi": "lực lượng lao động",
+    "en": "All the people who work in a country, industry or company.",
+    "example": "how very small a percentage of the UK workforce is employed in agriculture."
+  },
+  {
+    "part": "listening-4",
+    "term": "invest",
+    "pos": "verb",
+    "vi": "đầu tư",
+    "en": "To spend money or effort on something in order to get a future benefit.",
+    "example": "the recognition by farmers of the value of investing in technology."
+  },
+  {
+    "part": "listening-4",
+    "term": "geology",
+    "pos": "noun",
+    "vi": "địa chất",
+    "en": "The structure of the rocks and soil of an area, or the science that studies it.",
+    "example": "the geology and climate vary a good deal from region to region."
+  },
+  {
+    "part": "listening-4",
+    "term": "fertile",
+    "pos": "adjective",
+    "vi": "màu mỡ",
+    "en": "Able to produce good crops.",
+    "example": "with fertile soils and a mixed climate."
+  },
+  {
+    "part": "listening-4",
+    "term": "cereal",
+    "pos": "noun",
+    "vi": "ngũ cốc",
+    "en": "A grain crop such as wheat, oats or barley.",
+    "example": "the east is the UK's great cereal producing region."
+  },
+  {
+    "part": "listening-4",
+    "term": "pasture",
+    "pos": "noun",
+    "vi": "đồng cỏ chăn thả",
+    "en": "Land covered with grass where farm animals feed.",
+    "example": "The resulting rich soils in the west provide excellent pasture."
+  },
+  {
+    "part": "listening-4",
+    "term": "solidarity",
+    "pos": "noun",
+    "vi": "tinh thần đoàn kết",
+    "en": "Unity among people who share the same interests or aims.",
+    "example": "this does not prevent quite a strong sense of solidarity amongst the farming community"
+  },
+  {
+    "part": "reading-1",
+    "term": "venture",
+    "pos": "noun",
+    "vi": "dự án kinh doanh mới",
+    "en": "A new business activity that involves some risk.",
+    "example": "One of its latest ventures, the Sydney Airport Hotel (SAH), opened in March 1995."
+  },
+  {
+    "part": "reading-1",
+    "term": "economically viable",
+    "pos": "adjective",
+    "vi": "khả thi về mặt kinh tế",
+    "en": "Able to make enough money to continue.",
+    "example": "In order to develop an economically viable hotel organisation model"
+  },
+  {
+    "part": "reading-1",
+    "term": "initiative",
+    "pos": "noun",
+    "vi": "sáng kiến, biện pháp mới",
+    "en": "A new plan or action intended to solve a problem.",
+    "example": "The first of the initiatives was an organisational structure with only three levels of management"
+  },
+  {
+    "part": "reading-1",
+    "term": "front-line",
+    "pos": "adjective",
+    "vi": "tuyến đầu (trực tiếp tiếp xúc khách hàng)",
+    "en": "Dealing directly with customers or the public.",
+    "example": "Decision-making has been forced down in many cases to front-line employees."
+  },
+  {
+    "part": "reading-1",
+    "term": "supervisor",
+    "pos": "noun",
+    "vi": "người giám sát, quản lý trực tiếp",
+    "en": "A person who watches over workers and checks their work.",
+    "example": "guest requests are usually met without reference to a supervisor"
+  },
+  {
+    "part": "reading-1",
+    "term": "recruit",
+    "pos": "noun",
+    "vi": "nhân viên mới tuyển",
+    "en": "A person who has recently joined an organisation.",
+    "example": "potential recruits were divided into three categories."
+  },
+  {
+    "part": "reading-1",
+    "term": "prospective",
+    "pos": "adjective",
+    "vi": "tương lai, tiềm năng",
+    "en": "Likely to become or be something in the future.",
+    "example": "Department heads and shift leaders then composed prospective teams"
+  },
+  {
+    "part": "reading-1",
+    "term": "multi-skilled",
+    "pos": "adjective",
+    "vi": "đa kỹ năng",
+    "en": "Able to do several different jobs.",
+    "example": "Another major initiative by SAH was to adopt a totally multi-skilled workforce."
+  },
+  {
+    "part": "reading-1",
+    "term": "benchmarking",
+    "pos": "noun",
+    "vi": "đối chuẩn (so sánh với tiêu chuẩn tốt nhất)",
+    "en": "Comparing your performance with a standard or with the best in the field.",
+    "example": "SAH management concluded this would first require a process of 'benchmarking'."
+  },
+  {
+    "part": "reading-1",
+    "term": "feedback loop",
+    "pos": "noun",
+    "vi": "vòng phản hồi",
+    "en": "A process in which comments about results are used to make improvements.",
+    "example": "Take Charge provides an effective feedback loop from both customers and employees."
+  },
+  {
+    "part": "reading-1",
+    "term": "collate",
+    "pos": "verb",
+    "vi": "đối chiếu, tổng hợp",
+    "en": "To collect information and put it together in order.",
+    "example": "These are collated regularly to identify opportunities for improvement."
+  },
+  {
+    "part": "reading-1",
+    "term": "anecdotal",
+    "pos": "adjective",
+    "vi": "mang tính giai thoại, dựa trên kinh nghiệm cá nhân (chưa có số liệu)",
+    "en": "Based on personal stories rather than on facts or statistics.",
+    "example": "anecdotal evidence clearly suggests that these practices are working."
+  },
+  {
+    "part": "reading-2",
+    "term": "impede",
+    "pos": "verb",
+    "vi": "cản trở",
+    "en": "To make it difficult for something to happen or progress.",
+    "example": "the lack of a common language can severely impede progress or can halt it altogether."
+  },
+  {
+    "part": "reading-2",
+    "term": "dissemination",
+    "pos": "noun",
+    "vi": "sự phổ biến, truyền bá (thông tin)",
+    "en": "The act of spreading information widely.",
+    "example": "policing, business, or data dissemination"
+  },
+  {
+    "part": "reading-2",
+    "term": "metaphorical",
+    "pos": "adjective",
+    "vi": "mang nghĩa bóng",
+    "en": "Using words in a figurative way rather than a literal one.",
+    "example": "has a major metaphorical meaning alongside its literal one."
+  },
+  {
+    "part": "reading-2",
+    "term": "remedy",
+    "pos": "noun",
+    "vi": "phương thuốc chữa, biện pháp khắc phục",
+    "en": "A treatment or solution for a problem or illness.",
+    "example": "No remedy was known, and two of the people died within days."
+  },
+  {
+    "part": "reading-2",
+    "term": "periodical",
+    "pos": "noun",
+    "vi": "tạp chí định kỳ",
+    "en": "A magazine or journal published regularly.",
+    "example": "only 13 per cent were for foreign language periodicals."
+  },
+  {
+    "part": "reading-2",
+    "term": "insularity",
+    "pos": "noun",
+    "vi": "tính hẹp hòi, thiển cận (chỉ nhìn vào phạm vi của mình)",
+    "en": "A narrow-minded attitude that ignores other countries and cultures.",
+    "example": "criticised for its linguistic insularity"
+  },
+  {
+    "part": "reading-2",
+    "term": "glossary",
+    "pos": "noun",
+    "vi": "bảng thuật ngữ",
+    "en": "A list of specialised words with their meanings.",
+    "example": "some produce their own technical glossaries, to ensure consistency"
+  },
+  {
+    "part": "reading-2",
+    "term": "permeate",
+    "pos": "verb",
+    "vi": "thấm vào, lan tỏa khắp",
+    "en": "To spread through every part of something.",
+    "example": "the regional and social variation which permeates speech"
+  },
+  {
+    "part": "reading-3",
+    "term": "livelihood",
+    "pos": "noun",
+    "vi": "kế sinh nhai",
+    "en": "The way a person earns the money needed to live.",
+    "example": "a major source of livelihood and a major force for cultural mixing."
+  },
+  {
+    "part": "reading-3",
+    "term": "generic",
+    "pos": "adjective",
+    "vi": "chung, mang tính chung chung",
+    "en": "Relating to a whole group of things rather than one specific item.",
+    "example": "under a single generic label?"
+  },
+  {
+    "part": "reading-3",
+    "term": "warrant",
+    "pos": "verb",
+    "vi": "xứng đáng, biện minh cho",
+    "en": "To justify or deserve something.",
+    "example": "Do they have enough in common to warrant distinguishing them from other kinds of cities?"
+  },
+  {
+    "part": "reading-3",
+    "term": "hinterland",
+    "pos": "noun",
+    "vi": "vùng nội địa phía sau cảng",
+    "en": "The land behind a coast or port that supplies and uses its goods.",
+    "example": "requires good access to a hinterland even more than a sea-linked foreland."
+  },
+  {
+    "part": "reading-3",
+    "term": "breakwater",
+    "pos": "noun",
+    "vi": "đê chắn sóng",
+    "en": "A wall built out into the sea to protect a harbour from waves.",
+    "example": "Poor harbours can be improved with breakwaters and dredging"
+  },
+  {
+    "part": "reading-3",
+    "term": "cosmopolitan",
+    "pos": "adjective",
+    "vi": "mang tính quốc tế, đa văn hóa",
+    "en": "Including people and influences from many parts of the world.",
+    "example": "Port functions, more than anything else, make a city cosmopolitan."
+  },
+  {
+    "part": "reading-3",
+    "term": "jostle",
+    "pos": "verb",
+    "vi": "chen lấn, va chạm xô đẩy",
+    "en": "To push and compete for space with others.",
+    "example": "goods from a variety of places, jostle, mix and enrich each other"
+  },
+  {
+    "part": "reading-3",
+    "term": "microcosm",
+    "pos": "noun",
+    "vi": "mô hình thu nhỏ",
+    "en": "A small place that shows the features of something much larger.",
+    "example": "samples of which are present in microcosm within their own urban areas."
+  },
+  {
+    "part": "reading-3",
+    "term": "advent",
+    "pos": "noun",
+    "vi": "sự xuất hiện, ra đời",
+    "en": "The arrival of an important new thing or invention.",
+    "example": "Sea ports have been transformed by the advent of powered vessels"
+  },
+  {
+    "part": "reading-3",
+    "term": "backwater",
+    "pos": "noun",
+    "vi": "nơi tù túng, tụt hậu (ít phát triển)",
+    "en": "A place that is quiet and cut off from progress.",
+    "example": "they have become cultural and economic backwaters"
+  },
+  {
+    "part": "reading-3",
+    "term": "refine",
+    "pos": "verb",
+    "vi": "tinh chế, lọc",
+    "en": "To make a raw material purer by removing unwanted substances.",
+    "example": "by refining raw materials or turning them into finished goods."
+  },
+  {
+    "part": "reading-3",
+    "term": "metropolis",
+    "pos": "noun",
+    "vi": "đô thị lớn",
+    "en": "A very large and important city.",
+    "example": "even though each city has expanded into a metropolis."
+  },
+  {
+    "part": "writing-1",
+    "term": "leisure time",
+    "pos": "noun",
+    "vi": "thời gian rảnh rỗi",
+    "en": "Time when you are free from work and can relax.",
+    "example": "The chart below shows the amount of leisure time enjoyed by men and women of different employment status."
+  },
+  {
+    "part": "writing-1",
+    "term": "employment status",
+    "pos": "noun",
+    "vi": "tình trạng việc làm",
+    "en": "Whether a person is working full-time, part-time, unemployed or retired.",
+    "example": "the weekly leisure time of men and women across different employment statuses."
+  },
+  {
+    "part": "writing-2",
+    "term": "prevention is better than cure",
+    "pos": "phrase",
+    "vi": "phòng bệnh hơn chữa bệnh",
+    "en": "It is wiser to stop a problem happening than to fix it later.",
+    "example": "\"Prevention is better than cure.\""
+  },
+  {
+    "part": "writing-2",
+    "term": "divert",
+    "pos": "verb",
+    "vi": "chuyển hướng (nguồn tiền)",
+    "en": "To send money or attention to a different use.",
+    "example": "a large proportion should be diverted from treatment to spending on health education"
+  },
+  {
+    "part": "writing-2",
+    "term": "preventative",
+    "pos": "adjective",
+    "vi": "mang tính phòng ngừa",
+    "en": "Intended to stop something bad from happening.",
+    "example": "Preventative measures have historically proven successful in combating infectious diseases."
+  },
+  {
+    "part": "writing-2",
+    "term": "eradicate",
+    "pos": "verb",
+    "vi": "xóa sổ, diệt trừ",
+    "en": "To destroy something completely.",
+    "example": "Vaccination programmes eradicated smallpox globally"
+  }
+]

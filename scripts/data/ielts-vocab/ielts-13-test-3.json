@@ -1,0 +1,530 @@
+[
+  {
+    "part": "listening-1",
+    "term": "suburb",
+    "pos": "noun",
+    "vi": "vùng ngoại ô, khu dân cư ngoại thành",
+    "en": "A residential area on the edge of a city.",
+    "example": "a really nice suburb, not too expensive"
+  },
+  {
+    "part": "listening-1",
+    "term": "reasonable",
+    "pos": "adjective",
+    "vi": "hợp lý, phải chăng",
+    "en": "Fair, especially about price.",
+    "example": "you should be able to get something reasonable for £850 per month"
+  },
+  {
+    "part": "listening-1",
+    "term": "rush hour",
+    "pos": "noun",
+    "vi": "giờ cao điểm",
+    "en": "The time of day when roads and trains are most crowded.",
+    "example": "the traffic during the rush hour can be bad"
+  },
+  {
+    "part": "listening-1",
+    "term": "nightmare",
+    "pos": "noun",
+    "vi": "cơn ác mộng (rất khó chịu)",
+    "en": "A very unpleasant or difficult experience.",
+    "example": "driving to work in the city center would be a nightmare"
+  },
+  {
+    "part": "listening-1",
+    "term": "estate agent",
+    "pos": "noun",
+    "vi": "nhân viên môi giới bất động sản",
+    "en": "A person whose job is to sell or rent houses and flats.",
+    "example": "appointments with estate agents"
+  },
+  {
+    "part": "listening-1",
+    "term": "preferable",
+    "pos": "adjective",
+    "vi": "được ưa thích hơn",
+    "en": "Better or more suitable than another choice.",
+    "example": "Thursday is preferable"
+  },
+  {
+    "part": "listening-1",
+    "term": "link",
+    "pos": "noun",
+    "vi": "tuyến kết nối (giao thông)",
+    "en": "A route that connects one place with another.",
+    "example": "Are the transport links easy from where you live"
+  },
+  {
+    "part": "listening-2",
+    "term": "put off",
+    "pos": "phrase",
+    "vi": "làm nản lòng, khiến mất hứng",
+    "en": "To make someone not want to do something.",
+    "example": "Many people are put off by the idea of having to fit a visit to the gym"
+  },
+  {
+    "part": "listening-2",
+    "term": "accessible",
+    "pos": "adjective",
+    "vi": "dễ tiếp cận, ai cũng làm được",
+    "en": "Easy to reach, use or take part in.",
+    "example": "it's a very accessible form of exercise"
+  },
+  {
+    "part": "listening-2",
+    "term": "solitary",
+    "pos": "adjective",
+    "vi": "đơn độc, một mình",
+    "en": "Done alone, without other people.",
+    "example": "it can be quite boring or solitary"
+  },
+  {
+    "part": "listening-2",
+    "term": "instructor",
+    "pos": "noun",
+    "vi": "người hướng dẫn, huấn luyện viên",
+    "en": "A person who teaches a practical skill.",
+    "example": "with the right instructor, there's less chance of hurting yourself"
+  },
+  {
+    "part": "listening-2",
+    "term": "personal trainer",
+    "pos": "noun",
+    "vi": "huấn luyện viên cá nhân",
+    "en": "A fitness expert who coaches one person at a time.",
+    "example": "Getting a personal trainer is a good way to start your fitness program"
+  },
+  {
+    "part": "listening-2",
+    "term": "sign up for",
+    "pos": "phrase",
+    "vi": "đăng ký tham gia",
+    "en": "To officially join something.",
+    "example": "signing up for membership"
+  },
+  {
+    "part": "listening-2",
+    "term": "determination",
+    "pos": "noun",
+    "vi": "sự quyết tâm",
+    "en": "The firm decision to keep trying despite difficulties.",
+    "example": "it takes a lot of determination and hard work"
+  },
+  {
+    "part": "listening-2",
+    "term": "manageable",
+    "pos": "adjective",
+    "vi": "vừa sức, có thể đạt được",
+    "en": "Not too large or difficult to deal with.",
+    "example": "set manageable goals, be realistic"
+  },
+  {
+    "part": "listening-2",
+    "term": "treat",
+    "pos": "noun",
+    "vi": "phần thưởng, niềm vui nhỏ",
+    "en": "Something special that you give yourself as a reward.",
+    "example": "Give yourself a really nice treat"
+  },
+  {
+    "part": "listening-3",
+    "term": "textile",
+    "pos": "noun",
+    "vi": "vải dệt, ngành dệt",
+    "en": "Cloth or fabric produced by weaving or knitting.",
+    "example": "your textile design project"
+  },
+  {
+    "part": "listening-3",
+    "term": "dye",
+    "pos": "noun",
+    "vi": "thuốc nhuộm",
+    "en": "A substance used to change the colour of cloth.",
+    "example": "how a range of natural dyes can be used to color fabrics"
+  },
+  {
+    "part": "listening-3",
+    "term": "fabric",
+    "pos": "noun",
+    "vi": "vải",
+    "en": "Cloth made by weaving or knitting.",
+    "example": "natural dyes can be used to color fabrics like cotton and wool"
+  },
+  {
+    "part": "listening-3",
+    "term": "variable",
+    "pos": "noun",
+    "vi": "biến số (trong thí nghiệm)",
+    "en": "A factor that can change in an experiment.",
+    "example": "I couldn't decide on my variables"
+  },
+  {
+    "part": "listening-3",
+    "term": "fiber",
+    "pos": "noun",
+    "vi": "sợi (vải)",
+    "en": "A thread from which cloth is made.",
+    "example": "just look at one type of fiber"
+  },
+  {
+    "part": "listening-3",
+    "term": "rinse",
+    "pos": "verb",
+    "vi": "giũ, xả (bằng nước)",
+    "en": "To wash something lightly with clean water.",
+    "example": "when I rinsed the material, the color just washed away"
+  },
+  {
+    "part": "listening-3",
+    "term": "abandon",
+    "pos": "verb",
+    "vi": "từ bỏ",
+    "en": "To stop doing something before it is finished.",
+    "example": "I abandoned that idea"
+  },
+  {
+    "part": "listening-3",
+    "term": "allergic reaction",
+    "pos": "noun",
+    "vi": "phản ứng dị ứng",
+    "en": "A medical reaction in which the body reacts badly to a substance.",
+    "example": "it can occasionally cause allergic reactions"
+  },
+  {
+    "part": "listening-3",
+    "term": "permanent",
+    "pos": "adjective",
+    "vi": "lâu bền, vĩnh viễn",
+    "en": "Lasting for a very long time or forever.",
+    "example": "it's not permanent when it's used as a dye"
+  },
+  {
+    "part": "listening-3",
+    "term": "ingest",
+    "pos": "verb",
+    "vi": "nuốt vào, ăn vào cơ thể",
+    "en": "To take food or a substance into the body.",
+    "example": "it can be extremely dangerous if it's ingested"
+  },
+  {
+    "part": "listening-3",
+    "term": "subtle",
+    "pos": "adjective",
+    "vi": "nhẹ, tinh tế (khó nhận ra)",
+    "en": "Not strong or obvious.",
+    "example": "the colors are quite subtle"
+  },
+  {
+    "part": "listening-4",
+    "term": "reptile",
+    "pos": "noun",
+    "vi": "loài bò sát",
+    "en": "A cold-blooded animal with scaly skin, such as a lizard or snake.",
+    "example": "we started looking at reptiles"
+  },
+  {
+    "part": "listening-4",
+    "term": "doze",
+    "pos": "verb",
+    "vi": "ngủ gà ngủ gật",
+    "en": "To sleep lightly for a short time.",
+    "example": "spends quite a lot of its time dozing under rocks"
+  },
+  {
+    "part": "listening-4",
+    "term": "distinctive",
+    "pos": "adjective",
+    "vi": "đặc trưng, dễ nhận biết",
+    "en": "Easy to recognise because it is different from others.",
+    "example": "what's particularly distinctive"
+  },
+  {
+    "part": "listening-4",
+    "term": "predator",
+    "pos": "noun",
+    "vi": "động vật săn mồi",
+    "en": "An animal that hunts and eats other animals.",
+    "example": "isn't a predator at all"
+  },
+  {
+    "part": "listening-4",
+    "term": "navigation",
+    "pos": "noun",
+    "vi": "sự định hướng, tìm đường",
+    "en": "Finding the way from one place to another.",
+    "example": "investigated the methods of navigation of these lizards"
+  },
+  {
+    "part": "listening-4",
+    "term": "monogamous",
+    "pos": "adjective",
+    "vi": "một vợ một chồng (chung thủy một bạn tình)",
+    "en": "Having only one mate at a time.",
+    "example": "they're relatively monogamous"
+  },
+  {
+    "part": "listening-4",
+    "term": "mating",
+    "pos": "noun",
+    "vi": "sự giao phối",
+    "en": "The act of animals coming together to produce young.",
+    "example": "their mating habits are quite unusual"
+  },
+  {
+    "part": "listening-4",
+    "term": "hypothesis",
+    "pos": "noun",
+    "vi": "giả thuyết",
+    "en": "An idea put forward to explain something, not yet proved.",
+    "example": "but one hypothesis is that male lizards can cause quite serious injuries"
+  },
+  {
+    "part": "reading-1",
+    "term": "exotic",
+    "pos": "adjective",
+    "vi": "kỳ lạ, từ xứ xa",
+    "en": "Unusual and exciting because it comes from a distant country.",
+    "example": "coconuts have always been exotic and unusual"
+  },
+  {
+    "part": "reading-1",
+    "term": "envisage",
+    "pos": "verb",
+    "vi": "hình dung, mường tượng",
+    "en": "To imagine something as a future possibility.",
+    "example": "we envisage coconuts as brown cannonballs"
+  },
+  {
+    "part": "reading-1",
+    "term": "slender",
+    "pos": "adjective",
+    "vi": "mảnh mai, thon dài",
+    "en": "Long, thin and graceful.",
+    "example": "a smooth, slender, grey trunk"
+  },
+  {
+    "part": "reading-1",
+    "term": "timber",
+    "pos": "noun",
+    "vi": "gỗ xây dựng",
+    "en": "Wood used for building and making things.",
+    "example": "an important source of timber for building houses"
+  },
+  {
+    "part": "reading-1",
+    "term": "fibrous",
+    "pos": "adjective",
+    "vi": "có nhiều sợi",
+    "en": "Made of or containing many thin threads.",
+    "example": "a fibrous middle layer"
+  },
+  {
+    "part": "reading-1",
+    "term": "yield",
+    "pos": "noun",
+    "vi": "năng suất, sản lượng",
+    "en": "The amount of a crop that is produced.",
+    "example": "produce higher yields"
+  },
+  {
+    "part": "reading-1",
+    "term": "maritime",
+    "pos": "adjective",
+    "vi": "thuộc biển",
+    "en": "Connected with the sea.",
+    "example": "the great maritime voyagers"
+  },
+  {
+    "part": "reading-1",
+    "term": "viable",
+    "pos": "adjective",
+    "vi": "có khả năng sống, nảy mầm được",
+    "en": "Able to live and develop successfully.",
+    "example": "cannot remain viable indefinitely"
+  },
+  {
+    "part": "reading-1",
+    "term": "germinate",
+    "pos": "verb",
+    "vi": "nảy mầm",
+    "en": "To begin to grow from a seed.",
+    "example": "they are no longer able to germinate"
+  },
+  {
+    "part": "reading-2",
+    "term": "high-pitched",
+    "pos": "adjective",
+    "vi": "cao giọng, the thé",
+    "en": "Having a high sound or voice.",
+    "example": "high-pitched, exaggerated and repetitious"
+  },
+  {
+    "part": "reading-2",
+    "term": "repetitious",
+    "pos": "adjective",
+    "vi": "lặp đi lặp lại",
+    "en": "Repeating the same thing many times.",
+    "example": "high-pitched, exaggerated and repetitious"
+  },
+  {
+    "part": "reading-2",
+    "term": "womb",
+    "pos": "noun",
+    "vi": "tử cung",
+    "en": "The organ in a woman's body where a baby grows before birth.",
+    "example": "developing their hearing while still in the womb"
+  },
+  {
+    "part": "reading-2",
+    "term": "bilingual",
+    "pos": "adjective",
+    "vi": "song ngữ",
+    "en": "Able to use two languages equally well.",
+    "example": "babies raised in bilingual homes"
+  },
+  {
+    "part": "reading-2",
+    "term": "absurd",
+    "pos": "adjective",
+    "vi": "lố bịch, vô lý",
+    "en": "Silly and not sensible.",
+    "example": "the sweet if sometimes absurd sound of infant-directed speech"
+  },
+  {
+    "part": "reading-2",
+    "term": "babble",
+    "pos": "verb",
+    "vi": "bập bẹ",
+    "en": "To make sounds like speech but without clear words, as a baby does.",
+    "example": "the more their youngsters began to babble"
+  },
+  {
+    "part": "reading-2",
+    "term": "vocabulary",
+    "pos": "noun",
+    "vi": "vốn từ vựng",
+    "en": "All the words that a person knows.",
+    "example": "frequent baby talk had dramatically boosted vocabulary"
+  },
+  {
+    "part": "reading-2",
+    "term": "synthesizing",
+    "pos": "adjective",
+    "vi": "tổng hợp (âm thanh nhân tạo)",
+    "en": "Producing sounds artificially by machine.",
+    "example": "a special synthesizing device"
+  },
+  {
+    "part": "reading-2",
+    "term": "syllable",
+    "pos": "noun",
+    "vi": "âm tiết",
+    "en": "A single unit of sound within a word.",
+    "example": "were played a number of syllables"
+  },
+  {
+    "part": "reading-3",
+    "term": "flourish",
+    "pos": "verb",
+    "vi": "hưng thịnh, phát triển mạnh",
+    "en": "To grow or develop well and be successful.",
+    "example": "flourished 5,000 years ago"
+  },
+  {
+    "part": "reading-3",
+    "term": "sophisticated",
+    "pos": "adjective",
+    "vi": "tinh vi, phát triển cao",
+    "en": "Highly developed and complex.",
+    "example": "The Harappan Civilisation was a sophisticated Bronze Age society"
+  },
+  {
+    "part": "reading-3",
+    "term": "depiction",
+    "pos": "noun",
+    "vi": "sự miêu tả, hình ảnh thể hiện",
+    "en": "A picture or description of someone or something.",
+    "example": "left almost no depictions of themselves"
+  },
+  {
+    "part": "reading-3",
+    "term": "drainage",
+    "pos": "noun",
+    "vi": "hệ thống thoát nước",
+    "en": "A system for taking away waste or extra water.",
+    "example": "many had their own wells and drainage systems"
+  },
+  {
+    "part": "reading-3",
+    "term": "thriving",
+    "pos": "adjective",
+    "vi": "thịnh vượng, phát đạt",
+    "en": "Growing strongly and being successful.",
+    "example": "It was very much a 'thriving' civilisation"
+  },
+  {
+    "part": "reading-3",
+    "term": "succumb to",
+    "pos": "phrase",
+    "vi": "không chống đỡ nổi, đầu hàng trước",
+    "en": "To be unable to resist something powerful.",
+    "example": "they succumbed to invasion and conflict"
+  },
+  {
+    "part": "reading-3",
+    "term": "definitive",
+    "pos": "adjective",
+    "vi": "dứt khoát, xác đáng",
+    "en": "Final and certain, not open to doubt.",
+    "example": "the first definitive evidence for climate change"
+  },
+  {
+    "part": "reading-3",
+    "term": "sediment",
+    "pos": "noun",
+    "vi": "trầm tích",
+    "en": "Solid material that settles at the bottom of water.",
+    "example": "from the sediments of an ancient lake"
+  },
+  {
+    "part": "reading-3",
+    "term": "proactive",
+    "pos": "adjective",
+    "vi": "chủ động",
+    "en": "Acting in advance to deal with a problem.",
+    "example": "to be more proactive in issues such as the management"
+  },
+  {
+    "part": "reading-3",
+    "term": "heritage",
+    "pos": "noun",
+    "vi": "di sản",
+    "en": "The traditions and buildings passed down from the past.",
+    "example": "preserving cultural heritage"
+  },
+  {
+    "part": "writing-1",
+    "term": "consumption",
+    "pos": "noun",
+    "vi": "sự tiêu thụ",
+    "en": "The amount of something that is used.",
+    "example": "production and consumption of electricity"
+  },
+  {
+    "part": "writing-2",
+    "term": "holistic",
+    "pos": "adjective",
+    "vi": "toàn diện",
+    "en": "Considering the whole of something, not only its parts.",
+    "example": "fundamental to holistic learning"
+  },
+  {
+    "part": "writing-2",
+    "term": "merit",
+    "pos": "verb",
+    "vi": "đáng được, xứng đáng",
+    "en": "To deserve attention or consideration.",
+    "example": "valid arguments that merit careful examination"
+  }
+]

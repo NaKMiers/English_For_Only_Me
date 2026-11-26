@@ -1,0 +1,562 @@
+[
+  {
+    "part": "listening-1",
+    "term": "briefcase",
+    "pos": "noun",
+    "vi": "cặp tài liệu",
+    "en": "A flat case used for carrying papers and documents.",
+    "example": "I'd like to report a stolen briefcase, please."
+  },
+  {
+    "part": "listening-1",
+    "term": "buckle",
+    "pos": "noun",
+    "vi": "khóa cài (của thắt lưng, cặp)",
+    "en": "A metal fastener used to close a strap or belt.",
+    "example": "It's got buckles at the front, two of them, they're gold plated ones."
+  },
+  {
+    "part": "listening-1",
+    "term": "distinguishing feature",
+    "pos": "phrase",
+    "vi": "đặc điểm nhận dạng",
+    "en": "A mark or detail that makes something easy to identify.",
+    "example": "Any distinguishing features, any marks or badges on it that make it stand out?"
+  },
+  {
+    "part": "listening-1",
+    "term": "scratch",
+    "pos": "noun",
+    "vi": "vết xước",
+    "en": "A thin mark made on a surface by something sharp.",
+    "example": "Oh, and there's a scratch."
+  },
+  {
+    "part": "listening-1",
+    "term": "platform",
+    "pos": "noun",
+    "vi": "sân ga",
+    "en": "The raised area at a station where passengers wait for trains.",
+    "example": "I was standing on the platform, it was right next to me."
+  },
+  {
+    "part": "listening-2",
+    "term": "drought",
+    "pos": "noun",
+    "vi": "hạn hán",
+    "en": "A long period with little or no rain.",
+    "example": "help the drought stricken farmers in the northern part of the country"
+  },
+  {
+    "part": "listening-2",
+    "term": "stricken",
+    "pos": "adjective",
+    "vi": "bị thiệt hại nặng, khốn đốn",
+    "en": "Badly affected by a disaster or difficulty.",
+    "example": "help the drought stricken farmers in the northern part of the country"
+  },
+  {
+    "part": "listening-2",
+    "term": "rescue",
+    "pos": "verb",
+    "vi": "giải cứu, cứu hộ",
+    "en": "To save someone from danger.",
+    "example": "a group of school children are successfully rescued from a plane"
+  },
+  {
+    "part": "listening-2",
+    "term": "strike",
+    "pos": "noun",
+    "vi": "cuộc đình công",
+    "en": "A period when workers refuse to work, usually to demand better pay.",
+    "example": "Transport workers are on strike in Melbourne, over a pay claim"
+  },
+  {
+    "part": "listening-2",
+    "term": "pay claim",
+    "pos": "noun",
+    "vi": "yêu sách tăng lương",
+    "en": "A formal request by workers for higher wages.",
+    "example": "Transport workers are on strike in Melbourne, over a pay claim"
+  },
+  {
+    "part": "listening-2",
+    "term": "pledge",
+    "pos": "verb",
+    "vi": "cam kết, hứa chắc",
+    "en": "To promise formally to do something.",
+    "example": "The Prime Minister has pledged today that he will make $250 million available"
+  },
+  {
+    "part": "listening-2",
+    "term": "restructuring",
+    "pos": "noun",
+    "vi": "việc tái cấu trúc, cải tổ",
+    "en": "The act of changing how something is organised or built.",
+    "example": "Money that was to have been spent on the restructuring of Sydney's road system"
+  },
+  {
+    "part": "listening-2",
+    "term": "reallocate",
+    "pos": "verb",
+    "vi": "phân bổ lại (ngân sách)",
+    "en": "To give money or resources to a different purpose.",
+    "example": "has been reallocated to what the Prime Minister described as a more worthy cause."
+  },
+  {
+    "part": "listening-2",
+    "term": "financial ruin",
+    "pos": "phrase",
+    "vi": "sự phá sản, tán gia bại sản",
+    "en": "A situation where someone loses all their money.",
+    "example": "it has come too late to save them and their farms from financial ruin."
+  },
+  {
+    "part": "listening-2",
+    "term": "privately chartered",
+    "pos": "phrase",
+    "vi": "thuê riêng (máy bay, xe)",
+    "en": "Hired by a group for its own exclusive use.",
+    "example": "travelling in a privately chartered airplane from Sydney to Queensland"
+  },
+  {
+    "part": "listening-2",
+    "term": "pleasure craft",
+    "pos": "noun",
+    "vi": "thuyền du lịch, thuyền giải trí",
+    "en": "Boats used for leisure rather than work.",
+    "example": "where boats and pleasure craft were able to come to the rescue of the boys."
+  },
+  {
+    "part": "listening-3",
+    "term": "orientation",
+    "pos": "noun",
+    "vi": "buổi định hướng (cho sinh viên mới)",
+    "en": "An introduction to a new place, course or job.",
+    "example": "which you should have received yesterday at the orientation meeting."
+  },
+  {
+    "part": "listening-3",
+    "term": "tutorial",
+    "pos": "noun",
+    "vi": "giờ thảo luận nhóm nhỏ, tiết hướng dẫn",
+    "en": "A small class where students discuss a subject with a teacher.",
+    "example": "so there are two lectures a week and one tutorial."
+  },
+  {
+    "part": "listening-3",
+    "term": "attendance",
+    "pos": "noun",
+    "vi": "sự có mặt, chuyên cần",
+    "en": "The fact of being present at a lesson or event.",
+    "example": "Attendance at lectures is necessary"
+  },
+  {
+    "part": "listening-3",
+    "term": "allocate",
+    "pos": "verb",
+    "vi": "phân công, chỉ định",
+    "en": "To officially give something to a person or group.",
+    "example": "Yours will be allocated at the first lecture."
+  },
+  {
+    "part": "listening-3",
+    "term": "mark",
+    "pos": "verb",
+    "vi": "chấm điểm",
+    "en": "To check a piece of work and give it a grade.",
+    "example": "and give it to the lecturer to be marked."
+  },
+  {
+    "part": "listening-3",
+    "term": "open book exam",
+    "pos": "phrase",
+    "vi": "kỳ thi được mang tài liệu",
+    "en": "An exam in which students may use their books.",
+    "example": "It's an open book exam, so you can have the textbook with you during the exam."
+  },
+  {
+    "part": "listening-3",
+    "term": "closed reserve",
+    "pos": "phrase",
+    "vi": "khu sách chỉ đọc tại thư viện (không được mượn về)",
+    "en": "A library section whose books can be read only inside the building.",
+    "example": "most of the important ones are held in Closed Reserve"
+  },
+  {
+    "part": "listening-3",
+    "term": "vocational",
+    "pos": "adjective",
+    "vi": "hướng nghiệp, gắn với nghề nghiệp",
+    "en": "Related to the skills needed for a particular job.",
+    "example": "the course at this university has a vocational focus"
+  },
+  {
+    "part": "listening-4",
+    "term": "faculty",
+    "pos": "noun",
+    "vi": "khoa (của trường đại học)",
+    "en": "A major division of a university, such as law or science.",
+    "example": "The Bachelor of Social Science is in one faculty within the university"
+  },
+  {
+    "part": "listening-4",
+    "term": "dean",
+    "pos": "noun",
+    "vi": "trưởng khoa",
+    "en": "The senior official in charge of a faculty.",
+    "example": "At the top of the faculty, we have a dean"
+  },
+  {
+    "part": "listening-4",
+    "term": "division",
+    "pos": "noun",
+    "vi": "bộ phận, phân khoa",
+    "en": "A section of a larger organisation.",
+    "example": "below the dean we have three divisions."
+  },
+  {
+    "part": "listening-4",
+    "term": "deadline",
+    "pos": "noun",
+    "vi": "hạn nộp bài",
+    "en": "The last time by which something must be finished.",
+    "example": "meeting deadlines for essays, and attendance."
+  },
+  {
+    "part": "listening-4",
+    "term": "constitute",
+    "pos": "verb",
+    "vi": "cấu thành, tạo nên",
+    "en": "To form or make up something.",
+    "example": "It's this discussion at the tutorial which really constitutes the basis of university learning in my view."
+  },
+  {
+    "part": "listening-4",
+    "term": "plagiarism",
+    "pos": "noun",
+    "vi": "đạo văn",
+    "en": "Using someone else's work as your own without saying where it came from.",
+    "example": "And in particular, I would like to mention the question of plagiarism."
+  },
+  {
+    "part": "listening-4",
+    "term": "acknowledge",
+    "pos": "verb",
+    "vi": "ghi nhận nguồn, thừa nhận",
+    "en": "To state where an idea or information came from.",
+    "example": "Plagiarism is taking other people's work without acknowledging it"
+  },
+  {
+    "part": "listening-4",
+    "term": "attribute",
+    "pos": "verb",
+    "vi": "ghi công cho, dẫn nguồn (cho tác giả)",
+    "en": "To say that something was written or said by a particular person.",
+    "example": "You must remember to attribute the work to the original writer"
+  },
+  {
+    "part": "listening-4",
+    "term": "run the risk of",
+    "pos": "phrase",
+    "vi": "có nguy cơ, liều bị",
+    "en": "To accept the possibility of something bad happening.",
+    "example": "you run the risk of failing the subject"
+  },
+  {
+    "part": "reading-1",
+    "term": "friction",
+    "pos": "noun",
+    "vi": "ma sát",
+    "en": "The force or rubbing that happens when two surfaces move against each other.",
+    "example": "the earliest method of making fire was through friction."
+  },
+  {
+    "part": "reading-1",
+    "term": "flint",
+    "pos": "noun",
+    "vi": "đá lửa",
+    "en": "A hard stone that makes sparks when struck.",
+    "example": "chipping flints produced sparks."
+  },
+  {
+    "part": "reading-1",
+    "term": "tinder",
+    "pos": "noun",
+    "vi": "mồi lửa (vật khô dễ cháy)",
+    "en": "Dry material that catches fire easily.",
+    "example": "the combination of steel, flint and tinder remained the main method of fire-lighting"
+  },
+  {
+    "part": "reading-1",
+    "term": "percussion",
+    "pos": "noun",
+    "vi": "phương pháp đập, gõ (tạo lửa)",
+    "en": "The act of striking one object against another.",
+    "example": "Percussion methods of fire-lighting date back to Paleolithic times"
+  },
+  {
+    "part": "reading-1",
+    "term": "transmute",
+    "pos": "verb",
+    "vi": "biến đổi (chất này thành chất khác)",
+    "en": "To change one substance into another.",
+    "example": "a German alchemist trying to transmute silver into gold."
+  },
+  {
+    "part": "reading-1",
+    "term": "inflammable",
+    "pos": "adjective",
+    "vi": "dễ cháy",
+    "en": "Easily set on fire.",
+    "example": "but the results were dangerously inflammable."
+  },
+  {
+    "part": "reading-1",
+    "term": "hazardous",
+    "pos": "adjective",
+    "vi": "nguy hiểm",
+    "en": "Dangerous, likely to cause harm.",
+    "example": "An even more hazardous device, popular in America"
+  },
+  {
+    "part": "reading-1",
+    "term": "patent",
+    "pos": "verb",
+    "vi": "đăng ký bằng sáng chế",
+    "en": "To get official legal protection for an invention.",
+    "example": "Walker never patented his invention"
+  },
+  {
+    "part": "reading-1",
+    "term": "fumes",
+    "pos": "noun",
+    "vi": "khói độc, hơi độc",
+    "en": "Strong-smelling gas or smoke that can be harmful.",
+    "example": "match-makers exposed to its fumes succumbed to necrosis"
+  },
+  {
+    "part": "reading-1",
+    "term": "succumb",
+    "pos": "verb",
+    "vi": "gục ngã, mắc phải (bệnh)",
+    "en": "To fail to resist something harmful, such as a disease.",
+    "example": "match-makers exposed to its fumes succumbed to necrosis"
+  },
+  {
+    "part": "reading-1",
+    "term": "non-toxic",
+    "pos": "adjective",
+    "vi": "không độc",
+    "en": "Not poisonous.",
+    "example": "had discovered non-toxic red or amorphous phosphorus"
+  },
+  {
+    "part": "reading-1",
+    "term": "pioneer",
+    "pos": "verb",
+    "vi": "đi tiên phong, khai phá",
+    "en": "To be the first to develop or use something new.",
+    "example": "the Diamond Match Company pioneered book matches."
+  },
+  {
+    "part": "reading-1",
+    "term": "smoulder",
+    "pos": "verb",
+    "vi": "cháy âm ỉ",
+    "en": "To burn slowly with smoke but without a flame.",
+    "example": "to prevent the match from smouldering after it has been blown out"
+  },
+  {
+    "part": "reading-2",
+    "term": "conservation",
+    "pos": "noun",
+    "vi": "bảo tồn",
+    "en": "The protection of animals, plants and natural resources.",
+    "example": "With the zoo world’s rather mediocre record on conservation"
+  },
+  {
+    "part": "reading-2",
+    "term": "endangered",
+    "pos": "adjective",
+    "vi": "có nguy cơ tuyệt chủng",
+    "en": "At risk of dying out completely.",
+    "example": "it was bordered with illustrations of several endangered species"
+  },
+  {
+    "part": "reading-2",
+    "term": "extol",
+    "pos": "verb",
+    "vi": "tán dương, ca ngợi quá mức",
+    "en": "To praise something very strongly.",
+    "example": "went on to extol the myth that without zoos like London Zoo"
+  },
+  {
+    "part": "reading-2",
+    "term": "mediocre",
+    "pos": "adjective",
+    "vi": "tầm thường, không tốt lắm",
+    "en": "Not very good, of only average quality.",
+    "example": "With the zoo world’s rather mediocre record on conservation"
+  },
+  {
+    "part": "reading-2",
+    "term": "sceptical",
+    "pos": "adjective",
+    "vi": "hoài nghi",
+    "en": "Doubting that something is true or useful.",
+    "example": "one might be forgiven for being slightly sceptical about such an advertisement."
+  },
+  {
+    "part": "reading-2",
+    "term": "masquerade",
+    "pos": "verb",
+    "vi": "giả danh, đội lốt",
+    "en": "To pretend to be something that one is not.",
+    "example": "the total number of places masquerading as zoological establishments."
+  },
+  {
+    "part": "reading-2",
+    "term": "calibre",
+    "pos": "noun",
+    "vi": "tầm cỡ, chất lượng",
+    "en": "The level of quality or ability of someone or something.",
+    "example": "One would assume that the calibre of these institutions would have been carefully examined"
+  },
+  {
+    "part": "reading-2",
+    "term": "censure",
+    "pos": "verb",
+    "vi": "chỉ trích, khiển trách",
+    "en": "To criticise someone severely and officially.",
+    "example": "members that have been roundly censured in the national press."
+  },
+  {
+    "part": "reading-2",
+    "term": "notorious",
+    "pos": "adjective",
+    "vi": "tai tiếng",
+    "en": "Famous for something bad.",
+    "example": "which many considered the most notorious collection of animals in the country."
+  },
+  {
+    "part": "reading-2",
+    "term": "dubious",
+    "pos": "adjective",
+    "vi": "đáng ngờ, không đáng tin",
+    "en": "Not to be trusted; probably not honest or of good quality.",
+    "example": "has had extremely dubious members"
+  },
+  {
+    "part": "reading-2",
+    "term": "captive breeding",
+    "pos": "phrase",
+    "vi": "nhân giống trong điều kiện nuôi nhốt",
+    "en": "Breeding animals in zoos or similar places rather than in the wild.",
+    "example": "have been “saved” by captive breeding programmes"
+  },
+  {
+    "part": "reading-3",
+    "term": "aspiration",
+    "pos": "noun",
+    "vi": "khát vọng, hoài bão",
+    "en": "A strong hope or wish to achieve something.",
+    "example": "as well as the ideas and aspirations of the designer and client."
+  },
+  {
+    "part": "reading-3",
+    "term": "reinforced concrete",
+    "pos": "phrase",
+    "vi": "bê tông cốt thép",
+    "en": "Concrete strengthened with steel bars inside.",
+    "example": "concrete strengthened steel bars, known as reinforced concrete."
+  },
+  {
+    "part": "reading-3",
+    "term": "slum",
+    "pos": "noun",
+    "vi": "khu ổ chuột",
+    "en": "A crowded, run-down area of a city where poor people live.",
+    "example": "helped to turn parts of cities into slums."
+  },
+  {
+    "part": "reading-3",
+    "term": "prefabricate",
+    "pos": "verb",
+    "vi": "sản xuất sẵn (cấu kiện) để lắp ghép",
+    "en": "To make parts of a building in a factory before putting them together on site.",
+    "example": "an improved ability to prefabricate building sections"
+  },
+  {
+    "part": "reading-3",
+    "term": "discredit",
+    "pos": "verb",
+    "vi": "làm mất uy tín",
+    "en": "To make people stop trusting or respecting something.",
+    "example": "which discredited the original aims of Modernism."
+  },
+  {
+    "part": "reading-3",
+    "term": "demolish",
+    "pos": "verb",
+    "vi": "phá dỡ",
+    "en": "To destroy a building completely.",
+    "example": "have since been demolished."
+  },
+  {
+    "part": "reading-3",
+    "term": "facade",
+    "pos": "noun",
+    "vi": "mặt tiền (của tòa nhà)",
+    "en": "The front wall of a building.",
+    "example": "keeping only their facades (or fronts) grew common."
+  },
+  {
+    "part": "reading-3",
+    "term": "skyscraper",
+    "pos": "noun",
+    "vi": "nhà chọc trời",
+    "en": "A very tall building with many floors.",
+    "example": "the skyscraper became a reality."
+  },
+  {
+    "part": "writing-1",
+    "term": "qualification",
+    "pos": "noun",
+    "vi": "bằng cấp, chứng chỉ",
+    "en": "An exam or course you have passed, needed for a job.",
+    "example": "\"to gain qualifications\" (38%)"
+  },
+  {
+    "part": "writing-1",
+    "term": "bear",
+    "pos": "verb",
+    "vi": "gánh chịu (chi phí)",
+    "en": "To accept responsibility for a cost or problem.",
+    "example": "should bear the majority of costs"
+  },
+  {
+    "part": "writing-2",
+    "term": "transcend",
+    "pos": "verb",
+    "vi": "vượt qua, vượt lên trên",
+    "en": "To go beyond the limits of something.",
+    "example": "Music serves as a universal language that transcends borders"
+  },
+  {
+    "part": "writing-2",
+    "term": "heritage",
+    "pos": "noun",
+    "vi": "di sản",
+    "en": "Traditions and culture passed down from the past.",
+    "example": "encapsulate centuries of Spanish Romani heritage"
+  },
+  {
+    "part": "writing-2",
+    "term": "coexist",
+    "pos": "verb",
+    "vi": "cùng tồn tại",
+    "en": "To exist together at the same time or place.",
+    "example": "both musical traditions coexist and enrich each other."
+  }
+]

@@ -1,0 +1,714 @@
+[
+  {
+    "part": "listening-1",
+    "term": "have a good ring to it",
+    "pos": "phrase",
+    "vi": "nghe rất kêu, nghe hay",
+    "en": "to sound pleasant and impressive",
+    "example": "that has quite a good ring to it"
+  },
+  {
+    "part": "listening-1",
+    "term": "refresh my memory",
+    "pos": "phrase",
+    "vi": "nhắc lại cho tôi nhớ",
+    "en": "To remind someone of something they have forgotten.",
+    "example": "Just refresh my memory"
+  },
+  {
+    "part": "listening-1",
+    "term": "go shares",
+    "pos": "phrase",
+    "vi": "chia đôi chi phí",
+    "en": "to split the cost of something equally",
+    "example": "I would like to go shares"
+  },
+  {
+    "part": "listening-2",
+    "term": "vacuum flask",
+    "pos": "noun",
+    "vi": "bình giữ nhiệt",
+    "en": "A container that keeps drinks hot or cold.",
+    "example": "this vacuum flask for keeping drinks hot"
+  },
+  {
+    "part": "listening-2",
+    "term": "have a lot going for it",
+    "pos": "phrase",
+    "vi": "có nhiều ưu điểm",
+    "en": "to have many good qualities",
+    "example": "I felt this had quite a lot going for it"
+  },
+  {
+    "part": "listening-2",
+    "term": "to all intents and purposes",
+    "pos": "phrase",
+    "vi": "về cơ bản, trên thực tế",
+    "en": "In almost every important way.",
+    "example": "unbreakable to all intents and purposes"
+  },
+  {
+    "part": "listening-2",
+    "term": "stainless steel",
+    "pos": "noun",
+    "vi": "thép không gỉ",
+    "en": "A type of metal that does not rust.",
+    "example": "It's made of stainless steel which is guaranteed for 20 years."
+  },
+  {
+    "part": "listening-2",
+    "term": "downside",
+    "pos": "noun",
+    "vi": "mặt trái, nhược điểm",
+    "en": "A disadvantage of something that is otherwise good.",
+    "example": "On the downside, it really works out to be quite expensive"
+  },
+  {
+    "part": "listening-2",
+    "term": "masterpiece",
+    "pos": "noun",
+    "vi": "kiệt tác",
+    "en": "An extremely good piece of work.",
+    "example": "I thought it was a masterpiece of design"
+  },
+  {
+    "part": "listening-2",
+    "term": "decoy",
+    "pos": "adjective",
+    "vi": "giả để đánh lừa",
+    "en": "Made to trick someone by looking real.",
+    "example": "The decoy camera was last on my list."
+  },
+  {
+    "part": "listening-2",
+    "term": "burglar",
+    "pos": "noun",
+    "vi": "kẻ trộm đột nhập",
+    "en": "A person who breaks into a building to steal.",
+    "example": "scare off burglars"
+  },
+  {
+    "part": "listening-3",
+    "term": "draft",
+    "pos": "noun",
+    "vi": "bản thảo",
+    "en": "an early version of a piece of writing",
+    "example": "thanks for letting me have your draft in such good time"
+  },
+  {
+    "part": "listening-3",
+    "term": "dash off",
+    "pos": "phrase",
+    "vi": "viết vội, làm nhanh",
+    "en": "To write or produce something very quickly.",
+    "example": "I dashed the writing off very quickly"
+  },
+  {
+    "part": "listening-3",
+    "term": "par for the course",
+    "pos": "phrase",
+    "vi": "là điều bình thường, đúng như dự kiến",
+    "en": "What is normal or expected in a situation.",
+    "example": "that's about par for the course"
+  },
+  {
+    "part": "listening-3",
+    "term": "chronology",
+    "pos": "noun",
+    "vi": "bảng niên đại, trình tự thời gian",
+    "en": "A list of events in the order they happened.",
+    "example": "What about the chronology, the list of dates?"
+  },
+  {
+    "part": "listening-3",
+    "term": "simplistic",
+    "pos": "adjective",
+    "vi": "quá đơn giản, giản lược",
+    "en": "Treating something complex as if it were simple.",
+    "example": "it makes the whole piece appear too simplistic"
+  },
+  {
+    "part": "listening-3",
+    "term": "proofreading",
+    "pos": "noun",
+    "vi": "đọc soát lỗi",
+    "en": "Checking a text for mistakes before it is finished.",
+    "example": "Then you do the proofreading."
+  },
+  {
+    "part": "listening-4",
+    "term": "housing estate",
+    "pos": "noun",
+    "vi": "khu nhà ở",
+    "en": "a large group of houses built together",
+    "example": "the effects of noise on a planned housing estate"
+  },
+  {
+    "part": "listening-4",
+    "term": "abate",
+    "pos": "verb",
+    "vi": "giảm dần (tiếng ồn)",
+    "en": "To become less strong or less severe.",
+    "example": "the noise will have abated to a fairly large extent"
+  },
+  {
+    "part": "listening-4",
+    "term": "modification",
+    "pos": "noun",
+    "vi": "sự điều chỉnh, thay đổi",
+    "en": "A small change made to improve something.",
+    "example": "modifications to houses will be necessary"
+  },
+  {
+    "part": "listening-4",
+    "term": "perimeter",
+    "pos": "noun",
+    "vi": "ranh giới ngoài, vành đai",
+    "en": "The outer edge of an area.",
+    "example": "the highway along the eastern perimeter"
+  },
+  {
+    "part": "listening-4",
+    "term": "threshold",
+    "pos": "noun",
+    "vi": "ngưỡng",
+    "en": "The level at which something starts or becomes unacceptable.",
+    "example": "the normal noise threshold for private housing is 55 decibels"
+  },
+  {
+    "part": "listening-4",
+    "term": "decibel",
+    "pos": "noun",
+    "vi": "đề-xi-ben (đơn vị đo âm thanh)",
+    "en": "A unit for measuring how loud a sound is.",
+    "example": "55 decibels"
+  },
+  {
+    "part": "listening-4",
+    "term": "double glazing",
+    "pos": "noun",
+    "vi": "kính hai lớp",
+    "en": "Windows made with two layers of glass.",
+    "example": "specialized double glazing"
+  },
+  {
+    "part": "listening-4",
+    "term": "acoustic",
+    "pos": "adjective",
+    "vi": "cách âm, thuộc âm thanh",
+    "en": "Relating to sound.",
+    "example": "special acoustic seals will have to be fitted to the doors"
+  },
+  {
+    "part": "listening-4",
+    "term": "hinge",
+    "pos": "noun",
+    "vi": "bản lề",
+    "en": "a metal joint that lets a door swing open",
+    "example": "solid core wood doors with hinges"
+  },
+  {
+    "part": "listening-4",
+    "term": "adjacent",
+    "pos": "adjective",
+    "vi": "liền kề",
+    "en": "Next to something.",
+    "example": "not just those adjacent to the highway"
+  },
+  {
+    "part": "listening-4",
+    "term": "insulation",
+    "pos": "noun",
+    "vi": "vật liệu cách nhiệt, cách âm",
+    "en": "Material that stops heat or sound from passing through.",
+    "example": "high density insulation materials in the roof"
+  },
+  {
+    "part": "listening-4",
+    "term": "plasterboard",
+    "pos": "noun",
+    "vi": "tấm thạch cao",
+    "en": "Flat boards used to make interior walls and ceilings.",
+    "example": "double thickness plasterboard"
+  },
+  {
+    "part": "listening-4",
+    "term": "ventilation",
+    "pos": "noun",
+    "vi": "hệ thống thông gió",
+    "en": "A system that lets fresh air move through a building.",
+    "example": "mechanical ventilation will have to be installed"
+  },
+  {
+    "part": "listening-4",
+    "term": "absorber",
+    "pos": "noun",
+    "vi": "bộ giảm âm, vật hấp thụ",
+    "en": "a device that takes in sound or shock",
+    "example": "fit fans with absorbers to cut out the noise"
+  },
+  {
+    "part": "reading-1",
+    "term": "deteriorate",
+    "pos": "verb",
+    "vi": "xấu đi, suy giảm",
+    "en": "To become worse.",
+    "example": "air quality in many of the world's major cities will deteriorate beyond reason"
+  },
+  {
+    "part": "reading-1",
+    "term": "legislation",
+    "pos": "noun",
+    "vi": "luật pháp, quy định pháp luật",
+    "en": "Laws made by a government.",
+    "example": "through new legislation, improved enforcement"
+  },
+  {
+    "part": "reading-1",
+    "term": "enforce",
+    "pos": "verb",
+    "vi": "thực thi, áp dụng (luật)",
+    "en": "To make sure a law or rule is obeyed.",
+    "example": "allowed to enforce anti-pollution laws themselves"
+  },
+  {
+    "part": "reading-1",
+    "term": "run-down",
+    "pos": "adj",
+    "vi": "cũ nát, xuống cấp",
+    "en": "old and in poor condition",
+    "example": "any old, run-down vehicle driven in by its owner"
+  },
+  {
+    "part": "reading-1",
+    "term": "decrepit",
+    "pos": "adjective",
+    "vi": "cũ nát, hư hỏng",
+    "en": "Old and in very bad condition.",
+    "example": "most decrepit vehicles"
+  },
+  {
+    "part": "reading-1",
+    "term": "gauge",
+    "pos": "verb",
+    "vi": "đo, đánh giá",
+    "en": "To measure or judge something.",
+    "example": "It gauges the pollution from a passing vehicle"
+  },
+  {
+    "part": "reading-1",
+    "term": "stationary",
+    "pos": "adj",
+    "vi": "đứng yên",
+    "en": "not moving",
+    "example": "more useful than the annual stationary test"
+  },
+  {
+    "part": "reading-1",
+    "term": "car-pooling",
+    "pos": "noun",
+    "vi": "đi chung xe",
+    "en": "sharing one car between several people travelling to the same place",
+    "example": "One solution is car-pooling"
+  },
+  {
+    "part": "reading-1",
+    "term": "emission",
+    "pos": "noun",
+    "vi": "khí thải",
+    "en": "Gas or other substances sent into the air.",
+    "example": "an effective way of reducing emissions"
+  },
+  {
+    "part": "reading-1",
+    "term": "congestion",
+    "pos": "noun",
+    "vi": "tình trạng tắc nghẽn (giao thông)",
+    "en": "A situation where a place is too crowded, especially with traffic.",
+    "example": "easing congestion"
+  },
+  {
+    "part": "reading-1",
+    "term": "vocal",
+    "pos": "adj",
+    "vi": "lớn tiếng, thẳng thắn",
+    "en": "expressing opinions openly and strongly",
+    "example": "it faced vocal and ultimately successful opposition"
+  },
+  {
+    "part": "reading-1",
+    "term": "megacity",
+    "pos": "noun",
+    "vi": "siêu đô thị",
+    "en": "A very large city with more than ten million people.",
+    "example": "twenty megacities"
+  },
+  {
+    "part": "reading-1",
+    "term": "particulate matter",
+    "pos": "noun",
+    "vi": "bụi mịn (các hạt vật chất lơ lửng)",
+    "en": "Tiny solid or liquid particles floating in the air.",
+    "example": "particulate matter measuring ten-millionths of a metre across"
+  },
+  {
+    "part": "reading-1",
+    "term": "implicated in",
+    "pos": "phrase",
+    "vi": "bị cho là có liên quan đến",
+    "en": "shown or believed to be involved in something bad",
+    "example": "has been implicated in thousands of deaths a year in Britain alone"
+  },
+  {
+    "part": "reading-1",
+    "term": "acute",
+    "pos": "adj",
+    "vi": "cấp tính, nghiêm trọng",
+    "en": "severe and sudden",
+    "example": "the most vulnerable to the acute effects of heavily polluted stagnant air"
+  },
+  {
+    "part": "reading-1",
+    "term": "stagnant",
+    "pos": "adjective",
+    "vi": "tù đọng, không lưu thông",
+    "en": "Not moving or flowing, and therefore unhealthy.",
+    "example": "heavily polluted stagnant air"
+  },
+  {
+    "part": "reading-1",
+    "term": "hasten",
+    "pos": "verb",
+    "vi": "làm nhanh hơn, đẩy nhanh",
+    "en": "To make something happen sooner.",
+    "example": "It can actually hasten death"
+  },
+  {
+    "part": "reading-2",
+    "term": "suffragette",
+    "pos": "noun",
+    "vi": "nữ chiến sĩ đòi quyền bầu cử",
+    "en": "A woman who campaigned for women's right to vote in the early twentieth century.",
+    "example": "The suffragette movement, which campaigned for votes for women"
+  },
+  {
+    "part": "reading-2",
+    "term": "militant",
+    "pos": "adjective",
+    "vi": "hiếu chiến, đấu tranh quyết liệt",
+    "en": "Using strong or violent methods to support a cause.",
+    "example": "militant acts of varying degrees of violence"
+  },
+  {
+    "part": "reading-2",
+    "term": "corporate identity",
+    "pos": "noun",
+    "vi": "bản sắc thương hiệu",
+    "en": "the image and style an organisation uses to represent itself",
+    "example": "one of the first groups to project a corporate identity"
+  },
+  {
+    "part": "reading-2",
+    "term": "enfranchise",
+    "pos": "verb",
+    "vi": "trao quyền bầu cử",
+    "en": "To give people the right to vote.",
+    "example": "had already enfranchised women"
+  },
+  {
+    "part": "reading-2",
+    "term": "counterpart",
+    "pos": "noun",
+    "vi": "người ở vị trí tương đương",
+    "en": "A person or thing with the same role in another place or group.",
+    "example": "their British counterparts"
+  },
+  {
+    "part": "reading-2",
+    "term": "cohesion",
+    "pos": "noun",
+    "vi": "sự gắn kết",
+    "en": "The state of working together as one united group.",
+    "example": "the cohesion and focus it had previously lacked"
+  },
+  {
+    "part": "reading-2",
+    "term": "invaluable",
+    "pos": "adjective",
+    "vi": "vô giá, cực kỳ hữu ích",
+    "en": "So useful that its value cannot be measured.",
+    "example": "proved an invaluable way of informing members"
+  },
+  {
+    "part": "reading-2",
+    "term": "like-minded",
+    "pos": "adj",
+    "vi": "cùng chí hướng",
+    "en": "sharing similar opinions or interests",
+    "example": "together with other like-minded commercial enterprises"
+  },
+  {
+    "part": "reading-2",
+    "term": "exploit",
+    "pos": "verb",
+    "vi": "tận dụng, khai thác",
+    "en": "to make good use of something for gain",
+    "example": "the WSPU was quick to exploit"
+  },
+  {
+    "part": "reading-2",
+    "term": "merchandising",
+    "pos": "noun",
+    "vi": "việc bán hàng hóa gắn thương hiệu",
+    "en": "Selling goods that carry the name or image of a group.",
+    "example": "such merchandising of a corporate identity"
+  },
+  {
+    "part": "reading-2",
+    "term": "coffers",
+    "pos": "noun",
+    "vi": "quỹ, ngân khố",
+    "en": "The money that an organisation has.",
+    "example": "fill the coffers of the 'war chest'"
+  },
+  {
+    "part": "reading-2",
+    "term": "trinket",
+    "pos": "noun",
+    "vi": "đồ trang sức nhỏ, món đồ lưu niệm",
+    "en": "a small cheap ornament or piece of jewellery",
+    "example": "a number of purple, white and green trinkets"
+  },
+  {
+    "part": "reading-2",
+    "term": "depict",
+    "pos": "verb",
+    "vi": "mô tả, khắc họa",
+    "en": "to show or portray in a picture or story",
+    "example": "Photographs depict vivid scenes of a suffragette's life"
+  },
+  {
+    "part": "reading-2",
+    "term": "forthcoming",
+    "pos": "adj",
+    "vi": "sắp tới",
+    "en": "going to happen soon",
+    "example": "chalking up pavements with details of a forthcoming meeting"
+  },
+  {
+    "part": "reading-2",
+    "term": "devise",
+    "pos": "verb",
+    "vi": "nghĩ ra, thiết kế",
+    "en": "to invent or plan something",
+    "example": "a short film devised by the 'antis'"
+  },
+  {
+    "part": "reading-2",
+    "term": "populace",
+    "pos": "noun",
+    "vi": "dân chúng",
+    "en": "the ordinary people of a country",
+    "example": "gave the adult female populace of Britain the vote"
+  },
+  {
+    "part": "reading-2",
+    "term": "shrewd",
+    "pos": "adjective",
+    "vi": "khôn khéo, sắc sảo",
+    "en": "Good at judging situations and making clever decisions.",
+    "example": "shrewd and skilful image-builders"
+  },
+  {
+    "part": "reading-2",
+    "term": "deem",
+    "pos": "verb",
+    "vi": "cho rằng, coi là",
+    "en": "To consider something in a particular way.",
+    "example": "deemed by several politicians"
+  },
+  {
+    "part": "reading-3",
+    "term": "clear-cut",
+    "pos": "adjective",
+    "vi": "rõ ràng, dứt khoát",
+    "en": "Definite and easy to understand.",
+    "example": "There is clear-cut evidence that"
+  },
+  {
+    "part": "reading-3",
+    "term": "supervision",
+    "pos": "noun",
+    "vi": "sự giám sát",
+    "en": "the act of watching and directing workers",
+    "example": "supervision which increases the direct pressure for productivity"
+  },
+  {
+    "part": "reading-3",
+    "term": "clerical",
+    "pos": "adjective",
+    "vi": "thuộc công việc văn phòng",
+    "en": "Relating to office work such as filing and typing.",
+    "example": "The study covered 500 clerical employees"
+  },
+  {
+    "part": "reading-3",
+    "term": "aptitude",
+    "pos": "noun",
+    "vi": "năng khiếu, năng lực",
+    "en": "A natural ability to do something.",
+    "example": "had employees of comparable aptitudes"
+  },
+  {
+    "part": "reading-3",
+    "term": "entail",
+    "pos": "verb",
+    "vi": "đòi hỏi, bao gồm",
+    "en": "To involve something as a necessary part.",
+    "example": "The work entailed the processing of accounts"
+  },
+  {
+    "part": "reading-3",
+    "term": "at random",
+    "pos": "phrase",
+    "vi": "ngẫu nhiên",
+    "en": "Without any plan or order.",
+    "example": "Each programme was assigned at random"
+  },
+  {
+    "part": "reading-3",
+    "term": "habitual",
+    "pos": "adj",
+    "vi": "thường lệ, quen thuộc",
+    "en": "done regularly as a habit",
+    "example": "habitual methods of supervision used by the manager"
+  },
+  {
+    "part": "reading-3",
+    "term": "endeavour",
+    "pos": "verb",
+    "vi": "cố gắng, nỗ lực",
+    "en": "To try hard to do something.",
+    "example": "which they endeavoured to use as much as their skill would permit"
+  },
+  {
+    "part": "reading-3",
+    "term": "participative",
+    "pos": "adjective",
+    "vi": "có sự tham gia (của nhân viên vào quyết định)",
+    "en": "Involving people in making decisions.",
+    "example": "the 'participative programme'"
+  },
+  {
+    "part": "reading-3",
+    "term": "overstaffed",
+    "pos": "adjective",
+    "vi": "thừa nhân viên",
+    "en": "Having more workers than are needed.",
+    "example": "these divisions were overstaffed by about 30%"
+  },
+  {
+    "part": "reading-3",
+    "term": "adverse",
+    "pos": "adjective",
+    "vi": "bất lợi, tiêu cực",
+    "en": "Harmful or unfavourable.",
+    "example": "shifts in an adverse direction"
+  },
+  {
+    "part": "reading-3",
+    "term": "loyalty",
+    "pos": "noun",
+    "vi": "lòng trung thành",
+    "en": "strong support and faithfulness to a person or group",
+    "example": "shifts in an adverse direction in such factors as loyalty"
+  },
+  {
+    "part": "reading-3",
+    "term": "hierarchical",
+    "pos": "adjective",
+    "vi": "theo thứ bậc, phân cấp",
+    "en": "Organised with levels of authority from top to bottom.",
+    "example": "The opposite was true in the hierarchical programme."
+  },
+  {
+    "part": "writing-1",
+    "term": "unemployment rate",
+    "pos": "noun",
+    "vi": "tỷ lệ thất nghiệp",
+    "en": "The percentage of people who want to work but have no job.",
+    "example": "unemployment rates in the US and Japan"
+  },
+  {
+    "part": "writing-1",
+    "term": "converge",
+    "pos": "verb",
+    "vi": "hội tụ, tiến gần nhau",
+    "en": "to come together at one point",
+    "example": "the two nations' figures converging by the end of the period"
+  },
+  {
+    "part": "writing-1",
+    "term": "fluctuate",
+    "pos": "verb",
+    "vi": "dao động",
+    "en": "to change up and down repeatedly",
+    "example": "fluctuating slightly but generally moving downward"
+  },
+  {
+    "part": "writing-1",
+    "term": "disparity",
+    "pos": "noun",
+    "vi": "sự chênh lệch",
+    "en": "a big difference between two things",
+    "example": "a significant shift from their initial disparity"
+  },
+  {
+    "part": "writing-2",
+    "term": "affluent",
+    "pos": "adj",
+    "vi": "giàu có",
+    "en": "having a lot of money",
+    "example": "Historically affluent nations bear moral obligations"
+  },
+  {
+    "part": "writing-2",
+    "term": "accountability",
+    "pos": "noun",
+    "vi": "trách nhiệm giải trình",
+    "en": "being responsible for your actions and able to explain them",
+    "example": "developing nations must demonstrate accountability"
+  },
+  {
+    "part": "writing-2",
+    "term": "exemplify",
+    "pos": "verb",
+    "vi": "minh họa, là ví dụ điển hình",
+    "en": "to be a typical example of something",
+    "example": "Rwanda's post-genocide recovery exemplifies this balance"
+  },
+  {
+    "part": "writing-2",
+    "term": "dependency",
+    "pos": "noun",
+    "vi": "sự phụ thuộc",
+    "en": "relying on others for support",
+    "example": "rather than dependency on single donors"
+  },
+  {
+    "part": "writing-2",
+    "term": "sovereignty",
+    "pos": "noun",
+    "vi": "chủ quyền",
+    "en": "the power of a country to govern itself",
+    "example": "while preserving economic sovereignty"
+  },
+  {
+    "part": "writing-2",
+    "term": "reciprocal",
+    "pos": "adj",
+    "vi": "qua lại, hai chiều",
+    "en": "given and received by both sides",
+    "example": "Only through such reciprocal engagement"
+  }
+]

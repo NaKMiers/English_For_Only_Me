@@ -1,0 +1,682 @@
+[
+  {
+    "part": "listening-1",
+    "term": "vacancy",
+    "pos": "noun",
+    "vi": "vị trí còn trống, chỗ tuyển dụng",
+    "en": "A job that is available because no one is doing it.",
+    "example": "She's always really busy in the morning, trying to fill last-minute vacancies."
+  },
+  {
+    "part": "listening-1",
+    "term": "clerical",
+    "pos": "adjective",
+    "vi": "thuộc văn phòng, hành chính (công việc giấy tờ)",
+    "en": "Relating to routine office work such as filing and typing.",
+    "example": "It's mainly clerical and admin jobs they deal with, isn't it?"
+  },
+  {
+    "part": "listening-1",
+    "term": "recruit",
+    "pos": "verb",
+    "vi": "tuyển dụng",
+    "en": "To find and hire people to work for a company.",
+    "example": "Becky mostly recruits temporary staff for the finance sector."
+  },
+  {
+    "part": "listening-1",
+    "term": "temporary",
+    "pos": "adjective",
+    "vi": "tạm thời, ngắn hạn",
+    "en": "Lasting only for a limited period of time.",
+    "example": "Becky mostly recruits temporary staff for the finance sector."
+  },
+  {
+    "part": "listening-1",
+    "term": "informal",
+    "pos": "adjective",
+    "vi": "thân mật, không chính thức",
+    "en": "Relaxed and not following official rules or formal style.",
+    "example": "I'm sure it would be worth getting in touch with her for an informal chat."
+  },
+  {
+    "part": "listening-1",
+    "term": "receptionist",
+    "pos": "noun",
+    "vi": "nhân viên lễ tân",
+    "en": "A person who greets visitors and answers phones in an office.",
+    "example": "They'll probably start you as a receptionist or something like that."
+  },
+  {
+    "part": "listening-1",
+    "term": "extend",
+    "pos": "verb",
+    "vi": "gia hạn, kéo dài",
+    "en": "To make something last longer.",
+    "example": "You're more likely to be offered something for a week at first, which might get extended."
+  },
+  {
+    "part": "listening-1",
+    "term": "in advance",
+    "pos": "phrase",
+    "vi": "trước, từ trước (một khoảng thời gian)",
+    "en": "Before the time something happens.",
+    "example": "The interview usually takes about an hour, and you should arrange that about a week in advance."
+  },
+  {
+    "part": "listening-1",
+    "term": "candidate",
+    "pos": "noun",
+    "vi": "ứng viên",
+    "en": "A person who applies for a job.",
+    "example": "So there are questions about personality that they always ask candidates."
+  },
+  {
+    "part": "listening-1",
+    "term": "feedback",
+    "pos": "noun",
+    "vi": "phản hồi, nhận xét góp ý",
+    "en": "Comments about how well someone has done something, to help them improve.",
+    "example": "The interview will be useful because they'll give you feedback on your performance, so you can improve next time."
+  },
+  {
+    "part": "listening-1",
+    "term": "match",
+    "pos": "verb",
+    "vi": "ghép (người phù hợp với công việc)",
+    "en": "To find someone or something that suits another.",
+    "example": "It's just a chance for them to build relationship with you, so they can try and match you to a job which you'll like."
+  },
+  {
+    "part": "listening-2",
+    "term": "personal touch",
+    "pos": "phrase",
+    "vi": "sự chăm sóc riêng, nét cá nhân (thân thiện)",
+    "en": "A friendly, individual way of dealing with customers.",
+    "example": "We believe in the importance of the personal touch."
+  },
+  {
+    "part": "listening-2",
+    "term": "ferry",
+    "pos": "noun",
+    "vi": "phà",
+    "en": "A boat that carries passengers and vehicles across water.",
+    "example": "Then you'll travel by ferry to the Isle of Man."
+  },
+  {
+    "part": "listening-2",
+    "term": "supplement",
+    "pos": "noun",
+    "vi": "phụ phí",
+    "en": "An extra amount of money you pay for something additional.",
+    "example": "There's no supplement for single rooms in hotels."
+  },
+  {
+    "part": "listening-2",
+    "term": "promenade",
+    "pos": "noun",
+    "vi": "đường dạo ven biển",
+    "en": "A wide path beside the sea where people walk for pleasure.",
+    "example": "This begins with a leisurely ride along the promenade in Douglas in a horse-drawn tram."
+  },
+  {
+    "part": "listening-2",
+    "term": "leisurely",
+    "pos": "adjective",
+    "vi": "thong thả, nhàn nhã",
+    "en": "Relaxed and without hurry.",
+    "example": "This begins with a leisurely ride along the promenade in Douglas in a horse-drawn tram."
+  },
+  {
+    "part": "listening-2",
+    "term": "spectacular",
+    "pos": "adjective",
+    "vi": "ngoạn mục, đẹp ấn tượng",
+    "en": "Very impressive to look at.",
+    "example": "Lunch will be in the cafe, giving you spectacular views of the island."
+  },
+  {
+    "part": "listening-2",
+    "term": "heritage",
+    "pos": "noun",
+    "vi": "di sản",
+    "en": "Buildings, traditions and places from the past that are valued today.",
+    "example": "You won't have to pay for travel on local transport, or for entrance to the island's heritage sites."
+  },
+  {
+    "part": "listening-2",
+    "term": "overlook",
+    "pos": "verb",
+    "vi": "nhìn ra, nhìn xuống (từ trên cao)",
+    "en": "To have a view over something from above.",
+    "example": "A coach will take you to the Headland that overlooks the Calf of Man, a small island just off the coast."
+  },
+  {
+    "part": "listening-2",
+    "term": "mediaeval",
+    "pos": "adjective",
+    "vi": "thuộc thời Trung Cổ",
+    "en": "Relating to the Middle Ages.",
+    "example": "Castletown, which used to be the capital of the Isle of Man, and its mediaeval castle."
+  },
+  {
+    "part": "listening-3",
+    "term": "stereotype",
+    "pos": "noun",
+    "vi": "định kiến, khuôn mẫu",
+    "en": "A fixed, oversimplified idea about a type of person.",
+    "example": "A lot of the claims about how your position in the family determines certain personality traits, are just stereotypes with no robust evidence to support them."
+  },
+  {
+    "part": "listening-3",
+    "term": "robust",
+    "pos": "adjective",
+    "vi": "vững chắc, đáng tin cậy (bằng chứng)",
+    "en": "Strong and reliable.",
+    "example": "A lot of the claims about how your position in the family determines certain personality traits, are just stereotypes with no robust evidence to support them."
+  },
+  {
+    "part": "listening-3",
+    "term": "consensus",
+    "pos": "noun",
+    "vi": "sự đồng thuận, ý kiến chung",
+    "en": "A general agreement among a group of people.",
+    "example": "The consensus seems to be that oldest children are generally less well adjusted."
+  },
+  {
+    "part": "listening-3",
+    "term": "well adjusted",
+    "pos": "adjective",
+    "vi": "hòa nhập tốt, ổn định về tâm lý",
+    "en": "Emotionally healthy and able to cope with life.",
+    "example": "The consensus seems to be that oldest children are generally less well adjusted, because they never get over the arrival of a younger sibling."
+  },
+  {
+    "part": "listening-3",
+    "term": "sibling",
+    "pos": "noun",
+    "vi": "anh chị em ruột",
+    "en": "A brother or sister.",
+    "example": "They never get over the arrival of a younger sibling."
+  },
+  {
+    "part": "listening-3",
+    "term": "nurture",
+    "pos": "verb",
+    "vi": "nuôi dưỡng, chăm sóc",
+    "en": "To care for and help someone to grow and develop.",
+    "example": "Some studies claim that they were thought to be good at nurturing."
+  },
+  {
+    "part": "listening-3",
+    "term": "envious",
+    "pos": "adjective",
+    "vi": "ghen tị",
+    "en": "Wishing you had what someone else has.",
+    "example": "My middle brother was a nightmare, always causing fights and envious of whatever I had."
+  },
+  {
+    "part": "listening-3",
+    "term": "loner",
+    "pos": "noun",
+    "vi": "người thích ở một mình, sống đơn độc",
+    "en": "A person who prefers to be alone.",
+    "example": "A lot of studies have branded them as loners, who think the world revolves around them."
+  },
+  {
+    "part": "listening-3",
+    "term": "sibling rivalry",
+    "pos": "phrase",
+    "vi": "sự cạnh tranh giữa anh chị em",
+    "en": "Competition or jealousy between brothers and sisters.",
+    "example": "Would you say sibling rivalry has been a useful thing for you?"
+  },
+  {
+    "part": "listening-3",
+    "term": "socioeconomic status",
+    "pos": "phrase",
+    "vi": "địa vị kinh tế - xã hội",
+    "en": "A person's or family's position in society based on income, education and job.",
+    "example": "The more siblings there are, the likelier the family is to have a low socioeconomic status."
+  },
+  {
+    "part": "listening-3",
+    "term": "marginally",
+    "pos": "adverb",
+    "vi": "một chút, không đáng kể",
+    "en": "By a very small amount.",
+    "example": "The main reason for the marginally higher academic performance of oldest children is quite surprising."
+  },
+  {
+    "part": "listening-3",
+    "term": "amicably",
+    "pos": "adverb",
+    "vi": "một cách thân thiện, hòa nhã",
+    "en": "In a friendly way, without arguing.",
+    "example": "Most of the time we coexisted amicably enough."
+  },
+  {
+    "part": "listening-3",
+    "term": "put up with",
+    "pos": "phrase",
+    "vi": "chịu đựng, chấp nhận",
+    "en": "To accept someone or something annoying without complaining.",
+    "example": "But we had to put up with each other."
+  },
+  {
+    "part": "listening-4",
+    "term": "biodiversity",
+    "pos": "noun",
+    "vi": "đa dạng sinh học",
+    "en": "The variety of plant and animal life in an area.",
+    "example": "So it supports biodiversity."
+  },
+  {
+    "part": "listening-4",
+    "term": "nectar",
+    "pos": "noun",
+    "vi": "mật hoa",
+    "en": "The sweet liquid in flowers that insects and birds feed on.",
+    "example": "These and other species also depend on it for food, particularly the nectar from its flowers."
+  },
+  {
+    "part": "listening-4",
+    "term": "disinfectant",
+    "pos": "noun",
+    "vi": "chất khử trùng",
+    "en": "A chemical that kills germs.",
+    "example": "We can kill germs with a disinfectant made from oil extracted from eucalyptus leaves."
+  },
+  {
+    "part": "listening-4",
+    "term": "prematurely",
+    "pos": "adverb",
+    "vi": "sớm hơn bình thường, yểu",
+    "en": "Earlier than expected or normal.",
+    "example": "Because the trees are dying off prematurely."
+  },
+  {
+    "part": "listening-4",
+    "term": "bushfire",
+    "pos": "noun",
+    "vi": "cháy rừng bụi",
+    "en": "A large fire that spreads through wild areas of bush or forest.",
+    "example": "One possibility is that it's to do with the huge bushfires that we have in Australia."
+  },
+  {
+    "part": "listening-4",
+    "term": "indigenous",
+    "pos": "adjective",
+    "vi": "bản địa",
+    "en": "Originally living in or coming from a particular place.",
+    "example": "There's evidence that Australia's indigenous people practiced regular burning of bushland for thousands of years."
+  },
+  {
+    "part": "listening-4",
+    "term": "proliferate",
+    "pos": "verb",
+    "vi": "sinh sôi nhanh, lan rộng",
+    "en": "To increase quickly in number.",
+    "example": "If these other quick-growing species of bushes and plants are allowed to proliferate, they harm the eucalyptus in another way."
+  },
+  {
+    "part": "listening-4",
+    "term": "vegetation",
+    "pos": "noun",
+    "vi": "thảm thực vật",
+    "en": "Plants in general, especially those growing in an area.",
+    "example": "It has very thick dense vegetation, but not much variety of species."
+  },
+  {
+    "part": "listening-4",
+    "term": "ecosystem",
+    "pos": "noun",
+    "vi": "hệ sinh thái",
+    "en": "All the living things in an area and how they interact with their environment.",
+    "example": "Unlike tropical rainforest, which is a rich ecosystem, this type of ecosystem is usually a simple one."
+  },
+  {
+    "part": "listening-4",
+    "term": "undergrowth",
+    "pos": "noun",
+    "vi": "tầng cây bụi dưới tán rừng",
+    "en": "Bushes and small plants growing under taller trees.",
+    "example": "Which builds its nests in the undergrowth there."
+  },
+  {
+    "part": "reading-1",
+    "term": "evergreen",
+    "pos": "adjective",
+    "vi": "xanh quanh năm (cây thường xanh)",
+    "en": "Having green leaves all through the year.",
+    "example": "The nutmeg tree, Myristica fragrans, is a large evergreen tree native to Southeast Asia."
+  },
+  {
+    "part": "reading-1",
+    "term": "foliage",
+    "pos": "noun",
+    "vi": "tán lá",
+    "en": "The leaves of a plant or tree.",
+    "example": "The tree is thickly branched with dense foliage of tough, dark green oval leaves."
+  },
+  {
+    "part": "reading-1",
+    "term": "husk",
+    "pos": "noun",
+    "vi": "vỏ ngoài (của quả, hạt)",
+    "en": "The dry outer covering of a fruit or seed.",
+    "example": "The fruit is encased in a fleshy husk."
+  },
+  {
+    "part": "reading-1",
+    "term": "commodity",
+    "pos": "noun",
+    "vi": "hàng hóa, mặt hàng",
+    "en": "A product that is bought and sold.",
+    "example": "They never revealed the exact location of the source of this extremely valuable commodity."
+  },
+  {
+    "part": "reading-1",
+    "term": "preservative",
+    "pos": "noun",
+    "vi": "chất bảo quản",
+    "en": "Something that stops food from going bad.",
+    "example": "Nutmeg was used as a flavouring, medicinal, and preservative agent."
+  },
+  {
+    "part": "reading-1",
+    "term": "exploit",
+    "pos": "verb",
+    "vi": "khai thác (tài nguyên)",
+    "en": "To use something fully, especially for profit.",
+    "example": "The Portuguese reached the Banda Islands and began exploiting its precious resources."
+  },
+  {
+    "part": "reading-1",
+    "term": "subcontract",
+    "pos": "verb",
+    "vi": "thuê thầu lại, giao lại cho bên khác",
+    "en": "To pass part of a job to another company or person.",
+    "example": "The Portuguese began subcontracting their spice distribution to Dutch traders."
+  },
+  {
+    "part": "reading-1",
+    "term": "soar",
+    "pos": "verb",
+    "vi": "tăng vọt (giá)",
+    "en": "To rise very quickly to a high level.",
+    "example": "As prices for pepper, nutmeg, and other spices soared across Europe, they decided to fight back."
+  },
+  {
+    "part": "reading-1",
+    "term": "plague",
+    "pos": "noun",
+    "vi": "bệnh dịch hạch, đại dịch",
+    "en": "A deadly disease that spreads quickly through a population.",
+    "example": "Thousands of people across Europe were dying of the plague, a highly contagious and deadly disease."
+  },
+  {
+    "part": "reading-1",
+    "term": "contagious",
+    "pos": "adjective",
+    "vi": "dễ lây",
+    "en": "Able to spread from one person to another.",
+    "example": "The plague, a highly contagious and deadly disease."
+  },
+  {
+    "part": "reading-1",
+    "term": "uproot",
+    "pos": "verb",
+    "vi": "nhổ bật rễ",
+    "en": "To pull a plant out of the ground with its roots.",
+    "example": "Uprooting and destroying any trees outside the plantation zones."
+  },
+  {
+    "part": "reading-1",
+    "term": "seedling",
+    "pos": "noun",
+    "vi": "cây con, cây giống mới mọc",
+    "en": "A young plant grown from a seed.",
+    "example": "Anyone caught growing a nutmeg seedling or carrying seeds without the proper authority was severely punished."
+  },
+  {
+    "part": "reading-1",
+    "term": "fertile",
+    "pos": "adjective",
+    "vi": "có khả năng nảy mầm, màu mỡ",
+    "en": "Able to produce young plants or crops.",
+    "example": "There was no chance a fertile seed which could be grown elsewhere would leave the islands."
+  },
+  {
+    "part": "reading-1",
+    "term": "compromise",
+    "pos": "noun",
+    "vi": "sự thỏa hiệp",
+    "en": "An agreement where each side gives up something.",
+    "example": "The Dutch and British arrived at a compromise settlement, the Treaty of Breda, in 1667."
+  },
+  {
+    "part": "reading-1",
+    "term": "monopoly",
+    "pos": "noun",
+    "vi": "sự độc quyền",
+    "en": "Complete control of a trade by one group.",
+    "example": "The Dutch now had a monopoly over the nutmeg trade which would last for another century."
+  },
+  {
+    "part": "reading-1",
+    "term": "smuggle",
+    "pos": "verb",
+    "vi": "buôn lậu, đưa lén",
+    "en": "To take something secretly and illegally from one place to another.",
+    "example": "A Frenchman named Pierre Poivre successfully smuggled nutmeg plants to safety in Mauritius."
+  },
+  {
+    "part": "reading-1",
+    "term": "thrive",
+    "pos": "verb",
+    "vi": "phát triển mạnh",
+    "en": "To grow or develop very well.",
+    "example": "Some of these were later exported to the Caribbean where they thrived."
+  },
+  {
+    "part": "reading-1",
+    "term": "seize",
+    "pos": "verb",
+    "vi": "chiếm lấy, đoạt lấy",
+    "en": "To take something suddenly by force.",
+    "example": "In 1809, the British returned to Indonesia and seized the Banda Islands by force."
+  },
+  {
+    "part": "reading-2",
+    "term": "collision",
+    "pos": "noun",
+    "vi": "vụ va chạm",
+    "en": "An accident in which vehicles hit each other.",
+    "example": "More than 90 percent of road collisions involve human error as a contributory factor."
+  },
+  {
+    "part": "reading-2",
+    "term": "autonomy",
+    "pos": "noun",
+    "vi": "sự tự chủ, độc lập đi lại",
+    "en": "The ability to act and decide for yourself.",
+    "example": "Older or disabled travellers may be able to enjoy significantly greater travel autonomy."
+  },
+  {
+    "part": "reading-2",
+    "term": "viable",
+    "pos": "adjective",
+    "vi": "khả thi",
+    "en": "Able to work successfully in practice.",
+    "example": "Automation means that initiatives for car-sharing become much more viable, particularly in urban areas."
+  },
+  {
+    "part": "reading-2",
+    "term": "turnover",
+    "pos": "noun",
+    "vi": "tốc độ thay thế, vòng quay",
+    "en": "The rate at which things are replaced or renewed.",
+    "example": "This faster rate of turnover may mean that vehicle production will not necessarily decrease."
+  },
+  {
+    "part": "reading-2",
+    "term": "hurdle",
+    "pos": "noun",
+    "vi": "trở ngại, rào cản",
+    "en": "A problem that must be overcome.",
+    "example": "There are a number of hurdles to overcome in delivering automated vehicles to our roads."
+  },
+  {
+    "part": "reading-2",
+    "term": "liability",
+    "pos": "noun",
+    "vi": "trách nhiệm pháp lý",
+    "en": "Legal responsibility for something, especially damage or harm.",
+    "example": "The regulatory challenges in understanding how liability and enforcement might change."
+  },
+  {
+    "part": "reading-3",
+    "term": "nomadic",
+    "pos": "adjective",
+    "vi": "du mục, sống du cư",
+    "en": "Moving from place to place rather than living in one spot.",
+    "example": "It nowadays no doubt helps the last nomadic Penan maintain their existence in the depleted forests of Borneo."
+  },
+  {
+    "part": "reading-3",
+    "term": "deplete",
+    "pos": "verb",
+    "vi": "làm cạn kiệt",
+    "en": "To reduce the amount of something greatly.",
+    "example": "The depleted forests of Borneo."
+  },
+  {
+    "part": "reading-3",
+    "term": "delve",
+    "pos": "verb",
+    "vi": "đào sâu, tìm hiểu kỹ",
+    "en": "To search deeply into something.",
+    "example": "He is delving into matters we all recognise because they are common to humanity."
+  },
+  {
+    "part": "reading-3",
+    "term": "pioneer",
+    "pos": "noun",
+    "vi": "người tiên phong",
+    "en": "A person who is among the first to explore or develop something new.",
+    "example": "Each definition tends to reflect the field of endeavour of each pioneer."
+  },
+  {
+    "part": "reading-3",
+    "term": "criteria",
+    "pos": "noun",
+    "vi": "tiêu chí",
+    "en": "Standards used to judge or decide something.",
+    "example": "They each set their own particular criteria."
+  },
+  {
+    "part": "reading-3",
+    "term": "bias",
+    "pos": "noun",
+    "vi": "thiên kiến, định hướng riêng",
+    "en": "A personal leaning that affects how you see something.",
+    "example": "I'd best declare my own bias."
+  },
+  {
+    "part": "reading-3",
+    "term": "slant",
+    "pos": "noun",
+    "vi": "góc nhìn mới",
+    "en": "A particular way of presenting or looking at something.",
+    "example": "Through my books, I've found a new slant, explored a new idea."
+  },
+  {
+    "part": "writing-1",
+    "term": "consumption",
+    "pos": "noun",
+    "vi": "sự tiêu thụ",
+    "en": "The amount of something that people use, eat or drink.",
+    "example": "The buying and consumption patterns of coffee and tea among inhabitants of five Australian cities."
+  },
+  {
+    "part": "writing-1",
+    "term": "hover",
+    "pos": "verb",
+    "vi": "dao động quanh (một mức)",
+    "en": "To stay close to a particular level or amount.",
+    "example": "Brisbane and Adelaide both hovering around 34%."
+  },
+  {
+    "part": "writing-1",
+    "term": "in the vicinity of",
+    "pos": "phrase",
+    "vi": "xấp xỉ, khoảng chừng",
+    "en": "Approximately; close to a particular number.",
+    "example": "Followed by Melbourne in the vicinity of 42%."
+  },
+  {
+    "part": "writing-2",
+    "term": "tangible",
+    "pos": "adjective",
+    "vi": "hữu hình, cụ thể",
+    "en": "Real and able to be touched or clearly seen.",
+    "example": "Property serves as a tangible store of value in economies with volatile currencies."
+  },
+  {
+    "part": "writing-2",
+    "term": "volatile",
+    "pos": "adjective",
+    "vi": "biến động mạnh, bất ổn",
+    "en": "Likely to change suddenly and unexpectedly.",
+    "example": "Economies with volatile currencies or limited investment options."
+  },
+  {
+    "part": "writing-2",
+    "term": "fluctuation",
+    "pos": "noun",
+    "vi": "sự biến động, dao động",
+    "en": "A frequent change in amount, level or value.",
+    "example": "As protection against peso fluctuations."
+  },
+  {
+    "part": "writing-2",
+    "term": "tenant",
+    "pos": "noun",
+    "vi": "người thuê nhà",
+    "en": "A person who pays rent to live in a property.",
+    "example": "Legal frameworks in some nations disadvantage tenants."
+  },
+  {
+    "part": "writing-2",
+    "term": "inadvertently",
+    "pos": "adverb",
+    "vi": "vô tình, không cố ý",
+    "en": "Without intending to.",
+    "example": "Inadvertently pushing stability-seekers toward buying."
+  },
+  {
+    "part": "writing-2",
+    "term": "exacerbate",
+    "pos": "verb",
+    "vi": "làm trầm trọng thêm",
+    "en": "To make a problem or bad situation worse.",
+    "example": "Exacerbating housing shortages."
+  },
+  {
+    "part": "writing-2",
+    "term": "sprawl",
+    "pos": "noun",
+    "vi": "sự mở rộng lan tràn (đô thị)",
+    "en": "The uncontrolled spread of a city into the land around it.",
+    "example": "Suburban sprawl intensifies in markets favoring detached homes."
+  },
+  {
+    "part": "writing-2",
+    "term": "stigma",
+    "pos": "noun",
+    "vi": "sự kỳ thị, tiếng xấu",
+    "en": "A feeling that something is shameful or socially unacceptable.",
+    "example": "60% rent high-quality public apartments without stigma."
+  }
+]

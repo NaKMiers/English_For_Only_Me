@@ -1,0 +1,714 @@
+[
+  {
+    "part": "listening-1",
+    "term": "excursion",
+    "pos": "noun",
+    "vi": "chuyến tham quan, chuyến đi chơi ngắn",
+    "en": "A short trip made for pleasure, usually with a group.",
+    "example": "I'd like to find out if you have any excursions suitable for families."
+  },
+  {
+    "part": "listening-1",
+    "term": "cruise",
+    "pos": "noun",
+    "vi": "chuyến du ngoạn bằng tàu",
+    "en": "A trip on a boat or ship taken for pleasure.",
+    "example": "How about taking your family for a cruise?"
+  },
+  {
+    "part": "listening-1",
+    "term": "steamship",
+    "pos": "noun",
+    "vi": "tàu hơi nước",
+    "en": "A large ship driven by steam power.",
+    "example": "We have a steamship that takes passengers out several times a day."
+  },
+  {
+    "part": "listening-1",
+    "term": "trek",
+    "pos": "noun",
+    "vi": "chuyến đi bộ (hoặc cưỡi ngựa) đường dài",
+    "en": "A long, difficult journey made on foot or on an animal.",
+    "example": "there's also a 40-minute trek round the farm on a horse"
+  },
+  {
+    "part": "listening-1",
+    "term": "trail",
+    "pos": "noun",
+    "vi": "đường mòn",
+    "en": "A path through the countryside or wild land.",
+    "example": "There's a trail there called the Back Road."
+  },
+  {
+    "part": "listening-1",
+    "term": "scenery",
+    "pos": "noun",
+    "vi": "phong cảnh",
+    "en": "The natural features of a place, such as hills and lakes.",
+    "example": "and the scenery's wonderful."
+  },
+  {
+    "part": "listening-1",
+    "term": "repair kit",
+    "pos": "noun",
+    "vi": "bộ đồ sửa chữa (xe đạp)",
+    "en": "A set of tools and spare parts for fixing something.",
+    "example": "You'd also need to pick up a repair kit for the bike from there"
+  },
+  {
+    "part": "listening-1",
+    "term": "fare",
+    "pos": "noun",
+    "vi": "tiền vé (đi tàu, xe)",
+    "en": "The price paid to travel on a boat, bus or train.",
+    "example": "she has to pay the adult fare, which is $75"
+  },
+  {
+    "part": "listening-2",
+    "term": "footwear",
+    "pos": "noun",
+    "vi": "giày dép",
+    "en": "Things people wear on their feet, such as shoes and boots.",
+    "example": "I'm glad to see none of you have unsuitable footwear"
+  },
+  {
+    "part": "listening-2",
+    "term": "slippery",
+    "pos": "adjective",
+    "vi": "trơn trượt",
+    "en": "Smooth or wet so that it is easy to slide on.",
+    "example": "the floors can get very wet and slippery."
+  },
+  {
+    "part": "listening-2",
+    "term": "hazard",
+    "pos": "noun",
+    "vi": "mối nguy hiểm",
+    "en": "Something that may cause danger or harm.",
+    "example": "as they can be a safety hazard."
+  },
+  {
+    "part": "listening-2",
+    "term": "waste disposal",
+    "pos": "noun",
+    "vi": "hệ thống xử lý rác thải",
+    "en": "The process or equipment for getting rid of rubbish.",
+    "example": "like the waste disposal system for example"
+  },
+  {
+    "part": "listening-2",
+    "term": "out of bounds",
+    "pos": "phrase",
+    "vi": "bị cấm sử dụng (không được phép đụng tới)",
+    "en": "Not allowed to be used or entered.",
+    "example": "for you two the meat slicer is out of bounds"
+  },
+  {
+    "part": "listening-2",
+    "term": "overtime",
+    "pos": "noun",
+    "vi": "giờ làm thêm",
+    "en": "Extra hours worked beyond the normal working day.",
+    "example": "you'll have the chance to do overtime after that as well"
+  },
+  {
+    "part": "listening-2",
+    "term": "physically demanding",
+    "pos": "adjective",
+    "vi": "đòi hỏi nhiều sức lực",
+    "en": "Needing a lot of strength and energy from the body.",
+    "example": "you're on your feet all day long, lifting and carrying"
+  },
+  {
+    "part": "listening-2",
+    "term": "first aid",
+    "pos": "noun",
+    "vi": "sơ cứu",
+    "en": "Basic medical help given quickly to an injured person.",
+    "example": "He's trained to give basic treatment to staff himself"
+  },
+  {
+    "part": "listening-2",
+    "term": "breakage",
+    "pos": "noun",
+    "vi": "đồ bị vỡ, sự đổ vỡ",
+    "en": "An item that has been broken, or the act of breaking something.",
+    "example": "if you smash a plate or something like that"
+  },
+  {
+    "part": "listening-2",
+    "term": "perishables",
+    "pos": "noun",
+    "vi": "thực phẩm dễ hỏng",
+    "en": "Foods that go bad quickly if not used.",
+    "example": "takes care of all the stores of perishables."
+  },
+  {
+    "part": "listening-3",
+    "term": "brainstorm",
+    "pos": "verb",
+    "vi": "động não, cùng nghĩ ý tưởng",
+    "en": "To think of many ideas quickly in a group or alone.",
+    "example": "shall we just brainstorm a few ideas to get started?"
+  },
+  {
+    "part": "listening-3",
+    "term": "digitalise",
+    "pos": "verb",
+    "vi": "số hoá",
+    "en": "To change information into a digital form for computers.",
+    "example": "Now that lots of books have been digitalized"
+  },
+  {
+    "part": "listening-3",
+    "term": "obsolete",
+    "pos": "adjective",
+    "vi": "lỗi thời, không còn được dùng",
+    "en": "No longer used because something newer is better.",
+    "example": "And if everyone did that, libraries would be obsolete."
+  },
+  {
+    "part": "listening-3",
+    "term": "out of copyright",
+    "pos": "adjective",
+    "vi": "hết thời hạn bản quyền",
+    "en": "No longer protected by copyright, so anyone can use it freely.",
+    "example": "are mostly out of copyright, aren't they?"
+  },
+  {
+    "part": "listening-3",
+    "term": "copyright",
+    "pos": "noun",
+    "vi": "bản quyền",
+    "en": "The legal right to control the copying of a creative work.",
+    "example": "And copyright in this country lasts for 70 years after the author dies."
+  },
+  {
+    "part": "listening-3",
+    "term": "implication",
+    "pos": "noun",
+    "vi": "hệ quả, tác động (có thể xảy ra)",
+    "en": "A possible effect or result of an action or decision.",
+    "example": "There are financial implications after all."
+  },
+  {
+    "part": "listening-3",
+    "term": "in-depth",
+    "pos": "adjective",
+    "vi": "chuyên sâu, kỹ lưỡng",
+    "en": "Thorough and detailed.",
+    "example": "Why don't we make an in-depth study of our local public library"
+  },
+  {
+    "part": "listening-3",
+    "term": "local council",
+    "pos": "noun",
+    "vi": "hội đồng địa phương",
+    "en": "The elected group that runs services in a town or area.",
+    "example": "if that's controlled by the local council"
+  },
+  {
+    "part": "listening-3",
+    "term": "emergency exit",
+    "pos": "noun",
+    "vi": "lối thoát hiểm",
+    "en": "A door used to leave a building quickly in danger.",
+    "example": "emergency exits for instance"
+  },
+  {
+    "part": "listening-3",
+    "term": "archive",
+    "pos": "noun",
+    "vi": "kho lưu trữ",
+    "en": "A collection of historical documents or records.",
+    "example": "they've got an archive of local newspapers going back years."
+  },
+  {
+    "part": "listening-4",
+    "term": "collaboration",
+    "pos": "noun",
+    "vi": "sự hợp tác",
+    "en": "The act of working together with others to achieve something.",
+    "example": "Collaboration, hard work, creativity, and excellence."
+  },
+  {
+    "part": "listening-4",
+    "term": "theoretical",
+    "pos": "adjective",
+    "vi": "mang tính lý thuyết",
+    "en": "Based on ideas rather than real practice.",
+    "example": "they're theoretical concepts removed from the reality of day-to-day business"
+  },
+  {
+    "part": "listening-4",
+    "term": "backfire",
+    "pos": "verb",
+    "vi": "gây tác dụng ngược",
+    "en": "To have the opposite result from the one you wanted.",
+    "example": "all too often the right thing backfires."
+  },
+  {
+    "part": "listening-4",
+    "term": "side effect",
+    "pos": "noun",
+    "vi": "tác dụng phụ",
+    "en": "An unplanned and often harmful result of an action.",
+    "example": "without understanding and managing the side effects that arise"
+  },
+  {
+    "part": "listening-4",
+    "term": "descend into",
+    "pos": "verb",
+    "vi": "rơi vào (tình trạng hỗn loạn)",
+    "en": "To gradually get into a bad state.",
+    "example": "descended into confusion with everyone getting in each other's way"
+  },
+  {
+    "part": "listening-4",
+    "term": "comply with",
+    "pos": "phrase",
+    "vi": "tuân thủ (quy định)",
+    "en": "To obey a rule or request.",
+    "example": "to move a piece a few centimeters to comply with the rule"
+  },
+  {
+    "part": "listening-4",
+    "term": "aptitude",
+    "pos": "noun",
+    "vi": "năng khiếu",
+    "en": "A natural ability to do something well.",
+    "example": "the person in the team with an aptitude for puzzles like this"
+  },
+  {
+    "part": "listening-4",
+    "term": "inconsistency",
+    "pos": "noun",
+    "vi": "sự thiếu nhất quán",
+    "en": "A lack of agreement or steadiness between parts of something.",
+    "example": "Teamwork can also lead to inconsistency, a common cause of poor sales."
+  },
+  {
+    "part": "listening-4",
+    "term": "industriousness",
+    "pos": "noun",
+    "vi": "sự chăm chỉ, cần cù",
+    "en": "The quality of working hard and steadily.",
+    "example": "Now industriousness or hard work."
+  },
+  {
+    "part": "listening-4",
+    "term": "mock",
+    "pos": "verb",
+    "vi": "chế nhạo",
+    "en": "To laugh at someone in an unkind way.",
+    "example": "It's easy to mock people who say they work hard."
+  },
+  {
+    "part": "listening-4",
+    "term": "rational",
+    "pos": "adjective",
+    "vi": "hợp lý, dựa trên lý trí",
+    "en": "Based on clear thinking and good reasons.",
+    "example": "lazy means having a rational determination not to carry out unnecessary tasks."
+  },
+  {
+    "part": "listening-4",
+    "term": "attention grabbing",
+    "pos": "adjective",
+    "vi": "thu hút sự chú ý",
+    "en": "Designed to make people notice it immediately.",
+    "example": "creating an attention grabbing TV commercial for example"
+  },
+  {
+    "part": "listening-4",
+    "term": "strive for",
+    "pos": "verb",
+    "vi": "nỗ lực đạt được",
+    "en": "To try very hard to achieve something.",
+    "example": "companies that claim they strive for excellence"
+  },
+  {
+    "part": "listening-4",
+    "term": "pioneer",
+    "pos": "noun",
+    "vi": "công ty tiên phong",
+    "en": "A person or company that is first to do or develop something.",
+    "example": "compared pioneers - that is, companies bringing out the first version of a particular product"
+  },
+  {
+    "part": "listening-4",
+    "term": "market share",
+    "pos": "noun",
+    "vi": "thị phần",
+    "en": "The proportion of total sales in a market held by one company.",
+    "example": "the pioneers commanded an average market share of 29 percent"
+  },
+  {
+    "part": "listening-4",
+    "term": "second-rate",
+    "pos": "adjective",
+    "vi": "loại hai, kém chất lượng",
+    "en": "Of poor quality or not the best.",
+    "example": "Sometimes, second-rate work is more worthwhile than excellence."
+  },
+  {
+    "part": "reading-1",
+    "term": "buoyant",
+    "pos": "adjective",
+    "vi": "nổi được trên mặt nước",
+    "en": "Able to float on water or in the air.",
+    "example": "It is tough, elastic, buoyant, and fire-resistant"
+  },
+  {
+    "part": "reading-1",
+    "term": "replicate",
+    "pos": "verb",
+    "vi": "sao chép, tái tạo lại",
+    "en": "To make an exact copy of something.",
+    "example": "that technology has never succeeded in replicating."
+  },
+  {
+    "part": "reading-1",
+    "term": "elasticity",
+    "pos": "noun",
+    "vi": "độ đàn hồi",
+    "en": "The ability of a material to return to its shape after being pressed.",
+    "example": "It also has an elasticity that means you can squash it"
+  },
+  {
+    "part": "reading-1",
+    "term": "flourish",
+    "pos": "verb",
+    "vi": "phát triển mạnh, sinh sôi tốt",
+    "en": "To grow well and be healthy and successful.",
+    "example": "They flourish in warm, sunny climates"
+  },
+  {
+    "part": "reading-1",
+    "term": "thrive",
+    "pos": "verb",
+    "vi": "phát triển mạnh",
+    "en": "To grow well and be healthy.",
+    "example": "the trees thrive in poor soil"
+  },
+  {
+    "part": "reading-1",
+    "term": "sapling",
+    "pos": "noun",
+    "vi": "cây non",
+    "en": "A young tree.",
+    "example": "From the planting of a cork sapling to the first harvest takes 25 years"
+  },
+  {
+    "part": "reading-1",
+    "term": "harvest",
+    "pos": "noun",
+    "vi": "vụ thu hoạch",
+    "en": "The gathering of a crop or product when it is ready.",
+    "example": "From the planting of a cork sapling to the first harvest takes 25 years"
+  },
+  {
+    "part": "reading-1",
+    "term": "prise",
+    "pos": "verb",
+    "vi": "bẩy ra, cạy ra",
+    "en": "To force something open or away from something using a lever.",
+    "example": "The most skilful cork-strippers prise away a semi-circular husk"
+  },
+  {
+    "part": "reading-1",
+    "term": "stopper",
+    "pos": "noun",
+    "vi": "nút chai",
+    "en": "An object put into the neck of a bottle to close it.",
+    "example": "traditional bottle stoppers"
+  },
+  {
+    "part": "reading-1",
+    "term": "monopoly",
+    "pos": "noun",
+    "vi": "sự độc quyền",
+    "en": "Complete control of a market or product by one group.",
+    "example": "Recent years have seen the end of the virtual monopoly of cork as the material for bottle stoppers"
+  },
+  {
+    "part": "reading-1",
+    "term": "sustainable",
+    "pos": "adjective",
+    "vi": "bền vững",
+    "en": "Able to continue without harming the environment or using up resources.",
+    "example": "cork is a sustainable product that can be recycled without difficulty."
+  },
+  {
+    "part": "reading-1",
+    "term": "biodiversity",
+    "pos": "noun",
+    "vi": "đa dạng sinh học",
+    "en": "The variety of plant and animal life in an area.",
+    "example": "cork forests are a resource which support local biodiversity"
+  },
+  {
+    "part": "reading-1",
+    "term": "desertification",
+    "pos": "noun",
+    "vi": "sự sa mạc hoá",
+    "en": "The process by which fertile land becomes desert.",
+    "example": "prevent desertification in the regions where they are planted."
+  },
+  {
+    "part": "reading-2",
+    "term": "amass",
+    "pos": "verb",
+    "vi": "tích lũy, gom góp (số lượng lớn)",
+    "en": "To collect a large amount of something over time.",
+    "example": "Amassing hundreds or even thousands of postcards, chocolate wrappers or whatever"
+  },
+  {
+    "part": "reading-2",
+    "term": "instrumental",
+    "pos": "adjective",
+    "vi": "mang tính phương tiện (để đạt mục đích khác)",
+    "en": "Used as a means of achieving something else.",
+    "example": "this could be called an instrumental reason for collecting"
+  },
+  {
+    "part": "reading-2",
+    "term": "triumph",
+    "pos": "noun",
+    "vi": "cảm giác chiến thắng",
+    "en": "A feeling of great satisfaction after winning or succeeding.",
+    "example": "can give the collector a sense of triumph"
+  },
+  {
+    "part": "reading-2",
+    "term": "like-minded",
+    "pos": "adjective",
+    "vi": "có cùng sở thích, chí hướng",
+    "en": "Sharing similar interests or opinions.",
+    "example": "brings them into contact with like-minded people."
+  },
+  {
+    "part": "reading-2",
+    "term": "aimless",
+    "pos": "adjective",
+    "vi": "vô định, không mục đích",
+    "en": "Without a clear purpose or direction.",
+    "example": "this can give a purpose to a life that otherwise feels aimless."
+  },
+  {
+    "part": "reading-2",
+    "term": "by-product",
+    "pos": "noun",
+    "vi": "kết quả phụ, lợi ích đi kèm",
+    "en": "A secondary result produced while doing something else.",
+    "example": "As a by-product, many practitioners of the hobby become very knowledgeable about railway operations"
+  },
+  {
+    "part": "reading-2",
+    "term": "notion",
+    "pos": "noun",
+    "vi": "quan niệm",
+    "en": "An idea or belief about something.",
+    "example": "how dolls reflect notions of what children like"
+  },
+  {
+    "part": "reading-2",
+    "term": "insecurity",
+    "pos": "noun",
+    "vi": "sự thiếu an toàn, bất an (về tâm lý)",
+    "en": "A feeling of not being confident or safe.",
+    "example": "perhaps as a way of dealing with insecurity."
+  },
+  {
+    "part": "reading-2",
+    "term": "commonplace",
+    "pos": "adjective",
+    "vi": "phổ biến, thông thường",
+    "en": "Happening or seen often; not unusual.",
+    "example": "according to certain commonplace principles"
+  },
+  {
+    "part": "reading-2",
+    "term": "individualism",
+    "pos": "noun",
+    "vi": "cá tính riêng, chủ nghĩa cá nhân",
+    "en": "The quality of being different and independent from others.",
+    "example": "to show the collector's individualism."
+  },
+  {
+    "part": "reading-2",
+    "term": "engrossing",
+    "pos": "adjective",
+    "vi": "cuốn hút hoàn toàn",
+    "en": "So interesting that it takes all your attention.",
+    "example": "collecting can be totally engrossing"
+  },
+  {
+    "part": "reading-2",
+    "term": "fulfilment",
+    "pos": "noun",
+    "vi": "sự thỏa mãn, viên mãn",
+    "en": "A feeling of satisfaction that you are using your abilities well.",
+    "example": "a strong sense of personal fulfilment"
+  },
+  {
+    "part": "reading-2",
+    "term": "eccentric",
+    "pos": "adjective",
+    "vi": "lập dị, kỳ quặc",
+    "en": "Behaving in an unusual way that differs from what is normal.",
+    "example": "it may appear an eccentric, if harmless, way of spending time"
+  },
+  {
+    "part": "reading-3",
+    "term": "apt",
+    "pos": "adjective",
+    "vi": "phù hợp, thích đáng",
+    "en": "Suitable for a particular situation.",
+    "example": "it seems an apt characterization"
+  },
+  {
+    "part": "reading-3",
+    "term": "arson",
+    "pos": "noun",
+    "vi": "tội cố ý phóng hoả",
+    "en": "The crime of deliberately setting fire to a building.",
+    "example": "But what would the founders of these two institutions have thought of a course called \"Arson for Profit\"?"
+  },
+  {
+    "part": "reading-3",
+    "term": "undergraduate",
+    "pos": "noun",
+    "vi": "sinh viên đại học (chưa tốt nghiệp)",
+    "en": "A student studying for a first degree at a university.",
+    "example": "Any undergraduates who have met the academic requirements can sign up for the course"
+  },
+  {
+    "part": "reading-3",
+    "term": "prosecution",
+    "pos": "noun",
+    "vi": "việc truy tố",
+    "en": "The process of taking someone to court for a crime.",
+    "example": "establishing a chain of evidence for effective prosecution in a court of law."
+  },
+  {
+    "part": "reading-3",
+    "term": "professionalization",
+    "pos": "noun",
+    "vi": "sự chuyên nghiệp hoá",
+    "en": "The process of making an occupation more professional.",
+    "example": "as part of the increasing professionalization of this and many other occupations."
+  },
+  {
+    "part": "reading-3",
+    "term": "principled",
+    "pos": "adjective",
+    "vi": "có nguyên tắc đạo đức",
+    "en": "Based on strong moral beliefs about what is right.",
+    "example": "without being principled in the sense of being ethical."
+  },
+  {
+    "part": "reading-3",
+    "term": "ethical",
+    "pos": "adjective",
+    "vi": "thuộc đạo đức, có đạo đức",
+    "en": "Relating to moral principles of right and wrong.",
+    "example": "without being principled in the sense of being ethical."
+  },
+  {
+    "part": "reading-3",
+    "term": "scrutiny",
+    "pos": "noun",
+    "vi": "sự xem xét kỹ lưỡng",
+    "en": "Careful and detailed examination.",
+    "example": "hence \"both\" deserve scrutiny"
+  },
+  {
+    "part": "reading-3",
+    "term": "noble",
+    "pos": "adjective",
+    "vi": "cao thượng, cao quý",
+    "en": "Having high moral qualities.",
+    "example": "a much less noble end, such as personal profit"
+  },
+  {
+    "part": "reading-3",
+    "term": "reckless",
+    "pos": "adjective",
+    "vi": "liều lĩnh, thiếu thận trọng",
+    "en": "Showing no care about danger or its results.",
+    "example": "destructive, dangerous, reckless activity"
+  },
+  {
+    "part": "reading-3",
+    "term": "fraud",
+    "pos": "noun",
+    "vi": "gian lận, lừa đảo",
+    "en": "The crime of cheating someone to get money or goods.",
+    "example": "We have another term for it: \"fraud\"."
+  },
+  {
+    "part": "writing-2",
+    "term": "transparency",
+    "pos": "noun",
+    "vi": "sự minh bạch",
+    "en": "Being open so that others can see what is happening.",
+    "example": "transparency accelerates innovation"
+  },
+  {
+    "part": "writing-2",
+    "term": "intellectual property",
+    "pos": "noun",
+    "vi": "quyền sở hữu trí tuệ",
+    "en": "Ideas and creations that the owner has legal rights over.",
+    "example": "require intellectual property protections to sustain operations."
+  },
+  {
+    "part": "writing-2",
+    "term": "patent",
+    "pos": "noun",
+    "vi": "bằng sáng chế",
+    "en": "An official right to make or sell an invention that no one else can copy.",
+    "example": "relies on patent systems to fund drug development"
+  },
+  {
+    "part": "writing-2",
+    "term": "proliferation",
+    "pos": "noun",
+    "vi": "sự phổ biến, lan rộng (vũ khí)",
+    "en": "A rapid increase in the spread or number of something.",
+    "example": "nuclear technology research remains restricted to prevent weapon proliferation."
+  },
+  {
+    "part": "writing-2",
+    "term": "premature",
+    "pos": "adjective",
+    "vi": "quá sớm",
+    "en": "Happening before the right or proper time.",
+    "example": "premature disclosure of incomplete findings"
+  },
+  {
+    "part": "writing-2",
+    "term": "exemplify",
+    "pos": "verb",
+    "vi": "là ví dụ điển hình cho",
+    "en": "To be a clear example of something.",
+    "example": "exemplifies this balance"
+  },
+  {
+    "part": "writing-2",
+    "term": "proprietary",
+    "pos": "adjective",
+    "vi": "thuộc quyền sở hữu độc quyền",
+    "en": "Owned by a company and protected from use by others.",
+    "example": "proprietary details in business"
+  },
+  {
+    "part": "writing-2",
+    "term": "disclosure",
+    "pos": "noun",
+    "vi": "sự tiết lộ, công bố",
+    "en": "The act of making secret information known.",
+    "example": "mandate eventual public disclosure after exclusive periods"
+  }
+]

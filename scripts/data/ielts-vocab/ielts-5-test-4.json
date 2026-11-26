@@ -1,0 +1,562 @@
+[
+  {
+    "part": "listening-1",
+    "term": "host family",
+    "pos": "noun",
+    "vi": "gia đình bản xứ nhận sinh viên ở cùng",
+    "en": "A family that lets a visiting student live in their home.",
+    "example": "I understand you help fix up students with host families."
+  },
+  {
+    "part": "listening-1",
+    "term": "extension",
+    "pos": "noun",
+    "vi": "sự gia hạn",
+    "en": "An extra period of time allowed for something.",
+    "example": "I have to get an extension to my permit."
+  },
+  {
+    "part": "listening-1",
+    "term": "intermediate",
+    "pos": "adjective",
+    "vi": "trung cấp",
+    "en": "At a middle level, between beginner and advanced.",
+    "example": "So, I suppose it's intermediate."
+  },
+  {
+    "part": "listening-1",
+    "term": "vegetarian",
+    "pos": "noun",
+    "vi": "người ăn chay",
+    "en": "A person who does not eat meat.",
+    "example": "Well, I'm nearly a vegetarian, not quite."
+  },
+  {
+    "part": "listening-1",
+    "term": "en suite",
+    "pos": "adjective",
+    "vi": "có phòng tắm riêng trong phòng ngủ",
+    "en": "A bedroom with its own bathroom attached.",
+    "example": "I would prefer my own facilities - 'en suite', is that right?"
+  },
+  {
+    "part": "listening-1",
+    "term": "dependent on",
+    "pos": "phrase",
+    "vi": "phụ thuộc vào",
+    "en": "Decided or affected by something else.",
+    "example": "obviously all this is partly dependent on how much you're willing to pay."
+  },
+  {
+    "part": "listening-2",
+    "term": "clubhouse",
+    "pos": "noun",
+    "vi": "nhà câu lạc bộ",
+    "en": "A building used by the members of a sports club.",
+    "example": "we're going to use the clubhouse in King's Park"
+  },
+  {
+    "part": "listening-2",
+    "term": "presentation of prizes",
+    "pos": "noun",
+    "vi": "lễ trao giải",
+    "en": "A ceremony in which awards are given out.",
+    "example": "we usually have a dinner and presentation of prizes to the players."
+  },
+  {
+    "part": "listening-2",
+    "term": "committee",
+    "pos": "noun",
+    "vi": "ban điều hành, ủy ban",
+    "en": "A small group chosen to manage an organisation.",
+    "example": "I'd like to introduce you to the new committee for the soccer club this season."
+  },
+  {
+    "part": "listening-2",
+    "term": "treasurer",
+    "pos": "noun",
+    "vi": "thủ quỹ",
+    "en": "The person responsible for an organisation's money.",
+    "example": "She's the treasurer, and she'll collect the fees from you for the season."
+  },
+  {
+    "part": "listening-2",
+    "term": "fees",
+    "pos": "noun",
+    "vi": "phí, lệ phí",
+    "en": "Money paid to belong to or use something.",
+    "example": "Please try and give Gina your fees as early as possible"
+  },
+  {
+    "part": "listening-2",
+    "term": "volunteer",
+    "pos": "verb",
+    "vi": "tình nguyện nhận (việc)",
+    "en": "To offer to do something without being asked or paid.",
+    "example": "who's volunteered to be the club secretary"
+  },
+  {
+    "part": "listening-2",
+    "term": "supervise",
+    "pos": "verb",
+    "vi": "giám sát, hướng dẫn",
+    "en": "To watch over people to make sure things are done properly.",
+    "example": "He will continue to supervise the teams at training sessions"
+  },
+  {
+    "part": "listening-3",
+    "term": "case study",
+    "pos": "noun",
+    "vi": "nghiên cứu tình huống",
+    "en": "A detailed study of one real example, often a company.",
+    "example": "I asked you to look at the case study for Box Telecom"
+  },
+  {
+    "part": "listening-3",
+    "term": "take on board",
+    "pos": "phrase",
+    "vi": "tiếp nhận, đối mặt xử lý",
+    "en": "To accept and deal with something.",
+    "example": "what the problems were that Box Telecom had to take on board?"
+  },
+  {
+    "part": "listening-3",
+    "term": "face up to",
+    "pos": "phrase",
+    "vi": "đối mặt với, chấp nhận",
+    "en": "To accept and deal with a difficult situation.",
+    "example": "they had to face up to increased competition."
+  },
+  {
+    "part": "listening-3",
+    "term": "get to grips with",
+    "pos": "phrase",
+    "vi": "bắt tay xử lý, nắm bắt được",
+    "en": "To start to understand and deal with a problem.",
+    "example": "before they had a chance to get to grips with the effects of that"
+  },
+  {
+    "part": "listening-3",
+    "term": "stalled",
+    "pos": "adjective",
+    "vi": "bị đình trệ",
+    "en": "Brought to a stop or unable to make progress.",
+    "example": "they were stalled by a strike."
+  },
+  {
+    "part": "listening-3",
+    "term": "colossal",
+    "pos": "adjective",
+    "vi": "khổng lồ, rất lớn",
+    "en": "Extremely large.",
+    "example": "making a colossal investment in new machinery for their plants."
+  },
+  {
+    "part": "listening-3",
+    "term": "set back",
+    "pos": "phrase",
+    "vi": "làm chậm lại, gây trở ngại",
+    "en": "To delay or harm the progress of something.",
+    "example": "what they were set back by was high interest rates."
+  },
+  {
+    "part": "listening-3",
+    "term": "market share",
+    "pos": "noun",
+    "vi": "thị phần",
+    "en": "The portion of total sales in a market that a company has.",
+    "example": "which were affecting their market share"
+  },
+  {
+    "part": "listening-3",
+    "term": "buy out",
+    "pos": "phrase",
+    "vi": "mua lại (toàn bộ công ty)",
+    "en": "To buy all the shares of a company in order to own it.",
+    "example": "to buy them out."
+  },
+  {
+    "part": "listening-3",
+    "term": "capital",
+    "pos": "noun",
+    "vi": "vốn",
+    "en": "Money used to start or expand a business.",
+    "example": "to back them with some of the capital they need."
+  },
+  {
+    "part": "listening-3",
+    "term": "go under",
+    "pos": "phrase",
+    "vi": "phá sản, sụp đổ",
+    "en": "To fail financially and stop trading.",
+    "example": "A smaller or even medium-sized company would have gone under by now."
+  },
+  {
+    "part": "listening-3",
+    "term": "intrinsic",
+    "pos": "adjective",
+    "vi": "thuộc bản chất, nội tại",
+    "en": "Belonging naturally to the thing itself.",
+    "example": "try and keep it intrinsic to the company."
+  },
+  {
+    "part": "listening-3",
+    "term": "foregone conclusion",
+    "pos": "phrase",
+    "vi": "kết quả chắc chắn, đã định sẵn",
+    "en": "A result that is certain before it happens.",
+    "example": "I think it can, but it's not a foregone conclusion"
+  },
+  {
+    "part": "listening-3",
+    "term": "outdated",
+    "pos": "adjective",
+    "vi": "lỗi thời",
+    "en": "No longer modern or useful.",
+    "example": "They are suffering from having to work with outdated production machinery"
+  },
+  {
+    "part": "listening-3",
+    "term": "kick-start",
+    "pos": "verb",
+    "vi": "khởi động lại, thúc đẩy",
+    "en": "To make something start moving or improve quickly.",
+    "example": "to get sales kick-started."
+  },
+  {
+    "part": "listening-4",
+    "term": "induction",
+    "pos": "noun",
+    "vi": "buổi định hướng cho người mới",
+    "en": "An introduction to a new place or job for new people.",
+    "example": "I just oversee your induction and will not be around after this initial week."
+  },
+  {
+    "part": "listening-4",
+    "term": "computer literate",
+    "pos": "adjective",
+    "vi": "thạo sử dụng máy tính",
+    "en": "Able to use computers well.",
+    "example": "you really do need to be computer literate."
+  },
+  {
+    "part": "listening-4",
+    "term": "bring up to speed",
+    "pos": "phrase",
+    "vi": "giúp bắt kịp, cập nhật kiến thức",
+    "en": "To give someone the latest information or skills they need.",
+    "example": "which will bring you up to speed on how to access the computer-loaded information."
+  },
+  {
+    "part": "listening-4",
+    "term": "readily",
+    "pos": "adverb",
+    "vi": "dễ dàng",
+    "en": "Easily and without difficulty.",
+    "example": "you can readily save texts on your personal computer space"
+  },
+  {
+    "part": "listening-4",
+    "term": "debatable",
+    "pos": "adjective",
+    "vi": "còn tranh cãi, đáng ngờ",
+    "en": "Open to question or argument.",
+    "example": "as it is from highly debatable sources, so be critical."
+  },
+  {
+    "part": "listening-4",
+    "term": "phase out",
+    "pos": "phrase",
+    "vi": "loại bỏ dần",
+    "en": "To stop using something gradually.",
+    "example": "the intention is to phase these out eventually."
+  },
+  {
+    "part": "listening-4",
+    "term": "restricted",
+    "pos": "adjective",
+    "vi": "bị hạn chế",
+    "en": "Limited by rules.",
+    "example": "There is a restricted loan time on these"
+  },
+  {
+    "part": "listening-4",
+    "term": "dissertation",
+    "pos": "noun",
+    "vi": "luận văn",
+    "en": "A long piece of writing on a subject, done for a university degree.",
+    "example": "specialised training sessions on writing a dissertation."
+  },
+  {
+    "part": "listening-4",
+    "term": "bibliography",
+    "pos": "noun",
+    "vi": "danh mục tài liệu tham khảo",
+    "en": "A list of books and articles used when writing a piece of work.",
+    "example": "how they would like you to organise the bibliography"
+  },
+  {
+    "part": "reading-1",
+    "term": "wilderness",
+    "pos": "noun",
+    "vi": "vùng hoang dã",
+    "en": "A wild natural area where few people live.",
+    "example": "Countries all across the world are actively promoting their 'wilderness' regions"
+  },
+  {
+    "part": "reading-1",
+    "term": "fragile",
+    "pos": "adjective",
+    "vi": "mong manh, dễ bị tổn hại",
+    "en": "Easily damaged or harmed.",
+    "example": "these regions are fragile (i.e. highly vulnerable to abnormal pressures)"
+  },
+  {
+    "part": "reading-1",
+    "term": "indigenous",
+    "pos": "adjective",
+    "vi": "bản địa",
+    "en": "Originally belonging to a particular place.",
+    "example": "the unique cultures of their indigenous people."
+  },
+  {
+    "part": "reading-1",
+    "term": "foreign exchange",
+    "pos": "noun",
+    "vi": "ngoại tệ",
+    "en": "Money from other countries that a country earns.",
+    "example": "tourism has been the prime source of foreign exchange in Nepal and Bhutan."
+  },
+  {
+    "part": "reading-1",
+    "term": "porter",
+    "pos": "noun",
+    "vi": "phu khuân vác",
+    "en": "A person paid to carry heavy bags, for example on a trek.",
+    "example": "working as porters for foreign trekkers"
+  },
+  {
+    "part": "reading-1",
+    "term": "deforestation",
+    "pos": "noun",
+    "vi": "nạn phá rừng",
+    "en": "The cutting down of trees over a large area.",
+    "example": "the deforestation and impacts on water supplies"
+  },
+  {
+    "part": "reading-1",
+    "term": "degradation",
+    "pos": "noun",
+    "vi": "sự xuống cấp, suy thoái",
+    "en": "The process of becoming worse in quality.",
+    "example": "vulnerable to degradation through heavy use."
+  },
+  {
+    "part": "reading-1",
+    "term": "reinvigorate",
+    "pos": "verb",
+    "vi": "làm hồi sinh, tiếp thêm sức sống",
+    "en": "To give new energy to something.",
+    "example": "it can even be a vehicle for reinvigorating local cultures"
+  },
+  {
+    "part": "reading-1",
+    "term": "repatriate",
+    "pos": "verb",
+    "vi": "chuyển (lợi nhuận) về nước",
+    "en": "To send money or people back to their home country.",
+    "example": "repatriate most of the profits to their home base."
+  },
+  {
+    "part": "reading-1",
+    "term": "accrue",
+    "pos": "verb",
+    "vi": "tích lũy, thuộc về (lợi ích)",
+    "en": "To be gained gradually, especially as a benefit.",
+    "example": "thereby ensuring that the benefits accrue locally."
+  },
+  {
+    "part": "reading-2",
+    "term": "toughened glass",
+    "pos": "noun",
+    "vi": "kính cường lực",
+    "en": "Glass specially treated to make it stronger.",
+    "example": "a large pane of toughened glass in the roof of a shopping centre"
+  },
+  {
+    "part": "reading-2",
+    "term": "shatter",
+    "pos": "verb",
+    "vi": "vỡ tan",
+    "en": "To break suddenly into many small pieces.",
+    "example": "shattered without warning and fell from its frame."
+  },
+  {
+    "part": "reading-2",
+    "term": "shard",
+    "pos": "noun",
+    "vi": "mảnh vỡ sắc",
+    "en": "A sharp broken piece of glass or pottery.",
+    "example": "rather than large, razor-sharp shards."
+  },
+  {
+    "part": "reading-2",
+    "term": "impurity",
+    "pos": "noun",
+    "vi": "tạp chất",
+    "en": "A substance that spoils the purity of something.",
+    "example": "The problem starts when glass contains nickel sulphide impurities."
+  },
+  {
+    "part": "reading-2",
+    "term": "tensile",
+    "pos": "adjective",
+    "vi": "thuộc lực kéo, chịu kéo",
+    "en": "Relating to stretching or pulling force.",
+    "example": "produces a tensile force inside the glass."
+  },
+  {
+    "part": "reading-2",
+    "term": "propagate",
+    "pos": "verb",
+    "vi": "lan truyền (vết nứt)",
+    "en": "To spread or extend through a material.",
+    "example": "As cracks propagate best in materials under tension"
+  },
+  {
+    "part": "reading-2",
+    "term": "molten",
+    "pos": "adjective",
+    "vi": "nóng chảy",
+    "en": "Turned into liquid by great heat.",
+    "example": "nickel can also be introduced by fragments of nickel alloys falling into the molten glass."
+  },
+  {
+    "part": "reading-2",
+    "term": "revert",
+    "pos": "verb",
+    "vi": "trở lại trạng thái cũ",
+    "en": "To go back to a previous state.",
+    "example": "ready to revert to the beta phase without warning."
+  },
+  {
+    "part": "reading-2",
+    "term": "inclusion",
+    "pos": "noun",
+    "vi": "tạp chất lẫn bên trong (vật liệu)",
+    "en": "A foreign particle trapped inside a material.",
+    "example": "due to nickel sulphide inclusions"
+  },
+  {
+    "part": "reading-3",
+    "term": "cue",
+    "pos": "noun",
+    "vi": "tín hiệu, dấu hiệu kích hoạt",
+    "en": "A signal that tells something when to start.",
+    "example": "Firstly it is used as a cue for the timing of daily and seasonal rhythms"
+  },
+  {
+    "part": "reading-3",
+    "term": "breeding",
+    "pos": "noun",
+    "vi": "sự sinh sản",
+    "en": "The process of animals or plants producing young.",
+    "example": "Breeding in most organisms occurs during a part of the year only"
+  },
+  {
+    "part": "reading-3",
+    "term": "photoperiodism",
+    "pos": "noun",
+    "vi": "hiện tượng quang chu kỳ (phản ứng với độ dài ngày)",
+    "en": "The response of living things to the length of day and night.",
+    "example": "The seasonal impact of day length on physiological responses is called photoperiodism"
+  },
+  {
+    "part": "reading-3",
+    "term": "temperate",
+    "pos": "adjective",
+    "vi": "ôn đới",
+    "en": "Having mild weather, neither very hot nor very cold.",
+    "example": "In the temperate zone in spring, temperatures fluctuate greatly from day to day"
+  },
+  {
+    "part": "reading-3",
+    "term": "induce",
+    "pos": "verb",
+    "vi": "gây ra, kích thích",
+    "en": "To cause something to happen.",
+    "example": "some species of birds' breeding can be induced even in midwinter"
+  },
+  {
+    "part": "reading-3",
+    "term": "fledging",
+    "pos": "noun",
+    "vi": "giai đoạn chim non mọc đủ lông, rời tổ",
+    "en": "The time when young birds grow feathers and learn to fly.",
+    "example": "when they are in the nest and after fledging."
+  },
+  {
+    "part": "reading-3",
+    "term": "germinate",
+    "pos": "verb",
+    "vi": "nảy mầm",
+    "en": "To start to grow from a seed.",
+    "example": "desert annuals germinate, flower and seed whenever suitable rainfall occurs"
+  },
+  {
+    "part": "reading-3",
+    "term": "perennial",
+    "pos": "adjective",
+    "vi": "sống lâu năm",
+    "en": "Living for several years.",
+    "example": "Bamboos are perennial grasses"
+  },
+  {
+    "part": "reading-3",
+    "term": "photosynthesis",
+    "pos": "noun",
+    "vi": "quang hợp",
+    "en": "The process by which plants use sunlight to make their food.",
+    "example": "it is essential for photosynthesis."
+  },
+  {
+    "part": "reading-3",
+    "term": "shade-tolerant",
+    "pos": "adjective",
+    "vi": "chịu bóng râm",
+    "en": "Able to grow well in low light.",
+    "example": "Plants in general can be divided into two groups: shade-tolerant species and shade-intolerant species."
+  },
+  {
+    "part": "writing-2",
+    "term": "genetic",
+    "pos": "adjective",
+    "vi": "thuộc di truyền",
+    "en": "Relating to genes passed from parents to children.",
+    "example": "While genetic predispositions undoubtedly form the foundation of our traits"
+  },
+  {
+    "part": "writing-2",
+    "term": "innate",
+    "pos": "adjective",
+    "vi": "bẩm sinh",
+    "en": "Present from birth rather than learned.",
+    "example": "These innate qualities act like raw materials"
+  },
+  {
+    "part": "writing-2",
+    "term": "temperament",
+    "pos": "noun",
+    "vi": "tính khí, khí chất",
+    "en": "The natural way a person tends to feel and behave.",
+    "example": "separated siblings often share similar temperament patterns"
+  },
+  {
+    "part": "writing-2",
+    "term": "nurture",
+    "pos": "noun",
+    "vi": "sự nuôi dưỡng, môi trường giáo dục",
+    "en": "The care and upbringing that shape a person, as opposed to inherited traits.",
+    "example": "The debate between nature and nurture in shaping human personality has persisted for decades."
+  }
+]

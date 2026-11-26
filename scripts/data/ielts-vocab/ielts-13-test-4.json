@@ -1,0 +1,554 @@
+[
+  {
+    "part": "listening-1",
+    "term": "trainee",
+    "pos": "noun",
+    "vi": "thực tập sinh, người đang được đào tạo",
+    "en": "A person who is learning a job by doing it.",
+    "example": "at the end of your trainee period"
+  },
+  {
+    "part": "listening-1",
+    "term": "diploma",
+    "pos": "noun",
+    "vi": "bằng cấp, chứng chỉ",
+    "en": "A certificate given for finishing a course of study.",
+    "example": "Did you get a diploma at the end of your trainee period"
+  },
+  {
+    "part": "listening-1",
+    "term": "on the job",
+    "pos": "phrase",
+    "vi": "vừa làm vừa học, tại nơi làm việc",
+    "en": "While actually working rather than in a classroom.",
+    "example": "I did lots of courses on the job"
+  },
+  {
+    "part": "listening-1",
+    "term": "minimum wage",
+    "pos": "noun",
+    "vi": "mức lương tối thiểu",
+    "en": "The lowest pay that an employer is legally allowed to give.",
+    "example": "you get a lower minimum wage than regular employees"
+  },
+  {
+    "part": "listening-1",
+    "term": "variety",
+    "pos": "noun",
+    "vi": "sự đa dạng",
+    "en": "A range of different things.",
+    "example": "There's a lot of variety too"
+  },
+  {
+    "part": "listening-1",
+    "term": "casual",
+    "pos": "adjective",
+    "vi": "giản dị, không trang trọng",
+    "en": "Relaxed and not formal.",
+    "example": "Nothing too casual, like jeans for example"
+  },
+  {
+    "part": "listening-2",
+    "term": "premier",
+    "pos": "adjective",
+    "vi": "hàng đầu",
+    "en": "The best or most important of its kind.",
+    "example": "New Zealand's premier snow and ski center"
+  },
+  {
+    "part": "listening-2",
+    "term": "cross country skiing",
+    "pos": "noun",
+    "vi": "trượt tuyết băng đồng",
+    "en": "Skiing over long distances on fairly flat ground.",
+    "example": "Most visitors come here for the cross country skiing"
+  },
+  {
+    "part": "listening-2",
+    "term": "sled",
+    "pos": "noun",
+    "vi": "xe trượt tuyết (do chó kéo)",
+    "en": "A vehicle that slides over snow.",
+    "example": "you'll be going on a dog sled trip"
+  },
+  {
+    "part": "listening-2",
+    "term": "relay",
+    "pos": "noun",
+    "vi": "cuộc đua tiếp sức",
+    "en": "A race in which team members take turns.",
+    "example": "we have the team relay event"
+  },
+  {
+    "part": "listening-2",
+    "term": "participation",
+    "pos": "noun",
+    "vi": "sự tham gia",
+    "en": "The act of taking part in an activity.",
+    "example": "Participation rather than winning is the main focus"
+  },
+  {
+    "part": "listening-2",
+    "term": "expedition",
+    "pos": "noun",
+    "vi": "chuyến thám hiểm",
+    "en": "A long organised journey for a special purpose.",
+    "example": "For your final expedition, you'll head off to Mount Frenner"
+  },
+  {
+    "part": "listening-2",
+    "term": "snowshoe",
+    "pos": "noun",
+    "vi": "giày đi tuyết",
+    "en": "A wide frame worn on the foot to walk on top of snow.",
+    "example": "wearing a pair of special snowshoes"
+  },
+  {
+    "part": "listening-2",
+    "term": "conserve",
+    "pos": "verb",
+    "vi": "tiết kiệm, bảo tồn",
+    "en": "To use something carefully so it is not wasted.",
+    "example": "to conserve supplies"
+  },
+  {
+    "part": "listening-2",
+    "term": "trail",
+    "pos": "noun",
+    "vi": "đường mòn",
+    "en": "A path through the countryside or mountains.",
+    "example": "the different ski trails you can follow"
+  },
+  {
+    "part": "listening-2",
+    "term": "exposed",
+    "pos": "adjective",
+    "vi": "trống trải, không có che chắn",
+    "en": "Not protected from wind, weather or danger.",
+    "example": "the last part is quite exposed"
+  },
+  {
+    "part": "listening-3",
+    "term": "allergy",
+    "pos": "noun",
+    "vi": "dị ứng",
+    "en": "A medical condition in which the body reacts badly to a substance.",
+    "example": "because of my allergy"
+  },
+  {
+    "part": "listening-3",
+    "term": "ready meal",
+    "pos": "noun",
+    "vi": "bữa ăn chế biến sẵn",
+    "en": "A meal sold already cooked, needing only to be heated.",
+    "example": "Ready meals are the worst"
+  },
+  {
+    "part": "listening-3",
+    "term": "transparent",
+    "pos": "adjective",
+    "vi": "minh bạch, rõ ràng",
+    "en": "Open and clear, not hiding anything.",
+    "example": "Not exactly transparent, is it"
+  },
+  {
+    "part": "listening-3",
+    "term": "intake",
+    "pos": "noun",
+    "vi": "lượng hấp thụ (nạp vào cơ thể)",
+    "en": "The amount of food or drink taken into the body.",
+    "example": "your required daily intake of each ingredient"
+  },
+  {
+    "part": "listening-3",
+    "term": "consistency",
+    "pos": "noun",
+    "vi": "sự nhất quán",
+    "en": "Being the same in each case.",
+    "example": "more consistency between labeling systems"
+  },
+  {
+    "part": "listening-3",
+    "term": "portion",
+    "pos": "noun",
+    "vi": "khẩu phần",
+    "en": "The amount of food served to one person.",
+    "example": "in terms of portion sizes"
+  },
+  {
+    "part": "listening-3",
+    "term": "additive",
+    "pos": "noun",
+    "vi": "chất phụ gia",
+    "en": "A substance added to food to improve its taste or keep it fresh.",
+    "example": "they only contain artificial additives"
+  },
+  {
+    "part": "listening-3",
+    "term": "conclusive",
+    "pos": "adjective",
+    "vi": "có tính kết luận, thuyết phục",
+    "en": "Proving something beyond doubt.",
+    "example": "Those findings weren't that conclusive"
+  },
+  {
+    "part": "listening-3",
+    "term": "adopt",
+    "pos": "verb",
+    "vi": "áp dụng, chấp nhận sử dụng",
+    "en": "To start to use a new method or system.",
+    "example": "it's not been adopted universally"
+  },
+  {
+    "part": "listening-3",
+    "term": "compulsory",
+    "pos": "adjective",
+    "vi": "bắt buộc",
+    "en": "Required by law or by rule.",
+    "example": "I'd have thought it would have been compulsory"
+  },
+  {
+    "part": "listening-3",
+    "term": "reservation",
+    "pos": "noun",
+    "vi": "sự e ngại, nghi ngại",
+    "en": "A feeling of doubt about a plan or idea.",
+    "example": "A lot of experts had deep reservations about it"
+  },
+  {
+    "part": "listening-3",
+    "term": "literacy",
+    "pos": "noun",
+    "vi": "khả năng đọc viết",
+    "en": "The ability to read and write.",
+    "example": "people with low literacy levels"
+  },
+  {
+    "part": "listening-3",
+    "term": "sample size",
+    "pos": "noun",
+    "vi": "cỡ mẫu (số người trong khảo sát)",
+    "en": "The number of people or items included in a study.",
+    "example": "they could have used a much bigger sample size"
+  },
+  {
+    "part": "listening-4",
+    "term": "documentary",
+    "pos": "adjective",
+    "vi": "bằng tài liệu, văn bản",
+    "en": "Based on written or recorded records.",
+    "example": "there's hardly any documentary evidence of it"
+  },
+  {
+    "part": "listening-4",
+    "term": "cultivate",
+    "pos": "verb",
+    "vi": "trồng trọt",
+    "en": "To grow plants or crops.",
+    "example": "coffee bushes were being cultivated in the Yemen"
+  },
+  {
+    "part": "listening-4",
+    "term": "plantation",
+    "pos": "noun",
+    "vi": "đồn điền",
+    "en": "A large farm where crops such as coffee are grown.",
+    "example": "coffee was grown in huge plantations"
+  },
+  {
+    "part": "listening-4",
+    "term": "colonization",
+    "pos": "noun",
+    "vi": "sự chiếm làm thuộc địa",
+    "en": "The act of taking control of another country and settling there.",
+    "example": "helped by European colonization"
+  },
+  {
+    "part": "listening-4",
+    "term": "peasant",
+    "pos": "noun",
+    "vi": "nông dân nghèo",
+    "en": "A poor person who works on the land.",
+    "example": "the peasants grew coffee"
+  },
+  {
+    "part": "listening-4",
+    "term": "taxation",
+    "pos": "noun",
+    "vi": "việc đánh thuế",
+    "en": "The system of collecting money for the government.",
+    "example": "it was used as a means of taxation"
+  },
+  {
+    "part": "listening-4",
+    "term": "luxury",
+    "pos": "noun",
+    "vi": "xa xỉ phẩm",
+    "en": "Something expensive that is not a necessity.",
+    "example": "it still remained something of a luxury item"
+  },
+  {
+    "part": "listening-4",
+    "term": "stimulant",
+    "pos": "noun",
+    "vi": "chất kích thích (tỉnh táo)",
+    "en": "A substance that makes you feel more awake and active.",
+    "example": "the use of coffee as a stimulant became important"
+  },
+  {
+    "part": "reading-1",
+    "term": "clipper",
+    "pos": "noun",
+    "vi": "tàu buồm tốc độ cao",
+    "en": "A fast sailing ship of the 19th century.",
+    "example": "clippers dominated world trade"
+  },
+  {
+    "part": "reading-1",
+    "term": "propulsion",
+    "pos": "noun",
+    "vi": "động lực đẩy, sự đẩy tới",
+    "en": "The force that drives a vehicle forward.",
+    "example": "steam propulsion was replacing sail"
+  },
+  {
+    "part": "reading-1",
+    "term": "intact",
+    "pos": "adjective",
+    "vi": "còn nguyên vẹn",
+    "en": "Complete and not damaged.",
+    "example": "only one has survived more or less intact"
+  },
+  {
+    "part": "reading-1",
+    "term": "figurehead",
+    "pos": "noun",
+    "vi": "tượng đầu mũi tàu",
+    "en": "A carved figure at the front of an old ship.",
+    "example": "The witch is depicted in Cutty Sark's figurehead"
+  },
+  {
+    "part": "reading-1",
+    "term": "maiden voyage",
+    "pos": "noun",
+    "vi": "chuyến đi đầu tiên (của tàu)",
+    "en": "The first journey of a new ship.",
+    "example": "On her maiden voyage, in 1870"
+  },
+  {
+    "part": "reading-1",
+    "term": "laden",
+    "pos": "adjective",
+    "vi": "chất đầy hàng",
+    "en": "Carrying a heavy load.",
+    "example": "She returned laden with tea"
+  },
+  {
+    "part": "reading-1",
+    "term": "prestigious",
+    "pos": "adjective",
+    "vi": "có uy tín, danh giá",
+    "en": "Respected and admired because of high quality or status.",
+    "example": "the much less prestigious work of carrying any cargo"
+  },
+  {
+    "part": "reading-1",
+    "term": "incompetent",
+    "pos": "adjective",
+    "vi": "kém năng lực",
+    "en": "Not having the skill to do a job well.",
+    "example": "an incompetent drunkard who stole the crew's wages"
+  },
+  {
+    "part": "reading-1",
+    "term": "navigator",
+    "pos": "noun",
+    "vi": "hoa tiêu, người dẫn đường",
+    "en": "A person who plans and directs the route of a ship.",
+    "example": "was an excellent navigator"
+  },
+  {
+    "part": "reading-1",
+    "term": "gamble",
+    "pos": "noun",
+    "vi": "canh bạc, việc liều lĩnh",
+    "en": "A risky action taken in hope of a good result.",
+    "example": "His gamble paid off"
+  },
+  {
+    "part": "reading-1",
+    "term": "miscellaneous",
+    "pos": "adjective",
+    "vi": "đủ loại, linh tinh",
+    "en": "Of various different kinds.",
+    "example": "she again carried miscellaneous cargoes around the world"
+  },
+  {
+    "part": "reading-2",
+    "term": "degradation",
+    "pos": "noun",
+    "vi": "sự thoái hóa, suy thoái",
+    "en": "The process of becoming worse in quality.",
+    "example": "the degradation of the world's soil for decades"
+  },
+  {
+    "part": "reading-2",
+    "term": "decompose",
+    "pos": "verb",
+    "vi": "phân hủy",
+    "en": "To break down and rot.",
+    "example": "living amid decomposing plants and various minerals"
+  },
+  {
+    "part": "reading-2",
+    "term": "nutrient",
+    "pos": "noun",
+    "vi": "chất dinh dưỡng",
+    "en": "A substance that plants or animals need to grow.",
+    "example": "plants grow they remove nutrients from the soil"
+  },
+  {
+    "part": "reading-2",
+    "term": "decay",
+    "pos": "verb",
+    "vi": "mục rữa, phân rã",
+    "en": "To rot slowly.",
+    "example": "when the plants die and decay"
+  },
+  {
+    "part": "reading-2",
+    "term": "synthetic",
+    "pos": "adjective",
+    "vi": "tổng hợp, nhân tạo",
+    "en": "Made artificially using chemicals.",
+    "example": "this synthetic fertiliser"
+  },
+  {
+    "part": "reading-2",
+    "term": "fertiliser",
+    "pos": "noun",
+    "vi": "phân bón",
+    "en": "A substance added to soil to help plants grow.",
+    "example": "Chemical fertilisers can release polluting nitrous oxide"
+  },
+  {
+    "part": "reading-2",
+    "term": "cocktail",
+    "pos": "noun",
+    "vi": "hỗn hợp (nhiều thành phần)",
+    "en": "A mixture of several different things.",
+    "example": "a cocktail of beneficial bacteria, fungi and humus"
+  },
+  {
+    "part": "reading-2",
+    "term": "humus",
+    "pos": "noun",
+    "vi": "mùn (chất hữu cơ trong đất)",
+    "en": "Dark organic matter in soil formed from rotted plants.",
+    "example": "a cocktail of beneficial bacteria, fungi and humus"
+  },
+  {
+    "part": "reading-2",
+    "term": "classify",
+    "pos": "verb",
+    "vi": "phân loại",
+    "en": "To arrange things into groups by type.",
+    "example": "no agreed international system for classifying soil"
+  },
+  {
+    "part": "reading-2",
+    "term": "carbon neutrality",
+    "pos": "noun",
+    "vi": "trung hòa carbon",
+    "en": "A state in which no extra carbon is added to the atmosphere.",
+    "example": "Like the idea of carbon neutrality"
+  },
+  {
+    "part": "reading-3",
+    "term": "self-evidently",
+    "pos": "adverb",
+    "vi": "hiển nhiên",
+    "en": "In a way that is obvious and needs no proof.",
+    "example": "because it is self-evidently good"
+  },
+  {
+    "part": "reading-3",
+    "term": "crude",
+    "pos": "adjective",
+    "vi": "thô thiển, sơ sài",
+    "en": "Simple and lacking detail or subtlety.",
+    "example": "an astonishingly crude and simple-minded way of thinking"
+  },
+  {
+    "part": "reading-3",
+    "term": "oblivious",
+    "pos": "adjective",
+    "vi": "không hay biết",
+    "en": "Not aware of something.",
+    "example": "Those who think in this way are oblivious to the vast philosophical literature"
+  },
+  {
+    "part": "reading-3",
+    "term": "lucid",
+    "pos": "adjective",
+    "vi": "sáng sủa, dễ hiểu",
+    "en": "Clearly expressed and easy to understand.",
+    "example": "this rich, lucid and arresting book"
+  },
+  {
+    "part": "reading-3",
+    "term": "quantify",
+    "pos": "verb",
+    "vi": "định lượng",
+    "en": "To express or measure something as a number.",
+    "example": "it might be quantified by measuring the human pulse rate"
+  },
+  {
+    "part": "reading-3",
+    "term": "integral",
+    "pos": "adjective",
+    "vi": "không thể thiếu, là một phần thiết yếu",
+    "en": "Necessary as a part of the whole.",
+    "example": "has become integral to capitalism"
+  },
+  {
+    "part": "reading-3",
+    "term": "malady",
+    "pos": "noun",
+    "vi": "chứng bệnh, tình trạng bệnh",
+    "en": "An illness or disorder.",
+    "example": "treated as psychological maladies"
+  },
+  {
+    "part": "reading-3",
+    "term": "pedigree",
+    "pos": "noun",
+    "vi": "nguồn gốc, xuất xứ (của ý tưởng)",
+    "en": "The background or origin of something.",
+    "example": "whatever its intellectual pedigree"
+  },
+  {
+    "part": "writing-1",
+    "term": "redevelopment",
+    "pos": "noun",
+    "vi": "việc tái phát triển, cải tạo",
+    "en": "Rebuilding or improving an area or building.",
+    "example": "how it will look after redevelopment"
+  },
+  {
+    "part": "writing-2",
+    "term": "exacerbate",
+    "pos": "verb",
+    "vi": "làm trầm trọng thêm",
+    "en": "To make a bad situation worse.",
+    "example": "Political conflicts exacerbate these challenges"
+  },
+  {
+    "part": "writing-2",
+    "term": "perishable",
+    "pos": "adjective",
+    "vi": "dễ hỏng, dễ thối",
+    "en": "Likely to go bad quickly, like fresh food.",
+    "example": "transport perishable goods"
+  }
+]

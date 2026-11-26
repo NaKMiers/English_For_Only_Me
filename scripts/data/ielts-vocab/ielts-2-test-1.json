@@ -1,0 +1,562 @@
+[
+  {
+    "part": "listening-1",
+    "term": "application form",
+    "pos": "noun",
+    "vi": "đơn đăng ký",
+    "en": "A document you fill in to ask formally for something.",
+    "example": "would you like to fill in the application form now?"
+  },
+  {
+    "part": "listening-1",
+    "term": "by heart",
+    "pos": "phrase",
+    "vi": "thuộc lòng",
+    "en": "From memory, without needing to look at it.",
+    "example": "Yes, I know it off by heart."
+  },
+  {
+    "part": "listening-1",
+    "term": "survey",
+    "pos": "noun",
+    "vi": "cuộc khảo sát",
+    "en": "A set of questions asked to many people to collect opinions or facts.",
+    "example": "could I just ask you a few questions for a survey we're conducting?"
+  },
+  {
+    "part": "listening-1",
+    "term": "punch line",
+    "pos": "noun",
+    "vi": "câu chốt gây cười (của một chuyện cười)",
+    "en": "The final line of a joke that makes it funny.",
+    "example": "I just love to hear jokes and funny punch lines."
+  },
+  {
+    "part": "listening-1",
+    "term": "documentary",
+    "pos": "noun",
+    "vi": "phim tài liệu",
+    "en": "A film or programme that presents real facts about a subject.",
+    "example": "I'm completely taken by documentaries of the great outdoors."
+  },
+  {
+    "part": "listening-2",
+    "term": "expedition",
+    "pos": "noun",
+    "vi": "chuyến thám hiểm",
+    "en": "An organised journey made for a special purpose, such as exploring.",
+    "example": "an expedition of four men undertook what they believe to have been the first and only complete end to end crossing"
+  },
+  {
+    "part": "listening-2",
+    "term": "peak",
+    "pos": "noun",
+    "vi": "đỉnh núi",
+    "en": "The pointed top of a mountain.",
+    "example": "we managed to climb 32 peaks that were over 3,000 meters high"
+  },
+  {
+    "part": "listening-2",
+    "term": "taken aback",
+    "pos": "phrase",
+    "vi": "sửng sốt, bất ngờ",
+    "en": "Surprised or shocked by something unexpected.",
+    "example": "we were pretty taken aback really to find that it rained on quite a number of days"
+  },
+  {
+    "part": "listening-2",
+    "term": "from the outset",
+    "pos": "phrase",
+    "vi": "ngay từ đầu",
+    "en": "From the very beginning.",
+    "example": "we were forced to start replanning our route almost from the outset."
+  },
+  {
+    "part": "listening-2",
+    "term": "pass",
+    "pos": "noun",
+    "vi": "đèo (lối đi qua núi)",
+    "en": "A route through a range of mountains.",
+    "example": "the heavy snow which blocks the mountain passes."
+  },
+  {
+    "part": "listening-2",
+    "term": "detour",
+    "pos": "noun",
+    "vi": "đường vòng",
+    "en": "A longer route taken to avoid a problem or obstacle.",
+    "example": "So you have to make considerable detours."
+  },
+  {
+    "part": "listening-2",
+    "term": "meadow",
+    "pos": "noun",
+    "vi": "đồng cỏ",
+    "en": "A field covered with grass and wild flowers.",
+    "example": "we fell upon amazing high meadows, uh, huge gorges and wonderful snowcapped mountains."
+  },
+  {
+    "part": "listening-2",
+    "term": "gorge",
+    "pos": "noun",
+    "vi": "hẻm núi",
+    "en": "A deep, narrow valley with steep rocky sides.",
+    "example": "huge gorges and wonderful snowcapped mountains."
+  },
+  {
+    "part": "listening-2",
+    "term": "stint",
+    "pos": "noun",
+    "vi": "khoảng thời gian tham gia (làm việc gì đó)",
+    "en": "A fixed period of time spent doing something.",
+    "example": "groups of friends actually joined us for three week stints"
+  },
+  {
+    "part": "listening-2",
+    "term": "tag along",
+    "pos": "phrase",
+    "vi": "đi theo cùng",
+    "en": "To go somewhere with other people, often without being invited.",
+    "example": "Some whom we hadn't met before the trip at all tagged on for short bursts"
+  },
+  {
+    "part": "listening-2",
+    "term": "long-suffering",
+    "pos": "adjective",
+    "vi": "chịu đựng kiên nhẫn",
+    "en": "Patiently putting up with trouble or difficulty over a long time.",
+    "example": "we took two, I must say long suffering donkeys with us"
+  },
+  {
+    "part": "listening-2",
+    "term": "summit",
+    "pos": "noun",
+    "vi": "đỉnh (núi)",
+    "en": "The highest point of a mountain.",
+    "example": "on both the really high summits, they took diversions that were quite out of character."
+  },
+  {
+    "part": "listening-3",
+    "term": "opt for",
+    "pos": "phrase",
+    "vi": "chọn, lựa chọn",
+    "en": "To choose one thing instead of another.",
+    "example": "No, I changed my mind and opted for history instead."
+  },
+  {
+    "part": "listening-3",
+    "term": "seminar",
+    "pos": "noun",
+    "vi": "buổi hội thảo chuyên đề (lớp thảo luận nhỏ)",
+    "en": "A small class where students discuss a topic with a teacher.",
+    "example": "You just have to stay ahead of the lectures and seminars."
+  },
+  {
+    "part": "listening-3",
+    "term": "schedule",
+    "pos": "noun",
+    "vi": "lịch trình, thời khóa biểu",
+    "en": "A plan showing when things will happen.",
+    "example": "Have you got your class schedule yet?"
+  },
+  {
+    "part": "listening-3",
+    "term": "strategy",
+    "pos": "noun",
+    "vi": "chiến lược, cách tiếp cận",
+    "en": "A plan for achieving something.",
+    "example": "Have you got any special strategy for listening to lectures?"
+  },
+  {
+    "part": "listening-3",
+    "term": "skim",
+    "pos": "verb",
+    "vi": "đọc lướt",
+    "en": "To read something quickly to get the main ideas.",
+    "example": "My approach is to skim the book first to see what's important and what isn't."
+  },
+  {
+    "part": "listening-3",
+    "term": "assignment",
+    "pos": "noun",
+    "vi": "bài tập được giao",
+    "en": "A piece of work given to a student to do.",
+    "example": "Have you been given any writing assignments yet?"
+  },
+  {
+    "part": "listening-3",
+    "term": "field research",
+    "pos": "noun",
+    "vi": "nghiên cứu thực địa",
+    "en": "Research done in a real-life setting rather than in a laboratory or library.",
+    "example": "I suppose you'll be off to the zoo to do field research..."
+  },
+  {
+    "part": "listening-4",
+    "term": "faculty",
+    "pos": "noun",
+    "vi": "khoa (của trường đại học)",
+    "en": "A department or group of related subjects in a university.",
+    "example": "This is the Physical Education faculty session, and I'm the head of the faculty."
+  },
+  {
+    "part": "listening-4",
+    "term": "entry requirements",
+    "pos": "noun",
+    "vi": "điều kiện đầu vào",
+    "en": "The qualifications you need before you can join a course.",
+    "example": "And the entry requirements if any for those courses."
+  },
+  {
+    "part": "listening-4",
+    "term": "school leaver",
+    "pos": "noun",
+    "vi": "học sinh vừa tốt nghiệp phổ thông",
+    "en": "A young person who has just finished school.",
+    "example": "Some of these courses are open to school leavers"
+  },
+  {
+    "part": "listening-4",
+    "term": "certificate",
+    "pos": "noun",
+    "vi": "chứng chỉ",
+    "en": "An official document showing you have completed a course or passed a test.",
+    "example": "is offered as a 6 month certificate course"
+  },
+  {
+    "part": "listening-4",
+    "term": "diploma",
+    "pos": "noun",
+    "vi": "văn bằng, bằng cấp (cao hơn chứng chỉ)",
+    "en": "A qualification awarded after finishing a course of study.",
+    "example": "we offer a one year diploma course"
+  },
+  {
+    "part": "listening-4",
+    "term": "prerequisite",
+    "pos": "noun",
+    "vi": "điều kiện tiên quyết",
+    "en": "Something that must exist or be done before something else.",
+    "example": "But we do not insist on any prerequisites for this course."
+  },
+  {
+    "part": "listening-4",
+    "term": "vocational",
+    "pos": "adjective",
+    "vi": "hướng nghiệp, dạy nghề",
+    "en": "Teaching the practical skills needed for a particular job.",
+    "example": "Remember that this is a vocational training institute."
+  },
+  {
+    "part": "listening-4",
+    "term": "motivation",
+    "pos": "noun",
+    "vi": "động lực",
+    "en": "The reason or drive that makes someone want to do something.",
+    "example": "They do this by improving motivation and concentration"
+  },
+  {
+    "part": "listening-4",
+    "term": "stress management",
+    "pos": "noun",
+    "vi": "quản lý căng thẳng",
+    "en": "Methods for controlling and reducing stress.",
+    "example": "or assisting with stress management."
+  },
+  {
+    "part": "listening-4",
+    "term": "posture",
+    "pos": "noun",
+    "vi": "tư thế cơ thể",
+    "en": "The way you hold your body when standing or sitting.",
+    "example": "PE teachers help the development of coordination, balance, posture and flexibility"
+  },
+  {
+    "part": "reading-1",
+    "term": "reclaim",
+    "pos": "verb",
+    "vi": "khai hoang, lấn biển (tạo đất mới)",
+    "en": "To make land from sea or wasteland so it can be used.",
+    "example": "The usual way to reclaim land is to pile sand rock on to the seabed."
+  },
+  {
+    "part": "reading-1",
+    "term": "delta",
+    "pos": "noun",
+    "vi": "đồng bằng châu thổ",
+    "en": "A low area of land formed where a river splits and enters the sea.",
+    "example": "River deltas are difficult places for map makers."
+  },
+  {
+    "part": "reading-1",
+    "term": "hectare",
+    "pos": "noun",
+    "vi": "héc-ta",
+    "en": "A unit of land area equal to 10,000 square metres.",
+    "example": "An island six kilometres long and with a total area of 1248 hectares is being created there."
+  },
+  {
+    "part": "reading-1",
+    "term": "breakneck",
+    "pos": "adjective",
+    "vi": "cực nhanh, chóng mặt",
+    "en": "Dangerously or extremely fast.",
+    "example": "the airport itself will be built at a similarly breakneck pace."
+  },
+  {
+    "part": "reading-1",
+    "term": "settlement",
+    "pos": "noun",
+    "vi": "sự lún (của đất, công trình)",
+    "en": "The slow sinking of ground or a structure over time.",
+    "example": "The Kansai builders recognised that settlement was inevitable."
+  },
+  {
+    "part": "reading-1",
+    "term": "buckle",
+    "pos": "verb",
+    "vi": "cong vênh, oằn",
+    "en": "To bend or twist out of shape under pressure.",
+    "example": "So buildings, pipes, roads and so on tend to buckle and crack."
+  },
+  {
+    "part": "reading-1",
+    "term": "alluvial",
+    "pos": "adjective",
+    "vi": "(thuộc) phù sa",
+    "en": "Made of sand, silt or mud left by flowing water.",
+    "example": "a seabed that consisted of 20 metres of soft alluvial silt and mud deposits."
+  },
+  {
+    "part": "reading-1",
+    "term": "landfill",
+    "pos": "noun",
+    "vi": "vật liệu đắp, đất đắp",
+    "en": "Earth, rock or waste used to fill in low ground or build up land.",
+    "example": "Sand was driven into the seabed to strengthen it before the landfill was piled on top"
+  },
+  {
+    "part": "reading-1",
+    "term": "outcrop",
+    "pos": "noun",
+    "vi": "mỏm đá lộ thiên",
+    "en": "A part of a rock formation that sticks out above the ground.",
+    "example": "a smaller outcrop called Lam Chau."
+  },
+  {
+    "part": "reading-1",
+    "term": "dredger",
+    "pos": "noun",
+    "vi": "tàu nạo vét",
+    "en": "A ship or machine that digs up mud and sand from the bottom of the water.",
+    "example": "assembled the world's largest fleet of dredgers"
+  },
+  {
+    "part": "reading-1",
+    "term": "consortium",
+    "pos": "noun",
+    "vi": "liên danh, tập đoàn liên kết",
+    "en": "A group of companies that join together for a large project.",
+    "example": "But the consortium that won the contract for the island opted for a more aggressive approach"
+  },
+  {
+    "part": "reading-1",
+    "term": "foundation",
+    "pos": "noun",
+    "vi": "móng, nền móng",
+    "en": "The solid base on which a building or structure is built.",
+    "example": "This provided 70m cubic metres of granite to add to the island's foundations."
+  },
+  {
+    "part": "reading-1",
+    "term": "bolster",
+    "pos": "verb",
+    "vi": "gia cố, củng cố",
+    "en": "To strengthen or support something.",
+    "example": "the new coastline is being bolstered with a formidable twelve kilometres of sea defences."
+  },
+  {
+    "part": "reading-1",
+    "term": "typhoon",
+    "pos": "noun",
+    "vi": "bão nhiệt đới (ở châu Á)",
+    "en": "A violent tropical storm in the western Pacific.",
+    "example": "The brunt of a typhoon will be deflected by the neighbouring island of Lantau"
+  },
+  {
+    "part": "reading-1",
+    "term": "monsoon",
+    "pos": "noun",
+    "vi": "gió mùa, mùa mưa",
+    "en": "A season of very heavy rain in South Asia and East Asia.",
+    "example": "the downpours of the summer monsoon - is also being taken into account."
+  },
+  {
+    "part": "reading-2",
+    "term": "sanitation",
+    "pos": "noun",
+    "vi": "hệ thống vệ sinh (cấp thoát nước, xử lý chất thải)",
+    "en": "Systems that keep places clean and healthy, such as drains and sewage disposal.",
+    "example": "there was an emphasis on providing clean water, improved sanitation and housing."
+  },
+  {
+    "part": "reading-2",
+    "term": "holistically",
+    "pos": "adverb",
+    "vi": "một cách toàn diện",
+    "en": "Considering the whole of something rather than only its parts.",
+    "example": "Health and the person were seen more holistically (mind / body / spirit)"
+  },
+  {
+    "part": "reading-2",
+    "term": "health promotion",
+    "pos": "noun",
+    "vi": "nâng cao sức khỏe cộng đồng",
+    "en": "Activities that help people improve and look after their health.",
+    "example": "health promotion programs and policies which would help people maintain healthy behaviours and lifestyles."
+  },
+  {
+    "part": "reading-2",
+    "term": "endorse",
+    "pos": "verb",
+    "vi": "tán thành, ủng hộ chính thức",
+    "en": "To publicly say that you support or approve of something.",
+    "example": "The broad socio-ecological view of health was endorsed at the first International Conference of Health Promotion"
+  },
+  {
+    "part": "reading-2",
+    "term": "sustainable",
+    "pos": "adjective",
+    "vi": "bền vững",
+    "en": "Able to continue without using up resources or harming the environment.",
+    "example": "a stable eco-system, sustainable resources, social justice and equity."
+  },
+  {
+    "part": "reading-2",
+    "term": "urbanisation",
+    "pos": "noun",
+    "vi": "đô thị hóa",
+    "en": "The growth of towns and cities as more people move into them.",
+    "example": "issues such as poverty, pollution, urbanisation, natural resource depletion, social alienation and poor working conditions."
+  },
+  {
+    "part": "reading-2",
+    "term": "depletion",
+    "pos": "noun",
+    "vi": "sự cạn kiệt",
+    "en": "The reduction of something until little is left.",
+    "example": "natural resource depletion, social alienation and poor working conditions."
+  },
+  {
+    "part": "reading-2",
+    "term": "interdependent",
+    "pos": "adjective",
+    "vi": "phụ thuộc lẫn nhau",
+    "en": "Depending on each other.",
+    "example": "Rather, they are interacting and interdependent"
+  },
+  {
+    "part": "reading-2",
+    "term": "charter",
+    "pos": "noun",
+    "vi": "hiến chương",
+    "en": "A formal written statement of principles or aims.",
+    "example": "a charter was developed which outlined new directions for health promotion"
+  },
+  {
+    "part": "reading-3",
+    "term": "eminent",
+    "pos": "adjective",
+    "vi": "lỗi lạc, kiệt xuất",
+    "en": "Famous and respected, especially in a profession.",
+    "example": "One of the most eminent of psychologists, Clark Hull"
+  },
+  {
+    "part": "reading-3",
+    "term": "deductive reasoning",
+    "pos": "noun",
+    "vi": "suy luận diễn dịch",
+    "en": "Reaching a conclusion by logic from facts or rules already known.",
+    "example": "So the Kendlers concluded that they were incapable of deductive reasoning."
+  },
+  {
+    "part": "reading-3",
+    "term": "integrate",
+    "pos": "verb",
+    "vi": "kết hợp, tích hợp (các bước lại với nhau)",
+    "en": "To combine separate parts so they work together.",
+    "example": "But they did not for the most part 'integrate', to use the Kendlers' terminology."
+  },
+  {
+    "part": "reading-3",
+    "term": "analogous",
+    "pos": "adjective",
+    "vi": "tương tự, tương đồng",
+    "en": "Similar in a way that allows comparison.",
+    "example": "a task was devised which was strictly analogous to the Kendlers' one"
+  },
+  {
+    "part": "reading-3",
+    "term": "inferential",
+    "pos": "adjective",
+    "vi": "(thuộc) suy luận, suy ra",
+    "en": "Based on drawing conclusions from evidence.",
+    "example": "the difficulty lies not in the inferential processes which the task demands"
+  },
+  {
+    "part": "reading-3",
+    "term": "perplexing",
+    "pos": "adjective",
+    "vi": "gây bối rối, khó hiểu",
+    "en": "Confusing and difficult to understand.",
+    "example": "certain perplexing features of the apparatus and the procedure."
+  },
+  {
+    "part": "reading-3",
+    "term": "apparatus",
+    "pos": "noun",
+    "vi": "thiết bị, dụng cụ thí nghiệm",
+    "en": "The equipment used for a particular purpose.",
+    "example": "children experience very real difficulty when faced with the Kendler apparatus"
+  },
+  {
+    "part": "reading-3",
+    "term": "equivalence",
+    "pos": "noun",
+    "vi": "sự tương đương",
+    "en": "The state of being equal in value or function.",
+    "example": "Hewson made the functional equivalence of different marbles clear by playing a 'swapping game' with the children."
+  },
+  {
+    "part": "writing-1",
+    "term": "consumer durables",
+    "pos": "noun",
+    "vi": "hàng tiêu dùng lâu bền",
+    "en": "Household goods that last a long time, such as fridges and telephones.",
+    "example": "The table below shows the consumer durables (telephone, refrigerator, etc.) owned in Britain from 1972 to 1983."
+  },
+  {
+    "part": "writing-2",
+    "term": "emphasise",
+    "pos": "verb",
+    "vi": "nhấn mạnh, coi trọng",
+    "en": "To give special importance to something.",
+    "example": "Fatherhood ought to be emphasised as much as motherhood."
+  },
+  {
+    "part": "writing-2",
+    "term": "solely",
+    "pos": "adverb",
+    "vi": "chỉ riêng, duy nhất",
+    "en": "Only, and no one or nothing else.",
+    "example": "The idea that women are solely responsible for deciding whether or not to have babies"
+  },
+  {
+    "part": "writing-2",
+    "term": "tokenism",
+    "pos": "noun",
+    "vi": "chủ nghĩa hình thức (làm cho có lệ)",
+    "en": "Making only a small, symbolic effort to appear fair.",
+    "example": "Fatherhood deserves equal emphasis not as tokenism"
+  }
+]

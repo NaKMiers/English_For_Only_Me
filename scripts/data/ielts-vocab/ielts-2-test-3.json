@@ -1,0 +1,562 @@
+[
+  {
+    "part": "listening-1",
+    "term": "market research",
+    "pos": "noun",
+    "vi": "nghiên cứu thị trường",
+    "en": "Collecting information about what customers want or think.",
+    "example": "We're doing some market research for a new television channel starting in 2 years' time."
+  },
+  {
+    "part": "listening-1",
+    "term": "unwind",
+    "pos": "verb",
+    "vi": "thư giãn, xả stress",
+    "en": "To relax after a period of work or worry.",
+    "example": "it probably just helps me relax and unwind."
+  },
+  {
+    "part": "listening-1",
+    "term": "bulletin",
+    "pos": "noun",
+    "vi": "bản tin",
+    "en": "A short news report on television or radio.",
+    "example": "Some news bulletins, but I also really like to put my feet up with some of the old comedy shows."
+  },
+  {
+    "part": "listening-1",
+    "term": "factual",
+    "pos": "adjective",
+    "vi": "mang tính thông tin, dựa trên sự thật",
+    "en": "Based on real facts rather than fiction.",
+    "example": "I certainly don't think we need any more factual programs like news and documentaries."
+  },
+  {
+    "part": "listening-1",
+    "term": "in the same vein",
+    "pos": "phrase",
+    "vi": "cùng hướng đó, tương tự như vậy",
+    "en": "In a similar style or on a similar subject.",
+    "example": "And in the same vein, perhaps more for younger viewers"
+  },
+  {
+    "part": "listening-1",
+    "term": "fussy",
+    "pos": "adjective",
+    "vi": "khó tính, kén chọn",
+    "en": "Hard to please and careful about small details.",
+    "example": "People are very fussy these days about that."
+  },
+  {
+    "part": "listening-1",
+    "term": "commercial",
+    "pos": "adjective",
+    "vi": "thương mại (có quảng cáo để kiếm tiền)",
+    "en": "Run to make a profit, for example by showing adverts.",
+    "example": "This will be a commercial channel of course"
+  },
+  {
+    "part": "listening-1",
+    "term": "tolerable",
+    "pos": "adjective",
+    "vi": "có thể chấp nhận được",
+    "en": "Acceptable, even if not ideal.",
+    "example": "how often do you think it is tolerable to have adverts?"
+  },
+  {
+    "part": "listening-1",
+    "term": "promotion",
+    "pos": "noun",
+    "vi": "chương trình quảng bá",
+    "en": "An activity to advertise a product or service.",
+    "example": "would you be willing to attend any of our special promotions for the new channel?"
+  },
+  {
+    "part": "listening-2",
+    "term": "welfare officer",
+    "pos": "noun",
+    "vi": "cán bộ phúc lợi (sinh viên)",
+    "en": "A person whose job is to look after the well-being of students.",
+    "example": "I'm your assistant welfare officer."
+  },
+  {
+    "part": "listening-2",
+    "term": "student union",
+    "pos": "noun",
+    "vi": "hội sinh viên",
+    "en": "An organisation run by students that provides services and events.",
+    "example": "the Student Union building is the main center of social life here"
+  },
+  {
+    "part": "listening-2",
+    "term": "fundraising",
+    "pos": "noun",
+    "vi": "gây quỹ",
+    "en": "Collecting money for a cause or charity.",
+    "example": "Many of these events are fundraising activities for charities"
+  },
+  {
+    "part": "listening-2",
+    "term": "charter flight",
+    "pos": "noun",
+    "vi": "chuyến bay thuê chuyến",
+    "en": "A flight booked for a special group, often cheaper than a regular one.",
+    "example": "coaches to London, or inexpensive charter flights."
+  },
+  {
+    "part": "listening-2",
+    "term": "grant",
+    "pos": "noun",
+    "vi": "học bổng, tiền trợ cấp",
+    "en": "Money given for a particular purpose, such as study.",
+    "example": "offering help with financial matters, uh, such as grants."
+  },
+  {
+    "part": "listening-2",
+    "term": "counselling",
+    "pos": "noun",
+    "vi": "tư vấn tâm lý",
+    "en": "Professional advice about personal problems.",
+    "example": "which also has an excellent counseling center."
+  },
+  {
+    "part": "listening-2",
+    "term": "on the outskirts",
+    "pos": "phrase",
+    "vi": "ở vùng ven, ngoại ô",
+    "en": "In the outer area of a town or city.",
+    "example": "That's on the outskirts at a place called Renton."
+  },
+  {
+    "part": "listening-2",
+    "term": "ice rink",
+    "pos": "noun",
+    "vi": "sân trượt băng",
+    "en": "A large indoor or outdoor area of ice for skating.",
+    "example": "has got an ice rink."
+  },
+  {
+    "part": "listening-3",
+    "term": "dissertation",
+    "pos": "noun",
+    "vi": "luận văn",
+    "en": "A long piece of academic writing done for a university degree.",
+    "example": "you're looking forward to writing your dissertation."
+  },
+  {
+    "part": "listening-3",
+    "term": "milestone",
+    "pos": "noun",
+    "vi": "cột mốc",
+    "en": "An important stage in a project.",
+    "example": "Requirements, milestones, who to see when you need help."
+  },
+  {
+    "part": "listening-3",
+    "term": "tutor",
+    "pos": "noun",
+    "vi": "giáo viên hướng dẫn, gia sư",
+    "en": "A university teacher who guides a small group of students.",
+    "example": "you should see your course tutor to agree on your final title"
+  },
+  {
+    "part": "listening-3",
+    "term": "research methods",
+    "pos": "noun",
+    "vi": "phương pháp nghiên cứu",
+    "en": "The techniques used to collect and analyse information in a study.",
+    "example": "a special program running on research methods for anyone who wants some extra help on that."
+  },
+  {
+    "part": "listening-3",
+    "term": "bibliography",
+    "pos": "noun",
+    "vi": "danh mục tài liệu tham khảo",
+    "en": "A list of books and articles used in a piece of research.",
+    "example": "you've got to work on your basic bibliography."
+  },
+  {
+    "part": "listening-3",
+    "term": "get a move on",
+    "pos": "phrase",
+    "vi": "nhanh tay lên, khẩn trương lên",
+    "en": "To hurry up.",
+    "example": "so you'd better get a move on on that."
+  },
+  {
+    "part": "listening-3",
+    "term": "questionnaire",
+    "pos": "noun",
+    "vi": "bảng câu hỏi khảo sát",
+    "en": "A written list of questions given to many people to collect information.",
+    "example": "they did a lot of research using questionnaires."
+  },
+  {
+    "part": "listening-3",
+    "term": "to be frank",
+    "pos": "phrase",
+    "vi": "nói thẳng ra thì",
+    "en": "Used to introduce an honest, direct opinion.",
+    "example": "but to be frank, they tell you very little else."
+  },
+  {
+    "part": "listening-4",
+    "term": "aridity",
+    "pos": "noun",
+    "vi": "sự khô cằn",
+    "en": "The state of being very dry, with little rain.",
+    "example": "dryness or aridity as it is generally called by geographers"
+  },
+  {
+    "part": "listening-4",
+    "term": "evaporation",
+    "pos": "noun",
+    "vi": "sự bay hơi",
+    "en": "The process by which liquid turns into vapour.",
+    "example": "give Australia an extremely high rate of evaporation"
+  },
+  {
+    "part": "listening-4",
+    "term": "searing",
+    "pos": "adjective",
+    "vi": "nóng rát, thiêu đốt",
+    "en": "Extremely hot.",
+    "example": "Long hours of hot sunshine and searing winds"
+  },
+  {
+    "part": "listening-4",
+    "term": "penetrate",
+    "pos": "verb",
+    "vi": "thấm vào, xuyên qua",
+    "en": "To pass into or through something.",
+    "example": "some rainfall barely penetrates the soil."
+  },
+  {
+    "part": "listening-4",
+    "term": "seep",
+    "pos": "verb",
+    "vi": "thấm, rỉ qua",
+    "en": "To flow slowly through small gaps.",
+    "example": "rainwater seeps quickly through sandy soils and into the rock below."
+  },
+  {
+    "part": "listening-4",
+    "term": "subterranean",
+    "pos": "adjective",
+    "vi": "ngầm dưới đất",
+    "en": "Existing under the surface of the ground.",
+    "example": "Water from these subterranean lakes can be pumped to the surface"
+  },
+  {
+    "part": "listening-4",
+    "term": "irrigation",
+    "pos": "noun",
+    "vi": "việc tưới tiêu",
+    "en": "Supplying water to land to help crops grow.",
+    "example": "too salty to be used for human consumption, or for the irrigation of crops."
+  },
+  {
+    "part": "listening-4",
+    "term": "reservoir",
+    "pos": "noun",
+    "vi": "hồ chứa nước",
+    "en": "A natural or artificial place where water is stored.",
+    "example": "can be kept in underground reservoirs for a very long time."
+  },
+  {
+    "part": "listening-4",
+    "term": "spring",
+    "pos": "noun",
+    "vi": "mạch nước, suối",
+    "en": "A place where water rises naturally out of the ground.",
+    "example": "Water from these underground reservoirs bubbles to the surface as springs"
+  },
+  {
+    "part": "listening-4",
+    "term": "harness",
+    "pos": "verb",
+    "vi": "khai thác, tận dụng (nguồn năng lượng)",
+    "en": "To control and use a natural force to produce power.",
+    "example": "the harnessing of the force of gravity, for the generation of electricity."
+  },
+  {
+    "part": "reading-1",
+    "term": "absenteeism",
+    "pos": "noun",
+    "vi": "tình trạng nghỉ làm thường xuyên",
+    "en": "Regularly staying away from work without good reason.",
+    "example": "The cost of absenteeism in Australia has been put at 1.8 million hours per day"
+  },
+  {
+    "part": "reading-1",
+    "term": "longitudinal",
+    "pos": "adjective",
+    "vi": "theo dõi dài hạn",
+    "en": "Carried out over a long period of time.",
+    "example": "In another longitudinal study of nurses working in two Canadian hospitals"
+  },
+  {
+    "part": "reading-1",
+    "term": "prevalent",
+    "pos": "adjective",
+    "vi": "phổ biến, thịnh hành",
+    "en": "Common or widespread at a particular time or place.",
+    "example": "A prevalent attitude amongst many nurses in the group selected for study"
+  },
+  {
+    "part": "reading-1",
+    "term": "entitlement",
+    "pos": "noun",
+    "vi": "quyền lợi được hưởng",
+    "en": "The right to have or receive something.",
+    "example": "not utilising the paid sick leave entitlement allowed them in their employment conditions."
+  },
+  {
+    "part": "reading-1",
+    "term": "bereavement",
+    "pos": "noun",
+    "vi": "sự mất người thân",
+    "en": "The death of a close family member or friend.",
+    "example": "illness in family, family social function, work to do at home and bereavement."
+  },
+  {
+    "part": "reading-1",
+    "term": "complementary",
+    "pos": "adjective",
+    "vi": "bổ trợ cho nhau",
+    "en": "Working well together by adding to each other.",
+    "example": "three different, yet potentially complementary, strategies over 18 months."
+  },
+  {
+    "part": "reading-1",
+    "term": "incentive",
+    "pos": "noun",
+    "vi": "sự khuyến khích, phần thưởng khuyến khích",
+    "en": "Something that encourages people to act in a certain way.",
+    "example": "Strategy 1: Non-financial (material) incentives."
+  },
+  {
+    "part": "reading-1",
+    "term": "roster",
+    "pos": "noun",
+    "vi": "bảng phân ca làm việc",
+    "en": "A list showing when each person has to work.",
+    "example": "At the end of each roster period, the ward with the lowest absence rate would win the prize."
+  },
+  {
+    "part": "reading-1",
+    "term": "momentum",
+    "pos": "noun",
+    "vi": "đà, động lực tiến triển",
+    "en": "The force or speed that keeps a process moving forward.",
+    "example": "this contributed to the program's losing momentum and finally ceasing."
+  },
+  {
+    "part": "reading-1",
+    "term": "per se",
+    "pos": "phrase",
+    "vi": "tự thân, bản thân nó",
+    "en": "By itself; in itself.",
+    "example": "no single strategy or combination of strategies has had a significant impact on absenteeism per se."
+  },
+  {
+    "part": "reading-1",
+    "term": "contention",
+    "pos": "noun",
+    "vi": "quan điểm, luận điểm",
+    "en": "A strongly held opinion or claim.",
+    "example": "it is our contention that the strategies were not in vain."
+  },
+  {
+    "part": "reading-2",
+    "term": "congestion",
+    "pos": "noun",
+    "vi": "tắc nghẽn (giao thông)",
+    "en": "A situation in which roads are blocked with too much traffic.",
+    "example": "environmental pollution, depletion of oil resources, traffic congestion and safety."
+  },
+  {
+    "part": "reading-2",
+    "term": "emission",
+    "pos": "noun",
+    "vi": "khí thải",
+    "en": "A gas or other substance sent out into the air.",
+    "example": "While emissions from new cars are far less harmful than they used to be"
+  },
+  {
+    "part": "reading-2",
+    "term": "afflict",
+    "pos": "verb",
+    "vi": "gây khổ sở, hành hạ",
+    "en": "To cause suffering or trouble to someone or something.",
+    "example": "Even Moscow has joined the list of capitals afflicted by congestion and traffic fumes."
+  },
+  {
+    "part": "reading-2",
+    "term": "freight",
+    "pos": "noun",
+    "vi": "hàng hóa vận chuyển",
+    "en": "Goods carried by road, rail, sea or air.",
+    "example": "Heavy freight could only be carried by water or rail."
+  },
+  {
+    "part": "reading-2",
+    "term": "revert",
+    "pos": "verb",
+    "vi": "quay trở lại (trạng thái cũ)",
+    "en": "To go back to an earlier state or way of doing things.",
+    "example": "Clearly the world cannot revert to the horse-drawn wagon."
+  },
+  {
+    "part": "reading-2",
+    "term": "urban sprawl",
+    "pos": "noun",
+    "vi": "sự đô thị hóa lan tràn",
+    "en": "The uncontrolled spread of a city into the countryside.",
+    "example": "Urban sprawl means that life without a car is next to impossible."
+  },
+  {
+    "part": "reading-2",
+    "term": "mass transit",
+    "pos": "noun",
+    "vi": "giao thông công cộng khối lượng lớn",
+    "en": "Public transport systems that carry large numbers of people.",
+    "example": "to give up private cars in favour of mass transit."
+  },
+  {
+    "part": "reading-2",
+    "term": "hybrid",
+    "pos": "adjective",
+    "vi": "lai (dùng kết hợp xăng và điện)",
+    "en": "Combining two different types, such as a petrol engine and an electric motor.",
+    "example": "larger hybrid or lean burn cars for use elsewhere."
+  },
+  {
+    "part": "reading-2",
+    "term": "predominate",
+    "pos": "verb",
+    "vi": "chiếm ưu thế",
+    "en": "To be the main or most common thing.",
+    "example": "old cars and old technologies continue to predominate."
+  },
+  {
+    "part": "reading-3",
+    "term": "biometrics",
+    "pos": "noun",
+    "vi": "công nghệ sinh trắc học",
+    "en": "Technology that identifies people by body features such as fingerprints.",
+    "example": "All of these are applications of biometrics"
+  },
+  {
+    "part": "reading-3",
+    "term": "authenticate",
+    "pos": "verb",
+    "vi": "xác thực",
+    "en": "To prove that someone or something is genuine.",
+    "example": "their identities must be authenticated by an electronic hand scanner."
+  },
+  {
+    "part": "reading-3",
+    "term": "mushroom",
+    "pos": "verb",
+    "vi": "tăng nhanh, bùng nổ",
+    "en": "To grow or increase very quickly.",
+    "example": "that grand total is expected to mushroom to at least $50 million by 1999."
+  },
+  {
+    "part": "reading-3",
+    "term": "digitised",
+    "pos": "adjective",
+    "vi": "được số hóa",
+    "en": "Converted into a form that a computer can store.",
+    "example": "Biometric security systems operate by storing a digitised record of some unique human feature."
+  },
+  {
+    "part": "reading-3",
+    "term": "deploy",
+    "pos": "verb",
+    "vi": "triển khai, đưa vào sử dụng",
+    "en": "To put something into use in a planned way.",
+    "example": "Fingerprint scanners are currently the most widely deployed type of biometric application"
+  },
+  {
+    "part": "reading-3",
+    "term": "law-enforcement",
+    "pos": "adjective",
+    "vi": "thực thi pháp luật (cảnh sát)",
+    "en": "Connected with making sure that laws are obeyed.",
+    "example": "thanks to their growing use over the last 20 years by law-enforcement agencies."
+  },
+  {
+    "part": "reading-3",
+    "term": "verification",
+    "pos": "noun",
+    "vi": "sự xác minh",
+    "en": "The act of checking that something is true or correct.",
+    "example": "Sixteen American states now use biometric fingerprint verification systems"
+  },
+  {
+    "part": "reading-3",
+    "term": "viable",
+    "pos": "adjective",
+    "vi": "khả thi",
+    "en": "Able to work successfully or make a profit.",
+    "example": "for the prices to drop sufficiently to make them commercially viable."
+  },
+  {
+    "part": "reading-3",
+    "term": "thorny",
+    "pos": "adjective",
+    "vi": "gai góc, nan giải",
+    "en": "Difficult and causing disagreement.",
+    "example": "Not surprisingly, biometrics raise thorny questions about privacy"
+  },
+  {
+    "part": "reading-3",
+    "term": "stigmatise",
+    "pos": "verb",
+    "vi": "gán cho tiếng xấu, kỳ thị",
+    "en": "To treat someone as if they were shameful.",
+    "example": "it would stigmatise recipients by forcing them to submit to a procedure widely identified with criminals."
+  },
+  {
+    "part": "writing-2",
+    "term": "capital punishment",
+    "pos": "noun",
+    "vi": "án tử hình",
+    "en": "The legal killing of a person as a punishment for a serious crime.",
+    "example": "Without capital punishment (the death penalty) our lives are less secure and crimes of violence increase."
+  },
+  {
+    "part": "writing-2",
+    "term": "deter",
+    "pos": "verb",
+    "vi": "ngăn chặn, răn đe",
+    "en": "To make someone decide not to do something by showing the risks.",
+    "example": "ensures public safety by deterring violent crime remains controversial."
+  },
+  {
+    "part": "writing-2",
+    "term": "rehabilitation",
+    "pos": "noun",
+    "vi": "cải tạo, phục hồi (phạm nhân)",
+    "en": "Helping a criminal return to normal life.",
+    "example": "which emphasizes rehabilitation over retribution."
+  },
+  {
+    "part": "writing-2",
+    "term": "retribution",
+    "pos": "noun",
+    "vi": "sự trừng phạt, trả thù",
+    "en": "Punishment given for a wrong that someone has done.",
+    "example": "which emphasizes rehabilitation over retribution."
+  },
+  {
+    "part": "writing-2",
+    "term": "punitive",
+    "pos": "adjective",
+    "vi": "mang tính trừng phạt",
+    "en": "Intended as punishment.",
+    "example": "societal stability stems more from effective governance and social equality than punitive measures."
+  }
+]

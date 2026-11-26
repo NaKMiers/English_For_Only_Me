@@ -1,0 +1,562 @@
+[
+  {
+    "part": "listening-1",
+    "term": "volunteer",
+    "pos": "noun",
+    "vi": "tình nguyện viên",
+    "en": "A person who works without pay to help others.",
+    "example": "I'd like to become a volunteer."
+  },
+  {
+    "part": "listening-1",
+    "term": "coordinate",
+    "pos": "verb",
+    "vi": "điều phối, phối hợp tổ chức",
+    "en": "To organise people or activities so they work well together.",
+    "example": "And I gather you coordinate voluntary work in the village."
+  },
+  {
+    "part": "listening-1",
+    "term": "donate",
+    "pos": "verb",
+    "vi": "quyên góp, tặng",
+    "en": "To give something to help a person or organisation.",
+    "example": "We borrow books from the town library, and individuals also donate them."
+  },
+  {
+    "part": "listening-1",
+    "term": "purpose built",
+    "pos": "adjective",
+    "vi": "được xây dựng chuyên biệt cho mục đích đó",
+    "en": "Designed and built for one particular use.",
+    "example": "Is the library purpose built?"
+  },
+  {
+    "part": "listening-1",
+    "term": "one-off",
+    "pos": "adjective",
+    "vi": "chỉ một lần, đột xuất",
+    "en": "Happening only once, not regularly.",
+    "example": "Yes, we do it as a one-off."
+  },
+  {
+    "part": "listening-1",
+    "term": "weeding",
+    "pos": "noun",
+    "vi": "việc nhổ cỏ dại",
+    "en": "Removing unwanted wild plants from a garden.",
+    "example": "But if you could do some weeding in his garden, that would be wonderful."
+  },
+  {
+    "part": "listening-1",
+    "term": "refreshments",
+    "pos": "noun",
+    "vi": "đồ ăn nhẹ và thức uống",
+    "en": "Light food and drinks provided at an event.",
+    "example": "We need plenty of refreshments for halfway through."
+  },
+  {
+    "part": "listening-1",
+    "term": "bottleneck",
+    "pos": "noun",
+    "vi": "điểm tắc nghẽn (nơi dòng người bị ùn lại)",
+    "en": "A narrow point where movement slows down and people queue.",
+    "example": "It can be quite a bottleneck if everyone arrives at once."
+  },
+  {
+    "part": "listening-1",
+    "term": "right up my street",
+    "pos": "phrase",
+    "vi": "đúng sở trường của tôi",
+    "en": "Exactly the kind of thing you like or are good at.",
+    "example": "Before I retired, I was a graphic designer, so that's right up my street."
+  },
+  {
+    "part": "listening-2",
+    "term": "estate",
+    "pos": "noun",
+    "vi": "điền trang, khu đất lớn của một gia đình",
+    "en": "A large area of land with a big house, owned by one person or family.",
+    "example": "Welcome to Oniton Hall, one of the largest estates in the area."
+  },
+  {
+    "part": "listening-2",
+    "term": "demolish",
+    "pos": "verb",
+    "vi": "phá dỡ, đập bỏ",
+    "en": "To pull down a building completely.",
+    "example": "Generally by adding new rooms. Like the ballroom and conservatory, or by demolishing others."
+  },
+  {
+    "part": "listening-2",
+    "term": "conservatory",
+    "pos": "noun",
+    "vi": "nhà kính (gắn liền với ngôi nhà)",
+    "en": "A room with glass walls and roof, attached to a house.",
+    "example": "Like the ballroom and conservatory, or by demolishing others."
+  },
+  {
+    "part": "listening-2",
+    "term": "talent",
+    "pos": "noun",
+    "vi": "tài năng",
+    "en": "A natural ability to do something well.",
+    "example": "He didn't care whether his guests were rich or poor, as long as they had talent."
+  },
+  {
+    "part": "listening-2",
+    "term": "servant",
+    "pos": "noun",
+    "vi": "người hầu, người giúp việc",
+    "en": "A person employed to work in someone else's house.",
+    "example": "Big houses like Oniton had dozens of servants until the 1920s or 30s."
+  },
+  {
+    "part": "listening-2",
+    "term": "agricultural",
+    "pos": "adjective",
+    "vi": "thuộc nông nghiệp",
+    "en": "Relating to farming.",
+    "example": "So you can really step back into an agricultural past."
+  },
+  {
+    "part": "listening-2",
+    "term": "dairy",
+    "pos": "noun",
+    "vi": "nơi chế biến sữa, xưởng sữa",
+    "en": "A place where milk is processed into products such as cheese.",
+    "example": "Until recently, the dairy was where milk from the cows was turned into cheese."
+  },
+  {
+    "part": "listening-2",
+    "term": "barn",
+    "pos": "noun",
+    "vi": "nhà kho (ở nông trại)",
+    "en": "A large farm building used to store crops or animals.",
+    "example": "The big stone building that dominates the farm is the large barn."
+  },
+  {
+    "part": "listening-2",
+    "term": "plough",
+    "pos": "verb",
+    "vi": "cày (đất)",
+    "en": "To turn over soil with a farm tool before planting.",
+    "example": "These were used in the past to plough the earth, sow seeds, make gates, and much more."
+  },
+  {
+    "part": "listening-2",
+    "term": "groom",
+    "pos": "verb",
+    "vi": "chải lông (cho ngựa, lừa)",
+    "en": "To clean and brush an animal's coat.",
+    "example": "You can groom the donkeys and horses to keep their coats clean."
+  },
+  {
+    "part": "listening-2",
+    "term": "cattle",
+    "pos": "noun",
+    "vi": "gia súc (trâu bò)",
+    "en": "Cows and bulls kept on a farm.",
+    "example": "You'll see types of cattle and sheep that are hardly ever found on farms these days."
+  },
+  {
+    "part": "listening-2",
+    "term": "preserve",
+    "pos": "verb",
+    "vi": "bảo tồn, gìn giữ",
+    "en": "To keep something safe from loss or damage.",
+    "example": "We're helping to preserve them to stop their numbers falling further."
+  },
+  {
+    "part": "listening-3",
+    "term": "assignment",
+    "pos": "noun",
+    "vi": "bài tập lớn, bài được giao",
+    "en": "A piece of work given to a student to complete.",
+    "example": "I've also got some questions about our assignment."
+  },
+  {
+    "part": "listening-3",
+    "term": "imagery",
+    "pos": "noun",
+    "vi": "hình ảnh ẩn dụ, biểu tượng (trong văn học)",
+    "en": "Descriptive language that creates pictures in the mind.",
+    "example": "We'd focus on the poetry and Shakespeare's use of imagery."
+  },
+  {
+    "part": "listening-3",
+    "term": "production",
+    "pos": "noun",
+    "vi": "vở diễn, bản dàn dựng",
+    "en": "A particular staging of a play or show.",
+    "example": "What about the Emporium Theater's production of the play?"
+  },
+  {
+    "part": "listening-3",
+    "term": "set",
+    "pos": "noun",
+    "vi": "bối cảnh sân khấu, phông cảnh",
+    "en": "The scenery and objects on a stage.",
+    "example": "Yeah. What about the set for example?"
+  },
+  {
+    "part": "listening-3",
+    "term": "stunning",
+    "pos": "adjective",
+    "vi": "tuyệt đẹp, gây ấn tượng mạnh",
+    "en": "Extremely impressive or beautiful.",
+    "example": "I think it was visually really stunning."
+  },
+  {
+    "part": "listening-3",
+    "term": "dimly lit",
+    "pos": "adjective",
+    "vi": "thiếu sáng, mờ tối",
+    "en": "Lit by only a weak light.",
+    "example": "Some of the scenes were so dimly lit, it was quite hard to see."
+  },
+  {
+    "part": "listening-3",
+    "term": "contemporary",
+    "pos": "adjective",
+    "vi": "hiện đại, đương đại",
+    "en": "Belonging to the present time.",
+    "example": "I was a bit surprised by the contemporary dress, I must say."
+  },
+  {
+    "part": "listening-3",
+    "term": "conventional",
+    "pos": "adjective",
+    "vi": "truyền thống, theo lối thông thường",
+    "en": "Following traditional or usual methods.",
+    "example": "I had assumed it would be more conventional."
+  },
+  {
+    "part": "listening-3",
+    "term": "deliver",
+    "pos": "verb",
+    "vi": "đọc, diễn đạt (lời thoại)",
+    "en": "To say lines or a speech in a particular way.",
+    "example": "The actors didn't deliver the lines that well."
+  },
+  {
+    "part": "listening-3",
+    "term": "relate to",
+    "pos": "phrase",
+    "vi": "đồng cảm với, liên hệ được với",
+    "en": "To understand and feel connected to something.",
+    "example": "That's something all young people can relate to."
+  },
+  {
+    "part": "listening-3",
+    "term": "intensify",
+    "pos": "verb",
+    "vi": "làm tăng cường, làm mạnh thêm",
+    "en": "To make something stronger or more extreme.",
+    "example": "Yes, that somehow intensified the emotion for me."
+  },
+  {
+    "part": "listening-3",
+    "term": "appeal",
+    "pos": "noun",
+    "vi": "sức hấp dẫn",
+    "en": "The quality that makes people like something.",
+    "example": "What's the reason for his international appeal, do you think?"
+  },
+  {
+    "part": "listening-4",
+    "term": "decline",
+    "pos": "noun",
+    "vi": "sự suy giảm, sự suy tàn",
+    "en": "A gradual fall in number, quality or strength.",
+    "example": "Why some world languages are in decline."
+  },
+  {
+    "part": "listening-4",
+    "term": "millennium",
+    "pos": "noun",
+    "vi": "thiên niên kỷ (1.000 năm)",
+    "en": "A period of one thousand years.",
+    "example": "It's changed very little in the past millennium."
+  },
+  {
+    "part": "listening-4",
+    "term": "predominantly",
+    "pos": "adverb",
+    "vi": "chủ yếu, phần lớn",
+    "en": "Mostly or mainly.",
+    "example": "This world is predominantly English."
+  },
+  {
+    "part": "listening-4",
+    "term": "bilingual",
+    "pos": "adjective",
+    "vi": "song ngữ, nói được hai thứ tiếng",
+    "en": "Able to use two languages well.",
+    "example": "This is a good thing in many respects, because it promotes their bilingual skills."
+  },
+  {
+    "part": "listening-4",
+    "term": "staggering",
+    "pos": "adjective",
+    "vi": "đáng kinh ngạc, choáng váng",
+    "en": "So large or surprising that it is hard to believe.",
+    "example": "But the extent of the influence of English in the virtual world is staggering."
+  },
+  {
+    "part": "listening-4",
+    "term": "mother tongue",
+    "pos": "noun",
+    "vi": "tiếng mẹ đẻ",
+    "en": "The first language a person learns as a child.",
+    "example": "The young generation in Iceland is at risk of losing its mother tongue."
+  },
+  {
+    "part": "listening-4",
+    "term": "drawback",
+    "pos": "noun",
+    "vi": "nhược điểm, điểm bất lợi",
+    "en": "A disadvantage or problem.",
+    "example": "The other drawback of Icelandic is the grammar."
+  },
+  {
+    "part": "listening-4",
+    "term": "allocate",
+    "pos": "verb",
+    "vi": "phân bổ (ngân sách)",
+    "en": "To give out money or resources for a particular purpose.",
+    "example": "Large sums of money are being allocated to a language technology fund."
+  },
+  {
+    "part": "listening-4",
+    "term": "uphill struggle",
+    "pos": "noun",
+    "vi": "cuộc đấu tranh gian nan",
+    "en": "A very difficult task that needs great effort.",
+    "example": "But clearly this is going to be an uphill struggle."
+  },
+  {
+    "part": "listening-4",
+    "term": "inevitable",
+    "pos": "adjective",
+    "vi": "không thể tránh khỏi",
+    "en": "Certain to happen and impossible to avoid.",
+    "example": "It's becoming an inevitable second choice in young people's lives."
+  },
+  {
+    "part": "reading-1",
+    "term": "scroll",
+    "pos": "noun",
+    "vi": "cuộn giấy cổ, cuộn bản thảo",
+    "en": "A long roll of paper or parchment with writing on it.",
+    "example": "Seven of which contained scrolls with writing on them."
+  },
+  {
+    "part": "reading-1",
+    "term": "unearth",
+    "pos": "verb",
+    "vi": "khai quật, đào được",
+    "en": "To find something by digging in the ground.",
+    "example": "Bedouins and archaeologists eventually unearthed tens of thousands of additional scroll fragments."
+  },
+  {
+    "part": "reading-1",
+    "term": "prevailing",
+    "pos": "adjective",
+    "vi": "phổ biến nhất, đang được chấp nhận rộng rãi",
+    "en": "Most common or widely accepted at a particular time.",
+    "example": "According to the prevailing theory, they are the work of a population that inhabited the area."
+  },
+  {
+    "part": "reading-1",
+    "term": "devout",
+    "pos": "adjective",
+    "vi": "sùng đạo, mộ đạo",
+    "en": "Deeply religious.",
+    "example": "A group called the Essenes, a devout Jewish sect."
+  },
+  {
+    "part": "reading-1",
+    "term": "parchment",
+    "pos": "noun",
+    "vi": "giấy da (làm từ da động vật)",
+    "en": "Material for writing made from animal skin.",
+    "example": "The scrolls themselves are nearly all made of either parchment (animal skin) or an early form of paper."
+  },
+  {
+    "part": "reading-1",
+    "term": "chiselled",
+    "pos": "adjective",
+    "vi": "được đục, khắc bằng đục",
+    "en": "Cut into a hard material with a sharp tool.",
+    "example": "This curious document features letters chiselled onto metal."
+  },
+  {
+    "part": "reading-1",
+    "term": "hoard",
+    "pos": "noun",
+    "vi": "kho báu giấu kín, kho tích trữ",
+    "en": "A secret store of valuable things.",
+    "example": "None of these hoards have been recovered."
+  },
+  {
+    "part": "reading-1",
+    "term": "pillage",
+    "pos": "verb",
+    "vi": "cướp bóc, tàn phá",
+    "en": "To steal goods violently during a war.",
+    "example": "Possibly because the Romans pillaged Judea during the first century CE."
+  },
+  {
+    "part": "reading-1",
+    "term": "decipher",
+    "pos": "verb",
+    "vi": "giải mã",
+    "en": "To work out the meaning of something written in code or hard to read.",
+    "example": "Researchers from the University of Haifa restored and deciphered one of the last untranslated scrolls."
+  },
+  {
+    "part": "reading-2",
+    "term": "domesticate",
+    "pos": "verb",
+    "vi": "thuần hóa, trồng trọt hóa (cây dại)",
+    "en": "To change a wild plant or animal so people can grow or keep it.",
+    "example": "It took at least 3,000 years for humans to learn how to domesticate the wild tomato."
+  },
+  {
+    "part": "reading-2",
+    "term": "cultivate",
+    "pos": "verb",
+    "vi": "canh tác, trồng trọt",
+    "en": "To grow plants for food or other use.",
+    "example": "Learn how to domesticate the wild tomato and cultivate it for food."
+  },
+  {
+    "part": "reading-2",
+    "term": "genome",
+    "pos": "noun",
+    "vi": "bộ gen",
+    "en": "The complete set of genetic material of a living thing.",
+    "example": "This approach relies on the revolutionary CRISPR genome editing technique."
+  },
+  {
+    "part": "reading-2",
+    "term": "resistant",
+    "pos": "adjective",
+    "vi": "kháng (bệnh), có sức chống chịu",
+    "en": "Not harmed by something such as a disease.",
+    "example": "This fast-track domestication could help make the world's food supply healthier and far more resistant to diseases."
+  },
+  {
+    "part": "reading-2",
+    "term": "mutation",
+    "pos": "noun",
+    "vi": "đột biến (gen)",
+    "en": "A change in the genetic structure of a living thing.",
+    "example": "Selecting and breeding plants with mutations in their genetic structure."
+  },
+  {
+    "part": "reading-2",
+    "term": "trait",
+    "pos": "noun",
+    "vi": "đặc điểm, đặc tính",
+    "en": "A particular quality or characteristic.",
+    "example": "Which resulted in desirable traits such as larger fruit."
+  },
+  {
+    "part": "reading-2",
+    "term": "aromatic",
+    "pos": "adjective",
+    "vi": "thơm, có hương vị mạnh",
+    "en": "Having a strong, pleasant smell.",
+    "example": "A little bit strong. And very aromatic."
+  },
+  {
+    "part": "reading-2",
+    "term": "sprawling",
+    "pos": "adjective",
+    "vi": "mọc lan, lan rộng bừa bãi",
+    "en": "Spreading out in an untidy way.",
+    "example": "The plant has a sprawling growth habit."
+  },
+  {
+    "part": "reading-2",
+    "term": "staple",
+    "pos": "adjective",
+    "vi": "chính, thiết yếu (lương thực chủ yếu)",
+    "en": "Forming the main part of what people regularly eat.",
+    "example": "That they become new staple crops."
+  },
+  {
+    "part": "reading-3",
+    "term": "insight",
+    "pos": "noun",
+    "vi": "sự thấu hiểu, ý tưởng đột phá",
+    "en": "A sudden clear understanding of something.",
+    "example": "Conventional wisdom also places great weight on insight in promoting breakthrough scientific achievements."
+  },
+  {
+    "part": "reading-3",
+    "term": "predecessor",
+    "pos": "noun",
+    "vi": "người đi trước, tiền nhân",
+    "en": "A person who did a job or work before someone else.",
+    "example": "The efforts of their lesser-known predecessors."
+  },
+  {
+    "part": "reading-3",
+    "term": "trial and error",
+    "pos": "noun",
+    "vi": "thử và sai",
+    "en": "Learning by trying different methods until one works.",
+    "example": "We suggest that innovation is more a process of trial and error."
+  },
+  {
+    "part": "reading-3",
+    "term": "cumulative",
+    "pos": "adjective",
+    "vi": "tích lũy dần",
+    "en": "Growing bit by bit as more is added.",
+    "example": "Recognizes the cumulative nature of scientific progress."
+  },
+  {
+    "part": "reading-3",
+    "term": "postulate",
+    "pos": "verb",
+    "vi": "đưa ra giả thuyết, đặt giả định",
+    "en": "To suggest that something exists or is true as a basis for a theory.",
+    "example": "Who postulated the existence of 'proto-elements' in outer space."
+  },
+  {
+    "part": "reading-3",
+    "term": "fanciful",
+    "pos": "adjective",
+    "vi": "viển vông, thiếu thực tế",
+    "en": "Based on imagination rather than reality.",
+    "example": "Amid his often fanciful theories and wild speculations."
+  },
+  {
+    "part": "reading-3",
+    "term": "serendipity",
+    "pos": "noun",
+    "vi": "sự tình cờ may mắn",
+    "en": "A lucky discovery made by accident.",
+    "example": "Fresh advances can arise from error, misadventure, and also pure serendipity."
+  },
+  {
+    "part": "reading-3",
+    "term": "banal",
+    "pos": "adjective",
+    "vi": "tầm thường, nhàm chán",
+    "en": "Ordinary and lacking originality.",
+    "example": "Far more banal and mechanical forces may be at work."
+  },
+  {
+    "part": "reading-3",
+    "term": "provenance",
+    "pos": "noun",
+    "vi": "nguồn gốc, xuất xứ",
+    "en": "The place or source where something comes from.",
+    "example": "The provenance of the raw material on which the Law of Effect operates."
+  }
+]

@@ -1,0 +1,562 @@
+[
+  {
+    "part": "listening-1",
+    "term": "hall of residence",
+    "pos": "noun",
+    "vi": "ký túc xá (của trường đại học)",
+    "en": "A university building where students live.",
+    "example": "I'd like to try and arrange accommodation in the hall of residence."
+  },
+  {
+    "part": "listening-1",
+    "term": "catering",
+    "pos": "noun",
+    "vi": "việc cung cấp bữa ăn",
+    "en": "The service of providing food and drink.",
+    "example": "And what did you have in mind for catering?"
+  },
+  {
+    "part": "listening-1",
+    "term": "full board",
+    "pos": "noun",
+    "vi": "ăn trọn gói (ba bữa mỗi ngày)",
+    "en": "A stay where all meals are provided.",
+    "example": "Or have all your meals provided, that's full board?"
+  },
+  {
+    "part": "listening-1",
+    "term": "half board",
+    "pos": "noun",
+    "vi": "bao gồm bữa tối (chỉ một bữa chính)",
+    "en": "A stay where only the evening meal is provided.",
+    "example": "You can just have evening meal provided, which is half board."
+  },
+  {
+    "part": "listening-1",
+    "term": "opt for",
+    "pos": "phrase",
+    "vi": "chọn, lựa chọn",
+    "en": "To choose one thing from several possibilities.",
+    "example": "Yes, a lot of students opt for that."
+  },
+  {
+    "part": "listening-1",
+    "term": "bedsit",
+    "pos": "noun",
+    "vi": "phòng ở kiêm phòng ngủ (một phòng có tiện nghi riêng)",
+    "en": "A single room used for both living and sleeping.",
+    "example": "The other alternative is to opt for a single bedsit, which actually has more space and better facilities."
+  },
+  {
+    "part": "listening-1",
+    "term": "grant",
+    "pos": "noun",
+    "vi": "học bổng, tiền trợ cấp",
+    "en": "Money given by an organisation to help pay for study.",
+    "example": "Well, actually my grant is quite generous."
+  },
+  {
+    "part": "listening-1",
+    "term": "mature student",
+    "pos": "noun",
+    "vi": "sinh viên lớn tuổi",
+    "en": "A student who starts studying at an older age than most.",
+    "example": "I'd prefer a hall where there are other mature students, if possible."
+  },
+  {
+    "part": "listening-1",
+    "term": "vacancy",
+    "pos": "noun",
+    "vi": "chỗ trống (phòng còn trống)",
+    "en": "A room or job that is available.",
+    "example": "We tend to have more vacancies in out-of-town halls."
+  },
+  {
+    "part": "listening-2",
+    "term": "accessible",
+    "pos": "adjective",
+    "vi": "có thể vào được, mở cửa tự do",
+    "en": "Possible to enter or reach.",
+    "example": "The common is accessible 24 hours a day."
+  },
+  {
+    "part": "listening-2",
+    "term": "willow",
+    "pos": "noun",
+    "vi": "cây liễu",
+    "en": "A tree with long thin branches that grows near water.",
+    "example": "In the past willows were grown here commercially for basket making."
+  },
+  {
+    "part": "listening-2",
+    "term": "replica",
+    "pos": "noun",
+    "vi": "bản sao, mô hình tái hiện",
+    "en": "A very exact copy of something.",
+    "example": "Longfield has a modern replica of a farm from over 2,000 years ago."
+  },
+  {
+    "part": "listening-2",
+    "term": "herb",
+    "pos": "noun",
+    "vi": "thảo mộc",
+    "en": "A plant used in cooking or medicine.",
+    "example": "On Monday, you can learn about herbs and how they've been used over the centuries."
+  },
+  {
+    "part": "listening-2",
+    "term": "ranger",
+    "pos": "noun",
+    "vi": "kiểm lâm, nhân viên quản lý công viên",
+    "en": "A person whose job is to look after a park or forest.",
+    "example": "You'll need to phone the park ranger a few days ahead."
+  },
+  {
+    "part": "listening-2",
+    "term": "litter",
+    "pos": "noun",
+    "vi": "rác (vứt bừa bãi)",
+    "en": "Rubbish left lying in public places.",
+    "example": "You'll have a choice of all sorts of activities from planting hedges to picking up litter."
+  },
+  {
+    "part": "listening-2",
+    "term": "hide",
+    "pos": "noun",
+    "vi": "chòi quan sát chim",
+    "en": "A small hut from which people watch wild birds without being seen.",
+    "example": "There's a lake in the northwest of the park, with a bird hide to the west of it."
+  },
+  {
+    "part": "listening-3",
+    "term": "self-access centre",
+    "pos": "noun",
+    "vi": "trung tâm tự học",
+    "en": "A room where students study on their own using resources.",
+    "example": "We have to decide what we want to do about this very important resource."
+  },
+  {
+    "part": "listening-3",
+    "term": "component",
+    "pos": "noun",
+    "vi": "thành phần, phần cấu thành",
+    "en": "One of the parts that make up a whole.",
+    "example": "They see it as a pretty major component of their course."
+  },
+  {
+    "part": "listening-3",
+    "term": "relocate",
+    "pos": "verb",
+    "vi": "chuyển địa điểm",
+    "en": "To move something to a new place.",
+    "example": "We could benefit a lot more by relocating the Self-access Center to the main university library building."
+  },
+  {
+    "part": "listening-3",
+    "term": "incorporate",
+    "pos": "verb",
+    "vi": "gộp vào, tích hợp",
+    "en": "To include something as part of a larger whole.",
+    "example": "The library is big enough to incorporate the Self-access Center."
+  },
+  {
+    "part": "listening-3",
+    "term": "cramped",
+    "pos": "adjective",
+    "vi": "chật chội",
+    "en": "Too small and without enough space.",
+    "example": "It is a bit cramped in there at times."
+  },
+  {
+    "part": "listening-3",
+    "term": "supervise",
+    "pos": "verb",
+    "vi": "giám sát, trông coi",
+    "en": "To watch and direct people or activities.",
+    "example": "I'll have to talk to the teachers and make sure we can all reach some agreement on a timetable to supervise the Center after class."
+  },
+  {
+    "part": "listening-3",
+    "term": "misuse",
+    "pos": "verb",
+    "vi": "sử dụng sai mục đích",
+    "en": "To use something in a wrong or dishonest way.",
+    "example": "I really don't want to see that resource misused."
+  },
+  {
+    "part": "listening-4",
+    "term": "characteristic",
+    "pos": "noun",
+    "vi": "đặc điểm",
+    "en": "A typical quality of a person or thing.",
+    "example": "You will realize that the organization you've joined has certain characteristics."
+  },
+  {
+    "part": "listening-4",
+    "term": "classify",
+    "pos": "verb",
+    "vi": "phân loại",
+    "en": "To arrange things into groups by type.",
+    "example": "One well-known writer has classified company cultures by identifying four major types."
+  },
+  {
+    "part": "listening-4",
+    "term": "procedure",
+    "pos": "noun",
+    "vi": "quy trình",
+    "en": "A fixed way of doing something.",
+    "example": "There aren't many rules or procedures."
+  },
+  {
+    "part": "listening-4",
+    "term": "job security",
+    "pos": "noun",
+    "vi": "sự ổn định việc làm",
+    "en": "The certainty that you will keep your job.",
+    "example": "The kind of person who does well in this type of business culture is one who is happy to take risks, and for whom job security is a low priority."
+  },
+  {
+    "part": "listening-4",
+    "term": "overheads",
+    "pos": "noun",
+    "vi": "chi phí cố định (chi phí chung)",
+    "en": "The regular costs of running a business, such as rent.",
+    "example": "Its fixed costs, or overheads as they're known, are low in relation to its output."
+  },
+  {
+    "part": "listening-4",
+    "term": "economies of scale",
+    "pos": "noun",
+    "vi": "lợi thế kinh tế nhờ quy mô",
+    "en": "Lower costs per unit because a business produces a large amount.",
+    "example": "In other words, it can achieve economies of scale."
+  },
+  {
+    "part": "listening-4",
+    "term": "expertise",
+    "pos": "noun",
+    "vi": "chuyên môn, kỹ năng chuyên sâu",
+    "en": "Special skill or knowledge in a subject.",
+    "example": "It is particularly successful in business markets where technical expertise is important."
+  },
+  {
+    "part": "listening-4",
+    "term": "delegate",
+    "pos": "verb",
+    "vi": "giao phó (công việc, quyền hạn)",
+    "en": "To give work or responsibility to someone else.",
+    "example": "Usually top management delegates the projects, the people, and other resources."
+  },
+  {
+    "part": "listening-4",
+    "term": "allocate",
+    "pos": "verb",
+    "vi": "phân bổ",
+    "en": "To give out resources for a particular purpose.",
+    "example": "Once these have been allocated, little day-to-day control is exercised from the top."
+  },
+  {
+    "part": "reading-1",
+    "term": "auditory",
+    "pos": "adjective",
+    "vi": "thuộc thính giác",
+    "en": "Relating to hearing.",
+    "example": "Classroom Noise and Auditory Function Deficits in Children"
+  },
+  {
+    "part": "reading-1",
+    "term": "detrimental",
+    "pos": "adjective",
+    "vi": "có hại",
+    "en": "Causing harm or damage.",
+    "example": "Resulting in a detrimental effect on their ability to learn at school."
+  },
+  {
+    "part": "reading-1",
+    "term": "acoustics",
+    "pos": "noun",
+    "vi": "âm học (đặc tính truyền âm của căn phòng)",
+    "en": "The qualities of a room that decide how well sound is heard in it.",
+    "example": "Poor classroom acoustics."
+  },
+  {
+    "part": "reading-1",
+    "term": "comprehend",
+    "pos": "verb",
+    "vi": "hiểu",
+    "en": "To understand something fully.",
+    "example": "All contribute to the number of children unable to comprehend the teacher's voice."
+  },
+  {
+    "part": "reading-1",
+    "term": "exacerbate",
+    "pos": "verb",
+    "vi": "làm trầm trọng thêm",
+    "en": "To make a bad situation worse.",
+    "example": "Noise in classrooms can only exacerbate their difficulty in comprehending and processing verbal communication."
+  },
+  {
+    "part": "reading-1",
+    "term": "reverberation",
+    "pos": "noun",
+    "vi": "tiếng vang, sự vọng âm",
+    "en": "The echo of sound inside a room.",
+    "example": "To evaluate noise and reverberation control for school rooms."
+  },
+  {
+    "part": "reading-1",
+    "term": "vulnerable",
+    "pos": "adjective",
+    "vi": "dễ bị tổn thương",
+    "en": "Easily harmed or affected.",
+    "example": "Those with a disability that affects their processing of speech and verbal communication could be extremely vulnerable."
+  },
+  {
+    "part": "reading-1",
+    "term": "discrepancy",
+    "pos": "noun",
+    "vi": "sự khác biệt, chênh lệch",
+    "en": "A difference between things that should be the same.",
+    "example": "Autism is considered a neurological and genetic life-long disorder that causes discrepancies in the way information is processed."
+  },
+  {
+    "part": "reading-1",
+    "term": "intrusive",
+    "pos": "adjective",
+    "vi": "gây phiền nhiễu, xâm phạm",
+    "en": "Disturbing a person in an unwelcome way.",
+    "example": "But a child who finds any type of noise in their classroom or learning space intrusive is likely to be adversely affected."
+  },
+  {
+    "part": "reading-1",
+    "term": "embark on",
+    "pos": "phrase",
+    "vi": "bắt tay vào",
+    "en": "To start a new and important activity.",
+    "example": "Has embarked on a wide-ranging consultation process."
+  },
+  {
+    "part": "reading-1",
+    "term": "imperative",
+    "pos": "adjective",
+    "vi": "cấp thiết, bắt buộc",
+    "en": "Extremely important and urgent.",
+    "example": "It is imperative that the needs of these children are taken into account."
+  },
+  {
+    "part": "reading-1",
+    "term": "promulgate",
+    "pos": "verb",
+    "vi": "ban hành, công bố rộng rãi",
+    "en": "To make a law or rule widely known and official.",
+    "example": "In the setting of appropriate international standards to be promulgated in future."
+  },
+  {
+    "part": "reading-2",
+    "term": "transit",
+    "pos": "noun",
+    "vi": "hiện tượng đi qua (hành tinh đi ngang mặt trời)",
+    "en": "The passing of a planet across the face of the Sun.",
+    "example": "This 'transit' of Venus was the first since 6 December 1882."
+  },
+  {
+    "part": "reading-2",
+    "term": "polymath",
+    "pos": "noun",
+    "vi": "người uyên bác, thông thạo nhiều lĩnh vực",
+    "en": "A person who knows a great deal about many subjects.",
+    "example": "And you can put it all down to the extraordinary polymath Edmond Halley."
+  },
+  {
+    "part": "reading-2",
+    "term": "desolate",
+    "pos": "adjective",
+    "vi": "hoang vắng",
+    "en": "Empty, with no people and no comfort.",
+    "example": "From the desolate island of St Helena in the south Pacific."
+  },
+  {
+    "part": "reading-2",
+    "term": "parallax",
+    "pos": "noun",
+    "vi": "thị sai",
+    "en": "The apparent change in position of an object when seen from two different places.",
+    "example": "Teams of astronomers could calculate the parallax angle."
+  },
+  {
+    "part": "reading-2",
+    "term": "orbital",
+    "pos": "adjective",
+    "vi": "thuộc quỹ đạo",
+    "en": "Relating to the path of a body moving around a star or planet.",
+    "example": "The distances of the planets from the Sun governed their orbital speeds."
+  },
+  {
+    "part": "reading-2",
+    "term": "pin down",
+    "pos": "phrase",
+    "vi": "xác định chính xác",
+    "en": "To find out or fix something exactly.",
+    "example": "Inspired by Halley's suggestion of a way to pin down the scale of the Solar System."
+  },
+  {
+    "part": "reading-2",
+    "term": "thwart",
+    "pos": "verb",
+    "vi": "cản trở, làm hỏng kế hoạch",
+    "en": "To stop someone from doing what they planned.",
+    "example": "He was thwarted by the fact that the British were besieging his observation site."
+  },
+  {
+    "part": "reading-2",
+    "term": "undaunted",
+    "pos": "adjective",
+    "vi": "không nản chí",
+    "en": "Not discouraged by difficulty or danger.",
+    "example": "Undaunted, he remained south of the equator."
+  },
+  {
+    "part": "reading-2",
+    "term": "dispiriting",
+    "pos": "adjective",
+    "vi": "làm nản lòng",
+    "en": "Making you lose hope or enthusiasm.",
+    "example": "His view was clouded out at the last moment, a very dispiriting experience."
+  },
+  {
+    "part": "reading-2",
+    "term": "diffraction",
+    "pos": "noun",
+    "vi": "sự nhiễu xạ (ánh sáng)",
+    "en": "The bending of light as it passes an edge.",
+    "example": "This is due to diffraction of light."
+  },
+  {
+    "part": "reading-3",
+    "term": "neuron",
+    "pos": "noun",
+    "vi": "nơ-ron, tế bào thần kinh",
+    "en": "A nerve cell that carries signals in the brain.",
+    "example": "The decisions humans make can be traced to the firing patterns of neurons in specific parts of the brain."
+  },
+  {
+    "part": "reading-3",
+    "term": "iconoclast",
+    "pos": "noun",
+    "vi": "người phá vỡ lối mòn, người dám thách thức quy ước",
+    "en": "A person who attacks accepted beliefs and ways of doing things.",
+    "example": "Briefly, an iconoclast is a person who does something that others say can't be done."
+  },
+  {
+    "part": "reading-3",
+    "term": "naysayer",
+    "pos": "noun",
+    "vi": "người hay phản đối, hay hoài nghi",
+    "en": "A person who always says something will not work.",
+    "example": "Naysayers might suggest that the brain is irrelevant."
+  },
+  {
+    "part": "reading-3",
+    "term": "impede",
+    "pos": "verb",
+    "vi": "cản trở",
+    "en": "To make it difficult for something to happen or progress.",
+    "example": "This is where most people are impeded from being an iconoclast."
+  },
+  {
+    "part": "reading-3",
+    "term": "novelty",
+    "pos": "noun",
+    "vi": "sự mới lạ",
+    "en": "The quality of being new and unusual.",
+    "example": "Novelty releases the perceptual process from the chains of past experience."
+  },
+  {
+    "part": "reading-3",
+    "term": "inhibit",
+    "pos": "verb",
+    "vi": "kìm hãm, ngăn cản",
+    "en": "To prevent something from happening or developing freely.",
+    "example": "The two that inhibit iconoclastic thinking."
+  },
+  {
+    "part": "reading-3",
+    "term": "ridicule",
+    "pos": "noun",
+    "vi": "sự chế nhạo",
+    "en": "Words or actions that make fun of someone.",
+    "example": "Fear of uncertainty and fear of public ridicule."
+  },
+  {
+    "part": "reading-3",
+    "term": "afflict",
+    "pos": "verb",
+    "vi": "gây đau khổ, làm khổ sở",
+    "en": "To cause suffering to someone.",
+    "example": "Fear of public speaking, which everyone must do from time to time, afflicts one-third of the population."
+  },
+  {
+    "part": "reading-3",
+    "term": "empathy",
+    "pos": "noun",
+    "vi": "sự đồng cảm",
+    "en": "The ability to understand how another person feels.",
+    "example": "Understanding what other people think, empathy, fairness, and social identity."
+  },
+  {
+    "part": "reading-3",
+    "term": "alienation",
+    "pos": "noun",
+    "vi": "sự bị xa lánh, cô lập",
+    "en": "The feeling of being separated from other people.",
+    "example": "Iconoclasts face alienation and failure."
+  },
+  {
+    "part": "writing-1",
+    "term": "exponential",
+    "pos": "adjective",
+    "vi": "tăng theo cấp số nhân, rất nhanh",
+    "en": "Becoming faster and faster.",
+    "example": "While mobile calls showed exponential growth."
+  },
+  {
+    "part": "writing-1",
+    "term": "negligible",
+    "pos": "adjective",
+    "vi": "không đáng kể",
+    "en": "So small that it is not worth considering.",
+    "example": "Starting from a negligible amount of roughly 2 billion minutes in 1995."
+  },
+  {
+    "part": "writing-2",
+    "term": "civic",
+    "pos": "adjective",
+    "vi": "thuộc công dân, cộng đồng",
+    "en": "Relating to a town or its people and their duties.",
+    "example": "Structured volunteer programs can cultivate civic responsibility."
+  },
+  {
+    "part": "writing-2",
+    "term": "underprivileged",
+    "pos": "adjective",
+    "vi": "thiệt thòi, có hoàn cảnh khó khăn",
+    "en": "Having less money and fewer opportunities than most people.",
+    "example": "Tutoring underprivileged children in reading programs."
+  },
+  {
+    "part": "writing-2",
+    "term": "resentment",
+    "pos": "noun",
+    "vi": "sự bực bội, oán giận",
+    "en": "A bitter feeling about being treated unfairly.",
+    "example": "Critics rightly argue that forced volunteering might breed resentment."
+  },
+  {
+    "part": "writing-2",
+    "term": "cohesion",
+    "pos": "noun",
+    "vi": "sự gắn kết",
+    "en": "The state of a group sticking together well.",
+    "example": "Mandatory community service becomes an investment in societal cohesion."
+  }
+]

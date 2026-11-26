@@ -1,0 +1,722 @@
+[
+  {
+    "part": "listening-1",
+    "term": "let",
+    "pos": "noun",
+    "vi": "thời hạn thuê nhà",
+    "en": "A period of time for which a property is rented out.",
+    "example": "The minimum let is six months as you probably realize."
+  },
+  {
+    "part": "listening-1",
+    "term": "cloakroom",
+    "pos": "noun",
+    "vi": "phòng để áo khoác",
+    "en": "A small room for coats near the entrance.",
+    "example": "It's got a very large living room and kitchen, bathroom, cloakroom."
+  },
+  {
+    "part": "listening-1",
+    "term": "furnished",
+    "pos": "adjective",
+    "vi": "có sẵn nội thất",
+    "en": "Supplied with furniture.",
+    "example": "it's very well furnished and equipped."
+  },
+  {
+    "part": "listening-1",
+    "term": "cope with",
+    "pos": "phrase",
+    "vi": "xoay xở, đối phó với",
+    "en": "To deal successfully with a difficult task or situation.",
+    "example": "I don't think we could cope with that to be honest."
+  },
+  {
+    "part": "listening-1",
+    "term": "scheme",
+    "pos": "noun",
+    "vi": "dự án, kế hoạch (của chính quyền)",
+    "en": "An organised plan to achieve something.",
+    "example": "there's a big scheme to improve the district"
+  },
+  {
+    "part": "listening-2",
+    "term": "venue",
+    "pos": "noun",
+    "vi": "địa điểm tổ chức (sự kiện, biểu diễn)",
+    "en": "A place where an event such as a concert takes place.",
+    "example": "It's famous throughout the world as one of the major venues for classical music."
+  },
+  {
+    "part": "listening-2",
+    "term": "cater for",
+    "pos": "phrase",
+    "vi": "phục vụ, đáp ứng nhu cầu của",
+    "en": "To provide what a group of people need or want.",
+    "example": "The center itself is a huge complex that caters for a great range of arts."
+  },
+  {
+    "part": "listening-2",
+    "term": "spectacular",
+    "pos": "adjective",
+    "vi": "hoành tráng, ngoạn mục",
+    "en": "Very impressive to look at.",
+    "example": "a spectacular production of The Magic Flute"
+  },
+  {
+    "part": "listening-3",
+    "term": "fluency",
+    "pos": "noun",
+    "vi": "sự trôi chảy (khi nói một ngôn ngữ)",
+    "en": "The ability to speak a language easily and smoothly.",
+    "example": "Was it to gain more fluency in Spanish?"
+  },
+  {
+    "part": "listening-3",
+    "term": "language barrier",
+    "pos": "noun phrase",
+    "vi": "rào cản ngôn ngữ",
+    "en": "A difficulty in communicating because people speak different languages.",
+    "example": "So you weren't too worried about language barriers?"
+  },
+  {
+    "part": "listening-3",
+    "term": "demotivated",
+    "pos": "adjective",
+    "vi": "mất động lực",
+    "en": "Having lost the wish or energy to do something.",
+    "example": "I get demotivated otherwise."
+  },
+  {
+    "part": "listening-3",
+    "term": "reluctant",
+    "pos": "adjective",
+    "vi": "miễn cưỡng, ngại",
+    "en": "Not willing to do something.",
+    "example": "some of them were reluctant to speak to me."
+  },
+  {
+    "part": "listening-3",
+    "term": "suspicious",
+    "pos": "adjective",
+    "vi": "nghi ngờ, e dè",
+    "en": "Not trusting someone or something.",
+    "example": "when people became more comfortable with me and less suspicious"
+  },
+  {
+    "part": "listening-3",
+    "term": "indigenous",
+    "pos": "adjective",
+    "vi": "bản địa",
+    "en": "Belonging naturally to a particular place, especially its original people.",
+    "example": "OK, what about indigenous women's lives?"
+  },
+  {
+    "part": "listening-3",
+    "term": "sign up for",
+    "pos": "phrasal verb",
+    "vi": "đăng ký tham gia",
+    "en": "To join a course or activity officially.",
+    "example": "will you sign up for Portuguese lessons?"
+  },
+  {
+    "part": "listening-3",
+    "term": "interfere",
+    "pos": "verb",
+    "vi": "gây trở ngại, can thiệp",
+    "en": "To get in the way and stop something from working well.",
+    "example": "Some people find that Spanish interferes with learning Portuguese"
+  },
+  {
+    "part": "listening-4",
+    "term": "utilize",
+    "pos": "verb",
+    "vi": "tận dụng, sử dụng",
+    "en": "To make practical use of something.",
+    "example": "The goal then is to utilize existing knowledge, and not to generate new knowledge."
+  },
+  {
+    "part": "listening-4",
+    "term": "confine",
+    "pos": "verb",
+    "vi": "giới hạn trong phạm vi",
+    "en": "To keep something within certain limits.",
+    "example": "And it certainly hasn't been confined to the United States."
+  },
+  {
+    "part": "listening-4",
+    "term": "overwhelming majority",
+    "pos": "noun phrase",
+    "vi": "đại đa số",
+    "en": "Far more than half of the whole group.",
+    "example": "the overwhelming majority of attempts fail."
+  },
+  {
+    "part": "listening-4",
+    "term": "grasp",
+    "pos": "verb",
+    "vi": "nắm bắt, hiểu thấu",
+    "en": "To understand something completely.",
+    "example": "even the expert doesn't fully grasp the whole thing"
+  },
+  {
+    "part": "listening-4",
+    "term": "interwoven",
+    "pos": "adjective",
+    "vi": "đan xen, gắn chặt với nhau",
+    "en": "Closely connected with something else.",
+    "example": "the individual components of the process are interwoven with one another."
+  },
+  {
+    "part": "listening-4",
+    "term": "replicate",
+    "pos": "verb",
+    "vi": "sao chép, tái tạo",
+    "en": "To copy something exactly.",
+    "example": "set up a duplicate system to replicate a successful process."
+  },
+  {
+    "part": "listening-4",
+    "term": "misguided",
+    "pos": "adjective",
+    "vi": "sai lầm, thiếu cân nhắc",
+    "en": "Based on wrong ideas or bad judgement.",
+    "example": "attempts like these usually turn out to be misguided and lead to problems."
+  },
+  {
+    "part": "listening-4",
+    "term": "overlook",
+    "pos": "verb",
+    "vi": "bỏ sót, xem nhẹ",
+    "en": "To fail to notice or consider something.",
+    "example": "there are also disadvantages that have been overlooked."
+  },
+  {
+    "part": "listening-4",
+    "term": "exert",
+    "pos": "verb",
+    "vi": "áp dụng, thực thi (quyền kiểm soát)",
+    "en": "To use power, influence or effort to achieve something.",
+    "example": "Secondly, they involve exerting strict controls on the organizational and operational systems"
+  },
+  {
+    "part": "listening-4",
+    "term": "duplicate",
+    "pos": "verb",
+    "vi": "sao chép y hệt",
+    "en": "To make an exact copy of something.",
+    "example": "not merely duplicating the physical characteristics of the factory"
+  },
+  {
+    "part": "listening-4",
+    "term": "template",
+    "pos": "noun",
+    "vi": "mẫu chuẩn, khuôn mẫu",
+    "en": "A model that is copied to make something else.",
+    "example": "Reliance on a template like this"
+  },
+  {
+    "part": "listening-4",
+    "term": "consistency",
+    "pos": "noun",
+    "vi": "tính nhất quán",
+    "en": "Always behaving or producing results in the same way.",
+    "example": "Reliance on a template like this offers the huge advantage of built-in consistency."
+  },
+  {
+    "part": "reading-1",
+    "term": "inflict",
+    "pos": "verb",
+    "vi": "gây ra (thiệt hại, đau đớn)",
+    "en": "To cause something unpleasant to happen to someone.",
+    "example": "Their electrical fury inflicts death or serious injury on around 500 people each year in the United States alone."
+  },
+  {
+    "part": "reading-1",
+    "term": "neutralise",
+    "pos": "verb",
+    "vi": "vô hiệu hóa",
+    "en": "To stop something from having any effect.",
+    "example": "tested strategies for neutralising the power of thunderstorms"
+  },
+  {
+    "part": "reading-1",
+    "term": "discharge",
+    "pos": "verb",
+    "vi": "phóng điện, xả điện",
+    "en": "To release stored electricity.",
+    "example": "to discharge thunderclouds before lightning can strike."
+  },
+  {
+    "part": "reading-1",
+    "term": "ionisation",
+    "pos": "noun",
+    "vi": "sự ion hóa",
+    "en": "The process of making atoms carry an electric charge.",
+    "example": "a laser could generate a line of ionisation in the air"
+  },
+  {
+    "part": "reading-1",
+    "term": "surge",
+    "pos": "noun",
+    "vi": "đợt tăng vọt đột ngột (dòng điện)",
+    "en": "A sudden strong rise in electric power.",
+    "example": "break down the air in an uncontrollable surge."
+  },
+  {
+    "part": "reading-1",
+    "term": "lightning conductor",
+    "pos": "noun phrase",
+    "vi": "cột thu lôi",
+    "en": "A metal rod that carries lightning safely to the ground.",
+    "example": "The mirror would be protected by placing lightning conductors close by."
+  },
+  {
+    "part": "reading-1",
+    "term": "brewing",
+    "pos": "adjective",
+    "vi": "đang hình thành, sắp ập đến",
+    "en": "Beginning to develop, usually describing a storm or trouble.",
+    "example": "to beam up at brewing storm clouds."
+  },
+  {
+    "part": "reading-1",
+    "term": "stumbling block",
+    "pos": "noun",
+    "vi": "trở ngại, vật cản",
+    "en": "A problem that stops progress.",
+    "example": "However, there is still a big stumbling block."
+  },
+  {
+    "part": "reading-1",
+    "term": "in the offing",
+    "pos": "phrase",
+    "vi": "sắp xuất hiện, sắp có",
+    "en": "Likely to happen or appear soon.",
+    "example": "a laser around the size of a small table is in the offing."
+  },
+  {
+    "part": "reading-1",
+    "term": "menace",
+    "pos": "noun",
+    "vi": "mối đe dọa",
+    "en": "Something that is dangerous or likely to cause harm.",
+    "example": "we'll be able to confront some other meteorological menaces."
+  },
+  {
+    "part": "reading-1",
+    "term": "induce",
+    "pos": "verb",
+    "vi": "gây ra, kích hoạt",
+    "en": "To cause something to happen.",
+    "example": "We think we could prevent hail by inducing lightning"
+  },
+  {
+    "part": "reading-1",
+    "term": "hail",
+    "pos": "noun",
+    "vi": "mưa đá",
+    "en": "Small balls of ice that fall from storm clouds.",
+    "example": "We think we could prevent hail by inducing lightning"
+  },
+  {
+    "part": "reading-1",
+    "term": "torrential",
+    "pos": "adjective",
+    "vi": "(mưa) như trút nước",
+    "en": "Falling very heavily and fast.",
+    "example": "the torrential rain that is typical of storms."
+  },
+  {
+    "part": "reading-2",
+    "term": "prodigy",
+    "pos": "noun",
+    "vi": "thần đồng",
+    "en": "A young person with an extraordinary talent.",
+    "example": "There has always been an interest in geniuses and prodigies."
+  },
+  {
+    "part": "reading-2",
+    "term": "perpetuate",
+    "pos": "verb",
+    "vi": "duy trì, làm cho tiếp diễn mãi",
+    "en": "To make something continue for a long time.",
+    "example": "the ability of the head of the family, the paterfamilias, to perpetuate himself."
+  },
+  {
+    "part": "reading-2",
+    "term": "ambivalent",
+    "pos": "adjective",
+    "vi": "mâu thuẫn, vừa yêu vừa ghét",
+    "en": "Having mixed feelings about something.",
+    "example": "and attitudes are ambivalent towards them."
+  },
+  {
+    "part": "reading-2",
+    "term": "gifted",
+    "pos": "adjective",
+    "vi": "có năng khiếu",
+    "en": "Having a very high natural ability.",
+    "example": "We envy the gifted and mistrust them."
+  },
+  {
+    "part": "reading-2",
+    "term": "defective",
+    "pos": "adjective",
+    "vi": "khiếm khuyết",
+    "en": "Having a fault or weakness.",
+    "example": "they must be defective in another"
+  },
+  {
+    "part": "reading-2",
+    "term": "eccentric",
+    "pos": "adjective",
+    "vi": "lập dị",
+    "en": "Behaving in an unusual way that is different from most people.",
+    "example": "that gifted people are eccentric"
+  },
+  {
+    "part": "reading-2",
+    "term": "adversity",
+    "pos": "noun",
+    "vi": "nghịch cảnh",
+    "en": "A difficult or unlucky situation.",
+    "example": "that adversity makes men wise"
+  },
+  {
+    "part": "reading-2",
+    "term": "denigration",
+    "pos": "noun",
+    "vi": "sự hạ thấp, bôi nhọ",
+    "en": "The act of criticising someone or something unfairly.",
+    "example": "for many, 'intellectual' is a term of denigration."
+  },
+  {
+    "part": "reading-2",
+    "term": "anecdote",
+    "pos": "noun",
+    "vi": "giai thoại, câu chuyện nhỏ",
+    "en": "A short, interesting story about a real person or event.",
+    "example": "collecting together anecdotes and apparent similarities and exceptions"
+  },
+  {
+    "part": "reading-2",
+    "term": "norm-referenced",
+    "pos": "adjective",
+    "vi": "dựa trên chuẩn so sánh (với mức thông thường)",
+    "en": "Judged by comparison with what is normal for most people.",
+    "example": "they are not what we would today call norm-referenced."
+  },
+  {
+    "part": "reading-2",
+    "term": "vantage point",
+    "pos": "noun",
+    "vi": "góc nhìn, vị trí quan sát",
+    "en": "A place or position from which you can see or judge something.",
+    "example": "visible to the particular observer from his or her particular vantage point."
+  },
+  {
+    "part": "reading-2",
+    "term": "continuum",
+    "pos": "noun",
+    "vi": "dải liên tục",
+    "en": "A range with no clear break between its two ends.",
+    "example": "who stand near the end of the continuum of human abilities"
+  },
+  {
+    "part": "reading-2",
+    "term": "mundane",
+    "pos": "adjective",
+    "vi": "tầm thường, bình thường",
+    "en": "Ordinary and not exciting.",
+    "example": "through the mundane and mediocre to the incapable."
+  },
+  {
+    "part": "reading-2",
+    "term": "mediocre",
+    "pos": "adjective",
+    "vi": "tầm thường, xoàng",
+    "en": "Only average, not very good.",
+    "example": "through the mundane and mediocre to the incapable."
+  },
+  {
+    "part": "reading-2",
+    "term": "nurture",
+    "pos": "verb",
+    "vi": "nuôi dưỡng, bồi đắp",
+    "en": "To help something to develop.",
+    "example": "the accidental determination which nurtured or triggered their gifts"
+  },
+  {
+    "part": "reading-2",
+    "term": "outstrip",
+    "pos": "verb",
+    "vi": "vượt trội hơn",
+    "en": "To do much better than something.",
+    "example": "which outstrip our own as the sub-four-minute milers outstrip our jogging."
+  },
+  {
+    "part": "reading-2",
+    "term": "emulate",
+    "pos": "verb",
+    "vi": "noi theo, cố gắng sánh bằng",
+    "en": "To try to do as well as someone you admire.",
+    "example": "But before we try to emulate geniuses or encourage our children to do so"
+  },
+  {
+    "part": "reading-2",
+    "term": "unpalatable",
+    "pos": "adjective",
+    "vi": "khó chấp nhận, khó nuốt",
+    "en": "Unpleasant and difficult to accept.",
+    "example": "some of the things we learn from them may prove unpalatable."
+  },
+  {
+    "part": "reading-2",
+    "term": "perseverance",
+    "pos": "noun",
+    "vi": "tính kiên trì",
+    "en": "Continuing to try despite difficulty.",
+    "example": "the price they may have paid in terms of perseverance, single-mindedness, dedication"
+  },
+  {
+    "part": "reading-2",
+    "term": "delude",
+    "pos": "verb",
+    "vi": "tự huyễn hoặc, đánh lừa",
+    "en": "To make someone believe something that is not true.",
+    "example": "we should never delude ourselves into believing that gifted children or geniuses are different from the rest of humanity"
+  },
+  {
+    "part": "reading-3",
+    "term": "wear and tear",
+    "pos": "phrase",
+    "vi": "sự hao mòn (do sử dụng)",
+    "en": "Damage that happens to something through ordinary use.",
+    "example": "products which are subjected to natural wear and tear during use."
+  },
+  {
+    "part": "reading-3",
+    "term": "thermodynamics",
+    "pos": "noun",
+    "vi": "nhiệt động lực học",
+    "en": "The branch of physics dealing with heat and energy.",
+    "example": "according to the laws of physical chemistry and of thermodynamics."
+  },
+  {
+    "part": "reading-3",
+    "term": "inexorable",
+    "pos": "adjective",
+    "vi": "không thể tránh khỏi, không gì cản nổi",
+    "en": "Continuing and impossible to stop.",
+    "example": "the result of this law is not inexorable in the same way."
+  },
+  {
+    "part": "reading-3",
+    "term": "equilibrium",
+    "pos": "noun",
+    "vi": "trạng thái cân bằng",
+    "en": "A state in which opposing forces are balanced.",
+    "example": "are thus in permanent dynamic equilibrium."
+  },
+  {
+    "part": "reading-3",
+    "term": "inevitable",
+    "pos": "adjective",
+    "vi": "không thể tránh khỏi",
+    "en": "Certain to happen.",
+    "example": "ageing and death should not be seen as inevitable"
+  },
+  {
+    "part": "reading-3",
+    "term": "mutation",
+    "pos": "noun",
+    "vi": "đột biến",
+    "en": "A change in the genetic material of a living thing.",
+    "example": "Because of changes in the genetic material (mutations)"
+  },
+  {
+    "part": "reading-3",
+    "term": "adaptation",
+    "pos": "noun",
+    "vi": "sự thích nghi",
+    "en": "A change that helps a living thing survive in its environment.",
+    "example": "optimal or better adaptation to the environmental conditions."
+  },
+  {
+    "part": "reading-3",
+    "term": "immortality",
+    "pos": "noun",
+    "vi": "sự bất tử",
+    "en": "The ability to live forever.",
+    "example": "Immortality would disturb this system"
+  },
+  {
+    "part": "reading-3",
+    "term": "attain",
+    "pos": "verb",
+    "vi": "đạt được",
+    "en": "To reach or achieve something.",
+    "example": "more and more people attain an advanced age"
+  },
+  {
+    "part": "reading-3",
+    "term": "metabolic rate",
+    "pos": "noun",
+    "vi": "tốc độ trao đổi chất",
+    "en": "The speed at which a body uses energy.",
+    "example": "the metabolic rate has for different organisms a fixed mathematical relationship to the body mass."
+  },
+  {
+    "part": "reading-3",
+    "term": "frugally",
+    "pos": "adverb",
+    "vi": "một cách tiết kiệm",
+    "en": "In a careful way that avoids waste.",
+    "example": "Animals which behave 'frugally' with energy become particularly old"
+  },
+  {
+    "part": "reading-3",
+    "term": "captivity",
+    "pos": "noun",
+    "vi": "tình trạng bị nuôi nhốt",
+    "en": "The state of being kept in a cage or closed place.",
+    "example": "so they attain a high life span in captivity."
+  },
+  {
+    "part": "reading-3",
+    "term": "hibernation",
+    "pos": "noun",
+    "vi": "sự ngủ đông",
+    "en": "A long sleep that some animals have through the winter.",
+    "example": "Animals which save energy by hibernation or lethargy"
+  },
+  {
+    "part": "reading-3",
+    "term": "lethargy",
+    "pos": "noun",
+    "vi": "tình trạng uể oải, ít hoạt động",
+    "en": "A state of low energy and activity.",
+    "example": "Animals which save energy by hibernation or lethargy"
+  },
+  {
+    "part": "reading-3",
+    "term": "sparing",
+    "pos": "adjective",
+    "vi": "tiết kiệm, dè sẻn",
+    "en": "Using only a small amount of something.",
+    "example": "sparing use of energy reserves should tend to extend life."
+  },
+  {
+    "part": "reading-3",
+    "term": "prolong",
+    "pos": "verb",
+    "vi": "kéo dài",
+    "en": "To make something last longer.",
+    "example": "but they quite certainly do not prolong life."
+  },
+  {
+    "part": "reading-3",
+    "term": "equable",
+    "pos": "adjective",
+    "vi": "điềm đạm, ổn định (tính cách)",
+    "en": "Calm and not easily upset.",
+    "example": "an equable and balanced personality."
+  },
+  {
+    "part": "writing-1",
+    "term": "limestone",
+    "pos": "noun",
+    "vi": "đá vôi",
+    "en": "A hard rock used to make cement.",
+    "example": "first, limestone and clay are crushed into a powder"
+  },
+  {
+    "part": "writing-1",
+    "term": "grind",
+    "pos": "verb",
+    "vi": "nghiền mịn",
+    "en": "To break something into fine powder.",
+    "example": "the material is ground into fine cement using a grinder"
+  },
+  {
+    "part": "writing-2",
+    "term": "disproportionately",
+    "pos": "adverb",
+    "vi": "một cách không cân xứng",
+    "en": "To a degree that is too large or too small compared with others.",
+    "example": "it disproportionately affects lower-income groups"
+  },
+  {
+    "part": "writing-2",
+    "term": "exacerbate",
+    "pos": "verb",
+    "vi": "làm trầm trọng thêm",
+    "en": "To make a bad situation worse.",
+    "example": "without exacerbating social inequality."
+  },
+  {
+    "part": "writing-2",
+    "term": "commuter",
+    "pos": "noun",
+    "vi": "người đi làm bằng phương tiện hằng ngày",
+    "en": "A person who travels regularly between home and work.",
+    "example": "this strategy becomes less effective when commuters lack alternatives."
+  },
+  {
+    "part": "writing-2",
+    "term": "equitable",
+    "pos": "adjective",
+    "vi": "công bằng",
+    "en": "Fair and equal to everyone.",
+    "example": "More equitable solutions should focus on transforming transportation infrastructure."
+  },
+  {
+    "part": "writing-2",
+    "term": "infrastructure",
+    "pos": "noun",
+    "vi": "cơ sở hạ tầng",
+    "en": "The basic systems and structures a country needs, such as roads and railways.",
+    "example": "More equitable solutions should focus on transforming transportation infrastructure."
+  },
+  {
+    "part": "writing-2",
+    "term": "emissions",
+    "pos": "noun",
+    "vi": "khí thải",
+    "en": "Gases or other substances released into the air.",
+    "example": "reduced traffic-related emissions by 15%"
+  },
+  {
+    "part": "writing-2",
+    "term": "congestion",
+    "pos": "noun",
+    "vi": "tắc nghẽn (giao thông)",
+    "en": "A situation where roads are too crowded for traffic to move easily.",
+    "example": "Complementary measures could include congestion charges for city centers"
+  },
+  {
+    "part": "writing-2",
+    "term": "gridlock",
+    "pos": "noun",
+    "vi": "tình trạng kẹt cứng xe",
+    "en": "A situation in which traffic cannot move at all.",
+    "example": "also show promise in reducing rush-hour gridlock."
+  },
+  {
+    "part": "writing-2",
+    "term": "penalize",
+    "pos": "verb",
+    "vi": "phạt, gây bất lợi cho",
+    "en": "To treat someone unfairly or punish them.",
+    "example": "without penalizing low-income citizens for essential travel."
+  },
+  {
+    "part": "writing-2",
+    "term": "marginally",
+    "pos": "adverb",
+    "vi": "ở mức độ nhỏ",
+    "en": "To a very small degree.",
+    "example": "might contribute marginally to solving transportation issues"
+  }
+]

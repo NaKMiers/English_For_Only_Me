@@ -1,0 +1,730 @@
+[
+  {
+    "part": "listening-1",
+    "term": "facilities",
+    "pos": "noun",
+    "vi": "tiện ích, cơ sở vật chất",
+    "en": "Buildings, services or equipment provided for a particular purpose.",
+    "example": "the new library has all sorts of facilities."
+  },
+  {
+    "part": "listening-1",
+    "term": "reference book",
+    "pos": "noun",
+    "vi": "sách tham khảo",
+    "en": "A book such as a dictionary that you look things up in.",
+    "example": "there used to be a separate room with reference books."
+  },
+  {
+    "part": "listening-1",
+    "term": "fiction",
+    "pos": "noun",
+    "vi": "tiểu thuyết, truyện hư cấu",
+    "en": "Stories about imaginary people and events.",
+    "example": "We've introduced a special section of fiction written specially for teenagers"
+  },
+  {
+    "part": "listening-1",
+    "term": "certificate",
+    "pos": "noun",
+    "vi": "giấy chứng nhận",
+    "en": "An official document proving that you have achieved something.",
+    "example": "they get a certificate if they manage it."
+  },
+  {
+    "part": "listening-1",
+    "term": "get up to speed",
+    "pos": "phrase",
+    "vi": "nắm bắt kịp, bắt kịp trình độ",
+    "en": "To learn the latest information or skills about something.",
+    "example": "who are wanting to get up to speed with computer technology."
+  },
+  {
+    "part": "listening-1",
+    "term": "turn up",
+    "pos": "phrase",
+    "vi": "đến, có mặt (không cần hẹn)",
+    "en": "To arrive or appear, often without being expected.",
+    "example": "They just turn up."
+  },
+  {
+    "part": "listening-1",
+    "term": "cholesterol",
+    "pos": "noun",
+    "vi": "cholesterol (mỡ trong máu)",
+    "en": "A fatty substance in the blood that can affect heart health.",
+    "example": "they check cholesterol levels at the same time."
+  },
+  {
+    "part": "listening-1",
+    "term": "qualify",
+    "pos": "verb",
+    "vi": "đủ điều kiện",
+    "en": "To meet the conditions needed to receive something.",
+    "example": "so you wouldn't qualify."
+  },
+  {
+    "part": "listening-2",
+    "term": "specialized",
+    "pos": "adjective",
+    "vi": "chuyên biệt",
+    "en": "Designed or developed for a particular purpose.",
+    "example": "some of the more specialized holidays we offer at BC Travel."
+  },
+  {
+    "part": "listening-2",
+    "term": "competitive",
+    "pos": "adjective",
+    "vi": "có tính cạnh tranh cao",
+    "en": "Involving many companies trying to win customers.",
+    "example": "the travel business is very competitive"
+  },
+  {
+    "part": "listening-2",
+    "term": "adventure holiday",
+    "pos": "noun",
+    "vi": "kỳ nghỉ mạo hiểm",
+    "en": "A holiday that includes exciting and risky activities.",
+    "example": "I'm not talking here about adventure holidays"
+  },
+  {
+    "part": "listening-2",
+    "term": "organic",
+    "pos": "adjective",
+    "vi": "hữu cơ",
+    "en": "Produced without artificial chemicals.",
+    "example": "good quality organic ingredients."
+  },
+  {
+    "part": "listening-2",
+    "term": "tuition",
+    "pos": "noun",
+    "vi": "sự dạy kèm, giảng dạy",
+    "en": "Teaching, especially to one person or a small group.",
+    "example": "so clients can have one on one tuition during the holiday"
+  },
+  {
+    "part": "listening-2",
+    "term": "exhibition",
+    "pos": "noun",
+    "vi": "buổi triển lãm",
+    "en": "A public display of art or other items.",
+    "example": "an exhibition is held of the photographs"
+  },
+  {
+    "part": "listening-2",
+    "term": "consultation",
+    "pos": "noun",
+    "vi": "buổi tư vấn",
+    "en": "A meeting to get advice from an expert.",
+    "example": "Clients start the course with a consultation with a trainer"
+  },
+  {
+    "part": "listening-2",
+    "term": "draw up",
+    "pos": "phrasal verb",
+    "vi": "lập ra, soạn ra",
+    "en": "To prepare a plan or document in written form.",
+    "example": "together they draw up an individual program"
+  },
+  {
+    "part": "listening-2",
+    "term": "personalized",
+    "pos": "adjective",
+    "vi": "được cá nhân hoá",
+    "en": "Made to suit the needs of one particular person.",
+    "example": "a personalized diet program."
+  },
+  {
+    "part": "listening-2",
+    "term": "tailored",
+    "pos": "adjective",
+    "vi": "được thiết kế riêng cho phù hợp",
+    "en": "Specially made to fit particular needs.",
+    "example": "We offer one which is tailored to the needs of families"
+  },
+  {
+    "part": "listening-3",
+    "term": "case study",
+    "pos": "noun",
+    "vi": "nghiên cứu điển hình",
+    "en": "A detailed study of one particular person, group or situation.",
+    "example": "I'm worried about our case study."
+  },
+  {
+    "part": "listening-3",
+    "term": "straightforward",
+    "pos": "adjective",
+    "vi": "đơn giản, dễ hiểu",
+    "en": "Easy to do or understand.",
+    "example": "it's quite straightforward."
+  },
+  {
+    "part": "listening-3",
+    "term": "oversee",
+    "pos": "verb",
+    "vi": "giám sát, quản lý",
+    "en": "To watch and direct work or an activity.",
+    "example": "administrators involved in overseeing tourism"
+  },
+  {
+    "part": "listening-3",
+    "term": "interviewee",
+    "pos": "noun",
+    "vi": "người được phỏng vấn",
+    "en": "A person who is being interviewed.",
+    "example": "we should ask our interviewees if they can bring along some numerical data"
+  },
+  {
+    "part": "listening-3",
+    "term": "numerical",
+    "pos": "adjective",
+    "vi": "bằng số liệu",
+    "en": "Expressed in numbers.",
+    "example": "some numerical data that we can add to support our findings."
+  },
+  {
+    "part": "listening-3",
+    "term": "anonymous",
+    "pos": "adjective",
+    "vi": "ẩn danh",
+    "en": "Without the person's name being known or shown.",
+    "example": "Or whether they want to be anonymous."
+  },
+  {
+    "part": "listening-3",
+    "term": "trend",
+    "pos": "noun",
+    "vi": "xu hướng",
+    "en": "A general direction in which something is changing.",
+    "example": "to find out if we can identify any trends or regularities there."
+  },
+  {
+    "part": "listening-3",
+    "term": "planning permission",
+    "pos": "noun",
+    "vi": "giấy phép xây dựng",
+    "en": "Official approval needed to build or change a building.",
+    "example": "it'd need to get special planning permission, I expect."
+  },
+  {
+    "part": "listening-3",
+    "term": "restriction",
+    "pos": "noun",
+    "vi": "sự hạn chế, giới hạn",
+    "en": "A rule or limit on what people can do.",
+    "example": "there might have to be some restrictions"
+  },
+  {
+    "part": "listening-3",
+    "term": "warden",
+    "pos": "noun",
+    "vi": "người trông coi, kiểm soát viên",
+    "en": "A person whose job is to look after a place and its visitors.",
+    "example": "there'd need to be guides and wardens around"
+  },
+  {
+    "part": "listening-3",
+    "term": "enforce",
+    "pos": "verb",
+    "vi": "thực thi, buộc tuân thủ",
+    "en": "To make sure a rule or law is obeyed.",
+    "example": "to make sure these are enforced"
+  },
+  {
+    "part": "listening-4",
+    "term": "mercury",
+    "pos": "noun",
+    "vi": "thuỷ ngân",
+    "en": "A silvery liquid metal that is poisonous.",
+    "example": "Let's take a look at mercury."
+  },
+  {
+    "part": "listening-4",
+    "term": "toxic",
+    "pos": "adjective",
+    "vi": "độc hại",
+    "en": "Poisonous and able to harm or kill living things.",
+    "example": "because it's highly toxic"
+  },
+  {
+    "part": "listening-4",
+    "term": "ingest",
+    "pos": "verb",
+    "vi": "ăn vào, nạp vào cơ thể",
+    "en": "To take food or a substance into the body.",
+    "example": "if it's ingested by a fish"
+  },
+  {
+    "part": "listening-4",
+    "term": "excrete",
+    "pos": "verb",
+    "vi": "bài tiết, thải ra",
+    "en": "To pass waste matter out of the body.",
+    "example": "it's not excreted, it stays in the fish's body"
+  },
+  {
+    "part": "listening-4",
+    "term": "subtle",
+    "pos": "adjective",
+    "vi": "tinh vi, khó nhận thấy",
+    "en": "Small and not obvious, so hard to notice.",
+    "example": "she's looking for more subtle sub-effects"
+  },
+  {
+    "part": "listening-4",
+    "term": "contaminated",
+    "pos": "adjective",
+    "vi": "bị ô nhiễm",
+    "en": "Made dirty or poisonous by a harmful substance.",
+    "example": "if they eat food contaminated with mercury"
+  },
+  {
+    "part": "listening-4",
+    "term": "exposure",
+    "pos": "noun",
+    "vi": "sự tiếp xúc (với chất độc hại)",
+    "en": "The state of being in contact with something harmful.",
+    "example": "So quite low-level exposure to mercury is likely to have an impact on male birds"
+  },
+  {
+    "part": "listening-4",
+    "term": "variable",
+    "pos": "noun",
+    "vi": "biến số, yếu tố thay đổi",
+    "en": "A factor that can change and affect the result of an experiment.",
+    "example": "you don't get all the variables you would in a natural setting."
+  },
+  {
+    "part": "listening-4",
+    "term": "implication",
+    "pos": "noun",
+    "vi": "hệ quả, tác động tiềm tàng",
+    "en": "A possible future effect or result of something.",
+    "example": "what are the implications here for humans?"
+  },
+  {
+    "part": "listening-4",
+    "term": "migratory",
+    "pos": "adjective",
+    "vi": "di cư",
+    "en": "Moving from one region to another at certain times of year.",
+    "example": "because many birds are migratory"
+  },
+  {
+    "part": "listening-4",
+    "term": "warrant",
+    "pos": "verb",
+    "vi": "đáng để, biện minh cho",
+    "en": "To be a good enough reason for something.",
+    "example": "high enough to warrant concern for human consumption"
+  },
+  {
+    "part": "listening-4",
+    "term": "acquisition",
+    "pos": "noun",
+    "vi": "sự tiếp thu, thu nhận (ngôn ngữ)",
+    "en": "The process of learning or gaining a skill.",
+    "example": "mercury causes developmental delays in the acquisition of language"
+  },
+  {
+    "part": "listening-4",
+    "term": "emission",
+    "pos": "noun",
+    "vi": "sự thải khí, khí thải",
+    "en": "A release of gas or other substances into the air.",
+    "example": "there are new regulations for mercury emissions from power plants."
+  },
+  {
+    "part": "listening-4",
+    "term": "regulation",
+    "pos": "noun",
+    "vi": "quy định",
+    "en": "An official rule made by an authority.",
+    "example": "there are new regulations for mercury emissions from power plants"
+  },
+  {
+    "part": "reading-1",
+    "term": "barren",
+    "pos": "adjective",
+    "vi": "cằn cỗi",
+    "en": "Too poor to support plants or crops.",
+    "example": "offers respite from the barren terrain below."
+  },
+  {
+    "part": "reading-1",
+    "term": "inhospitable",
+    "pos": "adjective",
+    "vi": "khắc nghiệt, không thuận lợi cho sự sống",
+    "en": "Difficult to live in because of harsh conditions.",
+    "example": "This inhospitable environment is home to the giant Galapágos tortoise."
+  },
+  {
+    "part": "reading-1",
+    "term": "colonise",
+    "pos": "verb",
+    "vi": "xâm chiếm, định cư (loài vật)",
+    "en": "To settle in a new area and live there in large numbers.",
+    "example": "the islands were colonised by one or more tortoises"
+  },
+  {
+    "part": "reading-1",
+    "term": "exploitation",
+    "pos": "noun",
+    "vi": "sự khai thác quá mức",
+    "en": "The use of something for benefit, often unfairly or too much.",
+    "example": "the arrival of whaling ships in the 1790s saw this exploitation grow exponentially."
+  },
+  {
+    "part": "reading-1",
+    "term": "exponentially",
+    "pos": "adverb",
+    "vi": "theo cấp số nhân, tăng vọt",
+    "en": "At a rate that becomes faster and faster.",
+    "example": "the arrival of whaling ships in the 1790s saw this exploitation grow exponentially."
+  },
+  {
+    "part": "reading-1",
+    "term": "exacerbate",
+    "pos": "verb",
+    "vi": "làm trầm trọng thêm",
+    "en": "To make a bad situation worse.",
+    "example": "This historical exploitation was then exacerbated"
+  },
+  {
+    "part": "reading-1",
+    "term": "alien species",
+    "pos": "noun",
+    "vi": "loài ngoại lai",
+    "en": "An animal or plant brought into a place where it does not naturally live.",
+    "example": "They also introduced alien species"
+  },
+  {
+    "part": "reading-1",
+    "term": "endangered",
+    "pos": "adjective",
+    "vi": "có nguy cơ tuyệt chủng",
+    "en": "At risk of dying out completely.",
+    "example": "several are highly endangered."
+  },
+  {
+    "part": "reading-1",
+    "term": "captive",
+    "pos": "adjective",
+    "vi": "nuôi nhốt, nuôi trong môi trường nhân tạo",
+    "en": "Kept in a place such as a zoo and not free.",
+    "example": "The centre's captive-breeding programme proved to be extremely successful"
+  },
+  {
+    "part": "reading-1",
+    "term": "predator",
+    "pos": "noun",
+    "vi": "động vật săn mồi",
+    "en": "An animal that hunts and eats other animals.",
+    "example": "are sufficient to protect them from predators."
+  },
+  {
+    "part": "reading-1",
+    "term": "repatriation",
+    "pos": "noun",
+    "vi": "việc đưa trở về quê hương (nơi sinh sống tự nhiên)",
+    "en": "The act of sending something or someone back to its original place.",
+    "example": "For years, repatriation efforts were carried out in small numbers"
+  },
+  {
+    "part": "reading-1",
+    "term": "treacherous",
+    "pos": "adjective",
+    "vi": "nguy hiểm, hiểm trở",
+    "en": "Very dangerous, especially in a hidden way.",
+    "example": "over weeks of long, treacherous hikes along narrow trails."
+  },
+  {
+    "part": "reading-1",
+    "term": "payload",
+    "pos": "noun",
+    "vi": "tải trọng",
+    "en": "The weight of goods or passengers a vehicle can carry.",
+    "example": "approached the helicopter's maximum payload"
+  },
+  {
+    "part": "reading-1",
+    "term": "juvenile",
+    "pos": "adjective",
+    "vi": "non, chưa trưởng thành",
+    "en": "Young and not yet fully grown.",
+    "example": "the juvenile tortoises quickly spread out"
+  },
+  {
+    "part": "reading-1",
+    "term": "vegetation",
+    "pos": "noun",
+    "vi": "thảm thực vật",
+    "en": "Plants in general, especially those growing in an area.",
+    "example": "feeding on the vegetation"
+  },
+  {
+    "part": "reading-1",
+    "term": "regeneration",
+    "pos": "noun",
+    "vi": "sự tái sinh, phục hồi",
+    "en": "The process of growing or developing again.",
+    "example": "a powerful symbol of the regeneration of an ancient species."
+  },
+  {
+    "part": "reading-2",
+    "term": "eradicate",
+    "pos": "verb",
+    "vi": "xoá sổ, diệt trừ",
+    "en": "To destroy something completely.",
+    "example": "many diseases that affect humans have been eradicated"
+  },
+  {
+    "part": "reading-2",
+    "term": "prevalent",
+    "pos": "adjective",
+    "vi": "phổ biến, lan rộng",
+    "en": "Common or widespread in a particular place or time.",
+    "example": "where certain health issues are more prevalent."
+  },
+  {
+    "part": "reading-2",
+    "term": "globalised",
+    "pos": "adjective",
+    "vi": "toàn cầu hóa",
+    "en": "Connected across the whole world through trade, travel and communication.",
+    "example": "In a world that is far more globalised than ever before"
+  },
+  {
+    "part": "reading-2",
+    "term": "resistant",
+    "pos": "adjective",
+    "vi": "kháng (thuốc), có sức đề kháng",
+    "en": "Not harmed or affected by something.",
+    "example": "other infections resistant to antibiotics"
+  },
+  {
+    "part": "reading-2",
+    "term": "foster",
+    "pos": "verb",
+    "vi": "tạo điều kiện cho phát triển",
+    "en": "To help something grow or develop.",
+    "example": "a warm and damp environment in which the mosquitos that can give people this disease can grow."
+  },
+  {
+    "part": "reading-2",
+    "term": "smog",
+    "pos": "noun",
+    "vi": "sương khói ô nhiễm",
+    "en": "Thick, dirty air caused by pollution and fog.",
+    "example": "the wind is not strong enough to clear the air of the massive amounts of smog and pollution"
+  },
+  {
+    "part": "reading-2",
+    "term": "respiratory",
+    "pos": "adjective",
+    "vi": "thuộc đường hô hấp",
+    "en": "Relating to breathing.",
+    "example": "respiratory diseases continue to spread"
+  },
+  {
+    "part": "reading-2",
+    "term": "hybrid",
+    "pos": "adjective",
+    "vi": "lai, kết hợp",
+    "en": "Made by combining two different things.",
+    "example": "The aim of this hybrid science"
+  },
+  {
+    "part": "reading-2",
+    "term": "correlation",
+    "pos": "noun",
+    "vi": "mối tương quan",
+    "en": "A connection between two things that change together.",
+    "example": "to see if there could be a correlation between the two."
+  },
+  {
+    "part": "reading-2",
+    "term": "epidemiology",
+    "pos": "noun",
+    "vi": "dịch tễ học",
+    "en": "The study of how diseases spread and can be controlled.",
+    "example": "basic epidemiology as it relates to the spread of diseases"
+  },
+  {
+    "part": "reading-2",
+    "term": "epidemic",
+    "pos": "noun",
+    "vi": "dịch bệnh",
+    "en": "A disease that spreads quickly among many people.",
+    "example": "categorising illnesses, diseases and epidemics into local and global scales."
+  },
+  {
+    "part": "reading-2",
+    "term": "vulnerable",
+    "pos": "adjective",
+    "vi": "dễ bị tổn thương",
+    "en": "Easily harmed or affected.",
+    "example": "re-emergence of diseases in vulnerable populations"
+  },
+  {
+    "part": "reading-2",
+    "term": "discrepancy",
+    "pos": "noun",
+    "vi": "sự chênh lệch",
+    "en": "A difference between things that should be the same.",
+    "example": "there is often a very large discrepancy between the options available to people"
+  },
+  {
+    "part": "reading-2",
+    "term": "frontline",
+    "pos": "noun",
+    "vi": "tuyến đầu",
+    "en": "The most active or important position in a field of work.",
+    "example": "on the frontline of making recommendations"
+  },
+  {
+    "part": "reading-3",
+    "term": "abstract",
+    "pos": "adjective",
+    "vi": "trừu tượng",
+    "en": "Existing as an idea rather than as something concrete.",
+    "example": "music is a purely abstract art form"
+  },
+  {
+    "part": "reading-3",
+    "term": "devoid",
+    "pos": "adjective",
+    "vi": "không có, thiếu",
+    "en": "Completely lacking something.",
+    "example": "devoid of language or explicit ideas"
+  },
+  {
+    "part": "reading-3",
+    "term": "arousal",
+    "pos": "noun",
+    "vi": "sự kích thích, hưng phấn",
+    "en": "A state of being physically or emotionally excited.",
+    "example": "our body betrays all the symptoms of emotional arousal."
+  },
+  {
+    "part": "reading-3",
+    "term": "dilate",
+    "pos": "verb",
+    "vi": "giãn ra (đồng tử)",
+    "en": "To become wider or larger.",
+    "example": "The pupils in our eyes dilate"
+  },
+  {
+    "part": "reading-3",
+    "term": "underpinning",
+    "pos": "noun",
+    "vi": "cơ sở nền tảng",
+    "en": "The basic idea or fact that supports something.",
+    "example": "marks an important step in revealing the precise underpinnings"
+  },
+  {
+    "part": "reading-3",
+    "term": "potent",
+    "pos": "adjective",
+    "vi": "mạnh mẽ, có sức tác động lớn",
+    "en": "Having a strong effect.",
+    "example": "the potent pleasurable stimulus"
+  },
+  {
+    "part": "reading-3",
+    "term": "anticipate",
+    "pos": "verb",
+    "vi": "dự đoán, mong đợi trước",
+    "en": "To expect something and be ready for it.",
+    "example": "and in anticipating food and other 'reward' stimuli"
+  },
+  {
+    "part": "reading-3",
+    "term": "labyrinth",
+    "pos": "noun",
+    "vi": "mê cung",
+    "en": "A complicated set of paths where it is easy to get lost.",
+    "example": "like a labyrinth of intricate patterns"
+  },
+  {
+    "part": "reading-3",
+    "term": "intricate",
+    "pos": "adjective",
+    "vi": "phức tạp, tinh vi",
+    "en": "Having many small parts arranged in a complicated way.",
+    "example": "like a labyrinth of intricate patterns"
+  },
+  {
+    "part": "reading-3",
+    "term": "connotative",
+    "pos": "adjective",
+    "vi": "mang hàm ý, gợi nghĩa",
+    "en": "Suggesting an extra meaning beyond the literal one.",
+    "example": "its 'connotative' meaning"
+  },
+  {
+    "part": "writing-1",
+    "term": "rebound",
+    "pos": "verb",
+    "vi": "phục hồi, tăng trở lại",
+    "en": "To rise again after a fall.",
+    "example": "rebounded to nearly 33% in 2013"
+  },
+  {
+    "part": "writing-1",
+    "term": "peak",
+    "pos": "verb",
+    "vi": "đạt đỉnh",
+    "en": "To reach the highest point.",
+    "example": "peaked at 20% in 2006"
+  },
+  {
+    "part": "writing-1",
+    "term": "fluctuate",
+    "pos": "verb",
+    "vi": "dao động, lên xuống thất thường",
+    "en": "To rise and fall irregularly.",
+    "example": "\"A few times a year\" fluctuated slightly"
+  },
+  {
+    "part": "writing-2",
+    "term": "contentious",
+    "pos": "adjective",
+    "vi": "gây tranh cãi",
+    "en": "Likely to cause disagreement.",
+    "example": "Investing in transportation infrastructure remains a contentious issue globally."
+  },
+  {
+    "part": "writing-2",
+    "term": "revitalise",
+    "pos": "verb",
+    "vi": "làm hồi sinh",
+    "en": "To give new life or energy to something.",
+    "example": "France's TGV lines have revitalized secondary cities like Lyon"
+  },
+  {
+    "part": "writing-2",
+    "term": "commuter",
+    "pos": "noun",
+    "vi": "người đi làm bằng phương tiện công cộng",
+    "en": "A person who travels regularly between home and work.",
+    "example": "Urban buses, subways, and trams cater to daily commuters"
+  },
+  {
+    "part": "writing-2",
+    "term": "congestion",
+    "pos": "noun",
+    "vi": "tắc nghẽn",
+    "en": "A situation where roads or places are too crowded.",
+    "example": "chronic issues like traffic congestion"
+  },
+  {
+    "part": "writing-2",
+    "term": "prioritize",
+    "pos": "verb",
+    "vi": "ưu tiên",
+    "en": "To treat something as more important than other things.",
+    "example": "governments should prioritize current transport systems"
+  }
+]

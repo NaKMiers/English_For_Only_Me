@@ -1,0 +1,562 @@
+[
+  {
+    "part": "listening-1",
+    "term": "studio flat",
+    "pos": "noun",
+    "vi": "căn hộ một phòng (studio)",
+    "en": "A small flat with one main room for living and sleeping.",
+    "example": "Well, we've got a lovely studio flat available at that time."
+  },
+  {
+    "part": "listening-1",
+    "term": "reasonable",
+    "pos": "adjective",
+    "vi": "hợp lý, không đắt",
+    "en": "Fair in price, not too expensive.",
+    "example": "That sounds very reasonable."
+  },
+  {
+    "part": "listening-1",
+    "term": "energetic",
+    "pos": "adjective",
+    "vi": "năng động, tốn sức",
+    "en": "Having or needing a lot of physical effort.",
+    "example": "So you don't have to be too energetic."
+  },
+  {
+    "part": "listening-1",
+    "term": "kite-surfing",
+    "pos": "noun",
+    "vi": "lướt ván diều",
+    "en": "A water sport in which you stand on a board and are pulled by a large kite.",
+    "example": "Any kite-surfing? My friend's quite keen."
+  },
+  {
+    "part": "listening-1",
+    "term": "brochure",
+    "pos": "noun",
+    "vi": "tờ rơi, sách giới thiệu",
+    "en": "A thin booklet with pictures and information about a product or place.",
+    "example": "Well, why don't I send you a brochure with full details."
+  },
+  {
+    "part": "listening-1",
+    "term": "insurance",
+    "pos": "noun",
+    "vi": "bảo hiểm",
+    "en": "An agreement to pay you money if you lose something or are harmed.",
+    "example": "Could I just check a couple of points about insurance?"
+  },
+  {
+    "part": "listening-1",
+    "term": "claim",
+    "pos": "verb",
+    "vi": "yêu cầu bồi thường",
+    "en": "To ask an insurance company for money after a loss.",
+    "example": "You can claim eight thousand pounds."
+  },
+  {
+    "part": "listening-1",
+    "term": "cancellation",
+    "pos": "noun",
+    "vi": "việc hủy (chuyến đi)",
+    "en": "The act of deciding that an arranged event will not happen.",
+    "example": "Well, the first thing is cancellation."
+  },
+  {
+    "part": "listening-1",
+    "term": "cover",
+    "pos": "noun",
+    "vi": "phạm vi bảo hiểm",
+    "en": "Protection provided by an insurance policy.",
+    "example": "It's still sensible to have good cover."
+  },
+  {
+    "part": "listening-1",
+    "term": "belongings",
+    "pos": "noun",
+    "vi": "đồ đạc cá nhân",
+    "en": "The things that a person owns and carries with them.",
+    "example": "We're particularly generous about loss of personal belongings."
+  },
+  {
+    "part": "listening-1",
+    "term": "switchboard",
+    "pos": "noun",
+    "vi": "tổng đài",
+    "en": "The system in an office that connects incoming telephone calls.",
+    "example": "That's the main switchboard."
+  },
+  {
+    "part": "listening-2",
+    "term": "acquire",
+    "pos": "verb",
+    "vi": "mua được, có được",
+    "en": "To get something, often by buying it.",
+    "example": "We had just acquired 80 acres of sheep farming land."
+  },
+  {
+    "part": "listening-2",
+    "term": "miniature",
+    "pos": "adjective",
+    "vi": "thu nhỏ",
+    "en": "Much smaller than the normal size.",
+    "example": "An enormous network of miniature railway track."
+  },
+  {
+    "part": "listening-2",
+    "term": "locomotive",
+    "pos": "noun",
+    "vi": "đầu máy xe lửa",
+    "en": "The engine that pulls a train.",
+    "example": "I began to develop larger scale models of locomotives."
+  },
+  {
+    "part": "listening-2",
+    "term": "on to a winner",
+    "pos": "phrase",
+    "vi": "đang có một ý tưởng thành công",
+    "en": "About to be very successful with an idea.",
+    "example": "It soon became clear that we were on to a winner."
+  },
+  {
+    "part": "listening-2",
+    "term": "retirement",
+    "pos": "noun",
+    "vi": "sự nghỉ hưu",
+    "en": "The time when a person stops working because of age.",
+    "example": "I'm near to retirement age."
+  },
+  {
+    "part": "listening-2",
+    "term": "stalwart",
+    "pos": "noun",
+    "vi": "thành viên trung thành, đáng tin cậy",
+    "en": "A loyal and hard-working supporter of an organisation.",
+    "example": "Our son Duncan has been a stalwart of the park for the last 10 years."
+  },
+  {
+    "part": "listening-2",
+    "term": "souvenir",
+    "pos": "noun",
+    "vi": "quà lưu niệm",
+    "en": "An object you buy to remember a place you visited.",
+    "example": "A lot of people want to buy souvenirs."
+  },
+  {
+    "part": "listening-2",
+    "term": "geology",
+    "pos": "noun",
+    "vi": "địa chất",
+    "en": "The structure of the rocks and soil of an area.",
+    "example": "Because of the geology of the area, our greatest problem is digging tunnels."
+  },
+  {
+    "part": "listening-2",
+    "term": "mound",
+    "pos": "noun",
+    "vi": "gò, mô đất",
+    "en": "A small hill or pile of earth.",
+    "example": "We had to level the mounds on the track for safety reasons."
+  },
+  {
+    "part": "listening-3",
+    "term": "dissertation",
+    "pos": "noun",
+    "vi": "luận văn",
+    "en": "A long piece of academic writing done for a university degree.",
+    "example": "So how's the dissertation planning going?"
+  },
+  {
+    "part": "listening-3",
+    "term": "cope with",
+    "pos": "phrase",
+    "vi": "xoay xở, đối phó tốt với",
+    "en": "To deal successfully with something difficult.",
+    "example": "Well, I think I'm coping well with statistics."
+  },
+  {
+    "part": "listening-3",
+    "term": "peer-group",
+    "pos": "adjective",
+    "vi": "(nhóm) bạn đồng trang lứa",
+    "en": "Made up of people of the same age or status.",
+    "example": "Some people find it helpful to organise peer-group discussions."
+  },
+  {
+    "part": "listening-3",
+    "term": "drawback",
+    "pos": "noun",
+    "vi": "nhược điểm",
+    "en": "A disadvantage of something.",
+    "example": "The drawback is that everyone in the group seems to share the same ideas."
+  },
+  {
+    "part": "listening-3",
+    "term": "structured",
+    "pos": "adjective",
+    "vi": "có cấu trúc, bài bản",
+    "en": "Carefully organised in a clear pattern.",
+    "example": "It's designed to give you a structured programme over a number of weeks to develop your skills."
+  },
+  {
+    "part": "listening-3",
+    "term": "consult",
+    "pos": "verb",
+    "vi": "tra cứu, tham khảo",
+    "en": "To look in a book or ask an expert for information.",
+    "example": "And then there are several study skills books you can consult."
+  },
+  {
+    "part": "listening-3",
+    "term": "card index",
+    "pos": "noun",
+    "vi": "hộp thẻ ghi chú (hệ thống phiếu)",
+    "en": "A set of cards with notes, arranged in order for quick reference.",
+    "example": "Like using a card index."
+  },
+  {
+    "part": "listening-3",
+    "term": "discipline",
+    "pos": "verb",
+    "vi": "tự rèn luyện, kỷ luật bản thân",
+    "en": "To train yourself to behave in a controlled way.",
+    "example": "I don't seem to be able to discipline myself."
+  },
+  {
+    "part": "listening-4",
+    "term": "contemporary",
+    "pos": "adjective",
+    "vi": "đương đại, hiện đại",
+    "en": "Belonging to the present time.",
+    "example": "Today I want to begin looking at some contemporary experimental designs for housing."
+  },
+  {
+    "part": "listening-4",
+    "term": "disused",
+    "pos": "adjective",
+    "vi": "bỏ hoang, không còn sử dụng",
+    "en": "No longer used.",
+    "example": "They found a disused stone quarry in a beautiful area."
+  },
+  {
+    "part": "listening-4",
+    "term": "quarry",
+    "pos": "noun",
+    "vi": "mỏ đá",
+    "en": "A place where stone is dug out of the ground.",
+    "example": "They found a disused stone quarry in a beautiful area."
+  },
+  {
+    "part": "listening-4",
+    "term": "photovoltaic",
+    "pos": "adjective",
+    "vi": "quang điện (biến ánh sáng thành điện)",
+    "en": "Able to produce electricity from light.",
+    "example": "There were also photovoltaic tiles fixed to the top and bottom of this sloping wall."
+  },
+  {
+    "part": "listening-4",
+    "term": "insulation",
+    "pos": "noun",
+    "vi": "sự cách nhiệt",
+    "en": "Material that stops heat from escaping.",
+    "example": "And the walls had a layer of foam around them too, to increase the insulation."
+  },
+  {
+    "part": "listening-4",
+    "term": "surplus",
+    "pos": "noun",
+    "vi": "phần dư thừa",
+    "en": "An amount that is more than what is needed.",
+    "example": "The house may even generate an electricity surplus."
+  },
+  {
+    "part": "listening-4",
+    "term": "reclaimed",
+    "pos": "adjective",
+    "vi": "tái sử dụng (vật liệu cũ)",
+    "en": "Taken from an old building and used again.",
+    "example": "The floors are made of reclaimed wood."
+  },
+  {
+    "part": "listening-4",
+    "term": "purify",
+    "pos": "verb",
+    "vi": "lọc sạch",
+    "en": "To remove dirty or harmful substances from something.",
+    "example": "It's purified by being filtered through reed beds."
+  },
+  {
+    "part": "listening-4",
+    "term": "occupant",
+    "pos": "noun",
+    "vi": "người ở, người sử dụng nhà",
+    "en": "A person who lives in a building.",
+    "example": "So the occupants of the house won't pollute the land."
+  },
+  {
+    "part": "reading-1",
+    "term": "systematic",
+    "pos": "adjective",
+    "vi": "có hệ thống",
+    "en": "Done in an organised and logical way.",
+    "example": "It is not easy to be systematic and objective about language study."
+  },
+  {
+    "part": "reading-1",
+    "term": "deteriorate",
+    "pos": "verb",
+    "vi": "xấu đi, sa sút",
+    "en": "To become worse.",
+    "example": "Popular linguistic debate regularly deteriorates into invective and polemic."
+  },
+  {
+    "part": "reading-1",
+    "term": "exempt",
+    "pos": "adjective",
+    "vi": "được miễn, không bị ảnh hưởng",
+    "en": "Not affected by something that applies to others.",
+    "example": "No part of society or social behavior is exempt."
+  },
+  {
+    "part": "reading-1",
+    "term": "prescriptivism",
+    "pos": "noun",
+    "vi": "chủ nghĩa quy chuẩn (cho rằng ngôn ngữ phải theo chuẩn)",
+    "en": "The belief that one form of a language is correct and should be followed.",
+    "example": "In its most general sense, prescriptivism is the view that one variety of language has an inherently higher value than others."
+  },
+  {
+    "part": "reading-1",
+    "term": "propound",
+    "pos": "verb",
+    "vi": "đề xuất, đưa ra (quan điểm)",
+    "en": "To put forward an idea for people to consider.",
+    "example": "The view is propounded especially in relation to grammar and vocabulary."
+  },
+  {
+    "part": "reading-1",
+    "term": "adherent",
+    "pos": "noun",
+    "vi": "người tuân theo, người ủng hộ",
+    "en": "A person who supports a particular idea or group.",
+    "example": "Adherents to this variety are said to speak or write 'correctly'."
+  },
+  {
+    "part": "reading-1",
+    "term": "codify",
+    "pos": "verb",
+    "vi": "hệ thống hóa thành quy tắc",
+    "en": "To arrange rules or laws into an organised system.",
+    "example": "They wanted to codify the principles of their languages."
+  },
+  {
+    "part": "reading-1",
+    "term": "authoritarian",
+    "pos": "adjective",
+    "vi": "độc đoán, áp đặt",
+    "en": "Demanding strict obedience to rules.",
+    "example": "The authoritarian nature of the approach is best characterised by its reliance on 'rules' of grammar."
+  },
+  {
+    "part": "reading-1",
+    "term": "proscribe",
+    "pos": "verb",
+    "vi": "cấm, loại bỏ",
+    "en": "To forbid something officially.",
+    "example": "Others are 'proscribed', to be avoided."
+  },
+  {
+    "part": "reading-1",
+    "term": "tenet",
+    "pos": "noun",
+    "vi": "nguyên lý, tín điều",
+    "en": "A main principle of a belief or theory.",
+    "example": "This view has become the tenet of the modern linguistic approach."
+  },
+  {
+    "part": "reading-2",
+    "term": "turbine",
+    "pos": "noun",
+    "vi": "tua-bin",
+    "en": "A machine with blades that are turned by water, wind or steam to make power.",
+    "example": "Undersea turbines which produce electricity from the tides."
+  },
+  {
+    "part": "reading-2",
+    "term": "renewable",
+    "pos": "adjective",
+    "vi": "tái tạo được",
+    "en": "Describes energy from sources that do not run out.",
+    "example": "Undersea turbines are set to become an important source of renewable energy for Britain."
+  },
+  {
+    "part": "reading-2",
+    "term": "self-sufficient",
+    "pos": "adjective",
+    "vi": "tự cung tự cấp",
+    "en": "Able to provide everything you need without outside help.",
+    "example": "The technology raises the prospect of Britain becoming self-sufficient in renewable energy."
+  },
+  {
+    "part": "reading-2",
+    "term": "drastically",
+    "pos": "adverb",
+    "vi": "mạnh mẽ, đáng kể",
+    "en": "In a very strong and sudden way.",
+    "example": "Drastically reducing its carbon dioxide emissions."
+  },
+  {
+    "part": "reading-2",
+    "term": "ailing",
+    "pos": "adjective",
+    "vi": "đang suy yếu",
+    "en": "Weak and not doing well.",
+    "example": "Undercutting those of the already ailing nuclear industry."
+  },
+  {
+    "part": "reading-2",
+    "term": "undercut",
+    "pos": "verb",
+    "vi": "bán rẻ hơn, có giá thấp hơn",
+    "en": "To offer a lower price than a competitor.",
+    "example": "Undercutting those of the already ailing nuclear industry."
+  },
+  {
+    "part": "reading-2",
+    "term": "hostile",
+    "pos": "adjective",
+    "vi": "khắc nghiệt (môi trường)",
+    "en": "Harsh and difficult for living things or machines.",
+    "example": "The technology for dealing with the hostile saline environment under the sea."
+  },
+  {
+    "part": "reading-2",
+    "term": "saline",
+    "pos": "adjective",
+    "vi": "có muối, mặn",
+    "en": "Containing salt.",
+    "example": "The technology for dealing with the hostile saline environment under the sea."
+  },
+  {
+    "part": "reading-2",
+    "term": "cavitation",
+    "pos": "noun",
+    "vi": "hiện tượng xâm thực (bọt khí do áp suất thấp)",
+    "en": "The forming of air bubbles around a moving blade because of low pressure.",
+    "example": "One technical difficulty is cavitation, where low pressure behind a turning blade causes air bubbles."
+  },
+  {
+    "part": "reading-2",
+    "term": "debris",
+    "pos": "noun",
+    "vi": "mảnh vỡ, rác trôi nổi",
+    "en": "Broken pieces of material left after something is destroyed.",
+    "example": "Another slight concern is submerged debris floating into the blades."
+  },
+  {
+    "part": "reading-2",
+    "term": "robust",
+    "pos": "adjective",
+    "vi": "chắc chắn, bền",
+    "en": "Strong and unlikely to break.",
+    "example": "We will have to make the turbines robust because the sea is a hostile environment."
+  },
+  {
+    "part": "reading-3",
+    "term": "probe",
+    "pos": "noun",
+    "vi": "tàu thăm dò",
+    "en": "An unmanned spacecraft sent to collect information.",
+    "example": "The space probe Voyager I, launched in 1977."
+  },
+  {
+    "part": "reading-3",
+    "term": "on the brink of",
+    "pos": "phrase",
+    "vi": "sắp sửa (xảy ra điều xấu)",
+    "en": "Very close to a bad event.",
+    "example": "Sensors and circuits were on the brink of failing."
+  },
+  {
+    "part": "reading-3",
+    "term": "triumph",
+    "pos": "noun",
+    "vi": "chiến thắng, thành tựu lớn",
+    "en": "A great success or victory.",
+    "example": "It was the longest-distance repair job history, and a triumph for the NASA engineers."
+  },
+  {
+    "part": "reading-3",
+    "term": "shun",
+    "pos": "verb",
+    "vi": "tránh xa, né tránh",
+    "en": "To deliberately avoid someone or something.",
+    "example": "Shannon developed information theory, but shunned the resulting acclaim."
+  },
+  {
+    "part": "reading-3",
+    "term": "acclaim",
+    "pos": "noun",
+    "vi": "sự ca ngợi",
+    "en": "Public praise for someone or something.",
+    "example": "Shannon developed information theory, but shunned the resulting acclaim."
+  },
+  {
+    "part": "reading-3",
+    "term": "prestigious",
+    "pos": "adjective",
+    "vi": "danh giá",
+    "en": "Respected and admired as very important.",
+    "example": "a 22-year-old graduate engineering student at the prestigious Massachusetts Institute of Technology in 1939"
+  },
+  {
+    "part": "reading-3",
+    "term": "binary",
+    "pos": "adjective",
+    "vi": "nhị phân",
+    "en": "Using only two numbers, 0 and 1.",
+    "example": "Which can be captured in the binary unit, or 'bit', of the form 1 or 0."
+  },
+  {
+    "part": "reading-3",
+    "term": "intact",
+    "pos": "adjective",
+    "vi": "nguyên vẹn",
+    "en": "Complete and not damaged.",
+    "example": "It is always possible to guarantee information will get through random interference - 'noise' - intact."
+  },
+  {
+    "part": "reading-3",
+    "term": "bandwidth",
+    "pos": "noun",
+    "vi": "băng thông",
+    "en": "The amount of information a communication channel can carry.",
+    "example": "On its capacity (its 'bandwidth')."
+  },
+  {
+    "part": "reading-3",
+    "term": "superfluous",
+    "pos": "adjective",
+    "vi": "thừa, không cần thiết",
+    "en": "More than is needed.",
+    "example": "By stripping out superfluous ('redundant') bits from data."
+  },
+  {
+    "part": "reading-3",
+    "term": "ambiguous",
+    "pos": "adjective",
+    "vi": "mơ hồ, nhập nhằng",
+    "en": "Having more than one possible meaning.",
+    "example": "There's a limit beyond which messages become too ambiguous."
+  },
+  {
+    "part": "writing-2",
+    "term": "facility",
+    "pos": "noun",
+    "vi": "cơ sở vật chất, tiện ích",
+    "en": "A building or equipment provided for a particular purpose.",
+    "example": "Increasing the number of sports facilities."
+  }
+]

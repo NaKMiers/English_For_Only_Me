@@ -1,0 +1,562 @@
+[
+  {
+    "part": "listening-1",
+    "term": "guided tour",
+    "pos": "noun",
+    "vi": "chuyến tham quan có hướng dẫn viên",
+    "en": "A visit to a place led by a person who explains what you see.",
+    "example": "we go for ones where we know there are guided tours"
+  },
+  {
+    "part": "listening-1",
+    "term": "refund",
+    "pos": "noun",
+    "vi": "tiền hoàn lại",
+    "en": "Money that is paid back to you when you cancel or are not satisfied.",
+    "example": "we can cancel if necessary with full refund of course."
+  },
+  {
+    "part": "listening-1",
+    "term": "in advance",
+    "pos": "phrase",
+    "vi": "trước, từ trước",
+    "en": "Before the time something happens.",
+    "example": "we do ask that you sign up 3 days in advance"
+  },
+  {
+    "part": "listening-1",
+    "term": "optional extra",
+    "pos": "noun",
+    "vi": "hoạt động bổ sung tùy chọn (không bắt buộc)",
+    "en": "An additional activity or item you can choose to add but do not have to.",
+    "example": "And that's a day in town with the optional extra of visiting the Hepworth museum."
+  },
+  {
+    "part": "listening-2",
+    "term": "roam about",
+    "pos": "phrase",
+    "vi": "đi lang thang, tự do đi tham quan",
+    "en": "To walk around freely without a fixed plan.",
+    "example": "Before letting you roam about on your own, I won't keep you long, OK?"
+  },
+  {
+    "part": "listening-2",
+    "term": "manufacturing",
+    "pos": "noun",
+    "vi": "sản xuất, chế tạo",
+    "en": "The making of goods in a factory or workshop.",
+    "example": "this site was a natural place for manufacturing works."
+  },
+  {
+    "part": "listening-2",
+    "term": "raw material",
+    "pos": "noun",
+    "vi": "nguyên liệu thô",
+    "en": "A natural substance used to make a product.",
+    "example": "The water and the availability of raw materials in the area like minerals and iron ore."
+  },
+  {
+    "part": "listening-2",
+    "term": "iron ore",
+    "pos": "noun",
+    "vi": "quặng sắt",
+    "en": "Rock from which iron metal is obtained.",
+    "example": "The water and the availability of raw materials in the area like minerals and iron ore."
+  },
+  {
+    "part": "listening-2",
+    "term": "abundance",
+    "pos": "noun",
+    "vi": "sự dồi dào, phong phú",
+    "en": "A very large amount of something.",
+    "example": "And also the abundance of local fuels like coal and firewood"
+  },
+  {
+    "part": "listening-2",
+    "term": "forge",
+    "pos": "noun",
+    "vi": "lò rèn",
+    "en": "A workshop where metal is heated and shaped.",
+    "example": "local craftsmen first built an iron forge just behind the village here on the bend in the river."
+  },
+  {
+    "part": "listening-2",
+    "term": "steam engine",
+    "pos": "noun",
+    "vi": "máy hơi nước",
+    "en": "An engine that uses the power of steam.",
+    "example": "But then the steam engine was invented, and then the railways came"
+  },
+  {
+    "part": "listening-2",
+    "term": "furnace",
+    "pos": "noun",
+    "vi": "lò nung",
+    "en": "A very hot enclosed fire used to melt metal.",
+    "example": "That's where the furnace is, and where all the metal was smelted"
+  },
+  {
+    "part": "listening-2",
+    "term": "smelt",
+    "pos": "verb",
+    "vi": "nấu chảy (quặng để lấy kim loại)",
+    "en": "To melt rock to get the metal out of it.",
+    "example": "That's where the furnace is, and where all the metal was smelted, and the tools were cast"
+  },
+  {
+    "part": "listening-2",
+    "term": "cast",
+    "pos": "verb",
+    "vi": "đúc (kim loại)",
+    "en": "To shape metal by pouring it melted into a mould.",
+    "example": "and where all the metal was smelted, and the tools were cast, as you'll be able to see."
+  },
+  {
+    "part": "listening-3",
+    "term": "extension",
+    "pos": "noun",
+    "vi": "sự gia hạn (thời hạn nộp bài)",
+    "en": "Extra time to finish something after the deadline.",
+    "example": "You might get an extension of time to finish your assignment for me."
+  },
+  {
+    "part": "listening-3",
+    "term": "compassionate",
+    "pos": "adjective",
+    "vi": "vì lý do thông cảm, nhân đạo (hoàn cảnh cá nhân khó khăn)",
+    "en": "Showing sympathy for someone's serious personal problems.",
+    "example": "extensions are normally given only for medical or compassionate reasons."
+  },
+  {
+    "part": "listening-3",
+    "term": "get hold of",
+    "pos": "phrase",
+    "vi": "kiếm được, tìm mượn được",
+    "en": "To manage to obtain or find something.",
+    "example": "I've been having trouble getting hold of the books."
+  },
+  {
+    "part": "listening-3",
+    "term": "reference",
+    "pos": "noun",
+    "vi": "tài liệu tham khảo",
+    "en": "A book or article that you use as a source of information.",
+    "example": "as long as I can get hold of some of the important references."
+  },
+  {
+    "part": "listening-3",
+    "term": "journal article",
+    "pos": "noun",
+    "vi": "bài báo trên tạp chí học thuật",
+    "en": "A piece of research writing published in an academic journal.",
+    "example": "Have you checked out the journal articles in the list?"
+  },
+  {
+    "part": "listening-3",
+    "term": "methodology",
+    "pos": "noun",
+    "vi": "phương pháp nghiên cứu",
+    "en": "The methods used to carry out a piece of research.",
+    "example": "But just look at the part on the research methodology, how they did it."
+  },
+  {
+    "part": "listening-3",
+    "term": "submit",
+    "pos": "verb",
+    "vi": "nộp (bài)",
+    "en": "To hand in work to be judged or marked.",
+    "example": "you'll need to submit it about a month from now."
+  },
+  {
+    "part": "listening-3",
+    "term": "proximity",
+    "pos": "noun",
+    "vi": "sự gần, khoảng cách gần",
+    "en": "Nearness in distance.",
+    "example": "OK, proximity to the city is an issue."
+  },
+  {
+    "part": "listening-3",
+    "term": "tenant",
+    "pos": "noun",
+    "vi": "người thuê nhà",
+    "en": "A person who pays rent to use a house or flat.",
+    "example": "In other words, the owner is not helpful. And so the tenants move out."
+  },
+  {
+    "part": "listening-4",
+    "term": "vegetation",
+    "pos": "noun",
+    "vi": "thảm thực vật, cây cối",
+    "en": "Plants in general, especially those growing in an area.",
+    "example": "How vegetation can have a significant effect on urban climate"
+  },
+  {
+    "part": "listening-4",
+    "term": "humid",
+    "pos": "adjective",
+    "vi": "ẩm ướt (không khí)",
+    "en": "Containing a lot of water vapour, so the air feels damp.",
+    "example": "or they can make it a bit more humid, if it's a dry inland city."
+  },
+  {
+    "part": "listening-4",
+    "term": "evaporate",
+    "pos": "verb",
+    "vi": "bay hơi, làm bay hơi",
+    "en": "To change from liquid into vapour.",
+    "example": "It evaporates water through its leaves"
+  },
+  {
+    "part": "listening-4",
+    "term": "regulate",
+    "pos": "verb",
+    "vi": "điều hòa, điều chỉnh",
+    "en": "To control something so that it stays at a steady level.",
+    "example": "has got an internal mechanism to keep the temperature regulated."
+  },
+  {
+    "part": "listening-4",
+    "term": "exploit",
+    "pos": "verb",
+    "vi": "tận dụng, khai thác",
+    "en": "To make full use of something for benefit.",
+    "example": "a property which can be exploited to improve the local climate."
+  },
+  {
+    "part": "listening-4",
+    "term": "gust",
+    "pos": "noun",
+    "vi": "cơn gió giật",
+    "en": "A sudden strong rush of wind.",
+    "example": "preventing those very large strong gusts that you so often find around tall buildings."
+  },
+  {
+    "part": "listening-4",
+    "term": "intensify",
+    "pos": "verb",
+    "vi": "làm tăng cường, làm dữ dội hơn",
+    "en": "To make something stronger or more extreme.",
+    "example": "traffic noise is intensified by tall buildings."
+  },
+  {
+    "part": "listening-4",
+    "term": "street canyon",
+    "pos": "noun",
+    "vi": "hẻm phố giữa các tòa nhà cao (như hẻm núi)",
+    "en": "A narrow street with tall buildings on both sides.",
+    "example": "if you have what we call a street canyon."
+  },
+  {
+    "part": "reading-1",
+    "term": "misconception",
+    "pos": "noun",
+    "vi": "quan niệm sai lầm",
+    "en": "A wrong idea that results from misunderstanding.",
+    "example": "Many studies have shown that children harbor misconceptions about 'pure', curriculum science."
+  },
+  {
+    "part": "reading-1",
+    "term": "erroneous",
+    "pos": "adjective",
+    "vi": "sai, nhầm lẫn",
+    "en": "Wrong or mistaken.",
+    "example": "making it and the component ideas, some of which are erroneous, more robust"
+  },
+  {
+    "part": "reading-1",
+    "term": "robust",
+    "pos": "adjective",
+    "vi": "vững chắc, bền vững",
+    "en": "Strong and not easily changed or broken.",
+    "example": "making it and the component ideas, some of which are erroneous, more robust but also accessible to modification."
+  },
+  {
+    "part": "reading-1",
+    "term": "habitat",
+    "pos": "noun",
+    "vi": "môi trường sống",
+    "en": "The natural place where an animal or plant lives.",
+    "example": "was that rainforests provide animals with habitats."
+  },
+  {
+    "part": "reading-1",
+    "term": "indigenous",
+    "pos": "adjective",
+    "vi": "bản địa",
+    "en": "Belonging naturally to a particular place.",
+    "example": "and even fewer mentioned the indigenous populations of rainforests."
+  },
+  {
+    "part": "reading-1",
+    "term": "intrinsic value",
+    "pos": "noun",
+    "vi": "giá trị nội tại (vốn có)",
+    "en": "Worth that something has in itself, not because of its use.",
+    "example": "place an intrinsic value on non-human animal life."
+  },
+  {
+    "part": "reading-1",
+    "term": "logging",
+    "pos": "noun",
+    "vi": "khai thác gỗ, đốn gỗ",
+    "en": "The work of cutting down trees for wood.",
+    "example": "About 18% of the pupils referred specifically to logging activity."
+  },
+  {
+    "part": "reading-1",
+    "term": "conservation",
+    "pos": "noun",
+    "vi": "sự bảo tồn",
+    "en": "Protection of nature and natural resources.",
+    "example": "In answer to the final question about the importance of rainforest conservation"
+  },
+  {
+    "part": "reading-1",
+    "term": "predominate",
+    "pos": "verb",
+    "vi": "chiếm ưu thế, phổ biến nhất",
+    "en": "To be the most common or strongest.",
+    "example": "certain ideas predominate in the thinking of children about rainforests."
+  },
+  {
+    "part": "reading-2",
+    "term": "terrestrial",
+    "pos": "adjective",
+    "vi": "sống trên cạn",
+    "en": "Living on land rather than in water.",
+    "example": "that we and other terrestrial mammals take for granted"
+  },
+  {
+    "part": "reading-2",
+    "term": "blowhole",
+    "pos": "noun",
+    "vi": "lỗ thở (trên đầu cá voi)",
+    "en": "The opening on the top of a whale's head used for breathing.",
+    "example": "as the blowholes evolved and migrated to the top of the head"
+  },
+  {
+    "part": "reading-2",
+    "term": "rudimentary",
+    "pos": "adjective",
+    "vi": "sơ khai, kém phát triển",
+    "en": "Very basic or not fully developed.",
+    "example": "the nerves serving these have degenerated or are rudimentary."
+  },
+  {
+    "part": "reading-2",
+    "term": "stereoscopic",
+    "pos": "adjective",
+    "vi": "(thị giác) lập thể, nhìn được chiều sâu",
+    "en": "Seeing with both eyes so that objects appear solid and have depth.",
+    "example": "they probably do not have stereoscopic vision."
+  },
+  {
+    "part": "reading-2",
+    "term": "keen",
+    "pos": "adjective",
+    "vi": "tinh, nhạy (giác quan)",
+    "en": "Very sharp and good at noticing things.",
+    "example": "the bottlenose dolphin has extremely keen vision in water."
+  },
+  {
+    "part": "reading-2",
+    "term": "anecdotal",
+    "pos": "adjective",
+    "vi": "mang tính giai thoại (chưa được kiểm chứng khoa học)",
+    "en": "Based on personal stories rather than scientific proof.",
+    "example": "provides anecdotal evidence to the contrary."
+  },
+  {
+    "part": "reading-2",
+    "term": "turbid",
+    "pos": "adjective",
+    "vi": "đục, vẩn bùn",
+    "en": "Cloudy and full of mud or dirt, so you cannot see through it.",
+    "example": "than to those living in turbid rivers and flooded plains."
+  },
+  {
+    "part": "reading-2",
+    "term": "compensate for",
+    "pos": "phrase",
+    "vi": "bù đắp cho",
+    "en": "To make up for a weakness or loss with something else.",
+    "example": "such weaknesses are more than compensated for by cetaceans' well-developed acoustic sense."
+  },
+  {
+    "part": "reading-2",
+    "term": "forage",
+    "pos": "verb",
+    "vi": "kiếm ăn",
+    "en": "To search for food.",
+    "example": "many forage for food using echo-location."
+  },
+  {
+    "part": "reading-2",
+    "term": "repertoire",
+    "pos": "noun",
+    "vi": "vốn (âm thanh) đa dạng, bộ âm",
+    "en": "The range of things a person or animal can do or produce.",
+    "example": "and are often limited in their repertoire."
+  },
+  {
+    "part": "reading-3",
+    "term": "literal",
+    "pos": "adjective",
+    "vi": "theo nghĩa đen, sao chép nguyên si",
+    "en": "Exactly what is shown, without any deeper or symbolic meaning.",
+    "example": "But pictures are more than literal representations."
+  },
+  {
+    "part": "reading-3",
+    "term": "taken aback",
+    "pos": "phrase",
+    "vi": "sửng sốt, bất ngờ",
+    "en": "Very surprised or shocked.",
+    "example": "I was taken aback."
+  },
+  {
+    "part": "reading-3",
+    "term": "rendition",
+    "pos": "noun",
+    "vi": "cách thể hiện, bản vẽ",
+    "en": "A particular way of showing or performing something.",
+    "example": "one particularly clever rendition appeared repeatedly"
+  },
+  {
+    "part": "reading-3",
+    "term": "metaphorical",
+    "pos": "adjective",
+    "vi": "mang tính ẩn dụ",
+    "en": "Using one thing to stand for another, not literally.",
+    "example": "they all described them as metaphorical ways of suggesting motion."
+  },
+  {
+    "part": "reading-3",
+    "term": "idiosyncratic",
+    "pos": "adjective",
+    "vi": "riêng biệt, mang tính cá nhân",
+    "en": "Peculiar to one person and not shared by others.",
+    "example": "or if they were merely idiosyncratic marks."
+  },
+  {
+    "part": "reading-3",
+    "term": "apt",
+    "pos": "adjective",
+    "vi": "phù hợp, thích đáng",
+    "en": "Suitable for the situation.",
+    "example": "whether various lines of motion were apt ways of showing movement"
+  },
+  {
+    "part": "reading-3",
+    "term": "perimeter",
+    "pos": "noun",
+    "vi": "chu vi, đường viền ngoài",
+    "en": "The outer edge of an area or shape.",
+    "example": "and extended beyond the perimeter of the wheel."
+  },
+  {
+    "part": "reading-3",
+    "term": "consensus",
+    "pos": "noun",
+    "vi": "sự đồng thuận",
+    "en": "General agreement among a group of people.",
+    "example": "What is more, the consensus among the sighted was barely higher than that among the blind."
+  },
+  {
+    "part": "reading-3",
+    "term": "ascribe",
+    "pos": "verb",
+    "vi": "gán cho, cho là thuộc về",
+    "en": "To say that something belongs to or is caused by someone or something.",
+    "example": "A full 94% ascribed happy to the circle, instead of sad."
+  },
+  {
+    "part": "reading-3",
+    "term": "deem",
+    "pos": "verb",
+    "vi": "cho rằng, xem là",
+    "en": "To consider something to be a certain way.",
+    "example": "All our subjects deemed the circle soft and the square hard."
+  },
+  {
+    "part": "writing-1",
+    "term": "sole parent",
+    "pos": "noun",
+    "vi": "cha hoặc mẹ đơn thân",
+    "en": "A parent who raises children alone.",
+    "example": "Sole parent families topped the list, with 21% (232,000 people) living in poverty."
+  },
+  {
+    "part": "writing-1",
+    "term": "pension",
+    "pos": "noun",
+    "vi": "lương hưu",
+    "en": "Regular money paid to a person after they retire.",
+    "example": "while aged households, likely supported by pensions, had minimal poverty rates."
+  },
+  {
+    "part": "writing-2",
+    "term": "dissemination",
+    "pos": "noun",
+    "vi": "sự truyền bá, phổ biến",
+    "en": "The spreading of information to many people.",
+    "example": "When evaluating media for information dissemination"
+  },
+  {
+    "part": "writing-2",
+    "term": "unparalleled",
+    "pos": "adjective",
+    "vi": "vô song, không gì sánh bằng",
+    "en": "Better than any other.",
+    "example": "Books remain unparalleled in delivering in-depth analysis"
+  },
+  {
+    "part": "writing-2",
+    "term": "digestible",
+    "pos": "adjective",
+    "vi": "dễ tiếp thu, dễ hiểu",
+    "en": "Easy to understand and take in.",
+    "example": "effectively break down human history into digestible theories."
+  },
+  {
+    "part": "writing-2",
+    "term": "demographic",
+    "pos": "noun",
+    "vi": "nhóm dân cư (theo tuổi, giới...)",
+    "en": "A group of people of a particular age, background or type.",
+    "example": "makes it particularly effective for reaching diverse demographics."
+  },
+  {
+    "part": "writing-2",
+    "term": "dilute",
+    "pos": "verb",
+    "vi": "làm loãng, làm giảm giá trị",
+    "en": "To make something weaker or less effective.",
+    "example": "potentially diluting informational content."
+  },
+  {
+    "part": "writing-2",
+    "term": "resonance",
+    "pos": "noun",
+    "vi": "sự đồng cảm, tiếng vang cảm xúc",
+    "en": "The power to bring back strong feelings or memories.",
+    "example": "creating emotional resonance through immediate human connection."
+  },
+  {
+    "part": "writing-2",
+    "term": "logistical",
+    "pos": "adjective",
+    "vi": "thuộc về hậu cần, tổ chức thực tế",
+    "en": "Relating to the practical organisation of a plan or event.",
+    "example": "overcoming literacy barriers that limit books and logistical limitations inherent to theatre."
+  },
+  {
+    "part": "writing-2",
+    "term": "inherent",
+    "pos": "adjective",
+    "vi": "vốn có, cố hữu",
+    "en": "Existing as a natural and permanent part of something.",
+    "example": "overcoming literacy barriers that limit books and logistical limitations inherent to theatre."
+  }
+]

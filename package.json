@@ -32,7 +32,8 @@
     "ielts:eval-generation": "node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/evalIeltsGeneration.ts",
     "ielts:dump-test": "node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/dumpIeltsTest.ts",
     "ielts:patch-section": "node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/patchIeltsSection.ts",
-    "ielts:scan-warnings": "node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/scanIeltsWarnings.ts"
+    "ielts:scan-warnings": "node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/scanIeltsWarnings.ts",
+    "ielts:set-vocab": "node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/setIeltsTestVocab.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",

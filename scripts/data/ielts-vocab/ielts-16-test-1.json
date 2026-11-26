@@ -1,0 +1,562 @@
+[
+  {
+    "part": "listening-1",
+    "term": "workshop",
+    "pos": "noun",
+    "vi": "buổi hội thảo thực hành, lớp thực hành",
+    "en": "A session where a group of people learn by doing practical activities.",
+    "example": "I wanted some information about the workshops in the school holidays."
+  },
+  {
+    "part": "listening-1",
+    "term": "force",
+    "pos": "noun",
+    "vi": "lực (vật lý)",
+    "en": "A physical power that makes something move or change.",
+    "example": "And the force of the air in that actually powers the car, and makes it move along."
+  },
+  {
+    "part": "listening-1",
+    "term": "construct",
+    "pos": "verb",
+    "vi": "xây dựng, lắp ráp",
+    "en": "To build or put something together.",
+    "example": "But also how to construct animals using the same sorts of material and technique."
+  },
+  {
+    "part": "listening-1",
+    "term": "program",
+    "pos": "verb",
+    "vi": "lập trình",
+    "en": "To give a machine or computer a set of instructions.",
+    "example": "And then they learn how they can program them and make them move."
+  },
+  {
+    "part": "listening-1",
+    "term": "recycled",
+    "pos": "adjective",
+    "vi": "được tái chế",
+    "en": "Made from materials that have been used before.",
+    "example": "It's to use recycled materials like card and wood."
+  },
+  {
+    "part": "listening-1",
+    "term": "animation",
+    "pos": "noun",
+    "vi": "hoạt hình",
+    "en": "A film made by showing a series of drawings or models that seem to move.",
+    "example": "And then film it using special animation software."
+  },
+  {
+    "part": "listening-1",
+    "term": "enroll",
+    "pos": "verb",
+    "vi": "đăng ký (cho ai) vào khóa học",
+    "en": "To officially put someone's name on a course or class.",
+    "example": "So would you like to enroll Lydia and Carly now?"
+  },
+  {
+    "part": "listening-1",
+    "term": "industrial estate",
+    "pos": "noun",
+    "vi": "khu công nghiệp",
+    "en": "An area of land used for factories and warehouses.",
+    "example": "And that's in Fradstone Industrial Estate."
+  },
+  {
+    "part": "listening-2",
+    "term": "manufacturer",
+    "pos": "noun",
+    "vi": "nhà sản xuất",
+    "en": "A company that makes goods in large numbers.",
+    "example": "One of the country's major manufacturers of metal goods."
+  },
+  {
+    "part": "listening-2",
+    "term": "work experience",
+    "pos": "noun",
+    "vi": "thực tập ngắn hạn (cho học sinh)",
+    "en": "A short period of time spent working to learn about a job.",
+    "example": "Thank you for choosing us for your two weeks of work experience."
+  },
+  {
+    "part": "listening-2",
+    "term": "managing director",
+    "pos": "noun",
+    "vi": "giám đốc điều hành",
+    "en": "The person with the highest executive position in a company.",
+    "example": "Since the beginning of this year, I've been the managing director."
+  },
+  {
+    "part": "listening-2",
+    "term": "apprenticeship",
+    "pos": "noun",
+    "vi": "thời gian học nghề",
+    "en": "A period of training in a skilled job while working.",
+    "example": "He set up this company when he finished his apprenticeship, in 1926."
+  },
+  {
+    "part": "listening-2",
+    "term": "component",
+    "pos": "noun",
+    "vi": "linh kiện, bộ phận",
+    "en": "One of the parts that make up a machine or product.",
+    "example": "Stevenson's long-term plan was to manufacture components for the machine tools industry."
+  },
+  {
+    "part": "listening-2",
+    "term": "automotive",
+    "pos": "adjective",
+    "vi": "thuộc ngành ô tô",
+    "en": "Relating to cars and other motor vehicles.",
+    "example": "And for the automotive industry, that is, cars and lorries."
+  },
+  {
+    "part": "listening-2",
+    "term": "premises",
+    "pos": "noun",
+    "vi": "khuôn viên, cơ sở (tòa nhà và đất)",
+    "en": "The land and buildings used by a business.",
+    "example": "Over the years, we've expanded the premises considerably."
+  },
+  {
+    "part": "listening-2",
+    "term": "refurbishment",
+    "pos": "noun",
+    "vi": "việc tân trang, cải tạo",
+    "en": "The work of cleaning and improving a building.",
+    "example": "We intend to carry out major refurbishment of this site over the next five years."
+  },
+  {
+    "part": "listening-2",
+    "term": "orientate",
+    "pos": "verb",
+    "vi": "định hướng, làm quen với vị trí",
+    "en": "To help yourself find your way in a new place.",
+    "example": "I'll briefly help you to orientate yourselves around the site."
+  },
+  {
+    "part": "listening-2",
+    "term": "warehouse",
+    "pos": "noun",
+    "vi": "nhà kho",
+    "en": "A large building where goods are stored.",
+    "example": "Next to it is the warehouse, which can be accessed by lorries."
+  },
+  {
+    "part": "listening-3",
+    "term": "put off",
+    "pos": "phrase",
+    "vi": "làm mất hứng, làm nản",
+    "en": "To make someone feel less interested in something.",
+    "example": "I was really put off."
+  },
+  {
+    "part": "listening-3",
+    "term": "brainstorming",
+    "pos": "noun",
+    "vi": "động não, thảo luận ý tưởng",
+    "en": "Thinking of many ideas quickly, usually in a group.",
+    "example": "The workshop sessions with Dr Fletcher were good too, especially the brainstorming sessions."
+  },
+  {
+    "part": "listening-3",
+    "term": "proposal",
+    "pos": "noun",
+    "vi": "bản đề xuất",
+    "en": "A formal plan or suggestion put forward for approval.",
+    "example": "Have you drafted your proposal yet?"
+  },
+  {
+    "part": "listening-3",
+    "term": "amend",
+    "pos": "verb",
+    "vi": "sửa đổi, chỉnh sửa",
+    "en": "To change a piece of writing to improve it.",
+    "example": "I need to amend some parts."
+  },
+  {
+    "part": "listening-3",
+    "term": "evaluate",
+    "pos": "verb",
+    "vi": "đánh giá",
+    "en": "To judge how good or useful something is.",
+    "example": "I haven't actually evaluated anything, so I'll have to fix that."
+  },
+  {
+    "part": "listening-3",
+    "term": "rationale",
+    "pos": "noun",
+    "vi": "cơ sở lý luận, lý do căn bản",
+    "en": "The reasons that explain a decision or plan.",
+    "example": "You know, give a rationale."
+  },
+  {
+    "part": "listening-3",
+    "term": "vague",
+    "pos": "adjective",
+    "vi": "mơ hồ, không rõ ràng",
+    "en": "Not clear or detailed.",
+    "example": "So I'm going to go back to my proposal to make it a bit more vague."
+  },
+  {
+    "part": "listening-3",
+    "term": "predator",
+    "pos": "noun",
+    "vi": "động vật săn mồi",
+    "en": "An animal that hunts and eats other animals.",
+    "example": "So you could discuss it in relation to predators and food chains."
+  },
+  {
+    "part": "listening-3",
+    "term": "ambiguous",
+    "pos": "adjective",
+    "vi": "mơ hồ, nước đôi (không rõ ràng về thái độ)",
+    "en": "Having more than one possible meaning or feeling.",
+    "example": "To me, it's about how ambiguous people are in the way they exploit the natural world."
+  },
+  {
+    "part": "listening-3",
+    "term": "exploit",
+    "pos": "verb",
+    "vi": "khai thác, lợi dụng",
+    "en": "To use something for your own benefit, often unfairly.",
+    "example": "How ambiguous people are in the way they exploit the natural world."
+  },
+  {
+    "part": "listening-4",
+    "term": "virtue",
+    "pos": "noun",
+    "vi": "đức hạnh",
+    "en": "Moral goodness and high standards of behaviour.",
+    "example": "The key to achieving this was virtue."
+  },
+  {
+    "part": "listening-4",
+    "term": "destructive",
+    "pos": "adjective",
+    "vi": "có tính hủy hoại, tiêu cực",
+    "en": "Causing serious harm or damage.",
+    "example": "Destructive emotions like anger and jealousy are under our conscious control."
+  },
+  {
+    "part": "listening-4",
+    "term": "ardent",
+    "pos": "adjective",
+    "vi": "nhiệt thành, hăng hái",
+    "en": "Showing strong enthusiasm for something.",
+    "example": "Was an ardent Stoic, referring to it as his consoling religion."
+  },
+  {
+    "part": "listening-4",
+    "term": "irrational",
+    "pos": "adjective",
+    "vi": "phi lý, không hợp lý",
+    "en": "Not based on clear reasoning or logic.",
+    "example": "Challenging the irrational beliefs that create our faulty thinking."
+  },
+  {
+    "part": "listening-4",
+    "term": "cognitive behavior therapy",
+    "pos": "noun",
+    "vi": "liệu pháp nhận thức hành vi",
+    "en": "A treatment that helps people change harmful thoughts and actions.",
+    "example": "Who invented cognitive behavior therapy, which is used to help people manage their problems."
+  },
+  {
+    "part": "listening-4",
+    "term": "resilience",
+    "pos": "noun",
+    "vi": "khả năng phục hồi, sự kiên cường",
+    "en": "The ability to recover quickly from difficulties.",
+    "example": "Stoic principles can build the resilience and state of mind required to overcome setbacks."
+  },
+  {
+    "part": "listening-4",
+    "term": "setback",
+    "pos": "noun",
+    "vi": "trở ngại, thất bại",
+    "en": "A problem that delays or reverses progress.",
+    "example": "The resilience and state of mind required to overcome setbacks."
+  },
+  {
+    "part": "listening-4",
+    "term": "resonate",
+    "pos": "verb",
+    "vi": "gây tiếng vang, tạo sự đồng cảm",
+    "en": "To feel meaningful or true to someone.",
+    "example": "Something which seems to resonate with many people today."
+  },
+  {
+    "part": "reading-1",
+    "term": "adipose tissue",
+    "pos": "noun",
+    "vi": "mô mỡ",
+    "en": "The body tissue where fat is stored.",
+    "example": "Humans with comparative levels of adipose tissue would be considered obese."
+  },
+  {
+    "part": "reading-1",
+    "term": "obese",
+    "pos": "adjective",
+    "vi": "béo phì",
+    "en": "Extremely overweight in a way that harms health.",
+    "example": "Would be considered obese and would be likely to suffer from diabetes and heart disease."
+  },
+  {
+    "part": "reading-1",
+    "term": "cholesterol",
+    "pos": "noun",
+    "vi": "cholesterol (chất béo trong máu)",
+    "en": "A fatty substance in the blood that can cause heart disease.",
+    "example": "A form of 'bad' cholesterol."
+  },
+  {
+    "part": "reading-1",
+    "term": "mutation",
+    "pos": "noun",
+    "vi": "đột biến",
+    "en": "A change in a gene.",
+    "example": "In humans, mutations of this gene are associated with increased risk of heart disease."
+  },
+  {
+    "part": "reading-1",
+    "term": "genome",
+    "pos": "noun",
+    "vi": "bộ gen",
+    "en": "The complete set of genes of a living thing.",
+    "example": "The genome of the polar bear may also provide the solution for another condition."
+  },
+  {
+    "part": "reading-1",
+    "term": "osteoporosis",
+    "pos": "noun",
+    "vi": "chứng loãng xương",
+    "en": "A disease that makes bones weak and thin.",
+    "example": "Another condition, one that particularly affects our older generation: osteoporosis."
+  },
+  {
+    "part": "reading-1",
+    "term": "den",
+    "pos": "noun",
+    "vi": "hang, ổ (của thú)",
+    "en": "A wild animal's home, often a hole or cave.",
+    "example": "These females will dig maternity dens in the snow."
+  },
+  {
+    "part": "reading-1",
+    "term": "hibernate",
+    "pos": "verb",
+    "vi": "ngủ đông",
+    "en": "To spend the winter in a sleeping state.",
+    "example": "Hibernating brown bears do not have this capacity."
+  },
+  {
+    "part": "reading-1",
+    "term": "anecdotal",
+    "pos": "adjective",
+    "vi": "mang tính giai thoại, dựa trên quan sát lẻ tẻ",
+    "en": "Based on personal stories rather than scientific proof.",
+    "example": "And yet anecdotal evidence from the field challenges those assumptions."
+  },
+  {
+    "part": "reading-1",
+    "term": "dislodge",
+    "pos": "verb",
+    "vi": "làm rơi ra, đánh bật ra",
+    "en": "To knock something loose from its position.",
+    "example": "The bear used a tree branch on multiple occasions to dislodge a piece of meat."
+  },
+  {
+    "part": "reading-1",
+    "term": "majestic",
+    "pos": "adjective",
+    "vi": "uy nghi, hùng vĩ",
+    "en": "Having a grand and impressive appearance.",
+    "example": "The disappearance of an intelligent, majestic animal."
+  },
+  {
+    "part": "reading-2",
+    "term": "dynasty",
+    "pos": "noun",
+    "vi": "triều đại",
+    "en": "A series of rulers from the same family.",
+    "example": "Djoser was the first king of the Third Dynasty of Egypt."
+  },
+  {
+    "part": "reading-2",
+    "term": "tomb",
+    "pos": "noun",
+    "vi": "lăng mộ",
+    "en": "A large structure where a dead person is buried.",
+    "example": "Prior to Djoser's reign, tombs were rectangular monuments made of dried clay brick."
+  },
+  {
+    "part": "reading-2",
+    "term": "reign",
+    "pos": "noun",
+    "vi": "triều đại, thời gian trị vì",
+    "en": "The period when a king or queen rules.",
+    "example": "Prior to Djoser's reign, tombs were rectangular monuments."
+  },
+  {
+    "part": "reading-2",
+    "term": "incline",
+    "pos": "noun",
+    "vi": "độ nghiêng",
+    "en": "A slope or slanting angle.",
+    "example": "Who placed the stones at an inward incline."
+  },
+  {
+    "part": "reading-2",
+    "term": "trench",
+    "pos": "noun",
+    "vi": "rãnh, hào",
+    "en": "A long narrow channel dug in the ground.",
+    "example": "The entire wall was then ringed by a trench 750 meters long and 40 meters wide."
+  },
+  {
+    "part": "reading-2",
+    "term": "vessel",
+    "pos": "noun",
+    "vi": "bình, vật chứa",
+    "en": "A container for liquids, such as a pot or bowl.",
+    "example": "One of the most mysterious discoveries found inside the pyramid was a large number of stone vessels."
+  },
+  {
+    "part": "reading-2",
+    "term": "inscribe",
+    "pos": "verb",
+    "vi": "khắc, ghi (chữ lên bề mặt)",
+    "en": "To write or carve words on a surface.",
+    "example": "They are inscribed with the names of rulers from the First and Second Dynasties of Egypt."
+  },
+  {
+    "part": "reading-2",
+    "term": "excavate",
+    "pos": "verb",
+    "vi": "khai quật",
+    "en": "To dig up an area to find objects from the past.",
+    "example": "The archaeologist Jean-Philippe Lauer, who excavated most of the pyramid and complex."
+  },
+  {
+    "part": "reading-2",
+    "term": "grave goods",
+    "pos": "noun",
+    "vi": "đồ tùy táng",
+    "en": "Objects buried with a dead person.",
+    "example": "Djoser's grave goods, and even his body, were stolen at some point in the past."
+  },
+  {
+    "part": "reading-2",
+    "term": "milestone",
+    "pos": "noun",
+    "vi": "cột mốc quan trọng",
+    "en": "An important event that marks a stage of progress.",
+    "example": "This pyramid complex constitutes a milestone in the evolution of monumental stone architecture."
+  },
+  {
+    "part": "reading-2",
+    "term": "archetype",
+    "pos": "noun",
+    "vi": "nguyên mẫu, hình mẫu gốc",
+    "en": "The original model that later examples copy.",
+    "example": "Became the archetype which all the other great pyramid builders of Egypt would follow."
+  },
+  {
+    "part": "reading-3",
+    "term": "workforce",
+    "pos": "noun",
+    "vi": "lực lượng lao động",
+    "en": "All the people who work in a country or company.",
+    "example": "3-14% of the global workforce will need to switch to a different occupation."
+  },
+  {
+    "part": "reading-3",
+    "term": "automation",
+    "pos": "noun",
+    "vi": "tự động hóa",
+    "en": "The use of machines to do work that people did before.",
+    "example": "Automation - or 'embodied artificial intelligence' (AI) - is one aspect of the disruptive effects of technology."
+  },
+  {
+    "part": "reading-3",
+    "term": "disruptive",
+    "pos": "adjective",
+    "vi": "gây gián đoạn, làm đảo lộn",
+    "en": "Causing major change to the way something normally works.",
+    "example": "One aspect of the disruptive effects of technology on the labour market."
+  },
+  {
+    "part": "reading-3",
+    "term": "algorithm",
+    "pos": "noun",
+    "vi": "thuật toán",
+    "en": "A set of rules a computer follows to solve a problem.",
+    "example": "Algorithms are capable of learning from data to undertake tasks that previously needed human judgement."
+  },
+  {
+    "part": "reading-3",
+    "term": "outperform",
+    "pos": "verb",
+    "vi": "làm tốt hơn, vượt trội hơn",
+    "en": "To do something better than someone else.",
+    "example": "In many cases, they can outperform humans."
+  },
+  {
+    "part": "reading-3",
+    "term": "novice",
+    "pos": "noun",
+    "vi": "người mới vào nghề",
+    "en": "A person who is new to a job or skill.",
+    "example": "A novice stands next to experts and learns by observation."
+  },
+  {
+    "part": "reading-3",
+    "term": "short-sighted",
+    "pos": "adjective",
+    "vi": "thiển cận",
+    "en": "Not thinking about the long-term effects.",
+    "example": "A short-sighted view begins to creep into working practices."
+  },
+  {
+    "part": "reading-3",
+    "term": "fallacy",
+    "pos": "noun",
+    "vi": "quan niệm sai lầm",
+    "en": "A false belief based on faulty reasoning.",
+    "example": "Low believes the predictions are founded on a fallacy."
+  },
+  {
+    "part": "reading-3",
+    "term": "redundancy",
+    "pos": "noun",
+    "vi": "việc bị cho thôi việc (do dư thừa nhân sự)",
+    "en": "The loss of a job because it is no longer needed.",
+    "example": "History is clear that change can mean redundancies."
+  },
+  {
+    "part": "reading-3",
+    "term": "redeployment",
+    "pos": "noun",
+    "vi": "việc điều chuyển sang công việc khác",
+    "en": "Moving workers to a different job or place.",
+    "example": "But social policies can tackle this through retraining and redeployment."
+  },
+  {
+    "part": "reading-3",
+    "term": "subsistence",
+    "pos": "noun",
+    "vi": "mức sống tối thiểu, tự cung tự cấp",
+    "en": "Having just enough food or money to stay alive.",
+    "example": "Just as the industrial revolution brought people past subsistence agriculture."
+  },
+  {
+    "part": "writing-1",
+    "term": "appliance",
+    "pos": "noun",
+    "vi": "thiết bị gia dụng",
+    "en": "A machine used in the home, such as a fridge.",
+    "example": "The charts below show the changes in ownership of electrical appliances."
+  }
+]
