@@ -1,13 +1,15 @@
 'use client'
 
-import { useId, useMemo } from 'react'
+import { useId, useMemo, useState } from 'react'
 
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
+import { passageIntro } from '@/modules/ielts/passageIntro'
 import { toPublicSection } from '@/modules/ielts/publicView'
 import type { IeltsSection } from '@/modules/ielts/schema'
 import { sharedGroupHeaders } from '@/modules/ielts/sharedGroupHeaders'
 
+import { ListeningPart } from '../runner/ListeningPane'
 import { PassagePane } from '../runner/PassagePane'
 import { TaskVisual } from '../visual/TaskVisual'
 import {
@@ -15,6 +17,7 @@ import {
   type IeltsAnswerContextValue,
 } from '../widgets/answerContext'
 import { GroupBlock } from '../widgets/GroupBlock'
+import { SampleAnswerPanel } from '../widgets/SampleAnswerPanel'
 import { WritingPrompt } from '../widgets/WritingPrompt'
 
 /**
@@ -46,9 +49,12 @@ export function ShowAnswersSwitch({
 }
 
 /**
- * Live preview with the learner widgets. `showAnswers` fills every widget
- * with the first accepted answer, so a wrong key or a missing slot shows up
- * before publishing.
+ * Live preview with the learner widgets, laid out as the test page shows the
+ * part (same exam styling, headings, audioscript, sample answer and question
+ * list), so the editor sees what the learner sees. `showAnswers` fills every
+ * widget with the first accepted answer, so a wrong key or a missing slot
+ * shows up before publishing. Audioscript lines carry their index, which
+ * evidence `blockIndex` refers to.
  */
 export function SectionPreview({
   section,
@@ -57,6 +63,7 @@ export function SectionPreview({
   section: IeltsSection
   showAnswers: boolean
 }) {
+  const [scriptOpen, setScriptOpen] = useState(true)
   const publicSection = useMemo(
     () =>
       toPublicSection(section, {
@@ -90,52 +97,59 @@ export function SectionPreview({
       onShowEvidence: null,
     }
   }, [section, showAnswers])
+  const writing = publicSection.writing
 
   return (
-    <div className="grid gap-4">
+    <div className="ielts-exam grid gap-6">
       {section.reading ? (
         <PassagePane
+          heading={`Passage ${section.order}`}
           highlight={null}
+          intro={passageIntro(section)}
           material={section.reading}
           partLabel={section.title}
         />
       ) : null}
-      {section.listening ? (
-        <ol className="font-body grid gap-1 text-sm leading-[1.6]">
-          {section.listening.lines.map((line, index) => (
-            <li key={index}>
-              <span className="text-muted-foreground font-sans text-xs tabular-nums">
-                {index}
-              </span>{' '}
-              <strong className="font-sans uppercase">{line.speaker}:</strong>{' '}
-              {line.text}
-            </li>
-          ))}
-        </ol>
+      {publicSection.listening ? (
+        <ListeningPart
+          highlight={null}
+          lineNumbers
+          onShowTranscriptChange={setScriptOpen}
+          section={publicSection}
+          showTranscript={scriptOpen}
+        />
       ) : null}
-      {section.writing ? (
-        <div className="font-body grid gap-3 text-[16px] leading-[1.7]">
-          <WritingPrompt text={section.writing.prompt} />
-          {section.writing.visual ? (
+      {writing ? (
+        <div className="font-body grid w-full gap-4 text-[17px] leading-[1.7]">
+          <h2 className="text-muted-foreground font-sans text-lg leading-none font-black tracking-wide uppercase">
+            Task {writing.task}
+          </h2>
+          <WritingPrompt text={writing.prompt} />
+          {writing.visual ? (
             <TaskVisual
-              className="border-manga-black rounded-control border-2"
-              visual={section.writing.visual}
+              className="p-0"
+              visual={writing.visual}
             />
+          ) : null}
+          {writing.sampleAnswer ? (
+            <SampleAnswerPanel text={writing.sampleAnswer} />
           ) : null}
         </div>
       ) : null}
-      <IeltsAnswerContext.Provider value={context}>
-        <div className="grid gap-6 text-[16px] leading-[1.7]">
-          {publicSection.groups.map((group, index) => (
-            <GroupBlock
-              group={group}
-              header={groupHeaders[index]}
-              key={group.id}
-              sectionTitle={publicSection.title}
-            />
-          ))}
-        </div>
-      </IeltsAnswerContext.Provider>
+      {publicSection.groups.length ? (
+        <IeltsAnswerContext.Provider value={context}>
+          <div className="text-manga-black border-exam-line grid w-full gap-7 border-t pt-5 text-[16px] leading-[1.6]">
+            {publicSection.groups.map((group, index) => (
+              <GroupBlock
+                group={group}
+                header={groupHeaders[index]}
+                key={group.id}
+                sectionTitle={publicSection.title}
+              />
+            ))}
+          </div>
+        </IeltsAnswerContext.Provider>
+      ) : null}
     </div>
   )
 }

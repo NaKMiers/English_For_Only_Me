@@ -1,11 +1,13 @@
 import type { Metadata } from 'next'
+import { PenLine } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { AuthControl } from '@/components/common/AuthControl'
 import { MangaPageShell } from '@/components/common/MangaPageShell'
-import { hasMongoDbUri } from '@/constants/environments'
+import { hasGoogleAuth, hasMongoDbUri } from '@/constants/environments'
+import { auth } from '@/lib/auth/auth'
 import { connectDatabase, connectDatabaseWhen } from '@/lib/db/connectDatabase'
 import { getPracticeActorId } from '@/modules/dictation/services/getCurrentUser'
 import {
@@ -23,7 +25,12 @@ import { readPublishedIeltsTest } from '@/modules/ielts/tests/testReaders'
 import { listIeltsTestVocabForLearner } from '@/modules/ielts/vocab/testVocabService'
 import { SkillLauncher } from '@/components/ielts/catalogue/SkillLauncher'
 import { TestVocabPanel } from '@/components/ielts/catalogue/TestVocabPanel'
-import { ExamBadge, ExamSheet, ExamHero } from '@/components/ielts/ui'
+import {
+  ExamBadge,
+  ExamHero,
+  ExamIconButton,
+  ExamSheet,
+} from '@/components/ielts/ui'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -79,7 +86,7 @@ export default async function IeltsTestPage({ params }: Props) {
   if (!hasMongoDbUri() || !/^[a-z0-9-]{1,80}$/.test(slug)) notFound()
 
   const actorId = await connectDatabaseWhen(getPracticeActorId())
-  const [test, attempts, vocab] = await Promise.all([
+  const [test, attempts, vocab, session] = await Promise.all([
     readPublishedIeltsTest(slug),
     actorId
       ? listIeltsAttempts(actorId, { testSlug: slug, limit: 20 })
@@ -89,9 +96,13 @@ export default async function IeltsTestPage({ params }: Props) {
     connectDatabase().then(() =>
       listIeltsTestVocabForLearner({ slug, userId: actorId })
     ),
+    hasGoogleAuth() ? auth() : null,
   ])
 
   if (!test) notFound()
+
+  // Role comes from the server session (ADMIN_EMAILS), never the client.
+  const isAdmin = session?.user?.role === 'admin'
 
   return (
     <MangaPageShell
@@ -104,30 +115,43 @@ export default async function IeltsTestPage({ params }: Props) {
       }
     >
       <ExamSheet>
-        <ExamHero>
-          <nav
-            aria-label="Breadcrumb"
-            className="text-muted-foreground text-sm font-semibold"
-          >
-            <Link
-              className="hover:text-manga-red underline"
-              href="/ielts"
+        {/* One line: breadcrumb, title, track and target, admin edit. */}
+        <ExamHero className="gap-1">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+            <nav
+              aria-label="Breadcrumb"
+              className="text-muted-foreground text-sm font-semibold"
             >
-              IELTS
-            </Link>{' '}
-            / {test.title}
-          </nav>
-          <div className="flex flex-wrap gap-2">
+              <Link
+                className="hover:text-manga-red underline"
+                href="/ielts"
+              >
+                IELTS
+              </Link>{' '}
+              /
+            </nav>
+            <h1 className="font-sans text-2xl leading-tight font-black wrap-break-word">
+              {test.title}
+            </h1>
             <ExamBadge tone="pale">
               {test.track === 'general' ? 'General Training' : 'Academic'}
             </ExamBadge>
             <ExamBadge>Target {test.targetBand}</ExamBadge>
+            {isAdmin ? (
+              <ExamIconButton
+                className="ml-auto size-9"
+                href={`/admin/ielts/${test.id}`}
+                label="Edit this test"
+              >
+                <PenLine
+                  aria-hidden="true"
+                  className="size-4"
+                />
+              </ExamIconButton>
+            ) : null}
           </div>
-          <h1 className="font-sans text-3xl leading-tight font-black wrap-break-word sm:text-4xl">
-            {test.title}
-          </h1>
           {test.description ? (
-            <p className="max-w-2xl">{test.description}</p>
+            <p className="max-w-2xl text-sm">{test.description}</p>
           ) : null}
         </ExamHero>
 

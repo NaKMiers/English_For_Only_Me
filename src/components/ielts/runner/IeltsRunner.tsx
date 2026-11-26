@@ -22,6 +22,7 @@ import {
 import { cn } from '@/lib/utils'
 import type { IeltsAttemptRecord } from '@/modules/ielts/attempts/attemptRecords'
 import { IELTS_SKILL_LABELS } from '@/modules/ielts/constants'
+import { passageIntro } from '@/modules/ielts/passageIntro'
 import type { IeltsPublicSection } from '@/modules/ielts/publicView'
 import { sharedGroupHeaders } from '@/modules/ielts/sharedGroupHeaders'
 import { checkIeltsPartApi, readIeltsEvidenceApi } from '@/requests/ieltsApi'
@@ -70,16 +71,6 @@ function partName(skill: string, part: number, mode?: string) {
   if (mode === 'drill') return `Group ${part}`
 
   return skill === 'listening' ? `Part ${part}` : `Passage ${part}`
-}
-
-/** The paper's line under the passage heading, from the part's questions. */
-function passageIntro(section: IeltsPublicSection) {
-  const from = Math.min(...section.groups.map(group => group.from))
-  const to = Math.max(...section.groups.map(group => group.to))
-
-  if (!Number.isFinite(from) || !Number.isFinite(to)) return undefined
-
-  return `You should spend about 20 minutes on Questions ${from}-${to}, which are based on Reading Passage ${section.order}.`
 }
 
 /**

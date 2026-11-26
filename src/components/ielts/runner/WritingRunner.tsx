@@ -1,6 +1,5 @@
 'use client'
 
-import { ChevronDown } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
@@ -12,12 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import {
-  Collapsible,
-  CollapsiblePanel,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible'
-import { SampleAnswerBody } from '@/components/ielts/widgets/SampleAnswerBody'
+import { SampleAnswerPanel } from '@/components/ielts/widgets/SampleAnswerPanel'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
@@ -321,7 +315,7 @@ export function WritingRunner({
               />
             ) : null}
             {writing.sampleAnswer ? (
-              <SampleAnswer
+              <SampleAnswerPanel
                 key={taskKey}
                 text={writing.sampleAnswer}
               />
@@ -495,26 +489,5 @@ export function WritingRunner({
         </DialogContent>
       </Dialog>
     </div>
-  )
-}
-
-/**
- * The model answer under the task, closed until the learner opens it, as
- * Jumpinto shows it in practice. Paragraphs are split on blank lines.
- */
-function SampleAnswer({ text }: { text: string }) {
-  return (
-    <Collapsible className="border-exam-line border-t">
-      <CollapsibleTrigger className="group/sample flex min-h-11 w-full items-center justify-between gap-2 font-sans text-sm font-black focus-visible:underline focus-visible:ring-0">
-        Sample Writing Answer
-        <ChevronDown
-          aria-hidden="true"
-          className="size-4 transition-transform group-data-[panel-open]/sample:rotate-180"
-        />
-      </CollapsibleTrigger>
-      <CollapsiblePanel className="grid gap-3 pt-1 pb-4 text-[14px] leading-[1.6]">
-        <SampleAnswerBody text={text} />
-      </CollapsiblePanel>
-    </Collapsible>
   )
 }

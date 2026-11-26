@@ -46,9 +46,12 @@ interface Props {
 
 function Transcript({
   highlight,
+  lineNumbers = false,
   section,
 }: {
   highlight: Props['highlight']
+  /** Admin preview: each line's index, which evidence `blockIndex` uses. */
+  lineNumbers?: boolean
   section: IeltsPublicSection
 }) {
   const lines = section.listening?.lines
@@ -75,6 +78,11 @@ function Transcript({
     >
       {lines.map((line, index) => (
         <li key={index}>
+          {lineNumbers ? (
+            <span className="text-muted-foreground mr-1.5 font-sans text-xs tabular-nums">
+              {index}
+            </span>
+          ) : null}
           <strong className="font-sans font-black uppercase">
             {line.speaker}:
           </strong>{' '}
@@ -389,26 +397,24 @@ export function ListeningPlayer(props: Props) {
 }
 
 /**
- * Practice only: the part header and the transcript, in a section the
- * learner can expand or collapse. A part without audio always shows its
- * transcript. Mock has neither (the audio bar carries the part context).
+ * A listening part as the paper shows it: PART N, the context unless the
+ * script reads it aloud, and the audioscript headed by the part title. A
+ * part without audio always shows its script. Shared by the runner
+ * (practice) and the admin preview.
  */
-export function ListeningMaterial(
-  props: Pick<
-    Props,
-    | 'attempt'
-    | 'highlight'
-    | 'onShowTranscriptChange'
-    | 'sections'
-    | 'showTranscript'
-    | 'visiblePart'
-  >
-) {
-  const section = visibleSection(props)
-
-  if (!section || props.attempt.mode === 'mock') return null
-
-  const { highlight, onShowTranscriptChange, showTranscript } = props
+export function ListeningPart({
+  highlight,
+  lineNumbers = false,
+  onShowTranscriptChange,
+  section,
+  showTranscript,
+}: {
+  highlight: Props['highlight']
+  lineNumbers?: boolean
+  onShowTranscriptChange: (open: boolean) => void
+  section: IeltsPublicSection
+  showTranscript: boolean
+}) {
   const hasLines = Boolean(section.listening?.lines?.length)
   const context = section.listening?.context ?? ''
   // The announcer reads the context aloud, so the audioscript repeats it.
@@ -418,6 +424,13 @@ export function ListeningMaterial(
     <h3 className="text-center font-sans text-xl leading-tight font-black">
       {section.title}
     </h3>
+  )
+  const script = (
+    <Transcript
+      highlight={highlight}
+      lineNumbers={lineNumbers}
+      section={section}
+    />
   )
 
   return (
@@ -435,10 +448,7 @@ export function ListeningMaterial(
       {!section.listening?.audio ? (
         <div className="grid gap-3">
           {hasLines ? title : null}
-          <Transcript
-            highlight={highlight}
-            section={section}
-          />
+          {script}
         </div>
       ) : hasLines ? (
         <Collapsible
@@ -455,13 +465,39 @@ export function ListeningMaterial(
           </CollapsibleTrigger>
           <CollapsiblePanel className="grid gap-3">
             {title}
-            <Transcript
-              highlight={highlight}
-              section={section}
-            />
+            {script}
           </CollapsiblePanel>
         </Collapsible>
       ) : null}
     </div>
+  )
+}
+
+/**
+ * Practice only: the part header and the audioscript. Mock has neither (the
+ * audio bar carries the part context).
+ */
+export function ListeningMaterial(
+  props: Pick<
+    Props,
+    | 'attempt'
+    | 'highlight'
+    | 'onShowTranscriptChange'
+    | 'sections'
+    | 'showTranscript'
+    | 'visiblePart'
+  >
+) {
+  const section = visibleSection(props)
+
+  if (!section || props.attempt.mode === 'mock') return null
+
+  return (
+    <ListeningPart
+      highlight={props.highlight}
+      onShowTranscriptChange={props.onShowTranscriptChange}
+      section={section}
+      showTranscript={props.showTranscript}
+    />
   )
 }

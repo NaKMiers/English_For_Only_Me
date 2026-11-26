@@ -241,7 +241,7 @@ export function VideoFilterBar({
           />
           <Input
             aria-label="Search videos"
-            className="border-manga-black bg-manga-white min-h-10 border-2 pr-9 pl-8 font-sans text-sm font-black"
+            className="border-manga-black bg-manga-white min-h-10 border-2 pr-9 pl-8 font-sans text-sm font-black [&::-webkit-search-cancel-button]:appearance-none"
             onChange={event => patch({ search: event.target.value })}
             placeholder="Search title, channel, topic…"
             type="search"

@@ -9,6 +9,7 @@ import type { IeltsHomeData } from '@/modules/ielts/services/ieltsPageData'
 
 import { AttemptHistory } from './AttemptHistory'
 import { DrillButton } from './DrillButton'
+import { OverviewPanel } from './OverviewPanel'
 import { TestCards } from './TestCards'
 import {
   ExamButton,
@@ -22,47 +23,46 @@ function WeaknessMap({ weakness }: Pick<IeltsHomeData, 'weakness'>) {
   if (!weakness || weakness.weakest.length === 0) return null
 
   return (
-    <ExamCard
-      eyebrow="Weak spots"
-      title="Most-missed question types"
-    >
-      <ul className="grid gap-4">
+    <section className="grid min-w-0 content-start gap-2">
+      <h2 className="font-sans text-sm font-black uppercase">
+        Most-missed question types
+      </h2>
+      {/* One line per type: name, accuracy bar, percent, drill. */}
+      <ul className="grid gap-1.5">
         {weakness.weakest.map(row => {
           const percent = Math.round((row.accuracy ?? 0) * 100)
 
           return (
             <li
-              className="grid gap-2"
+              className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm"
               key={`${row.skill}-${row.type}`}
             >
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="font-semibold">
-                  <strong className="font-sans font-black">
-                    {IELTS_QUESTION_TYPE_LABELS[row.type]}
-                  </strong>{' '}
-                  · {IELTS_SKILL_LABELS[row.skill]} · {row.correct}/{row.total}{' '}
-                  correct
+              <span className="min-w-0 flex-1 basis-56">
+                <strong className="font-sans font-black">
+                  {IELTS_QUESTION_TYPE_LABELS[row.type]}
+                </strong>{' '}
+                <span className="text-muted-foreground">
+                  · {IELTS_SKILL_LABELS[row.skill]} · {row.correct}/{row.total}
                 </span>
-                <DrillButton
-                  skill={row.skill}
-                  type={row.type}
-                />
-              </div>
-              <div className="flex items-center gap-3">
-                <Progress
-                  aria-label={`${percent}% correct`}
-                  className="flex-1"
-                  value={percent}
-                />
-                <span className="w-12 text-right font-sans text-sm font-black tabular-nums">
-                  {percent}%
-                </span>
-              </div>
+              </span>
+              <Progress
+                aria-label={`${percent}% correct`}
+                className="w-24"
+                value={percent}
+              />
+              <span className="w-9 text-right font-sans font-black tabular-nums">
+                {percent}%
+              </span>
+              <DrillButton
+                compact
+                skill={row.skill}
+                type={row.type}
+              />
             </li>
           )
         })}
       </ul>
-    </ExamCard>
+    </section>
   )
 }
 
@@ -80,47 +80,66 @@ export function IeltsHome({
   testBands,
   weakness,
 }: IeltsHomeData) {
+  const hasProgress =
+    Boolean(weakness?.weakest.length) ||
+    attempts.some(attempt => attempt.status !== 'in_progress')
+
   return (
     <ExamSheet>
-      <ExamHero className="flex flex-wrap items-center justify-between gap-3">
-        <div className="grid min-w-0 gap-1">
-          <h1 className="font-sans text-3xl leading-tight font-black sm:text-4xl">
-            IELTS Tests
-          </h1>
-          <p className="text-manga-ink-soft text-sm">
-            Pick a test, then choose a skill.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          {overall ? (
-            <div
-              className="border-manga-black bg-manga-paper-soft rounded-control flex items-baseline gap-2 border-2 px-3 py-1.5"
-              title={`Estimate from ${overall.skills.length} ${overall.skills.length === 1 ? 'skill' : 'skills'}`}
-            >
-              <span className="font-sans text-[11px] font-black uppercase">
-                Band
-              </span>
-              <strong className="font-sans text-2xl leading-none font-black tabular-nums">
-                {overall.band.toFixed(1)}
-              </strong>
+      {/* One panel: the header line, then weak spots and recent attempts,
+          which fold away under the header's chevron. */}
+      <ExamHero className="gap-0">
+        <OverviewPanel
+          actions={
+            <>
+              {overall ? (
+                <div
+                  className="border-manga-black bg-manga-paper-soft rounded-control flex items-baseline gap-1.5 border-2 px-2.5 py-1"
+                  title={`Estimate from ${overall.skills.length} ${overall.skills.length === 1 ? 'skill' : 'skills'}`}
+                >
+                  <span className="font-sans text-[11px] font-black uppercase">
+                    Band
+                  </span>
+                  <strong className="font-sans text-lg leading-none font-black tabular-nums">
+                    {overall.band.toFixed(1)}
+                  </strong>
+                </div>
+              ) : null}
+              {isAdmin ? (
+                <ExamButton
+                  className="min-h-9 px-3"
+                  href="/admin/ielts"
+                  icon={
+                    <Settings
+                      aria-hidden="true"
+                      className="size-4"
+                    />
+                  }
+                  tone="paper"
+                >
+                  Manage
+                </ExamButton>
+              ) : null}
+            </>
+          }
+          heading={
+            <>
+              <h1 className="font-sans text-2xl leading-tight font-black">
+                IELTS Tests
+              </h1>
+              <p className="text-manga-ink-soft hidden text-sm sm:block">
+                Pick a test, then choose a skill.
+              </p>
+            </>
+          }
+        >
+          {hasProgress ? (
+            <div className="border-manga-black/20 mt-3 grid gap-x-6 gap-y-4 border-t pt-3 xl:grid-cols-2">
+              <WeaknessMap weakness={weakness} />
+              <AttemptHistory attempts={attempts} />
             </div>
           ) : null}
-          {isAdmin ? (
-            <ExamButton
-              className="min-h-10 px-3"
-              href="/admin/ielts"
-              icon={
-                <Settings
-                  aria-hidden="true"
-                  className="size-4"
-                />
-              }
-              tone="paper"
-            >
-              Manage
-            </ExamButton>
-          ) : null}
-        </div>
+        </OverviewPanel>
       </ExamHero>
 
       {error ? (
@@ -153,11 +172,6 @@ export function IeltsHome({
           ) : null}
         </ExamCard>
       )}
-
-      <div className="grid gap-6 xl:grid-cols-2">
-        <WeaknessMap weakness={weakness} />
-        <AttemptHistory attempts={attempts} />
-      </div>
 
       <p className="text-muted-foreground text-xs">
         Bands are estimates from common conversion tables, not official scores.

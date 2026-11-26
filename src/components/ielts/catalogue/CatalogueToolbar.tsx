@@ -77,7 +77,7 @@ export function CatalogueToolbar({
         />
         <Input
           aria-label="Search tests"
-          className="border-manga-black bg-manga-white h-9 border-2 pr-8 pl-8 font-semibold"
+          className="border-manga-black bg-manga-white h-9 border-2 pr-8 pl-8 font-semibold [&::-webkit-search-cancel-button]:appearance-none"
           onChange={event => onQueryChange(event.target.value)}
           onKeyDown={event => {
             if (event.key === 'Escape') onQueryChange('')
