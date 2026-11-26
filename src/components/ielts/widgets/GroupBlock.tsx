@@ -1,5 +1,6 @@
 'use client'
 
+import { ArrowDown } from 'lucide-react'
 import { Fragment, memo, type ReactNode, useCallback } from 'react'
 
 import { Checkbox } from '@/components/ui/checkbox'
@@ -17,10 +18,14 @@ import {
   TFNG_OPTIONS,
   YNNG_OPTIONS,
 } from '@/modules/ielts/constants'
+import { flowChartSteps } from '@/modules/ielts/flowChart'
 import { toJudgementInstruction } from '@/modules/ielts/judgementInstruction'
+import { formatInstruction } from '@/modules/ielts/instructionText'
+import { onlyNamesSections } from '@/modules/ielts/sectionLetterOptions'
+import type { GroupHeaderRange } from '@/modules/ielts/sharedGroupHeaders'
 import {
   type IeltsPublicGroup,
-  optionsInBody,
+  bodyWithoutOptions,
 } from '@/modules/ielts/publicView'
 import type { IeltsOption } from '@/modules/ielts/schema'
 
@@ -32,11 +37,20 @@ import {
 } from './answerContext'
 import { EvidenceIconButton } from './EvidenceIconButton'
 import { IeltsMarkdown } from './IeltsMarkdown'
+import { QuestionNumberBadge } from './QuestionNumberBadge'
 import { ReviewMark } from './ReviewMark'
 import { SlotInput } from './SlotInput'
 
 interface Props {
   group: IeltsPublicGroup
+  /**
+   * The questions header from `sharedGroupHeaders`: a wider range when this
+   * group leads a run of one-question choice groups, null when an earlier
+   * group's header already covers it. Omitted: the group's own range.
+   */
+  header?: GroupHeaderRange
+  /** The part's title; a choice group title equal to it is not shown. */
+  sectionTitle?: string
 }
 
 /**
@@ -70,21 +84,7 @@ function optionsFor(group: IeltsPublicGroup): IeltsOption[] {
 }
 
 function QuestionNumber({ number }: { number: number }) {
-  const { currentNumber } = useIeltsAnswers()
-
-  return (
-    <span
-      aria-hidden="true"
-      className={cn(
-        'rounded-tag inline-grid h-7 min-w-7 shrink-0 place-items-center px-1 text-sm font-bold tabular-nums',
-        currentNumber === number
-          ? 'bg-manga-red text-manga-white'
-          : 'bg-manga-pale-red text-manga-black'
-      )}
-    >
-      {number}
-    </span>
-  )
+  return <QuestionNumberBadge number={number} />
 }
 
 /**
@@ -108,10 +108,10 @@ function OptionRow({
   return (
     <div
       className={cn(
-        'rounded-control flex items-start gap-3 border-2 px-2 py-0.5',
+        'rounded-control flex items-start gap-3 border-2 px-2 py-0',
         // TRUE / FALSE / NOT GIVEN chips: one compact row.
         nowrap && 'items-center gap-2 px-1.5 text-sm whitespace-nowrap',
-        selected ? 'border-manga-red bg-manga-paper-soft' : 'border-transparent'
+        selected ? 'border-exam-line bg-manga-paper-soft' : 'border-transparent'
       )}
       data-option
     >
@@ -126,7 +126,8 @@ function OptionRow({
   )
 }
 
-const OPTION_CONTROL_CLASS = 'hover:bg-manga-pale-red mt-[3px]'
+// Rows now touch: the control's padded hit area stays inside its own row.
+const OPTION_CONTROL_CLASS = 'hover:bg-manga-pale-red mt-[3px] after:-inset-y-1'
 
 /** One question, one letter: MC with a single answer, TFNG, YNNG. */
 function RadioQuestions({ group }: Props) {
@@ -158,7 +159,7 @@ function RadioQuestions({ group }: Props) {
             <RadioGroup
               aria-labelledby={promptId}
               className={cn(
-                'gap-1 pl-8',
+                'gap-0 pl-8',
                 isJudgement && 'flex flex-wrap gap-1'
               )}
               onValueChange={next => setAnswer(question.number, String(next))}
@@ -244,14 +245,7 @@ function CheckboxQuestions({ group }: Props) {
           <EvidenceIconButton number={first} />
         </p>
       </div>
-      <p
-        className="text-muted-foreground pl-10 text-sm"
-        role="status"
-      >
-        Chosen {chosen.length}/{size}
-        {full && !readOnly ? '. Remove a choice to change it.' : ''}
-      </p>
-      <div className="grid gap-1 pl-8">
+      <div className="grid gap-0 pl-8">
         {group.options.map((option, index) => {
           const checked = chosen.includes(option.key)
           const id =
@@ -306,22 +300,35 @@ function CheckboxQuestions({ group }: Props) {
 
 /** The lettered list the answers are picked from. */
 function OptionsBox({
+  className,
   options,
   title,
 }: {
+  className?: string
   options: IeltsOption[]
   title?: string
 }) {
+  // Centered and only as wide as its longest option, as the paper sets a
+  // word box or a matching list.
   return (
-    <div className="border-manga-black bg-manga-pale-red rounded-control grid gap-1 border-2 px-3 py-2">
-      {title ? <p className="text-sm font-bold">{title}</p> : null}
-      <ul className="grid gap-1">
+    <div
+      className={cn(
+        'border-manga-black bg-exam-tint rounded-control mx-auto grid w-fit max-w-full min-w-40 gap-1 border-2 px-3 py-1.5',
+        className
+      )}
+    >
+      {title ? (
+        <p className="mb-1 text-center font-sans text-lg leading-tight font-black">
+          {title}
+        </p>
+      ) : null}
+      <ul className="grid gap-0.5">
         {options.map(option => (
           <li
             className="flex gap-2 leading-[1.5]"
             key={option.key}
           >
-            <strong className="min-w-8 font-sans font-black">
+            <strong className="min-w-5 font-sans font-black">
               {option.key}
             </strong>
             <span>{option.text}</span>
@@ -341,11 +348,14 @@ function DropdownQuestions({ group }: Props) {
     useIeltsAnswers()
   const isPicture = isPictureChoice(group)
   const hideOptions = lettersInImage(group)
+  // "Which section contains ...": the letters are the passage's own
+  // sections, so the paper prints no box.
+  const hideBox = hideOptions || onlyNamesSections(group.options)
 
   return (
     <div className="grid gap-3">
       {hideOptions && group.title ? (
-        <p className="text-center font-sans text-lg font-black">
+        <p className="mb-2 text-center font-sans text-xl leading-tight font-black">
           {group.title}
         </p>
       ) : null}
@@ -357,7 +367,7 @@ function DropdownQuestions({ group }: Props) {
           src={group.imageUrl}
         />
       ) : null}
-      {hideOptions ? null : (
+      {hideBox ? null : (
         <OptionsBox
           options={group.options}
           title={group.title}
@@ -386,19 +396,20 @@ function DropdownQuestions({ group }: Props) {
                   onValueChange={next =>
                     setAnswer(question.number, String(next ?? ''))
                   }
-                  value={value}
+                  // Null shows the "-" placeholder; there is no blank item
+                  // to pick, so a chosen letter can only change, not clear.
+                  value={value || null}
                 >
                   <SelectTrigger
                     aria-labelledby={promptId}
-                    className="border-manga-black rounded-tag bg-manga-white min-w-24 border-2 font-semibold"
+                    className="border-manga-black rounded-tag bg-manga-white min-w-24 border font-semibold"
                     id={questionControlId(question.number)}
                     onFocus={() => onFocusQuestion(question.number)}
                     size="sm"
                   >
-                    <SelectValue placeholder="Choose" />
+                    <SelectValue placeholder="-" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">-</SelectItem>
                     {group.options.map(option => (
                       <SelectItem
                         key={option.key}
@@ -445,33 +456,66 @@ function SlotQuestions({ group }: Props) {
   const promptQuestions = group.questions.filter(question =>
     question.prompt.includes(`{{q${question.number}}}`)
   )
+  // A word box listed inside the summary shows as its own box above it,
+  // as on the paper, instead of a bullet list under the text.
+  const body = letters ? bodyWithoutOptions(group.body, letters) : group.body
+  const flowSteps = flowChartSteps(body)
 
   return (
     <div className="grid gap-3">
-      {group.body ? (
+      {/* "Label the diagram(s) below": the paper's picture, then the notes
+          that hold the blanks. */}
+      {group.imageUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element -- admin-uploaded Cloudinary image of any size
+        <img
+          alt={group.title || 'Diagram'}
+          className="border-manga-black rounded-control bg-manga-white max-h-[560px] w-full border object-contain"
+          src={group.imageUrl}
+        />
+      ) : null}
+      {letters ? <OptionsBox options={letters} /> : null}
+      {body ? (
         <div
-          className="border-manga-black rounded-control bg-manga-white border-2 px-4 py-3"
+          className="border-manga-black rounded-control bg-manga-white border-2 px-2.5 py-5"
           id={bodyId}
         >
           {group.title ? (
-            <p className="mb-2 text-center font-sans font-black">
+            <p className="mb-2 text-center font-sans text-xl leading-tight font-black">
               {group.title}
             </p>
           ) : null}
-          <IeltsMarkdown
-            renderSlot={renderSlot}
-            source={group.body}
-          />
+          {flowSteps ? (
+            // Flow chart: each step in its own box, an arrow between boxes.
+            <div className="grid gap-1">
+              {flowSteps.map((step, index) => (
+                <Fragment key={index}>
+                  {index ? (
+                    <ArrowDown
+                      aria-hidden="true"
+                      className="mx-auto size-5"
+                    />
+                  ) : null}
+                  <IeltsMarkdown
+                    className="border-manga-black rounded-control gap-1 border px-3 py-2"
+                    renderSlot={renderSlot}
+                    source={step}
+                  />
+                </Fragment>
+              ))}
+            </div>
+          ) : (
+            <IeltsMarkdown
+              renderSlot={renderSlot}
+              source={body}
+            />
+          )}
         </div>
       ) : null}
-      {letters && !optionsInBody(group.body).length ? (
-        <OptionsBox options={letters} />
-      ) : null}
       {promptQuestions.length ? (
-        <ol className="grid gap-2">
+        <ol className="grid gap-1.5">
           {promptQuestions.map(question => (
             <li
-              className="leading-[1.9]"
+              className="leading-[1.65]"
               id={questionBlockId(question.number)}
               key={question.number}
             >
@@ -496,7 +540,26 @@ function GroupInstruction({ group }: Props) {
   const judgement = toJudgementInstruction(group.type, group.instruction)
 
   if (!judgement)
-    return <p className="text-manga-black leading-[1.6]">{group.instruction}</p>
+    return (
+      <div className="text-manga-black grid gap-1 leading-[1.6]">
+        {formatInstruction(group.instruction).map((line, index) => (
+          <p key={index}>
+            {line.map((part, partIndex) =>
+              part.bold ? (
+                <strong
+                  className="font-black"
+                  key={partIndex}
+                >
+                  {part.text}
+                </strong>
+              ) : (
+                part.text
+              )
+            )}
+          </p>
+        ))}
+      </div>
+    )
 
   return (
     <div className="text-manga-black grid gap-2 leading-[1.6]">
@@ -520,6 +583,34 @@ function GroupInstruction({ group }: Props) {
   )
 }
 
+const flatTitle = (value: string) =>
+  value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+
+/**
+ * "Which TWO benefits ...?" stored both as the group title and as the
+ * question: the paper prints it once, so the title steps aside.
+ */
+function titleRepeatsPrompt(group: IeltsPublicGroup): boolean {
+  const title = flatTitle(group.title)
+
+  return group.questions.some(question => {
+    const prompt = flatTitle(question.prompt)
+
+    return Boolean(prompt) && (prompt.includes(title) || title.includes(prompt))
+  })
+}
+
+/** "Question 5", "Questions 21 and 22", "Questions 1-6", as on the paper. */
+function questionsLabel({ from, to }: { from: number; to: number }): string {
+  if (from === to) return `Question ${from}`
+  if (to === from + 1) return `Questions ${from} and ${to}`
+
+  return `Questions ${from}-${to}`
+}
+
 /** A choice group's body (e.g. the worked example) has no answer slots. */
 const noSlot = () => null
 
@@ -528,7 +619,11 @@ const noSlot = () => null
  * in English, an optional intro such as the worked example, then the widget
  * its type maps to.
  */
-export const GroupBlock = memo(function GroupBlock({ group }: Props) {
+export const GroupBlock = memo(function GroupBlock({
+  group,
+  header = { from: group.from, to: group.to },
+  sectionTitle = '',
+}: Props) {
   const widget = isPictureChoice(group)
     ? 'dropdown'
     : IELTS_QUESTION_WIDGETS[group.type]
@@ -539,17 +634,35 @@ export const GroupBlock = memo(function GroupBlock({ group }: Props) {
       data-highlight-scope={`group:${group.id}`}
       className="grid gap-3"
     >
-      <header className="grid gap-0.5">
+      {header ? (
+        <header className="grid gap-0.5">
+          <h3
+            className="font-sans text-base font-black"
+            id={`ielts-group-${group.id}-title`}
+          >
+            {questionsLabel(header)}
+          </h3>
+          <GroupInstruction group={group} />
+        </header>
+      ) : (
         <h3
-          className="font-sans text-base font-black"
+          className="sr-only"
           id={`ielts-group-${group.id}-title`}
         >
-          {group.from === group.to
-            ? `Question ${group.from}`
-            : `Questions ${group.from}-${group.to}`}
+          {questionsLabel(group)}
         </h3>
-        <GroupInstruction group={group} />
-      </header>
+      )}
+      {/* Fill-in and matching draw the title inside their own box; choice
+          groups have none, so their title ("Local council report on
+          traffic and highways") heads the questions here. */}
+      {(widget === 'radio' || widget === 'checkbox') &&
+      group.title &&
+      flatTitle(group.title) !== flatTitle(sectionTitle) &&
+      !titleRepeatsPrompt(group) ? (
+        <p className="mb-2 text-center font-sans text-xl leading-tight font-black">
+          {group.title}
+        </p>
+      ) : null}
       {widget === 'radio' && group.body ? (
         <IeltsMarkdown
           className="gap-1 pl-4"

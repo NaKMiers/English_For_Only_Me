@@ -7,6 +7,7 @@ import type {
   IeltsAttemptRecord,
   IeltsWritingTaskFeedback,
 } from '@/modules/ielts/attempts/attemptRecords'
+import { SampleAnswerBody } from '@/components/ielts/widgets/SampleAnswerBody'
 import { countEssayWords } from '@/modules/ielts/scoring/wordCount'
 import type { IeltsWritingReviewTask } from '@/modules/ielts/services/resultPageData'
 import { gradeIeltsWritingApi } from '@/requests/ieltsApi'
@@ -228,8 +229,8 @@ function TaskFeedback({
         </ExamButton>
       </div>
       {showSample && task.sampleAnswer ? (
-        <div className="font-body border-manga-black rounded-control bg-manga-white border-2 p-4 text-[17px] leading-[1.8] whitespace-pre-wrap">
-          {task.sampleAnswer}
+        <div className="font-body border-manga-black rounded-control bg-manga-white grid gap-3 border-2 p-4 text-[17px] leading-[1.8]">
+          <SampleAnswerBody text={task.sampleAnswer} />
         </div>
       ) : null}
     </ExamCard>

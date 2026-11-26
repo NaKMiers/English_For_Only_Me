@@ -67,7 +67,8 @@ Claude via thin `.claude/skills/` wrappers; see `.agents/README.md`):
 ## Web browsing
 
 Use the `/browse` skill from gstack for web browsing tasks in this repository.
-Do not use `mcp__claude-in-chrome__*` tools.
+Claude in Chrome (`mcp__claude-in-chrome__*`) is also allowed, for example
+when a task needs the owner's own Chrome session.
 
 <!-- BEGIN:nextjs-agent-rules -->
 

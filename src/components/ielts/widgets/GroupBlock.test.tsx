@@ -62,7 +62,9 @@ function renderGroup(section: IeltsSection, group: IeltsQuestionGroup) {
     name:
       group.from === group.to
         ? `Question ${group.from}`
-        : `Questions ${group.from}-${group.to}`,
+        : group.to === group.from + 1
+          ? `Questions ${group.from} and ${group.to}`
+          : `Questions ${group.from}-${group.to}`,
   })
 }
 
@@ -161,5 +163,18 @@ describe('GroupBlock picture multiple choice and intro', () => {
     expect(region).toHaveTextContent('(Example)')
     expect(region).toHaveTextContent('What has the woman lost? A')
     expect(within(region).getAllByRole('radio').length).toBeGreaterThan(0)
+  })
+
+  it('shows a title once when it repeats the question', () => {
+    const prompt = choice.group.questions[0].prompt
+    const { region } = renderVariant({ title: prompt })
+
+    expect(within(region).getAllByText(prompt)).toHaveLength(1)
+  })
+
+  it('keeps a title that is not a question', () => {
+    const { region } = renderVariant({ title: 'Local council report' })
+
+    expect(region).toHaveTextContent('Local council report')
   })
 })

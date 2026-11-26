@@ -76,7 +76,11 @@ export async function loadRunnerPageData({
     skill,
     startPart: part,
     sections: sections.map(section =>
-      toPublicSection(section, { includeTranscript: mode === 'practice' })
+      toPublicSection(section, {
+        // Shown in mock too, closed until opened, as Jumpinto does.
+        includeSampleAnswer: true,
+        includeTranscript: mode === 'practice',
+      })
     ),
   }
 }

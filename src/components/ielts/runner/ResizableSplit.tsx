@@ -136,9 +136,15 @@ export function useResizableSplit({
       aria-valuemin={MIN_PERCENT}
       aria-valuenow={Math.round(percent)}
       className={cn(
-        'group bg-manga-black relative hidden w-[3px] cursor-col-resize touch-none outline-none lg:block',
-        // A wider invisible hit area than the 3px line.
-        'before:absolute before:inset-y-0 before:-right-2 before:-left-2 before:content-[""]',
+        // Zero width: the panes meet with no gap. The divider shows only
+        // while hovered, focused or dragged.
+        'group relative z-10 hidden w-0 cursor-col-resize touch-none outline-none lg:block',
+        // A 10px invisible hit area, mostly over the right pane's padding so
+        // it never covers the left pane's scrollbar at the seam.
+        'before:absolute before:inset-y-0 before:-right-2 before:-left-0.5 before:content-[""]',
+        // The 2px line, faded in on demand.
+        'after:bg-exam-line after:pointer-events-none after:absolute after:inset-y-0 after:-left-px after:w-0.5 after:opacity-0 after:transition-opacity after:content-[""] group-hover:after:opacity-100 group-focus-visible:after:opacity-100',
+        draft !== null && 'after:opacity-100',
         dividerClassName
       )}
       onDoubleClick={() => writeStored(storageKey, defaultPercent)}
@@ -154,9 +160,9 @@ export function useResizableSplit({
       <span
         aria-hidden="true"
         className={cn(
-          'border-manga-black bg-manga-white rounded-tag pointer-events-none absolute top-1/2 left-1/2 grid h-10 w-2.5 -translate-x-1/2 -translate-y-1/2 place-items-center border-2 transition-colors',
-          'group-hover:bg-manga-pale-red group-focus-visible:bg-manga-pale-red',
-          draft !== null && 'bg-manga-red'
+          'border-manga-black bg-manga-white rounded-tag pointer-events-none absolute top-1/2 left-1/2 z-10 grid h-10 w-2.5 -translate-x-1/2 -translate-y-1/2 place-items-center border-2 opacity-0 transition-[opacity,background-color]',
+          'group-hover:bg-manga-pale-red group-focus-visible:bg-manga-pale-red group-hover:opacity-100 group-focus-visible:opacity-100',
+          draft !== null && 'bg-manga-red opacity-100'
         )}
       />
     </div>

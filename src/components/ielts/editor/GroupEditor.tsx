@@ -377,6 +377,13 @@ export function GroupEditor({ group, index, onChange, onRemove }: Props) {
               value={group.body}
             />
           ) : null}
+          {widget === 'slot' ? (
+            <ImageUploadField
+              label="Diagram / chart image (optional: shown above the notes, for 'Label the diagram below')"
+              onChange={imageUrl => update({ imageUrl })}
+              value={group.imageUrl}
+            />
+          ) : null}
           {group.type === 'plan-map-labelling' ? (
             <ImageUploadField
               label="Plan / map image"

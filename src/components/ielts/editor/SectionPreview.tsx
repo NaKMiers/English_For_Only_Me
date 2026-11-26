@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { toPublicSection } from '@/modules/ielts/publicView'
 import type { IeltsSection } from '@/modules/ielts/schema'
+import { sharedGroupHeaders } from '@/modules/ielts/sharedGroupHeaders'
 
 import { PassagePane } from '../runner/PassagePane'
 import { TaskVisual } from '../visual/TaskVisual'
@@ -57,9 +58,14 @@ export function SectionPreview({
   showAnswers: boolean
 }) {
   const publicSection = useMemo(
-    () => toPublicSection(section, { includeTranscript: true }),
+    () =>
+      toPublicSection(section, {
+        includeSampleAnswer: true,
+        includeTranscript: true,
+      }),
     [section]
   )
+  const groupHeaders = sharedGroupHeaders(publicSection.groups)
   const context = useMemo<IeltsAnswerContextValue>(() => {
     const answers: IeltsAnswerContextValue['answers'] = {}
 
@@ -120,10 +126,12 @@ export function SectionPreview({
       ) : null}
       <IeltsAnswerContext.Provider value={context}>
         <div className="grid gap-6 text-[16px] leading-[1.7]">
-          {publicSection.groups.map(group => (
+          {publicSection.groups.map((group, index) => (
             <GroupBlock
               group={group}
+              header={groupHeaders[index]}
               key={group.id}
+              sectionTitle={publicSection.title}
             />
           ))}
         </div>

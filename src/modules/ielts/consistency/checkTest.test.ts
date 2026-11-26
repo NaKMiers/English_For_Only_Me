@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest'
 
 import { IELTS_SAMPLE_TEST } from '../fixtures/sampleTest'
-import type { IeltsSection, IeltsTestContent } from '../schema'
+import type {
+  IeltsQuestionGroup,
+  IeltsSection,
+  IeltsTestContent,
+} from '../schema'
 import { ieltsTestSchema } from '../schema'
 import { emptySections } from '../tests/emptySections'
 import { checkSection, checkTest, isSectionReady } from './checkTest'
@@ -31,9 +35,19 @@ function firstSlotGroup(target: IeltsSection) {
 }
 
 describe('checkTest', () => {
-  it('passes the sample fixture with no errors or warnings', () => {
+  it('passes the sample fixture with no errors, warning only on its imageless site plan', () => {
     expect(ieltsTestSchema.safeParse(IELTS_SAMPLE_TEST).success).toBe(true)
-    expect(checkTest(IELTS_SAMPLE_TEST)).toEqual({ errors: [], warnings: [] })
+
+    const report = checkTest(IELTS_SAMPLE_TEST)
+
+    expect(report.errors).toEqual([])
+    // The sample's Hollin Mill plan ships without an image.
+    expect(report.warnings).toEqual([
+      expect.objectContaining({
+        rule: 'visual_missing',
+        sectionKey: 'listening-2',
+      }),
+    ])
   })
 
   it('flags broken numbering', () => {
@@ -167,5 +181,72 @@ describe('isSectionReady', () => {
 
     for (const genStatus of ['pending', 'generating', 'failed'] as const)
       expect(isSectionReady({ ...part, genStatus })).toBe(false)
+  })
+})
+
+describe('visual_missing', () => {
+  const group = (instruction: string, imageUrl = '') =>
+    ({
+      ...IELTS_SAMPLE_TEST.sections[0].groups[0],
+      imageUrl,
+      instruction,
+    }) as IeltsQuestionGroup
+  const warningsFor = (instruction: string, imageUrl = '') =>
+    checkSection({
+      ...IELTS_SAMPLE_TEST.sections[0],
+      groups: [group(instruction, imageUrl)],
+    } as IeltsSection).warnings.filter(item => item.rule === 'visual_missing')
+
+  it('warns when the instruction points at a diagram the group lacks', () => {
+    expect(warningsFor('Label the diagrams below.')).toHaveLength(1)
+    expect(warningsFor('Label the map below.', 'https://x/map.png')).toEqual([])
+  })
+
+  it('leaves flow-charts and plain notes alone', () => {
+    expect(warningsFor('Complete the flow-chart below.')).toEqual([])
+    expect(warningsFor('Complete the notes below.')).toEqual([])
+  })
+})
+
+describe('question_stem_missing', () => {
+  const choice = () => {
+    const owner = IELTS_SAMPLE_TEST.sections.find(item =>
+      item.groups.some(group => group.type === 'multiple-choice')
+    )!
+
+    return {
+      owner,
+      group: structuredClone(
+        owner.groups.find(group => group.type === 'multiple-choice')!
+      ),
+    }
+  }
+  const warningsFor = (owner: IeltsSection, group: IeltsQuestionGroup) =>
+    checkSection({ ...owner, groups: [group] } as IeltsSection).warnings.filter(
+      item => item.rule === 'question_stem_missing'
+    )
+
+  it('warns when a choice question shows options but no question', () => {
+    const { owner, group } = choice()
+
+    group.title = ''
+    group.body = ''
+    group.questions[0]!.prompt = ''
+
+    expect(warningsFor(owner, group)).toHaveLength(1)
+  })
+
+  it('accepts a stem in the prompt, the title or the body', () => {
+    const { owner, group } = choice()
+
+    expect(warningsFor(owner, group)).toEqual([])
+    group.questions[0]!.prompt = ''
+    group.title = 'Which TWO points does the writer make?'
+    expect(warningsFor(owner, group)).toEqual([])
+    group.title = ''
+    group.body = ''
+    group.instruction =
+      'Which THREE things can the public do? Choose THREE letters, A-G.'
+    expect(warningsFor(owner, group)).toEqual([])
   })
 })

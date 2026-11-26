@@ -15,12 +15,10 @@ describe('QuestionNavigator', () => {
     render(
       <QuestionNavigator
         answers={{}}
-        currentNumber={1}
         currentPart={1}
         index={INDEX}
         next={{ href: '/ielts/t/writing', label: 'Writing' }}
         onPartChange={() => undefined}
-        onSelect={() => undefined}
         partLabel={part => `Passage ${part}`}
         prev={{ href: '/ielts/t/listening', label: 'Listening' }}
       />

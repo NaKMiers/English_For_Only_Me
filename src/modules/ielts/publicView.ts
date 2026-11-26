@@ -22,8 +22,9 @@ import { normalizeIeltsKey } from './scoring/normalize'
  * field added to the schema stays server-side until someone adds it here.
  *
  * Forbidden before submit: answers, correctKeys, evidence, explanation,
- * sampleAnswer, and in mock or drill also the listening transcript (it
- * contains the answers).
+ * and in mock or drill also the listening transcript (it contains the
+ * answers). The writing sample answer comes only when asked for: the
+ * runner shows it in practice and mock, closed until the learner opens it.
  */
 
 export interface IeltsPublicQuestion {
@@ -67,6 +68,8 @@ export interface IeltsPublicSection {
     prompt: string
     minWords: number
     visual: IeltsVisual | null
+    /** The model answer, opened on request (runner only, never in drill). */
+    sampleAnswer?: string
   } | null
   groups: IeltsPublicGroup[]
 }
@@ -89,6 +92,60 @@ export function optionsInBody(body: string): IeltsOption[] {
     key,
     text: text.trim(),
   }))
+}
+
+const TABLE_RULE = /^\s*\|?[\s:|-]+\|?\s*$/
+const flat = (value: string) =>
+  value.replace(/[*_|]/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase()
+
+/**
+ * True when a body line only lists word box entries, in any of the ways the
+ * content stores them: "- **A** fast", "A. fast", "A) fast", "**A** fast
+ * **B** isolated", or a table row "| A fast | B isolated |".
+ */
+function isOptionLine(line: string, options: IeltsOption[]): boolean {
+  let rest = ` ${flat(line).replace(/^[-+] /, '')} `
+  let found = false
+
+  for (const option of options) {
+    const key = option.key.toLowerCase()
+    const text = flat(option.text)
+    const before = rest
+
+    for (const entry of [
+      `${key} ${text}`,
+      `${key}. ${text}`,
+      `${key}) ${text}`,
+      `${key}: ${text}`,
+    ])
+      rest = rest.replace(` ${entry} `, ' ')
+
+    if (rest !== before) found = true
+  }
+
+  return found && !rest.replace(/[-,;\s]/g, '')
+}
+
+/**
+ * The body without its word box, for showing the box on its own above the
+ * summary as on the paper. A table left with only its header rule goes too.
+ */
+export function bodyWithoutOptions(
+  body: string,
+  options: IeltsOption[] = optionsInBody(body)
+): string {
+  const lines = body.split('\n').filter(line => !isOptionLine(line, options))
+  const hasTableRow = lines.some(
+    line => line.includes('|') && !TABLE_RULE.test(line)
+  )
+
+  return lines
+    .filter(
+      line => hasTableRow || !TABLE_RULE.test(line) || !line.includes('|')
+    )
+    .join('\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
 }
 
 function toPublicGroup(group: IeltsQuestionGroup): IeltsPublicGroup {
@@ -132,7 +189,10 @@ function toPublicGroup(group: IeltsQuestionGroup): IeltsPublicGroup {
 
 export function toPublicSection(
   section: IeltsSection,
-  { includeTranscript }: { includeTranscript: boolean }
+  {
+    includeSampleAnswer = false,
+    includeTranscript,
+  }: { includeSampleAnswer?: boolean; includeTranscript: boolean }
 ): IeltsPublicSection {
   return {
     key: section.key,
@@ -173,6 +233,9 @@ export function toPublicSection(
           prompt: section.writing.prompt,
           minWords: section.writing.minWords,
           visual: section.writing.visual,
+          ...(includeSampleAnswer && section.writing.sampleAnswer.trim()
+            ? { sampleAnswer: section.writing.sampleAnswer }
+            : {}),
         }
       : null,
     groups: section.groups.map(toPublicGroup),

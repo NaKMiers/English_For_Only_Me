@@ -1,5 +1,6 @@
 'use client'
 
+import { ChevronDown } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
@@ -11,6 +12,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import {
+  Collapsible,
+  CollapsiblePanel,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible'
+import { SampleAnswerBody } from '@/components/ielts/widgets/SampleAnswerBody'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
@@ -268,7 +275,7 @@ export function WritingRunner({
       ) : null}
 
       {/* Segmented toggles (aria-pressed): the documented raw-button exception. */}
-      <div className="border-manga-black bg-manga-white flex shrink-0 justify-end gap-2 border-b-2 px-3 py-2 lg:hidden">
+      <div className="border-manga-black bg-exam-surface flex shrink-0 justify-end gap-2 border-b-2 px-3 py-2 lg:hidden">
         {(
           [
             ['task', 'Prompt'],
@@ -298,19 +305,25 @@ export function WritingRunner({
         <section
           aria-label="Prompt"
           className={cn(
-            'bg-manga-white min-h-0 overflow-y-auto px-4 py-4 sm:px-6 lg:block',
+            'bg-exam-surface min-h-0 overflow-y-auto px-3 py-4 sm:px-3 lg:block',
             mobileTab === 'task' ? 'block' : 'hidden'
           )}
         >
-          <div className="font-body mx-auto grid max-w-[68ch] gap-4 text-[17px] leading-[1.7]">
-            <h2 className="font-sans text-[22px] font-black">
-              Writing Task {writing.task}
+          <div className="font-body grid w-full gap-4 text-[17px] leading-[1.7]">
+            <h2 className="text-muted-foreground font-sans text-lg leading-none font-black tracking-wide uppercase">
+              Task {writing.task}
             </h2>
             <WritingPrompt text={writing.prompt} />
             {writing.visual ? (
               <TaskVisual
-                className="border-manga-black rounded-control border-2"
+                className="p-0"
                 visual={writing.visual}
+              />
+            ) : null}
+            {writing.sampleAnswer ? (
+              <SampleAnswer
+                key={taskKey}
+                text={writing.sampleAnswer}
               />
             ) : null}
           </div>
@@ -319,7 +332,7 @@ export function WritingRunner({
         <section
           aria-label="Essay"
           className={cn(
-            'bg-manga-pale-red/60 min-h-0 overflow-y-auto px-4 py-4 sm:px-6 lg:flex',
+            'bg-exam-surface in-data-[theme=lightup]:bg-manga-pale-red/60 min-h-0 overflow-y-auto px-3 py-4 sm:px-3 lg:flex',
             mobileTab === 'essay' ? 'flex' : 'hidden',
             'flex-col gap-2'
           )}
@@ -333,7 +346,7 @@ export function WritingRunner({
           <Textarea
             autoCapitalize="off"
             autoCorrect="off"
-            className="font-body border-manga-black text-manga-black focus-visible:border-manga-red rounded-control bg-manga-white min-h-[50vh] flex-1 resize-none border-2 p-4 text-[17px] leading-[1.75] shadow-none focus-visible:ring-0"
+            className="font-body border-manga-black text-manga-black focus-visible:border-manga-red rounded-control bg-manga-white h-[min(60vh,520px)] min-h-60 shrink-0 resize-y border p-4 text-[17px] leading-[1.75] shadow-none focus-visible:ring-0"
             id={`ielts-essay-${taskKey}`}
             maxLength={IELTS_ESSAY_MAX_LENGTH}
             onChange={event => setAnswer(Number(taskKey), event.target.value)}
@@ -482,5 +495,26 @@ export function WritingRunner({
         </DialogContent>
       </Dialog>
     </div>
+  )
+}
+
+/**
+ * The model answer under the task, closed until the learner opens it, as
+ * Jumpinto shows it in practice. Paragraphs are split on blank lines.
+ */
+function SampleAnswer({ text }: { text: string }) {
+  return (
+    <Collapsible className="border-exam-line border-t">
+      <CollapsibleTrigger className="group/sample flex min-h-11 w-full items-center justify-between gap-2 font-sans text-sm font-black focus-visible:underline focus-visible:ring-0">
+        Sample Writing Answer
+        <ChevronDown
+          aria-hidden="true"
+          className="size-4 transition-transform group-data-[panel-open]/sample:rotate-180"
+        />
+      </CollapsibleTrigger>
+      <CollapsiblePanel className="grid gap-3 pt-1 pb-4 text-[14px] leading-[1.6]">
+        <SampleAnswerBody text={text} />
+      </CollapsiblePanel>
+    </Collapsible>
   )
 }

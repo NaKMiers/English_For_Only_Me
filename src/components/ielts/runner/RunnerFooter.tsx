@@ -77,7 +77,7 @@ export function RunnerFooter({
   return (
     <nav
       aria-label="Test navigation"
-      className="border-manga-black bg-manga-white shrink-0 border-t-3 px-3 py-2"
+      className="border-manga-black bg-exam-surface shrink-0 border-t-3 px-3 py-2"
     >
       {top}
       <div
@@ -115,6 +115,8 @@ export function RunnerFooter({
 export interface PartSwitcherItem {
   /** The part's whole work is done: a dot in its corner. */
   done: boolean
+  /** Some question in the part is flagged: an amber dot. */
+  flagged?: boolean
   part: number
   /** Accessible name, e.g. "Part 2, 4 of 10 answered". */
   label: string
@@ -167,6 +169,12 @@ export function PartSwitcher({
                   'absolute top-1 right-1 size-1.5 rounded-full',
                   active ? 'bg-manga-white' : 'bg-manga-red'
                 )}
+              />
+            ) : null}
+            {item.flagged ? (
+              <span
+                aria-hidden="true"
+                className="absolute bottom-1 left-1 size-1.5 rounded-full bg-amber-400"
               />
             ) : null}
           </button>

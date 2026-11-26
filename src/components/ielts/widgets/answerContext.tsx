@@ -26,6 +26,10 @@ export interface IeltsAnswerContextValue {
   onFocusQuestion: (number: number) => void
   /** Guided mode: show the "where is it" button per question. */
   onShowEvidence: ((number: number) => void) | null
+  /** Questions the learner flagged to come back to. */
+  flagged?: ReadonlySet<number>
+  /** While answering: clicking a question number flags or unflags it. */
+  onToggleFlag?: ((number: number) => void) | null
 }
 
 const noop = () => undefined

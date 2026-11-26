@@ -181,6 +181,34 @@
   --lesson-correct: #2c7333;
 }
 
+/* IELTS runner (day mode): a quiet exam sheet. Panes stay white, the app's
+   pink tints (audio bar, chips, hovers, selected answers) turn neutral grey,
+   and frames, inputs and the pane divider draw in grey line instead of
+   black ink, so the passage, questions and answers carry the contrast.
+   Light-up keeps its own warm room. `--exam-surface` is the pane colour. */
+:root {
+  --exam-surface: var(--manga-white);
+  --exam-line: var(--manga-black);
+  /* Option boxes ("Opinion of ..." letter lists): pink outside the runner. */
+  --exam-tint: var(--manga-pale-red);
+}
+:root[data-theme='lightup'] {
+  --exam-line: var(--manga-line);
+}
+:root:not([data-theme='lightup']) .ielts-exam {
+  --exam-line: #d4d4d0;
+  --exam-tint: #fafaf9;
+  --manga-paper-soft: #e6e6e3;
+  --manga-pale-red: #ececea;
+}
+/* Unlayered, so it beats the utility; a focused input keeps its red ring
+   colour from `focus-visible:border-manga-red`. */
+:root:not([data-theme='lightup'])
+  .ielts-exam
+  .border-manga-black:not(:focus-visible) {
+  border-color: var(--exam-line);
+}
+
 @theme inline {
   --color-manga-white: var(--manga-white);
   --color-manga-black: var(--manga-black);
@@ -192,6 +220,9 @@
   --color-manga-ink-soft: var(--manga-ink-soft);
   --color-manga-shadow: var(--manga-shadow);
   --color-lesson-correct: var(--lesson-correct);
+  --color-exam-surface: var(--exam-surface);
+  --color-exam-line: var(--exam-line);
+  --color-exam-tint: var(--exam-tint);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);

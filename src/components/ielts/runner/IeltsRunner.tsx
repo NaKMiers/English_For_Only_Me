@@ -23,6 +23,7 @@ import { cn } from '@/lib/utils'
 import type { IeltsAttemptRecord } from '@/modules/ielts/attempts/attemptRecords'
 import { IELTS_SKILL_LABELS } from '@/modules/ielts/constants'
 import type { IeltsPublicSection } from '@/modules/ielts/publicView'
+import { sharedGroupHeaders } from '@/modules/ielts/sharedGroupHeaders'
 import { checkIeltsPartApi, readIeltsEvidenceApi } from '@/requests/ieltsApi'
 
 import {
@@ -30,8 +31,6 @@ import {
   type IeltsAnswerContextValue,
   type IeltsAnswerValue,
   type IeltsReviewMark,
-  questionBlockId,
-  questionControlId,
 } from '../widgets/answerContext'
 import { GroupBlock } from '../widgets/GroupBlock'
 import { CheckPartPanel } from './CheckPartPanel'
@@ -40,11 +39,7 @@ import { ListeningMaterial, ListeningPlayer } from './ListeningPane'
 import { PassagePane, type IeltsHighlight } from './PassagePane'
 import { QuestionNavigator } from './QuestionNavigator'
 import { useResizableSplit } from './ResizableSplit'
-import {
-  buildQuestionIndex,
-  countBlanks,
-  type IeltsQuestionEntry,
-} from './questionIndex'
+import { buildQuestionIndex, countBlanks } from './questionIndex'
 import { ExamButton } from '../ui'
 import { RunnerToolbar, ToolbarToggle } from './RunnerToolbar'
 import { TextHighlighter } from './TextHighlighter'
@@ -77,14 +72,14 @@ function partName(skill: string, part: number, mode?: string) {
   return skill === 'listening' ? `Part ${part}` : `Passage ${part}`
 }
 
-function focusQuestion(number: number) {
-  window.setTimeout(() => {
-    const control = document.getElementById(questionControlId(number))
-    const block = document.getElementById(questionBlockId(number))
+/** The paper's line under the passage heading, from the part's questions. */
+function passageIntro(section: IeltsPublicSection) {
+  const from = Math.min(...section.groups.map(group => group.from))
+  const to = Math.max(...section.groups.map(group => group.to))
 
-    ;(block ?? control)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-    control?.focus({ preventScroll: true })
-  }, 0)
+  if (!Number.isFinite(from) || !Number.isFinite(to)) return undefined
+
+  return `You should spend about 20 minutes on Questions ${from}-${to}, which are based on Reading Passage ${section.order}.`
 }
 
 /**
@@ -129,6 +124,17 @@ export function IeltsRunner({
       ? startPart
       : (parts[0] ?? 1)
   )
+  // Flagged for a second look; kept for this sitting only.
+  const [flagged, setFlagged] = useState<ReadonlySet<number>>(() => new Set())
+  const toggleFlag = useCallback((number: number) => {
+    setFlagged(current => {
+      const next = new Set(current)
+
+      if (!next.delete(number)) next.add(number)
+
+      return next
+    })
+  }, [])
   const [currentNumber, setCurrentNumber] = useState<number | null>(
     () =>
       (index.find(entry => entry.part === currentPart) ?? index[0])?.number ??
@@ -282,13 +288,6 @@ export function IeltsRunner({
     else void finish()
   }
 
-  const selectEntry = useCallback((entry: IeltsQuestionEntry) => {
-    setCurrentPart(entry.part)
-    setCurrentNumber(entry.number)
-    setMobileTab('questions')
-    focusQuestion(entry.setStart ?? entry.number)
-  }, [])
-
   const showEvidence = useCallback(
     async (number: number) => {
       try {
@@ -405,6 +404,10 @@ export function IeltsRunner({
     )
 
     clearAnswers(numbers)
+    setFlagged(
+      current =>
+        new Set([...current].filter(number => !numbers.includes(number)))
+    )
     setMarks(current =>
       Object.fromEntries(
         Object.entries(current).filter(
@@ -431,8 +434,12 @@ export function IeltsRunner({
         if (entry) setCurrentPart(entry.part)
       },
       onShowEvidence: isPractice && guided ? showEvidence : null,
+      flagged,
+      onToggleFlag: locked ? null : toggleFlag,
     }),
     [
+      flagged,
+      toggleFlag,
       answers,
       currentNumber,
       editAnswer,
@@ -466,18 +473,23 @@ export function IeltsRunner({
     <PassagePane
       highlight={highlight?.sectionKey === section.key ? highlight : null}
       material={section.reading}
+      heading={partName(attempt.skill, section.order, attempt.mode)}
+      intro={attempt.mode === 'drill' ? undefined : passageIntro(section)}
       partLabel={`${testTitle} · ${partName(attempt.skill, section.order, attempt.mode)}`}
     />
   ) : null
   const currentPartName = partName(attempt.skill, currentPart, attempt.mode)
   const canCheck = isPractice && open && Boolean(section)
   const currentCheck = section ? (partChecks[section.order] ?? null) : null
+  const groupHeaders = sharedGroupHeaders(section?.groups ?? [])
   const questions = (
-    <div className="text-manga-black mx-auto grid max-w-[70ch] gap-7 text-[16px] leading-[1.6]">
-      {section?.groups.map(group => (
+    <div className="text-manga-black grid w-full gap-7 text-[16px] leading-[1.6]">
+      {section?.groups.map((group, index) => (
         <GroupBlock
           group={group}
+          header={groupHeaders[index]}
           key={group.id}
+          sectionTitle={section.title}
         />
       ))}
       {/* Phones and tablets: the check closes the questions. From lg it
@@ -494,7 +506,7 @@ export function IeltsRunner({
     </div>
   )
   const questionsPaneClass =
-    'border-manga-black bg-manga-white in-data-[theme=lightup]:bg-manga-pale-red/60 px-4 py-4 outline-none sm:px-6 lg:min-h-0 lg:overflow-y-auto'
+    'border-manga-black bg-exam-surface in-data-[theme=lightup]:bg-manga-pale-red/60 px-3 py-4 outline-none sm:px-3 lg:min-h-0 lg:overflow-y-auto'
 
   const toggles = isPractice ? (
     <div className="flex items-center gap-2">
@@ -614,8 +626,8 @@ export function IeltsRunner({
             ref={stageRef}
             style={split.style}
           >
-            <div className="border-manga-black bg-manga-paper-soft border-b-2 px-4 py-1.5 sm:px-6 lg:col-start-1 lg:row-start-1">
-              <div className="mx-auto max-w-[68ch]">
+            <div className="border-manga-black bg-manga-paper-soft border-b-2 px-3 py-1.5 sm:px-3 lg:col-start-1 lg:row-start-1">
+              <div className="w-full">
                 <ListeningPlayer {...listeningProps} />
               </div>
             </div>
@@ -628,7 +640,7 @@ export function IeltsRunner({
               {material ? (
                 <section
                   aria-label="Audio"
-                  className="bg-manga-white px-4 pt-4 pb-6 outline-none sm:px-6 lg:col-start-1 lg:row-start-2 lg:min-h-0 lg:overflow-y-auto"
+                  className="bg-exam-surface px-3 pt-4 pb-6 outline-none sm:px-3 lg:col-start-1 lg:row-start-2 lg:min-h-0 lg:overflow-y-auto"
                   ref={materialRef}
                   tabIndex={-1}
                 >
@@ -662,7 +674,7 @@ export function IeltsRunner({
             <section
               aria-label="Reading passage"
               className={cn(
-                'bg-manga-white min-h-0 overflow-y-auto px-4 py-4 outline-none sm:px-6 lg:block',
+                'bg-exam-surface min-h-0 overflow-y-auto px-3 py-4 outline-none sm:px-3 lg:block',
                 mobileTab === 'material' ? 'block' : 'hidden'
               )}
               ref={materialRef}
@@ -704,13 +716,12 @@ export function IeltsRunner({
             ) : null
           }
           answers={answers}
-          currentNumber={currentNumber}
           currentPart={currentPart}
+          flagged={flagged}
           index={index}
           next={isPractice ? next : null}
           prev={isPractice ? prev : null}
           onPartChange={setCurrentPart}
-          onSelect={selectEntry}
           partLabel={part => partName(attempt.skill, part, attempt.mode)}
         />
       </div>

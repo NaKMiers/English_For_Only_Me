@@ -3,7 +3,7 @@
   "version": "1.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "fuser -k 3000/tcp 2>/dev/null; next dev",
     "build": "next build",
     "clean": "rm -rf .next node_modules bun.lock",
     "start": "next start",
@@ -23,7 +23,16 @@
     "vocab:seed-family": "node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/seedVocabularyFamily.ts",
     "vocab:enrich": "node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/enrichVocabularyBatch.ts",
     "ielts:seed-sample": "node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/seedIeltsSample.ts",
-    "ielts:eval-generation": "node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/evalIeltsGeneration.ts"
+    "ielts:attach-image": "node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/attachIeltsGroupImage.ts",
+    "ielts:paragraph-breaks": "node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/setIeltsParagraphBreaks.ts",
+    "ielts:set-standfirst": "node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/setIeltsStandfirst.ts",
+    "ielts:set-sample-title": "node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/setIeltsSampleTitle.ts",
+    "ielts:set-prompts": "node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/setIeltsQuestionPrompts.ts",
+    "ielts:set-group-title": "node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/setIeltsGroupTitle.ts",
+    "ielts:eval-generation": "node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/evalIeltsGeneration.ts",
+    "ielts:dump-test": "node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/dumpIeltsTest.ts",
+    "ielts:patch-section": "node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/patchIeltsSection.ts",
+    "ielts:scan-warnings": "node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/scanIeltsWarnings.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",

@@ -56,11 +56,11 @@ function ListItems({
 
   return (
     <List
-      className={cn('grid gap-2 pl-6', ordered ? 'list-decimal' : 'list-disc')}
+      className={cn('grid gap-1 pl-6', ordered ? 'list-decimal' : 'list-disc')}
     >
       {items.map((item, index) => (
         <li
-          className="leading-[1.9]"
+          className="leading-[1.65]"
           key={index}
         >
           <Inline
@@ -68,7 +68,7 @@ function ListItems({
             renderSlot={renderSlot}
           />
           {item.items.length ? (
-            <div className="mt-2">
+            <div className="mt-1">
               <ListItems
                 items={item.items}
                 ordered={false}
@@ -115,7 +115,7 @@ function Block({
 
   if (block.type === 'paragraph')
     return (
-      <p className="leading-[1.9]">
+      <p className="leading-[1.65]">
         <Inline
           nodes={block.children}
           renderSlot={renderSlot}
@@ -160,7 +160,7 @@ function Block({
               {row.map((cell, index) => (
                 <td
                   className={cn(
-                    'border-manga-black border-2 px-3 py-2 align-top leading-[1.9]',
+                    'border-manga-black border-2 px-3 py-1.5 align-top leading-[1.65]',
                     ALIGN_CLASS[block.align[index] ?? 'left']
                   )}
                   key={index}
@@ -191,7 +191,7 @@ export const IeltsMarkdown = memo(function IeltsMarkdown({
   const blocks = useMemo(() => parseIeltsMarkdown(source), [source])
 
   return (
-    <div className={cn('grid gap-3', className)}>
+    <div className={cn('grid gap-2', className)}>
       {blocks.map((block, index) => (
         <Block
           block={block}

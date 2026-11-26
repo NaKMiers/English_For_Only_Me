@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
 import { IELTS_SAMPLE_TEST } from './fixtures/sampleTest'
-import { optionsInBody, toPublicSection, toPublicTest } from './publicView'
+import {
+  bodyWithoutOptions,
+  optionsInBody,
+  toPublicSection,
+  toPublicTest,
+} from './publicView'
 import type { IeltsOption, IeltsQuestionGroup, IeltsSection } from './schema'
 
 const FORBIDDEN = [
@@ -50,6 +55,24 @@ describe('toPublicTest', () => {
         item => (item.listening?.lines?.length ?? 0) > 0
       )
     ).toBe(true)
+  })
+
+  it('sends the writing sample answer only when asked for', () => {
+    const samples = (includeSampleAnswer: boolean) =>
+      IELTS_SAMPLE_TEST.sections
+        .filter(section => section.skill === 'writing')
+        .map(
+          section =>
+            toPublicSection(section, {
+              includeSampleAnswer,
+              includeTranscript: true,
+            }).writing?.sampleAnswer
+        )
+
+    expect(samples(false)).toEqual([undefined, undefined])
+    expect(samples(true).every(sample => (sample?.length ?? 0) > 100)).toBe(
+      true
+    )
   })
 
   it('keeps everything the runner needs', () => {
@@ -119,5 +142,37 @@ describe('pickLetter', () => {
         .pickLetter
     ).toBe(false)
     expect(viewOf(summary).pickLetter).toBe(false)
+  })
+})
+
+describe('bodyWithoutOptions', () => {
+  it('drops the word box lines and keeps the summary', () => {
+    expect(
+      bodyWithoutOptions(
+        'Showing some {{q18}} trends.\n\nRead {{q21}} words.\n\n- **A** fast\n- **B** isolated'
+      )
+    ).toBe('Showing some {{q18}} trends.\n\nRead {{q21}} words.')
+  })
+
+  const box = [
+    { key: 'A', text: 'fast' },
+    { key: 'B', text: 'isolated' },
+  ]
+
+  it.each([
+    ['plain lines', 'A fast\nB isolated'],
+    ['dotted letters', 'A. fast\nB) isolated'],
+    ['one line', '**A** fast   **B** isolated'],
+    ['a table', '| A fast | B isolated |\n| --- | --- |'],
+  ])('drops a word box stored as %s', (_, list) => {
+    expect(bodyWithoutOptions(`Some {{q18}} trends.\n\n${list}`, box)).toBe(
+      'Some {{q18}} trends.'
+    )
+  })
+
+  it('keeps summary lines that only mention an option word', () => {
+    expect(bodyWithoutOptions('A fast {{q18}} reader.', box)).toBe(
+      'A fast {{q18}} reader.'
+    )
   })
 })

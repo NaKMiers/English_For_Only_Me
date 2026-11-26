@@ -24,6 +24,7 @@ import {
 import { cn } from '@/lib/utils'
 import type { IeltsAttemptRecord } from '@/modules/ielts/attempts/attemptRecords'
 import { IELTS_MAX_AUDIO_INTERRUPTIONS } from '@/modules/ielts/constants'
+import { contextReadAloud } from '@/modules/ielts/listeningContext'
 import type { IeltsPublicSection } from '@/modules/ielts/publicView'
 import { postIeltsAudioEventApi } from '@/requests/ieltsApi'
 
@@ -69,12 +70,12 @@ function Transcript({
     <ol
       aria-label="Transcript"
       data-highlight-scope={`transcript:${section.key}`}
-      className="font-body grid gap-1.5 text-[17px] leading-[1.65]"
+      className="font-body grid gap-2.5 text-[15px] leading-[1.6]"
       ref={rootRef}
     >
       {lines.map((line, index) => (
         <li key={index}>
-          <strong className="font-sans text-sm font-black uppercase">
+          <strong className="font-sans font-black uppercase">
             {line.speaker}:
           </strong>{' '}
           <span>
@@ -409,37 +410,51 @@ export function ListeningMaterial(
 
   const { highlight, onShowTranscriptChange, showTranscript } = props
   const hasLines = Boolean(section.listening?.lines?.length)
+  const context = section.listening?.context ?? ''
+  // The announcer reads the context aloud, so the audioscript repeats it.
+  const contextInScript = contextReadAloud(section.listening)
+
+  const title = (
+    <h3 className="text-center font-sans text-xl leading-tight font-black">
+      {section.title}
+    </h3>
+  )
 
   return (
-    <div className="mx-auto grid max-w-[68ch] gap-3">
-      <header className="grid gap-0.5">
-        <p className="text-muted-foreground font-sans text-xs font-black uppercase">
+    <div className="grid w-full gap-3">
+      <header className="grid gap-2">
+        <h2 className="text-muted-foreground font-sans text-lg leading-none font-black tracking-wide uppercase">
           Part {section.order}
-        </p>
-        <h2 className="font-sans text-xl font-black">{section.title}</h2>
-        {section.listening?.context ? (
-          <p className="font-semibold">{section.listening.context}</p>
+        </h2>
+        {/* With an audioscript the title heads the script, as on Jumpinto. */}
+        {hasLines ? null : title}
+        {context && !contextInScript ? (
+          <p className="font-semibold">{context}</p>
         ) : null}
       </header>
       {!section.listening?.audio ? (
-        <Transcript
-          highlight={highlight}
-          section={section}
-        />
+        <div className="grid gap-3">
+          {hasLines ? title : null}
+          <Transcript
+            highlight={highlight}
+            section={section}
+          />
+        </div>
       ) : hasLines ? (
         <Collapsible
-          className="grid gap-3"
+          className="border-exam-line grid gap-3 border-t"
           onOpenChange={onShowTranscriptChange}
           open={showTranscript}
         >
-          <CollapsibleTrigger className="group/transcript border-manga-black bg-manga-white hover:bg-manga-paper-soft rounded-control inline-flex min-h-10 items-center justify-between gap-2 border-2 px-3 font-sans text-sm font-black transition-colors">
-            Transcript
+          <CollapsibleTrigger className="group/transcript flex min-h-11 w-full items-center justify-between gap-2 font-sans text-sm font-black focus-visible:underline focus-visible:ring-0">
+            Audioscript
             <ChevronDown
               aria-hidden="true"
               className="size-4 transition-transform group-data-[panel-open]/transcript:rotate-180"
             />
           </CollapsibleTrigger>
-          <CollapsiblePanel>
+          <CollapsiblePanel className="grid gap-3">
+            {title}
             <Transcript
               highlight={highlight}
               section={section}

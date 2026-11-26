@@ -3,6 +3,7 @@
 import { memo, type ReactNode, useEffect, useRef } from 'react'
 
 import { cn } from '@/lib/utils'
+import { passageStandfirst } from '@/modules/ielts/passageStandfirst'
 import type { IeltsReadingMaterial } from '@/modules/ielts/schema'
 
 export interface IeltsHighlight {
@@ -52,22 +53,36 @@ function highlightAt(text: string, start: number, length: number) {
 
 interface Props {
   className?: string
+  /** The big part heading ("Passage 1"); defaults to the label. */
+  heading?: string
   highlight: IeltsHighlight | null
+  /** "You should spend about 20 minutes on Questions 1-13, ..." */
+  intro?: string
   material: IeltsReadingMaterial
+  /** Names the passage, also the key saved highlights are stored under. */
   partLabel: string
 }
 
 /**
  * A reading passage on plain paper (focus mode): no shadows or gradients,
- * 17px Source Sans at 1.7 line height, at most 68ch per line.
+ * 17px Source Sans at 1.7 line height, as wide as its pane (the split sets it).
  */
 export const PassagePane = memo(function PassagePane({
   className,
+  heading,
   highlight,
+  intro,
   material,
   partLabel,
 }: Props) {
   const rootRef = useRef<HTMLElement>(null)
+  const { bodyStart, standfirst } = passageStandfirst(material)
+  // Highlights index the stored paragraphs, so a standfirst lifted out of
+  // paragraph 0 still answers to block 0.
+  const marked = (text: string, index: number) =>
+    highlight?.blockIndex === index
+      ? highlightText(text, highlight.quote)
+      : text
 
   useEffect(() => {
     if (!highlight) return
@@ -82,39 +97,57 @@ export const PassagePane = memo(function PassagePane({
       aria-label="Reading passage"
       data-highlight-scope={`passage:${partLabel}`}
       className={cn(
-        'text-manga-black mx-auto grid max-w-[70ch] gap-3 text-[17px] leading-[1.7]',
+        'text-manga-black grid w-full gap-2.5 text-[17px] leading-[1.7]',
         className
       )}
       ref={rootRef}
     >
       <header className="grid gap-1">
-        <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
-          {partLabel}
-        </p>
-        <h2 className="font-sans text-[22px] leading-tight font-black">
-          {material.title}
+        <h2 className="text-muted-foreground font-sans text-lg leading-none font-black tracking-wide uppercase">
+          {heading ?? partLabel}
         </h2>
-        {material.subtitle ? (
-          <p className="text-muted-foreground italic">{material.subtitle}</p>
+        {intro ? (
+          <p className="text-muted-foreground text-[15px] leading-snug">
+            {intro}
+          </p>
         ) : null}
       </header>
-      {material.paragraphs.map((paragraph, index) => (
-        <p
-          className={cn(paragraph.label && 'grid grid-cols-[1.5rem_1fr] gap-2')}
-          key={index}
-        >
-          {paragraph.label ? (
-            <strong className="text-muted-foreground font-sans text-sm leading-[1.7rem] font-black">
-              {paragraph.label}
-            </strong>
-          ) : null}
-          <span>
-            {highlight?.blockIndex === index
-              ? highlightText(paragraph.text, highlight.quote)
-              : paragraph.text}
-          </span>
-        </p>
-      ))}
+      <div className="grid gap-2 pt-3 text-center">
+        <h3 className="font-sans text-[24px] leading-tight font-black">
+          {material.title}
+        </h3>
+        {standfirst ? (
+          <p className="font-bold italic">
+            {bodyStart ? marked(standfirst, 0) : standfirst}
+          </p>
+        ) : null}
+      </div>
+      {material.paragraphs.slice(bodyStart).map((paragraph, offset) => {
+        const index = offset + bodyStart
+
+        // A lettered section ("A") heads its own paragraphs, as the paper
+        // sets it; a line break inside the stored text starts a paragraph.
+        const parts = paragraph.text
+          .split(/\n+/)
+          .map(part => part.trim())
+          .filter(Boolean)
+
+        return (
+          <section
+            className={cn('grid gap-1.5', paragraph.label && 'pt-5')}
+            key={index}
+          >
+            {paragraph.label ? (
+              <h4 className="pb-1 font-sans text-base leading-none font-black">
+                {paragraph.label}
+              </h4>
+            ) : null}
+            {parts.map((part, partIndex) => (
+              <p key={partIndex}>{marked(part, index)}</p>
+            ))}
+          </section>
+        )
+      })}
     </article>
   )
 })

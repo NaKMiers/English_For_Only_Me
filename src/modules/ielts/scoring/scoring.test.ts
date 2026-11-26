@@ -22,6 +22,9 @@ describe('normalizeIeltsAnswer', () => {
     ['9 / 30', '9/30'],
     ['children’s', "children's"],
     ['he’s', "he's"],
+    ['$199', '199'],
+    ['£ 50', '50'],
+    ['$', '$'],
   ])('%j -> %j', (input, expected) => {
     expect(normalizeIeltsAnswer(input)).toBe(expected)
   })

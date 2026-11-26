@@ -40,6 +40,8 @@ export type IeltsConsistencyRule =
   | 'audio_duration'
   | 'writing_task'
   | 'sections_complete'
+  | 'visual_missing'
+  | 'question_stem_missing'
 
 export interface IeltsConsistencyIssue {
   rule: IeltsConsistencyRule
@@ -366,6 +368,56 @@ function checkMaterial(section: IeltsSection, report: Report, warn: Report) {
   }
 }
 
+// "Label the diagram below", "Look at the map", "pictures A-D", "bar chart".
+// A flow-chart is printed as text boxes, so it needs no image.
+const VISUAL_WORDS =
+  /\b(?<!flow-)(?:diagrams?|maps?|plans?|pictures?|drawings?|charts?|graphs?)\b/i
+
+/**
+ * Warns when an instruction points at a picture the group does not have:
+ * the learner cannot answer, and the notes were usually rewritten to stand
+ * in for it. A warning, not an error, so a text stand-in can still publish.
+ */
+function checkVisual(group: IeltsQuestionGroup, index: number, warn: Report) {
+  if (group.imageUrl || !VISUAL_WORDS.test(group.instruction)) return
+
+  warn(
+    'visual_missing',
+    `groups.${index}.imageUrl`,
+    `Questions ${group.from}-${group.to} refer to a diagram, map or picture but the group has no image.`
+  )
+}
+
+/**
+ * A choice question needs its stem ("What does the writer say about ...?").
+ * Without it the learner sees only options A-D and cannot answer, yet the
+ * key still scores, so nothing else notices.
+ */
+function checkStems(group: IeltsQuestionGroup, index: number, warn: Report) {
+  if (
+    group.type !== 'multiple-choice' &&
+    group.type !== 'multiple-choice-multi'
+  )
+    return
+  // "Which THREE things ...? Choose THREE letters" carries the question.
+  if (
+    group.title.trim() ||
+    group.body.trim() ||
+    group.instruction.includes('?')
+  )
+    return
+
+  group.questions.forEach((question, questionIndex) => {
+    if (question.prompt.trim()) return
+
+    warn(
+      'question_stem_missing',
+      `groups.${index}.questions.${questionIndex}.prompt`,
+      `Question ${question.number} has options but no question text.`
+    )
+  })
+}
+
 export function checkSection(section: IeltsSection): IeltsConsistencyReport {
   const errors: IeltsConsistencyIssue[] = []
   const warnings: IeltsConsistencyIssue[] = []
@@ -375,9 +427,11 @@ export function checkSection(section: IeltsSection): IeltsConsistencyReport {
     warnings.push({ rule, sectionKey: section.key, path, message })
 
   checkMaterial(section, report, warn)
-  section.groups.forEach((group, index) =>
+  section.groups.forEach((group, index) => {
     checkGroup(section, group, index, report)
-  )
+    checkVisual(group, index, warn)
+    checkStems(group, index, warn)
+  })
 
   return { errors, warnings }
 }

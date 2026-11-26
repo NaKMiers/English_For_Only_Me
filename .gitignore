@@ -45,3 +45,6 @@ next-env.d.ts
 .gstack/
 
 .gstack/
+
+# IELTS parity dumps
+/docs/ielts-parity/dumps/

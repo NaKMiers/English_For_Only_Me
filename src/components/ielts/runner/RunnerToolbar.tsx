@@ -100,7 +100,7 @@ export function RunnerToolbar({
     ) : null
 
   return (
-    <header className="border-manga-black bg-manga-white flex shrink-0 flex-wrap items-center gap-x-3 gap-y-2 border-b-3 px-3 py-2 sm:px-4">
+    <header className="border-manga-black bg-exam-surface flex shrink-0 flex-wrap items-center gap-x-3 gap-y-2 border-b-3 px-3 py-2 sm:px-4">
       {onBack ? (
         <ExamIconButton
           className="size-10"

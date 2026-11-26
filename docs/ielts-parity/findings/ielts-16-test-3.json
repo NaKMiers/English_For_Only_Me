@@ -1,0 +1,182 @@
+[
+  {
+    "section": "listening-1",
+    "questions": "10",
+    "type": "missing-variant",
+    "detail": "Only '199' is stored. The note prints '$' before the gap ('The course costs ${{q10}} per week'), but a candidate who writes '$199' is normally still marked correct. normalizeIeltsAnswer does not strip '$', so '$199' is currently marked wrong.",
+    "evidence": "L26 '$199.'; src/modules/ielts/scoring/normalize.ts strips only . , ; : ! ? quotes and brackets",
+    "status": "fixed",
+    "fix": "Shared code: normalizeIeltsAnswer drops a leading currency sign before a number, so \"$199\" scores as \"199\" in every test. No data change."
+  },
+  {
+    "section": "listening-1",
+    "questions": "1",
+    "type": "structure",
+    "detail": "The opening lines are stored as one plain paragraph 'The course focuses on skills and safety. Charlie would be placed in Level 5.' followed by a bullet for Q1, with no heading. On the paper these are probably separate bullet lines under the title; the exact note layout can only be settled from the printed page.",
+    "evidence": "l1-g1 body first two lines",
+    "status": "needs-reference",
+    "fix": "if the paper shows them as bullets: split into '- The course focuses on skills and safety.' and '- Charlie would be placed in Level 5.' lines"
+  },
+  {
+    "section": "listening-2",
+    "questions": "15-20",
+    "type": "D5",
+    "detail": "Instruction reads 'What information does Megan give about each of the following job opportunities? Choose the correct letter, A-H, next to Questions 15-20.' The usual Cambridge wording for a box task is 'Choose SIX answers from the box and write the correct letter, A-H, next to Questions 15-20.' Also the paper normally prints a second heading 'Job opportunities' above the 15-20 list; only the box title 'Information' is stored. Exact wording needs the paper.",
+    "evidence": "l2-g3 instruction and title",
+    "status": "needs-reference",
+    "fix": "if confirmed: set l2-g3 instruction to 'What information does Megan give about each of the following job opportunities? Choose SIX answers from the box and write the correct letter, A-H, next to Questions 15-20.'; list heading 'Job opportunities' would need a body line or code support"
+  },
+  {
+    "section": "listening-4",
+    "questions": "39",
+    "type": "missing-variant",
+    "detail": "Stored answer 'style'. The gap 'Geographical areas had their own ___ of knitting.' also reads naturally with 'styles'. Whether the official key accepts 'styles' can only be settled from the Cambridge answer key; do not add without it.",
+    "evidence": "L11 'Regional differences in style developed'",
+    "status": "needs-reference",
+    "fix": "only if the official key lists it: add variant \"styles\" to listening-4 q39 answers"
+  },
+  {
+    "section": "listening-4",
+    "questions": "31-40",
+    "type": "structure",
+    "detail": "Note lines are inconsistent: 'Interest in knitting' and 'Early knitting' lines are plain lines, 'Benefits of knitting' lines are '- ' bullets. The paper most likely uses the same bullet style throughout; exact layout needs the printed page.",
+    "evidence": "l4-g1 body",
+    "status": "needs-reference",
+    "fix": "if the paper shows bullets throughout: prefix the plain lines under 'Interest in knitting' and 'Early knitting' with '- '"
+  },
+  {
+    "section": "reading-1",
+    "questions": "6-13",
+    "type": "wrong-type",
+    "detail": "Instruction 'Complete the summary below. Choose ONE WORD ONLY from the passage for each answer.' with a running-paragraph body titled 'Warships and merchant ships', but group r1-g2 is stored as note-completion. wordLimit {maxWords:1} matches ONE WORD ONLY. All answers verified against the passage and within the limit: lightweight, bronze, levels, hull, triangular, music, grain, towboats; every evidence quote occurs in its cited block.",
+    "evidence": "Q6 block 2: 'Warships were built to be lightweight and very speedy'; Q13 block 5: 'be intercepted by a number of towboats that would drag them to the quay'",
+    "status": "fixed",
+    "fix": "group r1-g2 type note-completion -> summary-completion (no other field changes) (applied with ielts:patch-section, revision 2)"
+  },
+  {
+    "section": "reading-2",
+    "questions": "20-22",
+    "type": "wrong-type",
+    "detail": "Instruction 'Complete the summary below. Choose ONE WORD ONLY ...' with a paragraph body titled 'Interesting finds at an archaeological site', stored as note-completion. Answers verified and within the one-word limit: microorganisms (variant micro-organisms already stored), reindeer, insects ('biting insects' would break the limit, so no variant needed).",
+    "evidence": "Q20 block 1: 'unless they're protected from the microorganisms that cause decay'; Q21/22 block 2: 'Reindeer once congregated on these icy patches in the later summer months to escape biting insects'",
+    "status": "fixed",
+    "fix": "group r2-g2 type note-completion -> summary-completion (no other field changes) (applied with ielts:patch-section, revision 2)"
+  },
+  {
+    "section": "reading-2",
+    "questions": "-",
+    "type": "passage-text",
+    "detail": "Section C names 'Lars Pile of Oppland County Council'. The glacial archaeologist of Oppland County Council is usually spelled 'Lars Pilø'; 'Pile' looks like an OCR/ASCII loss of the o-slash. No question depends on it. Only the printed paper can confirm the exact spelling.",
+    "evidence": "[2] (C) 'which included Lars Pile of Oppland County Council, Norway'",
+    "status": "needs-reference",
+    "fix": "if the paper prints 'Pilø': reading-2 paragraphs[2].text 'Lars Pile' -> 'Lars Pilø' (via ielts:patch-section)"
+  },
+  {
+    "section": "reading-3",
+    "questions": "31",
+    "type": "passage-text",
+    "detail": "Section E has 'inactivated-enabling' with no spaces: the paper's dash was collapsed into a hyphen joining two words. Elsewhere this test stores the dash as ' - '. Q31 evidence quote copies the same typo, so both must change together or the evidence check fails.",
+    "evidence": "[4] (E) 'phytochromes are quickly inactivated-enabling it to grow faster to find sunlight again'",
+    "status": "fixed",
+    "fix": "reading-3 paragraphs[4].text 'inactivated-enabling' -> 'inactivated - enabling'; r3-g1 question 31 evidence.quote 'phytochromes are quickly inactivated-enabling it to grow faster to find sunlight again' -> 'phytochromes are quickly inactivated - enabling it to grow faster to find sunlight again' (blockIndex stays 4) (applied with ielts:patch-section, revision 2)"
+  },
+  {
+    "section": "reading-3",
+    "questions": "38-40",
+    "type": "wrong-type",
+    "detail": "Instruction 'Complete the sentences below. Choose NO MORE THAN TWO WORDS from the passage for each answer.' with three stand-alone sentences, stored as note-completion. wordLimit {maxWords:2} matches. Answers verified and within the limit: 38 warm winter / warm, 39 summer, 40 mustard plant / mustard plants / mustard.",
+    "evidence": "Q38 block 6: 'can flower months in advance during a warm winter'; Q39 block 6: 'a colder summer is likely to be a rain-soaked one'; Q40 block 7: 'using a mustard plant called Arabidopsis'",
+    "status": "fixed",
+    "fix": "group r3-g3 type note-completion -> sentence-completion (no other field changes) (applied with ielts:patch-section, revision 2)"
+  },
+  {
+    "section": "listening-1..4",
+    "questions": "all",
+    "type": "display",
+    "detail": "Context line shown above the audioscript although the announcer reads it in different words",
+    "evidence": "context 'Part 2, you will hear a recruitment officer giving a talk...' vs announcer line '... officer called Megan Baker, giving a talk'",
+    "status": "fixed",
+    "fix": "Shared code: contextReadAloud() in src/modules/ielts/listeningContext.ts, used by ListeningPane"
+  },
+  {
+    "section": "listening-3",
+    "questions": "25-30",
+    "type": "display",
+    "detail": "Six one-question multiple choice groups each printed 'Question N / Choose the correct letter, A, B or C.'; the paper prints one header 'Questions 25-30'",
+    "evidence": "localhost screenshot",
+    "status": "fixed",
+    "fix": "Shared code: sharedGroupHeaders() in src/modules/ielts/sharedGroupHeaders.ts, used by IeltsRunner and SectionPreview"
+  },
+  {
+    "section": "reading-2, reading-3",
+    "questions": "14-19, 33-37",
+    "type": "display",
+    "detail": "Options box 'A Paragraph A ... H Paragraph H' shown for 'Which section contains the following information?'; the paper prints no box",
+    "evidence": "localhost screenshot",
+    "status": "fixed",
+    "fix": "Shared code: onlyNamesSections() in src/modules/ielts/sectionLetterOptions.ts, used by GroupBlock"
+  },
+  {
+    "section": "writing-1, writing-2",
+    "questions": "-",
+    "type": "writing",
+    "detail": "Prompts, airport plan image and sample answers (222 and 296 words) present and match the tasks",
+    "evidence": "dump + localhost screenshot",
+    "status": "ok",
+    "fix": ""
+  },
+  {
+    "section": "reading-3",
+    "questions": "-",
+    "type": "D2",
+    "detail": "Standfirst missing under the title",
+    "evidence": "owner screenshot of Jumpinto reading/3",
+    "status": "fixed",
+    "fix": "reading.subtitle set with ielts:patch-section (revision 4)"
+  },
+  {
+    "section": "reading-3",
+    "questions": "-",
+    "type": "D3",
+    "detail": "Section A is two paragraphs on the paper, stored as one",
+    "evidence": "owner screenshot of Jumpinto reading/3",
+    "status": "fixed",
+    "fix": "ielts:paragraph-breaks \"A=The new findings\" (revision 3)"
+  },
+  {
+    "section": "writing-1",
+    "questions": "-",
+    "type": "D6",
+    "detail": "Sample answer title missing ('Southwest Airport: Current Layout and Redevelopment Plan')",
+    "evidence": "owner screenshot of Jumpinto writing/1",
+    "status": "fixed",
+    "fix": "sampleAnswer now starts with '# <title>' (ielts:patch-section, revision 2); shared code SampleAnswerBody shows a '# ' first line as a centered title in the runner and the result page"
+  },
+  {
+    "section": "writing-1",
+    "questions": "-",
+    "type": "display",
+    "detail": "Sample answer spacing looser than Jumpinto",
+    "evidence": "owner screenshots",
+    "status": "fixed",
+    "fix": "WritingRunner sample panel: line height 1.6, small top padding"
+  },
+  {
+    "section": "writing-2",
+    "questions": "-",
+    "type": "D6",
+    "detail": "Sample answer title missing ('Should Sugary Products Be Made More Expensive to Reduce Sugar Consumption?')",
+    "evidence": "owner screenshot of Jumpinto writing/2",
+    "status": "fixed",
+    "fix": "sampleAnswer now starts with '# <title>' (ielts:patch-section, revision 2)"
+  },
+  {
+    "section": "writing-1, writing-2",
+    "questions": "-",
+    "type": "display",
+    "detail": "Sample answer text as large as the prompt; Jumpinto prints it smaller",
+    "evidence": "owner screenshots",
+    "status": "fixed",
+    "fix": "WritingRunner sample panel text 14px"
+  }
+]

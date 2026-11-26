@@ -5,7 +5,7 @@
  * tags in the source stay literal text, so AI or admin input cannot inject
  * markup.
  *
- *   blocks:  # / ## / ### headings, paragraphs, "- " or "* " bullets (two
+ *   blocks:  # / ## / ### headings, paragraphs (one per line), "- " or "* " bullets (two
  *            levels via two-space indent), "1. " ordered lists, GFM tables
  *   inline:  **bold**, *italic*, {{qN}} answer slots (N = 1..40), text
  */
@@ -245,24 +245,11 @@ export function parseIeltsMarkdown(source: string): IeltsMdBlock[] {
       continue
     }
 
-    const paragraph: string[] = []
-
-    while (
-      index < lines.length &&
-      lines[index].trim() &&
-      !HEADING_PATTERN.test(lines[index]) &&
-      !BULLET_PATTERN.test(lines[index]) &&
-      !ORDERED_PATTERN.test(lines[index]) &&
-      !isTableStart(lines, index)
-    ) {
-      paragraph.push(lines[index].trim())
-      index++
-    }
-
-    blocks.push({
-      type: 'paragraph',
-      children: parseIeltsInline(paragraph.join(' ')),
-    })
+    // Every line is its own paragraph: notes, forms and short-answer
+    // questions put one item per line on the paper, so a single newline is
+    // a line break, never a soft wrap.
+    blocks.push({ type: 'paragraph', children: parseIeltsInline(line.trim()) })
+    index++
   }
 
   return blocks

@@ -6,6 +6,9 @@
  */
 
 const LEADING_TRAILING_PUNCTUATION = /^[\s.,;:!?"'()[\]]+|[\s.,;:!?"'()[\]]+$/g
+// The paper prints the currency before the blank ("$ ____"), so a candidate
+// who writes "$199" or "£ 50" still gives the number the key holds.
+const LEADING_CURRENCY = /^[$£€¥]\s*(?=\d)/
 
 export function normalizeIeltsAnswer(value: string): string {
   return value
@@ -16,6 +19,7 @@ export function normalizeIeltsAnswer(value: string): string {
     .replace(/[‐-―−­]/g, '-')
     .replace(/ /g, ' ')
     .replace(LEADING_TRAILING_PUNCTUATION, '')
+    .replace(LEADING_CURRENCY, '')
     .replace(/\s+/g, ' ')
     .replace(/\s*([-/])\s*/g, '$1')
     .trim()

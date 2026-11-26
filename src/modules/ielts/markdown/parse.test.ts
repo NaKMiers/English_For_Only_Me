@@ -16,18 +16,42 @@ describe('parseIeltsMarkdown', () => {
     expect(blocks.map(block => block.type)).toEqual([
       'heading',
       'paragraph',
+      'paragraph',
       'list',
       'list',
     ])
     expect(blocks[1]).toEqual({
       type: 'paragraph',
-      children: [{ type: 'text', value: 'Members meet on Tuesdays.' }],
+      children: [{ type: 'text', value: 'Members meet on' }],
     })
-    expect(blocks[2]).toMatchObject({
+    expect(blocks[3]).toMatchObject({
       ordered: false,
       items: [{ items: [{ children: [{ value: 'nested' }] }] }, {}],
     })
-    expect(blocks[3]).toMatchObject({ ordered: true })
+    expect(blocks[4]).toMatchObject({ ordered: true })
+  })
+
+  it('puts each short-answer question on its own line', () => {
+    const blocks = parseIeltsMarkdown(
+      'What mineral was mined? {{q11}}\nWhose name was carved? {{q12}}'
+    )
+
+    expect(blocks).toEqual([
+      {
+        type: 'paragraph',
+        children: [
+          { type: 'text', value: 'What mineral was mined? ' },
+          { type: 'slot', number: 11 },
+        ],
+      },
+      {
+        type: 'paragraph',
+        children: [
+          { type: 'text', value: 'Whose name was carved? ' },
+          { type: 'slot', number: 12 },
+        ],
+      },
+    ])
   })
 
   it('parses a GFM table with slots in cells, alignment and escaped pipes', () => {

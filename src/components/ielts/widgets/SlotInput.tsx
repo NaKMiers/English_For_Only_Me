@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils'
 import { IELTS_ANSWER_MAX_LENGTH } from '@/modules/ielts/constants'
 import type { IeltsOption } from '@/modules/ielts/schema'
 
+import { QuestionNumberBadge } from './QuestionNumberBadge'
 import { answerText, questionControlId, useIeltsAnswers } from './answerContext'
 import { EvidenceIconButton } from './EvidenceIconButton'
 import { ReviewMark } from './ReviewMark'
@@ -42,14 +43,8 @@ export const SlotInput = memo(function SlotInput({
   number,
   options,
 }: Props) {
-  const {
-    answers,
-    currentNumber,
-    onFocusQuestion,
-    readOnly,
-    review,
-    setAnswer,
-  } = useIeltsAnswers()
+  const { answers, onFocusQuestion, readOnly, review, setAnswer } =
+    useIeltsAnswers()
   const value = answerText(answers[String(number)])
   const mark = review?.[number]
   const markClass = cn(
@@ -66,38 +61,32 @@ export const SlotInput = memo(function SlotInput({
 
   return (
     <span className="mx-0.5 inline-flex max-w-full flex-wrap items-center gap-1 align-baseline">
-      <span
-        aria-hidden="true"
-        className={cn(
-          'rounded-tag inline-grid h-5 min-w-5 place-items-center px-1 text-[11px] font-bold tabular-nums',
-          currentNumber === number
-            ? 'bg-manga-red text-manga-white'
-            : 'bg-manga-pale-red text-muted-foreground'
-        )}
-      >
-        {number}
-      </span>
+      <QuestionNumberBadge
+        number={number}
+        size="sm"
+      />
       {options ? (
         <Select
           disabled={readOnly}
           onValueChange={next => setAnswer(number, String(next ?? ''))}
-          value={value}
+          // Null shows the "-" placeholder; there is no blank item to pick,
+          // so a chosen letter can only change, not clear.
+          value={value || null}
         >
           <SelectTrigger
             aria-describedby={describedBy}
             aria-label={`Question ${number}`}
             className={cn(
-              'border-manga-black rounded-tag bg-manga-white min-w-20 border-2 font-semibold',
+              'border-manga-black rounded-tag bg-manga-white min-w-20 border font-semibold data-[size=sm]:min-h-7 data-[size=sm]:py-0',
               markClass
             )}
             id={questionControlId(number)}
             onFocus={() => onFocusQuestion(number)}
             size="sm"
           >
-            <SelectValue placeholder="Choose" />
+            <SelectValue placeholder="-" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">-</SelectItem>
             {options.map(option => (
               <SelectItem
                 key={option.key}
@@ -116,7 +105,7 @@ export const SlotInput = memo(function SlotInput({
           autoComplete="off"
           autoCorrect="off"
           className={cn(
-            'border-manga-black text-manga-black focus-visible:border-manga-red rounded-tag bg-manga-white h-8 border-2 px-2 text-[16px] font-medium shadow-none focus-visible:ring-0 md:text-[16px] pointer-coarse:h-11',
+            'border-manga-black text-manga-black focus-visible:border-manga-black rounded-tag bg-manga-white h-7 border px-2 text-[16px] font-medium shadow-none focus-visible:ring-0 md:text-[16px] pointer-coarse:h-11',
             markClass
           )}
           id={questionControlId(number)}
