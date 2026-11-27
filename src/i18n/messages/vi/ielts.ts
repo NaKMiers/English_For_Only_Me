@@ -425,9 +425,8 @@ export const ielts: Messages['ielts'] = {
     onlyWritingAi: 'Chỉ task Writing mới được AI chấm.',
     submitBeforeGrading: 'Hãy nộp bài trước khi chấm.',
     taskNotInAttempt: 'Task đó không có trong bài làm này.',
-    aiNotConfiguredCompare:
-      'Chưa cấu hình OpenAI. Bạn có thể tự so với bài mẫu.',
-    aiNotConfigured: 'Chưa cấu hình OpenAI.',
+    aiNotConfiguredCompare: 'Chưa cấu hình AI. Bạn có thể tự so với bài mẫu.',
+    aiNotConfigured: 'Chưa cấu hình AI.',
     gradingLimit: 'Hôm nay đã hết lượt chấm (giới hạn {limit}).',
     alreadyGrading: 'Task này đang được chấm. Vui lòng chờ một chút.',
     taskContentMissing: 'Thiếu nội dung task.',

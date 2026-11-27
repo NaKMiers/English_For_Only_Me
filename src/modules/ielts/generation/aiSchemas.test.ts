@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { OPENAI_STRICT_DROPPED_KEYWORDS } from '@/lib/ai/openAiStrictSchema'
+import { STRICT_DROPPED_KEYWORDS } from '@/lib/ai/strictJsonSchema'
 
 import {
   IELTS_JOB_SCHEMAS,
@@ -26,7 +26,7 @@ describe('AI job schemas', () => {
       const schema = strictSchemaFor(kind)
       const keys = keysDeep(schema)
 
-      for (const keyword of OPENAI_STRICT_DROPPED_KEYWORDS)
+      for (const keyword of STRICT_DROPPED_KEYWORDS)
         expect(keys.has(keyword)).toBe(false)
 
       expect(schema).toMatchObject({

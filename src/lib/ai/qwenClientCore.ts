@@ -1,8 +1,20 @@
+import { getQwenCompatibleBaseUrl } from '@/constants/environments'
+
+/*
+ * Structured output through Qwen's OpenAI-compatible Responses API
+ * (`POST /responses`, `text.format` json_schema strict).
+ */
+
 /** Enough for a debrief paragraph. Larger payloads must opt in explicitly. */
 const DEFAULT_MAX_OUTPUT_TOKENS = 1400
 
-interface OpenAiStructuredOutputRequest {
+/** Qwen ignores a `'minimal'` effort, so it is not offered. */
+type ReasoningEffort = 'low' | 'medium' | 'high'
+
+interface StructuredOutputRequest {
   apiKey: string | null
+  /** API root, no trailing slash. Defaults to the DashScope compatible API. */
+  baseUrl?: string
   fetcher?: typeof fetch
   input: Array<{
     content: string
@@ -16,30 +28,30 @@ interface OpenAiStructuredOutputRequest {
    */
   maxOutputTokens?: number
   model: string
-  /** Reasoning models only; omitted from the request when unset. */
-  reasoningEffort?: 'minimal' | 'low' | 'medium' | 'high'
+  /** Unset turns thinking off; set keeps thinking at that effort. */
+  reasoningEffort?: ReasoningEffort
   schema: Record<string, unknown>
   schemaName: string
 }
 
-export interface OpenAiUsage {
+export interface AiUsage {
   inputTokens: number
   outputTokens: number
 }
 
-export type OpenAiStructuredOutputResult =
+export type AiStructuredOutputResult =
   | {
       ok: true
       rawOutput: unknown
       text: string
-      usage: OpenAiUsage | null
+      usage: AiUsage | null
     }
   | {
       message: string
       ok: false
     }
 
-interface OpenAiResponseBody {
+interface ResponsesApiBody {
   error?: {
     message?: string
   }
@@ -60,7 +72,7 @@ interface OpenAiResponseBody {
   }
 }
 
-function extractResponseText(body: OpenAiResponseBody) {
+function extractResponseText(body: ResponsesApiBody) {
   if (typeof body.output_text === 'string') return body.output_text
 
   for (const output of body.output ?? [])
@@ -70,8 +82,16 @@ function extractResponseText(body: OpenAiResponseBody) {
   return ''
 }
 
-export async function requestOpenAiStructuredOutput({
+/** Qwen thinks by default; cheap calls (no effort) must switch it off. */
+function reasoningFields(reasoningEffort: ReasoningEffort | undefined) {
+  return reasoningEffort
+    ? { reasoning: { effort: reasoningEffort } }
+    : { enable_thinking: false }
+}
+
+export async function requestQwenStructuredOutput({
   apiKey,
+  baseUrl = getQwenCompatibleBaseUrl(),
   fetcher = fetch,
   input,
   maxOutputTokens = DEFAULT_MAX_OUTPUT_TOKENS,
@@ -79,15 +99,15 @@ export async function requestOpenAiStructuredOutput({
   reasoningEffort,
   schema,
   schemaName,
-}: OpenAiStructuredOutputRequest): Promise<OpenAiStructuredOutputResult> {
+}: StructuredOutputRequest): Promise<AiStructuredOutputResult> {
   if (!apiKey)
     return {
       ok: false,
-      message: 'OpenAI provider is not configured.',
+      message: 'AI provider is not configured.',
     }
 
   try {
-    const response = await fetcher('https://api.openai.com/v1/responses', {
+    const response = await fetcher(`${baseUrl}/responses`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${apiKey}`,
@@ -97,7 +117,9 @@ export async function requestOpenAiStructuredOutput({
         input,
         max_output_tokens: maxOutputTokens,
         model,
-        ...(reasoningEffort ? { reasoning: { effort: reasoningEffort } } : {}),
+        ...reasoningFields(reasoningEffort),
+        // Qwen keeps responses by default; learner text must not stay.
+        store: false,
         text: {
           format: {
             name: schemaName,
@@ -109,13 +131,12 @@ export async function requestOpenAiStructuredOutput({
       }),
       cache: 'no-store',
     })
-    const body = (await response.json()) as OpenAiResponseBody
+    const body = (await response.json()) as ResponsesApiBody
 
     if (!response.ok)
       return {
         ok: false,
-        message:
-          body.error?.message ?? 'OpenAI debrief provider request failed.',
+        message: body.error?.message ?? 'AI provider request failed.',
       }
 
     if (body.status && body.status !== 'completed')
@@ -124,7 +145,7 @@ export async function requestOpenAiStructuredOutput({
         // Name the reason and the ceiling. The generic message cost a real
         // (billed) run to diagnose, because "incomplete" reads like a network
         // problem when it is usually just too small a token budget.
-        message: `OpenAI response was ${body.status}${
+        message: `AI provider response was ${body.status}${
           body.incomplete_details?.reason
             ? ` (${body.incomplete_details.reason})`
             : ''
@@ -136,7 +157,7 @@ export async function requestOpenAiStructuredOutput({
     if (!text)
       return {
         ok: false,
-        message: 'OpenAI debrief provider returned no text.',
+        message: 'AI provider returned no text.',
       }
 
     return {
@@ -153,7 +174,7 @@ export async function requestOpenAiStructuredOutput({
   } catch {
     return {
       ok: false,
-      message: 'OpenAI debrief provider is unavailable.',
+      message: 'AI provider is unavailable.',
     }
   }
 }

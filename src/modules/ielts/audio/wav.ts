@@ -1,8 +1,9 @@
 /*
- * PCM assembly for listening audio (pure). OpenAI TTS returns raw 24 kHz,
- * 16-bit, mono little-endian PCM per line; lines are joined with short
- * silences (longer when the speaker changes) and wrapped in a WAV header.
- * Line offsets fall out of the sample counts exactly.
+ * PCM assembly for listening audio (pure). Each line arrives as raw 24 kHz,
+ * 16-bit, mono little-endian PCM (the Qwen TTS WAV with its header
+ * stripped); lines are joined with short silences (longer when the speaker
+ * changes) and wrapped in a WAV header. Line offsets fall out of the sample
+ * counts exactly.
  */
 
 export const PCM_SAMPLE_RATE = 24_000

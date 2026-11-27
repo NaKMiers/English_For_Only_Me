@@ -1,4 +1,4 @@
-import type { OpenAiUsage } from '@/lib/ai/openAiClientCore'
+import type { AiUsage } from '@/lib/ai/qwenClientCore'
 
 import { checkSection } from '../consistency/checkTest'
 import type { IeltsSectionKey } from '../constants'
@@ -25,7 +25,7 @@ import { type IeltsMessage, numberRange, repairMessages } from './prompts'
  *   messages -> request -> JSON parse -> Zod parse -> map to section input
  *            -> consistency check -> ok | needsRepair (keep raw + issues) | failed
  *
- * A route call performs exactly one step (one OpenAI request), so a step
+ * A route call performs exactly one step (one AI request), so a step
  * always fits inside the route's time limit.
  */
 
@@ -35,7 +35,7 @@ export type IeltsRequester = (input: {
   schemaName: string
   maxOutputTokens: number
 }) => Promise<
-  | { ok: true; text: string; usage: OpenAiUsage | null }
+  | { ok: true; text: string; usage: AiUsage | null }
   | { ok: false; message: string }
 >
 
@@ -45,7 +45,7 @@ export interface IeltsJobResult {
   rawText: string
   issues: string[]
   failedRules: string[]
-  usage: OpenAiUsage | null
+  usage: AiUsage | null
   error: string
 }
 

@@ -4,7 +4,7 @@ const band = z.number().min(0).max(9)
 
 /**
  * Strict examiner output. Every field required (nullable instead of
- * optional) so it converts to an OpenAI strict schema; the limits here are
+ * optional) so it converts to a strict json_schema; the limits here are
  * enforced on parse.
  */
 export const examinerOutputSchema = z.object({

@@ -1,13 +1,13 @@
 import 'server-only'
 
 import {
-  getOpenAiApiKey,
-  getOpenAiIeltsGenerationModel,
+  getQwenApiKey,
+  getQwenIeltsGenerationModel,
 } from '@/constants/environments'
 import { format } from '@/i18n/format'
 import type { Messages } from '@/i18n/messages'
 import { en } from '@/i18n/messages/en'
-import { requestOpenAiStructuredOutput } from '@/lib/ai/openAiClientCore'
+import { requestQwenStructuredOutput } from '@/lib/ai/qwenClientCore'
 import { IeltsTestModel } from '@/models/ielts/IeltsTestModel'
 
 import {
@@ -40,15 +40,15 @@ interface PendingRepair {
 
 type LeanDoc = Record<string, unknown>
 
-/** OpenAI with a per-request abort and low reasoning effort. */
-export function openAiRequester(fetcher: typeof fetch = fetch): IeltsRequester {
+/** Qwen with a per-request abort and low reasoning effort. */
+export function qwenRequester(fetcher: typeof fetch = fetch): IeltsRequester {
   return ({ maxOutputTokens, messages, schema, schemaName }) =>
-    requestOpenAiStructuredOutput({
-      apiKey: getOpenAiApiKey(),
+    requestQwenStructuredOutput({
+      apiKey: getQwenApiKey(),
       fetcher: withTimeout(fetcher),
       input: messages,
       maxOutputTokens,
-      model: getOpenAiIeltsGenerationModel(),
+      model: getQwenIeltsGenerationModel(),
       reasoningEffort: 'low',
       schema,
       schemaName,
@@ -102,7 +102,7 @@ function promptContext(
 }
 
 /**
- * One generation step for one draft section (one OpenAI request):
+ * One generation step for one draft section (one AI request):
  *
  *   claim (revision guard, genStatus generating) -> run -> write result with
  *   the claimed revision -> ready | needsRepair | failed, plus a log row.
@@ -114,7 +114,7 @@ export async function generateSectionStep({
   copy = en.ieltsEditor.generation,
   key,
   now = new Date(),
-  request = openAiRequester(),
+  request = qwenRequester(),
   revision,
   step,
   testId,
@@ -128,7 +128,7 @@ export async function generateSectionStep({
   step: IeltsGenerateStep
   testId: string
 }): Promise<IeltsDecision<{ test: IeltsAdminTest; message: string }>> {
-  if (!getOpenAiApiKey()) return ieltsError(503, copy.noApiKey)
+  if (!getQwenApiKey()) return ieltsError(503, copy.noApiKey)
 
   const doc = (await IeltsTestModel.findById(testId).lean()) as LeanDoc | null
 
@@ -192,7 +192,7 @@ export async function generateSectionStep({
     at: new Date(),
     sectionKey: key,
     kind: step === 'repair' ? `${kind} (repair)` : kind,
-    model: getOpenAiIeltsGenerationModel(),
+    model: getQwenIeltsGenerationModel(),
     inputTokens: result.usage?.inputTokens ?? 0,
     outputTokens: result.usage?.outputTokens ?? 0,
     durationMs: Date.now() - started,

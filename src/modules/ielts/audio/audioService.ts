@@ -2,8 +2,8 @@ import 'server-only'
 
 import { createHash } from 'node:crypto'
 
-import { getOpenAiApiKey, getOpenAiTtsModel } from '@/constants/environments'
-import { synthesizeSpeechPcm } from '@/lib/ai/openAiSpeech'
+import { getQwenApiKey, getQwenTtsModel } from '@/constants/environments'
+import { synthesizeSpeechPcm } from '@/lib/ai/qwenSpeech'
 import { uploadAudioBuffer } from '@/lib/cloudinary/uploadAudio'
 import { IeltsTestModel } from '@/models/ielts/IeltsTestModel'
 
@@ -11,12 +11,19 @@ import {
   ieltsMessageError,
   type IeltsDecision,
 } from '../attempts/attemptRouteDecisions'
-import { IELTS_GENERATION_LOG_LIMIT, type IeltsSectionKey } from '../constants'
+import {
+  IELTS_GENERATION_LOG_LIMIT,
+  type IeltsSectionKey,
+  qwenVoiceFor,
+} from '../constants'
 import { adoptSaved, type IeltsAdminTest } from '../tests/testService'
 import { toIeltsTestRecord } from '../tests/testRecords'
 import { assemblePcm, type PcmLine } from './wav'
 
+// Each line is two requests (synthesize, download); Qwen TTS allows 180 RPM.
 const PARALLEL_LINES = 4
+// Part of the audio hash, so a new TTS provider never reuses old public ids.
+const VOICE_PROVIDER = 'qwen'
 const AUDIO_BUDGET_MS = 240_000
 const SPEECH_INSTRUCTIONS =
   'Speak naturally at a moderate pace, like a recorded English listening test.'
@@ -42,7 +49,7 @@ export async function generateSectionAudio({
   if (!key.startsWith('listening'))
     return ieltsMessageError(400, 'onlyListeningAudio')
 
-  const apiKey = getOpenAiApiKey()
+  const apiKey = getQwenApiKey()
 
   if (!apiKey) return ieltsMessageError(503, 'aiNotConfigured')
 
@@ -73,10 +80,10 @@ export async function generateSectionAudio({
           apiKey,
           fetcher,
           instructions: SPEECH_INSTRUCTIONS,
-          model: getOpenAiTtsModel(),
+          model: getQwenTtsModel(),
           signal,
           text: line.text,
-          voice: line.voice,
+          voice: qwenVoiceFor(line.voice),
         })
       )
     )
@@ -97,7 +104,11 @@ export async function generateSectionAudio({
   if (!error) {
     const assembled = assemblePcm(pcm)
     const hash = createHash('sha1')
-      .update(lines.map(line => `${line.voice}:${line.text}`).join('\n'))
+      .update(
+        lines
+          .map(line => `${VOICE_PROVIDER}:${line.voice}:${line.text}`)
+          .join('\n')
+      )
       .digest('hex')
       .slice(0, 10)
 
@@ -130,7 +141,7 @@ export async function generateSectionAudio({
     at: new Date(),
     sectionKey: key,
     kind: 'audio',
-    model: getOpenAiTtsModel(),
+    model: getQwenTtsModel(),
     inputTokens: 0,
     outputTokens: 0,
     durationMs: Date.now() - started,

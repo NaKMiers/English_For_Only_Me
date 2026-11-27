@@ -1,12 +1,12 @@
-import { requestOpenAiStructuredOutput } from '@/lib/ai/openAiClientCore'
-import { toOpenAiStrictSchema } from '@/lib/ai/openAiStrictSchema'
+import { requestQwenStructuredOutput } from '@/lib/ai/qwenClientCore'
+import { toStrictJsonSchema } from '@/lib/ai/strictJsonSchema'
 
 import type { IeltsWritingTaskFeedback } from '../attempts/attemptRecords'
 import { roundTaskBand } from '../scoring/roundBand'
 import { buildExaminerMessages, type ExaminerInput } from './examinerPrompt'
 import { examinerOutputSchema } from './examinerSchema'
 
-const EXAMINER_SCHEMA = toOpenAiStrictSchema(examinerOutputSchema)
+const EXAMINER_SCHEMA = toStrictJsonSchema(examinerOutputSchema)
 export const EXAMINER_MAX_OUTPUT_TOKENS = 6000
 export const AI_REQUEST_TIMEOUT_MS = 240_000
 
@@ -24,7 +24,7 @@ export type ExaminerResult =
   | { ok: false; message: string }
 
 /**
- * One examiner request: build the prompt, call OpenAI, parse with the Zod
+ * One examiner request: build the prompt, call Qwen, parse with the Zod
  * schema, keep only quotes that occur in the essay and lesson ids that
  * exist, and compute the task band (mean of the four criteria, floored to a
  * half band).
@@ -40,7 +40,7 @@ export async function runExaminer({
   input: ExaminerInput
   model: string
 }): Promise<ExaminerResult> {
-  const response = await requestOpenAiStructuredOutput({
+  const response = await requestQwenStructuredOutput({
     apiKey,
     fetcher: withTimeout(fetcher),
     input: buildExaminerMessages(input),

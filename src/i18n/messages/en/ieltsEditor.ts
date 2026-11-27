@@ -437,7 +437,7 @@ export const ieltsEditor = {
     addSeries: 'Add data series',
   },
   generation: {
-    noApiKey: 'OPENAI_API_KEY is not configured.',
+    noApiKey: 'DASHSCOPE_API_KEY is not configured.',
     testNotFound: 'Test not found.',
     sectionNotFound: 'Section not found.',
     staleRevision: 'Section was just updated elsewhere. Reload.',
