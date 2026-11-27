@@ -79,20 +79,31 @@ Always show things in the simplest, most minimal way that still reads clearly.
 
 ## Soft Pastel Dashboard (the app's look)
 
-The app is a white rounded board (`PageShell`) floating on a lavender
-backdrop, with a dark icon rail (`AppSidebar`) on the left and the topbar
-(`AppTopbar`) above. Blocks are calm: hairline `border-line` borders, soft
-`shadow-card` at most, no hard offset shadows, no uppercase, no black weight.
+The app is a white rounded board (`PageShell`, `bg-board`) floating on a
+blush backdrop, with a dark icon rail (`AppSidebar`) on the left and the
+topbar (`AppTopbar`) above. Blocks are calm: hairline `border-line` borders,
+soft `shadow-card` at most, no hard offset shadows, no uppercase, no black
+weight.
 
 - Colours are tokens from `src/app/globals.css`: `ink` / `ink-soft` text,
-  `surface` cards, `canvas` backdrop, `line` borders, `brand` (violet) for
-  accents, `danger` (red) only for wrong answers, errors and delete,
-  `lesson-correct` for right answers, `tint` / `tint-soft` for selected and
-  quiet fills, and one pastel per module from `MODULE_THEMES`
-  (`src/constants/theme.ts`): Dictation sky, Vocabulary rose, Grammar lilac,
-  IELTS peach.
+  `board` the page sheet, `surface` cards, `canvas` backdrop, `line`
+  borders, `tint` / `tint-soft` for selected and quiet fills.
+- `brand` is the logo's pink: `brand` for accent text and fills,
+  `brand-soft` for the pastel pink chip and the primary button, `brand-ink`
+  for text that sits on `brand-soft`. No module wears pink.
+- `cta` / `cta-fg` is the one strong action (`ActionButton tone="ink"`,
+  selected segments and tabs, checked boxes): near-black by day, pink at
+  night. Never use `bg-ink text-surface` for a control, it turns into a
+  white slab at night.
+- `danger` is a tomato red about 40deg of hue away from the pink, only for
+  wrong answers, errors and delete, and always with an icon (cross, alert,
+  trash) so it never relies on colour. `lesson-correct` marks right answers.
+- One pastel per module from `MODULE_THEMES` (`src/constants/theme.ts`):
+  Dictation sky, Vocabulary mint, Grammar lilac, IELTS peach (fills
+  `bg-pastel-*`, text and icons `text-accent-*`, each at least 4.5:1 on its
+  pastel).
 - Buttons and chips are pills (`rounded-full`): `ActionButton` tones are
-  `primary` (soft violet), `paper` (outlined) and `ink` (the one dark CTA).
+  `primary` (pastel pink), `paper` (outlined) and `ink` (the one `cta`).
 - Corners by role, never a hand-typed radius on a bordered block:
 
 | Role    | Utility           | Size                    | Use for                                        |
@@ -113,9 +124,31 @@ backdrop, with a dark icon rail (`AppSidebar`) on the left and the topbar
   `motion-draw` for an SVG line. Entrances use `backwards` fill so no
   transform stays behind. Work screens (practice, lesson player, IELTS
   runner) get a quick fade at most. Reduced motion turns movement off.
-- Night mode remaps the same tokens under `:root[data-theme='lightup']`; the
-  rail keeps its own `rail` / `rail-fg` colours so it stays dark. Check both
-  themes after a visual change.
+- Night (`:root[data-theme='lightup']`) is its own plum-tinted palette, not
+  inverted day tokens. Depth comes from lighter surfaces (canvas < board <
+  surface < tint), hairline borders, an inner top highlight on cards
+  (`--card-highlight`, part of `shadow-card`) and a 1px ring on the shell;
+  never from drop shadows. Pastels become deep tinted fills and their
+  `accent-*` become light tones. The rail keeps its own `rail` / `rail-fg`.
+  Check both themes after a visual change.
+
+### Page patterns
+
+- Every module page starts with `PageHeader` (`src/components/common`):
+  module icon in its pastel circle, h1, one line under it, actions on the
+  right, an optional eyebrow (breadcrumb). Page content uses one padding
+  rhythm, `px-4 pb-6 md:pr-6 md:pl-0`, and its `loading.tsx` uses the same
+  padding and `SkeletonHero`, so nothing shifts when data lands.
+- Lead with the one next action (Grammar's Continue card, Vocabulary's
+  recall card), put counts in a compact strip of links (vocabulary status
+  strip) instead of tall metric tiles, and fold what is finished (grammar
+  units in `Collapsible`, IELTS progress under one line).
+- Long lists get a jump aid (the grammar unit index) and dense rows
+  (vocabulary word list), not a column of big cards.
+- Phones: `AppTabBar` floats at the bottom below `md` on normal pages and is
+  left out on full-height work screens; `PageShell` keeps room for it.
+- Route error boundaries render `RouteError` (mascot, retry, back to the
+  module).
 - Adding a corner role means adding it in `globals.css` AND to
   `extendTailwindMerge` in `src/lib/utils.ts`.
 
@@ -158,20 +191,20 @@ backdrop, with a dark icon rail (`AppSidebar`) on the left and the topbar
   - on/off preference → `Switch`
   - `<textarea>` → `Textarea`
   - `<label>` → `Label`
-  - `<button>` → `MangaButton` (primary/labelled actions), `IconButton`
+  - `<button>` → `ActionButton` (primary/labelled actions), `IconButton`
     (icon-only), or `Button` (base); destructive/confirm submits →
     `ConfirmSubmitButton`
   - menus → `DropdownMenu`; modals/confirms → `Dialog`; tabs → `Tabs`;
     tooltips → `Tooltip`; progress → `Progress`; separators → `Separator`
-- The primitives are themed ONCE to the manga aesthetic at the source
-  (`src/components/ui/*`): sharp corners (`rounded-none`), `border-2`/`border-3`
-  `border-manga-black`, `bg-manga-white`, hard offset shadows
-  (`shadow-[Npx_Npx_0_var(--manga-black)]`), `font-sans font-black`. When you
-  find a primitive still carrying default shadcn styling (rounded-lg, `ring`,
-  `bg-popover`, `bg-primary`), fix it in the primitive - do not paper over it
-  per call site. Per-site `className` is for layout/size overrides only.
+- The primitives are themed ONCE to the pastel dashboard at the source
+  (`src/components/ui/*`): corner roles, hairline `border-line`, `bg-surface`,
+  `shadow-card` / `shadow-float`, `cta` for checked and selected states. When
+  you find a primitive still carrying default shadcn styling (rounded-lg,
+  `ring`, `bg-popover`, `bg-primary`), fix it in the primitive - do not paper
+  over it per call site. Per-site `className` is for layout/size overrides
+  only.
 - If a needed primitive does not exist yet, add it under `src/components/ui`
-  and theme it to the manga tokens before using it. Do not hand-roll a
+  and theme it to the dashboard tokens before using it. Do not hand-roll a
   bespoke dropdown/modal/menu.
 - Replacements must preserve behavior AND appearance. Known gotchas:
   - base-ui `Select` `onValueChange` yields `string | null` - coerce null to
@@ -181,7 +214,7 @@ backdrop, with a dark icon rail (`AppSidebar`) on the left and the topbar
     `value="on"` - required when a server action reads
     `formData.get(name) === 'on'`. Use `defaultChecked` for uncontrolled
     server-action forms.
-  - `MangaButton` forwards `type` and `disabled`; keep `type="submit"` on
+  - `ActionButton` forwards `type` and `disabled`; keep `type="submit"` on
     buttons that drive a `<form action={serverAction}>`.
   - `Label` may wrap a native or labelable control (input/textarea/checkbox/
     the Switch button); it renders a real `<label>`.

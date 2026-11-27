@@ -80,8 +80,14 @@ export function HomeModuleTiles({ facts, messages }: Props) {
                   />
                 </span>
                 <span className="grid gap-1 px-1.5">
+                  {/* Short name where the row is narrowest (xl), full name otherwise. */}
                   <strong className="truncate font-sans text-sm font-medium">
-                    {text.title}
+                    <span className="hidden xl:inline 2xl:hidden">
+                      {text.shortTitle}
+                    </span>
+                    <span className="xl:hidden 2xl:inline">
+                      {text.title}
+                    </span>
                   </strong>
                   <span className="text-ink-soft truncate text-xs">
                     {facts[module.key] ?? text.skill}
