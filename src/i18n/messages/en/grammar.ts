@@ -68,7 +68,6 @@ export const grammar = {
     journeyTitle: 'Your grammar climb',
     lessonsPassed: 'lessons passed',
     ofTotal: 'of {total}',
-    journeyHint: 'Every lesson you pass is one step up the stairs.',
     levelState: {
       done: '{level}: climbed, {total} lessons',
       current: '{level}: {done} of {total} lessons, you are here',
@@ -79,9 +78,6 @@ export const grammar = {
       other: '{count} lessons to finish {level}',
     },
     allClimbed: 'Every level climbed. Keep the stars bright with reviews.',
-    nextStop: 'Next stop',
-    youAreHere: 'You are here',
-    jumpToCurrent: 'Back to my lesson',
   },
   notes: {
     path: 'Path',

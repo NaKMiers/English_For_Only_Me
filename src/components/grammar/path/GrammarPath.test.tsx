@@ -9,6 +9,8 @@ import {
   passedLesson,
 } from '@/modules/grammar/testing/fixtureCourse'
 
+import { expectLandingBudget } from '@/test/landingBudget'
+
 import { GrammarPath } from './GrammarPath'
 
 vi.mock('next/navigation', () => ({
@@ -43,6 +45,12 @@ function path(lessonProgress = [passedLesson('u01-l01')]) {
 }
 
 describe('GrammarPath', () => {
+  test('meets the landing budget: one next stop, one cta, 4 chips', () => {
+    const { container } = render(<GrammarPath path={path()} />)
+
+    expectLandingBudget(container)
+  })
+
   test('shows the next step and opens only the current unit', () => {
     render(<GrammarPath path={path()} />)
 

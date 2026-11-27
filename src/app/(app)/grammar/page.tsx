@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { PageShell } from '@/components/common/PageShell'
 import { GrammarPath } from '@/components/grammar/path/GrammarPath'
+import { format } from '@/i18n/format'
 import { getMessages } from '@/i18n/server'
 import { loadGrammarPageData } from '@/modules/grammar/services/grammarPageData'
 
@@ -29,6 +30,13 @@ export default async function GrammarPage() {
       topbar={
         <AppTopbar
           activeHref="/grammar"
+          page={{
+            module: 'grammar',
+            subtitle: format(t.grammar.path.introShort, {
+              count: path.totals.totalLessons,
+            }),
+            title: t.grammar.path.title,
+          }}
           subtitle={t.grammar.subtitle}
         />
       }

@@ -70,7 +70,6 @@ export const grammar: Messages['grammar'] = {
     journeyTitle: 'Leo bậc ngữ pháp',
     lessonsPassed: 'bài đã qua',
     ofTotal: 'trên {total}',
-    journeyHint: 'Mỗi bài bạn qua là thêm một bước lên bậc thang.',
     levelState: {
       done: '{level}: đã leo xong, {total} bài',
       current: '{level}: xong {done}/{total} bài, bạn đang ở đây',
@@ -81,9 +80,6 @@ export const grammar: Messages['grammar'] = {
       other: 'Còn {count} bài để xong {level}',
     },
     allClimbed: 'Đã leo hết các bậc. Ôn đều để sao luôn sáng.',
-    nextStop: 'Trạm tiếp theo',
-    youAreHere: 'Bạn đang ở đây',
-    jumpToCurrent: 'Về bài đang học',
   },
   notes: {
     path: 'Lộ trình',

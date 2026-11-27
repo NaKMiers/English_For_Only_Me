@@ -1,8 +1,6 @@
 'use client'
 
 import {
-  ArrowDown,
-  ArrowUp,
   BookOpen,
   Check,
   ChevronDown,
@@ -26,6 +24,7 @@ import {
 
 import { useClientOutbox } from '@/components/common/OutboxOwnerProvider'
 import { PageHeader } from '@/components/common/PageHeader'
+import { ContinueFloat } from '@/components/journey/ContinueFloat'
 import { ProgressRing } from '@/components/common/ProgressRing'
 import { ActionButton } from '@/components/ui/ActionButton'
 import { PageTag } from '@/components/ui/PageTag'
@@ -355,7 +354,7 @@ function UnitTrail({
       <h2 className="sticky top-2 z-20 font-normal">
         <CollapsibleTrigger
           className={cn(
-            'group/unit soft-press hover-pop flex w-full items-center gap-3 rounded-3xl p-3 text-left shadow-sm sm:gap-4 sm:p-4',
+            'group/unit soft-press hover-pop rounded-panel flex w-full items-center gap-3 p-3 text-left shadow-sm sm:gap-4 sm:p-4',
             tone.banner,
             isCurrent && 'ring-brand/40 ring-2'
           )}
@@ -511,73 +510,8 @@ export function GrammarPath({ path }: Props) {
     wasSyncingRef.current = syncing
   }, [router, syncing])
 
-  // Floating "back to my lesson" button: shown while the next node is folded
-  // away or scrolled out of view, pointing the way to it. Measured on scroll,
-  // resize and fold changes (an IntersectionObserver misreads a node while
-  // its panel is still animating open).
-  const [targetDirection, setTargetDirection] = useState<'up' | 'down' | null>(
-    null
-  )
   const nextUnitId = nextUnit?.id ?? null
   const targetUnitOpen = nextUnitId ? openIds.has(nextUnitId) : false
-
-  useEffect(() => {
-    if (!targetNodeId) return
-
-    let frame: number | null = null
-
-    function measure() {
-      frame = null
-      const node = targetUnitOpen
-        ? document.getElementById(targetNodeId ?? '')
-        : null
-      const anchor =
-        node ??
-        (nextUnitId ? document.getElementById(`unit-${nextUnitId}`) : null)
-
-      if (!anchor) {
-        setTargetDirection(null)
-        return
-      }
-
-      const rect = anchor.getBoundingClientRect()
-      const visible =
-        node !== null &&
-        rect.height > 0 &&
-        rect.bottom > 0 &&
-        rect.top < window.innerHeight
-
-      setTargetDirection(visible ? null : rect.top < 0 ? 'up' : 'down')
-    }
-
-    function schedule() {
-      if (frame === null) frame = requestAnimationFrame(measure)
-    }
-
-    schedule()
-    // Once more after the fold animation settles.
-    const settle = window.setTimeout(schedule, 450)
-
-    window.addEventListener('scroll', schedule, { passive: true })
-    window.addEventListener('resize', schedule)
-
-    return () => {
-      window.clearTimeout(settle)
-      window.removeEventListener('scroll', schedule)
-      window.removeEventListener('resize', schedule)
-      if (frame !== null) cancelAnimationFrame(frame)
-    }
-  }, [nextUnitId, targetNodeId, targetUnitOpen])
-
-  // Jump button: unfold the unit, then scroll once the panel is in the DOM.
-  const jumpTimer = useRef<number | null>(null)
-
-  useEffect(
-    () => () => {
-      if (jumpTimer.current !== null) cancelAnimationFrame(jumpTimer.current)
-    },
-    []
-  )
 
   function setUnitOpen(unitId: string, open: boolean) {
     setOpenIds(current => {
@@ -590,32 +524,13 @@ export function GrammarPath({ path }: Props) {
     })
   }
 
-  function scrollToElement(id: string, block: ScrollLogicalPosition) {
-    if (jumpTimer.current !== null) cancelAnimationFrame(jumpTimer.current)
-    jumpTimer.current = requestAnimationFrame(() => {
-      const reduce = window.matchMedia(
-        '(prefers-reduced-motion: reduce)'
-      ).matches
-
-      document.getElementById(id)?.scrollIntoView({
-        behavior: reduce ? 'auto' : 'smooth',
-        block,
-      })
-    })
-  }
-
-  function jumpToTarget() {
-    if (!targetNodeId) return
-    if (nextUnit) setUnitOpen(nextUnit.id, true)
-    scrollToElement(targetNodeId, 'center')
-  }
-
   const lesson = selected?.lesson
 
   return (
     <div className="grid gap-5 px-4 pb-6 md:pr-6 md:pl-0">
       <PageHeader
         icon={<PenLine />}
+        inTopbar
         iconClassName="bg-pastel-lilac text-accent-purple"
         subtitle={format(t.introShort, { count: path.totals.totalLessons })}
         title={t.title}
@@ -654,25 +569,16 @@ export function GrammarPath({ path }: Props) {
           </div>
         ))}
       </div>
-      {targetDirection && targetNodeId ? (
-        <button
-          className="soft-press hover-pop bg-cta text-cta-fg motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-2 fixed right-4 bottom-[calc(max(12px,env(safe-area-inset-bottom))+5rem)] z-30 flex min-h-11 items-center gap-2 rounded-full px-4 text-sm font-medium shadow-lg md:right-8 md:bottom-8"
-          onClick={jumpToTarget}
-          type="button"
-        >
-          {targetDirection === 'up' ? (
-            <ArrowUp
-              aria-hidden
-              className="size-4"
-            />
-          ) : (
-            <ArrowDown
-              aria-hidden
-              className="size-4"
-            />
-          )}
-          {t.jumpToCurrent}
-        </button>
+      {targetNodeId ? (
+        <ContinueFloat
+          fallbackId={nextUnitId ? `unit-${nextUnitId}` : undefined}
+          label={messages.common.journey.continue}
+          measureKey={targetUnitOpen}
+          onBeforeJump={() => {
+            if (nextUnitId) setUnitOpen(nextUnitId, true)
+          }}
+          targetId={targetNodeId}
+        />
       ) : null}
 
       <Dialog

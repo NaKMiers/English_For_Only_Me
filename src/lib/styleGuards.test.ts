@@ -90,8 +90,6 @@ const CORNERS: Guard = {
     'src/components/dictation/browse/ListeningJourneyHero.tsx',
     'src/components/dictation/browse/RecordShelves.tsx',
     'src/components/dictation/browse/TopicGrid.tsx',
-    'src/components/grammar/path/GrammarJourneyHero.tsx',
-    'src/components/grammar/path/GrammarPath.tsx',
     'src/components/home/HomeBuddyCard.tsx',
     'src/components/home/HomeModuleTiles.tsx',
     'src/components/home/HomeSimpleView.tsx',
