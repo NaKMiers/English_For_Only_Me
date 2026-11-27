@@ -28,7 +28,6 @@ export const dictation = {
     title: 'All topics',
     latestResults: 'View Latest Results',
     favoritesLink: '★ Favorites',
-    fullStats: 'Full stats',
     topicsHeading: 'Topics',
     descriptionSignedIn:
       'Pick a topic, then a section, then continue building your listening history.',
@@ -285,10 +284,6 @@ export const dictation = {
       revealed: 'Revealed',
       skipped: 'Skipped',
     },
-    untimed: 'untimed',
-    timing: '{start}s - {end}s',
-    drawerDescription:
-      'Current sentence stays marked while you move through practice.',
   },
   setup: {
     backToLab: 'Back To Dictation Lab',
@@ -404,46 +399,6 @@ export const dictation = {
     skipsMeta: {
       one: '{count} sentence skipped',
       other: '{count} sentences skipped',
-    },
-  },
-  globalStats: {
-    completedVideos: 'Completed videos',
-    savedVideos: {
-      one: '{count} saved video',
-      other: '{count} saved videos',
-    },
-    completedSegments: 'Completed segments',
-    completedSegmentsDetail: 'Correct, revealed, or skipped',
-    thisWeek: 'This week',
-    thisMonth: '{duration} this month',
-    streak: 'Active streak',
-    reviewDue: {
-      one: '{count} review item due',
-      other: '{count} review items due',
-    },
-    emptyEyebrow: 'Empty',
-    emptyTitle: 'No saved practice yet',
-    emptyDescription:
-      'Import a video, build segments, and finish a practice session. This page will then show where Dictation Lab should push you next.',
-    importVideo: 'Import Video',
-    backToLab: 'Back To Lab',
-    trendEyebrow: 'Trend',
-    trendTitle: 'First-try accuracy',
-    trendLabel: 'Last 7 practice days',
-    mistakeTypesTitle: 'Repeated mistake types',
-    weakWords: 'Weak words',
-    weakWordsEmpty: 'No weak words yet. The list starts after real attempts.',
-    nextEyebrow: 'Next',
-    nextTitle: 'Where to practice',
-    reviewDueItems: 'Review due items',
-    waiting: {
-      one: '{count} waiting',
-      other: '{count} waiting',
-    },
-    continueVideos: 'Continue saved videos',
-    unfinished: {
-      one: '{count} unfinished',
-      other: '{count} unfinished',
     },
   },
   reviewQueue: {

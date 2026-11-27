@@ -9,10 +9,7 @@ export default async function Loading() {
   const t = await getMessages()
 
   return (
-    <SkeletonPageShell
-      activeHref="/admin/vocab"
-      subtitle={t.ieltsEditor.listPage.topbarSubtitle}
-    >
+    <SkeletonPageShell subtitle={t.common.auth.admin}>
       <SkeletonPanel lines={2} />
       <SkeletonTileRow count={4} />
       <SkeletonPanel lines={3} />

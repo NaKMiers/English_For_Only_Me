@@ -4,9 +4,10 @@ import { format } from '@/i18n/format'
 import type { Messages } from '@/i18n/messages'
 import { en } from '@/i18n/messages/en'
 import { cn } from '@/lib/utils'
-import type {
-  BrowseQuery,
-  Pagination,
+import {
+  buildBrowseHref,
+  type BrowseQuery,
+  type Pagination,
 } from '@/modules/dictation/content/browseQuery'
 
 const linkClass =
@@ -28,13 +29,7 @@ export function BrowsePagination({
   if (pagination.totalPages <= 1) return null
 
   function href(page: number) {
-    const params = new URLSearchParams()
-    if (query.search) params.set('search', query.search)
-    if (query.level) params.set('level', query.level)
-    if (query.sort !== 'newest') params.set('sort', query.sort)
-    if (page > 1) params.set('page', String(page))
-    const qs = params.toString()
-    return qs ? `${basePath}?${qs}` : basePath
+    return buildBrowseHref(basePath, query, page)
   }
 
   return (

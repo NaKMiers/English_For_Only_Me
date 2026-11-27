@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  buildBrowseHref,
   buildVideoMongoFilter,
   buildVideoMongoSort,
   isBrowseQueryActive,
@@ -105,5 +106,22 @@ describe('paginate', () => {
     expect(paginate(3, 45, 20)).toMatchObject({ skip: 40, hasNext: false })
     expect(paginate(99, 45, 20)).toMatchObject({ page: 3, skip: 40 })
     expect(paginate(1, 0, 20)).toMatchObject({ totalPages: 1, hasNext: false })
+  })
+})
+
+describe('buildBrowseHref', () => {
+  const base = parseBrowseQuery({})
+
+  it('page 2 keeps sort=newest', () => {
+    expect(
+      buildBrowseHref('/dictation/news', { ...base, sort: 'newest' }, 2)
+    ).toBe('/dictation/news?sort=newest&page=2')
+  })
+
+  it('leaves the default sort and page 1 out of the URL', () => {
+    expect(buildBrowseHref('/dictation/news', base, 1)).toBe('/dictation/news')
+    expect(
+      buildBrowseHref('/dictation/news', { ...base, search: 'cat' }, 3)
+    ).toBe('/dictation/news?search=cat&page=3')
   })
 })

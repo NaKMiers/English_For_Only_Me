@@ -14,6 +14,9 @@ export interface BrowseQuery {
 
 export const BROWSE_PAGE_SIZE = 20
 
+/** The sort a bare URL means; it is left out of links. */
+export const DEFAULT_BROWSE_SORT: BrowseSort = 'order'
+
 const SORTS: BrowseSort[] = ['order', 'newest', 'oldest', 'title']
 
 /** Parse raw (string | string[] | undefined) search params into a clean query. */
@@ -35,9 +38,27 @@ export function parseBrowseQuery(params: {
     level: isDictationLevel(levelRaw) ? levelRaw : null,
     sort: (SORTS as string[]).includes(sortRaw)
       ? (sortRaw as BrowseSort)
-      : 'order',
+      : DEFAULT_BROWSE_SORT,
     page: Number.isFinite(pageNum) && pageNum > 0 ? pageNum : 1,
   }
+}
+
+/**
+ * URL for one page of a browse query: keeps search, level and any sort that
+ * is not the default, so page 2 of a "newest" search stays sorted by newest.
+ */
+export function buildBrowseHref(
+  basePath: string,
+  query: BrowseQuery,
+  page: number
+): string {
+  const params = new URLSearchParams()
+  if (query.search) params.set('search', query.search)
+  if (query.level) params.set('level', query.level)
+  if (query.sort !== DEFAULT_BROWSE_SORT) params.set('sort', query.sort)
+  if (page > 1) params.set('page', String(page))
+  const qs = params.toString()
+  return qs ? `${basePath}?${qs}` : basePath
 }
 
 /** True when the user has narrowed results (flat list mode vs accordion). */

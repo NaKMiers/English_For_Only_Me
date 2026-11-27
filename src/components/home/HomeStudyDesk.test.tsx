@@ -66,6 +66,13 @@ describe('HomeStudyDesk', () => {
     expect(html).toContain('1')
   })
 
+  test('no link points at the removed /dictation/stats route', () => {
+    for (const view of ['simple', 'full'] as const) {
+      const html = renderToStaticMarkup(<HomeStudyDesk view={view} />)
+      expect(html).not.toContain('/dictation/stats')
+    }
+  })
+
   test('greets the signed-in learner by first name', () => {
     const html = renderToStaticMarkup(
       <HomeStudyDesk

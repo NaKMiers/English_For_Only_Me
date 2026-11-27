@@ -30,7 +30,6 @@ export const dictation: Messages['dictation'] = {
     title: 'Tất cả chủ đề',
     latestResults: 'Xem kết quả gần nhất',
     favoritesLink: '★ Yêu thích',
-    fullStats: 'Xem thống kê',
     topicsHeading: 'Chủ đề',
     descriptionSignedIn:
       'Chọn một chủ đề, rồi một phần, rồi tiếp tục xây dựng lịch sử luyện nghe của bạn.',
@@ -283,9 +282,6 @@ export const dictation: Messages['dictation'] = {
       revealed: 'Đã xem',
       skipped: 'Bỏ qua',
     },
-    untimed: 'không có mốc giờ',
-    timing: '{start}s - {end}s',
-    drawerDescription: 'Câu hiện tại luôn được đánh dấu khi bạn luyện tập.',
   },
   setup: {
     backToLab: 'Về Chép chính tả',
@@ -401,46 +397,6 @@ export const dictation: Messages['dictation'] = {
     skipsMeta: {
       one: '{count} câu bị bỏ qua',
       other: '{count} câu bị bỏ qua',
-    },
-  },
-  globalStats: {
-    completedVideos: 'Video đã xong',
-    savedVideos: {
-      one: '{count} video đã lưu',
-      other: '{count} video đã lưu',
-    },
-    completedSegments: 'Câu đã xong',
-    completedSegmentsDetail: 'Đúng, đã xem đáp án hoặc bỏ qua',
-    thisWeek: 'Tuần này',
-    thisMonth: '{duration} tháng này',
-    streak: 'Chuỗi ngày học',
-    reviewDue: {
-      one: '{count} mục cần ôn',
-      other: '{count} mục cần ôn',
-    },
-    emptyEyebrow: 'Trống',
-    emptyTitle: 'Chưa có buổi luyện nào được lưu',
-    emptyDescription:
-      'Nhập một video, tách câu và hoàn thành một buổi luyện. Sau đó trang này sẽ gợi ý bạn nên luyện gì tiếp.',
-    importVideo: 'Nhập video',
-    backToLab: 'Về Chép chính tả',
-    trendEyebrow: 'Xu hướng',
-    trendTitle: 'Độ chính xác lần đầu',
-    trendLabel: '7 ngày luyện gần nhất',
-    mistakeTypesTitle: 'Loại lỗi lặp lại',
-    weakWords: 'Từ yếu',
-    weakWordsEmpty: 'Chưa có từ yếu. Danh sách bắt đầu sau các lượt làm thật.',
-    nextEyebrow: 'Tiếp theo',
-    nextTitle: 'Nên luyện gì',
-    reviewDueItems: 'Ôn các mục đến hạn',
-    waiting: {
-      one: '{count} đang chờ',
-      other: '{count} đang chờ',
-    },
-    continueVideos: 'Học tiếp video đã lưu',
-    unfinished: {
-      one: '{count} chưa xong',
-      other: '{count} chưa xong',
     },
   },
   reviewQueue: {

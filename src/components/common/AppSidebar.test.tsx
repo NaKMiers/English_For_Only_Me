@@ -67,7 +67,7 @@ describe('AppSidebar', () => {
   test('home only matches itself, modules match their subtree', () => {
     expect(isActiveHref('/', '/')).toBe(true)
     expect(isActiveHref('/dictation', '/')).toBe(false)
-    expect(isActiveHref('/dictation/stats', '/dictation')).toBe(true)
+    expect(isActiveHref('/dictation/review', '/dictation')).toBe(true)
     expect(isActiveHref('/dictationx', '/dictation')).toBe(false)
   })
 })

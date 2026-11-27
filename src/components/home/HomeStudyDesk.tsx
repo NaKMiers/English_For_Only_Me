@@ -286,7 +286,7 @@ export function HomeStudyDesk({
         minutes: weeklyMinutes,
         total: dictationStats?.totalVideoCount ?? 0,
       }),
-      href: '/dictation/stats',
+      href: '/dictation',
       icon: Headphones,
       label: t.progress.dictation,
       meta: format(t.progress.streak, {
@@ -368,7 +368,7 @@ export function HomeStudyDesk({
               <div className="grid min-w-0 content-start gap-5 md:col-span-2 xl:col-span-1">
                 <Card className="grid gap-3">
                   <Link
-                    href="/dictation/stats"
+                    href="/dictation"
                     className="hover:bg-tint-soft flex items-center justify-between gap-3 rounded-2xl px-2 py-1.5 transition-colors"
                   >
                     <span className="flex items-center gap-3 text-sm font-medium">

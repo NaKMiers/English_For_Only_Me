@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { ChartColumn, Headphones, Trophy } from 'lucide-react'
+import { Headphones, Trophy } from 'lucide-react'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { PageShell } from '@/components/common/PageShell'
@@ -195,18 +195,6 @@ export default async function DictationPage() {
                   {text.latestResults}
                 </ActionButton>
               ) : null}
-              <ActionButton
-                href="/dictation/stats"
-                icon={
-                  <ChartColumn
-                    aria-hidden="true"
-                    className="size-4"
-                  />
-                }
-                tone="paper"
-              >
-                {text.fullStats}
-              </ActionButton>
               <ActionButton href="/dictation/favorites">
                 {text.favoritesLink}
               </ActionButton>
