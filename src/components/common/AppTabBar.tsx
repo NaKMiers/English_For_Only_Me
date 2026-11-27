@@ -29,7 +29,7 @@ export function AppTabBar({ className }: Props) {
     <nav
       aria-label={t.common.nav.primary}
       className={cn(
-        'bg-rail fixed inset-x-3 bottom-[max(12px,env(safe-area-inset-bottom))] z-40 mx-auto grid h-16 max-w-md auto-cols-fr grid-flow-col items-center gap-1 rounded-full p-1.5 shadow-[0_18px_40px_-16px_rgba(0,0,0,0.45)]',
+        'bg-rail shadow-tabbar fixed inset-x-3 bottom-[max(12px,env(safe-area-inset-bottom))] z-40 mx-auto grid h-16 max-w-md auto-cols-fr grid-flow-col items-center gap-1 rounded-full p-1.5',
         className
       )}
     >

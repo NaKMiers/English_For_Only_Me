@@ -115,3 +115,31 @@ export function shelveTopics<T extends { id: string; total: number }>(
 
   return shelves
 }
+
+export interface TopicRecord {
+  done: number
+  total: number
+}
+
+/**
+ * The topic record after one practice session: +1 when this session
+ * finished a video that was not finished before, +0 for a replay. The next
+ * server refresh reconciles with the stored counts.
+ */
+export function advanceTopicRecord(
+  record: TopicRecord,
+  session: { finished: boolean; wasFinishedBefore: boolean }
+): TopicRecord & { gained: number; left: number } {
+  const gained =
+    session.finished && !session.wasFinishedBefore && record.done < record.total
+      ? 1
+      : 0
+  const done = record.done + gained
+
+  return {
+    done,
+    gained,
+    left: Math.max(0, record.total - done),
+    total: record.total,
+  }
+}

@@ -43,3 +43,28 @@ export function wordGardenPosition(known: number): WordGardenPosition {
     progress: (words - current.at) / (next.at - current.at),
   }
 }
+
+export interface GardenAdvance {
+  after: WordGardenPosition
+  before: WordGardenPosition
+  /** Known words after the session. */
+  known: number
+  /** True when the session crossed into a new stage. */
+  stageUp: boolean
+}
+
+/**
+ * The garden after a recall session: words newly mastered move the garden
+ * on; reviewing words already known adds nothing.
+ */
+export function advanceGardenPosition(
+  knownBefore: number,
+  newlyMastered: number
+): GardenAdvance {
+  const before = wordGardenPosition(knownBefore)
+  const known =
+    Math.max(0, Math.floor(knownBefore)) + Math.max(0, newlyMastered)
+  const after = wordGardenPosition(known)
+
+  return { after, before, known, stageUp: after.index > before.index }
+}

@@ -135,6 +135,33 @@ export const common: Messages['common'] = {
     rights: '© {year} English For Only Me. Bảo lưu mọi quyền.',
     developedBy: 'Phát triển bởi {author}',
   },
+  journey: {
+    nextStop: 'Trạm tiếp theo',
+    youAreHere: 'Bạn đang ở đây',
+    continue: 'Học tiếp',
+    showMore: 'Xem thêm',
+    hideMore: 'Thu gọn',
+    showSide: 'Xem lịch sử và điểm yếu',
+    hideSide: 'Ẩn lịch sử và điểm yếu',
+    allClear: 'Đã xong hết',
+    stepOf: '{done} / {total}',
+    stepOfLabel: 'Bước {done} trên {total}',
+    stepTaken: '+1 bước',
+    toMilestone: {
+      one: 'Còn {count} bước tới {milestone}',
+      other: 'Còn {count} bước tới {milestone}',
+    },
+    details: 'Chi tiết',
+    moreItems: {
+      one: 'Thêm {count} mục',
+      other: 'Thêm {count} mục',
+    },
+    retryPip: {
+      one: '{count} câu làm lại',
+      other: '{count} câu làm lại',
+    },
+    breadcrumb: 'Đường dẫn',
+  },
   errors: {
     generic: 'Đã có lỗi xảy ra.',
     network: 'Lỗi mạng. Hãy kiểm tra kết nối rồi thử lại.',

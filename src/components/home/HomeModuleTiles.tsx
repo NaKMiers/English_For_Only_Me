@@ -1,24 +1,14 @@
-import {
-  BookA,
-  GraduationCap,
-  Headphones,
-  PenLine,
-  Star,
-  type LucideIcon,
-} from 'lucide-react'
+import { Star } from 'lucide-react'
 import Link from 'next/link'
 
-import { APP_MODULES, type AppModuleKey } from '@/constants/modules'
+import {
+  APP_MODULES,
+  MODULE_ICONS,
+  type AppModuleKey,
+} from '@/constants/modules'
 import { MODULE_THEMES } from '@/constants/theme'
 import type { Messages } from '@/i18n/messages'
 import { cn } from '@/lib/utils'
-
-export const MODULE_ICONS: Partial<Record<AppModuleKey, LucideIcon>> = {
-  dictation: Headphones,
-  vocabulary: BookA,
-  grammar: PenLine,
-  ielts: GraduationCap,
-}
 
 interface Props {
   /** One short fact per module, shown under its title. */

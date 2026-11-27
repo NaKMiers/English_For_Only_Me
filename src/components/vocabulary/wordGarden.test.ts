@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 
-import { wordGardenPosition } from './wordGarden'
+import { advanceGardenPosition, wordGardenPosition } from './wordGarden'
 
 describe('wordGardenPosition', () => {
   test('starts as a seed', () => {
@@ -21,5 +21,24 @@ describe('wordGardenPosition', () => {
       left: 0,
       progress: 1,
     })
+  })
+})
+
+describe('advanceGardenPosition', () => {
+  test('newly mastered words move the garden, and can cross a stage', () => {
+    const result = advanceGardenPosition(498, 3)
+
+    expect(result.known).toBe(501)
+    expect(result.before.index).toBe(0)
+    expect(result.after.index).toBe(1)
+    expect(result.stageUp).toBe(true)
+  })
+
+  test('a session that masters nothing adds nothing', () => {
+    const result = advanceGardenPosition(120, 0)
+
+    expect(result.known).toBe(120)
+    expect(result.after).toEqual(result.before)
+    expect(result.stageUp).toBe(false)
   })
 })

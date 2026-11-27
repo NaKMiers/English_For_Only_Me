@@ -31,6 +31,8 @@ export interface ModuleTheme {
   accent: string
   /** Outline for the module's filter chip. */
   outline: string
+  /** Journey card fill: the module pastel easing into the surface. */
+  gradient: string
 }
 
 /**
@@ -42,40 +44,48 @@ export const MODULE_THEMES: Record<AppModuleKey, ModuleTheme> = {
     tint: 'bg-pastel-sky',
     accent: 'text-accent-blue',
     outline: 'border-accent-blue/50',
+    gradient: 'from-pastel-sky via-pastel-lilac/40 to-surface',
   },
   vocabulary: {
     tint: 'bg-pastel-mint',
     accent: 'text-accent-green',
     outline: 'border-accent-green/50',
+    gradient: 'from-pastel-mint via-pastel-lemon/40 to-surface',
   },
   grammar: {
     tint: 'bg-pastel-lilac',
     accent: 'text-accent-purple',
     outline: 'border-accent-purple/50',
+    gradient: 'from-pastel-lilac via-pastel-rose/30 to-surface',
   },
   ielts: {
     tint: 'bg-pastel-peach',
     accent: 'text-accent-orange',
     outline: 'border-accent-orange/50',
+    gradient: 'from-pastel-peach to-pastel-cream/60',
   },
   'writing-notes': {
     tint: 'bg-pastel-cream',
     accent: 'text-accent-orange',
     outline: 'border-accent-orange/50',
+    gradient: 'from-pastel-cream to-surface',
   },
   'ai-coach': {
     tint: 'bg-pastel-mint',
     accent: 'text-accent-green',
     outline: 'border-accent-green/50',
+    gradient: 'from-pastel-mint to-surface',
   },
   reading: {
     tint: 'bg-pastel-lemon',
     accent: 'text-accent-green',
     outline: 'border-accent-green/50',
+    gradient: 'from-pastel-lemon to-surface',
   },
   speaking: {
     tint: 'bg-pastel-mint',
     accent: 'text-accent-green',
     outline: 'border-accent-green/50',
+    gradient: 'from-pastel-mint to-surface',
   },
 }

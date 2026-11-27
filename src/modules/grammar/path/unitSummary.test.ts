@@ -9,6 +9,7 @@ import {
 
 import { buildGrammarPath } from './buildGrammarPath'
 import {
+  advanceUnitSummary,
   currentLevel,
   firstDueLesson,
   initialOpenUnitIds,
@@ -142,5 +143,29 @@ describe('levelProgress', () => {
     expect(
       currentLevel(levels.map(row => ({ ...row, done: row.total })))
     ).toBeNull()
+  })
+})
+
+describe('advanceUnitSummary', () => {
+  it('counts a newly passed lesson as one step', () => {
+    const [first] = build().units
+    const after = first && advanceUnitSummary(first, 'u01-l01', true)
+
+    expect(after).toMatchObject({ done: 1, gained: 1, left: 4, percent: 20 })
+  })
+
+  it('a replay or a failed session adds nothing', () => {
+    const view = build({ lessonProgress: [passedLesson('u01-l01')] })
+    const [first] = view.units
+
+    expect(first && advanceUnitSummary(first, 'u01-l01', true)).toMatchObject({
+      done: 1,
+      gained: 0,
+      left: 4,
+    })
+    expect(first && advanceUnitSummary(first, 'u01-l02', false)).toMatchObject({
+      done: 1,
+      gained: 0,
+    })
   })
 })

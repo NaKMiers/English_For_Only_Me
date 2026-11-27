@@ -122,12 +122,12 @@ describe('buildDictationSegments (grammar-based, DailyDictation style)', () => {
     const result = buildDictationSegments({
       rawText: '',
       rawCues: [
-        cue(0, 0, 8000, 'As the yeasts feed on the fruit sugars they produce a compound called ethanol— the type of alcohol in alcoholic beverages.'),
+        cue(0, 0, 8000, 'As the yeasts feed on the fruit sugars they produce a compound called ethanol\u2014 the type of alcohol in alcoholic beverages.'),
       ],
     })
 
     expect(result.segments.map(s => s.text)).toEqual([
-      'As the yeasts feed on the fruit sugars they produce a compound called ethanol—',
+      'As the yeasts feed on the fruit sugars they produce a compound called ethanol\u2014',
       'the type of alcohol in alcoholic beverages.',
     ])
   })

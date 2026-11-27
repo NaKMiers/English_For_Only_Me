@@ -137,3 +137,27 @@ export function levelProgress(units: PathUnit[]): LevelProgress[] {
 export function currentLevel(levels: LevelProgress[]): LevelProgress | null {
   return levels.find(row => row.done < row.total) ?? null
 }
+
+/**
+ * A unit's summary after one finished session on `lessonId`: a lesson that
+ * was open becomes done (+1); a replay or a review adds nothing. The next
+ * server refresh reconciles with the stored progress.
+ */
+export function advanceUnitSummary(
+  unit: PathUnit,
+  lessonId: string,
+  passed: boolean
+): UnitSummary & { gained: number; left: number } {
+  const before = summarizeUnit(unit)
+  const lesson = unit.lessons.find(item => item.id === lessonId)
+  const gained = passed && lesson && !isLessonDone(lesson) ? 1 : 0
+  const done = Math.min(before.total, before.done + gained)
+
+  return {
+    ...before,
+    done,
+    gained,
+    left: before.total - done,
+    percent: before.total === 0 ? 0 : Math.round((done / before.total) * 100),
+  }
+}

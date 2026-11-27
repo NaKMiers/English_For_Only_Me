@@ -3,36 +3,40 @@
 import { ChevronsRight } from 'lucide-react'
 import { createContext, useContext, useState, type ReactNode } from 'react'
 
-import { useMessages } from '@/i18n/client'
 import { cn } from '@/lib/utils'
 
-const SIDE_ID = 'ielts-progress-side'
+const DEFAULT_SIDE_ID = 'journey-side'
 
 const RowContext = createContext<{
   open: boolean
+  sideId: string
   toggle: () => void
-}>({ open: false, toggle: () => undefined })
+}>({ open: false, sideId: DEFAULT_SIDE_ID, toggle: () => undefined })
 
 /**
- * The journey card and, folded away by default, the recent attempts and
- * weak spots card. The toggle inside the journey card slides the side card
- * out: on wide screens its column grows from nothing beside the journey, on
- * phones its row grows below it. The grid tracks animate, so the journey
- * card eases narrower instead of jumping.
+ * The journey card and, folded away by default, a side card (recent work,
+ * weak spots, favorites). The `DrawerHandle` inside the journey card slides
+ * the side card out: on wide screens its column grows from nothing beside the
+ * journey, on phones its row grows below it. The grid tracks animate, so the
+ * journey card eases narrower instead of jumping.
  */
-export function JourneyRow({
+export function DrawerRow({
   children,
   side,
+  sideId = DEFAULT_SIDE_ID,
 }: {
-  /** The journey card; its right edge holds the ProgressToggle. */
+  /** The journey card; its right edge holds the DrawerHandle. */
   children: ReactNode
-  /** The recent attempts and weak spots card. */
+  /** The folded side card. */
   side: ReactNode
+  sideId?: string
 }) {
   const [open, setOpen] = useState(false)
 
   return (
-    <RowContext value={{ open, toggle: () => setOpen(current => !current) }}>
+    <RowContext
+      value={{ open, sideId, toggle: () => setOpen(current => !current) }}
+    >
       <div
         className={cn(
           'grid transition-[grid-template-columns,grid-template-rows,column-gap,row-gap] duration-500 ease-(--ease-out-soft) motion-reduce:transition-none',
@@ -50,7 +54,7 @@ export function JourneyRow({
               ? 'translate-x-0 translate-y-0 opacity-100'
               : '-translate-y-2 opacity-0 lg:translate-x-6 lg:translate-y-0'
           )}
-          id={SIDE_ID}
+          id={sideId}
           inert={!open}
         >
           {side}
@@ -61,25 +65,36 @@ export function JourneyRow({
 }
 
 /**
- * The handle straddling the journey card's right edge that slides the side card out
- * and back: a double arrow pointing the way it will move (right and left on
- * wide screens, down and up on phones, where the card opens below).
+ * The handle straddling the journey card's right edge that slides the side
+ * card out and back: a double arrow pointing the way it will move (right and
+ * left on wide screens, down and up on phones, where the card opens below).
  */
-export function ProgressToggle() {
-  const t = useMessages().ielts.journey.progress
-  const { open, toggle } = useContext(RowContext)
-  const label = open ? t.hide : t.show
+export function DrawerHandle({
+  accentClassName = 'text-ink',
+  hideLabel,
+  showLabel,
+}: {
+  /** The module accent for the closed handle's arrow. */
+  accentClassName?: string
+  hideLabel: string
+  showLabel: string
+}) {
+  const { open, sideId, toggle } = useContext(RowContext)
+  const label = open ? hideLabel : showLabel
 
   return (
     <button
-      aria-controls={SIDE_ID}
+      aria-controls={sideId}
       aria-expanded={open}
       aria-label={label}
       // Half over the card's right edge (w-8, -right-4). Centred with my-auto,
-      // not a translate: hover-pop owns `translate`.
+      // not a translate: hover-pop owns `translate`. Raw button: a disclosure
+      // trigger relying on aria-expanded / aria-controls.
       className={cn(
         'soft-press hover-pop border-line absolute inset-y-0 -right-4 z-10 my-auto grid h-16 w-8 place-items-center rounded-full border',
-        open ? 'bg-ink text-board' : 'bg-surface text-accent-orange shadow-sm'
+        open
+          ? 'bg-cta text-cta-fg'
+          : cn('bg-surface shadow-sm', accentClassName)
       )}
       onClick={toggle}
       title={label}

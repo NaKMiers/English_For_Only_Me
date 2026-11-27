@@ -43,7 +43,7 @@ const HARD_MAX_CHARS = 700
 // Pause punctuation that marks a natural place to break a long sentence: comma,
 // semicolon, colon, or an en/em dash (also `--` or a lone `-` used as a dash).
 // A period never appears here - sentences are already split on `.` / `!` / `?`.
-const PAUSE_PUNCTUATION = /[,;:—–]$|--$|^-$/
+const PAUSE_PUNCTUATION = /[,;:\u2014–]$|--$|^-$/
 
 interface TimedWord {
   text: string

@@ -1,3 +1,11 @@
+import {
+  BookA,
+  GraduationCap,
+  Headphones,
+  PenLine,
+  type LucideIcon,
+} from 'lucide-react'
+
 import type { Messages } from '@/i18n/messages'
 
 export type AppModuleKey =
@@ -32,6 +40,18 @@ export const APP_MODULES: AppModule[] = [
   { key: 'reading', href: '/reading', status: 'secondary' },
   { key: 'speaking', href: '/speaking', status: 'secondary' },
 ]
+
+/**
+ * The live modules' icons. Server pages pass a module key, never the icon
+ * component itself, when a client component draws it: a component type
+ * cannot cross the server-to-client boundary as a prop.
+ */
+export const MODULE_ICONS: Partial<Record<AppModuleKey, LucideIcon>> = {
+  dictation: Headphones,
+  vocabulary: BookA,
+  grammar: PenLine,
+  ielts: GraduationCap,
+}
 
 // The IELTS module already covers these skills, so they get no header button.
 const NAV_HIDDEN_MODULE_KEYS: AppModuleKey[] = [

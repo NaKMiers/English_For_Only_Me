@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest'
 
 import {
+  advanceTopicRecord,
   finishedByTopic,
   listeningTrack,
   NO_TOPIC_KEY,
@@ -63,5 +64,31 @@ describe('shelveTopics', () => {
     ])
     expect(shelves.new.map(item => item.topic.id)).toEqual(['c'])
     expect(done.get(NO_TOPIC_KEY)).toBe(1)
+  })
+})
+
+describe('advanceTopicRecord', () => {
+  test('a newly finished video moves the record one step', () => {
+    expect(
+      advanceTopicRecord(
+        { done: 6, total: 12 },
+        { finished: true, wasFinishedBefore: false }
+      )
+    ).toEqual({ done: 7, gained: 1, left: 5, total: 12 })
+  })
+
+  test('a replay or an unfinished session adds nothing', () => {
+    expect(
+      advanceTopicRecord(
+        { done: 6, total: 12 },
+        { finished: true, wasFinishedBefore: true }
+      )
+    ).toMatchObject({ done: 6, gained: 0 })
+    expect(
+      advanceTopicRecord(
+        { done: 6, total: 12 },
+        { finished: false, wasFinishedBefore: false }
+      )
+    ).toMatchObject({ done: 6, gained: 0 })
   })
 })

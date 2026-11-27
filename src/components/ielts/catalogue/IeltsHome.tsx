@@ -1,13 +1,13 @@
 import { GraduationCap } from 'lucide-react'
 
 import { PageHeader } from '@/components/common/PageHeader'
+import { ContinueFloat } from '@/components/journey/ContinueFloat'
+import { DrawerRow } from '@/components/journey/SideDrawer'
 import { getMessages } from '@/i18n/server'
 import type { IeltsHomeData } from '@/modules/ielts/services/ieltsPageData'
 
 import { groupCatalogue } from './catalogueGroups'
-import { ContinueFloat } from './ContinueFloat'
 import { JourneyHero } from './JourneyHero'
-import { JourneyRow } from './JourneyRow'
 import { ProgressTabs } from './ProgressTabs'
 import { TestPath } from './TestPath'
 import { HERE_STATION_ID, pickNextTest } from './testPath'
@@ -47,7 +47,8 @@ export async function IeltsHome({
       />
 
       {!error && catalog.length ? (
-        <JourneyRow
+        <DrawerRow
+          sideId="ielts-progress-side"
           side={
             <ProgressTabs
               attempts={attempts}
@@ -64,7 +65,7 @@ export async function IeltsHome({
             now={new Date()}
             overall={overall}
           />
-        </JourneyRow>
+        </DrawerRow>
       ) : null}
 
       {error ? (

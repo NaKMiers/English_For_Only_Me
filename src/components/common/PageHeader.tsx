@@ -2,16 +2,25 @@ import type { ReactNode } from 'react'
 
 import { cn } from '@/lib/utils'
 
+import { Breadcrumb, type BreadcrumbItem } from './Breadcrumb'
+
 interface Props {
   /** Right-hand slot: a stat chip, a link, the page's main action. */
   actions?: ReactNode
-  /** Line above the title, e.g. a breadcrumb or a small tag. */
+  /** Where the page sits, drawn above the title with links that pop. */
+  breadcrumb?: { items: BreadcrumbItem[]; label: string }
+  /** Line above the title, e.g. a small tag. */
   eyebrow?: ReactNode
   /** Pastel circle on the left, holding the module icon. */
   icon?: ReactNode
   /** Module tint for the icon circle, e.g. `bg-pastel-sky text-accent-blue`. */
   iconClassName?: string
   className?: string
+  /**
+   * The page's title also sits in the topbar (`AppTopbar page`) from md, so
+   * this header only shows on phones.
+   */
+  inTopbar?: boolean
   /** One short line under the title. */
   subtitle?: ReactNode
   title: ReactNode
@@ -26,10 +35,12 @@ interface Props {
  */
 export function PageHeader({
   actions,
+  breadcrumb,
   className,
   eyebrow,
   icon,
   iconClassName,
+  inTopbar = false,
   subtitle,
   title,
   titleClassName,
@@ -38,6 +49,7 @@ export function PageHeader({
     <header
       className={cn(
         'page-hero flex flex-wrap items-center justify-between gap-x-4 gap-y-3',
+        inTopbar && 'md:hidden',
         className
       )}
     >
@@ -54,6 +66,12 @@ export function PageHeader({
           </span>
         ) : null}
         <div className="grid min-w-0 gap-1">
+          {breadcrumb ? (
+            <Breadcrumb
+              items={breadcrumb.items}
+              label={breadcrumb.label}
+            />
+          ) : null}
           {eyebrow ? (
             <div className="text-ink-soft min-w-0 text-sm">{eyebrow}</div>
           ) : null}

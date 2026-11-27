@@ -30,4 +30,33 @@ describe('PageHeader', () => {
     expect(html).not.toContain('<p')
     expect(html).not.toContain('aria-hidden')
   })
+
+  test('inTopbar hides the header from md, where the topbar shows it', () => {
+    const html = renderToStaticMarkup(
+      <PageHeader
+        inTopbar
+        title="IELTS"
+      />
+    )
+
+    expect(html).toMatch(/<header[^>]*class="[^"]*md:hidden/)
+  })
+
+  test('breadcrumb links pop and the current page is plain text', () => {
+    const html = renderToStaticMarkup(
+      <PageHeader
+        breadcrumb={{
+          items: [{ href: '/ielts', label: 'IELTS' }, { label: 'Test 2' }],
+          label: 'Breadcrumb',
+        }}
+        title="Test 2"
+      />
+    )
+
+    expect(html).toContain('aria-label="Breadcrumb"')
+    expect(html).toMatch(
+      /<a[^>]*class="[^"]*hover-pop[^"]*"[^>]*href="\/ielts"/
+    )
+    expect(html).toContain('aria-current="page"')
+  })
 })

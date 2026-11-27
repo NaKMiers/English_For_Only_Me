@@ -1,12 +1,10 @@
 import { Sparkles } from 'lucide-react'
 import Link from 'next/link'
 
-import { APP_MODULES } from '@/constants/modules'
+import { APP_MODULES, MODULE_ICONS } from '@/constants/modules'
 import { MODULE_THEMES } from '@/constants/theme'
 import type { Messages } from '@/i18n/messages'
 import { cn } from '@/lib/utils'
-
-import { MODULE_ICONS } from './HomeModuleTiles'
 
 /** The module links beside the dashboard title: one outlined pill each. */
 export function HomeModuleNav({ messages }: { messages: Messages }) {

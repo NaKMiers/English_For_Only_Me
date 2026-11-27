@@ -137,6 +137,33 @@ export const common = {
     rights: '© {year} English For Only Me. All rights reserved.',
     developedBy: 'Developed by {author}',
   },
+  journey: {
+    nextStop: 'Next stop',
+    youAreHere: 'You are here',
+    continue: 'Continue',
+    showMore: 'Show more',
+    hideMore: 'Show less',
+    showSide: 'Show history and weak spots',
+    hideSide: 'Hide history and weak spots',
+    allClear: 'All clear',
+    stepOf: '{done} / {total}',
+    stepOfLabel: 'Step {done} of {total}',
+    stepTaken: '+1 step',
+    toMilestone: {
+      one: '{count} step to {milestone}',
+      other: '{count} steps to {milestone}',
+    },
+    details: 'Details',
+    moreItems: {
+      one: '{count} more',
+      other: '{count} more',
+    },
+    retryPip: {
+      one: '{count} to retry',
+      other: '{count} to retry',
+    },
+    breadcrumb: 'Breadcrumb',
+  },
   errors: {
     generic: 'Something went wrong.',
     network: 'Network error. Check your connection and try again.',

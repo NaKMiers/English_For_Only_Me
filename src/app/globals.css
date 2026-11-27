@@ -120,6 +120,13 @@
   /* A right answer in a lesson player. Wrong answers use `danger`; both
      always carry an icon and a word as well (never colour alone). */
   --lesson-correct: #1b7c44;
+  /* Notices and highlights (IELTS runner banner, highlighted passage text):
+     a warm amber that is neither the brand pink nor the danger red. */
+  --notice: #7a4f00;
+  --notice-soft: #fdf3d4;
+  --highlight: #fde68a;
+  /* The phone tab bar floats on the board: one deeper shadow for it. */
+  --shadow-tabbar-color: rgba(0, 0, 0, 0.45);
 
   /* ----------------------------------------------------------
      CORNERS by role, so radius encodes nesting:
@@ -197,6 +204,10 @@
   --scrollbar-thumb: rgba(255, 143, 189, 0.22);
   --scrollbar-thumb-hover: rgba(255, 143, 189, 0.42);
   --lesson-correct: #5fd08f;
+  --notice: #ffd27a;
+  --notice-soft: #2e2715;
+  --highlight: #5c4a14;
+  --shadow-tabbar-color: rgba(0, 0, 0, 0.45);
 }
 
 /* IELTS runner: a quiet exam sheet. Kept as its own names so the exam can
@@ -240,6 +251,9 @@
   --color-rail: var(--rail-bg);
   --color-rail-fg: var(--rail-fg);
   --color-lesson-correct: var(--lesson-correct);
+  --color-notice: var(--notice);
+  --color-notice-soft: var(--notice-soft);
+  --color-highlight: var(--highlight);
   --color-exam-surface: var(--exam-surface);
   --color-exam-line: var(--exam-line);
   --color-exam-tint: var(--exam-tint);
@@ -284,6 +298,7 @@
     var(--card-highlight), 0 1px 2px rgba(37, 23, 31, 0.03),
     0 10px 30px -18px var(--shadow-color);
   --shadow-float: var(--card-highlight), 0 18px 40px -20px var(--shadow-color);
+  --shadow-tabbar: 0 18px 40px -16px var(--shadow-tabbar-color);
   --shadow-shell:
     var(--shell-ring), 0 50px 100px -40px var(--shadow-color),
     0 2px 6px rgba(37, 23, 31, 0.03);

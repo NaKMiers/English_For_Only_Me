@@ -16,6 +16,7 @@ import Link from 'next/link'
 
 import { format, plural } from '@/i18n/format'
 import type { Messages } from '@/i18n/messages'
+import { DrawerHandle } from '@/components/journey/SideDrawer'
 import { cn } from '@/lib/utils'
 import type { IeltsAttemptSummary } from '@/modules/ielts/attempts/attemptQueries'
 import type { IeltsTestBands } from '@/modules/ielts/attempts/testBands'
@@ -24,7 +25,6 @@ import type { IeltsOverallEstimate } from '@/modules/ielts/scoring/overall'
 import type { IeltsCatalogEntry } from '@/modules/ielts/tests/testReaders'
 
 import type { CatalogueGroup } from './catalogueGroups'
-import { ProgressToggle } from './JourneyRow'
 import { SKILL_ICONS } from './SkillPips'
 import {
   JOURNEY_MILESTONES,
@@ -289,7 +289,11 @@ export function JourneyHero({
         </p>
       )}
 
-      <ProgressToggle />
+      <DrawerHandle
+        accentClassName="text-accent-orange"
+        hideLabel={t.progress.hide}
+        showLabel={t.progress.show}
+      />
     </section>
   )
 }

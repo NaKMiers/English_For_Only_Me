@@ -51,6 +51,86 @@ export function SkeletonHero({
   )
 }
 
+/**
+ * The `JourneyCard` shape: title, big headline, metaphor, chips and the next
+ * stop (a right column from lg, or last in `stacked`), so nothing jumps when
+ * the landing arrives.
+ */
+export function SkeletonJourney({
+  chips = 4,
+  layout = 'split',
+  metaphorClassName = 'h-40',
+}: {
+  chips?: number
+  layout?: 'split' | 'stacked'
+  /** Height of the module's picture, e.g. the staircase or the trail. */
+  metaphorClassName?: string
+}) {
+  return (
+    <div
+      aria-hidden="true"
+      className={cn(
+        'border-line bg-surface-muted rounded-panel grid gap-5 border p-4 sm:p-6',
+        layout === 'split' && 'lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]'
+      )}
+    >
+      <div className="grid content-between gap-5">
+        <div className="grid gap-2">
+          <SkeletonLine className="h-4 w-32" />
+          <SkeletonLine className="h-12 w-48" />
+        </div>
+        <Skeleton className={cn('rounded-control w-full', metaphorClassName)} />
+        <div className="grid gap-3">
+          <SkeletonLine className="w-56" />
+          <div className="flex flex-wrap gap-1.5">
+            {Array.from({ length: chips }).map((_, index) => (
+              <Skeleton
+                className="h-9 w-24 rounded-full"
+                key={index}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className="bg-surface rounded-panel grid content-between gap-5 p-5">
+        <Skeleton className="h-6 w-28 rounded-full" />
+        <div className="grid gap-2">
+          <SkeletonLine className="w-2/3" />
+          <SkeletonLine className="h-7 w-full" />
+        </div>
+        <Skeleton className="h-11 w-40 rounded-full" />
+      </div>
+    </div>
+  )
+}
+
+/**
+ * A focus screen (lesson player, dictation practice): header row, one card
+ * and the footer bar, one viewport tall, with no topbar or tab bar so they do
+ * not flash before the full-height page lands.
+ */
+export function SkeletonPlayer({ label }: { label: string }) {
+  return (
+    <PageShell fullHeight>
+      <div
+        aria-busy
+        aria-label={label}
+        className="flex h-full flex-col gap-4 p-4 md:pr-6 md:pl-0"
+      >
+        <div className="flex items-center gap-3">
+          <Skeleton className="size-11 shrink-0 rounded-full" />
+          <Skeleton className="h-2 flex-1 rounded-full" />
+          <Skeleton className="h-6 w-14 rounded-full" />
+        </div>
+        <SkeletonBlock className="min-h-60 flex-1" />
+        <div className="flex justify-end">
+          <Skeleton className="h-11 w-36 rounded-full" />
+        </div>
+      </div>
+    </PageShell>
+  )
+}
+
 /** ContentPanel-shaped card: header row + content lines. */
 export function SkeletonPanel({
   className,
