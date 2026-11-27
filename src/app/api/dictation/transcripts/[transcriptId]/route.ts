@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 
 import { MissingEnvironmentError } from '@/constants/environments'
+import type { Messages } from '@/i18n/messages'
+import { getMessages } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { revalidateDictationCatalog } from '@/lib/db/revalidateCatalog'
 import { DictationTranscriptModel } from '@/models/dictation/DictationTranscriptModel'
@@ -8,6 +10,7 @@ import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
 import { requireAdmin } from '@/modules/dictation/services/getCurrentUser'
 import { parseTranscriptIdParam } from '@/modules/dictation/services/segmentRouteDecisions'
 import {
+  getAccessErrorMessage,
   type ApiErrorDecision,
   getMissingMongoResponse,
   MISSING_MONGODB_MESSAGE,
@@ -25,7 +28,10 @@ function jsonError(decision: ApiErrorDecision) {
   return NextResponse.json(decision.body, { status: decision.status })
 }
 
-function authErrorDecision(error: unknown): ApiErrorDecision | null {
+function authErrorDecision(
+  error: unknown,
+  t: Messages
+): ApiErrorDecision | null {
   if (
     typeof error === 'object' &&
     error !== null &&
@@ -35,7 +41,7 @@ function authErrorDecision(error: unknown): ApiErrorDecision | null {
     return {
       status: error.status,
       body: {
-        message: (error as { message?: string }).message ?? 'Access denied.',
+        message: getAccessErrorMessage(error.status, t),
       },
     }
 
@@ -45,6 +51,7 @@ function authErrorDecision(error: unknown): ApiErrorDecision | null {
 // Remove a translation caption track. Refuses to delete a video's active
 // (primary English) transcript so practice segments can't be orphaned.
 export async function DELETE(_request: Request, context: RouteContext) {
+  const t = await getMessages()
   const missingMongo = getMissingMongoResponse()
 
   if (missingMongo) return jsonError(missingMongo)
@@ -66,7 +73,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
     if (!transcript)
       return jsonError({
         status: 404,
-        body: { message: 'This transcript was not found.' },
+        body: { message: t.dictation.api.transcriptNotFound },
       })
 
     const video = await DictationVideoModel.findOne({
@@ -77,7 +84,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
       return jsonError({
         status: 409,
         body: {
-          message: 'Cannot delete the active transcript for this video.',
+          message: t.dictation.api.transcriptActiveDelete,
         },
       })
 
@@ -90,7 +97,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
       transcriptId: String(transcript._id),
     })
   } catch (error) {
-    const authError = authErrorDecision(error)
+    const authError = authErrorDecision(error, t)
     if (authError) return jsonError(authError)
 
     if (error instanceof MissingEnvironmentError)
@@ -103,7 +110,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
 
     return jsonError({
       status: 500,
-      body: { message: 'Could not delete this transcript.' },
+      body: { message: t.dictation.api.transcriptDeleteFailed },
     })
   }
 }

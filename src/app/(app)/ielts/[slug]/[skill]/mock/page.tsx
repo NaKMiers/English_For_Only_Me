@@ -2,12 +2,17 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { AttemptLoader } from '@/components/ielts/runner/AttemptLoader'
+import { getMessages } from '@/i18n/server'
 import { loadRunnerPageData } from '@/modules/ielts/services/runnerPageData'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
-export const metadata: Metadata = { title: 'IELTS Mock' }
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getMessages()
+
+  return { title: t.ielts.meta.mockTitle }
+}
 
 interface Props {
   params: Promise<{ slug: string; skill: string }>

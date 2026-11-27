@@ -1,3 +1,5 @@
+'use client'
+
 import {
   CircleAlert,
   CircleCheck,
@@ -8,6 +10,9 @@ import {
   Wrench,
 } from 'lucide-react'
 
+import { useMessages } from '@/i18n/client'
+import { format } from '@/i18n/format'
+import type { Messages } from '@/i18n/messages'
 import { cn } from '@/lib/utils'
 import { isSectionReady } from '@/modules/ielts/consistency/checkTest'
 import {
@@ -16,15 +21,6 @@ import {
   type IeltsGenStatus,
 } from '@/modules/ielts/constants'
 import type { IeltsSection } from '@/modules/ielts/schema'
-
-export const GEN_LABELS: Record<IeltsGenStatus, string> = {
-  pending: 'Pending',
-  generating: 'Generating...',
-  needsRepair: 'Needs repair',
-  ready: 'Ready',
-  failed: 'Failed',
-  manual: 'Manual',
-}
 
 const STATUS_ICONS = {
   pending: CircleDashed,
@@ -51,19 +47,21 @@ interface Props {
 /** Done means ready for learners: see `isSectionReady`. */
 export const isDone = isSectionReady
 
-export function statusOf(section: IeltsSection, busy: boolean) {
-  if (busy) return { Icon: LoaderCircle, label: 'Generating...' }
+export function statusOf(section: IeltsSection, busy: boolean, t: Messages) {
+  const labels = t.ieltsEditor.genStatus
+
+  if (busy) return { Icon: LoaderCircle, label: labels.generating }
 
   if (
     section.skill === 'listening' &&
     section.genStatus === 'ready' &&
     !section.listening?.audio
   )
-    return { Icon: VolumeX, label: 'Ready, no audio yet' }
+    return { Icon: VolumeX, label: labels.readyNoAudio }
 
   return {
     Icon: STATUS_ICONS[section.genStatus],
-    label: GEN_LABELS[section.genStatus],
+    label: labels[section.genStatus],
   }
 }
 
@@ -82,6 +80,8 @@ export function SectionPicker({
   sections,
   selectedKey,
 }: Props) {
+  const t = useMessages()
+
   return (
     <div
       className={cn(
@@ -120,8 +120,13 @@ export function SectionPicker({
                 const selected = item.key === selectedKey
                 const dirty = dirtyKeys.includes(item.key)
                 const busy = busyKey === item.key
-                const { Icon, label } = statusOf(item, busy)
-                const name = `${IELTS_SKILL_LABELS[skill]} ${item.order}: ${label}${dirty ? ', unsaved' : ''}`
+                const { Icon, label } = statusOf(item, busy, t)
+                const name = format(
+                  dirty
+                    ? t.ieltsEditor.picker.tileUnsaved
+                    : t.ieltsEditor.picker.tile,
+                  { skill: IELTS_SKILL_LABELS[skill], order: item.order, label }
+                )
 
                 return (
                   <li key={item.key}>

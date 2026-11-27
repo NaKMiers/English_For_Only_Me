@@ -3,6 +3,8 @@
 import { ContentPanel } from '@/components/common/ContentPanel'
 import { MetricTile } from '@/components/common/MetricTile'
 import { Progress } from '@/components/ui/progress'
+import { useMessages } from '@/i18n/client'
+import { plural } from '@/i18n/format'
 import type { VocabStatsRecord } from '@/modules/vocabulary/types'
 
 import { VocabTermHeader } from './VocabTermHeader'
@@ -12,6 +14,7 @@ interface Props {
 }
 
 export function VocabularyStatsOverview({ stats }: Props) {
+  const { stats: t, views } = useMessages().vocabulary
   const maxGrowth = Math.max(1, ...stats.dailyGrowth.map(point => point.count))
   const progress =
     stats.totalStartedCount === 0
@@ -23,35 +26,35 @@ export function VocabularyStatsOverview({ stats }: Props) {
       <div className="motion-stagger grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         <MetricTile
           href="/vocabulary/words?view=learning"
-          label="Learning"
+          label={views.learning}
           value={String(stats.learningCount)}
         />
         <MetricTile
           href="/vocabulary/words?view=dueToday"
-          label="Due Today"
+          label={views.dueToday}
           value={String(stats.dueTodayCount)}
         />
         <MetricTile
           href="/vocabulary/words?view=alreadyKnow"
-          label="Already Know"
+          label={views.alreadyKnow}
           value={String(stats.alreadyKnowCount)}
         />
         <MetricTile
           href="/vocabulary/words?view=mastered"
-          label="Mastered"
+          label={views.mastered}
           value={String(stats.masteredCount)}
         />
         <MetricTile
           href="/vocabulary/words?view=knownTotal"
-          label="Known Total"
+          label={views.knownTotal}
           value={String(stats.totalKnownCount)}
         />
       </div>
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]">
         <ContentPanel
-          eyebrow="Growth"
-          title="Daily word growth"
+          eyebrow={t.growthEyebrow}
+          title={t.growthTitle}
         >
           <Progress
             value={progress}
@@ -79,8 +82,8 @@ export function VocabularyStatsOverview({ stats }: Props) {
         </ContentPanel>
 
         <ContentPanel
-          eyebrow="Focus"
-          title="Hardest words"
+          eyebrow={t.focusEyebrow}
+          title={t.hardestTitle}
         >
           {stats.hardestWords.length > 0 ? (
             <div className="grid gap-2">
@@ -94,14 +97,16 @@ export function VocabularyStatsOverview({ stats }: Props) {
                     term={word.term}
                   />
                   <p className="text-ink-soft text-xs font-normal">
-                    {word.wrongCount} misses - {word.accuracyPercent}%
+                    {plural(t.misses, word.wrongCount, {
+                      percent: word.accuracyPercent,
+                    })}
                   </p>
                 </div>
               ))}
             </div>
           ) : (
             <p className="text-ink-soft text-sm leading-6 font-normal">
-              No hard words yet. Missed recall answers will appear here.
+              {t.noHardWords}
             </p>
           )}
         </ContentPanel>

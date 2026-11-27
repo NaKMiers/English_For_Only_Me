@@ -2,6 +2,8 @@
 
 import { Flag } from 'lucide-react'
 
+import { useMessages } from '@/i18n/client'
+import { format } from '@/i18n/format'
 import { cn } from '@/lib/utils'
 
 import { useIeltsAnswers } from './answerContext'
@@ -24,6 +26,7 @@ export function QuestionNumberBadge({
   number: number
   size?: keyof typeof SIZE_CLASS
 }) {
+  const t = useMessages().ielts.widgets
   const { currentNumber, flagged, onToggleFlag } = useIeltsAnswers()
   const isFlagged = flagged?.has(number) ?? false
   const className = cn(
@@ -56,16 +59,14 @@ export function QuestionNumberBadge({
 
   return (
     <button
-      aria-label={`${isFlagged ? 'Unflag' : 'Flag'} question ${number}`}
+      aria-label={format(isFlagged ? t.unflag : t.flag, { number })}
       aria-pressed={isFlagged}
       className={cn(
         className,
         'focus-visible:ring-line cursor-pointer outline-none hover:brightness-95 focus-visible:ring-2'
       )}
       onClick={() => onToggleFlag(number)}
-      title={
-        isFlagged ? 'Flagged: click to unflag' : 'Click to flag for review'
-      }
+      title={isFlagged ? t.flaggedTitle : t.flagTitle}
       type="button"
     >
       {icon}

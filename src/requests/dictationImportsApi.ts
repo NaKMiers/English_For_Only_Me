@@ -10,16 +10,20 @@ interface YouTubeImportResponse {
   warning: string | null
 }
 
+/**
+ * The server's message (already in the learner's language), or '' when the
+ * body has none: the form then shows its own translated fallback.
+ */
 async function readApiError(response: Response) {
   try {
     const body = (await response.json()) as { message?: unknown }
 
     if (typeof body.message === 'string') return body.message
   } catch {
-    return 'The YouTube import request failed.'
+    return ''
   }
 
-  return 'The YouTube import request failed.'
+  return ''
 }
 
 export async function importYouTubeVideoApi(

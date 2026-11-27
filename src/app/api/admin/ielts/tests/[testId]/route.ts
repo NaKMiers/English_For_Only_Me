@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
 
+import { plural } from '@/i18n/format'
+import { getMessages } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { requireAdmin } from '@/modules/dictation/services/getCurrentUser'
 import {
@@ -27,6 +29,7 @@ interface RouteContext {
 }
 
 export async function GET(_request: Request, context: RouteContext) {
+  const t = await getMessages()
   const missing = ieltsMissingMongo()
 
   if (missing) return missing
@@ -41,7 +44,7 @@ export async function GET(_request: Request, context: RouteContext) {
 
     const test = await readAdminTest(id.data)
 
-    if (!test) return ieltsJsonError(404, 'Test not found.')
+    if (!test) return ieltsJsonError(404, t.ieltsEditor.api.testNotFound)
 
     return NextResponse.json({ test })
   } catch (error) {
@@ -82,6 +85,7 @@ export async function PUT(request: Request, context: RouteContext) {
 
 /** Delete a draft or archived version; `?withAttempts=1` confirms losing its attempts. */
 export async function DELETE(request: Request, context: RouteContext) {
+  const t = await getMessages()
   const missing = ieltsMissingMongo()
 
   if (missing) return missing
@@ -94,13 +98,25 @@ export async function DELETE(request: Request, context: RouteContext) {
     await requireAdmin()
     await connectDatabase()
 
-    return ieltsDecisionResponse(
-      await deleteTest({
-        testId: id.data,
-        withAttempts:
-          new URL(request.url).searchParams.get('withAttempts') === '1',
-      })
-    )
+    const outcome = await deleteTest({
+      testId: id.data,
+      withAttempts:
+        new URL(request.url).searchParams.get('withAttempts') === '1',
+    })
+
+    if (!outcome.ok && 'attemptCount' in outcome.body)
+      return NextResponse.json(
+        {
+          ...outcome.body,
+          message: plural(
+            t.ieltsEditor.api.attemptsUseTest,
+            outcome.body.attemptCount
+          ),
+        },
+        { status: outcome.status }
+      )
+
+    return ieltsDecisionResponse(outcome)
   } catch (error) {
     return ieltsRouteFailure(error, 'ielts admin delete failed')
   }

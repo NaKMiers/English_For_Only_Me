@@ -1,0 +1,77 @@
+import type { Messages } from '../en'
+
+/** Vietnamese UI text for the study desk. Keys mirror en/home.ts. */
+export const home: Messages['home'] = {
+  greeting: 'Chào {name}',
+  dueToday: {
+    one: '{date} · hôm nay có {count} mục cần ôn',
+    other: '{date} · hôm nay có {count} mục cần ôn',
+  },
+  dashboard: 'Tổng quan',
+  modulesNav: 'Các phần học',
+  learningProgress: 'Tiến độ học',
+  progress: {
+    dictation: 'Chép chính tả',
+    dictationDetail:
+      'Tuần này nghe {minutes} phút, xong {done}/{total} video đã lưu.',
+    streak: 'Chuỗi {count} ngày',
+    vocabulary: 'Từ vựng',
+    vocabularyDetail: 'Đã thuộc {known} từ, hôm nay học {today} từ.',
+    due: '{count} cần ôn',
+  },
+  facts: {
+    savedVideos: '{count} video đã lưu',
+    grammarPath: 'Lộ trình A1 đến C1',
+    ielts: 'Listening, Reading, Writing',
+    wordsKnown: 'Đã thuộc {count} từ',
+  },
+  modulesTitle: 'Các phần học của bạn',
+  weakWords: 'Từ hay sai',
+  weakWordsEmpty: 'Những từ bạn chép sai sẽ được gom ở đây.',
+  counters: {
+    videos: 'Video',
+    streak: 'Chuỗi ngày',
+    words: 'Từ',
+  },
+  plan: {
+    title: 'Kế hoạch học hôm nay',
+    madeForYou: 'dành riêng cho bạn',
+    listen: 'Nghe',
+    minutesThisWeek: '{count} phút tuần này',
+    videos: '{count} video',
+    words: '{count} từ',
+    dictation: 'Chính tả',
+    weakWords: 'Từ hay sai',
+    newClip: 'Clip mới',
+    addOne: 'Thêm clip',
+    readWrite: 'Đọc và viết',
+    toReview: '{count} cần ôn',
+    due: '{count} cần ôn',
+    vocabulary: 'Từ vựng',
+    grammar: 'Ngữ pháp',
+    nextLesson: 'Bài tiếp theo',
+    start: 'Bắt đầu',
+    ielts: 'IELTS',
+    fullTests: 'Đề đầy đủ',
+  },
+  schedule: {
+    title: 'Lịch ôn',
+    openReview: 'Mở danh sách ôn tập',
+    dictationReview: 'Ôn chép chính tả',
+    vocabularyRecall: 'Ôn từ vựng',
+    grammarReview: 'Ôn ngữ pháp',
+    due: '{count} cần ôn',
+  },
+  buddy: {
+    title: 'Bạn đồng hành',
+    openGrammar: 'Mở lộ trình ngữ pháp',
+    done: 'Xong {count}',
+    nextUp: 'Tiếp theo',
+    pickLesson: 'Chọn một bài học',
+    dayStreak: 'Chuỗi ngày học',
+    advice:
+      'Học ngắn mà đều đặn hiệu quả hơn học dồn. Giữ chuỗi ngày bằng một clip nghe và một bài ngữ pháp.',
+    minutesThisMonth: 'Số phút tháng này',
+    videosDone: 'Video đã xong',
+  },
+}

@@ -2,6 +2,8 @@
 
 import { useEffect } from 'react'
 
+import { useMessages } from '@/i18n/client'
+
 interface Props {
   error: Error & { digest?: string }
   unstable_retry: () => void
@@ -13,6 +15,9 @@ interface Props {
  * instead of the page chrome (topbar, shell, panel, button).
  */
 export default function Error({ error, unstable_retry }: Props) {
+  const t = useMessages()
+  const text = t.dictation.errorBoundary
+
   useEffect(() => {
     console.error(error)
   }, [error])
@@ -24,21 +29,20 @@ export default function Error({ error, unstable_retry }: Props) {
         className="border-line bg-surface rounded-panel shadow-card mx-auto grid max-w-2xl gap-4 border p-6"
       >
         <span className="bg-danger-soft text-danger inline-flex min-h-7 w-fit items-center rounded-full px-3 py-1 font-sans text-xs leading-tight font-medium">
-          Error
+          {text.eyebrow}
         </span>
         <h1 className="font-sans text-2xl leading-tight font-medium tracking-tight">
-          Dictation Lab needs a retry
+          {text.title}
         </h1>
         <p className="text-ink-soft max-w-2xl text-base leading-7 font-normal">
-          The static module shell failed to render. Try the page again before
-          changing any practice data.
+          {text.description}
         </p>
         <button
           type="button"
           onClick={() => unstable_retry()}
           className="bg-cta text-cta-fg hover:bg-cta/85 soft-press inline-flex min-h-11 w-fit items-center justify-center rounded-full px-5 py-2 font-sans text-sm leading-tight font-medium"
         >
-          Retry
+          {text.retry}
         </button>
       </section>
     </div>

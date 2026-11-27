@@ -1,6 +1,8 @@
 import { PlayCircle } from 'lucide-react'
 
 import { PageTag } from '@/components/ui/PageTag'
+import type { Messages } from '@/i18n/messages'
+import { en } from '@/i18n/messages/en'
 
 import { BrowseDisclosure } from './BrowseDisclosure'
 import { BrowseVideoList, type BrowseVideoItem } from './BrowseVideoList'
@@ -15,9 +17,12 @@ import { BrowseVideoList, type BrowseVideoItem } from './BrowseVideoList'
 export function InProgressSection({
   videos,
   canFavorite,
+  labels = en.dictation.browse,
 }: {
   videos: BrowseVideoItem[]
   canFavorite: boolean
+  /** From the page's `getMessages()`: this stays a server component. */
+  labels?: Messages['dictation']['browse']
 }) {
   if (videos.length === 0) return null
 
@@ -33,7 +38,9 @@ export function InProgressSection({
             aria-hidden="true"
             className="text-brand size-5 shrink-0"
           />
-          <span className="font-sans text-base font-semibold">In Progress</span>
+          <span className="font-sans text-base font-semibold">
+            {labels.inProgress}
+          </span>
           <PageTag tone="red">{videos.length}</PageTag>
         </>
       }
@@ -42,6 +49,7 @@ export function InProgressSection({
         id={panelId}
         videos={videos}
         canFavorite={canFavorite}
+        labels={labels.card}
         className="border-line border-t p-3"
       />
     </BrowseDisclosure>

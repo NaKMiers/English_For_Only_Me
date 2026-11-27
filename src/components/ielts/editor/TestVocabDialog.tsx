@@ -12,6 +12,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { useMessages } from '@/i18n/client'
+import { format, plural } from '@/i18n/format'
 import { cn } from '@/lib/utils'
 import { IELTS_TEST_VOCAB_MAX } from '@/modules/ielts/constants'
 import type { VocabEntryApiRecord } from '@/modules/vocabulary/types'
@@ -22,13 +24,7 @@ import {
 } from '@/requests/ieltsAdminApi'
 import { lookupVocabEntryApi, searchVocabApi } from '@/requests/vocabularyApi'
 
-import {
-  countLabel,
-  INNER_BOX_CLASS,
-  MetaChip,
-  RowActions,
-  TextField,
-} from './fields'
+import { INNER_BOX_CLASS, MetaChip, RowActions, TextField } from './fields'
 
 interface Props {
   onOpenChange: (open: boolean) => void
@@ -39,7 +35,7 @@ interface Props {
 const SEARCH_DELAY_MS = 250
 
 function errorText(error: unknown, fallback: string) {
-  return error instanceof Error ? error.message : fallback
+  return error instanceof Error && error.message ? error.message : fallback
 }
 
 function move<T>(list: T[], from: number, to: number) {
@@ -54,6 +50,7 @@ function move<T>(list: T[], from: number, to: number) {
 }
 
 function WordLine({ entry }: { entry: VocabEntryApiRecord }) {
+  const t = useMessages()
   const meaning = getVietnameseMeaning(entry)
 
   return (
@@ -75,7 +72,7 @@ function WordLine({ entry }: { entry: VocabEntryApiRecord }) {
           className="w-fit"
           tone="warn"
         >
-          No Vietnamese meaning yet
+          {t.ieltsEditor.vocab.noMeaning}
         </MetaChip>
       )}
     </div>
@@ -88,6 +85,8 @@ function WordLine({ entry }: { entry: VocabEntryApiRecord }) {
  * A word missing from the dictionary can be looked up, which creates it.
  */
 export function TestVocabDialog({ onOpenChange, open, testId }: Props) {
+  const t = useMessages()
+  const copy = t.ieltsEditor.vocab
   const [words, setWords] = useState<VocabEntryApiRecord[]>([])
   const [loadState, setLoadState] = useState<'idle' | 'loaded' | 'failed'>(
     'idle'
@@ -117,14 +116,14 @@ export function TestVocabDialog({ onOpenChange, open, testId }: Props) {
       })
       .catch(cause => {
         if (cancelled) return
-        setError(errorText(cause, 'Could not load the words.'))
+        setError(errorText(cause, copy.loadFailed))
         setLoadState('failed')
       })
 
     return () => {
       cancelled = true
     }
-  }, [loadState, open, testId])
+  }, [copy.loadFailed, loadState, open, testId])
 
   useEffect(
     () => () => {
@@ -155,7 +154,7 @@ export function TestVocabDialog({ onOpenChange, open, testId }: Props) {
         })
         .catch(cause => {
           if (seq === searchSeqRef.current)
-            setError(errorText(cause, 'Search failed.'))
+            setError(errorText(cause, copy.searchFailed))
         })
         .finally(() => {
           if (seq === searchSeqRef.current) setSearching(false)
@@ -191,7 +190,7 @@ export function TestVocabDialog({ onOpenChange, open, testId }: Props) {
       add(response.entry)
       changeQuery('')
     } catch (cause) {
-      setError(errorText(cause, `Could not look up "${term}".`))
+      setError(errorText(cause, format(copy.lookupFailed, { term })))
     } finally {
       setBusy(null)
     }
@@ -211,7 +210,7 @@ export function TestVocabDialog({ onOpenChange, open, testId }: Props) {
       setDirty(false)
       onOpenChange(false)
     } catch (cause) {
-      setError(errorText(cause, 'Could not save the words.'))
+      setError(errorText(cause, copy.saveFailed))
     } finally {
       setBusy(null)
     }
@@ -229,19 +228,16 @@ export function TestVocabDialog({ onOpenChange, open, testId }: Props) {
     >
       <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Vocabulary</DialogTitle>
-          <DialogDescription>
-            Words learners read before starting this test, shown as Explore
-            Words under the skill cards. Order is the order on the page.
-          </DialogDescription>
+          <DialogTitle>{copy.title}</DialogTitle>
+          <DialogDescription>{copy.description}</DialogDescription>
         </DialogHeader>
 
         <div className="grid min-w-0 gap-3">
           <div className="grid gap-2">
             <TextField
-              label="Search words"
+              label={copy.search}
               onChange={changeQuery}
-              placeholder="e.g. excavate"
+              placeholder={copy.searchPlaceholder}
               value={query}
             />
             {term ? (
@@ -257,8 +253,8 @@ export function TestVocabDialog({ onOpenChange, open, testId }: Props) {
                       disabled={chosen.has(entry.id) || full}
                       label={
                         chosen.has(entry.id)
-                          ? `${entry.term} is already added`
-                          : `Add ${entry.term}`
+                          ? format(copy.alreadyAdded, { term: entry.term })
+                          : format(copy.add, { term: entry.term })
                       }
                       onClick={() => add(entry)}
                       type="button"
@@ -272,11 +268,11 @@ export function TestVocabDialog({ onOpenChange, open, testId }: Props) {
                 ))}
                 {searching ? (
                   <p className="text-muted-foreground text-xs font-semibold">
-                    Searching...
+                    {copy.searching}
                   </p>
                 ) : !results.length ? (
                   <p className="text-muted-foreground text-xs font-semibold">
-                    No word starts with &quot;{term}&quot; yet.
+                    {format(copy.noResults, { term })}
                   </p>
                 ) : null}
                 {!searching && !exactMatch ? (
@@ -294,8 +290,8 @@ export function TestVocabDialog({ onOpenChange, open, testId }: Props) {
                     type="button"
                   >
                     {busy === 'lookup'
-                      ? 'Looking up...'
-                      : `Look up "${term}" and add`}
+                      ? copy.lookingUp
+                      : format(copy.lookUp, { term })}
                   </ExamButton>
                 ) : null}
               </div>
@@ -304,11 +300,13 @@ export function TestVocabDialog({ onOpenChange, open, testId }: Props) {
 
           <div className="grid gap-2">
             <p className="font-sans text-xs font-semibold">
-              In this test ({countLabel(words.length, 'word')})
+              {format(copy.inTest, {
+                words: plural(t.ieltsEditor.counts.word, words.length),
+              })}
             </p>
             {loading ? (
               <p className="text-muted-foreground text-sm font-semibold">
-                Loading...
+                {t.common.actions.loading}
               </p>
             ) : words.length ? (
               <ol className="grid gap-1">
@@ -327,7 +325,7 @@ export function TestVocabDialog({ onOpenChange, open, testId }: Props) {
                     <ExamIconButton
                       className="size-9"
                       disabled={index === 0}
-                      label={`Move ${entry.term} up`}
+                      label={format(copy.moveUp, { term: entry.term })}
                       onClick={() => update(move(words, index, index - 1))}
                       type="button"
                     >
@@ -339,7 +337,7 @@ export function TestVocabDialog({ onOpenChange, open, testId }: Props) {
                     <ExamIconButton
                       className="size-9"
                       disabled={index === words.length - 1}
-                      label={`Move ${entry.term} down`}
+                      label={format(copy.moveDown, { term: entry.term })}
                       onClick={() => update(move(words, index, index + 1))}
                       type="button"
                     >
@@ -349,7 +347,7 @@ export function TestVocabDialog({ onOpenChange, open, testId }: Props) {
                       />
                     </ExamIconButton>
                     <RowActions
-                      label={`Remove ${entry.term}`}
+                      label={format(copy.remove, { term: entry.term })}
                       onRemove={() =>
                         update(words.filter(word => word.id !== entry.id))
                       }
@@ -359,7 +357,7 @@ export function TestVocabDialog({ onOpenChange, open, testId }: Props) {
               </ol>
             ) : (
               <p className="text-muted-foreground text-sm font-semibold">
-                No words yet. Search above to add some.
+                {copy.empty}
               </p>
             )}
           </div>
@@ -380,7 +378,7 @@ export function TestVocabDialog({ onOpenChange, open, testId }: Props) {
             tone="paper"
             type="button"
           >
-            Close
+            {t.common.actions.close}
           </ExamButton>
           <ExamButton
             disabled={!dirty || busy !== null || loadState !== 'loaded'}
@@ -394,7 +392,7 @@ export function TestVocabDialog({ onOpenChange, open, testId }: Props) {
             tone="ink"
             type="button"
           >
-            {busy === 'save' ? 'Saving...' : 'Save words'}
+            {busy === 'save' ? t.common.actions.saving : copy.save}
           </ExamButton>
         </DialogFooter>
       </DialogContent>

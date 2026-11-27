@@ -8,6 +8,8 @@ export interface ExtractYouTubeIdResult {
 
 export interface ExtractYouTubeIdError {
   ok: false
+  /** Lets a route say it in the learner's language; `message` is English. */
+  code: 'invalidUrl' | 'unsupportedUrl'
   message: string
 }
 
@@ -47,6 +49,7 @@ export function extractYouTubeId(input: string): ExtractYouTubeIdResponse {
   } catch {
     return {
       ok: false,
+      code: 'invalidUrl',
       message: 'Enter a valid YouTube URL.',
     }
   }
@@ -73,6 +76,7 @@ export function extractYouTubeId(input: string): ExtractYouTubeIdResponse {
   if (!videoId)
     return {
       ok: false,
+      code: 'unsupportedUrl',
       message:
         'Only YouTube watch, youtu.be, shorts, and embed URLs are supported.',
     }

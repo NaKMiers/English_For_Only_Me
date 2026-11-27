@@ -11,6 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { useMessages } from '@/i18n/client'
 import {
   ANSWER_TEXT_SIZE_OPTIONS,
   PLAYBACK_SPEED_OPTIONS,
@@ -26,22 +27,6 @@ interface Props {
   onVideoSizeChange: (size: VideoSize) => void
   playbackSpeed: number
   videoSize: VideoSize
-}
-
-const VIDEO_SIZE_LABEL: Record<VideoSize, string> = {
-  small: 'Small',
-  normal: 'Normal',
-  large: 'Large',
-  max: 'Max',
-}
-
-// Spelled out rather than the toolbar's S/M/L/XL: a menu row has the width for
-// a real word, and a bare "XL" on its own line reads like a shirt size.
-const ANSWER_TEXT_MENU_LABEL: Record<AnswerTextSize, string> = {
-  small: 'Small',
-  normal: 'Medium',
-  large: 'Large',
-  xlarge: 'Extra large',
 }
 
 const GROUP_LABEL_CLASS_NAME =
@@ -67,11 +52,18 @@ export function DictationSettingsMenu({
   playbackSpeed,
   videoSize,
 }: Props) {
+  const t = useMessages()
+  const text = t.dictation.settings
+  // Spelled out rather than the toolbar's S/M/L/XL: a menu row has the width
+  // for a real word, and a bare "XL" on its own line reads like a shirt size.
+  const answerTextLabels: Record<AnswerTextSize, string> = text.answerTextSizes
+  const videoSizeLabels: Record<VideoSize, string> = t.dictation.videoSizes
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        aria-label="Playback and display settings"
-        title="Playback and display settings"
+        aria-label={text.label}
+        title={text.label}
         className="border-line bg-surface text-ink hover:bg-tint rounded-control inline-flex min-h-9 shrink-0 items-center gap-1 border px-2 font-sans text-xs font-semibold transition-colors"
       >
         <SlidersHorizontal
@@ -94,7 +86,7 @@ export function DictationSettingsMenu({
           onValueChange={value => onPlaybackSpeedChange(Number(value))}
         >
           <DropdownMenuLabel className={GROUP_LABEL_CLASS_NAME}>
-            Speed
+            {text.speed}
           </DropdownMenuLabel>
           {PLAYBACK_SPEED_OPTIONS.map(speed => (
             <DropdownMenuRadioItem
@@ -116,7 +108,7 @@ export function DictationSettingsMenu({
           }
         >
           <DropdownMenuLabel className={GROUP_LABEL_CLASS_NAME}>
-            Answer text
+            {text.answerText}
           </DropdownMenuLabel>
           {ANSWER_TEXT_SIZE_OPTIONS.map(size => (
             <DropdownMenuRadioItem
@@ -124,7 +116,7 @@ export function DictationSettingsMenu({
               value={size}
               className={RADIO_ITEM_CLASS_NAME}
             >
-              {ANSWER_TEXT_MENU_LABEL[size]}
+              {answerTextLabels[size]}
             </DropdownMenuRadioItem>
           ))}
         </DropdownMenuRadioGroup>
@@ -136,7 +128,7 @@ export function DictationSettingsMenu({
           onValueChange={value => onVideoSizeChange(value as VideoSize)}
         >
           <DropdownMenuLabel className={GROUP_LABEL_CLASS_NAME}>
-            Video size
+            {text.videoSize}
           </DropdownMenuLabel>
           {VIDEO_SIZE_OPTIONS.map(size => (
             <DropdownMenuRadioItem
@@ -144,7 +136,7 @@ export function DictationSettingsMenu({
               value={size}
               className={RADIO_ITEM_CLASS_NAME}
             >
-              {VIDEO_SIZE_LABEL[size]}
+              {videoSizeLabels[size]}
             </DropdownMenuRadioItem>
           ))}
         </DropdownMenuRadioGroup>

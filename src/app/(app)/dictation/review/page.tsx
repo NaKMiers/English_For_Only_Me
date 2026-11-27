@@ -6,19 +6,26 @@ import { ContentPanel } from '@/components/common/ContentPanel'
 import { DictationReviewQueue } from '@/components/dictation/DictationReviewQueue'
 import { ActionButton } from '@/components/ui/ActionButton'
 import { hasMongoDbUri } from '@/constants/environments'
+import { getMessages } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { listDueReviewItemsForUser } from '@/modules/dictation/review/reviewItemService'
 import { getPracticeActorId } from '@/modules/dictation/services/getCurrentUser'
 import type { DictationReviewItemApiRecord } from '@/modules/dictation/types'
 
-export const metadata: Metadata = {
-  title: 'Dictation Review',
-  description: 'Drill weak dictation sentences from saved attempts.',
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getMessages()
+
+  return {
+    title: t.dictation.review.metaTitle,
+    description: t.dictation.review.metaDescription,
+  }
 }
 
 export const runtime = 'nodejs'
 
 export default async function Page() {
+  const t = await getMessages()
+  const text = t.dictation.review
   const reviewItems: DictationReviewItemApiRecord[] = []
 
   if (hasMongoDbUri()) {
@@ -41,35 +48,30 @@ export default async function Page() {
       topbar={
         <AppTopbar
           activeHref="/dictation"
-          subtitle="Dictation Lab listening module"
+          subtitle={t.dictation.meta.labSubtitle}
         />
       }
     >
       <section className="grid gap-5 p-4 sm:p-6 lg:p-8">
         <ContentPanel
-          eyebrow="Review"
-          title="Weak sentence queue"
+          eyebrow={text.eyebrow}
+          title={text.title}
           action={
             <ActionButton
               href="/dictation"
               tone="paper"
             >
-              Back To Lab
+              {text.backToLab}
             </ActionButton>
           }
         >
           <p className="text-ink-soft text-base leading-7 font-normal">
-            This page is for returning to weak dictation segments: skipped,
-            revealed, high-retry, repeated-mistake, and low-accuracy sentences.
+            {text.description}
           </p>
         </ContentPanel>
 
         <DictationReviewQueue
-          emptyMessage={
-            hasMongoDbUri()
-              ? 'No weak sentences are due. Finish a video or miss a few sentences honestly and the queue will fill itself.'
-              : 'Set MONGODB_URI on the server before using saved review items.'
-          }
+          emptyMessage={hasMongoDbUri() ? text.empty : text.noDatabase}
           reviewItems={reviewItems}
         />
       </section>

@@ -5,10 +5,48 @@ clear actions, responsive by default, and reusable component primitives.
 
 ## Language
 
-All web UI text is English: labels, buttons, headings, hints, aria labels,
-titles, metadata, toasts and API error messages a learner can see.
-Vietnamese appears only as data (lesson content, translations, meanings) when
-the content needs it.
+The UI speaks English (default) or Vietnamese, picked by the learner with the
+EN/VI pill beside the day / night toggle (rail on desktop, topbar on phones).
+The choice is a cookie (`efom-locale`), so server components render the right
+language on the first paint; routes do not change.
+
+- Every user-visible UI string goes through the message catalogue, in both
+  languages: labels, buttons, headings, hints, empty states, aria labels,
+  `title`s, page metadata, toasts and API error messages a learner can see.
+  No hard-coded UI copy in components.
+- Catalogues live in `src/i18n/messages/en/<namespace>.ts` (the source of
+  truth for keys) and `src/i18n/messages/vi/<namespace>.ts`, typed as
+  `Messages['<namespace>']`, so a missing or extra Vietnamese key is a type
+  error. `src/i18n/messages.test.ts` also checks key parity, placeholders and
+  empty strings.
+- Vietnamese is natural Vietnamese with full diacritics, written for a
+  learner, not translated word by word.
+- Vietnamese DATA stays data and is never moved into the catalogue: grammar
+  lesson content (`src/modules/grammar/course/units/*.ts`), IELTS passages and
+  question text, transcripts, translations, word meanings. Only the interface
+  around it changes language.
+
+Reading text:
+
+- Server component, `generateMetadata`, route handler, server action:
+  `const t = await getMessages()` from `@/i18n/server`
+  (`getLocale()` for the code).
+- Client component: `const t = useMessages()` from `@/i18n/client`
+  (`useLocale()` for the code). Without a provider it falls back to English,
+  so unit tests render English.
+- A component with no `'use client'` that is shared by server and client
+  trees cannot call either: take the text as props, or mark it
+  `'use client'` when it has no server-only imports.
+- Placeholders: `format(t.x.y, { count })`; plurals:
+  `plural(t.x.items, n)` with `{ one, other }` forms; a sentence holding a
+  link or `<kbd>`: `formatNodes(t.x.y, { key: <kbd>…</kbd> })`. Helpers are
+  in `@/i18n/format` and `@/i18n/formatNodes`. Never build a sentence by
+  concatenating fragments: word order differs between the languages.
+- Dates and numbers: `Intl` with `INTL_LOCALES[locale]` from `@/i18n/config`.
+
+Adding a string: add the key to `en/<namespace>.ts`, add the same key to
+`vi/<namespace>.ts` (the type checker lists what is missing), then read it
+with `t.<namespace>.<key>`.
 
 ## Simple And Minimal (always)
 

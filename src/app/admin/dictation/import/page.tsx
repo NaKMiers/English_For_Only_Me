@@ -7,12 +7,16 @@ import { PageShell } from '@/components/common/PageShell'
 import { AuthControl } from '@/components/common/AuthControl'
 import { DictationImportForm } from '@/components/dictation/DictationImportForm'
 import { PageTag } from '@/components/ui/PageTag'
+import { getMessages } from '@/i18n/server'
 import { getOptionalUser } from '@/modules/dictation/services/getCurrentUser'
 
-export const metadata: Metadata = {
-  title: 'Import Dictation Video',
-  description:
-    'Save a YouTube video and attach manual English transcript source text.',
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getMessages()
+
+  return {
+    title: t.admin.importPage.metaTitle,
+    description: t.admin.importPage.metaDescription,
+  }
 }
 
 export const dynamic = 'force-dynamic'
@@ -25,12 +29,14 @@ export default async function DictationImportPage() {
   if (!user) redirect('/api/auth/signin?callbackUrl=/admin/dictation/import')
   if (user.role !== 'admin') redirect('/dictation')
 
+  const t = await getMessages()
+
   return (
     <PageShell
       topbar={
         <AppTopbar
           activeHref="/dictation"
-          subtitle="Dictation Lab import desk"
+          subtitle={t.admin.shell.importDesk}
           authControl={<AuthControl />}
         />
       }
@@ -38,10 +44,10 @@ export default async function DictationImportPage() {
         <div className="border-line bg-cta text-cta-fg border-t px-5 py-4">
           <div className="mx-auto flex max-w-[1400px] flex-wrap items-center justify-between gap-3">
             <strong className="font-sans text-base font-semibold tracking-normal">
-              English For Only Me
+              {t.common.app.name}
             </strong>
             <span className="text-tint-soft text-sm font-semibold">
-              Official metadata. User-provided transcript. No hidden scraping.
+              {t.admin.importPage.footerNote}
             </span>
           </div>
         </div>
@@ -52,7 +58,7 @@ export default async function DictationImportPage() {
           href="/admin/dictation"
           className="text-brand justify-self-start text-sm font-semibold hover:underline"
         >
-          ← Dictation
+          {t.admin.importPage.back}
         </Link>
         <section
           aria-labelledby="dictation-import-title"
@@ -61,20 +67,19 @@ export default async function DictationImportPage() {
           <div className="border-line bg-surface/90 flex min-w-0 flex-wrap items-start justify-between gap-4 border-b p-4 sm:p-5">
             <div className="grid min-w-0 gap-3">
               <p className="text-brand text-xs leading-tight font-semibold tracking-normal">
-                Listening module import page
+                {t.admin.importPage.eyebrow}
               </p>
               <h1
                 id="dictation-import-title"
                 className="font-sans text-[clamp(2rem,7vw,4.75rem)] leading-none font-medium tracking-normal wrap-break-word"
               >
-                Add Dictation Source
+                {t.admin.importPage.title}
               </h1>
               <p className="text-ink-soft max-w-3xl text-base leading-7 font-normal">
-                Save a YouTube video, then attach the English transcript source
-                that future segmenting and practice will trust.
+                {t.admin.importPage.intro}
               </p>
             </div>
-            <PageTag tone="red">Import</PageTag>
+            <PageTag tone="red">{t.admin.importPage.tag}</PageTag>
           </div>
 
           <div className="p-4 sm:p-5">

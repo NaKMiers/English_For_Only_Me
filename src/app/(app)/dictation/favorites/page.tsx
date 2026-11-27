@@ -11,6 +11,7 @@ import {
   type BrowseVideoItem,
 } from '@/components/dictation/browse/SectionAccordion'
 import { hasMongoDbUri } from '@/constants/environments'
+import { getMessages } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { toBrowseItem } from '@/modules/dictation/content/browseItem'
 import { listFavoriteVideosForUser } from '@/modules/dictation/content/favoriteRepository'
@@ -20,7 +21,12 @@ import {
 } from '@/modules/dictation/content/progressRepository'
 import { getOptionalUser } from '@/modules/dictation/services/getCurrentUser'
 
-export const metadata: Metadata = { title: 'Favorites' }
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getMessages()
+
+  return { title: t.dictation.favorites.title }
+}
+
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
@@ -33,6 +39,7 @@ export default async function FavoritesPage() {
   ])
   if (!user) redirect('/api/auth/signin?callbackUrl=/dictation/favorites')
 
+  const t = await getMessages()
   let items: BrowseVideoItem[] = []
 
   if (hasMongoDbUri()) {
@@ -53,22 +60,26 @@ export default async function FavoritesPage() {
       topbar={
         <AppTopbar
           activeHref="/dictation"
-          subtitle="Your favorites"
+          subtitle={t.dictation.meta.favoritesSubtitle}
           authControl={<AuthControl />}
         />
       }
     >
       <section className="grid gap-5 p-4 sm:p-6 lg:p-8">
         <PageHero>
-          <BrowseBreadcrumb current="Favorites" />
+          <BrowseBreadcrumb
+            current={t.dictation.favorites.title}
+            labels={t.dictation.browse}
+          />
           <h1 className="font-sans text-[clamp(1.8rem,4vw,2.6rem)] leading-none font-medium">
-            Favorites
+            {t.dictation.favorites.title}
           </h1>
         </PageHero>
         <BrowseVideoList
           videos={items}
           canFavorite
-          emptyLabel="No favorites yet - tap the star on any lesson."
+          emptyLabel={t.dictation.favorites.empty}
+          labels={t.dictation.browse.card}
         />
       </section>
     </PageShell>

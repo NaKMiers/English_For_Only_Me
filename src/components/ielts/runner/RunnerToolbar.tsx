@@ -4,20 +4,13 @@ import { ArrowLeft, Clock, Moon, Send, Sun } from 'lucide-react'
 import type { ReactNode } from 'react'
 
 import { useTheme } from '@/components/common/ThemeProvider'
+import { useMessages } from '@/i18n/client'
+import type { Messages } from '@/i18n/messages'
 import { cn } from '@/lib/utils'
 
 import { ExamButton, ExamIconButton } from '../ui'
 import type { IeltsSaveState } from './useAttemptAnswers'
 import { formatClock, IELTS_TIMER_WARNING_SECONDS } from './useMockDeadline'
-
-const SAVE_LABELS: Record<IeltsSaveState, string> = {
-  idle: 'Not saved',
-  pending: 'Saving...',
-  saving: 'Saving...',
-  saved: 'Saved',
-  offline: 'Offline, answers saved on this device',
-  timeup: 'Time is up',
-}
 
 interface Props {
   backHref?: string
@@ -35,10 +28,10 @@ interface Props {
 }
 
 /** Shown at 10, 5 and 1 minute left only, so a screen reader is not spammed. */
-function timerAnnouncement(seconds: number) {
-  if (seconds === 600) return '10 minutes remaining'
-  if (seconds === 300) return '5 minutes remaining'
-  if (seconds === 60) return '1 minute remaining'
+function timerAnnouncement(t: Messages['ielts']['toolbar'], seconds: number) {
+  if (seconds === 600) return t.tenMinutes
+  if (seconds === 300) return t.fiveMinutes
+  if (seconds === 60) return t.oneMinute
 
   return ''
 }
@@ -62,6 +55,7 @@ export function RunnerToolbar({
   title,
   toggles,
 }: Props) {
+  const t = useMessages().ielts.toolbar
   const { theme, toggle } = useTheme()
   const lightUp = theme === 'lightup'
   const urgent =
@@ -76,7 +70,7 @@ export function RunnerToolbar({
   const clock =
     secondsLeft !== null ? (
       <div
-        aria-label="Time remaining"
+        aria-label={t.timeRemaining}
         className={cn(
           'border-line rounded-control inline-flex h-9 shrink-0 items-center gap-1.5 border px-2.5 font-sans text-base font-semibold tabular-nums sm:text-lg',
           urgent
@@ -94,7 +88,7 @@ export function RunnerToolbar({
           aria-live="polite"
           className="sr-only"
         >
-          {timerAnnouncement(secondsLeft)}
+          {timerAnnouncement(t, secondsLeft)}
         </span>
       </div>
     ) : null
@@ -104,7 +98,7 @@ export function RunnerToolbar({
       {onBack ? (
         <ExamIconButton
           className="size-10"
-          label="Leave"
+          label={t.leave}
           onClick={onBack}
           type="button"
         >
@@ -114,7 +108,7 @@ export function RunnerToolbar({
         <ExamIconButton
           className="size-10"
           href={backHref ?? '/ielts'}
-          label="Leave"
+          label={t.leave}
         >
           {back}
         </ExamIconButton>
@@ -148,7 +142,7 @@ export function RunnerToolbar({
                     : 'bg-ink-soft/50'
               )}
             />
-            <span className="truncate">{SAVE_LABELS[saveState]}</span>
+            <span className="truncate">{t.saveStates[saveState]}</span>
           </span>
         </p>
       </div>
@@ -176,11 +170,11 @@ export function RunnerToolbar({
       {/* The exam stage covers the global hanging lamp, so it gets its own
           quiet switch beside Submit. Toggle (aria-pressed): raw-button exception. */}
       <button
-        aria-label={lightUp ? 'Turn off dark mode' : 'Turn on dark mode'}
+        aria-label={lightUp ? t.darkOff : t.darkOn}
         aria-pressed={lightUp}
         className="text-ink-soft hover:bg-tint hover:text-ink rounded-tag -mx-1.5 inline-grid size-9 shrink-0 place-items-center transition-colors"
         onClick={toggle}
-        title={lightUp ? 'Dark mode on' : 'Dark mode'}
+        title={lightUp ? t.darkOnTitle : t.darkTitle}
         type="button"
       >
         {lightUp ? (
@@ -210,7 +204,7 @@ export function RunnerToolbar({
         tone="ink"
         type="button"
       >
-        {submitting ? 'Submitting...' : 'Submit'}
+        {submitting ? t.submitting : t.submit}
       </ExamButton>
     </header>
   )

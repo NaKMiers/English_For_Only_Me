@@ -2,6 +2,8 @@
 
 import { memo, type ReactNode } from 'react'
 
+import { useMessages } from '@/i18n/client'
+import { format } from '@/i18n/format'
 import type { IeltsAnswers } from '@/modules/ielts/scoring/scoreObjective'
 
 import { type IeltsQuestionEntry, isAnswered } from './questionIndex'
@@ -40,6 +42,7 @@ export const QuestionNavigator = memo(function QuestionNavigator({
   partLabel,
   prev = null,
 }: Props) {
+  const t = useMessages().ielts.navigator
   const parts = [...new Set(index.map(entry => entry.part))]
 
   return (
@@ -59,14 +62,19 @@ export const QuestionNavigator = memo(function QuestionNavigator({
             const flags = entries.filter(entry =>
               flagged?.has(entry.number)
             ).length
-            const flagNote = flags ? `, ${flags} flagged` : ''
+            const values = {
+              done,
+              flags,
+              part: partLabel(part),
+              total: entries.length,
+            }
 
             return {
               done: done === entries.length && entries.length > 0,
               flagged: flags > 0,
-              label: `${partLabel(part)}, ${done} of ${entries.length} answered${flagNote}`,
+              label: format(flags ? t.partLabelFlagged : t.partLabel, values),
               part,
-              title: `${partLabel(part)}: ${done}/${entries.length} answered${flagNote}`,
+              title: format(flags ? t.partTitleFlagged : t.partTitle, values),
             }
           })}
           onChange={onPartChange}

@@ -1,14 +1,16 @@
 import { NextResponse } from 'next/server'
 
 import { connectDatabase } from '@/lib/db/connectDatabase'
-import { parseAttemptId } from '@/modules/ielts/attempts/attemptRouteDecisions'
+import {
+  ieltsMessageError,
+  parseAttemptId,
+} from '@/modules/ielts/attempts/attemptRouteDecisions'
 import {
   deleteAttemptForOwner,
   readAttemptForOwner,
 } from '@/modules/ielts/attempts/attemptService'
 import {
   ieltsDecisionError,
-  ieltsJsonError,
   ieltsMissingMongo,
   ieltsRouteFailure,
 } from '@/modules/ielts/http'
@@ -37,7 +39,8 @@ export async function GET(_request: Request, context: RouteContext) {
 
     const attempt = await readAttemptForOwner(actor.id, id.data)
 
-    if (!attempt) return ieltsJsonError(404, 'Attempt not found.')
+    if (!attempt)
+      return ieltsDecisionError(ieltsMessageError(404, 'attemptNotFound'))
 
     return NextResponse.json({ attempt })
   } catch (error) {
@@ -62,7 +65,8 @@ export async function DELETE(_request: Request, context: RouteContext) {
 
     const deleted = await deleteAttemptForOwner(actor.id, id.data)
 
-    if (!deleted) return ieltsJsonError(404, 'Attempt not found.')
+    if (!deleted)
+      return ieltsDecisionError(ieltsMessageError(404, 'attemptNotFound'))
 
     return NextResponse.json({ deleted: true })
   } catch (error) {

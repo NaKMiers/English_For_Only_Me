@@ -30,7 +30,7 @@ import {
 import {
   type AudioEventInput,
   type CheckPartInput,
-  ieltsError,
+  ieltsMessageError,
   type IeltsDecision,
   shouldAwardBand,
   type StartAttemptInput,
@@ -295,9 +295,6 @@ function needsFinalize(attempt: LeanAttempt) {
     : !attempt.result
 }
 
-export const STALE_START_MESSAGE =
-  'This attempt belongs to an older version of the test. Start again.'
-
 function requireAudio(sections: IeltsSection[]) {
   return sections.every(section => Boolean(section.listening?.audio?.url))
 }
@@ -331,7 +328,7 @@ export async function startOrResumeAttempt({
       test &&
       replay.testVersion !== test.version
     )
-      return ieltsError(409, STALE_START_MESSAGE)
+      return ieltsMessageError(409, 'staleStart')
 
     return {
       ok: true,
@@ -342,7 +339,7 @@ export async function startOrResumeAttempt({
     }
   }
 
-  if (!test) return ieltsError(404, 'This test is not available.')
+  if (!test) return ieltsMessageError(404, 'testUnavailable')
 
   const sections = sectionsInScope(
     test.sections,
@@ -351,17 +348,14 @@ export async function startOrResumeAttempt({
   )
 
   if (sections.length === 0)
-    return ieltsError(
-      404,
-      `This test has no ${input.skill} section for that part.`
-    )
+    return ieltsMessageError(404, 'noSectionForPart', { skill: input.skill })
 
   if (
     input.skill === 'listening' &&
     input.mode === 'mock' &&
     !requireAudio(sections)
   )
-    return ieltsError(409, 'Listening mock needs audio for every part.')
+    return ieltsMessageError(409, 'mockNeedsAudio')
 
   const openFilter: Record<string, unknown> = {
     ownerId,
@@ -475,7 +469,7 @@ export async function saveAttemptAnswers({
 }): Promise<IeltsDecision<{ applied: boolean; savedSeq: number }>> {
   const existing = await readOwnedAttempt(ownerId, attemptId)
 
-  if (!existing) return ieltsError(404, 'Attempt not found.')
+  if (!existing) return ieltsMessageError(404, 'attemptNotFound')
 
   const lengths = validateAnswerLengths(answers, existing.skill === 'writing')
 
@@ -499,7 +493,7 @@ export async function saveAttemptAnswers({
   const current = await readOwnedAttempt(ownerId, attemptId)
 
   if (current?.status === 'in_progress' && isPastGrace(current.deadlineAt, now))
-    return ieltsError(409, 'Time is up for this attempt.')
+    return ieltsMessageError(409, 'timeUp')
 
   return {
     ok: true,
@@ -522,7 +516,7 @@ export async function submitAttempt({
 }): Promise<IeltsDecision<IeltsAttemptRecord>> {
   const existing = await readOwnedAttempt(ownerId, attemptId)
 
-  if (!existing) return ieltsError(404, 'Attempt not found.')
+  if (!existing) return ieltsMessageError(404, 'attemptNotFound')
 
   const lengths = validateAnswerLengths(answers, existing.skill === 'writing')
 
@@ -535,7 +529,7 @@ export async function submitAttempt({
     existing.audioEvents.length === 0 &&
     Object.keys(answers).length === 0
   )
-    return ieltsError(409, 'Start the audio before submitting.')
+    return ieltsMessageError(409, 'startAudioFirst')
 
   // The final snapshot and the status flip happen in one write when the
   // snapshot is newer and in time; otherwise the server keeps what it holds.
@@ -562,7 +556,7 @@ export async function submitAttempt({
 
   const record = await readAttemptForOwner(ownerId, attemptId, now)
 
-  if (!record) return ieltsError(404, 'Attempt not found.')
+  if (!record) return ieltsMessageError(404, 'attemptNotFound')
 
   return { ok: true, data: record }
 }
@@ -582,7 +576,7 @@ export async function recordAudioEvent({
   for (let tries = 0; tries < 3; tries++) {
     const attempt = await readOwnedAttempt(ownerId, attemptId)
 
-    if (!attempt) return ieltsError(404, 'Attempt not found.')
+    if (!attempt) return ieltsMessageError(404, 'attemptNotFound')
 
     if (
       attempt.skill !== 'listening' ||
@@ -632,7 +626,7 @@ export async function recordAudioEvent({
     if (updated) return { ok: true, data: toIeltsAttemptRecord(updated) }
   }
 
-  return ieltsError(409, 'Audio events changed, try again.')
+  return ieltsMessageError(409, 'audioEventsChanged')
 }
 
 /** Guided mode: the evidence for one question, practice attempts only. */
@@ -654,10 +648,10 @@ export async function readPracticeEvidence({
 > {
   const attempt = await readOwnedAttempt(ownerId, attemptId)
 
-  if (!attempt) return ieltsError(404, 'Attempt not found.')
+  if (!attempt) return ieltsMessageError(404, 'attemptNotFound')
 
   if (attempt.mode !== 'practice')
-    return ieltsError(403, 'Guided mode is only available in practice.')
+    return ieltsMessageError(403, 'guidedPracticeOnly')
 
   const sections = await loadAttemptSections(attempt)
 
@@ -680,7 +674,7 @@ export async function readPracticeEvidence({
       }
     }
 
-  return ieltsError(404, 'That question is not in this attempt.')
+  return ieltsMessageError(404, 'questionNotInAttempt')
 }
 
 /**
@@ -699,13 +693,13 @@ export async function checkPracticePart({
 }): Promise<IeltsDecision<IeltsPartCheck>> {
   const attempt = await readOwnedAttempt(ownerId, attemptId)
 
-  if (!attempt) return ieltsError(404, 'Attempt not found.')
+  if (!attempt) return ieltsMessageError(404, 'attemptNotFound')
 
   if (attempt.mode !== 'practice')
-    return ieltsError(403, 'Checking a part is only available in practice.')
+    return ieltsMessageError(403, 'checkPracticeOnly')
 
   if (attempt.skill === 'writing')
-    return ieltsError(400, 'Writing is graded per task, not per part.')
+    return ieltsMessageError(400, 'writingPerTask')
 
   const lengths = validateAnswerLengths(answers, false)
 
@@ -715,7 +709,7 @@ export async function checkPracticePart({
     item => item.order === part
   )
 
-  if (!section) return ieltsError(404, 'That part is not in this attempt.')
+  if (!section) return ieltsMessageError(404, 'partNotInAttempt')
 
   const result = scoreObjective(buildAnswerKey([section]), answers)
 

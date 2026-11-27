@@ -5,6 +5,9 @@ import { useEffect, useRef, useState } from 'react'
 
 import { useClientOutbox } from '@/components/common/OutboxOwnerProvider'
 import { ActionButton } from '@/components/ui/ActionButton'
+import { useMessages } from '@/i18n/client'
+import { format, plural } from '@/i18n/format'
+import type { Messages } from '@/i18n/messages'
 import { cn } from '@/lib/utils'
 import type { GrammarSessionMode } from '@/modules/grammar/constants'
 import {
@@ -67,9 +70,11 @@ function formatDuration(ms: number) {
 }
 
 function StarRow({ stars }: { stars: number }) {
+  const t = useMessages()
+
   return (
     <div
-      aria-label={`${stars} of 3 stars`}
+      aria-label={format(t.grammar.stars, { stars })}
       className="flex justify-center gap-2"
       role="img"
     >
@@ -90,18 +95,23 @@ function StarRow({ stars }: { stars: number }) {
   )
 }
 
-function headline(mode: GrammarSessionMode, passed: boolean, testOut: boolean) {
+function headline(
+  t: Messages['grammar']['result']['headlines'],
+  mode: GrammarSessionMode,
+  passed: boolean,
+  testOut: boolean
+) {
   switch (mode) {
     case 'lesson':
-      return 'Lesson done!'
+      return t.lesson
     case 'review':
-      return passed ? 'Review done, still sharp!' : 'Needs a little more review'
+      return passed ? t.reviewPassed : t.reviewFailed
     case 'checkpoint':
-      if (testOut) return passed ? 'Tested out!' : 'Not this time'
+      if (testOut) return passed ? t.testOutPassed : t.testOutFailed
 
-      return passed ? 'Checkpoint passed!' : 'Checkpoint not passed yet'
+      return passed ? t.checkpointPassed : t.checkpointFailed
     case 'weak':
-      return 'Practice done!'
+      return t.weak
   }
 }
 
@@ -116,6 +126,8 @@ export function PlayerResult({
   targetId,
   title,
 }: Props) {
+  const messages = useMessages()
+  const t = messages.grammar.result
   const summary = summarizePlayer(state)
   const localPassed =
     mode === 'lesson' || mode === 'weak' || summary.accuracy >= PASS_ACCURACY
@@ -209,14 +221,14 @@ export function PlayerResult({
 
   const unlocked = result?.unlocked ?? null
   let nextHref = exitHref
-  let nextLabel = 'Back to path'
+  let nextLabel = t.backToPath
 
   if (unlocked?.kind === 'lesson') {
     nextHref = `/grammar/lessons/${unlocked.lessonId}`
-    nextLabel = 'Next lesson'
+    nextLabel = t.nextLesson
   } else if (unlocked?.kind === 'checkpoint') {
     nextHref = `/grammar/units/${unlocked.unitId}/checkpoint`
-    nextLabel = 'Take the checkpoint'
+    nextLabel = t.takeCheckpoint
   }
 
   return (
@@ -248,7 +260,7 @@ export function PlayerResult({
             </div>
           ) : null}
           <h1 className="font-sans text-3xl leading-tight font-medium">
-            {headline(mode, passed, testOut)}
+            {headline(t.headlines, mode, passed, testOut)}
           </h1>
           <p className="text-ink-soft font-bold">{title}</p>
         </div>
@@ -256,11 +268,11 @@ export function PlayerResult({
         <dl className="grid grid-cols-3 gap-3">
           {[
             {
-              label: 'Accuracy',
+              label: t.accuracy,
               value: `${Math.round(summary.accuracy * 100)}%`,
             },
-            { label: 'Best streak', value: `x${state.bestCombo}` },
-            { label: 'Time', value: formatDuration(durationMs) },
+            { label: t.bestStreak, value: `x${state.bestCombo}` },
+            { label: t.time, value: formatDuration(durationMs) },
           ].map(item => (
             <div
               className="border-line bg-surface rounded-control grid gap-1 border p-3 text-center"
@@ -281,7 +293,7 @@ export function PlayerResult({
                 aria-hidden
                 className="size-4 motion-safe:animate-spin"
               />
-              Saving...
+              {t.saving}
             </p>
           ) : null}
           {save.kind === 'queued' ? (
@@ -290,8 +302,7 @@ export function PlayerResult({
                 aria-hidden
                 className="size-4 shrink-0"
               />
-              Waiting for the network. Your result is kept on this device and
-              will send itself once you are back online.
+              {t.queued}
             </p>
           ) : null}
           {save.kind === 'retryable' ? (
@@ -301,14 +312,14 @@ export function PlayerResult({
                   aria-hidden
                   className="size-4"
                 />
-                Not saved yet ({save.message}).
+                {format(t.notSaved, { message: save.message })}
               </p>
               <ActionButton
                 className="w-fit"
                 onClick={send}
                 tone="paper"
               >
-                Try again
+                {messages.common.actions.retry}
               </ActionButton>
             </div>
           ) : null}
@@ -318,9 +329,7 @@ export function PlayerResult({
             </p>
           ) : null}
           {save.kind === 'offline' ? (
-            <p className="text-ink-soft text-center text-sm">
-              No database is set up, so this result was not saved.
-            </p>
+            <p className="text-ink-soft text-center text-sm">{t.offline}</p>
           ) : null}
           {unlocked ? (
             <p className="border-line bg-tint rounded-control motion-safe:animate-in motion-safe:slide-in-from-bottom-2 flex items-center gap-2 border p-3 font-bold">
@@ -328,7 +337,7 @@ export function PlayerResult({
                 aria-hidden
                 className="size-5 shrink-0"
               />
-              Unlocked: {unlocked.title}
+              {format(t.unlocked, { title: unlocked.title })}
             </p>
           ) : null}
           {mode === 'checkpoint' && !passed ? (
@@ -337,7 +346,7 @@ export function PlayerResult({
                 aria-hidden
                 className="size-4"
               />
-              You need at least {Math.round(PASS_ACCURACY * 100)}% to pass.
+              {format(t.passMark, { percent: Math.round(PASS_ACCURACY * 100) })}
             </p>
           ) : null}
         </div>
@@ -345,13 +354,12 @@ export function PlayerResult({
         {misses.length > 0 ? (
           <section className="grid gap-3">
             <h2 className="font-sans text-lg font-semibold">
-              Review {misses.length} wrong{' '}
-              {misses.length === 1 ? 'answer' : 'answers'}
+              {plural(t.reviewMisses, misses.length)}
               {/* Only once the server confirmed the save; a test-out never
                   records misses. */}
               {result && !result.testOut ? (
                 <span className="text-ink-soft block text-sm font-bold">
-                  Added to Weak spots.
+                  {t.addedToWeak}
                 </span>
               ) : null}
             </h2>
@@ -374,8 +382,12 @@ export function PlayerResult({
                           aria-hidden
                           className="mt-0.5 size-4 shrink-0"
                         />
-                        <span className="sr-only">Your answer:</span>
-                        {describeAnswer(card, answer)}
+                        <span className="sr-only">{t.yourAnswer}</span>
+                        {describeAnswer(
+                          card,
+                          answer,
+                          messages.grammar.card.wrongWord
+                        )}
                       </p>
                     ) : null}
                     <p className="flex items-start gap-2 font-bold">
@@ -383,7 +395,7 @@ export function PlayerResult({
                         aria-hidden
                         className="text-lesson-correct mt-1 size-4 shrink-0"
                       />
-                      <span className="sr-only">Correct answer:</span>
+                      <span className="sr-only">{t.correctAnswer}</span>
                       <span className="min-w-0 flex-1">{expected}</span>
                       <SpeakButton text={expected} />
                     </p>
@@ -407,7 +419,7 @@ export function PlayerResult({
               onClick={() => window.location.reload()}
               tone="paper"
             >
-              Redo for 3 stars
+              {messages.grammar.redoForStars}
             </ActionButton>
           ) : null}
           {mode !== 'lesson' && !passed ? (
@@ -415,7 +427,7 @@ export function PlayerResult({
               onClick={() => window.location.reload()}
               tone="paper"
             >
-              Try again
+              {messages.common.actions.retry}
             </ActionButton>
           ) : null}
           {nextHref !== exitHref ? (
@@ -423,7 +435,7 @@ export function PlayerResult({
               href={exitHref}
               tone="paper"
             >
-              Back to path
+              {t.backToPath}
             </ActionButton>
           ) : null}
         </div>

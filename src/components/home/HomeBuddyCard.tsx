@@ -2,8 +2,12 @@ import { Clock3, Flame, ListChecks, Trophy } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 
+import { format } from '@/i18n/format'
+import type { Messages } from '@/i18n/messages'
+
 interface Props {
   completedVideoCount: number
+  messages: Messages
   monthlyMinutes: number
   nextGrammarTitle: string | null
   streakDays: number
@@ -15,10 +19,13 @@ interface Props {
  */
 export function HomeBuddyCard({
   completedVideoCount,
+  messages,
   monthlyMinutes,
   nextGrammarTitle,
   streakDays,
 }: Props) {
+  const t = messages.home.buddy
+
   return (
     <section
       aria-labelledby="home-buddy-title"
@@ -29,11 +36,11 @@ export function HomeBuddyCard({
           id="home-buddy-title"
           className="font-sans text-2xl font-medium tracking-tight"
         >
-          Study buddy
+          {t.title}
         </h2>
         <Link
           href="/grammar"
-          aria-label="Open the grammar path"
+          aria-label={t.openGrammar}
           className="soft-press bg-surface/70 hover:bg-surface grid size-11 place-items-center rounded-full"
         >
           <ListChecks
@@ -53,7 +60,7 @@ export function HomeBuddyCard({
             aria-hidden="true"
             className="text-accent-orange size-3.5"
           />
-          {completedVideoCount} done
+          {format(t.done, { count: completedVideoCount })}
         </span>
         <Image
           src="/logo.png"
@@ -67,14 +74,14 @@ export function HomeBuddyCard({
       <div className="grid gap-4">
         <div className="flex items-end justify-between gap-3">
           <div className="grid min-w-0 gap-1.5">
-            <p className="text-ink-soft text-sm">Next up</p>
+            <p className="text-ink-soft text-sm">{t.nextUp}</p>
             <h3 className="font-sans text-2xl leading-tight font-medium tracking-tight wrap-break-word">
-              {nextGrammarTitle ?? 'Pick a lesson'}
+              {nextGrammarTitle ?? t.pickLesson}
             </h3>
           </div>
           <span
             className="border-ink/80 grid size-16 shrink-0 place-items-center rounded-full border-2 border-dashed"
-            title="Day streak"
+            title={t.dayStreak}
           >
             <span className="grid justify-items-center leading-none">
               <Flame
@@ -87,14 +94,11 @@ export function HomeBuddyCard({
             </span>
           </span>
         </div>
-        <p className="text-ink-soft text-sm leading-6">
-          Short, steady sessions beat long ones. Keep the streak going with one
-          listening clip and one grammar lesson.
-        </p>
+        <p className="text-ink-soft text-sm leading-6">{t.advice}</p>
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-surface/80 grid gap-1 rounded-2xl p-3">
             <span className="text-ink-soft flex items-center justify-between text-xs">
-              Minutes this month
+              {t.minutesThisMonth}
               <Clock3
                 aria-hidden="true"
                 className="text-accent-blue size-4"
@@ -106,7 +110,7 @@ export function HomeBuddyCard({
           </div>
           <div className="bg-surface/80 grid gap-1 rounded-2xl p-3">
             <span className="text-ink-soft flex items-center justify-between text-xs">
-              Videos done
+              {t.videosDone}
               <Trophy
                 aria-hidden="true"
                 className="text-accent-pink size-4"

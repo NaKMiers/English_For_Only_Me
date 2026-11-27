@@ -9,6 +9,8 @@ import { PageShell } from '@/components/common/PageShell'
 import { ContentPanel } from '@/components/common/ContentPanel'
 import { ExplainCardView } from '@/components/grammar/player/PlayerCard'
 import { ActionButton } from '@/components/ui/ActionButton'
+import { format } from '@/i18n/format'
+import { getMessages } from '@/i18n/server'
 import { grammarCourse } from '@/modules/grammar/course'
 import { loadGrammarPageData } from '@/modules/grammar/services/grammarPageData'
 
@@ -21,8 +23,13 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const found = grammarCourse.getLesson((await params).lessonId)
+  const t = await getMessages()
 
-  return { title: found ? `Notes: ${found.lesson.title}` : 'Grammar' }
+  return {
+    title: found
+      ? format(t.grammar.meta.notes, { title: found.lesson.title })
+      : t.common.modules.grammar.title,
+  }
 }
 
 /**
@@ -44,6 +51,7 @@ export default async function GrammarNotesPage({ params }: Props) {
     redirect('/grammar')
 
   const explains = found.lesson.cards.filter(card => card.kind === 'explain')
+  const t = await getMessages()
 
   return (
     <PageShell
@@ -51,7 +59,7 @@ export default async function GrammarNotesPage({ params }: Props) {
         <AppTopbar
           activeHref="/grammar"
           authControl={<AuthControl />}
-          subtitle="Grammar path, A1 to C1"
+          subtitle={t.grammar.subtitle}
         />
       }
     >
@@ -64,7 +72,7 @@ export default async function GrammarNotesPage({ params }: Props) {
                 icon={<ArrowLeft aria-hidden />}
                 tone="paper"
               >
-                Path
+                {t.grammar.notes.path}
               </ActionButton>
               <ActionButton
                 href={`/grammar/lessons/${found.lesson.id}`}
@@ -76,11 +84,14 @@ export default async function GrammarNotesPage({ params }: Props) {
                 }
                 tone="ink"
               >
-                Redo this lesson
+                {t.grammar.notes.redo}
               </ActionButton>
             </>
           }
-          eyebrow={`Unit ${found.unit.order} · ${found.unit.level} · Notes`}
+          eyebrow={format(t.grammar.notes.eyebrow, {
+            level: found.unit.level,
+            order: found.unit.order,
+          })}
           icon={<BookOpen />}
           iconClassName="bg-pastel-lilac text-accent-purple"
           subtitle={found.lesson.summary}

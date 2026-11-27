@@ -3,6 +3,7 @@ import { LogIn } from 'lucide-react'
 import { UserMenu } from '@/components/common/UserMenu'
 import { ActionButton } from '@/components/ui/ActionButton'
 import { hasGoogleAuth } from '@/constants/environments'
+import { getMessages } from '@/i18n/server'
 import { auth, signIn, signOut } from '@/lib/auth/auth'
 
 /**
@@ -14,6 +15,7 @@ import { auth, signIn, signOut } from '@/lib/auth/auth'
 export async function AuthControl() {
   if (!hasGoogleAuth()) return null
 
+  const t = await getMessages()
   const session = await auth()
   const user = session?.user
 
@@ -35,12 +37,12 @@ export async function AuthControl() {
             />
           }
         >
-          Sign in
+          {t.common.auth.signIn}
         </ActionButton>
       </form>
     )
 
-  const label = user.name || user.email || 'Account'
+  const label = user.name || user.email || t.common.auth.account
   const initial = label.charAt(0).toUpperCase()
 
   return (

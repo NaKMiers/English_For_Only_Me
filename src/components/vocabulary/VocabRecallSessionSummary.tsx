@@ -2,8 +2,13 @@
 
 import { ContentPanel } from '@/components/common/ContentPanel'
 import { PageTag } from '@/components/ui/PageTag'
+import { useMessages } from '@/i18n/client'
+import { format } from '@/i18n/format'
 
-import type { VocabRecallCardResult } from './vocabRecallSession'
+import {
+  VOCAB_RECALL_STALE_ERROR,
+  type VocabRecallCardResult,
+} from './vocabRecallSession'
 
 interface Props {
   results: VocabRecallCardResult[]
@@ -15,6 +20,8 @@ interface Props {
  * "not saved" instead of vanishing silently.
  */
 export function VocabRecallSessionSummary({ results }: Props) {
+  const t = useMessages().vocabulary.summary
+
   if (results.length === 0) return null
 
   const correctCount = results.filter(result => result.isCorrect).length
@@ -25,18 +32,24 @@ export function VocabRecallSessionSummary({ results }: Props) {
 
   return (
     <ContentPanel
-      eyebrow="Recall"
-      title="Session summary"
+      eyebrow={t.eyebrow}
+      title={t.title}
     >
       <div className="grid gap-3">
         <div className="flex flex-wrap items-center gap-2">
-          <PageTag tone="ink">{results.length} reviewed</PageTag>
-          <PageTag>{correctCount} correct</PageTag>
+          <PageTag tone="ink">
+            {format(t.reviewed, { count: results.length })}
+          </PageTag>
+          <PageTag>{format(t.correct, { count: correctCount })}</PageTag>
           {savingCount > 0 ? (
-            <PageTag tone="sky">{savingCount} saving...</PageTag>
+            <PageTag tone="sky">
+              {format(t.saving, { count: savingCount })}
+            </PageTag>
           ) : null}
           {notSaved.length > 0 ? (
-            <PageTag tone="pale">{notSaved.length} not saved</PageTag>
+            <PageTag tone="pale">
+              {format(t.notSaved, { count: notSaved.length })}
+            </PageTag>
           ) : null}
         </div>
         {notSaved.length > 0 ? (
@@ -47,8 +60,12 @@ export function VocabRecallSessionSummary({ results }: Props) {
                 className="border-line bg-tint-soft rounded-control border p-3 text-sm font-semibold"
               >
                 <span>{result.term}</span>
-                <span className="text-ink-soft"> - not saved. </span>
-                <span className="font-semibold">{result.error}</span>
+                <span className="text-ink-soft">{t.rowNotSaved}</span>
+                <span className="font-semibold">
+                  {result.error === VOCAB_RECALL_STALE_ERROR
+                    ? t.staleCard
+                    : result.error}
+                </span>
               </li>
             ))}
           </ul>

@@ -7,6 +7,9 @@ import { AppTopbar } from '@/components/common/AppTopbar'
 import { AuthControl } from '@/components/common/AuthControl'
 import { PageShell } from '@/components/common/PageShell'
 import { hasGoogleAuth, hasMongoDbUri } from '@/constants/environments'
+import { format, plural } from '@/i18n/format'
+import type { Messages } from '@/i18n/messages'
+import { getMessages } from '@/i18n/server'
 import { auth } from '@/lib/auth/auth'
 import { connectDatabase, connectDatabaseWhen } from '@/lib/db/connectDatabase'
 import { getPracticeActorId } from '@/modules/dictation/services/getCurrentUser'
@@ -40,38 +43,42 @@ interface Props {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug } = await params
+  const [{ slug }, t] = await Promise.all([params, getMessages()])
 
-  return { title: `IELTS · ${slug}` }
+  return { title: format(t.ielts.meta.testTitle, { slug }) }
 }
 
-function partMinutes(section: IeltsSection) {
+type IeltsText = Messages['ielts']
+
+function partMinutes(t: IeltsText, section: IeltsSection) {
   if (section.skill === 'listening') {
     const seconds = section.listening?.audio?.durationSec ?? 0
 
-    return seconds ? `${Math.ceil(seconds / 60)} min audio` : 'no audio yet'
+    return seconds
+      ? format(t.testPage.audioMinutes, { minutes: Math.ceil(seconds / 60) })
+      : t.testPage.noAudio
   }
 
-  if (section.skill === 'reading') return `${IELTS_TIMERS.readingPart / 60} min`
+  const seconds =
+    section.skill === 'reading'
+      ? IELTS_TIMERS.readingPart
+      : section.writing?.task === 1
+        ? IELTS_TIMERS.writingTask1
+        : IELTS_TIMERS.writingTask2
 
-  return section.writing?.task === 1
-    ? `${IELTS_TIMERS.writingTask1 / 60} min`
-    : `${IELTS_TIMERS.writingTask2 / 60} min`
+  return format(t.testPage.minutes, { minutes: seconds / 60 })
 }
 
-const SECTION_NOUNS: Record<IeltsSkill, string> = {
-  listening: 'part',
-  reading: 'passage',
-  writing: 'task',
-}
-
-function partLabel(section: IeltsSection) {
+function partLabel(t: IeltsText, section: IeltsSection) {
   if (section.skill === 'writing')
-    return `Task ${section.writing?.task ?? section.order}`
+    return format(t.parts.task, {
+      part: section.writing?.task ?? section.order,
+    })
 
-  return section.skill === 'listening'
-    ? `Part ${section.order}`
-    : `Passage ${section.order}`
+  return format(
+    section.skill === 'listening' ? t.parts.part : t.parts.passage,
+    { part: section.order }
+  )
 }
 
 function lastAttempt(attempts: IeltsAttemptSummary[], skill: IeltsSkill) {
@@ -81,7 +88,8 @@ function lastAttempt(attempts: IeltsAttemptSummary[], skill: IeltsSkill) {
 }
 
 export default async function IeltsTestPage({ params }: Props) {
-  const { slug } = await params
+  const [{ slug }, messages] = await Promise.all([params, getMessages()])
+  const t = messages.ielts
 
   if (!hasMongoDbUri() || !/^[a-z0-9-]{1,80}$/.test(slug)) notFound()
 
@@ -110,7 +118,7 @@ export default async function IeltsTestPage({ params }: Props) {
         <AppTopbar
           activeHref="/ielts"
           authControl={<AuthControl />}
-          subtitle="IELTS practice: Listening, Reading, Writing"
+          subtitle={t.shell.subtitle}
         />
       }
     >
@@ -119,7 +127,7 @@ export default async function IeltsTestPage({ params }: Props) {
         <ExamHero className="gap-1">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
             <nav
-              aria-label="Breadcrumb"
+              aria-label={t.shell.breadcrumb}
               className="text-muted-foreground text-sm font-semibold"
             >
               <Link
@@ -133,15 +141,15 @@ export default async function IeltsTestPage({ params }: Props) {
             <h1 className="font-sans text-2xl leading-tight font-semibold wrap-break-word">
               {test.title}
             </h1>
-            <ExamBadge tone="pale">
-              {test.track === 'general' ? 'General Training' : 'Academic'}
+            <ExamBadge tone="pale">{t.tracks[test.track]}</ExamBadge>
+            <ExamBadge>
+              {format(t.testPage.target, { band: test.targetBand })}
             </ExamBadge>
-            <ExamBadge>Target {test.targetBand}</ExamBadge>
             {isAdmin ? (
               <ExamIconButton
                 className="ml-auto size-9"
                 href={`/admin/ielts/${test.id}`}
-                label="Edit this test"
+                label={t.testPage.editTest}
               >
                 <PenLine
                   aria-hidden="true"
@@ -170,11 +178,18 @@ export default async function IeltsTestPage({ params }: Props) {
             return (
               <SkillLauncher
                 fullMeta={{
-                  practice: `All ${parts.length} ${SECTION_NOUNS[skill]}s`,
+                  practice: format(t.testPage.allSections[skill], {
+                    count: parts.length,
+                  }),
                   mock:
                     skill === 'listening'
-                      ? 'Audio plays once'
-                      : `${(skill === 'reading' ? IELTS_TIMERS.readingSkill : IELTS_TIMERS.writingSkill) / 60} min`,
+                      ? t.testPage.audioOnce
+                      : format(t.testPage.minutes, {
+                          minutes:
+                            (skill === 'reading'
+                              ? IELTS_TIMERS.readingSkill
+                              : IELTS_TIMERS.writingSkill) / 60,
+                        }),
                 }}
                 key={skill}
                 latest={
@@ -183,24 +198,22 @@ export default async function IeltsTestPage({ params }: Props) {
                         href: `/ielts/attempts/${last.id}`,
                         label:
                           last.band !== null
-                            ? `Band ${last.band.toFixed(1)}`
+                            ? format(t.testPage.latestBand, {
+                                band: last.band.toFixed(1),
+                              })
                             : last.raw !== null
                               ? `${last.raw}/${last.total}`
-                              : 'View',
+                              : t.testPage.view,
                       }
                     : null
                 }
-                mockBlockedReason={
-                  audioMissing
-                    ? 'The mock test opens once every part has audio.'
-                    : null
-                }
+                mockBlockedReason={audioMissing ? t.testPage.mockBlocked : null}
                 parts={parts.map(section => ({
-                  label: partLabel(section),
-                  meta: partMinutes(section),
+                  label: partLabel(t, section),
+                  meta: partMinutes(t, section),
                   part: section.order,
                 }))}
-                partsNoun={`${parts.length} ${SECTION_NOUNS[skill]}${parts.length === 1 ? '' : 's'}`}
+                partsNoun={plural(t.testPage.sectionCount[skill], parts.length)}
                 skill={skill}
                 slug={slug}
                 title={IELTS_SKILL_LABELS[skill]}

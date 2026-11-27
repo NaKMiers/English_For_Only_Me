@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 
+import { getMessages } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { VocabEntryModel } from '@/models/vocabulary/VocabEntryModel'
 import { requirePracticeActor } from '@/modules/dictation/services/getCurrentUser'
@@ -23,13 +24,14 @@ function jsonError(decision: VocabApiErrorDecision) {
  * where the learner saw the word.
  */
 export async function POST(request: Request) {
-  const missingMongo = getMissingVocabMongoResponse()
+  const t = await getMessages()
+  const missingMongo = getMissingVocabMongoResponse(t)
 
   if (missingMongo) return jsonError(missingMongo)
 
   try {
     const body = await request.json()
-    const parsed = parseOccurrenceRecordRequest(body)
+    const parsed = parseOccurrenceRecordRequest(body, t)
 
     if (!parsed.ok) return jsonError(parsed)
 
@@ -42,7 +44,7 @@ export async function POST(request: Request) {
     if (!(await VocabEntryModel.exists({ _id: vocabEntryId })))
       return jsonError({
         status: 404,
-        body: { message: 'Vocabulary entry was not found.' },
+        body: { message: t.vocabulary.api.entryNotFound },
       })
 
     await recordVocabOccurrence({
@@ -56,9 +58,9 @@ export async function POST(request: Request) {
     if (error instanceof SyntaxError)
       return jsonError({
         status: 400,
-        body: { message: 'Request body must be valid JSON.' },
+        body: { message: t.vocabulary.api.invalidJson },
       })
 
-    return jsonError(toVocabApiError(error))
+    return jsonError(toVocabApiError(error, t))
   }
 }

@@ -8,6 +8,8 @@ import {
   useQuickVocabEntry,
 } from '@/components/vocabulary/QuickVocabLookup'
 import type { VocabMarkStatus } from '@/components/vocabulary/vocabItemWrites'
+import { useMessages } from '@/i18n/client'
+import { format } from '@/i18n/format'
 import { cn } from '@/lib/utils'
 
 import {
@@ -115,6 +117,7 @@ export function TextHighlighter({
 }: {
   rootRef: RefObject<HTMLElement | null>
 }) {
+  const t = useMessages().ielts.highlighter
   const [spans, setSpans] = useState<SpansByScope>({})
   const [menu, setMenu] = useState<MenuState | null>(null)
   const [lookupBusy, setLookupBusy] = useState(false)
@@ -305,9 +308,7 @@ export function TextHighlighter({
       setMenu(null)
       window.getSelection()?.removeAllRanges()
     } catch (error) {
-      setLookupError(
-        error instanceof Error ? error.message : 'Could not look up this word.'
-      )
+      setLookupError(error instanceof Error ? error.message : t.lookUpFailed)
     } finally {
       setLookupBusy(false)
     }
@@ -315,15 +316,34 @@ export function TextHighlighter({
 
   const { word } = menu
   const actions = [
-    { Icon: Highlighter, disabled: false, label: 'Highlight', run: highlight },
-    { Icon: Eraser, disabled: !menu.canClear, label: 'Clear', run: clear },
-    { Icon: X, disabled: !hasAny, label: 'Clear all', run: () => finish({}) },
+    {
+      Icon: Highlighter,
+      disabled: false,
+      id: 'highlight',
+      label: t.highlight,
+      run: highlight,
+    },
+    {
+      Icon: Eraser,
+      disabled: !menu.canClear,
+      id: 'clear',
+      label: t.clear,
+      run: clear,
+    },
+    {
+      Icon: X,
+      disabled: !hasAny,
+      id: 'clearAll',
+      label: t.clearAll,
+      run: () => finish({}),
+    },
     ...(word
       ? [
           {
             Icon: lookupBusy ? LoaderCircle : Search,
             disabled: lookupBusy,
-            label: 'Look up',
+            id: 'lookUp',
+            label: t.lookUp,
             run: () => void lookUp(word),
           },
         ]
@@ -338,13 +358,13 @@ export function TextHighlighter({
         style={{ left: menu.left, top: menu.top }}
       >
         <div
-          aria-label="Highlight"
+          aria-label={t.toolbar}
           className="border-line bg-surface rounded-control flex overflow-hidden border"
           // Keep the text selected while a menu button is pressed.
           onPointerDown={event => event.preventDefault()}
           role="toolbar"
         >
-          {actions.map(({ Icon, disabled, label, run }) => (
+          {actions.map(({ Icon, disabled, id, label, run }) => (
             <button
               className={cn(
                 'border-line flex h-9 items-center gap-1.5 border-l px-2.5 font-sans text-xs font-semibold whitespace-nowrap transition-colors first:border-l-0',
@@ -353,12 +373,12 @@ export function TextHighlighter({
                   : 'hover:bg-tint'
               )}
               aria-label={
-                label === 'Look up' && word
-                  ? `Look up "${word.term}" in Vocabulary`
+                id === 'lookUp' && word
+                  ? format(t.lookUpWord, { term: word.term })
                   : undefined
               }
               disabled={disabled}
-              key={label}
+              key={id}
               onClick={run}
               type="button"
             >
@@ -366,7 +386,7 @@ export function TextHighlighter({
                 aria-hidden="true"
                 className={cn(
                   'size-4',
-                  label === 'Highlight' && 'text-amber-600',
+                  id === 'highlight' && 'text-amber-600',
                   Icon === LoaderCircle && 'animate-spin'
                 )}
               />

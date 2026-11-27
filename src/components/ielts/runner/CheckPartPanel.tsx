@@ -3,6 +3,9 @@
 import { CheckCheck } from 'lucide-react'
 
 import { ExamButton } from '@/components/ielts/ui'
+import { useMessages } from '@/i18n/client'
+import { format } from '@/i18n/format'
+import { formatNodes } from '@/i18n/formatNodes'
 import { cn } from '@/lib/utils'
 
 interface Props {
@@ -26,6 +29,8 @@ export function CheckPartPanel({
   label,
   onCheck,
 }: Props) {
+  const t = useMessages().ielts.check
+
   return (
     <div
       className={cn('flex flex-wrap items-center justify-end gap-3', className)}
@@ -35,14 +40,15 @@ export function CheckPartPanel({
         aria-live="polite"
         className="text-sm empty:hidden"
       >
-        {check ? (
-          <>
-            <strong className="font-sans font-semibold tabular-nums">
-              {check.raw}/{check.total}
-            </strong>{' '}
-            correct
-          </>
-        ) : null}
+        {check
+          ? formatNodes(t.correct, {
+              score: (
+                <strong className="font-sans font-semibold tabular-nums">
+                  {check.raw}/{check.total}
+                </strong>
+              ),
+            })
+          : null}
       </p>
       <ExamButton
         disabled={checking}
@@ -56,7 +62,11 @@ export function CheckPartPanel({
         tone="paper"
         type="button"
       >
-        {checking ? 'Checking...' : check ? 'Check again' : `Check ${label}`}
+        {checking
+          ? t.checking
+          : check
+            ? t.checkAgain
+            : format(t.check, { part: label })}
       </ExamButton>
     </div>
   )

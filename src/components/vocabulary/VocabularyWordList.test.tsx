@@ -75,7 +75,7 @@ describe('VocabularyWordList', () => {
     fireEvent.click(screen.getAllByRole('button', { name: /Already Know/ })[0])
 
     expect(screen.queryByText('expect')).not.toBeInTheDocument()
-    expect(screen.getByText('1 words in this view.')).toBeInTheDocument()
+    expect(screen.getByText('1 word in this view.')).toBeInTheDocument()
 
     await waitFor(() => expect(responses).toHaveLength(1))
     responses[0](

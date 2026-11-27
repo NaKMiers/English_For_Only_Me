@@ -10,6 +10,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { useMessages } from '@/i18n/client'
+import { format } from '@/i18n/format'
 import { cn } from '@/lib/utils'
 import { IELTS_ANSWER_MAX_LENGTH } from '@/modules/ielts/constants'
 import type { IeltsOption } from '@/modules/ielts/schema'
@@ -43,6 +45,7 @@ export const SlotInput = memo(function SlotInput({
   number,
   options,
 }: Props) {
+  const t = useMessages().ielts.widgets
   const { answers, onFocusQuestion, readOnly, review, setAnswer } =
     useIeltsAnswers()
   const value = answerText(answers[String(number)])
@@ -75,7 +78,7 @@ export const SlotInput = memo(function SlotInput({
         >
           <SelectTrigger
             aria-describedby={describedBy}
-            aria-label={`Question ${number}`}
+            aria-label={format(t.question, { number })}
             className={cn(
               'border-line rounded-tag bg-surface min-w-20 border font-semibold data-[size=sm]:min-h-7 data-[size=sm]:py-0',
               markClass
@@ -100,7 +103,7 @@ export const SlotInput = memo(function SlotInput({
       ) : (
         <Input
           aria-describedby={describedBy}
-          aria-label={`Question ${number}`}
+          aria-label={format(t.question, { number })}
           autoCapitalize="off"
           autoComplete="off"
           autoCorrect="off"

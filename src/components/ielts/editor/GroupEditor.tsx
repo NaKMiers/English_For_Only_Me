@@ -12,6 +12,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { useMessages } from '@/i18n/client'
+import { format } from '@/i18n/format'
 import {
   IELTS_QUESTION_TYPE_LABELS,
   IELTS_QUESTION_TYPES,
@@ -90,6 +92,8 @@ function QuestionEditor({
   onRemove: () => void
   question: IeltsQuestion
 }) {
+  const t = useMessages()
+  const copy = t.ieltsEditor.group
   const missingAnswer = !isMulti && question.answers.length === 0
   const missingEvidence = !question.evidence?.quote
 
@@ -98,7 +102,7 @@ function QuestionEditor({
       <Disclosure
         actions={
           <RowActions
-            label={`Remove question ${question.number}`}
+            label={format(copy.removeQuestion, { number: question.number })}
             onRemove={onRemove}
           />
         }
@@ -108,7 +112,7 @@ function QuestionEditor({
             {missingAnswer ? (
               <MetaChip tone="warn">
                 <CircleAlert aria-hidden="true" />
-                No answer
+                {copy.noAnswer}
               </MetaChip>
             ) : isMulti ? null : (
               <span className="text-ink truncate font-bold">
@@ -116,7 +120,7 @@ function QuestionEditor({
               </span>
             )}
             {missingEvidence ? (
-              <MetaChip tone="warn">No evidence</MetaChip>
+              <MetaChip tone="warn">{copy.noEvidence}</MetaChip>
             ) : null}
             {question.prompt ? (
               <span className="truncate">{question.prompt}</span>
@@ -129,7 +133,7 @@ function QuestionEditor({
         <div className="flex flex-wrap items-end gap-2">
           <NumberField
             className="w-20"
-            label="No."
+            label={copy.number}
             max={40}
             min={1}
             onChange={number => onChange({ ...question, number })}
@@ -137,21 +141,21 @@ function QuestionEditor({
           />
           <TextField
             className="min-w-48 flex-1"
-            label="Prompt (leave blank if the gap is in the body)"
+            label={copy.prompt}
             onChange={prompt => onChange({ ...question, prompt })}
             value={question.prompt}
           />
         </div>
         {isMulti ? null : (
           <ListField
-            label="Accepted answers"
+            label={copy.answers}
             onChange={answers => onChange({ ...question, answers })}
             value={question.answers}
           />
         )}
         <div className="grid gap-2 @md:grid-cols-[1fr_7rem]">
           <TextField
-            label="Evidence (verbatim quote)"
+            label={copy.evidence}
             onChange={quote =>
               onChange({
                 ...question,
@@ -163,7 +167,7 @@ function QuestionEditor({
             value={question.evidence?.quote ?? ''}
           />
           <NumberField
-            label="Block (from 0)"
+            label={copy.block}
             min={0}
             onChange={blockIndex =>
               onChange({
@@ -175,7 +179,7 @@ function QuestionEditor({
           />
         </div>
         <TextField
-          label="Explanation"
+          label={copy.explanation}
           onChange={explanation => onChange({ ...question, explanation })}
           value={question.explanation}
         />
@@ -193,6 +197,8 @@ type GroupTab = 'setup' | 'options' | 'questions'
  * A brand-new group opens on its own.
  */
 export function GroupEditor({ group, index, onChange, onRemove }: Props) {
+  const t = useMessages()
+  const copy = t.ieltsEditor.group
   const widget = IELTS_QUESTION_WIDGETS[group.type]
   const isMulti = group.type === 'multiple-choice-multi'
   const usesOptions =
@@ -211,16 +217,19 @@ export function GroupEditor({ group, index, onChange, onRemove }: Props) {
     group.questions.every(question => question.answers.length === 0) &&
     group.correctKeys.length === 0
   const tabs: { value: GroupTab; label: string }[] = [
-    { value: 'setup', label: 'Setup' },
+    { value: 'setup', label: copy.setup },
     ...(usesOptions
       ? [
           {
             value: 'options' as const,
-            label: `Options (${group.options.length})`,
+            label: format(copy.options, { count: group.options.length }),
           },
         ]
       : []),
-    { value: 'questions', label: `Questions (${group.questions.length})` },
+    {
+      value: 'questions',
+      label: format(copy.questions, { count: group.questions.length }),
+    },
   ]
   // Switching the type away from an options type hides that tab.
   const activeTab = tab === 'options' && !usesOptions ? 'setup' : tab
@@ -229,7 +238,7 @@ export function GroupEditor({ group, index, onChange, onRemove }: Props) {
     <Disclosure
       actions={
         <RowActions
-          label={`Remove group ${index + 1}`}
+          label={format(copy.removeGroup, { number: index + 1 })}
           onRemove={onRemove}
         />
       }
@@ -242,7 +251,7 @@ export function GroupEditor({ group, index, onChange, onRemove }: Props) {
           {missing ? (
             <MetaChip tone="warn">
               <CircleAlert aria-hidden="true" />
-              {missing} no answer
+              {format(copy.missingAnswers, { count: missing })}
             </MetaChip>
           ) : null}
         </>
@@ -255,7 +264,7 @@ export function GroupEditor({ group, index, onChange, onRemove }: Props) {
       }
     >
       <div
-        aria-label={`Group ${index + 1} parts`}
+        aria-label={format(copy.parts, { number: index + 1 })}
         className="flex flex-wrap gap-1.5"
         role="group"
       >
@@ -279,9 +288,7 @@ export function GroupEditor({ group, index, onChange, onRemove }: Props) {
       {activeTab === 'setup' ? (
         <div className="grid gap-3">
           <div className="grid gap-1">
-            <span className="font-sans text-xs font-semibold">
-              Question type
-            </span>
+            <span className="font-sans text-xs font-semibold">{copy.type}</span>
             <Select
               onValueChange={value =>
                 update({ type: (value ?? group.type) as IeltsQuestionType })
@@ -289,7 +296,7 @@ export function GroupEditor({ group, index, onChange, onRemove }: Props) {
               value={group.type}
             >
               <SelectTrigger
-                aria-label="Question type"
+                aria-label={copy.type}
                 className="w-full"
                 size="sm"
               >
@@ -308,14 +315,14 @@ export function GroupEditor({ group, index, onChange, onRemove }: Props) {
             </Select>
           </div>
           <AreaField
-            label="Instructions (in English)"
+            label={copy.instructions}
             onChange={instruction => update({ instruction })}
             rows={2}
             value={group.instruction}
           />
           <div className="grid gap-3 @md:grid-cols-[minmax(0,1fr)_auto] @md:items-end">
             <TextField
-              label="Group title (optional)"
+              label={copy.title}
               onChange={title => update({ title })}
               value={group.title}
             />
@@ -323,7 +330,7 @@ export function GroupEditor({ group, index, onChange, onRemove }: Props) {
               <div className="flex flex-wrap items-end gap-3">
                 <NumberField
                   className="w-24"
-                  label="Max words"
+                  label={copy.maxWords}
                   max={5}
                   min={0}
                   onChange={maxWords =>
@@ -363,8 +370,8 @@ export function GroupEditor({ group, index, onChange, onRemove }: Props) {
           </div>
           {widget === 'slot' ? (
             <AreaField
-              hint="Markdown: # heading, - bullet, | table |, **bold**, *italic*, {{q12}} is the gap for question 12. No HTML."
-              label="Text (body)"
+              hint={copy.bodyHint}
+              label={copy.body}
               onChange={body => update({ body })}
               rows={8}
               value={group.body}
@@ -372,8 +379,8 @@ export function GroupEditor({ group, index, onChange, onRemove }: Props) {
           ) : null}
           {widget === 'radio' ? (
             <AreaField
-              hint="Optional text above the questions, such as the worked example. Markdown: **bold**, *italic*. No HTML."
-              label="Intro / example"
+              hint={copy.introHint}
+              label={copy.intro}
               onChange={body => update({ body })}
               rows={6}
               value={group.body}
@@ -381,21 +388,21 @@ export function GroupEditor({ group, index, onChange, onRemove }: Props) {
           ) : null}
           {widget === 'slot' ? (
             <ImageUploadField
-              label="Diagram / chart image (optional: shown above the notes, for 'Label the diagram below')"
+              label={copy.diagramImage}
               onChange={imageUrl => update({ imageUrl })}
               value={group.imageUrl}
             />
           ) : null}
           {group.type === 'plan-map-labelling' ? (
             <ImageUploadField
-              label="Plan / map image"
+              label={copy.mapImage}
               onChange={imageUrl => update({ imageUrl })}
               value={group.imageUrl}
             />
           ) : null}
           {group.type === 'multiple-choice' ? (
             <ImageUploadField
-              label="Pictures A-D (optional: shows the image with a letter dropdown)"
+              label={copy.picturesImage}
               onChange={imageUrl => update({ imageUrl })}
               value={group.imageUrl}
             />
@@ -413,7 +420,7 @@ export function GroupEditor({ group, index, onChange, onRemove }: Props) {
               >
                 <TextField
                   className="w-16"
-                  label="Key"
+                  label={copy.optionKey}
                   onChange={key =>
                     update({
                       options: replaceAt(group.options, optionIndex, {
@@ -426,7 +433,7 @@ export function GroupEditor({ group, index, onChange, onRemove }: Props) {
                 />
                 <TextField
                   className="min-w-0 flex-1"
-                  label="Text"
+                  label={copy.optionText}
                   onChange={text =>
                     update({
                       options: replaceAt(group.options, optionIndex, {
@@ -438,7 +445,7 @@ export function GroupEditor({ group, index, onChange, onRemove }: Props) {
                   value={option.text}
                 />
                 <RowActions
-                  label={`Remove option ${option.key}`}
+                  label={format(copy.removeOption, { key: option.key })}
                   onRemove={() =>
                     update({ options: removeAt(group.options, optionIndex) })
                   }
@@ -462,11 +469,13 @@ export function GroupEditor({ group, index, onChange, onRemove }: Props) {
               })
             }
           >
-            Add option
+            {copy.addOption}
           </AddButton>
           {isMulti ? (
             <ListField
-              label={`Correct keys (exactly ${group.questions.length})`}
+              label={format(copy.correctKeys, {
+                count: group.questions.length,
+              })}
               onChange={correctKeys => update({ correctKeys })}
               separator=","
               value={group.correctKeys}
@@ -503,7 +512,7 @@ export function GroupEditor({ group, index, onChange, onRemove }: Props) {
               })
             }
           >
-            Add question
+            {copy.addQuestion}
           </AddButton>
         </div>
       ) : null}

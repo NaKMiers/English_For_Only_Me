@@ -1,5 +1,7 @@
 import { z } from 'zod'
 
+import type { Messages } from '@/i18n/messages'
+import { en } from '@/i18n/messages/en'
 import type { DictationSessionRecord } from '@/models/dictation/DictationSessionModel'
 
 import type { ApiErrorDecision } from './videoRouteDecisions'
@@ -109,18 +111,21 @@ export function parseSessionPatchRequest(
   }
 }
 
+/** `text` is the request's `t.dictation.api` (English by default). */
 export function getSessionStartGuardDecision({
   firstSegment,
+  text = en.dictation.api,
   video,
 }: {
   firstSegment: SessionGuardSegment | null
+  text?: Messages['dictation']['api']
   video: SessionGuardVideo | null
 }): ApiErrorDecision | null {
   if (!video)
     return {
       status: 404,
       body: {
-        message: 'This dictation video was not found.',
+        message: text.videoNotFound,
       },
     }
 
@@ -128,7 +133,7 @@ export function getSessionStartGuardDecision({
     return {
       status: 409,
       body: {
-        message: 'This video needs an active transcript before practice.',
+        message: text.transcriptRequired,
       },
     }
 
@@ -136,7 +141,7 @@ export function getSessionStartGuardDecision({
     return {
       status: 409,
       body: {
-        message: 'Build sentence segments before starting practice.',
+        message: text.segmentsRequired,
       },
     }
 

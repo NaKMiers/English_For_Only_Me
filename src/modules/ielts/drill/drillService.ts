@@ -10,7 +10,7 @@ import {
   toIeltsAttemptRecord,
 } from '../attempts/attemptRecords'
 import {
-  ieltsError,
+  ieltsMessageError,
   type IeltsDecision,
   type StartDrillInput,
 } from '../attempts/attemptRouteDecisions'
@@ -99,10 +99,7 @@ export async function startDrill({
   })
 
   if (!picked.length)
-    return ieltsError(
-      404,
-      `No ${IELTS_QUESTION_TYPE_LABELS[input.type]} question groups yet.`
-    )
+    return ieltsMessageError(404, 'noDrillGroups', { type: input.type })
 
   const maps = planDrillNumbers(picked.map(item => item.group))
 

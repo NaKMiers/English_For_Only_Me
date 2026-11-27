@@ -6,6 +6,7 @@ import { PageShell } from '@/components/common/PageShell'
 import { DictationImportForm } from '@/components/dictation/DictationImportForm'
 import { PageTag } from '@/components/ui/PageTag'
 import { hasMongoDbUri } from '@/constants/environments'
+import { getMessages } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { DictationSegmentModel } from '@/models/dictation/DictationSegmentModel'
 import { DictationTranscriptModel } from '@/models/dictation/DictationTranscriptModel'
@@ -16,9 +17,13 @@ import { toDictationVideoRecord } from '@/modules/dictation/services/dictationVi
 import { getOptionalUser } from '@/modules/dictation/services/getCurrentUser'
 import { normalizeTranslationLanguage } from '@/modules/dictation/translations/languages'
 
-export const metadata: Metadata = {
-  title: 'Edit Dictation Video',
-  description: 'Attach transcript source text to a saved dictation video.',
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getMessages()
+
+  return {
+    title: t.admin.editPage.metaTitle,
+    description: t.admin.editPage.metaDescription,
+  }
 }
 
 export const runtime = 'nodejs'
@@ -29,25 +34,27 @@ interface Props {
   }>
 }
 
-function EditUnavailableState({
+async function EditUnavailableState({
   message,
   title,
 }: {
   message: string
   title: string
 }) {
+  const t = await getMessages()
+
   return (
     <PageShell
       topbar={
         <AppTopbar
           activeHref="/dictation"
-          subtitle="Dictation Lab edit desk"
+          subtitle={t.admin.shell.editDesk}
         />
       }
     >
       <section className="p-4 sm:p-6 lg:p-8">
         <div className="border-line bg-surface rounded-panel border p-5">
-          <PageTag tone="red">Edit</PageTag>
+          <PageTag tone="red">{t.admin.editPage.tag}</PageTag>
           <h1 className="mt-4 font-sans text-[clamp(2rem,6vw,4rem)] leading-none font-medium tracking-normal">
             {title}
           </h1>
@@ -72,13 +79,15 @@ export default async function Page({ params }: Props) {
 
   if (user.role !== 'admin') redirect('/dictation')
 
+  const t = await getMessages()
+
   if (!/^[a-f\d]{24}$/i.test(videoId)) notFound()
 
   if (!hasMongoDbUri())
     return (
       <EditUnavailableState
-        title="MongoDB is not configured"
-        message="Set MONGODB_URI on the server before editing saved dictation videos."
+        title={t.admin.editPage.mongoMissingTitle}
+        message={t.admin.editPage.mongoMissingMessage}
       />
     )
 
@@ -129,7 +138,7 @@ export default async function Page({ params }: Props) {
       topbar={
         <AppTopbar
           activeHref="/dictation"
-          subtitle="Dictation Lab edit desk"
+          subtitle={t.admin.shell.editDesk}
         />
       }
     >
@@ -141,20 +150,19 @@ export default async function Page({ params }: Props) {
           <div className="border-line bg-surface/90 flex min-w-0 flex-wrap items-start justify-between gap-4 border-b p-4 sm:p-5">
             <div className="grid min-w-0 gap-3">
               <p className="text-brand text-xs leading-tight font-semibold tracking-normal">
-                Listening module edit page
+                {t.admin.editPage.eyebrow}
               </p>
               <h1
                 id="dictation-edit-title"
                 className="font-sans text-[clamp(2rem,7vw,4.75rem)] leading-none font-medium tracking-normal wrap-break-word"
               >
-                Add Missing Transcript
+                {t.admin.editPage.title}
               </h1>
               <p className="text-ink-soft max-w-3xl text-base leading-7 font-normal">
-                Attach the English transcript source for this saved YouTube
-                video, then the app will build sentence segments for practice.
+                {t.admin.editPage.intro}
               </p>
             </div>
-            <PageTag tone="red">Edit</PageTag>
+            <PageTag tone="red">{t.admin.editPage.tag}</PageTag>
           </div>
 
           <div className="p-4 sm:p-5">

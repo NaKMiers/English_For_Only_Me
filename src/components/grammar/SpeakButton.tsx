@@ -3,6 +3,8 @@
 import { Volume2 } from 'lucide-react'
 import { useSyncExternalStore } from 'react'
 
+import { useMessages } from '@/i18n/client'
+import { format } from '@/i18n/format'
 import { cn } from '@/lib/utils'
 
 interface Props {
@@ -24,6 +26,7 @@ function canSpeak() {
  */
 export function SpeakButton({ className, text }: Props) {
   const supported = useSyncExternalStore(subscribe, canSpeak, () => false)
+  const t = useMessages().grammar.card
 
   if (!supported) return null
 
@@ -40,13 +43,13 @@ export function SpeakButton({ className, text }: Props) {
     // Raw button: an inline 28px glyph inside running text, smaller than any
     // IconButton size, and it must not carry a sticker shadow mid-sentence.
     <button
-      aria-label={`Nghe: ${text}`}
+      aria-label={format(t.listenTo, { text })}
       className={cn(
         'text-ink-soft hover:text-brand focus-visible:outline-line rounded-tag inline-grid size-7 shrink-0 place-items-center align-middle focus-visible:outline-2',
         className
       )}
       onClick={speak}
-      title="Listen"
+      title={t.listen}
       type="button"
     >
       <Volume2

@@ -7,6 +7,9 @@ import { ContentPanel } from '@/components/common/ContentPanel'
 import { Button } from '@/components/ui/button'
 import { ActionButton } from '@/components/ui/ActionButton'
 import { PageTag } from '@/components/ui/PageTag'
+import { useMessages } from '@/i18n/client'
+import { format } from '@/i18n/format'
+import type { Messages } from '@/i18n/messages/en'
 import { cn } from '@/lib/utils'
 import type {
   VocabEntryApiRecord,
@@ -46,19 +49,22 @@ interface Props {
   title?: string
 }
 
-function getVietnamesePreview(entry: VocabEntryApiRecord) {
-  return getRequiredVietnameseMeaning(entry)
+function getVietnamesePreview(entry: VocabEntryApiRecord, fallback: string) {
+  return getRequiredVietnameseMeaning(entry, fallback)
 }
 
 function getDefinitionPreview(entry: VocabEntryApiRecord) {
   return getEnglishDefinition(entry)
 }
 
-function getExploreDecisionLabel(decision: ExploreDecision | undefined) {
-  if (decision === 'shouldLearn') return 'Should learn'
-  if (decision === 'alreadyKnow') return 'Already know'
+function getExploreDecisionLabel(
+  decision: ExploreDecision | undefined,
+  t: Messages['vocabulary']['decisions']
+) {
+  if (decision === 'shouldLearn') return t.shouldLearn
+  if (decision === 'alreadyKnow') return t.alreadyKnow
 
-  return 'Unpicked'
+  return t.unpicked
 }
 
 function getExploreMapClassName({
@@ -167,16 +173,18 @@ function useExploreArrowKeys({
 export function VocabularyExplorePanel({
   activeIndex,
   decisions,
-  emptyMessage = 'No enriched words are ready to explore yet. Ask an admin to enrich a small batch, then refresh this page.',
+  emptyMessage,
   entries,
-  eyebrow = 'Explore',
+  eyebrow,
   markEntry,
   moveExplore,
   numbering = 'frequency',
   showExploreIndex,
   source = 'explore',
-  title = 'Explore Words',
+  title,
 }: Props) {
+  const vocab = useMessages().vocabulary
+  const t = vocab.explore
   const deckRef = useRef<HTMLDivElement>(null)
 
   useExploreArrowKeys({
@@ -188,8 +196,8 @@ export function VocabularyExplorePanel({
 
   return (
     <ContentPanel
-      eyebrow={eyebrow}
-      title={title}
+      eyebrow={eyebrow ?? t.eyebrow}
+      title={title ?? t.title}
     >
       {entries.length > 0 ? (
         <div
@@ -198,7 +206,7 @@ export function VocabularyExplorePanel({
         >
           <div className="flex items-center justify-between gap-3">
             <Button
-              aria-label="Previous explore word"
+              aria-label={t.previous}
               className="border-line bg-surface hover:bg-tint rounded-control soft-press size-11 border disabled:opacity-35"
               disabled={activeIndex === 0}
               onClick={() => moveExplore(-1)}
@@ -213,12 +221,12 @@ export function VocabularyExplorePanel({
             </Button>
             <span
               className="text-ink-soft text-xs font-normal"
-              title="Use the Left and Right arrow keys to move"
+              title={t.arrowKeysHint}
             >
               {activeIndex + 1}/{entries.length}
             </span>
             <Button
-              aria-label="Next explore word"
+              aria-label={t.next}
               className="border-line bg-surface hover:bg-tint rounded-control soft-press size-11 border disabled:opacity-35"
               disabled={activeIndex >= entries.length - 1}
               onClick={() => moveExplore(1)}
@@ -246,7 +254,11 @@ export function VocabularyExplorePanel({
               return (
                 <article
                   key={entry.entry.id}
-                  aria-label={active ? undefined : `Open ${entry.entry.term}`}
+                  aria-label={
+                    active
+                      ? undefined
+                      : format(t.open, { term: entry.entry.term })
+                  }
                   aria-hidden={!visible}
                   className={getExploreStackCardClassName({
                     active,
@@ -280,7 +292,7 @@ export function VocabularyExplorePanel({
                           size="lg"
                         />
                         <p className="text-ink-soft text-xs font-normal">
-                          {getExploreDecisionLabel(decision)}
+                          {getExploreDecisionLabel(decision, vocab.decisions)}
                         </p>
                       </div>
                       <PageTag tone="pale">
@@ -291,7 +303,10 @@ export function VocabularyExplorePanel({
                       </PageTag>
                     </div>
                     <p className="text-ink-soft ml-auto max-w-2xl text-right text-base leading-7 font-normal">
-                      {getVietnamesePreview(entry.entry)}
+                      {getVietnamesePreview(
+                        entry.entry,
+                        vocab.word.needsMeaning
+                      )}
                     </p>
                     <p className="text-ink-soft max-w-2xl text-sm leading-6 font-normal">
                       {getDefinitionPreview(entry.entry)}
@@ -311,7 +326,7 @@ export function VocabularyExplorePanel({
                           })
                         }
                       >
-                        Should Learn
+                        {vocab.marks.shouldLearn}
                       </ActionButton>
                       <ActionButton
                         className="min-w-0 px-2 text-xs sm:px-4 sm:text-sm [&>span:last-child]:whitespace-nowrap"
@@ -326,7 +341,7 @@ export function VocabularyExplorePanel({
                         }
                         tone="paper"
                       >
-                        Already Know
+                        {vocab.marks.alreadyKnow}
                       </ActionButton>
                     </div>
                   ) : null}
@@ -337,30 +352,28 @@ export function VocabularyExplorePanel({
 
           <div className="border-line bg-tint rounded-control grid gap-3 border p-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="text-ink-soft text-xs font-normal">
-                Explore map
-              </span>
+              <span className="text-ink-soft text-xs font-normal">{t.map}</span>
               <div
-                aria-label="Explore map color legend"
+                aria-label={t.legend}
                 className="flex flex-wrap gap-2"
               >
                 <span
-                  aria-label="White means unpicked"
+                  aria-label={t.legendUnpicked}
                   className="border-line bg-surface rounded-tag size-5 border"
                   role="img"
-                  title="Unpicked"
+                  title={vocab.decisions.unpicked}
                 />
                 <span
-                  aria-label="Pink means should learn"
+                  aria-label={t.legendShouldLearn}
                   className="border-line bg-tint rounded-tag size-5 border"
                   role="img"
-                  title="Should learn"
+                  title={vocab.decisions.shouldLearn}
                 />
                 <span
-                  aria-label="Green means already know"
+                  aria-label={t.legendAlreadyKnow}
                   className="border-line rounded-tag bg-lesson-correct/35 size-5 border"
                   role="img"
-                  title="Already know"
+                  title={vocab.decisions.alreadyKnow}
                 />
               </div>
             </div>
@@ -371,7 +384,13 @@ export function VocabularyExplorePanel({
                 return (
                   <Button
                     key={entry.entry.id}
-                    aria-label={`Open ${entry.entry.term}: ${getExploreDecisionLabel(decision)}`}
+                    aria-label={format(t.openWithDecision, {
+                      decision: getExploreDecisionLabel(
+                        decision,
+                        vocab.decisions
+                      ),
+                      term: entry.entry.term,
+                    })}
                     className={getExploreMapClassName({
                       active: index === activeIndex,
                       decision,
@@ -389,7 +408,7 @@ export function VocabularyExplorePanel({
         </div>
       ) : (
         <p className="text-ink-soft text-sm leading-6 font-normal">
-          {emptyMessage}
+          {emptyMessage ?? t.empty}
         </p>
       )}
     </ContentPanel>

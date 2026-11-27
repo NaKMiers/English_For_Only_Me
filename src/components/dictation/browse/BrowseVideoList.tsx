@@ -4,6 +4,9 @@ import Link from 'next/link'
 import { CompletionBadge } from '@/components/dictation/CompletionBadge'
 import { DictationVideoThumbnail } from '@/components/dictation/DictationVideoThumbnail'
 import { PageTag } from '@/components/ui/PageTag'
+import { format } from '@/i18n/format'
+import type { Messages } from '@/i18n/messages'
+import { en } from '@/i18n/messages/en'
 import { cn } from '@/lib/utils'
 
 import { FavoriteButton } from './FavoriteButton'
@@ -12,7 +15,11 @@ import { FavoriteButton } from './FavoriteButton'
 // FavoriteButton hydrates), and BrowseVideoListClient renders the same markup
 // in the browser for lists that start closed. Keep it client-safe: no
 // server-only imports. Above-the-fold cards get a high fetch priority.
+// For the same reason the card text arrives as `labels` (from the page's
+// `getMessages()`) instead of a hook.
 const PRIORITY_CARD_COUNT = 4
+
+export type BrowseCardLabels = Messages['dictation']['browse']['card']
 
 export interface BrowseVideoItem {
   id: string
@@ -29,10 +36,12 @@ export interface BrowseVideoItem {
 function VideoCard({
   video,
   canFavorite,
+  labels,
   priority,
 }: {
   video: BrowseVideoItem
   canFavorite: boolean
+  labels: BrowseCardLabels
   priority: boolean
 }) {
   return (
@@ -46,7 +55,7 @@ function VideoCard({
       {video.practiceHref && (
         <Link
           href={video.practiceHref}
-          aria-label={`Practice ${video.title}`}
+          aria-label={format(labels.practiceVideo, { title: video.title })}
           className="absolute inset-0 z-0"
         />
       )}
@@ -70,7 +79,7 @@ function VideoCard({
       <div className="pointer-events-none flex min-w-0 flex-wrap items-center gap-1.5">
         {video.completions > 0 && (
           <Check
-            aria-label="Completed"
+            aria-label={labels.completed}
             className="text-brand size-4 shrink-0"
           />
         )}
@@ -94,14 +103,14 @@ function VideoCard({
             )}
           >
             {video.inProgress
-              ? 'Continue'
+              ? labels.continue
               : video.completions > 0
-                ? 'Practice again'
-                : 'Practice'}
+                ? labels.practiceAgain
+                : labels.practice}
           </span>
         ) : (
           <span className="text-ink-soft text-xs font-normal">
-            No transcript
+            {labels.noTranscript}
           </span>
         )}
       </div>
@@ -113,14 +122,16 @@ export function BrowseVideoList({
   videos,
   canFavorite,
   id,
-  emptyLabel = 'No lessons here yet.',
+  emptyLabel,
   className,
+  labels = en.dictation.browse.card,
   priorityCount = PRIORITY_CARD_COUNT,
 }: {
   videos: BrowseVideoItem[]
   canFavorite: boolean
   id?: string
   emptyLabel?: string
+  labels?: BrowseCardLabels
   className?: string
   /** Leading cards loaded eagerly; 0 for lists opened after load. */
   priorityCount?: number
@@ -131,7 +142,7 @@ export function BrowseVideoList({
         id={id}
         className={cn('text-ink-soft p-2 text-sm', className)}
       >
-        {emptyLabel}
+        {emptyLabel ?? labels.empty}
       </p>
     )
 
@@ -148,6 +159,7 @@ export function BrowseVideoList({
           key={video.id}
           video={video}
           canFavorite={canFavorite}
+          labels={labels}
           priority={index < priorityCount}
         />
       ))}

@@ -2,6 +2,8 @@
 
 import { Languages } from 'lucide-react'
 
+import { useLocale, useMessages } from '@/i18n/client'
+import { INTL_LOCALES } from '@/i18n/config'
 import { cn } from '@/lib/utils'
 import {
   ANSWER_TEXT_STYLE,
@@ -19,10 +21,6 @@ interface Props {
   textSize: AnswerTextSize
 }
 
-const NO_CAPTION_MESSAGE =
-  'No caption for this moment in the selected language.'
-const LOADING_MESSAGE = 'Loading this translation...'
-
 export function DictationTranslation({
   className,
   isLoading = false,
@@ -31,6 +29,9 @@ export function DictationTranslation({
   text,
   textSize,
 }: Props) {
+  const t = useMessages()
+  const locale = useLocale()
+
   if (!isUnlocked) return null
 
   const hasText = text.trim().length > 0
@@ -54,12 +55,18 @@ export function DictationTranslation({
         aria-hidden="true"
         className="text-brand mt-1 size-5 shrink-0"
       />
-      <span className="sr-only">{getLanguageLabel(language)}</span>
+      <span className="sr-only">
+        {getLanguageLabel(language, INTL_LOCALES[locale])}
+      </span>
       <span
         style={hasText ? ANSWER_TEXT_STYLE[textSize] : undefined}
         className="min-w-0 text-base leading-7 font-semibold wrap-break-word"
       >
-        {hasText ? text : isLoading ? LOADING_MESSAGE : NO_CAPTION_MESSAGE}
+        {hasText
+          ? text
+          : isLoading
+            ? t.dictation.translation.loading
+            : t.dictation.translation.noCaption}
       </span>
     </div>
   )

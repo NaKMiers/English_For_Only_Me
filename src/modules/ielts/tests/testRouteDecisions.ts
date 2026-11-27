@@ -3,6 +3,7 @@ import { z } from 'zod'
 
 import {
   ieltsError,
+  ieltsMessageError,
   type IeltsDecision,
 } from '../attempts/attemptRouteDecisions'
 import {
@@ -87,14 +88,14 @@ export const parsePublish = (body: unknown) =>
   parseWith(publishSchema, body ?? {}, 'Invalid publish request.')
 
 export function parseTestId(value: string): IeltsDecision<string> {
-  if (!isValidObjectId(value)) return ieltsError(404, 'Test not found.')
+  if (!isValidObjectId(value)) return ieltsMessageError(404, 'testNotFound')
 
   return { ok: true, data: value }
 }
 
 export function parseSectionKey(value: string): IeltsDecision<IeltsSectionKey> {
   if (!(IELTS_SECTION_KEYS as readonly string[]).includes(value))
-    return ieltsError(404, 'Section not found.')
+    return ieltsMessageError(404, 'sectionNotFound')
 
   return { ok: true, data: value as IeltsSectionKey }
 }

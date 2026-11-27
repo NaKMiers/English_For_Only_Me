@@ -2,6 +2,7 @@
 
 import { useSyncExternalStore } from 'react'
 
+import { getActiveMessages } from '@/i18n/active'
 import {
   ANONYMOUS_OUTBOX_OWNER,
   createOutbox,
@@ -171,7 +172,8 @@ function getTabId() {
 export function ensureGuestIdentity(fetchImpl: typeof fetch = fetch) {
   guestIdentityPromise ??= fetchImpl(GUEST_IDENTITY_PATH, { method: 'POST' })
     .then(response => {
-      if (!response.ok) throw new Error('Could not start a guest session.')
+      if (!response.ok)
+        throw new Error(getActiveMessages().common.errors.guestSession)
     })
     .catch(error => {
       // Let the next write try again instead of caching a failure forever.

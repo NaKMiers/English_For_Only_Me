@@ -3,6 +3,8 @@
 import { Volume2 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { useMessages } from '@/i18n/client'
+import { format } from '@/i18n/format'
 import { cn } from '@/lib/utils'
 import type { VocabEntryApiRecord } from '@/modules/vocabulary/types'
 
@@ -61,6 +63,7 @@ export function VocabTermHeader({
   speakTerm,
   term,
 }: Props) {
+  const t = useMessages().vocabulary.word
   const displayTerm = entry?.term ?? term ?? ''
   const pronunciation = getPronunciation({
     phonetics: entry?.phonetics ?? phonetics,
@@ -96,7 +99,7 @@ export function VocabTermHeader({
         </p>
       </div>
       <Button
-        aria-label={`Speak ${displayTerm}`}
+        aria-label={format(t.speak, { term: displayTerm })}
         className={cn(
           'border-line bg-surface text-ink hover:bg-tint rounded-control soft-press size-10 shrink-0 border',
           buttonClassName

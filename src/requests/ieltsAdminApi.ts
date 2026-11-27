@@ -7,6 +7,10 @@ import type {
   IeltsAdminTestRow,
 } from '@/modules/ielts/tests/testService'
 
+/**
+ * A failed admin request. `message` is the server's text, already in the
+ * admin's language, or empty when it sent none: the UI then shows its own.
+ */
 export class IeltsAdminApiError extends Error {
   constructor(
     message: string,
@@ -43,7 +47,7 @@ async function send<T>(
 
   if (!response.ok)
     throw new IeltsAdminApiError(
-      body.message ?? `Request failed (${response.status}).`,
+      body.message ?? '',
       response.status,
       body.report ?? null,
       body.attemptCount ?? null
@@ -221,10 +225,7 @@ export async function uploadIeltsFileApi(
   }
 
   if (!response.ok || !payload.secure_url)
-    throw new IeltsAdminApiError(
-      payload.error?.message ?? 'Upload failed.',
-      response.status
-    )
+    throw new IeltsAdminApiError(payload.error?.message ?? '', response.status)
 
   return {
     url:

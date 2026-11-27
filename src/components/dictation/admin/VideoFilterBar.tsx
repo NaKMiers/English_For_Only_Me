@@ -23,6 +23,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { format, plural } from '@/i18n/format'
+import { useMessages } from '@/i18n/client'
 import { cn } from '@/lib/utils'
 import {
   ADMIN_FILTER_NONE,
@@ -36,7 +38,6 @@ import {
   countActiveAdminFilters,
   EMPTY_ADMIN_VIDEO_FILTER,
 } from '@/modules/dictation/content/adminVideoFilter'
-import { getDictationStatusLabel } from '@/modules/dictation/statusDisplay'
 import type { DictationVideoStatus } from '@/modules/dictation/types'
 
 interface Props {
@@ -48,9 +49,6 @@ interface Props {
   topics: Array<{ id: string; title: string }>
   total: number
 }
-
-const levelLabel = (level: string) =>
-  level === ADMIN_FILTER_NONE ? 'No level' : level
 
 function toggle<T extends string>(list: T[], value: T) {
   return list.includes(value)
@@ -74,10 +72,16 @@ function FacetChip({
   onClick: () => void
   pressed: boolean
 }) {
+  const t = useMessages()
+
   return (
     // Segmented toggle (aria-pressed): documented raw exception.
     <button
-      aria-label={count === undefined ? undefined : `${label} (${count})`}
+      aria-label={
+        count === undefined
+          ? undefined
+          : format(t.admin.filters.optionCount, { label, count })
+      }
       aria-pressed={pressed}
       className={cn(
         'border-line rounded-tag soft-press inline-flex min-h-8 items-center gap-1.5 border px-2.5 font-sans text-xs font-semibold',
@@ -139,6 +143,8 @@ export function VideoFilterBar({
   topics,
   total,
 }: Props) {
+  const t = useMessages()
+  const f = t.admin.filters
   const [open, setOpen] = useState(false)
   const active = countActiveAdminFilters(filter)
   const facetsActive = active - Number(Boolean(filter.search.trim()))
@@ -150,28 +156,41 @@ export function VideoFilterBar({
   const topicSections = sections.filter(
     section => section.topicId === pickedTopic
   )
+  const levelLabel = (level: string) =>
+    level === ADMIN_FILTER_NONE ? f.noLevel : level
+  const withCount = (label: string, count: number | undefined) =>
+    format(f.optionCount, { label, count: count ?? 0 })
+  const quickViewLabels: Record<string, string> = {
+    unfiled: f.quickUnfiled,
+    'no-level': f.quickNoLevel,
+    'not-ready': f.quickNotReady,
+  }
   const topicItems = [
-    { value: '', label: 'Any topic' },
+    { value: '', label: f.anyTopic },
     {
       value: ADMIN_FILTER_NONE,
-      label: `No topic (${counts.topics[ADMIN_FILTER_NONE] ?? 0})`,
+      label: withCount(f.noTopic, counts.topics[ADMIN_FILTER_NONE]),
     },
     ...topics.map(topic => ({
       value: topic.id,
-      label: `${topic.title} (${counts.topics[topic.id] ?? 0})`,
+      label: withCount(topic.title, counts.topics[topic.id]),
     })),
   ]
   const sectionItems = [
-    { value: '', label: 'Any section' },
+    { value: '', label: f.anySection },
     {
       value: ADMIN_FILTER_NONE,
-      label: `No section (${counts.sections[ADMIN_FILTER_NONE] ?? 0})`,
+      label: withCount(f.noSection, counts.sections[ADMIN_FILTER_NONE]),
     },
     ...topicSections.map(section => ({
       value: section.id,
-      label: `${section.title} (${counts.sections[section.id] ?? 0})`,
+      label: withCount(section.title, counts.sections[section.id]),
     })),
   ]
+  const sortItems = ADMIN_VIDEO_SORTS.map(sort => ({
+    value: sort.value,
+    label: f.sorts[sort.value],
+  }))
   // Statuses nobody has stay out of the way unless picked.
   const statuses = ADMIN_VIDEO_STATUSES.filter(
     status => counts.statuses[status] || filter.statuses.includes(status)
@@ -179,20 +198,19 @@ export function VideoFilterBar({
 
   const topicTitle = (id: string) =>
     id === ADMIN_FILTER_NONE
-      ? 'No topic'
-      : (topics.find(topic => topic.id === id)?.title ?? 'Unknown topic')
+      ? f.noTopic
+      : (topics.find(topic => topic.id === id)?.title ?? f.unknownTopic)
   const sectionTitle = (id: string) =>
     id === ADMIN_FILTER_NONE
-      ? 'No section'
-      : (sections.find(section => section.id === id)?.title ??
-        'Unknown section')
+      ? f.noSection
+      : (sections.find(section => section.id === id)?.title ?? f.unknownSection)
 
   const chips: Array<{ key: string; label: string; remove: () => void }> = [
     ...(filter.search.trim()
       ? [
           {
             key: 'search',
-            label: `“${filter.search.trim()}”`,
+            label: format(f.searchChip, { text: filter.search.trim() }),
             remove: () => patch({ search: '' }),
           },
         ]
@@ -204,7 +222,7 @@ export function VideoFilterBar({
     })),
     ...filter.statuses.map(status => ({
       key: `status:${status}`,
-      label: getDictationStatusLabel(status),
+      label: t.admin.status[status],
       remove: () => patch({ statuses: toggle(filter.statuses, status) }),
     })),
     ...(filter.topicId
@@ -240,16 +258,16 @@ export function VideoFilterBar({
             className="text-ink-soft pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2"
           />
           <Input
-            aria-label="Search videos"
+            aria-label={f.search}
             className="border-line bg-surface min-h-10 border pr-9 pl-8 font-sans text-sm font-semibold [&::-webkit-search-cancel-button]:appearance-none"
             onChange={event => patch({ search: event.target.value })}
-            placeholder="Search title, channel, topic…"
+            placeholder={f.searchPlaceholder}
             type="search"
             value={filter.search}
           />
           {filter.search ? (
             <Button
-              aria-label="Clear search"
+              aria-label={f.clearSearch}
               className="absolute top-1/2 right-1 -translate-y-1/2"
               onClick={() => patch({ search: '' })}
               size="icon-sm"
@@ -263,7 +281,9 @@ export function VideoFilterBar({
         <div className="flex gap-2 max-sm:w-full">
           <CollapsibleTrigger
             aria-label={
-              facetsActive ? `Filters, ${facetsActive} active` : 'Filters'
+              facetsActive
+                ? format(f.filtersActive, { count: facetsActive })
+                : f.filters
             }
             className={cn(
               'group/filters border-line rounded-control soft-press inline-flex min-h-10 items-center gap-1.5 border px-3 font-sans text-sm font-semibold max-sm:flex-1 max-sm:justify-center',
@@ -274,7 +294,7 @@ export function VideoFilterBar({
               aria-hidden="true"
               className="size-4"
             />
-            Filters
+            {f.filters}
             {facetsActive ? (
               <span className="bg-brand text-surface rounded-tag grid min-w-5 place-items-center px-1 text-xs tabular-nums">
                 {facetsActive}
@@ -286,14 +306,14 @@ export function VideoFilterBar({
             />
           </CollapsibleTrigger>
           <Select
-            items={ADMIN_VIDEO_SORTS}
+            items={sortItems}
             onValueChange={value =>
               patch({ sort: (value ?? 'order') as AdminVideoSort })
             }
             value={filter.sort}
           >
             <SelectTrigger
-              aria-label="Sort videos"
+              aria-label={f.sortVideos}
               className="min-h-10 max-sm:flex-1"
             >
               <ArrowDownUp
@@ -303,7 +323,7 @@ export function VideoFilterBar({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {ADMIN_VIDEO_SORTS.map(sort => (
+              {sortItems.map(sort => (
                 <SelectItem
                   key={sort.value}
                   value={sort.value}
@@ -318,7 +338,7 @@ export function VideoFilterBar({
 
       <CollapsiblePanel>
         <div className="border-line bg-tint rounded-panel grid gap-3 border p-3">
-          <FacetGroup label="Quick views">
+          <FacetGroup label={f.quickViews}>
             {ADMIN_QUICK_VIEWS.map(view => {
               const on =
                 sameSet(filter.levels, view.filter.levels) &&
@@ -329,7 +349,7 @@ export function VideoFilterBar({
               return (
                 <FacetChip
                   key={view.key}
-                  label={view.label}
+                  label={quickViewLabels[view.key] ?? view.label}
                   onClick={() =>
                     patch(
                       on
@@ -347,7 +367,7 @@ export function VideoFilterBar({
               )
             })}
           </FacetGroup>
-          <FacetGroup label="Level">
+          <FacetGroup label={f.level}>
             {ADMIN_LEVEL_OPTIONS.map(level => (
               <FacetChip
                 count={counts.levels[level] ?? 0}
@@ -358,12 +378,12 @@ export function VideoFilterBar({
               />
             ))}
           </FacetGroup>
-          <FacetGroup label="Status">
+          <FacetGroup label={f.status}>
             {statuses.map(status => (
               <FacetChip
                 count={counts.statuses[status] ?? 0}
                 key={status}
-                label={getDictationStatusLabel(status)}
+                label={t.admin.status[status]}
                 onClick={() =>
                   patch({
                     statuses: toggle<DictationVideoStatus>(
@@ -385,7 +405,7 @@ export function VideoFilterBar({
               value={filter.topicId}
             >
               <SelectTrigger
-                aria-label="Filter by topic"
+                aria-label={f.filterByTopic}
                 className="w-full"
                 size="sm"
               >
@@ -409,10 +429,10 @@ export function VideoFilterBar({
               value={filter.sectionId}
             >
               <SelectTrigger
-                aria-label="Filter by section"
+                aria-label={f.filterBySection}
                 className="w-full"
                 size="sm"
-                title={pickedTopic ? undefined : 'Pick a topic first'}
+                title={pickedTopic ? undefined : f.pickTopicFirst}
               >
                 <SelectValue />
               </SelectTrigger>
@@ -434,7 +454,7 @@ export function VideoFilterBar({
       <div className="flex flex-wrap items-center gap-1.5">
         {chips.map(chip => (
           <Button
-            aria-label={`Remove filter ${chip.label}`}
+            aria-label={format(f.removeFilter, { label: chip.label })}
             className="border-line bg-surface hover:bg-tint-soft rounded-tag h-7 max-w-full gap-1 border px-2 font-sans text-xs font-semibold"
             key={chip.key}
             onClick={chip.remove}
@@ -454,14 +474,16 @@ export function VideoFilterBar({
             type="button"
             variant="link"
           >
-            Clear all
+            {f.clearAll}
           </Button>
         ) : null}
         <span
           aria-live="polite"
           className="text-ink-soft ml-auto text-xs font-normal tabular-nums"
         >
-          {shown === total ? `${total} videos` : `${shown} of ${total} videos`}
+          {shown === total
+            ? plural(f.total, total)
+            : format(f.shownOf, { shown, total })}
         </span>
       </div>
     </Collapsible>

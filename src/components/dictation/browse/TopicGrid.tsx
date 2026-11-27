@@ -2,13 +2,19 @@ import { Layers } from 'lucide-react'
 import Link from 'next/link'
 
 import { PageTag } from '@/components/ui/PageTag'
+import { format, plural } from '@/i18n/format'
+import type { Messages } from '@/i18n/messages'
+import { en } from '@/i18n/messages/en'
 import { cn } from '@/lib/utils'
 import type { DictationTopicSummaryRecord } from '@/modules/dictation/types'
 
 import { getTopicTileImageUrl } from './topicThumbnailUrl'
 
+type BrowseLabels = Messages['dictation']['browse']
+
 interface TopicCardProps {
   href: string
+  labels: BrowseLabels
   title: string
   thumbnailUrl?: string | null
   levelRange: string | null
@@ -61,6 +67,7 @@ function ThumbTile({
 
 function TopicCard({
   href,
+  labels,
   title,
   thumbnailUrl,
   levelRange,
@@ -68,7 +75,7 @@ function TopicCard({
   hasVideoMedia,
   muted,
 }: TopicCardProps) {
-  const lessonLabel = `${lessonCount} ${lessonCount === 1 ? 'lesson' : 'lessons'}`
+  const lessonLabel = plural(labels.lessons, lessonCount)
 
   return (
     <Link
@@ -88,10 +95,10 @@ function TopicCard({
           <span className="text-brand truncate font-sans text-lg font-semibold">
             {title}
           </span>
-          {hasVideoMedia && <PageTag tone="yellow">Video</PageTag>}
+          {hasVideoMedia && <PageTag tone="yellow">{labels.video}</PageTag>}
         </div>
         <p className="text-ink-soft font-sans text-sm font-normal">
-          Levels: {levelRange ?? '-'}
+          {format(labels.levels, { range: levelRange ?? '-' })}
         </p>
         <p className="text-ink-soft text-sm">{lessonLabel}</p>
       </div>
@@ -102,20 +109,25 @@ function TopicCard({
 interface Props {
   topics: DictationTopicSummaryRecord[]
   noTopicCount: number
+  /** From the page's `getMessages()`: this stays a server component. */
+  labels?: BrowseLabels
 }
 
 /**
  * The all-topics browse grid. The "Uncategorized" bucket renders as a muted card
  * sorted last, and only when it holds videos (design review D - no-topic).
  */
-export function TopicGrid({ topics, noTopicCount }: Props) {
+export function TopicGrid({
+  topics,
+  noTopicCount,
+  labels = en.dictation.browse,
+}: Props) {
   if (topics.length === 0 && noTopicCount === 0)
     return (
       <div className="border-line bg-surface rounded-panel border p-6 text-center">
-        <p className="font-sans text-lg font-semibold">No lessons yet</p>
+        <p className="font-sans text-lg font-semibold">{labels.noLessons}</p>
         <p className="text-ink-soft mt-1 text-sm">
-          Once an admin adds topics and videos, they show up here to browse and
-          practice.
+          {labels.noLessonsDescription}
         </p>
       </div>
     )
@@ -126,6 +138,7 @@ export function TopicGrid({ topics, noTopicCount }: Props) {
         <TopicCard
           key={topic.id}
           href={`/dictation/${topic.slug}`}
+          labels={labels}
           title={topic.title}
           thumbnailUrl={topic.thumbnailUrl}
           levelRange={topic.levelRange}
@@ -136,7 +149,8 @@ export function TopicGrid({ topics, noTopicCount }: Props) {
       {noTopicCount > 0 && (
         <TopicCard
           href="/dictation/no-topic"
-          title="Uncategorized"
+          labels={labels}
+          title={labels.uncategorized}
           levelRange={null}
           lessonCount={noTopicCount}
         />

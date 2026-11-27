@@ -73,7 +73,7 @@ export async function POST(request: Request, context: RouteContext) {
     return ieltsRouteFailure(
       error,
       'ielts practice check failed',
-      'Could not check. Try again later.'
+      'checkFailed'
     )
   }
 }

@@ -4,12 +4,15 @@ import {
   SkeletonPageShell,
   SkeletonTag,
 } from '@/components/common/PageSkeletons'
+import { getMessages } from '@/i18n/server'
 
-export default function Loading() {
+export default async function Loading() {
+  const t = await getMessages()
+
   return (
     <SkeletonPageShell
       activeHref="/dictation"
-      subtitle="Dictation Lab listening module"
+      subtitle={t.dictation.meta.labSubtitle}
     >
       <div className="border-line bg-surface rounded-panel grid gap-3 border p-3 sm:p-4">
         <div className="flex flex-wrap items-start justify-between gap-3">

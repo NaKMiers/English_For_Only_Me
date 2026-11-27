@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 
+import { getMessages } from '@/i18n/server'
 import { OutboxOwnerMismatchError } from '@/lib/auth/clientOwnerKey'
 import { requirePracticeActor } from '@/modules/dictation/services/getCurrentUser'
 
@@ -18,7 +19,10 @@ export async function POST() {
     return NextResponse.json({ isGuest: actor.isGuest })
   } catch (error) {
     if (error instanceof OutboxOwnerMismatchError)
-      return NextResponse.json({ message: error.message }, { status: 409 })
+      return NextResponse.json(
+        { message: (await getMessages()).common.errors.ownerMismatch },
+        { status: 409 }
+      )
 
     throw error
   }

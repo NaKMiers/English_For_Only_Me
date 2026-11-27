@@ -4,6 +4,8 @@ import { useId, useMemo, useState } from 'react'
 
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
+import { useMessages } from '@/i18n/client'
+import { format } from '@/i18n/format'
 import { passageIntro } from '@/modules/ielts/passageIntro'
 import { toPublicSection } from '@/modules/ielts/publicView'
 import type { IeltsSection } from '@/modules/ielts/schema'
@@ -31,6 +33,7 @@ export function ShowAnswersSwitch({
   checked: boolean
   onCheckedChange: (checked: boolean) => void
 }) {
+  const t = useMessages()
   const switchId = useId()
 
   return (
@@ -43,7 +46,7 @@ export function ShowAnswersSwitch({
         id={switchId}
         onCheckedChange={onCheckedChange}
       />
-      Show answers
+      {t.ieltsEditor.preview.showAnswers}
     </Label>
   )
 }
@@ -63,6 +66,7 @@ export function SectionPreview({
   section: IeltsSection
   showAnswers: boolean
 }) {
+  const t = useMessages()
   const [scriptOpen, setScriptOpen] = useState(true)
   const publicSection = useMemo(
     () =>
@@ -103,7 +107,9 @@ export function SectionPreview({
     <div className="ielts-exam grid gap-6">
       {section.reading ? (
         <PassagePane
-          heading={`Passage ${section.order}`}
+          heading={format(t.ieltsEditor.preview.passage, {
+            number: section.order,
+          })}
           highlight={null}
           intro={passageIntro(section)}
           material={section.reading}
@@ -122,7 +128,7 @@ export function SectionPreview({
       {writing ? (
         <div className="font-body grid w-full gap-4 text-[17px] leading-[1.7]">
           <h2 className="text-muted-foreground font-sans text-lg leading-none font-semibold tracking-wide">
-            Task {writing.task}
+            {format(t.ieltsEditor.preview.task, { number: writing.task })}
           </h2>
           <WritingPrompt text={writing.prompt} />
           {writing.visual ? (

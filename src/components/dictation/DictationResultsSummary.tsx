@@ -1,6 +1,10 @@
+'use client'
+
 import { ContentPanel } from '@/components/common/ContentPanel'
 import { MetricTile } from '@/components/common/MetricTile'
 import { ActionButton } from '@/components/ui/ActionButton'
+import { useMessages } from '@/i18n/client'
+import { format } from '@/i18n/format'
 import type {
   DictationVideoProgress,
   DictationVideoStatsRecord,
@@ -19,12 +23,6 @@ interface Props {
   youtubeVideoId?: string | null
 }
 
-const EYEBROW: Record<DictationVideoProgress, string> = {
-  completed: 'Completed',
-  inProgress: 'In progress',
-  notStarted: 'Results',
-}
-
 export function DictationResultsSummary({
   isEmpty,
   progress,
@@ -34,18 +32,20 @@ export function DictationResultsSummary({
   videoId,
   youtubeVideoId = null,
 }: Props) {
+  const t = useMessages()
+  const text = t.dictation.results
   const action = getDictationResultsAction({ isEmpty, progress, videoId })
 
   return (
     <ContentPanel
-      eyebrow={EYEBROW[progress]}
+      eyebrow={text.eyebrow[progress]}
       title={title}
       action={
         <ActionButton
           href={action.href}
           tone="paper"
         >
-          {action.label}
+          {t.dictation.resultsAction[action.kind]}
         </ActionButton>
       }
     >
@@ -53,8 +53,8 @@ export function DictationResultsSummary({
         <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
           <p className="text-ink-soft text-base leading-7 font-normal">
             {progress === 'inProgress'
-              ? 'Practice in progress. Resolve a few sentences and your stats will build here.'
-              : 'No completed dictation attempts yet. Practice the video first, then come back for useful stats.'}
+              ? text.inProgressEmpty
+              : text.notStartedEmpty}
           </p>
           <DictationVideoThumbnail
             title={title}
@@ -68,15 +68,18 @@ export function DictationResultsSummary({
         <div className="grid gap-4">
           <div className="grid gap-3 sm:grid-cols-2">
             <MetricTile
-              label="Completion"
+              label={t.dictation.stats.completion}
               value={`${stats.completionPercentage}%`}
-              detail={`${stats.completedSegmentCount}/${stats.segmentCount} sentences resolved`}
+              detail={format(t.dictation.stats.resolved, {
+                done: stats.completedSegmentCount,
+                total: stats.segmentCount,
+              })}
               tone="red"
             />
             <MetricTile
-              label="First-try accuracy"
+              label={text.firstTryAccuracy}
               value={`${stats.firstTryWordAccuracy}%`}
-              detail="Word accuracy on first checks"
+              detail={t.dictation.stats.firstTryDetail}
             />
           </div>
           <div className="flex flex-wrap items-center gap-3">
@@ -88,8 +91,7 @@ export function DictationResultsSummary({
               className="w-40 shrink-0"
             />
             <p className="text-ink-soft min-w-0 flex-1 text-sm leading-6 font-normal">
-              Built from saved attempts only: mistakes, reveals, skips, retries,
-              replay deltas, and time spent.
+              {text.builtFrom}
             </p>
           </div>
         </div>

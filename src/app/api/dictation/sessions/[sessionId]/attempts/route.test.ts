@@ -10,6 +10,17 @@ const mocks = vi.hoisted(() => ({
   sessionFindOne: vi.fn(),
 }))
 
+// Route handlers read the learner's language from the locale cookie, which
+// only exists inside a request: serve the English catalogue here.
+vi.mock('@/i18n/server', async () => {
+  const { en } =
+    await vi.importActual<typeof import('@/i18n/messages/en')>(
+      '@/i18n/messages/en'
+    )
+
+  return { getLocale: async () => 'en', getMessages: async () => en }
+})
+
 vi.mock('@/lib/db/connectDatabase', () => ({
   connectDatabase: vi.fn(async () => undefined),
 }))
@@ -294,7 +305,7 @@ describe('POST /api/dictation/sessions/[sessionId]/attempts', () => {
     expect(response.status).toBe(500)
   })
 
-  it('passes an owner mismatch through as a 409', async () => {
+  it('answers an owner mismatch as a 409 in the learner language', async () => {
     mocks.requirePracticeActor.mockRejectedValueOnce(
       Object.assign(new Error('Signed in as someone else.'), { status: 409 })
     )
@@ -303,7 +314,7 @@ describe('POST /api/dictation/sessions/[sessionId]/attempts', () => {
 
     expect(response.status).toBe(409)
     await expect(response.json()).resolves.toEqual({
-      message: 'Signed in as someone else.',
+      message: 'This change was made for a different account. Reload the page.',
     })
   })
 })

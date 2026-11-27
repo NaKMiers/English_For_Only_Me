@@ -22,6 +22,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { useMessages } from '@/i18n/client'
 import type {
   AnswerTextSize,
   VideoSize,
@@ -70,6 +71,8 @@ export function DictationControls({
   totalSegments,
   videoSize,
 }: Props) {
+  const t = useMessages()
+  const text = t.dictation.controls
   const [isRestartConfirmOpen, setIsRestartConfirmOpen] = useState(false)
 
   return (
@@ -80,7 +83,7 @@ export function DictationControls({
     <div className="border-line bg-surface rounded-control flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1.5 border px-2 py-1.5 max-sm:border-0 max-sm:bg-transparent max-sm:p-0 max-sm:shadow-none!">
       <div className="flex min-w-0 items-center gap-1">
         <IconButton
-          label="Replay current sentence"
+          label={text.replay}
           disabled={!canReplay}
           onClick={onReplay}
           className={ICON_BUTTON_CLASS_NAME}
@@ -91,7 +94,7 @@ export function DictationControls({
           />
         </IconButton>
         <IconButton
-          label="Rewind to first segment"
+          label={text.rewind}
           onClick={onGoToFirstSegment}
           className={ICON_BUTTON_CLASS_NAME}
         >
@@ -101,7 +104,7 @@ export function DictationControls({
           />
         </IconButton>
         <IconButton
-          label="Previous segment"
+          label={text.previous}
           disabled={!canGoPrevious}
           onClick={onGoPrevious}
           className={ICON_BUTTON_CLASS_NAME}
@@ -112,13 +115,13 @@ export function DictationControls({
           />
         </IconButton>
         <span
-          aria-label="Current segment"
+          aria-label={text.current}
           className="border-line bg-tint rounded-control inline-flex min-h-8 items-center border px-2 font-sans text-xs font-semibold tabular-nums"
         >
           {currentIndex + 1} / {totalSegments}
         </span>
         <IconButton
-          label="Next segment"
+          label={text.next}
           disabled={!canGoNext}
           onClick={onGoNext}
           className={ICON_BUTTON_CLASS_NAME}
@@ -140,7 +143,7 @@ export function DictationControls({
           videoSize={videoSize}
         />
         <IconButton
-          label="Restart progress"
+          label={text.restart}
           onClick={() => setIsRestartConfirmOpen(true)}
           className={ICON_BUTTON_CLASS_NAME}
         >
@@ -150,7 +153,7 @@ export function DictationControls({
           />
         </IconButton>
         <IconButton
-          label={isVideoHidden ? 'Show video' : 'Hide video'}
+          label={isVideoHidden ? text.showVideo : text.hideVideo}
           onClick={onToggleVideo}
           className={ICON_BUTTON_CLASS_NAME}
         >
@@ -175,11 +178,10 @@ export function DictationControls({
         <DialogContent className="border-line bg-surface rounded-panel border">
           <DialogHeader>
             <DialogTitle className="font-sans text-xl leading-tight font-semibold tracking-normal">
-              Restart this exercise?
+              {text.restartTitle}
             </DialogTitle>
             <DialogDescription className="text-ink-soft text-base leading-7 font-normal">
-              This clears your typed answers and takes you back to the first
-              segment. Your saved accuracy stats stay untouched.
+              {text.restartDescription}
             </DialogDescription>
           </DialogHeader>
 
@@ -189,7 +191,7 @@ export function DictationControls({
               tone="paper"
               onClick={() => setIsRestartConfirmOpen(false)}
             >
-              Cancel
+              {t.common.actions.cancel}
             </ActionButton>
             <ActionButton
               type="button"
@@ -198,7 +200,7 @@ export function DictationControls({
                 onRestart()
               }}
             >
-              Restart
+              {text.restartConfirm}
             </ActionButton>
           </DialogFooter>
         </DialogContent>

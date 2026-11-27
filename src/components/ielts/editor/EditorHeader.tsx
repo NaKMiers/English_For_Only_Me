@@ -27,11 +27,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { useMessages } from '@/i18n/client'
+import { format, plural } from '@/i18n/format'
 import { cn } from '@/lib/utils'
 import type { IeltsConsistencyReport } from '@/modules/ielts/consistency/checkTest'
 import type { IeltsAdminTest } from '@/modules/ielts/tests/testService'
 
-import { countLabel, MetaChip } from './fields'
+import { MetaChip } from './fields'
 
 const STATUS_TONES = {
   draft: 'warn',
@@ -81,23 +83,28 @@ export function EditorHeader({
   report,
   test,
 }: Props) {
+  const t = useMessages()
+  const copy = t.ieltsEditor.header
+  const actions = t.ieltsEditor.actions
   const errors = report.errors.length
   const warnings = report.warnings.length
   const generating = Boolean(busy?.startsWith('gen:'))
+  const errorCount = plural(t.ieltsEditor.counts.error, errors)
+  const warningCount = plural(t.ieltsEditor.counts.warning, warnings)
 
   return (
     <header className="border-line bg-surface rounded-panel flex min-w-0 shrink-0 flex-wrap items-center gap-x-4 gap-y-2 border px-3 py-2">
       <div className="grid min-w-0 gap-1">
         <div className="flex min-w-0 items-baseline gap-1">
           <nav
-            aria-label="Breadcrumb"
+            aria-label={copy.breadcrumb}
             className="text-muted-foreground flex shrink-0 items-center gap-1 font-sans text-xs font-semibold"
           >
             <Link
               className="hover:text-ink underline-offset-2 hover:underline"
               href="/admin"
             >
-              Admin
+              {t.common.auth.admin}
             </Link>
             <span aria-hidden="true">/</span>
             <Link
@@ -112,17 +119,21 @@ export function EditorHeader({
             className="min-w-0 truncate font-sans text-lg leading-tight font-semibold"
             title={test.slug}
           >
-            {test.title || 'Untitled test'}
+            {test.title || copy.untitled}
           </h1>
         </div>
         <div className="flex flex-wrap items-center gap-1">
-          <MetaChip tone={STATUS_TONES[test.status]}>{test.status}</MetaChip>
-          <MetaChip>
-            {test.track === 'academic' ? 'Academic' : 'General'}
+          <MetaChip tone={STATUS_TONES[test.status]}>
+            {t.ieltsEditor.status[test.status]}
           </MetaChip>
+          <MetaChip>{t.ieltsEditor.tracks[test.track]}</MetaChip>
           {test.series ? <MetaChip>{test.series}</MetaChip> : null}
-          <MetaChip>Band {test.targetBand.toFixed(1)}</MetaChip>
-          <MetaChip>{test.source}</MetaChip>
+          <MetaChip>
+            {format(t.ieltsEditor.fields.band, {
+              band: test.targetBand.toFixed(1),
+            })}
+          </MetaChip>
+          <MetaChip>{t.ieltsEditor.sources[test.source]}</MetaChip>
           {test.tags.length ? (
             <MetaChip
               className="normal-case"
@@ -154,7 +165,7 @@ export function EditorHeader({
               tone="paper"
               type="button"
             >
-              Stop
+              {copy.stop}
             </ExamButton>
           ) : (
             <ExamButton
@@ -167,17 +178,20 @@ export function EditorHeader({
                 />
               }
               onClick={onGenerateMissing}
-              title="Generate every missing section"
+              title={copy.generateMissingTitle}
               tone="ink"
               type="button"
             >
-              Missing ({pendingCount})
+              {format(copy.missing, { count: pendingCount })}
             </ExamButton>
           )
         ) : null}
         {/* Opens the full check report: plain button styled as a chip. */}
         <button
-          aria-label={`${countLabel(errors, 'error')}, ${countLabel(warnings, 'warning')}`}
+          aria-label={format(copy.checksLabel, {
+            errors: errorCount,
+            warnings: warningCount,
+          })}
           className={cn(
             'border-line rounded-control soft-press inline-flex min-h-9 items-center gap-2 border px-2.5 font-sans text-xs font-semibold tabular-nums',
             errors
@@ -187,7 +201,10 @@ export function EditorHeader({
                 : 'bg-sky-100 text-sky-950'
           )}
           onClick={onOpenChecks}
-          title={`${countLabel(errors, 'error')} · ${countLabel(warnings, 'warning')}`}
+          title={format(copy.checksTitle, {
+            errors: errorCount,
+            warnings: warningCount,
+          })}
           type="button"
         >
           {errors || warnings ? (
@@ -213,7 +230,7 @@ export function EditorHeader({
                 aria-hidden="true"
                 className="size-4"
               />
-              All clear
+              {copy.allClear}
             </>
           )}
         </button>
@@ -228,11 +245,11 @@ export function EditorHeader({
               />
             }
             onClick={onPublish}
-            title={errors ? 'Fix the errors first' : undefined}
+            title={errors ? copy.fixErrorsFirst : undefined}
             tone="ink"
             type="button"
           >
-            {busy === 'publish' ? 'Publishing...' : 'Publish'}
+            {busy === 'publish' ? actions.publishing : actions.publish}
           </ExamButton>
         ) : test.status === 'archived' ? (
           <ExamButton
@@ -248,15 +265,15 @@ export function EditorHeader({
             tone="ink"
             type="button"
           >
-            {busy === 'unarchive' ? 'Publishing...' : 'Publish again'}
+            {busy === 'unarchive' ? actions.publishing : actions.publishAgain}
           </ExamButton>
         ) : null}
         <DropdownMenu>
           <DropdownMenuTrigger
-            aria-label="More test actions"
+            aria-label={copy.moreActions}
             className="border-line bg-surface hover:bg-tint rounded-control soft-press grid size-9 shrink-0 place-items-center border disabled:opacity-50"
             disabled={busy !== null && !generating}
-            title="More"
+            title={copy.more}
           >
             <EllipsisVertical
               aria-hidden="true"
@@ -269,21 +286,21 @@ export function EditorHeader({
           >
             <DropdownMenuItem onClick={onEditDetails}>
               <Pencil aria-hidden="true" />
-              Edit details
+              {copy.editDetails}
             </DropdownMenuItem>
             {test.status === 'published' ? (
               <DropdownMenuItem render={<Link href={`/ielts/${test.slug}`} />}>
                 <Eye aria-hidden="true" />
-                View as learner
+                {actions.viewAsLearner}
               </DropdownMenuItem>
             ) : null}
             <DropdownMenuItem onClick={onOpenVocab}>
               <BookOpen aria-hidden="true" />
-              Vocabulary
+              {copy.vocabulary}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={onOpenLog}>
               <ScrollText aria-hidden="true" />
-              AI log ({test.generationLog.length})
+              {format(copy.aiLog, { count: test.generationLog.length })}
             </DropdownMenuItem>
             {test.status === 'published' ? (
               <>
@@ -293,7 +310,7 @@ export function EditorHeader({
                   onClick={onArchive}
                 >
                   <Archive aria-hidden="true" />
-                  Archive
+                  {actions.archive}
                 </DropdownMenuItem>
               </>
             ) : (
@@ -305,7 +322,7 @@ export function EditorHeader({
                   variant="destructive"
                 >
                   <Trash2 aria-hidden="true" />
-                  Delete test
+                  {actions.deleteTest}
                 </DropdownMenuItem>
               </>
             )}

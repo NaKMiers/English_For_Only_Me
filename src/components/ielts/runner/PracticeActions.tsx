@@ -12,6 +12,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { IconButton } from '@/components/ui/IconButton'
+import { useMessages } from '@/i18n/client'
+import { format } from '@/i18n/format'
 import { cn } from '@/lib/utils'
 
 import { ExamButton } from '../ui'
@@ -35,6 +37,8 @@ export function CheckButton({
   /** "7/10" for a part, "Band 6.5" for a task. */
   score?: string | null
 }) {
+  const t = useMessages().ielts.check
+
   return (
     <ExamButton
       className={cn('h-9 min-h-9 border px-3', className)}
@@ -56,7 +60,7 @@ export function CheckButton({
       tone="ink"
       type="button"
     >
-      {busy ? 'Checking...' : label}
+      {busy ? t.checking : label}
       {score && !busy ? (
         <span className="rounded-tag bg-surface/20 ml-2 px-1.5 text-xs tabular-nums">
           {score}
@@ -80,6 +84,7 @@ export function ResetPartButton({
   name: string
   onReset: () => void
 }) {
+  const t = useMessages().ielts.reset
   const [open, setOpen] = useState(false)
 
   return (
@@ -87,7 +92,7 @@ export function ResetPartButton({
       <IconButton
         className="rounded-tag size-9 border"
         disabled={disabled}
-        label={`Reset ${name}`}
+        label={format(t.label, { name })}
         onClick={() => setOpen(true)}
         type="button"
       >
@@ -102,10 +107,8 @@ export function ResetPartButton({
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Reset {name}?</DialogTitle>
-            <DialogDescription>
-              Every answer in {name} is cleared. This cannot be undone.
-            </DialogDescription>
+            <DialogTitle>{format(t.title, { name })}</DialogTitle>
+            <DialogDescription>{format(t.body, { name })}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <ExamButton
@@ -113,7 +116,7 @@ export function ResetPartButton({
               tone="paper"
               type="button"
             >
-              Keep answers
+              {t.keep}
             </ExamButton>
             <ExamButton
               onClick={() => {
@@ -123,7 +126,7 @@ export function ResetPartButton({
               tone="danger"
               type="button"
             >
-              Reset {name}
+              {format(t.confirm, { name })}
             </ExamButton>
           </DialogFooter>
         </DialogContent>

@@ -16,6 +16,7 @@ import type {
 import {
   planGrammarSessionWrite,
   type ActorGrammarProgress,
+  type GrammarSessionErrorCode,
   type GrammarSessionResult,
   type GrammarSessionSubmission,
   type GrammarSessionWritePlan,
@@ -140,7 +141,12 @@ async function applyWritePlan(
 
 export type RecordGrammarSessionOutcome =
   | { ok: true; result: GrammarSessionResult; replayed: boolean }
-  | { ok: false; status: 400 | 409 | 503; message: string }
+  | {
+      ok: false
+      status: 400 | 409 | 503
+      code: GrammarSessionErrorCode
+      message: string
+    }
 
 /** A claim older than this was abandoned mid-write; the key may be retried. */
 const STALE_CLAIM_MS = 60_000
@@ -198,6 +204,7 @@ export async function recordGrammarSession({
 
     if (now.getTime() - claimedAt < STALE_CLAIM_MS)
       return {
+        code: 'busy',
         message: 'This result is still being saved.',
         ok: false,
         status: 503,

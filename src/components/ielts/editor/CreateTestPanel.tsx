@@ -4,6 +4,8 @@ import { FilePenLine, LoaderCircle, Plus, Sparkles } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { type FormEvent, useState } from 'react'
 
+import { useMessages } from '@/i18n/client'
+import { format } from '@/i18n/format'
 import { cn } from '@/lib/utils'
 import {
   IELTS_SECTION_KEYS,
@@ -14,24 +16,15 @@ import {
 } from '@/modules/ielts/constants'
 import { createIeltsTestApi } from '@/requests/ieltsAdminApi'
 
+import { apiErrorText } from './apiErrorText'
 import { AreaField, BandField, TextField } from './fields'
 import { ExamButton, ExamCard, segmentClass } from '@/components/ielts/ui'
 
 type Mode = 'manual' | 'generate'
 
 const MODES = [
-  {
-    hint: 'A blank draft you fill in section by section.',
-    icon: FilePenLine,
-    label: 'Manual',
-    value: 'manual',
-  },
-  {
-    hint: 'AI writes every section from your topics.',
-    icon: Sparkles,
-    label: 'Generate with AI',
-    value: 'generate',
-  },
+  { icon: FilePenLine, value: 'manual' },
+  { icon: Sparkles, value: 'generate' },
 ] as const
 
 const SECTION_COUNT = IELTS_SECTION_KEYS.length
@@ -49,6 +42,8 @@ function splitKey(key: string) {
  * the order AI fills them.
  */
 export function CreateTestPanel({ className }: { className?: string }) {
+  const t = useMessages()
+  const copy = t.ieltsEditor.create
   const router = useRouter()
   const [mode, setMode] = useState<Mode>('manual')
   const [title, setTitle] = useState('')
@@ -88,9 +83,7 @@ export function CreateTestPanel({ className }: { className?: string }) {
 
       router.push(`/admin/ielts/${test.id}`)
     } catch (caught) {
-      setError(
-        caught instanceof Error ? caught.message : "Couldn't create the test."
-      )
+      setError(apiErrorText(caught, t, copy.failed))
       setBusy(false)
     }
   }
@@ -98,20 +91,21 @@ export function CreateTestPanel({ className }: { className?: string }) {
   return (
     <ExamCard
       className={className}
-      eyebrow="Create test"
-      title="New test"
+      eyebrow={copy.eyebrow}
+      title={copy.title}
     >
       <form
         className="grid gap-4"
         onSubmit={event => void create(event)}
       >
         <div
-          aria-label="How to build it"
+          aria-label={copy.modeGroup}
           className="grid gap-2"
           role="group"
         >
-          {MODES.map(({ hint, icon: Icon, label, value }) => {
+          {MODES.map(({ icon: Icon, value }) => {
             const active = mode === value
+            const { hint, label } = copy.modes[value]
 
             return (
               // Segmented toggle (aria-pressed): documented raw exception.
@@ -155,17 +149,17 @@ export function CreateTestPanel({ className }: { className?: string }) {
         </div>
 
         <TextField
-          label="Test title"
+          label={t.ieltsEditor.fields.testTitle}
           onChange={setTitle}
-          placeholder={
-            mode === 'generate' ? 'Leave blank to auto-name' : 'New test'
-          }
+          placeholder={mode === 'generate' ? copy.autoName : 'New test'}
           value={title}
         />
 
         <div className="grid grid-cols-2 gap-3">
           <div className="grid gap-1">
-            <span className="font-sans text-xs font-semibold">Track</span>
+            <span className="font-sans text-xs font-semibold">
+              {t.ieltsEditor.fields.track}
+            </span>
             <div className="flex gap-1.5">
               {IELTS_TRACKS.map(value => (
                 // Segmented toggle (aria-pressed): documented raw exception.
@@ -179,7 +173,7 @@ export function CreateTestPanel({ className }: { className?: string }) {
                   onClick={() => setTrack(value)}
                   type="button"
                 >
-                  {value}
+                  {t.ieltsEditor.tracks[value]}
                 </button>
               ))}
             </div>
@@ -193,15 +187,18 @@ export function CreateTestPanel({ className }: { className?: string }) {
         {mode === 'generate' ? (
           <>
             <AreaField
-              hint={`${topicList.length}/${SECTION_COUNT} topics. One per line, in section order. Leave blank and AI picks.`}
-              label="Suggested topics"
+              hint={format(copy.topicsHint, {
+                count: topicList.length,
+                total: SECTION_COUNT,
+              })}
+              label={copy.topics}
               onChange={setTopics}
               rows={4}
               value={topics}
             />
             <div className="grid gap-1.5">
               <span className="font-sans text-xs font-semibold">
-                Section plan
+                {copy.plan}
               </span>
               <ol className="border-line/25 rounded-control grid gap-1 border border-dashed p-2">
                 {IELTS_SECTION_KEYS.map((key, index) => {
@@ -223,7 +220,7 @@ export function CreateTestPanel({ className }: { className?: string }) {
                         )}
                         title={topic}
                       >
-                        {topic || 'AI picks'}
+                        {topic || copy.aiPicks}
                       </span>
                     </li>
                   )
@@ -233,8 +230,7 @@ export function CreateTestPanel({ className }: { className?: string }) {
           </>
         ) : (
           <p className="bg-tint rounded-control text-muted-foreground p-3 text-xs font-semibold">
-            Starts with {SECTION_COUNT} empty sections (4 Listening, 3 Reading,
-            2 Writing). Open the editor to write or generate each one.
+            {format(copy.manualHint, { count: SECTION_COUNT })}
           </p>
         )}
 
@@ -251,9 +247,11 @@ export function CreateTestPanel({ className }: { className?: string }) {
             pinned to its bottom edge. */}
         <div className="border-line/25 bg-surface sticky -bottom-4 -mb-4 grid gap-2 border-t border-dashed pt-4 pb-4">
           <p className="text-muted-foreground text-xs font-semibold">
-            {SECTION_COUNT} sections ·{' '}
-            {track === 'academic' ? 'Academic' : 'General'} · Band{' '}
-            {targetBand.toFixed(1)}
+            {format(copy.summary, {
+              count: SECTION_COUNT,
+              track: t.ieltsEditor.tracks[track],
+              band: targetBand.toFixed(1),
+            })}
           </p>
           <ExamButton
             className="w-full"
@@ -274,7 +272,7 @@ export function CreateTestPanel({ className }: { className?: string }) {
             tone="ink"
             type="submit"
           >
-            {busy ? 'Creating...' : 'Create draft'}
+            {busy ? copy.creating : copy.submit}
           </ExamButton>
         </div>
       </form>

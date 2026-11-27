@@ -14,6 +14,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { PageTag } from '@/components/ui/PageTag'
+import { format } from '@/i18n/format'
+import { useMessages } from '@/i18n/client'
 import {
   Select,
   SelectContent,
@@ -30,10 +32,7 @@ import {
   DICTATION_LEVELS,
   type DictationLevel,
 } from '@/modules/dictation/levels'
-import {
-  getDictationStatusLabel,
-  getDictationStatusTone,
-} from '@/modules/dictation/statusDisplay'
+import { getDictationStatusTone } from '@/modules/dictation/statusDisplay'
 import type { DictationVideoStatus } from '@/modules/dictation/types'
 
 import { ConfirmSubmitButton } from './ConfirmSubmitButton'
@@ -46,6 +45,7 @@ function AdminVideoLevelBadge({
   videoId: string
   level: string | null
 }) {
+  const t = useMessages()
   const [, startTransition] = useTransition()
 
   return (
@@ -74,10 +74,10 @@ function AdminVideoLevelBadge({
               : 'bg-surface text-ink-soft'
           )}
         >
-          <SelectValue placeholder="No level" />
+          <SelectValue placeholder={t.admin.videoRow.noLevel} />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="">No level</SelectItem>
+          <SelectItem value="">{t.admin.videoRow.noLevel}</SelectItem>
           {DICTATION_LEVELS.map(option => (
             <SelectItem
               key={option}
@@ -108,11 +108,13 @@ function AdminVideoActionsMenu({
   video: AdminVideoItem
   children?: ReactNode
 }) {
+  const t = useMessages()
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        aria-label={`Actions for ${video.title}`}
-        title="Actions"
+        aria-label={format(t.admin.menu.triggerFor, { title: video.title })}
+        title={t.admin.menu.trigger}
         onClick={event => event.stopPropagation()}
         onKeyDown={event => event.stopPropagation()}
         className="border-line bg-surface hover:bg-tint rounded-control grid size-9 shrink-0 place-items-center border transition-colors"
@@ -132,7 +134,7 @@ function AdminVideoActionsMenu({
           render={<Link href={`/admin/dictation/videos/${video.id}/edit`} />}
         >
           <Pencil aria-hidden="true" />
-          Edit
+          {t.common.actions.edit}
         </DropdownMenuItem>
         {children}
         <DropdownMenuSeparator />
@@ -148,16 +150,18 @@ function AdminVideoActionsMenu({
             value={video.id}
           />
           <ConfirmSubmitButton
-            confirmTitle="Delete video?"
-            confirmMessage={`Move "${video.title}" to the trash? It disappears from admin and app lists until you restore it.`}
-            confirmLabel="Move to trash"
+            confirmTitle={t.admin.videoRow.deleteTitle}
+            confirmMessage={format(t.admin.videoRow.deleteMessage, {
+              title: video.title,
+            })}
+            confirmLabel={t.admin.videoRow.deleteConfirm}
             className="focus:bg-brand focus:text-surface text-brand hover:bg-brand hover:text-surface rounded-tag flex min-h-11 w-full items-center gap-2 px-3 font-sans text-sm font-semibold whitespace-nowrap transition-colors"
           >
             <Trash2
               aria-hidden="true"
               className="size-4"
             />
-            Delete
+            {t.common.actions.delete}
           </ConfirmSubmitButton>
         </form>
       </DropdownMenuContent>
@@ -210,6 +214,8 @@ export function AdminVideoRow({
   meta?: ReactNode
   menuActions?: ReactNode
 }) {
+  const t = useMessages()
+
   function startDrag(event: DragEvent<HTMLElement>) {
     onDragStartData(event.dataTransfer)
     event.dataTransfer.effectAllowed = 'move'
@@ -296,7 +302,7 @@ export function AdminVideoRow({
           tone={getDictationStatusTone(video.status)}
           className="shrink-0"
         >
-          {getDictationStatusLabel(video.status)}
+          {t.admin.status[video.status]}
         </PageTag>
       )}
       <div className="flex shrink-0 items-center">

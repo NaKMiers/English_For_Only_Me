@@ -1,12 +1,15 @@
 import { PageShell } from '@/components/common/PageShell'
 import { Skeleton } from '@/components/ui/skeleton'
+import { getMessages } from '@/i18n/server'
 
-export default function GrammarLoading() {
+export default async function GrammarLoading() {
+  const t = await getMessages()
+
   return (
     <PageShell>
       <div
         aria-busy
-        aria-label="Loading the grammar path"
+        aria-label={t.grammar.loading}
         className="grid gap-6 p-4 sm:p-6 lg:p-8"
       >
         <Skeleton className="rounded-control h-10 w-64" />

@@ -16,6 +16,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { useMessages } from '@/i18n/client'
+import { format, plural } from '@/i18n/format'
 import { cn } from '@/lib/utils'
 import { LISTENING_VOICES } from '@/modules/ielts/constants'
 import type {
@@ -31,10 +33,10 @@ import type {
 import { uploadIeltsFileApi } from '@/requests/ieltsAdminApi'
 
 import { AdminAudioPlayer } from './AdminAudioPlayer'
+import { apiErrorText } from './apiErrorText'
 import {
   AddButton,
   AreaField,
-  countLabel,
   Disclosure,
   EntryPager,
   INNER_BOX_CLASS,
@@ -71,7 +73,7 @@ function countWords(text: string) {
 }
 
 /** First words of a block, for a closed row's summary. */
-function snippet(text: string, empty = 'Empty') {
+function snippet(text: string, empty: string) {
   const clean = text.trim().replace(/\s+/g, ' ')
 
   return clean
@@ -98,6 +100,9 @@ function ListeningForm({
   onChange: (material: IeltsListeningMaterial) => void
   onGenerateAudio?: () => void
 }) {
+  const t = useMessages()
+  const copy = t.ieltsEditor.form
+  const counts = t.ieltsEditor.counts
   const fileRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState('')
@@ -115,7 +120,7 @@ function ListeningForm({
   )
   const pager = (
     <EntryPager
-      label="Line"
+      label={copy.line}
       onPageChange={setPage}
       page={safePage}
       pageSize={LINE_PAGE_SIZE}
@@ -141,7 +146,7 @@ function ListeningForm({
         },
       })
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'Upload failed.')
+      setError(apiErrorText(caught, t, t.ieltsEditor.upload.failed))
     } finally {
       setUploading(false)
     }
@@ -160,18 +165,18 @@ function ListeningForm({
                 {formatDuration(material.audio.durationSec)}
               </MetaChip>
               {material.audio.lineOffsetsSec.length
-                ? 'per-line timings'
-                : 'no per-line timings'}
+                ? copy.timings
+                : copy.noTimings}
             </>
           ) : (
-            <MetaChip tone="warn">No audio</MetaChip>
+            <MetaChip tone="warn">{copy.noAudio}</MetaChip>
           )
         }
-        title="Context & audio"
+        title={copy.contextAudio}
         variant="block"
       >
         <AreaField
-          label="Context (who speaks, where)"
+          label={copy.context}
           onChange={context => onChange({ ...material, context })}
           rows={2}
           value={material.context}
@@ -189,7 +194,7 @@ function ListeningForm({
                 aria-hidden="true"
                 className="size-4 shrink-0"
               />
-              No audio yet. Generate it from the script or upload an mp3.
+              {copy.noAudioYet}
             </p>
           )}
           <div className="flex flex-wrap items-center gap-2">
@@ -215,10 +220,10 @@ function ListeningForm({
                 type="button"
               >
                 {audioBusy
-                  ? 'Generating...'
+                  ? t.ieltsEditor.genStatus.generating
                   : material.audio
-                    ? 'Regenerate'
-                    : 'Generate audio'}
+                    ? copy.regenerate
+                    : copy.generateAudio}
               </ExamButton>
             ) : null}
             {/* File input behind an sr-only trigger: documented raw exception. */}
@@ -256,15 +261,15 @@ function ListeningForm({
               type="button"
             >
               {uploading
-                ? 'Uploading...'
+                ? t.ieltsEditor.upload.uploading
                 : material.audio
-                  ? 'Replace mp3'
-                  : 'Upload mp3'}
+                  ? copy.replaceMp3
+                  : copy.uploadMp3}
             </ExamButton>
             {material.audio ? (
               <ExamIconButton
                 className="hover:bg-brand hover:text-surface text-brand ml-auto size-9 border"
-                label="Remove audio"
+                label={copy.removeAudio}
                 onClick={() => onChange({ ...material, audio: null })}
                 type="button"
               >
@@ -287,8 +292,11 @@ function ListeningForm({
       </Disclosure>
       <Disclosure
         defaultOpen={material.lines.length === 0}
-        meta={`${countLabel(material.lines.length, 'line')} · ${countLabel(speakers, 'speaker')} · first line is 0`}
-        title="Script"
+        meta={format(copy.scriptMeta, {
+          lines: plural(counts.line, material.lines.length),
+          speakers: plural(counts.speaker, speakers),
+        })}
+        title={copy.script}
         variant="block"
       >
         {pager}
@@ -313,13 +321,13 @@ function ListeningForm({
                   <MetaChip className="mb-2 tabular-nums">{index}</MetaChip>
                   <div className="grid min-w-0 flex-1 gap-2 @xs:grid-cols-2">
                     <TextField
-                      label="Speaker"
+                      label={copy.speaker}
                       onChange={speaker => setLine({ speaker })}
                       value={line.speaker}
                     />
                     <div className="grid gap-1">
                       <span className="font-sans text-xs font-semibold">
-                        Voice
+                        {copy.voice}
                       </span>
                       <Select
                         onValueChange={voice =>
@@ -328,7 +336,7 @@ function ListeningForm({
                         value={line.voice}
                       >
                         <SelectTrigger
-                          aria-label={`Voice for line ${index}`}
+                          aria-label={format(copy.voiceFor, { index })}
                           className="w-full data-[size=default]:min-h-10 data-[size=default]:py-1.5"
                         >
                           <SelectValue />
@@ -339,7 +347,7 @@ function ListeningForm({
                               key={voice.id}
                               value={voice.id}
                             >
-                              {voice.id} ({voice.hint})
+                              {voice.id} ({copy.voiceHints[voice.hint]})
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -347,7 +355,7 @@ function ListeningForm({
                     </div>
                   </div>
                   <RowActions
-                    label={`Remove line ${index}`}
+                    label={format(copy.removeLine, { index })}
                     onRemove={() =>
                       onChange({
                         ...material,
@@ -357,7 +365,7 @@ function ListeningForm({
                   />
                 </div>
                 <AreaField
-                  label={`Line ${index} text`}
+                  label={format(copy.lineText, { index })}
                   onChange={text => setLine({ text })}
                   rows={2}
                   value={line.text}
@@ -385,7 +393,7 @@ function ListeningForm({
             })
           }}
         >
-          Add line
+          {copy.addLine}
         </AddButton>
       </Disclosure>
     </>
@@ -399,6 +407,8 @@ function ReadingForm({
   material: IeltsReadingMaterial
   onChange: (material: IeltsReadingMaterial) => void
 }) {
+  const t = useMessages()
+  const copy = t.ieltsEditor.form
   const words = material.paragraphs
     .map(paragraph => countWords(paragraph.text))
     .reduce((sum, count) => sum + count, 0)
@@ -409,23 +419,27 @@ function ReadingForm({
       meta={
         <>
           <MetaChip tone={words >= 700 && words <= 1000 ? 'ok' : 'warn'}>
-            {words} words
+            {plural(t.ieltsEditor.counts.word, words)}
           </MetaChip>
-          {countLabel(material.paragraphs.length, 'paragraph')} · aim for
-          700-1000 words
+          {format(copy.passageMeta, {
+            paragraphs: plural(
+              t.ieltsEditor.counts.paragraph,
+              material.paragraphs.length
+            ),
+          })}
         </>
       }
-      title="Passage"
+      title={copy.passage}
       variant="block"
     >
       <div className="grid gap-2 sm:grid-cols-2">
         <TextField
-          label="Passage title"
+          label={copy.passageTitle}
           onChange={title => onChange({ ...material, title })}
           value={material.title}
         />
         <TextField
-          label="Subtitle"
+          label={copy.subtitle}
           onChange={subtitle => onChange({ ...material, subtitle })}
           value={material.subtitle}
         />
@@ -436,7 +450,7 @@ function ReadingForm({
             <Disclosure
               actions={
                 <RowActions
-                  label={`Remove paragraph ${index}`}
+                  label={format(copy.removeParagraph, { index })}
                   onRemove={() =>
                     onChange({
                       ...material,
@@ -449,21 +463,27 @@ function ReadingForm({
               meta={
                 <>
                   <span className="tabular-nums">
-                    {countWords(paragraph.text)}w
+                    {format(copy.wordsShort, {
+                      count: countWords(paragraph.text),
+                    })}
                   </span>
-                  <span className="truncate">{snippet(paragraph.text)}</span>
+                  <span className="truncate">
+                    {snippet(paragraph.text, copy.empty)}
+                  </span>
                 </>
               }
               title={
                 <span className="flex items-center gap-1.5">
                   <MetaChip className="tabular-nums">{index}</MetaChip>
-                  {paragraph.label ? `Paragraph ${paragraph.label}` : null}
+                  {paragraph.label
+                    ? format(copy.paragraph, { label: paragraph.label })
+                    : null}
                 </span>
               }
             >
               <div className="grid gap-2 @md:grid-cols-[6rem_minmax(0,1fr)] @md:items-start">
                 <TextField
-                  label="Label"
+                  label={copy.label}
                   onChange={label =>
                     onChange({
                       ...material,
@@ -476,7 +496,7 @@ function ReadingForm({
                   value={paragraph.label}
                 />
                 <AreaField
-                  label="Text"
+                  label={copy.text}
                   onChange={text =>
                     onChange({
                       ...material,
@@ -510,20 +530,14 @@ function ReadingForm({
           })
         }
       >
-        Add paragraph
+        {copy.addParagraph}
       </AddButton>
     </Disclosure>
   )
 }
 
-const VISUAL_LABELS = {
-  none: 'None',
-  line: 'Line graph',
-  bar: 'Bar chart',
-  pie: 'Pie chart',
-  table: 'Table',
-  image: 'Image (process, map)',
-} as const
+/** Labels come from `ieltsEditor.visual.kinds`, in this order. */
+const VISUAL_KINDS = ['none', 'line', 'bar', 'pie', 'table', 'image'] as const
 
 const EMPTY_CHART: IeltsChartVisual = {
   kind: 'line',
@@ -542,17 +556,19 @@ function VisualForm({
   onChange: (visual: IeltsVisual | null) => void
   visual: IeltsVisual | null
 }) {
+  const t = useMessages()
+  const copy = t.ieltsEditor.visual
   const kind = visual?.kind ?? 'none'
 
   return (
     <Disclosure
       defaultOpen={!visual}
-      meta={VISUAL_LABELS[kind]}
-      title="Task 1 visual"
+      meta={copy.kinds[kind]}
+      title={copy.title}
       variant="block"
     >
       <div className="grid gap-1">
-        <span className="font-sans text-xs font-semibold">Task 1 visual</span>
+        <span className="font-sans text-xs font-semibold">{copy.title}</span>
         <Select
           onValueChange={value => {
             const next = String(value ?? 'none')
@@ -569,18 +585,18 @@ function VisualForm({
           value={kind}
         >
           <SelectTrigger
-            aria-label="Visual type"
+            aria-label={copy.type}
             size="sm"
           >
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {Object.entries(VISUAL_LABELS).map(([value, label]) => (
+            {VISUAL_KINDS.map(value => (
               <SelectItem
                 key={value}
                 value={value}
               >
-                {label}
+                {copy.kinds[value]}
               </SelectItem>
             ))}
           </SelectContent>
@@ -589,12 +605,12 @@ function VisualForm({
       {visual?.kind === 'image' ? (
         <>
           <ImageUploadField
-            label="Image URL"
+            label={copy.imageUrl}
             onChange={imageUrl => onChange({ ...visual, imageUrl })}
             value={visual.imageUrl}
           />
           <TextField
-            label="Image description (alt, also used for AI grading)"
+            label={copy.imageAlt}
             onChange={alt => onChange({ ...visual, alt })}
             value={visual.alt}
           />
@@ -603,29 +619,29 @@ function VisualForm({
       {visual && visual.kind !== 'image' ? (
         <>
           <TextField
-            label="Visual title"
+            label={copy.visualTitle}
             onChange={title => onChange({ ...visual, title })}
             value={visual.title}
           />
           <div className="grid gap-2 sm:grid-cols-3">
             <TextField
-              label="X-axis label"
+              label={copy.xLabel}
               onChange={xLabel => onChange({ ...visual, xLabel })}
               value={visual.xLabel}
             />
             <TextField
-              label="Y-axis label"
+              label={copy.yLabel}
               onChange={yLabel => onChange({ ...visual, yLabel })}
               value={visual.yLabel}
             />
             <TextField
-              label="Unit"
+              label={copy.unit}
               onChange={unit => onChange({ ...visual, unit })}
               value={visual.unit}
             />
           </div>
           <ListField
-            label={visual.kind === 'pie' ? 'Slices' : 'X-axis categories'}
+            label={visual.kind === 'pie' ? copy.slices : copy.categories}
             onChange={categories => onChange({ ...visual, categories })}
             separator=","
             value={visual.categories}
@@ -638,7 +654,9 @@ function VisualForm({
               >
                 <TextField
                   className="w-40"
-                  label={visual.kind === 'pie' ? 'Chart name' : 'Series name'}
+                  label={
+                    visual.kind === 'pie' ? copy.chartName : copy.seriesName
+                  }
                   onChange={name =>
                     onChange({
                       ...visual,
@@ -652,7 +670,7 @@ function VisualForm({
                 />
                 <TextField
                   className="min-w-48 flex-1"
-                  label="Values (separated by ,)"
+                  label={copy.values}
                   onChange={text =>
                     onChange({
                       ...visual,
@@ -668,7 +686,7 @@ function VisualForm({
                   value={series.values.join(', ')}
                 />
                 <RowActions
-                  label={`Remove series ${series.name}`}
+                  label={format(copy.removeSeries, { name: series.name })}
                   onRemove={() =>
                     onChange({
                       ...visual,
@@ -687,7 +705,7 @@ function VisualForm({
               })
             }
           >
-            Add data series
+            {copy.addSeries}
           </AddButton>
         </>
       ) : null}
@@ -702,26 +720,31 @@ function WritingForm({
   material: IeltsWritingMaterial
   onChange: (material: IeltsWritingMaterial) => void
 }) {
+  const t = useMessages()
+  const copy = t.ieltsEditor.form
   const sampleWords = countWords(material.sampleAnswer)
 
   return (
     <>
       <Disclosure
         defaultOpen
-        meta={`${countWords(material.prompt)} words · min ${material.minWords} in the answer`}
-        title="Task"
+        meta={format(copy.taskMeta, {
+          words: plural(t.ieltsEditor.counts.word, countWords(material.prompt)),
+          min: material.minWords,
+        })}
+        title={copy.task}
         variant="block"
       >
         <AreaField
-          hint='Start a line with "> " to put it in the exam box.'
-          label="Prompt"
+          hint={copy.promptHint}
+          label={copy.prompt}
           onChange={prompt => onChange({ ...material, prompt })}
           rows={6}
           value={material.prompt}
         />
         <NumberField
           className="w-40"
-          label="Minimum words"
+          label={copy.minWords}
           max={400}
           min={50}
           onChange={minWords => onChange({ ...material, minWords })}
@@ -739,16 +762,16 @@ function WritingForm({
         meta={
           <>
             <MetaChip tone={sampleWords >= material.minWords ? 'ok' : 'warn'}>
-              {sampleWords} words
+              {plural(t.ieltsEditor.counts.word, sampleWords)}
             </MetaChip>
-            learners see it after submitting
+            {copy.sampleMeta}
           </>
         }
-        title="Sample answer"
+        title={copy.sampleAnswer}
         variant="block"
       >
         <AreaField
-          label="Sample answer"
+          label={copy.sampleAnswer}
           onChange={sampleAnswer => onChange({ ...material, sampleAnswer })}
           rows={10}
           value={material.sampleAnswer}
@@ -767,6 +790,8 @@ export function SectionForm({
   section,
   value,
 }: Props) {
+  const t = useMessages()
+  const copy = t.ieltsEditor.form
   const setGroups = (groups: IeltsQuestionGroup[]) =>
     onChange({ ...value, groups })
   const lastNumber =
@@ -778,7 +803,7 @@ export function SectionForm({
   return (
     <div className="grid gap-3">
       <TextField
-        label="Section title"
+        label={copy.sectionTitle}
         onChange={title => onChange({ ...value, title })}
         value={value.title}
       />
@@ -805,8 +830,11 @@ export function SectionForm({
       {section.skill !== 'writing' ? (
         <Disclosure
           defaultOpen
-          meta={`${countLabel(questionCount, 'question')} in ${countLabel(value.groups.length, 'group')}`}
-          title="Questions"
+          meta={format(copy.questionsMeta, {
+            questions: plural(t.ieltsEditor.counts.question, questionCount),
+            groups: plural(t.ieltsEditor.counts.group, value.groups.length),
+          })}
+          title={copy.questions}
           variant="block"
         >
           <ol className="grid gap-2">
@@ -828,7 +856,7 @@ export function SectionForm({
               setGroups([...value.groups, newGroup(lastNumber + 1)])
             }
           >
-            Add question group
+            {copy.addGroup}
           </AddButton>
         </Disclosure>
       ) : null}

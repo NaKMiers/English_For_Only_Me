@@ -7,6 +7,7 @@ import { ContentPanel } from '@/components/common/ContentPanel'
 import { DictationPracticeShell } from '@/components/dictation/DictationPracticeShell'
 import { ActionButton } from '@/components/ui/ActionButton'
 import { hasMongoDbUri } from '@/constants/environments'
+import { getMessages } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { DictationSegmentModel } from '@/models/dictation/DictationSegmentModel'
 import { DictationSessionModel } from '@/models/dictation/DictationSessionModel'
@@ -24,9 +25,13 @@ import { toDictationVideoRecord } from '@/modules/dictation/services/dictationVi
 import { getPracticeActorId } from '@/modules/dictation/services/getCurrentUser'
 import { hasDictationTranscript } from '@/modules/dictation/videoReadiness'
 
-export const metadata: Metadata = {
-  title: 'Dictation Practice',
-  description: 'Practice sentence-level YouTube dictation for IELTS listening.',
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getMessages()
+
+  return {
+    title: t.dictation.meta.practiceTitle,
+    description: t.dictation.meta.practiceDescription,
+  }
 }
 
 export const runtime = 'nodejs'
@@ -37,7 +42,7 @@ interface Props {
   }>
 }
 
-function PracticeSetupState({
+async function PracticeSetupState({
   message,
   title,
   videoId,
@@ -46,35 +51,38 @@ function PracticeSetupState({
   title: string
   videoId?: string | null
 }) {
+  const t = await getMessages()
+  const text = t.dictation.setup
+
   return (
     <PageShell
       topbar={
         <AppTopbar
           activeHref="/dictation"
-          subtitle="Dictation Lab listening module"
+          subtitle={t.dictation.meta.labSubtitle}
         />
       }
     >
       <section className="p-4 sm:p-6 lg:p-8">
         <ContentPanel
-          eyebrow="Practice"
+          eyebrow={t.dictation.practice.emptyEyebrow}
           title={title}
         >
           <p className="text-ink-soft text-base leading-7 font-normal">
             {message}
           </p>
           <div className="flex flex-wrap gap-3">
-            <ActionButton href="/dictation">Back To Dictation Lab</ActionButton>
+            <ActionButton href="/dictation">{text.backToLab}</ActionButton>
             {videoId ? (
               <ActionButton href={`/admin/dictation/videos/${videoId}/edit`}>
-                Add Transcript
+                {text.addTranscript}
               </ActionButton>
             ) : null}
             <ActionButton
               href="/admin/dictation/import"
               tone="paper"
             >
-              Import Video
+              {text.importVideo}
             </ActionButton>
           </div>
         </ContentPanel>
@@ -88,11 +96,14 @@ export default async function Page({ params }: Props) {
 
   if (!/^[a-f\d]{24}$/i.test(videoId)) notFound()
 
+  const t = await getMessages()
+  const text = t.dictation.setup
+
   if (!hasMongoDbUri())
     return (
       <PracticeSetupState
-        title="MongoDB is not configured"
-        message="Set MONGODB_URI on the server before opening a saved practice session."
+        title={text.noDatabaseTitle}
+        message={text.practiceNoDatabase}
       />
     )
 
@@ -132,8 +143,8 @@ export default async function Page({ params }: Props) {
   if (!hasDictationTranscript(videoRecord))
     return (
       <PracticeSetupState
-        title="Transcript is needed"
-        message="Attach an English transcript before opening the practice player for this video."
+        title={text.transcriptNeededTitle}
+        message={text.practiceTranscriptNeeded}
         videoId={videoId}
       />
     )
@@ -155,8 +166,8 @@ export default async function Page({ params }: Props) {
   if (segments.length === 0)
     return (
       <PracticeSetupState
-        title="Segments are not ready"
-        message="This video has no practice segments yet. Segments are built automatically when its transcript is saved - re-open it in admin and save the captions to rebuild."
+        title={text.segmentsNotReadyTitle}
+        message={text.segmentsNotReady}
         videoId={videoId}
       />
     )

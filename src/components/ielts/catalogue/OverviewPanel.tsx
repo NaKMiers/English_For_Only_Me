@@ -8,6 +8,7 @@ import {
   CollapsiblePanel,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
+import { useMessages } from '@/i18n/client'
 import { cn } from '@/lib/utils'
 
 /**
@@ -26,6 +27,7 @@ export function OverviewPanel({
   children?: ReactNode
   heading: ReactNode
 }) {
+  const t = useMessages().ielts.home
   const [open, setOpen] = useState(false)
   const foldable = Boolean(children)
 
@@ -54,9 +56,9 @@ export function OverviewPanel({
           {actions}
           {foldable ? (
             <CollapsibleTrigger
-              aria-label="Show or hide weak spots and recent attempts"
+              aria-label={t.overviewToggle}
               className="group/progress border-line bg-surface hover:bg-tint rounded-control grid size-9 place-items-center border"
-              title="Weak spots and recent attempts"
+              title={t.overviewTitle}
             >
               <ChevronDown
                 aria-hidden="true"

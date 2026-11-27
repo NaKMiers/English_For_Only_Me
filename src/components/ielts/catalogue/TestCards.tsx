@@ -4,6 +4,8 @@ import { BookOpen, ChevronRight, Headphones, PenLine } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
 
+import { useMessages } from '@/i18n/client'
+import { format } from '@/i18n/format'
 import type { IeltsTestBands } from '@/modules/ielts/attempts/testBands'
 import { IELTS_SKILL_LABELS, IELTS_SKILLS } from '@/modules/ielts/constants'
 import type { IeltsCatalogEntry } from '@/modules/ielts/tests/testReaders'
@@ -14,7 +16,7 @@ import {
   sortCatalogue,
   type CatalogueSort,
 } from './catalogueFilters'
-import { groupCatalogue, TRACK_LABELS } from './catalogueGroups'
+import { groupCatalogue } from './catalogueGroups'
 
 interface Props {
   /** Best band per skill for tests already done, keyed by test id. */
@@ -40,6 +42,7 @@ const SORT_OPTIONS: CatalogueSort[] = ['newest', 'oldest', 'title']
  * learner already has a band on shows that best band next to its icon.
  */
 export function TestCards({ bands, catalog }: Props) {
+  const t = useMessages().ielts
   const [query, setQuery] = useState('')
   const [sort, setSort] = useState<CatalogueSort>('newest')
   const [track, setTrack] = useState('all')
@@ -62,21 +65,21 @@ export function TestCards({ bands, catalog }: Props) {
   if (tracks.length > 1)
     filters.push({
       id: 'track',
-      label: 'Test type',
+      label: t.catalogue.testType,
       onChange: setTrack,
       options: [
-        { value: 'all', label: 'All types' },
-        ...tracks.map(value => ({ value, label: TRACK_LABELS[value] })),
+        { value: 'all', label: t.catalogue.allTypes },
+        ...tracks.map(value => ({ value, label: t.tracks[value] })),
       ],
       value: track,
     })
   if (skills.length > 1)
     filters.push({
       id: 'skill',
-      label: 'Has skill',
+      label: t.catalogue.hasSkill,
       onChange: setSkill,
       options: [
-        { value: 'all', label: 'Any skill' },
+        { value: 'all', label: t.catalogue.anySkill },
         ...skills.map(value => ({ value, label: IELTS_SKILL_LABELS[value] })),
       ],
       value: skill,
@@ -96,7 +99,7 @@ export function TestCards({ bands, catalog }: Props) {
 
       {visible.length === 0 ? (
         <p className="text-ink-soft rounded-control bg-tint p-4 text-sm font-normal">
-          No tests match the search or filters.
+          {t.catalogue.noMatch}
         </p>
       ) : null}
 
@@ -138,12 +141,17 @@ export function TestCards({ bands, catalog }: Props) {
                           />
                         )
 
+                      const bestBand = format(t.catalogue.bestBand, {
+                        band: band.toFixed(1),
+                        skill: IELTS_SKILL_LABELS[skill],
+                      })
+
                       return (
                         <span
-                          aria-label={`${IELTS_SKILL_LABELS[skill]}: best band ${band.toFixed(1)}`}
+                          aria-label={bestBand}
                           className="bg-cta text-cta-fg rounded-tag inline-flex items-center gap-1 px-1.5 py-0.5"
                           key={skill}
-                          title={`${IELTS_SKILL_LABELS[skill]}: best band ${band.toFixed(1)}`}
+                          title={bestBand}
                         >
                           <Icon
                             aria-hidden="true"

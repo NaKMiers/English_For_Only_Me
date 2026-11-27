@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
 import { hasMongoDbUri } from '@/constants/environments'
+import { en, type Messages } from '@/i18n/messages/en'
 import {
   VOCAB_ADMIN_ENRICH_DEFAULT_LIMIT,
   VOCAB_ADMIN_ENRICH_MAX_LIMIT,
@@ -29,9 +30,6 @@ export interface VocabApiErrorDecision {
     message: string
   }
 }
-
-export const VOCAB_MISSING_MONGODB_MESSAGE =
-  'MongoDB is not configured. Set MONGODB_URI on the server to use the vocabulary module.'
 
 const objectIdSchema = z
   .string()
@@ -198,75 +196,80 @@ function invalid(message: string): VocabApiErrorDecision & { ok: false } {
   }
 }
 
-export function getMissingVocabMongoResponse() {
+export function getMissingVocabMongoResponse(t: Messages = en) {
   if (hasMongoDbUri()) return null
 
   return {
     status: 500,
     body: {
-      message: VOCAB_MISSING_MONGODB_MESSAGE,
+      message: t.vocabulary.api.missingMongo,
     },
   } satisfies VocabApiErrorDecision
 }
 
 export function parseLookupEntryRequest(
-  body: unknown
+  body: unknown,
+  t: Messages = en
 ): VocabRouteDecision<ParsedLookupEntryRequest> {
   const result = lookupEntrySchema.safeParse(body)
 
-  if (!result.success) return invalid('Vocabulary lookup payload is invalid.')
+  if (!result.success) return invalid(t.vocabulary.api.invalidLookup)
 
   return { data: result.data, ok: true }
 }
 
 export function parseSearchRequest(
-  searchParams: URLSearchParams
+  searchParams: URLSearchParams,
+  t: Messages = en
 ): VocabRouteDecision<ParsedSearchRequest> {
   const result = searchSchema.safeParse({
     limit: searchParams.get('limit') ?? undefined,
     q: searchParams.get('q') ?? undefined,
   })
 
-  if (!result.success) return invalid('Vocabulary search query is invalid.')
+  if (!result.success) return invalid(t.vocabulary.api.invalidSearch)
 
   return { data: result.data, ok: true }
 }
 
 export function parseExploreRequest(
-  searchParams: URLSearchParams
+  searchParams: URLSearchParams,
+  t: Messages = en
 ): VocabRouteDecision<ParsedExploreRequest> {
   const result = exploreSchema.safeParse({
     limit: searchParams.get('limit') ?? undefined,
   })
 
-  if (!result.success) return invalid('Vocabulary explore query is invalid.')
+  if (!result.success) return invalid(t.vocabulary.api.invalidExplore)
 
   return { data: result.data, ok: true }
 }
 
 export function parseItemStatusRequest(
-  body: unknown
+  body: unknown,
+  t: Messages = en
 ): VocabRouteDecision<ParsedItemStatusRequest> {
   const result = itemStatusSchema.safeParse(body)
 
-  if (!result.success) return invalid('Vocabulary item payload is invalid.')
+  if (!result.success) return invalid(t.vocabulary.api.invalidItem)
 
   return { data: result.data, ok: true }
 }
 
 export function parseItemStatusBatchRequest(
-  body: unknown
+  body: unknown,
+  t: Messages = en
 ): VocabRouteDecision<ParsedItemStatusBatchRequest> {
   const result = itemStatusBatchSchema.safeParse(body)
 
-  if (!result.success)
-    return invalid('Vocabulary item batch payload is invalid.')
+  if (!result.success) return invalid(t.vocabulary.api.invalidItemBatch)
 
   return { data: result.data, ok: true }
 }
 
 export function parseRecallDueRequest(
-  searchParams: URLSearchParams
+  searchParams: URLSearchParams,
+  t: Messages = en
 ): VocabRouteDecision<ParsedRecallDueRequest> {
   const result = recallDueSchema.safeParse({
     cursor: searchParams.get('cursor') ?? undefined,
@@ -274,18 +277,18 @@ export function parseRecallDueRequest(
     limit: searchParams.get('limit') ?? undefined,
   })
 
-  if (!result.success) return invalid('Vocabulary recall query is invalid.')
+  if (!result.success) return invalid(t.vocabulary.api.invalidRecallQuery)
 
   return { data: result.data, ok: true }
 }
 
 export function parseOccurrenceRecordRequest(
-  body: unknown
+  body: unknown,
+  t: Messages = en
 ): VocabRouteDecision<ParsedOccurrenceRecordRequest> {
   const result = occurrenceRecordSchema.safeParse(body)
 
-  if (!result.success)
-    return invalid('Vocabulary occurrence payload is invalid.')
+  if (!result.success) return invalid(t.vocabulary.api.invalidOccurrence)
 
   return { data: result.data, ok: true }
 }
@@ -319,11 +322,12 @@ export function parseVocabWordListQuery(params: {
 }
 
 export function parseRecallAnswerRequest(
-  body: unknown
+  body: unknown,
+  t: Messages = en
 ): VocabRouteDecision<ParsedRecallAnswerRequest> {
   const result = recallAnswerSchema.safeParse(body)
 
-  if (!result.success) return invalid('Vocabulary recall payload is invalid.')
+  if (!result.success) return invalid(t.vocabulary.api.invalidRecallAnswer)
 
   return { data: result.data, ok: true }
 }

@@ -4,21 +4,6 @@ import { TRACK_LABELS } from './catalogueGroups'
 
 export type CatalogueSort = 'newest' | 'oldest' | 'updated' | 'title'
 
-export const CATALOGUE_SORT_LABELS: Record<CatalogueSort, string> = {
-  newest: 'Newest first',
-  oldest: 'Oldest first',
-  updated: 'Recently updated',
-  title: 'Title A-Z',
-}
-
-/** The few words the sort button has room for. */
-export const CATALOGUE_SORT_SHORT_LABELS: Record<CatalogueSort, string> = {
-  newest: 'Newest',
-  oldest: 'Oldest',
-  updated: 'Updated',
-  title: 'A-Z',
-}
-
 interface CatalogueItem {
   title: string
   track: IeltsTrack

@@ -5,15 +5,22 @@ import { AuthControl } from '@/components/common/AuthControl'
 import { PageShell } from '@/components/common/PageShell'
 import { AdminVocabPanel } from '@/components/vocabulary/AdminVocabPanel'
 import { hasMongoDbUri } from '@/constants/environments'
+import { getMessages } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { getVocabAdminQueueSummary } from '@/modules/vocabulary/enrichment/enrichmentService'
 import type { VocabAdminQueueSummaryRecord } from '@/modules/vocabulary/types'
 
-export const metadata: Metadata = { title: 'Admin Vocabulary' }
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getMessages()
+
+  return { title: t.admin.vocabPage.metaTitle }
+}
+
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
 export default async function AdminVocabularyPage() {
+  const t = await getMessages()
   let initialQueue: VocabAdminQueueSummaryRecord | null = null
 
   if (hasMongoDbUri()) {
@@ -26,7 +33,7 @@ export default async function AdminVocabularyPage() {
       topbar={
         <AppTopbar
           activeHref="/admin/vocab"
-          subtitle="Admin vocabulary enrichment"
+          subtitle={t.admin.shell.vocab}
           authControl={<AuthControl />}
         />
       }

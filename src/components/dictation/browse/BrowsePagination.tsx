@@ -1,5 +1,8 @@
 import Link from 'next/link'
 
+import { format } from '@/i18n/format'
+import type { Messages } from '@/i18n/messages'
+import { en } from '@/i18n/messages/en'
 import { cn } from '@/lib/utils'
 import type {
   BrowseQuery,
@@ -14,10 +17,13 @@ export function BrowsePagination({
   pagination,
   query,
   basePath,
+  labels = en.dictation.browse,
 }: {
   pagination: Pagination
   query: BrowseQuery
   basePath: string
+  /** From the page's `getMessages()`: this stays a server component. */
+  labels?: Messages['dictation']['browse']
 }) {
   if (pagination.totalPages <= 1) return null
 
@@ -33,7 +39,7 @@ export function BrowsePagination({
 
   return (
     <nav
-      aria-label="Pagination"
+      aria-label={labels.pagination}
       className="flex items-center justify-between gap-3"
     >
       {pagination.hasPrev ? (
@@ -41,32 +47,35 @@ export function BrowsePagination({
           href={href(pagination.page - 1)}
           className={linkClass}
         >
-          ← Prev
+          {labels.prev}
         </Link>
       ) : (
         <span
           className={cn(linkClass, 'opacity-40')}
           aria-disabled="true"
         >
-          ← Prev
+          {labels.prev}
         </span>
       )}
       <span className="text-ink-soft font-sans text-sm font-normal">
-        Page {pagination.page} of {pagination.totalPages}
+        {format(labels.page, {
+          page: pagination.page,
+          total: pagination.totalPages,
+        })}
       </span>
       {pagination.hasNext ? (
         <Link
           href={href(pagination.page + 1)}
           className={linkClass}
         >
-          Next →
+          {labels.next}
         </Link>
       ) : (
         <span
           className={cn(linkClass, 'opacity-40')}
           aria-disabled="true"
         >
-          Next →
+          {labels.next}
         </span>
       )}
     </nav>

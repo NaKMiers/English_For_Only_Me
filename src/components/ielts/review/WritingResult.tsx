@@ -10,7 +10,9 @@ import type {
 import { SampleAnswerBody } from '@/components/ielts/widgets/SampleAnswerBody'
 import { countEssayWords } from '@/modules/ielts/scoring/wordCount'
 import type { IeltsWritingReviewTask } from '@/modules/ielts/services/resultPageData'
-import { gradeIeltsWritingApi } from '@/requests/ieltsApi'
+import { useMessages } from '@/i18n/client'
+import { format } from '@/i18n/format'
+import { gradeIeltsWritingApi, ieltsErrorMessage } from '@/requests/ieltsApi'
 
 import { TaskVisual } from '../visual/TaskVisual'
 import { WritingPrompt } from '../widgets/WritingPrompt'
@@ -86,6 +88,7 @@ export function WritingFeedbackDetails({
   feedback: IeltsWritingTaskFeedback
   task: 1 | 2
 }) {
+  const t = useMessages().ielts.writingResult
   const criteria = feedback.criteria
 
   if (!criteria) return null
@@ -130,7 +133,7 @@ export function WritingFeedbackDetails({
                   className="w-fit font-sans text-sm font-semibold underline"
                   href={`/grammar/lessons/${item.grammarLessonId}`}
                 >
-                  Study: {item.grammarLessonTitle}
+                  {format(t.study, { title: item.grammarLessonTitle ?? '' })}
                 </Link>
               ) : null}
             </li>
@@ -139,9 +142,7 @@ export function WritingFeedbackDetails({
       ) : null}
       {feedback.improved ? (
         <div className="grid gap-1">
-          <p className="font-sans text-sm font-semibold">
-            Rewritten paragraph (about 1 band higher)
-          </p>
+          <p className="font-sans text-sm font-semibold">{t.rewritten}</p>
           <p className="font-body border-line rounded-control bg-surface border p-3 leading-[1.7]">
             {feedback.improved}
           </p>
@@ -162,18 +163,26 @@ function TaskFeedback({
   onGrade: () => void
   task: IeltsWritingReviewTask
 }) {
+  const t = useMessages().ielts.writingResult
   const [showSample, setShowSample] = useState(false)
   const words = countEssayWords(task.essay)
   const status = busy ? 'grading' : (feedback?.status ?? 'pending')
 
   return (
     <ExamCard
-      eyebrow={`${words} words · minimum ${task.minWords}`}
-      title={`Task ${task.task}${feedback?.band != null ? ` · Band ${feedback.band.toFixed(1)}` : ''}`}
+      eyebrow={format(t.wordsMin, { min: task.minWords, words })}
+      title={
+        feedback?.band != null
+          ? format(t.taskBand, {
+              band: feedback.band.toFixed(1),
+              task: task.task,
+            })
+          : `Task ${task.task}`
+      }
     >
       <details>
         <summary className="cursor-pointer font-sans text-sm font-semibold">
-          Prompt
+          {t.prompt}
         </summary>
         <div className="mt-2 grid gap-3">
           <WritingPrompt text={task.prompt} />
@@ -196,13 +205,15 @@ function TaskFeedback({
         <>
           <p role="status">
             {status === 'grading'
-              ? `AI is grading Task ${task.task}...`
+              ? format(t.grading, { task: task.task })
               : status === 'failed'
-                ? `Grading failed: ${feedback?.error || 'unknown reason'}`
-                : 'Not graded yet.'}
+                ? format(t.gradingFailed, {
+                    reason: feedback?.error || t.unknownReason,
+                  })
+                : t.notGraded}
           </p>
           <div className="font-body border-line rounded-control bg-surface border p-4 text-[17px] leading-[1.8] whitespace-pre-wrap">
-            {task.essay || '(Blank)'}
+            {task.essay || t.blank}
           </div>
         </>
       )}
@@ -215,19 +226,19 @@ function TaskFeedback({
           type="button"
         >
           {busy
-            ? 'Grading...'
+            ? t.gradingButton
             : status === 'done'
-              ? 'Grade again'
+              ? t.gradeAgain
               : status === 'failed'
-                ? 'Grade again'
-                : 'Grade with AI'}
+                ? t.gradeAgain
+                : t.gradeWithAi}
         </ExamButton>
         <ExamButton
           onClick={() => setShowSample(current => !current)}
           tone="paper"
           type="button"
         >
-          {showSample ? 'Hide sample answer' : 'Show sample answer'}
+          {showSample ? t.hideSample : t.showSample}
         </ExamButton>
       </div>
       {showSample && task.sampleAnswer ? (
@@ -241,6 +252,7 @@ function TaskFeedback({
 
 /** Writing result: per task the essay, criteria, corrections and grading. */
 export function WritingResult({ attempt: initial, tasks }: Props) {
+  const t = useMessages().ielts
   const [attempt, setAttempt] = useState(initial)
   const [busyTask, setBusyTask] = useState<1 | 2 | null>(null)
   const [error, setError] = useState('')
@@ -254,7 +266,7 @@ export function WritingResult({ attempt: initial, tasks }: Props) {
 
       setAttempt(result.attempt)
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'Could not grade.')
+      setError(ieltsErrorMessage(caught, t.writingResult.gradeFailed))
     } finally {
       setBusyTask(null)
     }
@@ -263,16 +275,16 @@ export function WritingResult({ attempt: initial, tasks }: Props) {
   return (
     <div className="grid gap-6">
       <section
-        aria-label="Result"
+        aria-label={t.result.label}
         className="grid grid-cols-2 gap-3 md:grid-cols-4"
       >
         <StatTile
           detail={
             attempt.scope.kind === 'part'
-              ? 'A single task does not give a Writing band'
-              : 'Task 2 counts double Task 1'
+              ? t.writingResult.singleTaskNoBand
+              : t.writingResult.task2Double
           }
-          label="Writing band"
+          label={t.writingResult.writingBand}
           tone="ink"
           value={
             attempt.writingBand === null ? '-' : attempt.writingBand.toFixed(1)

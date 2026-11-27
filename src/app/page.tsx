@@ -1,5 +1,6 @@
 import { HomeStudyDesk } from '@/components/home/HomeStudyDesk'
 import { hasMongoDbUri } from '@/constants/environments'
+import { getLocale, getMessages } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { getOptionalUser } from '@/modules/dictation/services/getCurrentUser'
 import { getGlobalStatsForUser } from '@/modules/dictation/stats/globalStatsService'
@@ -12,13 +13,16 @@ export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
 export default async function Home() {
-  if (!hasMongoDbUri()) return <HomeStudyDesk />
+  const [locale, messages] = await Promise.all([getLocale(), getMessages()])
+  const text = { locale, messages }
+
+  if (!hasMongoDbUri()) return <HomeStudyDesk {...text} />
 
   // Stats are per-user; anonymous visitors see the desk without personal stats.
   // Auth is a local JWT decode, so it goes first and spares anonymous visitors
   // the connection handshake entirely.
   const user = await getOptionalUser()
-  if (!user) return <HomeStudyDesk />
+  if (!user) return <HomeStudyDesk {...text} />
 
   await connectDatabase()
 
@@ -36,6 +40,7 @@ export default async function Home() {
 
   return (
     <HomeStudyDesk
+      {...text}
       dictationStats={dictationStats}
       grammarToday={{
         dueCount: grammarPath.totals.dueCount,

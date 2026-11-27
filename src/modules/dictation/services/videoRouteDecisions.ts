@@ -1,4 +1,5 @@
 import { hasMongoDbUri } from '@/constants/environments'
+import type { Messages } from '@/i18n/messages'
 import {
   createDictationVideoPayloadSchema,
   updateDictationVideoPayloadSchema,
@@ -15,6 +16,17 @@ export interface ApiErrorDecision {
   body: {
     message: string
   }
+}
+
+/**
+ * Learner-facing text for an auth or owner error status (401, 403, 409), in
+ * the request's language. The thrown errors carry English developer text.
+ */
+export function getAccessErrorMessage(status: number, t: Messages) {
+  if (status === 401) return t.common.errors.unauthorized
+  if (status === 409) return t.dictation.api.ownerMismatch
+
+  return t.common.errors.forbidden
 }
 
 interface CreateVideoInput {

@@ -1,12 +1,15 @@
 import { PageShell } from '@/components/common/PageShell'
 import { Skeleton } from '@/components/ui/skeleton'
+import { getMessages } from '@/i18n/server'
 
-export default function IeltsLoading() {
+export default async function IeltsLoading() {
+  const t = await getMessages()
+
   return (
     <PageShell>
       <div
         aria-busy
-        aria-label="Loading tests"
+        aria-label={t.ielts.loading.tests}
         className="grid gap-6 p-4 sm:p-6 lg:p-8"
       >
         <Skeleton className="rounded-control h-10 w-64" />

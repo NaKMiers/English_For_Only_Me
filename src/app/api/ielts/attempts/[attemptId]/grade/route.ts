@@ -54,10 +54,6 @@ export async function POST(request: Request, context: RouteContext) {
       attempt => ({ attempt })
     )
   } catch (error) {
-    return ieltsRouteFailure(
-      error,
-      'ielts writing grade failed',
-      'Could not grade. Try again later.'
-    )
+    return ieltsRouteFailure(error, 'ielts writing grade failed', 'gradeFailed')
   }
 }

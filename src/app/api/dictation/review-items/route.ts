@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 
 import { MissingEnvironmentError } from '@/constants/environments'
+import type { Messages } from '@/i18n/messages'
+import { getMessages } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import {
   listDueReviewItemsForUser,
@@ -14,6 +16,7 @@ import {
   parseUpdateReviewItemRequest,
 } from '@/modules/dictation/services/reviewItemRouteDecisions'
 import {
+  getAccessErrorMessage,
   type ApiErrorDecision,
   getMissingMongoResponse,
   MISSING_MONGODB_MESSAGE,
@@ -25,7 +28,7 @@ function jsonError(decision: ApiErrorDecision) {
   return NextResponse.json(decision.body, { status: decision.status })
 }
 
-function toReviewItemError(error: unknown): ApiErrorDecision {
+function toReviewItemError(error: unknown, t: Messages): ApiErrorDecision {
   if (
     typeof error === 'object' &&
     error !== null &&
@@ -35,7 +38,7 @@ function toReviewItemError(error: unknown): ApiErrorDecision {
     return {
       status: error.status,
       body: {
-        message: (error as { message?: string }).message ?? 'Access denied.',
+        message: getAccessErrorMessage(error.status, t),
       },
     }
 
@@ -52,12 +55,13 @@ function toReviewItemError(error: unknown): ApiErrorDecision {
   return {
     status: 500,
     body: {
-      message: 'Could not update dictation review items.',
+      message: t.dictation.api.reviewUpdateFailed,
     },
   }
 }
 
 export async function GET(request: Request) {
+  const t = await getMessages()
   const missingMongo = getMissingMongoResponse()
 
   if (missingMongo) return jsonError(missingMongo)
@@ -79,11 +83,12 @@ export async function GET(request: Request) {
       }),
     })
   } catch (error) {
-    return jsonError(toReviewItemError(error))
+    return jsonError(toReviewItemError(error, t))
   }
 }
 
 export async function POST(request: Request) {
+  const t = await getMessages()
   const missingMongo = getMissingMongoResponse()
 
   if (missingMongo) return jsonError(missingMongo)
@@ -109,15 +114,16 @@ export async function POST(request: Request) {
       return jsonError({
         status: 400,
         body: {
-          message: 'Request body must be valid JSON.',
+          message: t.dictation.api.invalidJson,
         },
       })
 
-    return jsonError(toReviewItemError(error))
+    return jsonError(toReviewItemError(error, t))
   }
 }
 
 export async function PATCH(request: Request) {
+  const t = await getMessages()
   const missingMongo = getMissingMongoResponse()
 
   if (missingMongo) return jsonError(missingMongo)
@@ -142,7 +148,7 @@ export async function PATCH(request: Request) {
       return jsonError({
         status: 404,
         body: {
-          message: 'This review item was not found.',
+          message: t.dictation.api.reviewItemNotFound,
         },
       })
 
@@ -154,10 +160,10 @@ export async function PATCH(request: Request) {
       return jsonError({
         status: 400,
         body: {
-          message: 'Request body must be valid JSON.',
+          message: t.dictation.api.invalidJson,
         },
       })
 
-    return jsonError(toReviewItemError(error))
+    return jsonError(toReviewItemError(error, t))
   }
 }

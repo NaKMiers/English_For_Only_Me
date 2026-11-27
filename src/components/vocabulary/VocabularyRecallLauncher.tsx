@@ -5,6 +5,8 @@ import { BookOpen } from 'lucide-react'
 import { ContentPanel } from '@/components/common/ContentPanel'
 import { ActionButton } from '@/components/ui/ActionButton'
 import { PageTag } from '@/components/ui/PageTag'
+import { useMessages } from '@/i18n/client'
+import { format } from '@/i18n/format'
 import type { VocabRecallTaskRecord } from '@/modules/vocabulary/types'
 
 import { VocabTermHeader } from './VocabTermHeader'
@@ -21,12 +23,13 @@ export function VocabularyRecallLauncher({
   onOpenRecall,
   tasks,
 }: Props) {
+  const t = useMessages().vocabulary.launcher
   const activeRecall = tasks[0] ?? null
 
   return (
     <ContentPanel
-      eyebrow="Recall"
-      title="Flashcard review"
+      eyebrow={t.eyebrow}
+      title={t.title}
       className="bg-pastel-lilac"
       action={
         <ActionButton
@@ -34,7 +37,7 @@ export function VocabularyRecallLauncher({
           icon={<BookOpen className="size-4" />}
           onClick={onOpenRecall}
         >
-          Start Recall
+          {t.start}
         </ActionButton>
       }
     >
@@ -43,14 +46,14 @@ export function VocabularyRecallLauncher({
           <div className="grid gap-3">
             <div className="flex flex-wrap items-center gap-2">
               <PageTag tone="red">
-                {Math.max(dueCount, tasks.length)} due
+                {format(t.due, { count: Math.max(dueCount, tasks.length) })}
               </PageTag>
-              <PageTag tone="ink">Next: {activeRecall.entry.term}</PageTag>
+              <PageTag tone="ink">
+                {format(t.next, { term: activeRecall.entry.term })}
+              </PageTag>
             </div>
             <p className="text-ink-soft max-w-3xl text-base leading-7">
-              Review opens as a focused modal with listening, definition,
-              word-choice, and example-memory prompts. It will auto-open once
-              per day when cards are due.
+              {t.intro}
             </p>
           </div>
           <div className="grid gap-2">
@@ -65,17 +68,14 @@ export function VocabularyRecallLauncher({
                   headingClassName="text-xl"
                 />
                 <p className="text-ink-soft mt-2 text-xs">
-                  Stage {task.item.recallStage}/7
+                  {format(t.stage, { stage: task.item.recallStage })}
                 </p>
               </div>
             ))}
           </div>
         </div>
       ) : (
-        <p className="text-ink-soft text-sm leading-6">
-          No flashcards are due. Add words from Search or Explore and they will
-          appear here immediately.
-        </p>
+        <p className="text-ink-soft text-sm leading-6">{t.empty}</p>
       )}
     </ContentPanel>
   )

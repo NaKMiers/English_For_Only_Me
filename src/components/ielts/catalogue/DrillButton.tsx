@@ -3,8 +3,9 @@
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
+import { useMessages } from '@/i18n/client'
 import type { IeltsQuestionType } from '@/modules/ielts/constants'
-import { startIeltsDrillApi } from '@/requests/ieltsApi'
+import { ieltsErrorMessage, startIeltsDrillApi } from '@/requests/ieltsApi'
 import { ExamButton } from '@/components/ielts/ui'
 
 /** Starts a drill of one question type (groups from published tests). */
@@ -18,6 +19,7 @@ export function DrillButton({
   skill: 'listening' | 'reading'
   type: IeltsQuestionType
 }) {
+  const t = useMessages().ielts.drill
   const router = useRouter()
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
@@ -36,9 +38,7 @@ export function DrillButton({
       router.push(`/ielts/drill/${attempt.id}`)
     } catch (caught) {
       setBusy(false)
-      setError(
-        caught instanceof Error ? caught.message : 'Could not open the drill.'
-      )
+      setError(ieltsErrorMessage(caught, t.failed))
     }
   }
 
@@ -48,11 +48,11 @@ export function DrillButton({
         className={compact ? 'min-h-8 px-2.5 text-xs' : undefined}
         disabled={busy}
         onClick={() => void start()}
-        title={compact ? 'Drill this question type' : undefined}
+        title={compact ? t.title : undefined}
         tone="paper"
         type="button"
       >
-        {busy ? 'Opening...' : compact ? 'Drill' : 'Drill this type'}
+        {busy ? t.opening : compact ? t.compact : t.full}
       </ExamButton>
       {error ? (
         <span

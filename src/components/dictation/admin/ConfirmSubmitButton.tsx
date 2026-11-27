@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react'
 
+import { useMessages } from '@/i18n/client'
 import { cn } from '@/lib/utils'
 
 /**
@@ -11,9 +12,9 @@ import { cn } from '@/lib/utils'
  */
 export function ConfirmSubmitButton({
   children,
-  confirmTitle = 'Are you sure?',
+  confirmTitle: confirmTitleProp,
   confirmMessage,
-  confirmLabel = 'Delete',
+  confirmLabel: confirmLabelProp,
   className,
   ariaLabel,
   disabled = false,
@@ -28,6 +29,9 @@ export function ConfirmSubmitButton({
   disabled?: boolean
   disabledReason?: string
 }) {
+  const t = useMessages()
+  const confirmTitle = confirmTitleProp ?? t.admin.confirm.defaultTitle
+  const confirmLabel = confirmLabelProp ?? t.common.actions.delete
   const ref = useRef<HTMLButtonElement>(null)
   const [open, setOpen] = useState(false)
 
@@ -65,7 +69,7 @@ export function ConfirmSubmitButton({
                 onClick={() => setOpen(false)}
                 className="border-line bg-surface hover:bg-tint rounded-control inline-flex min-h-11 items-center border px-4 font-sans text-sm font-semibold"
               >
-                Cancel
+                {t.common.actions.cancel}
               </button>
               <button
                 type="button"

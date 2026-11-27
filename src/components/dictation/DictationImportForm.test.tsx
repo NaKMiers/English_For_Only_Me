@@ -251,7 +251,7 @@ describe('DictationImportForm', () => {
     expect(
       view.getAllByText('Dong dich tieng Viet.').length
     ).toBeGreaterThanOrEqual(1)
-    expect(view.getByText('1 sentences')).not.toBeNull()
+    expect(view.getByText('1 sentence')).not.toBeNull()
   })
 
   test('shows the full transcript preview for saved videos with segments', () => {

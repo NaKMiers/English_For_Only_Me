@@ -6,6 +6,7 @@ import { useState, type ReactNode } from 'react'
 
 import { IconButton } from '@/components/ui/IconButton'
 import type { NavItem } from '@/constants/modules'
+import { useMessages } from '@/i18n/client'
 
 interface Props {
   activeHref: string
@@ -37,6 +38,7 @@ export function TopbarMenu({
   className,
   navItems,
 }: Props) {
+  const t = useMessages()
   const [isActivated, setIsActivated] = useState(false)
   const [open, setOpen] = useState(false)
 
@@ -48,7 +50,7 @@ export function TopbarMenu({
   return (
     <>
       <IconButton
-        label="Open menu"
+        label={t.common.nav.openMenu}
         aria-haspopup="dialog"
         aria-expanded={open}
         onPointerEnter={prefetchSheet}
