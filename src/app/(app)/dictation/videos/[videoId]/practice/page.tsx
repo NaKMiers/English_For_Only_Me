@@ -63,7 +63,7 @@ async function PracticeSetupState({
         />
       }
     >
-      <section className="p-4 sm:p-6 lg:p-8">
+      <section className="px-4 pb-6 md:pr-6 md:pl-0">
         <ContentPanel
           eyebrow={t.dictation.practice.emptyEyebrow}
           title={title}

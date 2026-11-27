@@ -1,10 +1,11 @@
+import { Star } from 'lucide-react'
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { AuthControl } from '@/components/common/AuthControl'
 import { PageShell } from '@/components/common/PageShell'
-import { PageHero } from '@/components/common/PageHero'
+import { PageHeader } from '@/components/common/PageHeader'
 import { BrowseBreadcrumb } from '@/components/dictation/browse/BrowseBreadcrumb'
 import {
   BrowseVideoList,
@@ -65,16 +66,18 @@ export default async function FavoritesPage() {
         />
       }
     >
-      <section className="grid gap-5 p-4 sm:p-6 lg:p-8">
-        <PageHero>
-          <BrowseBreadcrumb
-            current={t.dictation.favorites.title}
-            labels={t.dictation.browse}
-          />
-          <h1 className="font-sans text-[clamp(1.8rem,4vw,2.6rem)] leading-none font-medium">
-            {t.dictation.favorites.title}
-          </h1>
-        </PageHero>
+      <section className="grid gap-5 px-4 pb-6 md:pr-6 md:pl-0">
+        <PageHeader
+          eyebrow={
+            <BrowseBreadcrumb
+              current={t.dictation.favorites.title}
+              labels={t.dictation.browse}
+            />
+          }
+          icon={<Star />}
+          iconClassName="bg-pastel-lemon text-accent-orange"
+          title={t.dictation.favorites.title}
+        />
         <BrowseVideoList
           videos={items}
           canFavorite

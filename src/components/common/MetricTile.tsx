@@ -14,10 +14,11 @@ interface Props {
   value: string
 }
 
+/** `paper` is the plain tile; `red` and `ink` are the two highlight tints. */
 const toneClassName = {
-  red: 'bg-tint',
+  red: 'border-transparent bg-pastel-rose',
   paper: 'bg-surface',
-  ink: 'bg-cta text-cta-fg',
+  ink: 'border-transparent bg-pastel-lilac',
 } as const
 
 export function MetricTile({
@@ -31,7 +32,7 @@ export function MetricTile({
   value,
 }: Props) {
   const classNames = cn(
-    'border-line grid min-h-36 min-w-0 gap-3 rounded-panel border p-4',
+    'border-line grid min-h-28 min-w-0 content-between gap-2 rounded-panel border p-4',
     href && 'soft-press hover-lift hover:bg-tint-soft',
     toneClassName[tone],
     className
@@ -40,21 +41,21 @@ export function MetricTile({
   const content = (
     <>
       <div className="flex min-w-0 items-center justify-between gap-3">
-        <span className="text-xs leading-tight font-semibold tracking-normal">
+        <span className="text-ink-soft text-xs leading-tight tracking-normal">
           {label}
         </span>
         {icon ? (
-          <span className="grid size-8 shrink-0 place-items-center">
+          <span className="bg-surface/70 text-ink-soft grid size-8 shrink-0 place-items-center rounded-full [&_svg]:size-4">
             {icon}
           </span>
         ) : null}
       </div>
-      <strong className="font-sans text-3xl leading-none font-medium tracking-normal wrap-break-word">
+      <strong className="font-sans text-3xl leading-none font-light tracking-tight wrap-break-word tabular-nums">
         {value}
       </strong>
-      <div className="text-sm leading-5 font-semibold wrap-break-word">
+      <div className="text-ink-soft text-xs leading-5 wrap-break-word">
         {detail ? <p>{detail}</p> : null}
-        {trend ? <p className="text-brand font-semibold">{trend}</p> : null}
+        {trend ? <p className="text-brand-ink font-medium">{trend}</p> : null}
       </div>
     </>
   )

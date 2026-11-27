@@ -52,7 +52,7 @@ async function EditUnavailableState({
         />
       }
     >
-      <section className="p-4 sm:p-6 lg:p-8">
+      <section className="px-4 pb-6 md:pr-6 md:pl-0">
         <div className="border-line bg-surface rounded-panel border p-5">
           <PageTag tone="red">{t.admin.editPage.tag}</PageTag>
           <h1 className="mt-4 font-sans text-[clamp(2rem,6vw,4rem)] leading-none font-medium tracking-normal">

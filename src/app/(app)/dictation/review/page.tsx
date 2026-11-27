@@ -1,8 +1,9 @@
+import { ArrowLeft, RotateCcw } from 'lucide-react'
 import type { Metadata } from 'next'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
+import { PageHeader } from '@/components/common/PageHeader'
 import { PageShell } from '@/components/common/PageShell'
-import { ContentPanel } from '@/components/common/ContentPanel'
 import { DictationReviewQueue } from '@/components/dictation/DictationReviewQueue'
 import { ActionButton } from '@/components/ui/ActionButton'
 import { hasMongoDbUri } from '@/constants/environments'
@@ -52,23 +53,28 @@ export default async function Page() {
         />
       }
     >
-      <section className="grid gap-5 p-4 sm:p-6 lg:p-8">
-        <ContentPanel
-          eyebrow={text.eyebrow}
-          title={text.title}
-          action={
+      <section className="grid gap-5 px-4 pb-6 md:pr-6 md:pl-0">
+        <PageHeader
+          actions={
             <ActionButton
               href="/dictation"
+              icon={
+                <ArrowLeft
+                  aria-hidden="true"
+                  className="size-4"
+                />
+              }
               tone="paper"
             >
               {text.backToLab}
             </ActionButton>
           }
-        >
-          <p className="text-ink-soft text-base leading-7 font-normal">
-            {text.description}
-          </p>
-        </ContentPanel>
+          eyebrow={text.eyebrow}
+          icon={<RotateCcw />}
+          iconClassName="bg-pastel-sky text-accent-blue"
+          subtitle={text.description}
+          title={text.title}
+        />
 
         <DictationReviewQueue
           emptyMessage={hasMongoDbUri() ? text.empty : text.noDatabase}

@@ -1,4 +1,4 @@
-import { FolderTree, List, Upload } from 'lucide-react'
+import { FolderTree, Headphones, List, Upload } from 'lucide-react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
@@ -190,15 +190,21 @@ export default async function AdminDictationPage({ searchParams }: Props) {
         />
       }
     >
-      <section className="grid gap-5 p-4 sm:p-6 lg:p-8">
+      <section className="grid gap-5 px-4 pb-6 md:pr-6 md:pl-0">
         <header className="page-hero grid gap-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h1 className="font-sans text-[clamp(1.6rem,4vw,2.4rem)] leading-none font-medium">
+            <h1 className="flex items-center gap-3 font-sans text-3xl leading-none font-medium tracking-tight sm:text-4xl">
+              <span
+                aria-hidden="true"
+                className="bg-pastel-sky text-accent-blue grid size-12 shrink-0 place-items-center rounded-full sm:size-14"
+              >
+                <Headphones className="size-6 sm:size-7" />
+              </span>
               {t.admin.dictationPage.title}
             </h1>
             <Link
               href="/admin"
-              className="text-brand text-sm font-semibold hover:underline"
+              className="text-brand-ink text-sm font-medium hover:underline"
             >
               {t.admin.dictationPage.backToAdmin}
             </Link>
@@ -206,7 +212,7 @@ export default async function AdminDictationPage({ searchParams }: Props) {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <nav
               aria-label={t.admin.dictationPage.viewNav}
-              className="border-line bg-surface rounded-control flex border p-1"
+              className="border-line bg-surface flex gap-0.5 rounded-full border p-1"
             >
               {VIEWS.map(({ Icon, view: option }) => (
                 <Link
@@ -218,7 +224,7 @@ export default async function AdminDictationPage({ searchParams }: Props) {
                   }
                   aria-current={option === view ? 'page' : undefined}
                   className={cn(
-                    'rounded-tag flex min-h-9 items-center gap-2 px-3 font-sans text-sm font-semibold transition-colors',
+                    'flex min-h-9 items-center gap-2 rounded-full px-3 font-sans text-sm font-medium transition-colors',
                     option === view ? 'bg-cta text-cta-fg' : 'hover:bg-tint'
                   )}
                 >

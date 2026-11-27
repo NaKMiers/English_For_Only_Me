@@ -61,7 +61,7 @@ async function ResultsSetupState({
         />
       }
     >
-      <section className="p-4 sm:p-6 lg:p-8">
+      <section className="px-4 pb-6 md:pr-6 md:pl-0">
         <ContentPanel
           eyebrow={t.dictation.results.eyebrow.notStarted}
           title={title}
@@ -166,7 +166,7 @@ export default async function Page({ params }: Props) {
         />
       }
     >
-      <section className="grid gap-5 p-4 sm:p-6 lg:p-8">
+      <section className="grid gap-5 px-4 pb-6 md:pr-6 md:pl-0">
         <DictationResultsSummary
           isEmpty={isEmpty}
           progress={progress}

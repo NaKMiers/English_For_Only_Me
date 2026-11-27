@@ -1,16 +1,14 @@
 import type { Metadata } from 'next'
-import { Trophy } from 'lucide-react'
-import Link from 'next/link'
+import { Headphones, Trophy } from 'lucide-react'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { AuthControl } from '@/components/common/AuthControl'
 import { PageShell } from '@/components/common/PageShell'
-import { PageHero } from '@/components/common/PageHero'
+import { PageHeader } from '@/components/common/PageHeader'
 import { DictationGlobalStats } from '@/components/dictation/DictationGlobalStats'
 import { InProgressSection } from '@/components/dictation/browse/InProgressSection'
 import { TopicGrid } from '@/components/dictation/browse/TopicGrid'
 import { ActionButton } from '@/components/ui/ActionButton'
-import { PageTag } from '@/components/ui/PageTag'
 import { hasMongoDbUri } from '@/constants/environments'
 import { getMessages } from '@/i18n/server'
 import { connectDatabaseWhen } from '@/lib/db/connectDatabase'
@@ -50,8 +48,8 @@ export const runtime = 'nodejs'
 
 function BrowseFooter({ appName }: { appName: string }) {
   return (
-    <div className="border-line bg-cta text-cta-fg border-t px-5 py-4">
-      <strong className="font-sans text-base font-semibold tracking-normal">
+    <div className="border-line text-ink-soft border-t px-5 py-4">
+      <strong className="font-sans text-sm font-medium tracking-normal">
         {appName}
       </strong>
     </div>
@@ -131,43 +129,36 @@ export default async function DictationPage() {
       }
       footer={<BrowseFooter appName={t.common.app.name} />}
     >
-      <section className="grid gap-5 p-4 sm:p-6 lg:p-8">
-        <PageHero>
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <PageTag tone="red">{text.eyebrow}</PageTag>
-            <div className="flex flex-wrap items-center justify-end gap-2">
+      <section className="grid gap-5 px-4 pb-6 md:pr-6 md:pl-0">
+        <PageHeader
+          actions={
+            <>
               {latestCompletedVideo ? (
                 <ActionButton
                   href={`/dictation/videos/${latestCompletedVideo.id}/results`}
-                  tone="primary"
-                  className="bg-tint hover:bg-tint-soft min-h-10 px-3 py-1 text-xs"
                   icon={
                     <Trophy
                       aria-hidden="true"
                       className="size-4"
                     />
                   }
+                  tone="paper"
                 >
                   {text.latestResults}
                 </ActionButton>
               ) : null}
-              <Link
-                href="/dictation/favorites"
-                className="text-brand text-sm font-semibold hover:underline"
-              >
+              <ActionButton href="/dictation/favorites">
                 {text.favoritesLink}
-              </Link>
-            </div>
-          </div>
-          <h1 className="font-sans text-[clamp(1.8rem,4vw,2.6rem)] leading-none font-medium">
-            {text.title}
-          </h1>
-          <p className="text-ink-soft max-w-2xl text-sm leading-6">
-            {hasPracticeActor
-              ? text.descriptionSignedIn
-              : text.descriptionGuest}
-          </p>
-        </PageHero>
+              </ActionButton>
+            </>
+          }
+          icon={<Headphones />}
+          iconClassName="bg-pastel-sky text-accent-blue"
+          subtitle={
+            hasPracticeActor ? text.descriptionSignedIn : text.descriptionGuest
+          }
+          title={text.title}
+        />
         <InProgressSection
           videos={inProgressItems}
           canFavorite={canFavorite}

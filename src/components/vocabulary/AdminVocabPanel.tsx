@@ -1,13 +1,13 @@
 'use client'
 
-import { DatabaseZap, RefreshCcw } from 'lucide-react'
+import { BookA, DatabaseZap, RefreshCcw } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 
 import { ContentPanel } from '@/components/common/ContentPanel'
+import { PageHeader } from '@/components/common/PageHeader'
 import { MetricTile } from '@/components/common/MetricTile'
 import { Input } from '@/components/ui/input'
 import { ActionButton } from '@/components/ui/ActionButton'
-import { PageTag } from '@/components/ui/PageTag'
 import { format } from '@/i18n/format'
 import { useMessages } from '@/i18n/client'
 import {
@@ -98,30 +98,29 @@ export function AdminVocabPanel({ initialQueue, mongoConfigured }: Props) {
 
   return (
     <div className="grid gap-5">
-      <header className="page-hero flex flex-wrap items-start justify-between gap-3">
-        <div className="grid min-w-0 gap-2">
-          <PageTag tone="ink">{v.tag}</PageTag>
-          <h1 className="font-sans text-[clamp(1.8rem,4vw,2.6rem)] leading-none font-medium wrap-break-word">
-            {v.title}
-          </h1>
-          <p className="text-ink-soft max-w-2xl text-sm leading-6 font-normal">
-            {v.intro}
-          </p>
-        </div>
-        <button
-          aria-label={v.refresh}
-          className="border-line bg-surface hover:bg-tint rounded-control soft-press inline-grid size-11 shrink-0 place-items-center border disabled:opacity-55"
-          disabled={isLoading}
-          onClick={() => refreshQueue()}
-          title={v.refresh}
-          type="button"
-        >
-          <RefreshCcw
-            aria-hidden="true"
-            className="size-5"
-          />
-        </button>
-      </header>
+      <PageHeader
+        actions={
+          <button
+            aria-label={v.refresh}
+            className="border-line bg-surface hover:bg-tint soft-press inline-grid size-11 shrink-0 place-items-center rounded-full border disabled:opacity-55"
+            disabled={isLoading}
+            onClick={() => refreshQueue()}
+            title={v.refresh}
+            type="button"
+          >
+            <RefreshCcw
+              aria-hidden="true"
+              className="size-5"
+            />
+          </button>
+        }
+        eyebrow={v.tag}
+        icon={<BookA />}
+        iconClassName="bg-pastel-mint text-accent-green"
+        subtitle={v.intro}
+        title={v.title}
+        titleClassName="wrap-break-word"
+      />
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         <MetricTile

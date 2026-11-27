@@ -1,9 +1,10 @@
+import { Headphones } from 'lucide-react'
 import type { Metadata } from 'next'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { AuthControl } from '@/components/common/AuthControl'
 import { PageShell } from '@/components/common/PageShell'
-import { PageHero } from '@/components/common/PageHero'
+import { PageHeader } from '@/components/common/PageHeader'
 import { BrowseBreadcrumb } from '@/components/dictation/browse/BrowseBreadcrumb'
 import {
   BrowseVideoList,
@@ -78,19 +79,19 @@ export default async function NoTopicPage() {
         />
       }
     >
-      <section className="grid gap-5 p-4 sm:p-6 lg:p-8">
-        <PageHero>
-          <BrowseBreadcrumb
-            current={t.dictation.browse.uncategorized}
-            labels={t.dictation.browse}
-          />
-          <h1 className="font-sans text-[clamp(1.8rem,4vw,2.6rem)] leading-none font-medium">
-            {t.dictation.browse.uncategorized}
-          </h1>
-          <p className="text-ink-soft max-w-2xl text-sm leading-6">
-            {t.dictation.noTopic.description}
-          </p>
-        </PageHero>
+      <section className="grid gap-5 px-4 pb-6 md:pr-6 md:pl-0">
+        <PageHeader
+          eyebrow={
+            <BrowseBreadcrumb
+              current={t.dictation.browse.uncategorized}
+              labels={t.dictation.browse}
+            />
+          }
+          icon={<Headphones />}
+          iconClassName="bg-pastel-sky text-accent-blue"
+          subtitle={t.dictation.noTopic.description}
+          title={t.dictation.browse.uncategorized}
+        />
         <BrowseVideoList
           videos={items}
           canFavorite={canFavorite}

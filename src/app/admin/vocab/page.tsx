@@ -38,7 +38,7 @@ export default async function AdminVocabularyPage() {
         />
       }
     >
-      <section className="grid gap-5 p-4 sm:p-6 lg:p-8">
+      <section className="grid gap-5 px-4 pb-6 md:pr-6 md:pl-0">
         <AdminVocabPanel
           initialQueue={initialQueue}
           mongoConfigured={hasMongoDbUri()}

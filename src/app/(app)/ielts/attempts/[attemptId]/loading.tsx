@@ -10,7 +10,7 @@ export default async function IeltsResultLoading() {
       <div
         aria-busy
         aria-label={t.ielts.loading.result}
-        className="grid gap-6 p-4 sm:p-6 lg:p-8"
+        className="grid gap-6 px-4 pb-6 md:pr-6 md:pl-0"
       >
         <Skeleton className="rounded-control h-10 w-72" />
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">

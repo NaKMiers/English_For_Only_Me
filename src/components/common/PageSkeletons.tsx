@@ -7,11 +7,11 @@ import { cn } from '@/lib/utils'
 
 /*
  * Shared building blocks for route `loading.tsx` skeletons. They reuse the real
- * shell (PageShell + AppTopbar) and mirror the manga aesthetic: sticker
- * corners, thick ink borders, pulsing `--muted` (pale red) fills. Compose these
- * so each skeleton mirrors the structure of the page it stands in for, down to
- * the corner role: a skeleton whose radius differs from the block it replaces
- * visibly snaps shape when the content lands.
+ * shell (PageShell + AppTopbar) and the board's calm surfaces: hairline
+ * borders and pulsing `muted` fills. Compose these so each skeleton mirrors
+ * the structure of the page it stands in for, down to the corner role: a
+ * skeleton whose radius differs from the block it replaces visibly snaps shape
+ * when the content lands.
  */
 
 /** Borderless pulsing bar, for text/line placeholders. */
@@ -19,7 +19,7 @@ export function SkeletonLine({ className }: { className?: string }) {
   return <Skeleton className={cn('rounded-tag h-4', className)} />
 }
 
-/** Bordered pulsing box, the default manga skeleton surface. */
+/** Bordered pulsing box, the default skeleton surface. */
 export function SkeletonBlock({ className }: { className?: string }) {
   return (
     <Skeleton className={cn('border-line rounded-panel border', className)} />
@@ -33,19 +33,19 @@ export function SkeletonTag({ className }: { className?: string }) {
   )
 }
 
-/** Page hero: eyebrow chip + big title line + a couple of subtitle lines. */
+/** PageHeader: module icon circle, an optional eyebrow, title and one line. */
 export function SkeletonHero({
   withEyebrow = true,
 }: {
   withEyebrow?: boolean
 }) {
   return (
-    <header className="page-hero grid gap-3">
-      {withEyebrow ? <SkeletonTag /> : null}
-      <SkeletonLine className="h-9 w-2/3 max-w-md" />
-      <div className="grid gap-2">
-        <SkeletonLine className="w-full max-w-2xl" />
-        <SkeletonLine className="w-4/5 max-w-xl" />
+    <header className="page-hero flex items-center gap-3 sm:gap-4">
+      <Skeleton className="size-12 shrink-0 rounded-full sm:size-14" />
+      <div className="grid min-w-0 flex-1 gap-2">
+        {withEyebrow ? <SkeletonLine className="h-3 w-24" /> : null}
+        <SkeletonLine className="h-8 w-2/3 max-w-sm" />
+        <SkeletonLine className="w-full max-w-xl" />
       </div>
     </header>
   )
@@ -191,7 +191,9 @@ export function SkeletonPageShell({
         />
       }
     >
-      <section className="grid gap-5 p-4 sm:p-6 lg:p-8">{children}</section>
+      <section className="grid gap-5 px-4 pb-6 md:pr-6 md:pl-0">
+        {children}
+      </section>
     </PageShell>
   )
 }

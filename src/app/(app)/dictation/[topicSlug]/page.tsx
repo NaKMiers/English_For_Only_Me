@@ -1,11 +1,12 @@
+import { Headphones } from 'lucide-react'
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { AuthControl } from '@/components/common/AuthControl'
 import { PageShell } from '@/components/common/PageShell'
-import { PageHero } from '@/components/common/PageHero'
+import { PageHeader } from '@/components/common/PageHeader'
+import { ActionButton } from '@/components/ui/ActionButton'
 import { BrowseBreadcrumb } from '@/components/dictation/browse/BrowseBreadcrumb'
 import { BrowsePagination } from '@/components/dictation/browse/BrowsePagination'
 import { BrowseToolbar } from '@/components/dictation/browse/BrowseToolbar'
@@ -128,29 +129,24 @@ export default async function TopicPage({ params, searchParams }: PageProps) {
         />
       }
     >
-      <section className="grid gap-5 p-4 sm:p-6 lg:p-8">
-        <PageHero>
-          <div className="flex flex-wrap items-center justify-between gap-2">
+      <section className="grid gap-5 px-4 pb-6 md:pr-6 md:pl-0">
+        <PageHeader
+          actions={
+            <ActionButton href="/dictation/favorites">
+              {t.dictation.landing.favoritesLink}
+            </ActionButton>
+          }
+          eyebrow={
             <BrowseBreadcrumb
               current={topic.title}
               labels={labels}
             />
-            <Link
-              href="/dictation/favorites"
-              className="text-brand text-sm font-semibold hover:underline"
-            >
-              {t.dictation.landing.favoritesLink}
-            </Link>
-          </div>
-          <h1 className="font-sans text-[clamp(1.8rem,4vw,2.6rem)] leading-none font-medium">
-            {topic.title}
-          </h1>
-          {topic.description && (
-            <p className="text-ink-soft max-w-2xl text-sm leading-6">
-              {topic.description}
-            </p>
-          )}
-        </PageHero>
+          }
+          icon={<Headphones />}
+          iconClassName="bg-pastel-sky text-accent-blue"
+          subtitle={topic.description || undefined}
+          title={topic.title}
+        />
 
         <BrowseToolbar
           search={query.search}
