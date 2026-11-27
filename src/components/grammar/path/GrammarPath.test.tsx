@@ -89,4 +89,21 @@ describe('GrammarPath', () => {
       expect.stringContaining('/grammar/lessons/u01-l01/review')
     )
   })
+
+  test('unfolds the new current unit when a refresh moves the learner on', () => {
+    const before = path()
+    const { rerender } = render(<GrammarPath path={before} />)
+
+    expect(screen.queryByRole('button', { name: /Lesson u02-l01/ })).toBeNull()
+
+    rerender(<GrammarPath path={{ ...before, currentUnitId: 'u02' }} />)
+
+    expect(
+      screen.getByRole('button', { name: /Lesson u02-l01, locked/ })
+    ).toBeTruthy()
+    // What was open stays open.
+    expect(
+      screen.getByRole('button', { name: /Lesson u01-l01, done/ })
+    ).toBeTruthy()
+  })
 })

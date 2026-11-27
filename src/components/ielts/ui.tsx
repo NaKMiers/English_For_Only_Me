@@ -2,7 +2,6 @@ import type { ComponentProps, ReactNode } from 'react'
 
 import { ContentPanel } from '@/components/common/ContentPanel'
 import { MetricTile } from '@/components/common/MetricTile'
-import { PageHero } from '@/components/common/PageHero'
 import { IconButton } from '@/components/ui/IconButton'
 import { ActionButton } from '@/components/ui/ActionButton'
 import { PageTag } from '@/components/ui/PageTag'
@@ -110,15 +109,4 @@ export function ExamSheet({
       {children}
     </div>
   )
-}
-
-/** Route hero (breadcrumb, tag, h1) that stays readable in light-up. */
-export function ExamHero({
-  children,
-  className,
-}: {
-  children: ReactNode
-  className?: string
-}) {
-  return <PageHero className={className}>{children}</PageHero>
 }

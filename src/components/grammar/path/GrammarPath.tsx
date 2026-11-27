@@ -476,6 +476,14 @@ export function GrammarPath({ path }: Props) {
   const [openIds, setOpenIds] = useState<Set<string>>(
     () => new Set(initialOpenUnitIds(path))
   )
+  // A refresh (a replayed session landing) can move the learner to a new
+  // unit: unfold it too, keeping whatever they opened themselves.
+  const [openedFor, setOpenedFor] = useState(path.currentUnitId)
+
+  if (openedFor !== path.currentUnitId) {
+    setOpenedFor(path.currentUnitId)
+    setOpenIds(current => new Set([...current, ...initialOpenUnitIds(path)]))
+  }
   const [level, setLevel] = useState<CefrLevel | 'all'>('all')
   const href = nextHref(path.next)
   const summaries = path.units.map(summarizeUnit)

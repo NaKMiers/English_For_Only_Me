@@ -1,7 +1,7 @@
 import {
   SkeletonBlock,
+  SkeletonHero,
   SkeletonPageShell,
-  SkeletonPanel,
 } from '@/components/common/PageSkeletons'
 import { getMessages } from '@/i18n/server'
 
@@ -13,24 +13,18 @@ export default async function Loading() {
       activeHref="/vocabulary"
       subtitle={t.vocabulary.page.subtitle}
     >
-      <SkeletonPanel lines={1} />
-      <div className="flex flex-wrap gap-2">
+      <SkeletonHero withEyebrow={false} />
+      <div className="flex gap-2 overflow-hidden">
         {Array.from({ length: 5 }).map((_, index) => (
           <SkeletonBlock
             key={index}
-            className="rounded-control h-10 w-28 border"
+            className="h-10 w-28 shrink-0 rounded-full"
           />
         ))}
       </div>
-      <SkeletonBlock className="h-20" />
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-        {Array.from({ length: 6 }).map((_, index) => (
-          <SkeletonBlock
-            key={index}
-            className="h-44"
-          />
-        ))}
-      </div>
+      <SkeletonBlock className="h-16" />
+      {/* One dense row per word, like VocabularyWordList. */}
+      <SkeletonBlock className="h-[30rem]" />
     </SkeletonPageShell>
   )
 }
