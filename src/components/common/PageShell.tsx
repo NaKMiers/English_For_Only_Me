@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils'
 
 import { AppCredits } from './AppCredits'
 import { AppSidebar } from './AppSidebar'
+import { AppTabBar } from './AppTabBar'
 
 interface Props {
   children: ReactNode
@@ -41,6 +42,9 @@ export function PageShell({
           ? 'h-dvh sm:h-[calc(100dvh-40px)] lg:h-[calc(100dvh-64px)]'
           : 'min-h-dvh sm:min-h-[calc(100dvh-40px)] lg:min-h-[calc(100dvh-64px)]',
         fullHeight === 'lg' && 'lg:h-[calc(100dvh-64px)] lg:min-h-0',
+        // Room under the last row for the phone tab bar (64px bar + its gap).
+        fullHeight !== true &&
+          'max-md:pb-[calc(88px+env(safe-area-inset-bottom))]',
         className
       )}
     >
@@ -67,11 +71,15 @@ export function PageShell({
           {footer}
         </footer>
       ) : null}
-      {/* Work screens locked to one viewport keep every pixel for the task. */}
+      {/* Work screens locked to one viewport keep every pixel for the task,
+          so they get neither the credits nor the phone tab bar. */}
       {fullHeight === true ? null : (
-        <AppCredits
-          className={cn('md:col-start-2', fullHeight === 'lg' && 'lg:hidden')}
-        />
+        <>
+          <AppCredits
+            className={cn('md:col-start-2', fullHeight === 'lg' && 'lg:hidden')}
+          />
+          <AppTabBar className="md:hidden" />
+        </>
       )}
     </div>
   )

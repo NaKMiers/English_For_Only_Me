@@ -17,7 +17,8 @@ import { cn } from '@/lib/utils'
 
 import { ThemeToggle } from './ThemeToggle'
 
-const NAV_ICONS: Record<string, LucideIcon> = {
+/** Icon per primary route, shared by the rail and the phone tab bar. */
+export const NAV_ICONS: Record<string, LucideIcon> = {
   '/': House,
   '/dictation': Headphones,
   '/vocabulary': BookA,
