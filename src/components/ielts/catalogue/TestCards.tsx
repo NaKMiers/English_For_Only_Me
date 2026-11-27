@@ -109,11 +109,11 @@ export function TestCards({ bands, catalog }: Props) {
           {/* No colour class: it inherits the shell's ink (cream on the dark
               light-up room). Red reads as an error here. */}
           <h2 className="font-sans text-lg font-semibold">{group.heading}</h2>
-          <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          <ul className="motion-stagger grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
             {group.tests.map(({ entry, label }) => (
               <li key={entry.id}>
                 <Link
-                  className="border-line bg-surface hover:bg-tint-soft rounded-panel soft-press grid gap-2 border px-4 py-3"
+                  className="border-line bg-surface hover:bg-tint-soft rounded-panel soft-press hover-lift grid gap-2 border px-4 py-3"
                   href={`/ielts/${entry.slug}`}
                   title={entry.title}
                 >

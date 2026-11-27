@@ -20,7 +20,7 @@ export function VocabularyStatsOverview({ stats }: Props) {
 
   return (
     <>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="motion-stagger grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         <MetricTile
           href="/vocabulary/words?view=learning"
           label="Learning"
@@ -64,7 +64,7 @@ export function VocabularyStatsOverview({ stats }: Props) {
                 className="grid min-w-0 gap-1"
               >
                 <div
-                  className="border-line bg-brand rounded-tag min-h-2 border"
+                  className="border-line bg-brand rounded-tag motion-grow-y min-h-2 border"
                   style={{
                     height: `${Math.max(8, (point.count / maxGrowth) * 96)}px`,
                   }}

@@ -82,7 +82,7 @@ function ProgressTile({ stat }: { stat: ProgressStat }) {
     <Link
       href={stat.href}
       className={cn(
-        'soft-press grid min-w-0 gap-3 rounded-[20px] p-4 hover:brightness-[0.98]',
+        'soft-press hover-lift grid min-w-0 gap-3 rounded-[20px] p-4',
         stat.tint
       )}
     >
@@ -321,7 +321,7 @@ export function HomeStudyDesk({
           </nav>
         </div>
 
-        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_minmax(0,0.95fr)]">
+        <div className="motion-stagger grid gap-5 md:grid-cols-2 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_minmax(0,0.95fr)]">
           {/* Column 1: progress, modules, counters */}
           <div className="grid min-w-0 content-start gap-5 md:col-span-2 xl:col-span-1">
             <Card className="grid gap-3">

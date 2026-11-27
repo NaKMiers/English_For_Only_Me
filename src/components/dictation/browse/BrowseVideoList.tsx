@@ -40,7 +40,7 @@ function VideoCard({
       className={cn(
         'border-line bg-surface rounded-panel relative grid min-w-0 gap-2 border p-2',
         video.practiceHref &&
-          'hover:bg-tint focus-within:bg-tint cursor-pointer'
+          'hover:bg-tint focus-within:bg-tint hover-lift cursor-pointer'
       )}
     >
       {video.practiceHref && (
@@ -139,7 +139,7 @@ export function BrowseVideoList({
     <ul
       id={id}
       className={cn(
-        'grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4',
+        'motion-stagger grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4',
         className
       )}
     >

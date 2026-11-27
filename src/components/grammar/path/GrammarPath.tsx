@@ -414,7 +414,7 @@ export function GrammarPath({ path }: Props) {
         ) : null}
       </div>
 
-      <div className="mx-auto grid w-full max-w-xl gap-14 pb-10">
+      <div className="motion-stagger mx-auto grid w-full max-w-xl gap-14 pb-10">
         {path.units.map(unit => (
           <UnitSection
             key={unit.id}

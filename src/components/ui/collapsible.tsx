@@ -37,7 +37,10 @@ function CollapsiblePanel({
   return (
     <CollapsiblePrimitive.Panel
       data-slot="collapsible-panel"
-      className={cn('min-w-0', className)}
+      className={cn(
+        'min-w-0 transition-[opacity,translate] duration-200 ease-(--ease-out-soft) data-ending-style:opacity-0 data-starting-style:-translate-y-1 data-starting-style:opacity-0 motion-reduce:translate-none',
+        className
+      )}
       {...props}
     />
   )

@@ -32,7 +32,7 @@ export function MetricTile({
 }: Props) {
   const classNames = cn(
     'border-line grid min-h-36 min-w-0 gap-3 rounded-panel border p-4',
-    href && 'soft-press hover:bg-tint-soft',
+    href && 'soft-press hover-lift hover:bg-tint-soft',
     toneClassName[tone],
     className
   )

@@ -120,8 +120,24 @@ function toggleTheme() {
   } catch {
     // ignore storage failures (private mode etc.) - theme still applies
   }
-  scheduleNext()
-  notify()
+  const apply = () => {
+    // Stamped here as well as in the provider's effect so the view transition
+    // below captures the new colours in its update callback.
+    document.documentElement.setAttribute('data-theme', next)
+    scheduleNext()
+    notify()
+  }
+  // Cross-fade the whole page once instead of letting every surface run its
+  // own colour transition. Falls back to an instant swap without support or
+  // with reduced motion.
+  if (
+    typeof document.startViewTransition !== 'function' ||
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  ) {
+    apply()
+    return
+  }
+  document.startViewTransition(apply)
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {

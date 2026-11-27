@@ -59,6 +59,7 @@ export function DictationFeedback({ attempt, className }: Props) {
         role="status"
         className={cn(
           'border-line rounded-control flex items-start gap-3 border p-3 text-sm leading-6 font-semibold',
+          'motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-1',
           attempt.isPassed ? 'bg-lesson-correct/10' : 'bg-tint'
         )}
       >
