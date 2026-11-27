@@ -143,7 +143,7 @@ export function AppSidebar({ className }: Props) {
         })}
       </nav>
       <ThemeToggle />
-      <LocaleToggle className="w-14" />
+      <LocaleToggle variant="round" />
     </aside>
   )
 }

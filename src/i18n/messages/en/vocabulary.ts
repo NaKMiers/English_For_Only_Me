@@ -172,6 +172,14 @@ export const vocabulary = {
     loadFailed: 'Could not load more cards',
     loadingMore: 'Loading more cards',
     oneMoment: 'One moment.',
+    correct: 'Correct!',
+    notQuite: 'Not quite',
+    meaning: 'Vietnamese meaning',
+    definition: 'Definition',
+    example: 'Example',
+    pressEnter: 'Press Enter to continue',
+    keysHint: 'Press 1-4 to answer',
+    progress: 'Card {number} of {total}',
   },
   wordList: {
     count: {

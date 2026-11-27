@@ -27,6 +27,9 @@ export const dictation = {
     title: 'All topics',
     latestResults: 'View Latest Results',
     favoritesLink: '★ Favorites',
+    fullStats: 'Full stats',
+    topicsHeading: 'Topics',
+    statsLabel: 'Your listening progress',
     descriptionSignedIn:
       'Pick a topic, then a section, then continue building your listening history.',
     descriptionGuest:

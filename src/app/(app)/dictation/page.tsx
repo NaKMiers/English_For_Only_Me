@@ -5,7 +5,7 @@ import { AppTopbar } from '@/components/common/AppTopbar'
 import { AuthControl } from '@/components/common/AuthControl'
 import { PageShell } from '@/components/common/PageShell'
 import { PageHeader } from '@/components/common/PageHeader'
-import { DictationGlobalStats } from '@/components/dictation/DictationGlobalStats'
+import { DictationStatsStrip } from '@/components/dictation/browse/DictationStatsStrip'
 import { InProgressSection } from '@/components/dictation/browse/InProgressSection'
 import { TopicGrid } from '@/components/dictation/browse/TopicGrid'
 import { ActionButton } from '@/components/ui/ActionButton'
@@ -45,16 +45,6 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
-
-function BrowseFooter({ appName }: { appName: string }) {
-  return (
-    <div className="border-line text-ink-soft border-t px-5 py-4">
-      <strong className="font-sans text-sm font-medium tracking-normal">
-        {appName}
-      </strong>
-    </div>
-  )
-}
 
 export default async function DictationPage() {
   const t = await getMessages()
@@ -127,9 +117,8 @@ export default async function DictationPage() {
           authControl={<AuthControl />}
         />
       }
-      footer={<BrowseFooter appName={t.common.app.name} />}
     >
-      <section className="grid gap-5 px-4 pb-6 md:pr-6 md:pl-0">
+      <section className="grid gap-4 px-4 pb-6 md:pr-6 md:pl-0">
         <PageHeader
           actions={
             <>
@@ -159,21 +148,33 @@ export default async function DictationPage() {
           }
           title={text.title}
         />
+        {globalStats ? (
+          <DictationStatsStrip
+            labels={t.dictation}
+            stats={globalStats}
+          />
+        ) : null}
         <InProgressSection
           videos={inProgressItems}
           canFavorite={canFavorite}
           labels={t.dictation.browse}
         />
-        <TopicGrid
-          labels={t.dictation.browse}
-          topics={topics}
-          noTopicCount={noTopicCount}
-        />
-        {globalStats ? (
-          <div className="border-line/20 mt-4 border-t pt-8">
-            <DictationGlobalStats stats={globalStats} />
-          </div>
-        ) : null}
+        <section
+          aria-labelledby="dictation-topics-title"
+          className="grid gap-3"
+        >
+          <h2
+            className="font-sans text-lg font-medium"
+            id="dictation-topics-title"
+          >
+            {text.topicsHeading}
+          </h2>
+          <TopicGrid
+            labels={t.dictation.browse}
+            topics={topics}
+            noTopicCount={noTopicCount}
+          />
+        </section>
       </section>
     </PageShell>
   )

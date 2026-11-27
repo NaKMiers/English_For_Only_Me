@@ -66,8 +66,7 @@ export const grammar = {
     go: 'Go',
     reviewDue: 'Review due',
     weakSpotsLabel: 'Weak spots',
-    level: 'Level',
-    allLevels: 'All',
+    jumpToCurrent: 'Back to my lesson',
   },
   notes: {
     path: 'Path',

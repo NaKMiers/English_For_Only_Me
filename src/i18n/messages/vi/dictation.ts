@@ -29,6 +29,9 @@ export const dictation: Messages['dictation'] = {
     title: 'Tất cả chủ đề',
     latestResults: 'Xem kết quả gần nhất',
     favoritesLink: '★ Yêu thích',
+    fullStats: 'Xem thống kê',
+    topicsHeading: 'Chủ đề',
+    statsLabel: 'Tiến độ nghe của bạn',
     descriptionSignedIn:
       'Chọn một chủ đề, rồi một phần, rồi tiếp tục xây dựng lịch sử luyện nghe của bạn.',
     descriptionGuest:

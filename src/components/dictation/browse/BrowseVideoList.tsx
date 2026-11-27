@@ -38,18 +38,27 @@ function VideoCard({
   canFavorite,
   labels,
   priority,
+  className,
 }: {
   video: BrowseVideoItem
   canFavorite: boolean
   labels: BrowseCardLabels
   priority: boolean
+  className?: string
 }) {
+  const action = video.inProgress
+    ? labels.continue
+    : video.completions > 0
+      ? labels.practiceAgain
+      : labels.practice
+
   return (
     <li
       className={cn(
-        'border-line bg-surface rounded-panel relative grid min-w-0 gap-2 border p-2',
+        'border-line bg-surface rounded-panel relative grid min-w-0 content-start gap-1.5 border p-1.5',
         video.practiceHref &&
-          'hover:bg-tint focus-within:bg-tint hover-lift cursor-pointer'
+          'hover:bg-tint-soft focus-within:bg-tint-soft hover-lift cursor-pointer',
+        className
       )}
     >
       {video.practiceHref && (
@@ -64,7 +73,7 @@ function VideoCard({
           title={video.title}
           thumbnailUrl={video.thumbnailUrl}
           youtubeVideoId={video.youtubeVideoId}
-          sizes="(min-width: 1024px) 22vw, (min-width: 640px) 33vw, 50vw"
+          sizes="(min-width: 1280px) 18vw, (min-width: 1024px) 22vw, (min-width: 640px) 33vw, 50vw"
           priority={priority}
           className="w-full"
         />
@@ -76,40 +85,34 @@ function VideoCard({
           />
         </span>
       </div>
-      <div className="pointer-events-none flex min-w-0 flex-wrap items-center gap-1.5">
-        {video.completions > 0 && (
-          <Check
-            aria-label={labels.completed}
-            className="text-brand size-4 shrink-0"
-          />
-        )}
-        {video.level && <PageTag tone="sky">{video.level}</PageTag>}
-        <CompletionBadge completions={video.completions} />
-      </div>
-      <span className="pointer-events-none line-clamp-2 min-w-0 font-sans text-base leading-tight font-semibold">
+      <span className="pointer-events-none line-clamp-2 min-h-[2.5em] min-w-0 px-1 font-sans text-sm leading-tight font-medium">
         {video.title}
       </span>
-      <div className="pointer-events-none relative z-10">
+      <div className="pointer-events-none flex min-w-0 flex-wrap items-center gap-1 px-1 pb-0.5">
+        {video.level && <PageTag tone="sky">{video.level}</PageTag>}
+        <CompletionBadge completions={video.completions} />
         {video.practiceHref ? (
           <span
             aria-hidden="true"
             className={cn(
-              'border-line hover:bg-tint-soft rounded-control inline-flex min-h-9 w-full items-center justify-center border px-3 font-sans text-sm font-semibold',
+              'ml-auto inline-flex min-h-7 items-center gap-1 rounded-full px-2.5 text-xs font-medium',
               video.inProgress
-                ? 'bg-pastel-sky'
+                ? 'bg-brand-soft text-brand-ink'
                 : video.completions > 0
-                  ? 'bg-pastel-lemon'
-                  : 'bg-tint'
+                  ? 'bg-lesson-correct/10 text-lesson-correct'
+                  : 'bg-tint text-ink'
             )}
           >
-            {video.inProgress
-              ? labels.continue
-              : video.completions > 0
-                ? labels.practiceAgain
-                : labels.practice}
+            {video.completions > 0 && !video.inProgress ? (
+              <Check
+                aria-label={labels.completed}
+                className="size-3.5"
+              />
+            ) : null}
+            {action}
           </span>
         ) : (
-          <span className="text-ink-soft text-xs font-normal">
+          <span className="text-ink-soft ml-auto text-xs">
             {labels.noTranscript}
           </span>
         )}
@@ -126,6 +129,7 @@ export function BrowseVideoList({
   className,
   labels = en.dictation.browse.card,
   priorityCount = PRIORITY_CARD_COUNT,
+  layout = 'grid',
 }: {
   videos: BrowseVideoItem[]
   canFavorite: boolean
@@ -135,6 +139,8 @@ export function BrowseVideoList({
   className?: string
   /** Leading cards loaded eagerly; 0 for lists opened after load. */
   priorityCount?: number
+  /** `grid` wraps; `rail` is one horizontally scrolling row (resume shelf). */
+  layout?: 'grid' | 'rail'
 }) {
   if (videos.length === 0)
     return (
@@ -150,7 +156,9 @@ export function BrowseVideoList({
     <ul
       id={id}
       className={cn(
-        'motion-stagger grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4',
+        layout === 'rail'
+          ? 'flex snap-x gap-3 overflow-x-auto pb-1'
+          : 'motion-stagger grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5',
         className
       )}
     >
@@ -161,6 +169,9 @@ export function BrowseVideoList({
           canFavorite={canFavorite}
           labels={labels}
           priority={index < priorityCount}
+          className={
+            layout === 'rail' ? 'w-52 shrink-0 snap-start sm:w-56' : undefined
+          }
         />
       ))}
     </ul>

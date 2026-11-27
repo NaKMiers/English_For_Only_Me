@@ -1,6 +1,8 @@
 'use client'
 
 import {
+  ArrowDown,
+  ArrowUp,
   BookOpen,
   Check,
   ChevronDown,
@@ -16,7 +18,13 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import {
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type CSSProperties,
+} from 'react'
 
 import { useClientOutbox } from '@/components/common/OutboxOwnerProvider'
 import { PageHeader } from '@/components/common/PageHeader'
@@ -39,7 +47,6 @@ import { useMessages } from '@/i18n/client'
 import { format, plural } from '@/i18n/format'
 import type { Messages } from '@/i18n/messages'
 import { cn } from '@/lib/utils'
-import type { CefrLevel } from '@/modules/grammar/course/types'
 import type {
   GrammarPathView,
   PathLesson,
@@ -49,7 +56,6 @@ import type {
 import {
   firstDueLesson,
   initialOpenUnitIds,
-  pathLevels,
   summarizeUnit,
   unitOfNext,
   type UnitSummary,
@@ -115,182 +121,206 @@ function StarsInline({ stars }: { stars: number }) {
   )
 }
 
-const NODE_STYLE: Record<
-  PathLesson['state'],
-  { icon: typeof Play; circle: string }
-> = {
-  due: { circle: 'bg-brand-soft text-brand-ink', icon: RotateCcw },
-  locked: {
-    circle: 'border-line-strong text-ink-soft border border-dashed',
-    icon: Lock,
-  },
-  mastered: { circle: 'bg-pastel-lilac text-accent-purple', icon: Crown },
-  open: { circle: 'bg-cta text-cta-fg', icon: Play },
-  passed: { circle: 'bg-pastel-mint text-accent-green', icon: Check },
+/**
+ * Each unit wears one module-safe pastel (pink is the brand, so it is only
+ * used for the current lesson). `--node` is the solid colour of a finished
+ * lesson; the 3D ledge under every node is the same colour mixed darker.
+ */
+const UNIT_TONES = [
+  { banner: 'bg-pastel-lilac', node: 'var(--accent-purple)' },
+  { banner: 'bg-pastel-sky', node: 'var(--accent-blue)' },
+  { banner: 'bg-pastel-mint', node: 'var(--accent-green)' },
+  { banner: 'bg-pastel-peach', node: 'var(--accent-orange)' },
+] as const
+
+function unitTone(unit: PathUnit) {
+  return UNIT_TONES[(unit.order - 1) % UNIT_TONES.length]
 }
 
-/** One lesson as a compact tile; a click opens the lesson dialog. */
-function LessonTile({
+/** Horizontal offsets (px) for the winding path, repeated down the unit. */
+const ZIGZAG = [0, 44, 72, 44, 0, -44, -72, -44]
+
+function zigzagOffset(index: number) {
+  return ZIGZAG[index % ZIGZAG.length]
+}
+
+/** DOM id of the node a "continue" action points at, for jumping to it. */
+function nextNodeId(next: PathNext) {
+  if (next.kind === 'lesson' || next.kind === 'review')
+    return `node-${next.lessonId}`
+  if (next.kind === 'checkpoint') return `node-checkpoint-${next.unitId}`
+
+  return null
+}
+
+const NODE_BASE =
+  'relative grid place-items-center rounded-full transition-[translate,box-shadow] duration-100 active:translate-y-[5px] active:shadow-none motion-reduce:active:translate-y-0'
+
+function nodeLedge(color: string): CSSProperties {
+  return {
+    background: color,
+    boxShadow: `0 6px 0 color-mix(in srgb, ${color} 62%, #000)`,
+  }
+}
+
+/** One lesson as a round 3D button on the winding path. */
+function PathNode({
   index,
   lesson,
   onSelect,
+  toneColor,
 }: {
   index: number
   lesson: PathLesson
   onSelect: () => void
+  toneColor: string
 }) {
   const t = useMessages().grammar.path
-  const style = NODE_STYLE[lesson.state]
-  const Icon = style.icon
+  const isOpen = lesson.state === 'open'
   const done = lesson.state !== 'open' && lesson.state !== 'locked'
+  const color =
+    lesson.state === 'open'
+      ? 'var(--brand)'
+      : lesson.state === 'locked'
+        ? 'var(--line-strong)'
+        : lesson.state === 'mastered'
+          ? 'var(--accent-orange)'
+          : lesson.state === 'due'
+            ? 'var(--brand-soft)'
+            : toneColor
+  const Icon =
+    lesson.state === 'open'
+      ? Play
+      : lesson.state === 'locked'
+        ? Lock
+        : lesson.state === 'mastered'
+          ? Crown
+          : lesson.state === 'due'
+            ? RotateCcw
+            : Check
 
   return (
-    <li>
-      {/* Raw button: a lesson tile that opens a dialog, not a labelled
-          action button. */}
+    <li
+      className={cn(
+        'relative flex flex-col items-center gap-2.5',
+        isOpen && 'pt-9'
+      )}
+      style={{ transform: `translateX(${zigzagOffset(index)}px)` }}
+    >
+      {isOpen ? (
+        <span className="bg-surface text-brand-ink border-line absolute top-0 rounded-full border px-3 py-1 text-xs font-semibold whitespace-nowrap shadow-sm motion-safe:animate-bounce">
+          {t.start}
+        </span>
+      ) : null}
+      {/* Raw button: a round path node, not a labelled action button. */}
       <button
         aria-label={format(t.nodeLabel, {
           state: t.states[lesson.state],
           title: lesson.title,
         })}
         className={cn(
-          'soft-press hover-lift border-line bg-surface hover:bg-tint-soft rounded-control flex min-h-16 w-full items-center gap-3 border p-2.5 text-left',
-          lesson.state === 'open' && 'border-brand/50 bg-brand-soft/40',
-          lesson.state === 'locked' && 'text-ink-soft'
+          NODE_BASE,
+          isOpen ? 'size-[76px]' : 'size-16',
+          lesson.state === 'locked' ? 'text-ink-soft' : 'text-surface',
+          lesson.state === 'due' && 'text-brand-ink'
         )}
+        id={`node-${lesson.id}`}
         onClick={onSelect}
+        style={nodeLedge(color)}
         type="button"
       >
-        <span
-          className={cn(
-            'grid size-10 shrink-0 place-items-center rounded-full',
-            style.circle
-          )}
-        >
-          <Icon
+        {isOpen ? (
+          <span
             aria-hidden
-            className={cn(
-              'size-[18px]',
-              lesson.state === 'open' && 'fill-current'
-            )}
+            className="ring-brand/30 pointer-events-none absolute -inset-2 rounded-full ring-4 motion-safe:animate-pulse"
           />
-        </span>
-        <span className="grid min-w-0 flex-1 gap-1">
-          <span className="text-ink-soft text-[11px] leading-none">
-            {format(t.lesson, { number: index + 1 })}
-          </span>
-          <span className="text-sm leading-tight font-medium">
-            {lesson.title}
-          </span>
-        </span>
-        {done ? (
-          lesson.passedByTest ? (
-            <span className="text-ink-soft shrink-0 text-[11px]">
-              {t.testedOut}
-            </span>
-          ) : (
-            <StarsInline stars={lesson.stars} />
-          )
         ) : null}
+        <Icon
+          aria-hidden
+          className={cn(
+            isOpen ? 'size-8 fill-current' : 'size-7',
+            (lesson.state === 'passed' || lesson.state === 'due') &&
+              'stroke-[3]'
+          )}
+        />
       </button>
+      {done ? (
+        lesson.passedByTest ? (
+          <span className="text-ink-soft text-[11px]">{t.testedOut}</span>
+        ) : (
+          <StarsInline stars={lesson.stars} />
+        )
+      ) : null}
+      <span
+        className={cn(
+          'max-w-36 text-center text-xs leading-tight font-medium',
+          lesson.state === 'locked' && 'text-ink-soft'
+        )}
+      >
+        <span className="text-ink-soft block text-[10px] font-normal">
+          {format(t.lesson, { number: index + 1 })}
+        </span>
+        {lesson.title}
+      </span>
     </li>
   )
 }
 
-/** The unit's checkpoint (or its test-out when locked) as the last tile. */
-function CheckpointTile({ unit }: { unit: PathUnit }) {
+/** The unit's checkpoint as the last, larger node on the path. */
+function CheckpointNode({ index, unit }: { index: number; unit: PathUnit }) {
   const t = useMessages().grammar.path
-
-  if (unit.state === 'locked')
-    return (
-      <li>
-        <Link
-          className="soft-press border-line-strong text-ink hover:bg-tint-soft rounded-control flex min-h-16 items-center gap-3 border border-dashed p-2.5"
-          href={`/grammar/units/${unit.id}/checkpoint`}
-        >
-          <span className="bg-pastel-peach text-accent-orange grid size-10 shrink-0 place-items-center rounded-full">
-            <Trophy
-              aria-hidden
-              className="size-[18px]"
-            />
-          </span>
-          <span className="text-sm font-medium">{t.testOut}</span>
-        </Link>
-      </li>
-    )
-
   const locked = unit.checkpoint === 'locked'
   const passed = unit.checkpoint === 'passed'
 
   return (
-    <li>
+    <li
+      className="flex flex-col items-center gap-2.5 pt-2"
+      style={{ transform: `translateX(${zigzagOffset(index)}px)` }}
+    >
       <Link
         aria-disabled={locked}
+        aria-label={passed ? t.checkpointPassed : t.checkpoint}
         className={cn(
-          'soft-press rounded-control flex min-h-16 items-center gap-3 border p-2.5',
-          locked
-            ? 'border-line-strong text-ink-soft pointer-events-none border-dashed'
-            : 'border-line bg-pastel-peach/60 hover:bg-pastel-peach'
+          NODE_BASE,
+          'size-[72px]',
+          locked ? 'text-ink-soft pointer-events-none' : 'text-surface'
         )}
         href={`/grammar/units/${unit.id}/checkpoint`}
+        id={`node-checkpoint-${unit.id}`}
+        style={nodeLedge(
+          locked
+            ? 'var(--line-strong)'
+            : passed
+              ? 'var(--accent-green)'
+              : 'var(--accent-orange)'
+        )}
         tabIndex={locked ? -1 : undefined}
       >
-        <span
-          className={cn(
-            'grid size-10 shrink-0 place-items-center rounded-full',
-            passed
-              ? 'bg-pastel-mint text-accent-green'
-              : 'bg-surface text-accent-orange'
-          )}
-        >
-          {passed ? (
-            <Check
-              aria-hidden
-              className="size-[18px]"
-            />
-          ) : (
-            <Trophy
-              aria-hidden
-              className="size-[18px]"
-            />
-          )}
-        </span>
-        <span className="text-sm font-medium">
-          {passed ? t.checkpointPassed : t.checkpoint}
-        </span>
+        {passed ? (
+          <Check
+            aria-hidden
+            className="size-8 stroke-[3]"
+          />
+        ) : (
+          <Trophy
+            aria-hidden
+            className="size-8"
+          />
+        )}
       </Link>
+      <span className={cn('text-xs font-medium', locked && 'text-ink-soft')}>
+        {passed ? t.checkpointPassed : t.checkpoint}
+      </span>
     </li>
   )
 }
 
-/** Header line shared by the unit card and its index row. */
-function UnitBadge({ summary }: { summary: UnitSummary }) {
-  const complete = summary.state === 'complete'
-
-  return (
-    <ProgressRing
-      percent={complete ? 100 : summary.percent}
-      ringClassName={complete ? 'text-accent-green' : 'text-brand'}
-      size={44}
-    >
-      {complete ? (
-        <Check
-          aria-hidden
-          className="text-accent-green size-4 stroke-3"
-        />
-      ) : summary.state === 'locked' ? (
-        <Lock
-          aria-hidden
-          className="text-ink-soft size-4"
-        />
-      ) : (
-        summary.order
-      )}
-    </ProgressRing>
-  )
-}
-
-function UnitCard({
+/**
+ * One unit: a sticky banner that folds the unit, then its winding path of
+ * lessons ending in the checkpoint. Only the current unit starts unfolded,
+ * so the page never turns into one endless scroll.
+ */
+function UnitTrail({
   isCurrent,
   onOpenChange,
   onSelectLesson,
@@ -306,6 +336,8 @@ function UnitCard({
   const messages = useMessages()
   const t = messages.grammar.path
   const summary = summarizeUnit(unit)
+  const tone = unitTone(unit)
+  const complete = summary.state === 'complete'
 
   return (
     <Collapsible
@@ -314,20 +346,42 @@ function UnitCard({
       render={
         <section
           aria-labelledby={`unit-${unit.id}-title`}
-          className={cn(
-            'border-line bg-surface rounded-panel shadow-card scroll-mt-6 border',
-            isCurrent && 'border-brand/40'
-          )}
+          className="grid scroll-mt-4 gap-2"
           id={`unit-${unit.id}`}
         />
       }
     >
-      {/* The heading wraps the trigger (accordion pattern), never the
-          other way round. */}
-      <h2 className="font-normal">
-        <CollapsibleTrigger className="group/unit hover:bg-tint-soft rounded-panel flex w-full items-center gap-3 p-3 text-left sm:gap-4 sm:p-4">
-          <UnitBadge summary={summary} />
-          <span className="grid min-w-0 flex-1 gap-1">
+      {/* The heading wraps the trigger (accordion pattern). The banner sticks
+          while its lessons scroll under it, like a chapter heading. */}
+      <h2 className="sticky top-2 z-20 font-normal">
+        <CollapsibleTrigger
+          className={cn(
+            'group/unit soft-press flex w-full items-center gap-3 rounded-3xl p-3 text-left shadow-sm sm:gap-4 sm:p-4',
+            tone.banner,
+            isCurrent && 'ring-brand/40 ring-2'
+          )}
+        >
+          <ProgressRing
+            className="bg-surface/70 rounded-full"
+            percent={complete ? 100 : summary.percent}
+            ringClassName={complete ? 'text-accent-green' : 'text-brand'}
+            size={44}
+          >
+            {complete ? (
+              <Check
+                aria-hidden
+                className="text-accent-green size-4 stroke-3"
+              />
+            ) : summary.state === 'locked' ? (
+              <Lock
+                aria-hidden
+                className="text-ink-soft size-4"
+              />
+            ) : (
+              summary.order
+            )}
+          </ProgressRing>
+          <span className="grid min-w-0 flex-1 gap-0.5">
             <span className="text-ink-soft flex flex-wrap items-center gap-x-2 text-xs">
               <span>
                 {format(messages.grammar.unitLevel, {
@@ -336,7 +390,7 @@ function UnitCard({
                 })}
               </span>
               {isCurrent ? (
-                <span className="bg-brand-soft text-brand-ink rounded-full px-2 py-0.5 font-medium">
+                <span className="bg-surface text-brand-ink rounded-full px-2 py-0.5 font-medium">
                   {t.current}
                 </span>
               ) : null}
@@ -359,35 +413,56 @@ function UnitCard({
           </span>
           <span className="text-ink-soft hidden shrink-0 text-right text-xs sm:grid">
             <span className="text-ink font-medium tabular-nums">
-              {summary.done}/{summary.total}
+              {format(t.lessonsCount, {
+                done: summary.done,
+                total: summary.total,
+              })}
             </span>
             <span className="flex items-center justify-end gap-1 tabular-nums">
               <Star
                 aria-hidden
                 className="fill-brand text-brand size-3"
               />
-              {summary.stars}
+              {summary.stars}/{summary.maxStars}
             </span>
           </span>
-          <ChevronDown
-            aria-hidden
-            className="text-ink-soft size-5 shrink-0 transition-transform group-data-[panel-open]/unit:rotate-180"
-          />
+          <span className="bg-surface/70 grid size-9 shrink-0 place-items-center rounded-full">
+            <ChevronDown
+              aria-hidden
+              className="text-ink-soft size-5 transition-transform group-data-[panel-open]/unit:rotate-180"
+            />
+          </span>
         </CollapsibleTrigger>
       </h2>
       <CollapsiblePanel>
-        <div className="grid gap-3 px-3 pb-3 sm:px-4 sm:pb-4">
-          <p className="text-ink-soft text-sm">{unit.summary}</p>
-          <ol className="grid gap-2 sm:grid-cols-2 2xl:grid-cols-3">
+        <div className="grid gap-4 pt-3 pb-6">
+          <p className="text-ink-soft mx-auto max-w-md text-center text-sm">
+            {unit.summary}
+          </p>
+          {unit.state === 'locked' ? (
+            <ActionButton
+              className="w-fit justify-self-center"
+              href={`/grammar/units/${unit.id}/checkpoint`}
+              icon={<Trophy aria-hidden />}
+              tone="paper"
+            >
+              {t.testOut}
+            </ActionButton>
+          ) : null}
+          <ol className="flex flex-col items-center gap-6">
             {unit.lessons.map((lesson, index) => (
-              <LessonTile
+              <PathNode
                 index={index}
                 key={lesson.id}
                 lesson={lesson}
                 onSelect={() => onSelectLesson(lesson)}
+                toneColor={tone.node}
               />
             ))}
-            <CheckpointTile unit={unit} />
+            <CheckpointNode
+              index={unit.lessons.length}
+              unit={unit}
+            />
           </ol>
         </div>
       </CollapsiblePanel>
@@ -395,7 +470,6 @@ function UnitCard({
   )
 }
 
-/** Jump list of every unit: a sticky column on desktop, a strip on phones. */
 function UnitIndex({
   currentUnitId,
   onJump,
@@ -484,17 +558,12 @@ export function GrammarPath({ path }: Props) {
     setOpenedFor(path.currentUnitId)
     setOpenIds(current => new Set([...current, ...initialOpenUnitIds(path)]))
   }
-  const [level, setLevel] = useState<CefrLevel | 'all'>('all')
   const href = nextHref(path.next)
   const summaries = path.units.map(summarizeUnit)
-  const levels = pathLevels(path.units)
   const nextUnit = unitOfNext(path)
   const nextSummary = nextUnit ? summarizeUnit(nextUnit) : null
   const dueLesson = firstDueLesson(path.units)
-  const visibleUnits =
-    level === 'all'
-      ? path.units
-      : path.units.filter(unit => unit.level === level)
+  const targetNodeId = nextNodeId(path.next)
 
   // Opening the outbox replays any finished session that never reached the
   // server (closed tab, dropped network). Once the last one lands, re-render
@@ -513,8 +582,65 @@ export function GrammarPath({ path }: Props) {
     wasSyncingRef.current = syncing
   }, [router, syncing])
 
-  // Index click: unfold the unit (and drop a level filter hiding it), then
-  // scroll once the panel is in the DOM.
+  // Floating "back to my lesson" button: shown while the next node is folded
+  // away or scrolled out of view, pointing the way to it. Measured on scroll,
+  // resize and fold changes (an IntersectionObserver misreads a node while
+  // its panel is still animating open).
+  const [targetDirection, setTargetDirection] = useState<'up' | 'down' | null>(
+    null
+  )
+  const nextUnitId = nextUnit?.id ?? null
+  const targetUnitOpen = nextUnitId ? openIds.has(nextUnitId) : false
+
+  useEffect(() => {
+    if (!targetNodeId) return
+
+    let frame: number | null = null
+
+    function measure() {
+      frame = null
+      const node = targetUnitOpen
+        ? document.getElementById(targetNodeId ?? '')
+        : null
+      const anchor =
+        node ??
+        (nextUnitId ? document.getElementById(`unit-${nextUnitId}`) : null)
+
+      if (!anchor) {
+        setTargetDirection(null)
+        return
+      }
+
+      const rect = anchor.getBoundingClientRect()
+      const visible =
+        node !== null &&
+        rect.height > 0 &&
+        rect.bottom > 0 &&
+        rect.top < window.innerHeight
+
+      setTargetDirection(visible ? null : rect.top < 0 ? 'up' : 'down')
+    }
+
+    function schedule() {
+      if (frame === null) frame = requestAnimationFrame(measure)
+    }
+
+    schedule()
+    // Once more after the fold animation settles.
+    const settle = window.setTimeout(schedule, 450)
+
+    window.addEventListener('scroll', schedule, { passive: true })
+    window.addEventListener('resize', schedule)
+
+    return () => {
+      window.clearTimeout(settle)
+      window.removeEventListener('scroll', schedule)
+      window.removeEventListener('resize', schedule)
+      if (frame !== null) cancelAnimationFrame(frame)
+    }
+  }, [nextUnitId, targetNodeId, targetUnitOpen])
+
+  // Index click: unfold the unit, then scroll once the panel is in the DOM.
   const jumpTimer = useRef<number | null>(null)
 
   useEffect(
@@ -535,22 +661,29 @@ export function GrammarPath({ path }: Props) {
     })
   }
 
-  function jumpToUnit(unitId: string) {
-    const unit = path.units.find(item => item.id === unitId)
-
-    if (unit && level !== 'all' && unit.level !== level) setLevel('all')
-    setUnitOpen(unitId, true)
+  function scrollToElement(id: string, block: ScrollLogicalPosition) {
     if (jumpTimer.current !== null) cancelAnimationFrame(jumpTimer.current)
     jumpTimer.current = requestAnimationFrame(() => {
       const reduce = window.matchMedia(
         '(prefers-reduced-motion: reduce)'
       ).matches
 
-      document.getElementById(`unit-${unitId}`)?.scrollIntoView({
+      document.getElementById(id)?.scrollIntoView({
         behavior: reduce ? 'auto' : 'smooth',
-        block: 'start',
+        block,
       })
     })
+  }
+
+  function jumpToUnit(unitId: string) {
+    setUnitOpen(unitId, true)
+    scrollToElement(`unit-${unitId}`, 'start')
+  }
+
+  function jumpToTarget() {
+    if (!targetNodeId) return
+    if (nextUnit) setUnitOpen(nextUnit.id, true)
+    scrollToElement(targetNodeId, 'center')
   }
 
   const lesson = selected?.lesson
@@ -729,48 +862,40 @@ export function GrammarPath({ path }: Props) {
           summaries={summaries}
         />
 
-        <div className="grid min-w-0 content-start gap-3">
-          {levels.length > 1 ? (
-            <div
-              aria-label={t.level}
-              className="flex flex-wrap gap-2"
-              role="group"
-            >
-              {(['all', ...levels] as const).map(value => (
-                // Segmented filter (aria-pressed): documented raw-button
-                // exception.
-                <button
-                  aria-pressed={level === value}
-                  className={cn(
-                    'soft-press min-h-9 rounded-full border px-3.5 text-sm font-medium',
-                    level === value
-                      ? 'border-cta bg-cta text-cta-fg'
-                      : 'border-line bg-surface hover:bg-tint-soft'
-                  )}
-                  key={value}
-                  onClick={() => setLevel(value)}
-                  type="button"
-                >
-                  {value === 'all' ? t.allLevels : value}
-                </button>
-              ))}
-            </div>
-          ) : null}
-
-          <div className="motion-stagger grid gap-3">
-            {visibleUnits.map(unit => (
-              <UnitCard
-                isCurrent={unit.id === path.currentUnitId}
-                key={unit.id}
-                onOpenChange={open => setUnitOpen(unit.id, open)}
-                onSelectLesson={item => setSelected({ lesson: item, unit })}
-                open={openIds.has(unit.id)}
-                unit={unit}
-              />
-            ))}
-          </div>
+        <div className="grid min-w-0 content-start gap-4 lg:mx-auto lg:w-full lg:max-w-2xl">
+          {path.units.map(unit => (
+            <UnitTrail
+              isCurrent={unit.id === path.currentUnitId}
+              key={unit.id}
+              onOpenChange={open => setUnitOpen(unit.id, open)}
+              onSelectLesson={item => setSelected({ lesson: item, unit })}
+              open={openIds.has(unit.id)}
+              unit={unit}
+            />
+          ))}
         </div>
       </div>
+
+      {targetDirection && targetNodeId ? (
+        <button
+          className="soft-press bg-cta text-cta-fg hover:shadow-float motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-2 fixed right-4 bottom-[calc(max(12px,env(safe-area-inset-bottom))+5rem)] z-30 flex min-h-11 items-center gap-2 rounded-full px-4 text-sm font-medium shadow-lg md:right-8 md:bottom-8"
+          onClick={jumpToTarget}
+          type="button"
+        >
+          {targetDirection === 'up' ? (
+            <ArrowUp
+              aria-hidden
+              className="size-4"
+            />
+          ) : (
+            <ArrowDown
+              aria-hidden
+              className="size-4"
+            />
+          )}
+          {t.jumpToCurrent}
+        </button>
+      ) : null}
 
       <Dialog
         onOpenChange={open => {

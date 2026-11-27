@@ -23,8 +23,9 @@ describe('AppSidebar', () => {
   test('carries the EN / VI switch under the theme toggle', () => {
     const html = renderToStaticMarkup(<AppSidebar />)
 
-    expect(html).toContain('aria-label="Language"')
-    expect(html).toMatch(/aria-pressed="true"[^>]*>EN</)
+    // One round button: shows the current language, offers the other one.
+    expect(html).toContain('aria-label="Switch to Vietnamese"')
+    expect(html).toMatch(/lang="en"[^>]*>.*EN</)
   })
 
   test('labels the rail in Vietnamese under the Vietnamese provider', () => {
@@ -39,7 +40,7 @@ describe('AppSidebar', () => {
 
     expect(html).toContain('aria-label="Điều hướng chính"')
     expect(html).toMatch(/aria-label="Chính tả"[^>]*aria-current="page"/)
-    expect(html).toMatch(/aria-pressed="true"[^>]*>VI</)
+    expect(html).toMatch(/lang="vi"[^>]*>.*VI</)
   })
 
   test('home only matches itself, modules match their subtree', () => {

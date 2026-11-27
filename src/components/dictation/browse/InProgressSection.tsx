@@ -50,6 +50,7 @@ export function InProgressSection({
         videos={videos}
         canFavorite={canFavorite}
         labels={labels.card}
+        layout="rail"
         className="border-line border-t p-3"
       />
     </BrowseDisclosure>

@@ -68,8 +68,7 @@ export const grammar: Messages['grammar'] = {
     go: 'Bắt đầu',
     reviewDue: 'Cần ôn tập',
     weakSpotsLabel: 'Điểm yếu',
-    level: 'Trình độ',
-    allLevels: 'Tất cả',
+    jumpToCurrent: 'Về bài đang học',
   },
   notes: {
     path: 'Lộ trình',

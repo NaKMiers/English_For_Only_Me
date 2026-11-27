@@ -9,28 +9,12 @@ import { SketchChart } from '@/components/common/SketchChart'
 import { ActionButton } from '@/components/ui/ActionButton'
 import { useMessages } from '@/i18n/client'
 import { format, plural } from '@/i18n/format'
-import type { Messages } from '@/i18n/messages'
 import type { DictationGlobalStatsRecord } from '@/modules/dictation/types'
+
+import { formatDuration } from './formatDuration'
 
 interface Props {
   stats: DictationGlobalStatsRecord
-}
-
-function formatDuration(
-  text: Messages['dictation']['duration'],
-  durationMs: number
-) {
-  const totalMinutes = Math.round(durationMs / 60000)
-
-  if (totalMinutes <= 0) return format(text.minutes, { minutes: 0 })
-
-  const hours = Math.floor(totalMinutes / 60)
-  const minutes = totalMinutes % 60
-
-  if (hours === 0) return format(text.minutes, { minutes })
-  if (minutes === 0) return format(text.hours, { hours })
-
-  return format(text.hoursMinutes, { hours, minutes })
 }
 
 export function DictationGlobalStats({ stats }: Props) {

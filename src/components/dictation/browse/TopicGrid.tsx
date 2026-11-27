@@ -39,7 +39,7 @@ function ThumbTile({
     <div
       aria-hidden="true"
       className={cn(
-        'border-line rounded-control grid size-16 shrink-0 place-items-center overflow-hidden border font-sans text-2xl font-semibold sm:size-20',
+        'border-line grid size-14 shrink-0 place-items-center overflow-hidden rounded-2xl border font-sans text-xl font-semibold',
         muted ? 'bg-tint text-ink-soft' : 'bg-tint-soft text-ink'
       )}
     >
@@ -81,7 +81,7 @@ function TopicCard({
     <Link
       href={href}
       className={cn(
-        'border-line hover:bg-tint-soft rounded-panel hover-lift soft-press grid grid-cols-[auto_1fr] items-center gap-3 border p-3',
+        'border-line hover:bg-tint-soft hover-lift soft-press grid grid-cols-[auto_1fr] items-center gap-3 rounded-[22px] border p-2.5',
         muted ? 'bg-tint' : 'bg-surface'
       )}
     >
@@ -91,16 +91,15 @@ function TopicCard({
         muted={muted}
       />
       <div className="grid min-w-0 gap-1">
-        <div className="flex min-w-0 flex-wrap items-center gap-2">
-          <span className="text-brand truncate font-sans text-lg font-semibold">
+        <div className="flex min-w-0 items-center gap-2">
+          <span className="truncate font-sans text-base font-medium">
             {title}
           </span>
           {hasVideoMedia && <PageTag tone="yellow">{labels.video}</PageTag>}
         </div>
-        <p className="text-ink-soft font-sans text-sm font-normal">
-          {format(labels.levels, { range: levelRange ?? '-' })}
+        <p className="text-ink-soft truncate text-xs">
+          {format(labels.levels, { range: levelRange ?? '-' })} · {lessonLabel}
         </p>
-        <p className="text-ink-soft text-sm">{lessonLabel}</p>
       </div>
     </Link>
   )
@@ -133,7 +132,7 @@ export function TopicGrid({
     )
 
   return (
-    <div className="motion-stagger grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+    <div className="motion-stagger grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
       {topics.map(topic => (
         <TopicCard
           key={topic.id}

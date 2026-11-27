@@ -109,7 +109,7 @@ export function TopbarMenuSheet({
           <span className="text-ink-soft text-sm">
             {t.common.language.label}
           </span>
-          <LocaleToggle className="w-24" />
+          <LocaleToggle />
         </div>
 
         {authControl ? (

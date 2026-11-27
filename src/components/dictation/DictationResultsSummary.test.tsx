@@ -74,8 +74,6 @@ describe('DictationResultsSummary', () => {
     )
 
     expect(view.getByText('In progress')).not.toBeNull()
-    expect(
-      view.getByRole('link', { name: 'Continue Practice' })
-    ).not.toBeNull()
+    expect(view.getByRole('link', { name: 'Continue Practice' })).not.toBeNull()
   })
 })

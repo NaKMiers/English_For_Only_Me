@@ -372,6 +372,41 @@ describe('VocabularyDashboard', () => {
     ).toBeInTheDocument()
   })
 
+  test('a right answer also stops on the card with the verdict and the Vietnamese meaning', async () => {
+    render(
+      <VocabularyDashboard
+        initialData={makeInitialData({ taskCount: 2 })}
+        mongoConfigured
+      />
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: /Start Recall/i }))
+    fireEvent.click(await screen.findByRole('button', { name: /word1/ }))
+
+    expect(screen.getByText('Correct!')).toBeInTheDocument()
+    expect(screen.getByText('word1 vi')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /word2/ })).toBeNull()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
+
+    expect(await screen.findByRole('button', { name: /word2/ })).toBeVisible()
+  })
+
+  test('a wrong answer shows the Vietnamese meaning too', async () => {
+    render(
+      <VocabularyDashboard
+        initialData={makeInitialData({ taskCount: 1 })}
+        mongoConfigured
+      />
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: /Start Recall/i }))
+    fireEvent.click(await screen.findByRole('button', { name: /other/ }))
+
+    expect(screen.getByText('Not quite')).toBeInTheDocument()
+    expect(screen.getByText('word1 vi')).toBeInTheDocument()
+  })
+
   test('keeps one idempotency key per recall task across retries', async () => {
     render(
       <VocabularyDashboard
@@ -406,12 +441,14 @@ describe('VocabularyDashboard', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /Start Recall/i }))
     fireEvent.click(await screen.findByRole('button', { name: /word1/ }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Continue' }))
     await waitFor(() => expect(controlled.calls).toHaveLength(1))
     controlled.calls[0].resolve(409, {
       message: 'This recall card is stale. Refresh recall.',
     })
 
     fireEvent.click(await screen.findByRole('button', { name: /word2/ }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Continue' }))
     await waitFor(() => expect(controlled.calls).toHaveLength(2))
     expect(mocks.getVocabStatsApi).not.toHaveBeenCalled()
     controlled.calls[1].resolve(200, {
@@ -443,6 +480,7 @@ describe('VocabularyDashboard', () => {
     expect(mocks.getDueVocabRecallApi).not.toHaveBeenCalled()
 
     fireEvent.click(await screen.findByRole('button', { name: /word1/ }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Continue' }))
 
     await waitFor(() =>
       expect(mocks.getDueVocabRecallApi).toHaveBeenCalledWith(
@@ -507,6 +545,7 @@ describe('VocabularyDashboard', () => {
       expect(mocks.getDueVocabRecallApi).toHaveBeenCalledTimes(1)
     )
     fireEvent.click(await screen.findByRole('button', { name: /word1/ }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Continue' }))
 
     expect(
       await screen.findByText('Could not load more cards')
@@ -707,6 +746,7 @@ describe('VocabularyDashboard', () => {
     fireEvent.click(screen.getByRole('button', { name: /Start Recall/i }))
     // The answer stays queued: the server never replies.
     fireEvent.click(await screen.findByRole('button', { name: /word1/ }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Continue' }))
 
     await waitFor(() => expect(mocks.getVocabStatsApi).toHaveBeenCalledTimes(1))
     expect(mocks.getDueVocabRecallApi).toHaveBeenCalledTimes(1)

@@ -174,6 +174,14 @@ export const vocabulary: Messages['vocabulary'] = {
     loadFailed: 'Không thể tải thêm thẻ',
     loadingMore: 'Đang tải thêm thẻ',
     oneMoment: 'Chờ một chút.',
+    correct: 'Chính xác!',
+    notQuite: 'Chưa đúng',
+    meaning: 'Nghĩa tiếng Việt',
+    definition: 'Định nghĩa',
+    example: 'Ví dụ',
+    pressEnter: 'Nhấn Enter để tiếp tục',
+    keysHint: 'Nhấn phím 1-4 để chọn',
+    progress: 'Thẻ {number}/{total}',
   },
   wordList: {
     count: {

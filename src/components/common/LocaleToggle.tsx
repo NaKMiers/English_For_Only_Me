@@ -10,13 +10,19 @@ import { cn } from '@/lib/utils'
 
 interface Props {
   className?: string
+  /**
+   * `segmented`: both languages side by side (phone menu, where there is
+   * room). `round`: one round button the size of the theme toggle that
+   * shows the current language and flips to the other one (the 56px rail).
+   */
+  variant?: 'segmented' | 'round'
 }
 
 /**
- * EN / VI pill. The choice is stored in a cookie by a server action, which
- * re-renders the page in the new language; the pill flips at once.
+ * EN / VI switch. The choice is stored in a cookie by a server action, which
+ * re-renders the page in the new language; the control flips at once.
  */
-export function LocaleToggle({ className }: Props) {
+export function LocaleToggle({ className, variant = 'segmented' }: Props) {
   const t = useMessages()
   const locale = useLocale()
   const [shown, setShown] = useOptimistic(locale)
@@ -29,6 +35,40 @@ export function LocaleToggle({ className }: Props) {
       setShown(next)
       await setLocaleAction(next)
     })
+  }
+
+  if (variant === 'round') {
+    const next = LOCALES.find(code => code !== shown) ?? shown
+    const label = format(t.common.language.switchTo, {
+      language: t.common.language.names[next],
+    })
+
+    return (
+      <button
+        type="button"
+        onClick={() => choose(next)}
+        aria-label={label}
+        aria-busy={pending || undefined}
+        title={label}
+        className={cn(
+          'soft-press border-line bg-surface-muted text-ink hover:bg-tint group relative grid size-12 place-items-center overflow-hidden rounded-full border',
+          className
+        )}
+      >
+        <span
+          key={shown}
+          lang={shown}
+          className="motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-2 grid place-items-center leading-none"
+        >
+          <span className="font-sans text-sm font-semibold">
+            {shown.toUpperCase()}
+          </span>
+          <span className="text-ink-soft group-hover:text-brand mt-0.5 font-sans text-[9px] font-medium transition-colors">
+            {next.toUpperCase()}
+          </span>
+        </span>
+      </button>
+    )
   }
 
   return (
@@ -60,9 +100,9 @@ export function LocaleToggle({ className }: Props) {
             }
             onClick={() => choose(code)}
             className={cn(
-              'soft-press grid h-8 min-w-8 flex-1 place-items-center rounded-full px-1.5 font-sans text-xs font-semibold',
+              'soft-press grid h-9 min-w-11 flex-1 place-items-center rounded-full px-3 font-sans text-xs font-semibold',
               active
-                ? 'bg-ink text-surface'
+                ? 'bg-cta text-cta-fg'
                 : 'text-ink-soft hover:bg-tint hover:text-ink'
             )}
           >

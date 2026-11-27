@@ -71,4 +71,17 @@ describe('LocaleToggle', () => {
         .getAttribute('aria-pressed')
     ).toBe('true')
   })
+
+  test('the round rail button shows the current language and flips to the other', async () => {
+    render(<LocaleToggle variant="round" />)
+
+    const button = screen.getByRole('button', { name: 'Switch to Vietnamese' })
+    expect(button.textContent).toContain('EN')
+
+    await act(async () => {
+      fireEvent.click(button)
+    })
+
+    expect(setLocaleAction).toHaveBeenCalledWith('vi')
+  })
 })
