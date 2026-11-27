@@ -1,17 +1,14 @@
 'use client'
 
-import { Flame } from 'lucide-react'
+import { AlertCircle, BookA, Flame, List } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { ContentPanel } from '@/components/common/ContentPanel'
 import { useClientOutbox } from '@/components/common/OutboxOwnerProvider'
-import {
-  SkeletonHero,
-  SkeletonPanel,
-  SkeletonTileRow,
-} from '@/components/common/PageSkeletons'
-import { PageTag } from '@/components/ui/PageTag'
+import { PageHeader } from '@/components/common/PageHeader'
+import { SkeletonHero, SkeletonPanel } from '@/components/common/PageSkeletons'
+import { ActionButton } from '@/components/ui/ActionButton'
 import {
   VOCAB_EXPLORE_INITIAL_LIMIT,
   VOCAB_EXPLORE_MAX_LIMIT,
@@ -741,11 +738,16 @@ export function VocabularyDashboard({
 
   if (isInitialLoad)
     return (
-      <div className="grid gap-5 p-4 sm:p-6 lg:p-8">
+      <div className="grid gap-5 px-4 pb-6 md:pr-6 md:pl-0">
         <SkeletonHero />
-        <SkeletonTileRow count={5} />
-        <SkeletonPanel lines={3} />
-        <SkeletonPanel lines={2} />
+        <div className="grid gap-5 lg:grid-cols-[minmax(0,20rem)_minmax(0,1fr)]">
+          <SkeletonPanel lines={3} />
+          <SkeletonPanel lines={3} />
+        </div>
+        <div className="grid gap-5 xl:grid-cols-2">
+          <SkeletonPanel lines={2} />
+          <SkeletonPanel lines={4} />
+        </div>
       </div>
     )
 
@@ -757,32 +759,73 @@ export function VocabularyDashboard({
     : heldRecallTotal
 
   return (
-    <div className="grid gap-5 p-4 sm:p-6 lg:p-8">
-      <section className="page-hero grid gap-4">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="grid min-w-0 flex-1 gap-2">
-            <PageTag tone="red">Vocabulary</PageTag>
-            <div className="flex min-w-0 flex-wrap items-center gap-3">
-              <h1 className="font-sans text-[clamp(1.9rem,5vw,3.8rem)] leading-none font-medium wrap-break-word">
-                Vocab Spine
-              </h1>
-              <div className="border-line bg-cta text-cta-fg rounded-control ml-auto flex items-center gap-2 border px-3 py-2">
-                <Flame className="text-brand size-7 fill-current" />
-                <span className="text-xs font-semibold">Streak</span>
-                <strong className="font-sans text-2xl leading-none font-semibold">
-                  {stats.activeStreakDays}
-                </strong>
-              </div>
-            </div>
-            <p className="text-ink-soft max-w-3xl text-sm leading-6 font-normal">
-              Track known words, pull in free dictionary data, and review the
-              words you chose to learn on a seven-touch schedule.
-            </p>
-          </div>
+    <div className="grid gap-5 px-4 pb-6 md:pr-6 md:pl-0">
+      <PageHeader
+        actions={
+          <>
+            <span
+              className="bg-pastel-peach text-accent-orange flex min-h-11 items-center gap-2 rounded-full px-4"
+              title="Streak"
+            >
+              <Flame
+                aria-hidden="true"
+                className="size-5 fill-current"
+              />
+              <strong className="font-sans text-xl leading-none font-medium tabular-nums">
+                {stats.activeStreakDays}
+              </strong>
+              <span className="sr-only">day streak</span>
+            </span>
+            <ActionButton
+              href="/vocabulary/words"
+              icon={<List aria-hidden="true" />}
+              tone="paper"
+            >
+              Words
+            </ActionButton>
+          </>
+        }
+        icon={<BookA />}
+        iconClassName="bg-pastel-mint text-accent-green"
+        subtitle="Track known words, pull in free dictionary data, and review the words you chose to learn on a seven-touch schedule."
+        title="Vocab Spine"
+      />
+
+      {errorMessage ? (
+        <div
+          className="border-danger/30 bg-danger-soft text-ink rounded-control flex items-center gap-2 border p-3 text-sm"
+          role="alert"
+        >
+          <AlertCircle
+            aria-hidden="true"
+            className="text-danger size-4 shrink-0"
+          />
+          {errorMessage}
         </div>
+      ) : null}
+      {statusMessage ? (
+        <div
+          aria-live="polite"
+          className="border-line bg-surface rounded-control border p-3 text-sm"
+        >
+          {statusMessage}
+        </div>
+      ) : null}
 
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,20rem)_minmax(0,1fr)]">
+        <VocabularyRecallLauncher
+          dueCount={stats.dueTodayCount}
+          onOpenRecall={openRecallModal}
+          tasks={recallTasks}
+        />
         <VocabularyStatsOverview stats={stats} />
+      </div>
 
+      {recallModalOpen ? null : (
+        <VocabRecallSessionSummary results={recallResults} />
+      )}
+
+      <div className="grid items-start gap-5 xl:grid-cols-2">
         <VocabularySearchPanel
           isLoading={isLoading}
           markEntry={markEntry}
@@ -793,37 +836,16 @@ export function VocabularyDashboard({
           selectedEntry={selectedEntry}
           speakTerm={speakTerm}
         />
-      </section>
 
-      {errorMessage ? (
-        <div className="border-line bg-tint-soft rounded-control border p-3 text-sm font-semibold">
-          {errorMessage}
-        </div>
-      ) : null}
-      {statusMessage ? (
-        <div className="border-line bg-surface rounded-control border p-3 text-sm font-semibold">
-          {statusMessage}
-        </div>
-      ) : null}
-
-      <VocabularyRecallLauncher
-        dueCount={stats.dueTodayCount}
-        onOpenRecall={openRecallModal}
-        tasks={recallTasks}
-      />
-
-      {recallModalOpen ? null : (
-        <VocabRecallSessionSummary results={recallResults} />
-      )}
-
-      <VocabularyExplorePanel
-        activeIndex={activeExploreIndex}
-        decisions={exploreDecisions}
-        entries={exploreEntries}
-        markEntry={markEntry}
-        moveExplore={moveExplore}
-        showExploreIndex={showExploreIndex}
-      />
+        <VocabularyExplorePanel
+          activeIndex={activeExploreIndex}
+          decisions={exploreDecisions}
+          entries={exploreEntries}
+          markEntry={markEntry}
+          moveExplore={moveExplore}
+          showExploreIndex={showExploreIndex}
+        />
+      </div>
 
       {recallModalMounted ? (
         <VocabRecallModal

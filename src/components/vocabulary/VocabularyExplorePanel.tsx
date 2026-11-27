@@ -70,7 +70,7 @@ function getExploreMapClassName({
 }) {
   return cn(
     'size-5 rounded-tag border border-line transition-transform hover:-translate-y-0.5',
-    decision === 'shouldLearn' && 'bg-tint hover:bg-tint-soft',
+    decision === 'shouldLearn' && 'bg-brand-soft hover:bg-brand-soft/70',
     decision === 'alreadyKnow' &&
       'bg-lesson-correct/35 hover:bg-lesson-correct/25',
     !decision && 'bg-surface hover:bg-pastel-sky',
@@ -88,8 +88,8 @@ function getExploreStackCardClassName({
   visible: boolean
 }) {
   return cn(
-    'border-line absolute top-0 left-1/2 flex h-full min-h-96 w-[min(74vw,760px)] flex-col gap-4 rounded-control border p-4 transition-[opacity,transform] duration-300 ease-out sm:w-[min(78vw,760px)]',
-    decision === 'shouldLearn' && 'bg-tint',
+    'border-line absolute top-0 left-1/2 flex h-full min-h-96 w-[min(84%,760px)] flex-col gap-4 rounded-control border p-4 shadow-card transition-[opacity,transform] duration-300 ease-out',
+    decision === 'shouldLearn' && 'bg-brand-soft',
     decision === 'alreadyKnow' && 'bg-lesson-correct/10',
     !decision && 'bg-surface',
     !active && 'cursor-pointer hover:opacity-80',
@@ -188,6 +188,7 @@ export function VocabularyExplorePanel({
 
   return (
     <ContentPanel
+      className="gap-3 p-4 py-4"
       eyebrow={eyebrow}
       title={title}
     >
@@ -233,7 +234,7 @@ export function VocabularyExplorePanel({
             </Button>
           </div>
 
-          <div className="relative min-h-96 overflow-hidden px-2 py-2 sm:min-h-104">
+          <div className="relative min-h-96 overflow-hidden px-2 py-2">
             {entries.map((entry, index) => {
               const decision = decisions[entry.entry.id]
               const distance = index - activeIndex
@@ -335,7 +336,7 @@ export function VocabularyExplorePanel({
             })}
           </div>
 
-          <div className="border-line bg-tint rounded-control grid gap-3 border p-3">
+          <div className="bg-tint-soft rounded-control grid gap-3 p-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="text-ink-soft text-xs font-normal">
                 Explore map
@@ -352,7 +353,7 @@ export function VocabularyExplorePanel({
                 />
                 <span
                   aria-label="Pink means should learn"
-                  className="border-line bg-tint rounded-tag size-5 border"
+                  className="border-line bg-brand-soft rounded-tag size-5 border"
                   role="img"
                   title="Should learn"
                 />

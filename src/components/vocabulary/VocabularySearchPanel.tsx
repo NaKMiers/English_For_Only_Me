@@ -41,12 +41,11 @@ export function VocabularySearchPanel({
 }: Props) {
   return (
     <ContentPanel
-      eyebrow="Dictionary"
       title="Search a word"
-      className="bg-tint"
+      className="content-start gap-3 p-4 py-4"
     >
       <form
-        className="grid gap-3 lg:grid-cols-[1fr_auto]"
+        className="grid grid-cols-[minmax(0,1fr)_auto] gap-2"
         onSubmit={event => {
           event.preventDefault()
           runLookup(query)
@@ -54,14 +53,13 @@ export function VocabularySearchPanel({
       >
         <Input
           aria-label="Search vocabulary term"
-          className="border-line bg-surface rounded-control h-14 border px-4 font-sans text-lg font-semibold"
+          className="border-line bg-surface-muted h-11 rounded-full border px-4 font-sans text-base"
           onChange={event => onQueryChange(event.target.value)}
           placeholder="Search any word..."
           type="search"
           value={query}
         />
         <ActionButton
-          className="min-h-14"
           disabled={isLoading}
           icon={<Search className="size-4" />}
           type="submit"
@@ -71,7 +69,7 @@ export function VocabularySearchPanel({
       </form>
 
       {selectedEntry ? (
-        <div className="border-line bg-surface rounded-control grid gap-3 border p-4">
+        <div className="border-line bg-surface-muted rounded-control grid gap-3 border p-3">
           <VocabTermHeader
             entry={selectedEntry.entry}
             speakTerm={speakTerm}
@@ -83,14 +81,14 @@ export function VocabularySearchPanel({
               : ''}
           </p>
 
-          <div className="border-line bg-tint rounded-tag border p-3 text-right">
-            <p className="text-xs font-semibold">Vietnamese meaning</p>
-            <p className="mt-1 text-base leading-7 font-semibold">
+          <div className="bg-pastel-mint rounded-tag p-3 text-right">
+            <p className="text-ink-soft text-xs">Vietnamese meaning</p>
+            <p className="mt-1 text-base leading-7 font-medium">
               {getRequiredVietnameseMeaning(selectedEntry.entry)}
             </p>
           </div>
 
-          <div className="grid gap-2 lg:grid-cols-3">
+          <div className="grid gap-2 sm:grid-cols-2">
             {selectedEntry.entry.definitions.slice(0, 3).map(definition => (
               <div
                 key={`${definition.partOfSpeech}:${definition.definition}`}
@@ -99,9 +97,7 @@ export function VocabularySearchPanel({
                 <p className="text-ink-soft text-xs font-normal">
                   English definition
                 </p>
-                <p className="text-sm leading-6 font-semibold">
-                  {definition.definition}
-                </p>
+                <p className="text-sm leading-6">{definition.definition}</p>
                 {definition.example ? (
                   <p className="text-ink-soft mt-1 text-xs font-normal">
                     {definition.example}
@@ -155,7 +151,7 @@ export function VocabularySearchPanel({
             </ActionButton>
           </div>
           {!hasVietnameseMeaning(selectedEntry.entry) ? (
-            <p className="text-brand text-sm font-semibold">
+            <p className="text-brand-ink text-sm font-medium">
               Vietnamese meaning is required before this word can be learned.
             </p>
           ) : null}
@@ -163,7 +159,7 @@ export function VocabularySearchPanel({
       ) : null}
 
       {searchResults.length > 0 ? (
-        <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-2 sm:grid-cols-2">
           {searchResults.map(result => (
             <div
               key={result.entry.id}
@@ -177,7 +173,7 @@ export function VocabularySearchPanel({
               <p className="text-ink-soft text-xs font-normal">
                 {result.userItem?.status ?? result.entry.enrichmentStatus}
               </p>
-              <p className="line-clamp-2 text-right text-sm leading-6 font-semibold">
+              <p className="line-clamp-2 text-right text-sm leading-6 font-medium">
                 {getVietnameseMeaning(result.entry) ??
                   'Needs Vietnamese meaning.'}
               </p>

@@ -42,7 +42,7 @@ export default async function VocabularyWordsPage({
           />
         }
       >
-        <section className="p-4 sm:p-6 lg:p-8">
+        <section className="px-4 pb-6 md:pr-6 md:pl-0">
           <ContentPanel
             eyebrow="Vocabulary"
             title="Database needed"
@@ -74,7 +74,7 @@ export default async function VocabularyWordsPage({
         />
       }
     >
-      <section className="grid gap-5 p-4 sm:p-6 lg:p-8">
+      <section className="grid gap-5 px-4 pb-6 md:pr-6 md:pl-0">
         <VocabularyWordList
           activeView={view}
           key={`${view}:${page}:${perPage}`}

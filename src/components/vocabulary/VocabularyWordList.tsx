@@ -1,6 +1,9 @@
 'use client'
 
 import {
+  AlertCircle,
+  ArrowLeft,
+  BookA,
   BookOpen,
   CalendarClock,
   Check,
@@ -14,9 +17,9 @@ import { useRef, useState } from 'react'
 import { useClientOutbox } from '@/components/common/OutboxOwnerProvider'
 
 import { ContentPanel } from '@/components/common/ContentPanel'
+import { PageHeader } from '@/components/common/PageHeader'
 import { Input } from '@/components/ui/input'
 import { ActionButton } from '@/components/ui/ActionButton'
-import { PageTag } from '@/components/ui/PageTag'
 import {
   Select,
   SelectContent,
@@ -88,12 +91,13 @@ const VIEW_TABS: Array<{
   },
 ]
 
+/** Status dot per view, the same colours as the dashboard's status strip. */
 const VIEW_TAB_CLASS_NAMES: Record<VocabWordListView, string> = {
-  alreadyKnow: 'bg-lesson-correct/15 hover:bg-lesson-correct/25',
-  dueToday: 'bg-pastel-sky hover:brightness-95',
-  knownTotal: 'bg-pastel-lemon hover:brightness-95',
-  learning: 'bg-tint hover:bg-tint-soft',
-  mastered: 'bg-pastel-lilac hover:brightness-95',
+  alreadyKnow: 'bg-accent-orange',
+  dueToday: 'bg-brand',
+  knownTotal: 'bg-accent-green',
+  learning: 'bg-accent-blue',
+  mastered: 'bg-accent-purple',
 }
 
 const VIEW_LABELS: Record<VocabWordListView, string> = {
@@ -144,11 +148,11 @@ function getStatusMeta(word: VocabWordListRecord) {
 }
 
 function getStatusIcon(word: VocabWordListRecord) {
-  if (word.item.status === 'learning') return <BookOpen className="size-4" />
-  if (word.item.status === 'mastered') return <Trophy className="size-4" />
-  if (word.item.status === 'alreadyKnow') return <Check className="size-4" />
+  if (word.item.status === 'learning') return <BookOpen className="size-3.5" />
+  if (word.item.status === 'mastered') return <Trophy className="size-3.5" />
+  if (word.item.status === 'alreadyKnow') return <Check className="size-3.5" />
 
-  return <CalendarClock className="size-4" />
+  return <CalendarClock className="size-3.5" />
 }
 
 interface PendingRow {
@@ -310,49 +314,55 @@ export function VocabularyWordList({
   const hasPresetPageSize = PER_PAGE_OPTIONS.some(option => option === perPage)
 
   return (
-    <div className="grid gap-5">
-      <ContentPanel
-        eyebrow="Vocabulary"
-        title={VIEW_LABELS[activeView]}
-        action={
+    <div className="grid gap-4">
+      <PageHeader
+        actions={
           <ActionButton
             href="/vocabulary"
+            icon={<ArrowLeft aria-hidden="true" />}
             tone="paper"
           >
             Back To Vocab
           </ActionButton>
         }
-      >
-        <p className="text-ink-soft text-sm leading-6 font-normal">
-          {visibleTotal} words in this view.
-        </p>
-      </ContentPanel>
+        icon={<BookA />}
+        iconClassName="bg-pastel-mint text-accent-green"
+        subtitle={`${visibleTotal} words in this view.`}
+        title={VIEW_LABELS[activeView]}
+      />
 
       <nav
         aria-label="Vocabulary word views"
-        className="flex flex-wrap gap-2"
+        className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:px-0"
       >
         {VIEW_TABS.map(tab => (
           <Link
             key={tab.view}
             className={cn(
-              'border-line text-ink! rounded-control soft-press relative px-3 py-2 text-sm font-semibold',
-              VIEW_TAB_CLASS_NAMES[tab.view],
-              tab.view === activeView &&
-                'after:bg-cta translate-x-[3px] translate-y-[3px] shadow-none after:absolute after:right-2 after:-bottom-2 after:left-2 after:h-1'
+              'soft-press flex min-h-10 shrink-0 items-center gap-2 rounded-full border px-4 text-sm font-medium',
+              tab.view === activeView
+                ? 'border-cta bg-cta text-cta-fg'
+                : 'border-line bg-surface text-ink hover:bg-tint-soft'
             )}
             href={tab.href}
             aria-current={tab.view === activeView ? 'page' : undefined}
           >
+            <span
+              aria-hidden="true"
+              className={cn(
+                'size-2 rounded-full',
+                VIEW_TAB_CLASS_NAMES[tab.view]
+              )}
+            />
             {tab.label}
           </Link>
         ))}
       </nav>
 
-      <div className="border-line bg-surface rounded-panel grid gap-3 border p-3 md:grid-cols-[1fr_auto] md:items-end">
-        <div className="grid gap-2 sm:grid-cols-[minmax(160px,220px)_minmax(120px,160px)]">
-          <div className="grid gap-1">
-            <span className="text-xs font-semibold">Per page</span>
+      <div className="border-line bg-surface rounded-panel grid gap-3 border p-2.5 sm:flex sm:flex-wrap sm:items-center sm:justify-between">
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center">
+          <div className="flex items-center gap-2">
+            <span className="text-ink-soft shrink-0 text-xs">Per page</span>
             <Select
               value={String(perPage)}
               onValueChange={value => {
@@ -362,7 +372,7 @@ export function VocabularyWordList({
             >
               <SelectTrigger
                 aria-label="Words per page"
-                className="w-full"
+                className="w-full sm:w-24"
               >
                 <SelectValue />
               </SelectTrigger>
@@ -381,11 +391,11 @@ export function VocabularyWordList({
               </SelectContent>
             </Select>
           </div>
-          <div className="grid gap-1">
-            <span className="text-xs font-semibold">Custom</span>
+          <div className="flex items-center gap-2">
+            <span className="text-ink-soft shrink-0 text-xs">Custom</span>
             <Input
               aria-label="Custom words per page"
-              className="border-line bg-surface rounded-control h-11 border px-3 font-sans font-semibold"
+              className="border-line bg-surface rounded-control h-10 w-full border px-3 font-sans sm:w-20"
               min={1}
               onBlur={() => updatePageSize(Number(customPageSize) || 1)}
               onChange={event => setCustomPageSize(event.target.value)}
@@ -399,18 +409,20 @@ export function VocabularyWordList({
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 md:justify-end">
+        <div className="flex items-center justify-between gap-2 sm:justify-end">
           <ActionButton
+            className="min-h-10"
             disabled={page <= 1}
             onClick={() => goTo(page - 1)}
             tone="paper"
           >
             Prev
           </ActionButton>
-          <span className="text-sm font-semibold">
+          <span className="text-sm tabular-nums">
             {firstItem}-{lastItem} / {visibleTotal}
           </span>
           <ActionButton
+            className="min-h-10"
             disabled={page >= pageCount}
             onClick={() => goTo(page + 1)}
             tone="paper"
@@ -421,72 +433,86 @@ export function VocabularyWordList({
       </div>
 
       {message ? (
-        <div className="border-line bg-surface rounded-control border p-3 text-sm font-semibold">
+        <div
+          aria-live="polite"
+          className="border-line bg-surface rounded-control border p-3 text-sm"
+        >
           {message}
         </div>
       ) : null}
       {error ? (
-        <div className="border-line bg-tint-soft rounded-control border p-3 text-sm font-semibold">
+        <div
+          className="border-danger/30 bg-danger-soft rounded-control flex items-center gap-2 border p-3 text-sm"
+          role="alert"
+        >
+          <AlertCircle
+            aria-hidden="true"
+            className="text-danger size-4 shrink-0"
+          />
           {error}
         </div>
       ) : null}
 
       {wordItems.length > 0 ? (
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        <ul className="border-line bg-surface rounded-panel motion-stagger divide-line grid divide-y border">
           {wordItems.map(word => (
-            <article
+            <li
               key={word.item.id}
-              className="border-line bg-surface rounded-panel grid min-w-0 gap-3 border p-4"
+              className="grid min-w-0 gap-2 px-3 py-3 sm:px-4 md:grid-cols-[minmax(0,13rem)_minmax(0,1fr)_auto] md:items-center md:gap-4"
             >
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="grid min-w-0 flex-1 gap-1">
-                  <VocabTermHeader entry={word.entry} />
-                  <p className="text-ink-soft text-xs font-normal">
-                    {getStatusMeta(word)}
-                  </p>
-                </div>
-                <PageTag tone="pale">
-                  {word.entry.frequencyRank
-                    ? `#${word.entry.frequencyRank}`
-                    : word.entry.enrichmentStatus}
-                </PageTag>
+              <div className="grid min-w-0 gap-1">
+                <VocabTermHeader
+                  entry={word.entry}
+                  headingClassName="text-lg"
+                />
+                <p className="text-ink-soft flex flex-wrap items-center gap-x-2 text-xs">
+                  <span
+                    aria-hidden="true"
+                    className="text-ink"
+                  >
+                    {getStatusIcon(word)}
+                  </span>
+                  <span>{getStatusMeta(word)}</span>
+                  <span className="tabular-nums">
+                    {word.entry.frequencyRank
+                      ? `#${word.entry.frequencyRank}`
+                      : word.entry.enrichmentStatus}
+                  </span>
+                </p>
               </div>
 
-              <div className="grid gap-1">
-                <p className="line-clamp-2 text-right text-sm leading-6 font-semibold">
+              <div className="grid min-w-0 gap-0.5">
+                <p className="line-clamp-1 text-sm leading-6 font-medium">
                   {getVietnamesePreview(word)}
                 </p>
-                <p className="text-ink-soft line-clamp-3 text-sm leading-6 font-normal">
+                <p className="text-ink-soft line-clamp-2 text-xs leading-5">
                   {getDefinitionPreview(word)}
+                </p>
+                <p className="text-ink-soft flex min-w-0 flex-wrap items-center gap-x-2 text-[11px]">
+                  <span>{word.item.source}</span>
+                  {word.sourceVideo ? (
+                    <a
+                      className="hover:text-brand flex min-w-0 items-center gap-1"
+                      href={`/dictation/videos/${word.sourceVideo.id}/practice`}
+                      rel="noopener noreferrer"
+                      target="_blank"
+                      title={word.sourceVideo.title}
+                    >
+                      <PlayCircle
+                        aria-hidden="true"
+                        className="size-3.5 shrink-0"
+                      />
+                      <span className="max-w-64 truncate">
+                        From: {word.sourceVideo.title}
+                      </span>
+                    </a>
+                  ) : null}
                 </p>
               </div>
 
-              <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
-                <span className="border-line bg-tint rounded-tag grid size-8 place-items-center border">
-                  {getStatusIcon(word)}
-                </span>
-                <span>{word.item.source}</span>
-                <span>{word.entry.enrichmentStatus}</span>
-              </div>
-
-              {word.sourceVideo ? (
-                <a
-                  className="border-line bg-tint hover:bg-tint-soft text-ink rounded-control soft-press flex min-w-0 items-center gap-2 border px-3 py-2 text-xs font-semibold"
-                  href={`/dictation/videos/${word.sourceVideo.id}/practice`}
-                  rel="noopener noreferrer"
-                  target="_blank"
-                  title={word.sourceVideo.title}
-                >
-                  <PlayCircle className="size-4 shrink-0" />
-                  <span className="truncate">
-                    From: {word.sourceVideo.title}
-                  </span>
-                </a>
-              ) : null}
-
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-2 md:flex">
                 <ActionButton
-                  className="min-w-0 px-2 text-xs sm:px-4 sm:text-sm [&>span:last-child]:whitespace-nowrap"
+                  className="min-h-9 min-w-0 px-3 text-xs [&>span:last-child]:whitespace-nowrap"
                   disabled={word.item.status === 'learning'}
                   icon={<BookOpen className="size-4" />}
                   onClick={() => updateWordStatus(word, 'shouldLearn')}
@@ -494,7 +520,7 @@ export function VocabularyWordList({
                   Should Learn
                 </ActionButton>
                 <ActionButton
-                  className="min-w-0 px-2 text-xs sm:px-4 sm:text-sm [&>span:last-child]:whitespace-nowrap"
+                  className="min-h-9 min-w-0 px-3 text-xs [&>span:last-child]:whitespace-nowrap"
                   disabled={word.item.status === 'alreadyKnow'}
                   icon={<Check className="size-4" />}
                   onClick={() => updateWordStatus(word, 'alreadyKnow')}
@@ -503,9 +529,9 @@ export function VocabularyWordList({
                   Already Know
                 </ActionButton>
               </div>
-            </article>
+            </li>
           ))}
-        </div>
+        </ul>
       ) : (
         <ContentPanel
           eyebrow="Empty"
