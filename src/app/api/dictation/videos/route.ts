@@ -1,12 +1,15 @@
 import { NextResponse } from 'next/server'
 
 import { MissingEnvironmentError } from '@/constants/environments'
+import type { Messages } from '@/i18n/messages'
+import { getMessages } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { revalidateDictationCatalog } from '@/lib/db/revalidateCatalog'
 import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
 import { toDictationVideoRecord } from '@/modules/dictation/services/dictationVideoRecords'
 import { requireAdmin } from '@/modules/dictation/services/getCurrentUser'
 import {
+  getAccessErrorMessage,
   type ApiErrorDecision,
   getMissingMongoResponse,
   MISSING_MONGODB_MESSAGE,
@@ -20,7 +23,10 @@ function jsonError(decision: ApiErrorDecision) {
 }
 
 // requireAdmin throws 401/403 - surface as JSON instead of a 500.
-function authErrorDecision(error: unknown): ApiErrorDecision | null {
+function authErrorDecision(
+  error: unknown,
+  t: Messages
+): ApiErrorDecision | null {
   if (
     typeof error === 'object' &&
     error !== null &&
@@ -30,15 +36,15 @@ function authErrorDecision(error: unknown): ApiErrorDecision | null {
     return {
       status: error.status,
       body: {
-        message: (error as { message?: string }).message ?? 'Access denied.',
+        message: getAccessErrorMessage(error.status, t),
       },
     }
 
   return null
 }
 
-function toCreateError(error: unknown): ApiErrorDecision {
-  const authError = authErrorDecision(error)
+function toCreateError(error: unknown, t: Messages): ApiErrorDecision {
+  const authError = authErrorDecision(error, t)
   if (authError) return authError
 
   if (
@@ -50,7 +56,7 @@ function toCreateError(error: unknown): ApiErrorDecision {
     return {
       status: 409,
       body: {
-        message: 'This video is already in the dictation library.',
+        message: t.dictation.api.videoDuplicate,
       },
     }
 
@@ -67,12 +73,12 @@ function toCreateError(error: unknown): ApiErrorDecision {
   return {
     status: 500,
     body: {
-      message: 'Could not create the dictation video.',
+      message: t.dictation.api.videoCreateFailed,
     },
   }
 }
 
-function toListError(error: unknown): ApiErrorDecision {
+function toListError(error: unknown, t: Messages): ApiErrorDecision {
   if (error instanceof MissingEnvironmentError)
     return {
       status: 500,
@@ -86,12 +92,13 @@ function toListError(error: unknown): ApiErrorDecision {
   return {
     status: 500,
     body: {
-      message: 'Could not load dictation videos.',
+      message: t.dictation.api.videosLoadFailed,
     },
   }
 }
 
 export async function GET() {
+  const t = await getMessages()
   const missingMongo = getMissingMongoResponse()
 
   if (missingMongo) return jsonError(missingMongo)
@@ -112,11 +119,12 @@ export async function GET() {
       videos: videos.map(toDictationVideoRecord),
     })
   } catch (error) {
-    return jsonError(toListError(error))
+    return jsonError(toListError(error, t))
   }
 }
 
 export async function POST(request: Request) {
+  const t = await getMessages()
   const missingMongo = getMissingMongoResponse()
 
   if (missingMongo) return jsonError(missingMongo)
@@ -150,10 +158,10 @@ export async function POST(request: Request) {
       return jsonError({
         status: 400,
         body: {
-          message: 'Request body must be valid JSON.',
+          message: t.dictation.api.invalidJson,
         },
       })
 
-    return jsonError(toCreateError(error))
+    return jsonError(toCreateError(error, t))
   }
 }

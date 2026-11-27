@@ -6,6 +6,7 @@ import {
   getImageFile,
   uploadImageToCloudinary,
 } from '@/lib/cloudinary/uploadImage'
+import { getMessages } from '@/i18n/server'
 import { CACHE_TAGS } from '@/lib/db/catalogCache'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import {
@@ -61,7 +62,11 @@ export async function uploadTopicThumbnailAction(formData: FormData) {
   await guardAdmin()
 
   const imageFile = getImageFile(formData, 'thumbnailFile')
-  if (!imageFile) return { ok: false as const, message: 'Choose an image.' }
+  if (!imageFile)
+    return {
+      ok: false as const,
+      message: (await getMessages()).admin.api.chooseImage,
+    }
 
   const url = await uploadImageToCloudinary(imageFile)
   return { ok: true as const, url }

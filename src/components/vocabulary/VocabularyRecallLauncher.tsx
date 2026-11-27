@@ -3,6 +3,8 @@
 import { BookOpen } from 'lucide-react'
 
 import { ActionButton } from '@/components/ui/ActionButton'
+import { useMessages } from '@/i18n/client'
+import { format } from '@/i18n/format'
 import { cn } from '@/lib/utils'
 import type { VocabRecallTaskRecord } from '@/modules/vocabulary/types'
 
@@ -24,6 +26,7 @@ export function VocabularyRecallLauncher({
   onOpenRecall,
   tasks,
 }: Props) {
+  const t = useMessages().vocabulary.launcher
   const activeRecall = tasks[0] ?? null
   const due = activeRecall ? Math.max(dueCount, tasks.length) : 0
 
@@ -41,13 +44,13 @@ export function VocabularyRecallLauncher({
             className="text-sm font-medium"
             id="vocab-recall-title"
           >
-            Flashcard review
+            {t.title}
           </h2>
           <p className="flex items-baseline gap-2">
             <strong className="text-accent-green font-sans text-5xl leading-none font-light tabular-nums">
               {due}
             </strong>
-            <span className="text-ink-soft text-sm">due</span>
+            <span className="text-ink-soft text-sm">{t.dueLabel}</span>
           </p>
         </div>
         <span className="bg-surface/80 text-accent-green grid size-11 shrink-0 place-items-center rounded-full">
@@ -60,7 +63,9 @@ export function VocabularyRecallLauncher({
 
       {activeRecall ? (
         <div className="grid gap-2">
-          <p className="text-xs font-medium">Next: {activeRecall.entry.term}</p>
+          <p className="text-xs font-medium">
+            {format(t.next, { term: activeRecall.entry.term })}
+          </p>
           <ul className="flex flex-wrap gap-1.5">
             {tasks.slice(0, 6).map(task => (
               <li
@@ -69,17 +74,14 @@ export function VocabularyRecallLauncher({
               >
                 <span className="font-medium">{task.entry.term}</span>
                 <span className="text-ink-soft tabular-nums">
-                  {task.item.recallStage}/7
+                  {format(t.stageShort, { stage: task.item.recallStage })}
                 </span>
               </li>
             ))}
           </ul>
         </div>
       ) : (
-        <p className="text-ink-soft text-sm leading-6">
-          No flashcards are due. Add words from Search or Explore and they will
-          appear here immediately.
-        </p>
+        <p className="text-ink-soft text-sm leading-6">{t.empty}</p>
       )}
 
       <ActionButton
@@ -89,7 +91,7 @@ export function VocabularyRecallLauncher({
         onClick={onOpenRecall}
         tone="ink"
       >
-        Start Recall
+        {t.start}
       </ActionButton>
     </section>
   )

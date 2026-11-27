@@ -9,6 +9,8 @@ import {
   type RefObject,
 } from 'react'
 
+import { useMessages } from '@/i18n/client'
+import type { Messages } from '@/i18n/messages'
 import { cn } from '@/lib/utils'
 import {
   buildCharCorrection,
@@ -177,11 +179,15 @@ export function answerLineCells(
   })
 }
 
-function statusMessage(status: GuidedStatus, isMissingWord: boolean): string {
-  if (status === 'correct') return 'You are correct!'
+function statusMessage(
+  text: Messages['dictation']['answer'],
+  status: GuidedStatus,
+  isMissingWord: boolean
+): string {
+  if (status === 'correct') return text.correct
   if (status === 'incorrect')
-    return isMissingWord ? 'Incorrect - a word is missing' : 'Incorrect'
-  if (status === 'revealed') return 'Answer revealed'
+    return isMissingWord ? text.incorrectMissingWord : text.incorrect
+  if (status === 'revealed') return text.revealed
 
   return ''
 }
@@ -254,6 +260,7 @@ export function GuidedAnswerInput({
   statusAction,
   value,
 }: Props) {
+  const text = useMessages().dictation.answer
   const localTextareaRef = useRef<HTMLTextAreaElement>(null)
   const textareaRef = inputRef ?? localTextareaRef
   const inputTextStyle = ANSWER_TEXT_STYLE[answerTextSize]
@@ -413,7 +420,7 @@ export function GuidedAnswerInput({
 
   return (
     <section
-      aria-label="Dictation answer"
+      aria-label={text.label}
       className="border-line bg-surface rounded-panel grid min-w-0 gap-2 border p-2"
     >
       {visibleHints.length > 0 && status !== 'correct' ? (
@@ -422,7 +429,7 @@ export function GuidedAnswerInput({
             aria-hidden="true"
             className="text-accent-orange size-5 shrink-0"
           />
-          <span className="text-ink-soft">Hint</span>
+          <span className="text-ink-soft">{text.hint}</span>
           {visibleHints.map(hint => (
             <button
               key={hint}
@@ -433,7 +440,7 @@ export function GuidedAnswerInput({
               {hint}
             </button>
           ))}
-          <span className="text-ink-soft text-xs">(Tab to fill)</span>
+          <span className="text-ink-soft text-xs">{text.tabToFill}</span>
         </p>
       ) : null}
 
@@ -449,7 +456,7 @@ export function GuidedAnswerInput({
         </div>
         <textarea
           ref={textareaRef}
-          aria-label="Type what you hear"
+          aria-label={text.inputLabel}
           data-dictation-shortcuts="allow"
           disabled={disabled}
           spellCheck={false}
@@ -458,7 +465,7 @@ export function GuidedAnswerInput({
           value={value}
           onChange={event => onChange(event.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Type what you hear..."
+          placeholder={text.placeholder}
           style={inputTextStyle}
           className={cn(
             // field-sizing-content grows the box with the answer, so the floor
@@ -495,7 +502,7 @@ export function GuidedAnswerInput({
               className="size-5 shrink-0"
             />
           ) : null}
-          {statusMessage(status, isMissingWord)}
+          {statusMessage(text, status, isMissingWord)}
         </p>
         {statusAction ? (
           <div className="flex flex-wrap items-center gap-2">

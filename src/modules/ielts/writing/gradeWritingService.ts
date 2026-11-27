@@ -15,8 +15,8 @@ import {
   toIeltsAttemptRecord,
 } from '../attempts/attemptRecords'
 import {
-  ieltsError,
   type IeltsDecision,
+  ieltsMessageError,
 } from '../attempts/attemptRouteDecisions'
 import { loadAttemptSections } from '../attempts/attemptService'
 import { IELTS_GENERATING_STALE_SECONDS } from '../constants'
@@ -102,43 +102,35 @@ export async function gradeWritingTask({
   ownerId: string
   task: 1 | 2
 }): Promise<IeltsDecision<IeltsAttemptRecord>> {
-  if (isGuest)
-    return ieltsError(
-      401,
-      'Sign in to get AI grading. Compare with the model answer yourself.'
-    )
+  if (isGuest) return ieltsMessageError(401, 'signInToGrade')
 
   const attempt = await IeltsAttemptModel.findOne({
     _id: attemptId,
     ownerId,
   }).lean()
 
-  if (!attempt) return ieltsError(404, 'Attempt not found.')
+  if (!attempt) return ieltsMessageError(404, 'attemptNotFound')
 
   if (attempt.skill !== 'writing')
-    return ieltsError(400, 'Only writing attempts are graded.')
+    return ieltsMessageError(400, 'onlyWritingGraded')
 
   if (attempt.status !== 'submitted' && attempt.status !== 'scored')
-    return ieltsError(409, 'Submit the attempt before grading.')
+    return ieltsMessageError(409, 'submitBeforeGrading')
 
   const key = String(task) as '1' | '2'
   const feedback = (attempt.writingFeedback ?? {}) as Partial<
     Record<'1' | '2', IeltsWritingTaskFeedback>
   >
 
-  if (!feedback[key])
-    return ieltsError(404, 'That task is not in this attempt.')
+  if (!feedback[key]) return ieltsMessageError(404, 'taskNotInAttempt')
 
   if (!getOpenAiApiKey())
-    return ieltsError(
-      503,
-      'OpenAI is not configured. Compare with the model answer yourself.'
-    )
+    return ieltsMessageError(503, 'aiNotConfiguredCompare')
 
   const limit = getIeltsWritingDailyLimit()
 
   if ((await countGradingsToday(ownerId, now)) >= limit)
-    return ieltsError(429, `No gradings left today (limit ${limit}).`)
+    return ieltsMessageError(429, 'gradingLimit', { limit })
 
   const staleBefore = new Date(
     now.getTime() - IELTS_GENERATING_STALE_SECONDS * 1000
@@ -161,8 +153,7 @@ export async function gradeWritingTask({
     { new: true }
   ).lean()
 
-  if (!claimed)
-    return ieltsError(409, 'This task is already being graded. Wait a moment.')
+  if (!claimed) return ieltsMessageError(409, 'alreadyGrading')
 
   const sections = await loadAttemptSections(
     claimed as unknown as Parameters<typeof loadAttemptSections>[0]
@@ -184,7 +175,7 @@ export async function gradeWritingTask({
         },
       }
     )
-    return ieltsError(404, 'The task content is missing.')
+    return ieltsMessageError(404, 'taskContentMissing')
   }
 
   const model = getOpenAiIeltsGradingModel()
@@ -227,7 +218,7 @@ export async function gradeWritingTask({
 
     return failed
       ? { ok: true, data: toIeltsAttemptRecord(failed) }
-      : ieltsError(404, 'Attempt not found.')
+      : ieltsMessageError(404, 'attemptNotFound')
   }
 
   const isFullSkill =
@@ -243,7 +234,7 @@ export async function gradeWritingTask({
     { new: true }
   ).lean()
 
-  if (!written) return ieltsError(404, 'Attempt not found.')
+  if (!written) return ieltsMessageError(404, 'attemptNotFound')
 
   // Completion is judged on the fresh document, so two tasks graded at the
   // same time still end `scored` with a band (whichever finishes last).
@@ -264,7 +255,7 @@ export async function gradeWritingTask({
 
   return updated
     ? { ok: true, data: toIeltsAttemptRecord(updated) }
-    : ieltsError(404, 'Attempt not found.')
+    : ieltsMessageError(404, 'attemptNotFound')
 }
 
 /**
@@ -291,25 +282,25 @@ export async function checkPracticeWriting({
   ownerId: string
   task: 1 | 2
 }): Promise<IeltsDecision<IeltsWritingTaskFeedback>> {
-  if (isGuest) return ieltsError(401, 'Sign in to get AI grading.')
+  if (isGuest) return ieltsMessageError(401, 'signInForAi')
 
   const attempt = await IeltsAttemptModel.findOne({
     _id: attemptId,
     ownerId,
   }).lean()
 
-  if (!attempt) return ieltsError(404, 'Attempt not found.')
+  if (!attempt) return ieltsMessageError(404, 'attemptNotFound')
 
   if (attempt.skill !== 'writing')
-    return ieltsError(400, 'Only writing tasks are graded with AI.')
+    return ieltsMessageError(400, 'onlyWritingAi')
 
   if (attempt.mode !== 'practice')
-    return ieltsError(403, 'Checking a task is only available in practice.')
+    return ieltsMessageError(403, 'checkTaskPracticeOnly')
 
   if (attempt.status !== 'in_progress')
-    return ieltsError(409, 'This attempt is already submitted.')
+    return ieltsMessageError(409, 'alreadySubmitted')
 
-  if (!essay.trim()) return ieltsError(400, 'Write the essay first.')
+  if (!essay.trim()) return ieltsMessageError(400, 'writeEssayFirst')
 
   const sections = await loadAttemptSections(
     attempt as unknown as Parameters<typeof loadAttemptSections>[0]
@@ -318,14 +309,14 @@ export async function checkPracticeWriting({
     section => section.writing?.task === task
   )?.writing
 
-  if (!material) return ieltsError(404, 'That task is not in this attempt.')
+  if (!material) return ieltsMessageError(404, 'taskNotInAttempt')
 
-  if (!getOpenAiApiKey()) return ieltsError(503, 'OpenAI is not configured.')
+  if (!getOpenAiApiKey()) return ieltsMessageError(503, 'aiNotConfigured')
 
   const limit = getIeltsWritingDailyLimit()
 
   if ((await countGradingsToday(ownerId, now)) >= limit)
-    return ieltsError(429, `No gradings left today (limit ${limit}).`)
+    return ieltsMessageError(429, 'gradingLimit', { limit })
 
   const result = await runExaminer({
     apiKey: getOpenAiApiKey(),
@@ -350,7 +341,7 @@ export async function checkPracticeWriting({
       task,
     })
 
-    return ieltsError(500, `Could not grade: ${result.message}`)
+    return ieltsMessageError(500, 'couldNotGrade', { reason: result.message })
   }
 
   await IeltsAttemptModel.updateOne(

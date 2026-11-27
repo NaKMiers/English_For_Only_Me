@@ -3,12 +3,15 @@ import {
   SkeletonPanel,
   SkeletonTileRow,
 } from '@/components/common/PageSkeletons'
+import { getMessages } from '@/i18n/server'
 
-export default function Loading() {
+export default async function Loading() {
+  const t = await getMessages()
+
   return (
     <SkeletonPageShell
       activeHref="/admin/vocab"
-      subtitle="Admin vocabulary enrichment"
+      subtitle={t.ieltsEditor.listPage.topbarSubtitle}
     >
       <SkeletonPanel lines={2} />
       <SkeletonTileRow count={4} />

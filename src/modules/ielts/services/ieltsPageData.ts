@@ -29,7 +29,8 @@ export interface IeltsHomeData {
   testBands: IeltsTestBands
   weakness: IeltsWeaknessStats | null
   isAdmin: boolean
-  error: string
+  /** Why the catalogue could not load, or null; the page names it. */
+  error: 'notConfigured' | 'loadFailed' | null
 }
 
 /** Everything /ielts shows. Learner rows only when a practice actor exists. */
@@ -41,11 +42,10 @@ export async function loadIeltsHomeData(): Promise<IeltsHomeData> {
     testBands: {},
     weakness: null,
     isAdmin: false,
-    error: '',
+    error: null,
   }
 
-  if (!hasMongoDbUri())
-    return { ...empty, error: 'Database is not configured.' }
+  if (!hasMongoDbUri()) return { ...empty, error: 'notConfigured' }
 
   try {
     const [user, actorId] = await Promise.all([
@@ -69,11 +69,11 @@ export async function loadIeltsHomeData(): Promise<IeltsHomeData> {
       testBands,
       weakness,
       isAdmin: user?.role === 'admin',
-      error: '',
+      error: null,
     }
   } catch (error) {
     console.error('ielts home data failed', { error })
 
-    return { ...empty, error: 'Could not load tests.' }
+    return { ...empty, error: 'loadFailed' }
   }
 }

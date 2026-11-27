@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 
 import { MissingEnvironmentError } from '@/constants/environments'
+import type { Messages } from '@/i18n/messages'
+import { getMessages } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { translateSegmentText } from '@/lib/ai/openAiTranslate'
 import { DictationSegmentModel } from '@/models/dictation/DictationSegmentModel'
@@ -12,6 +14,7 @@ import {
   normalizeTranslationLanguage,
 } from '@/modules/dictation/translations/languages'
 import {
+  getAccessErrorMessage,
   type ApiErrorDecision,
   getMissingMongoResponse,
   MISSING_MONGODB_MESSAGE,
@@ -33,7 +36,7 @@ function jsonError(decision: ApiErrorDecision) {
   return NextResponse.json(decision.body, { status: decision.status })
 }
 
-function toTranslateError(error: unknown): ApiErrorDecision {
+function toTranslateError(error: unknown, t: Messages): ApiErrorDecision {
   if (
     typeof error === 'object' &&
     error !== null &&
@@ -43,7 +46,7 @@ function toTranslateError(error: unknown): ApiErrorDecision {
     return {
       status: error.status,
       body: {
-        message: (error as { message?: string }).message ?? 'Access denied.',
+        message: getAccessErrorMessage(error.status, t),
       },
     }
 
@@ -54,11 +57,12 @@ function toTranslateError(error: unknown): ApiErrorDecision {
 
   return {
     status: 500,
-    body: { message: 'Could not translate this segment.' },
+    body: { message: t.dictation.api.segmentTranslateFailed },
   }
 }
 
 export async function POST(request: Request, context: RouteContext) {
+  const t = await getMessages()
   const missingMongo = getMissingMongoResponse()
 
   if (missingMongo) return jsonError(missingMongo)
@@ -68,7 +72,7 @@ export async function POST(request: Request, context: RouteContext) {
   if (!/^[a-f\d]{24}$/i.test(segmentId))
     return jsonError({
       status: 400,
-      body: { message: 'Invalid segment id.' },
+      body: { message: t.dictation.api.invalidSegmentId },
     })
 
   try {
@@ -78,7 +82,7 @@ export async function POST(request: Request, context: RouteContext) {
     if (!parsed.success)
       return jsonError({
         status: 400,
-        body: { message: 'A target language is required.' },
+        body: { message: t.dictation.api.targetLanguageRequired },
       })
 
     await requireAdmin()
@@ -92,7 +96,7 @@ export async function POST(request: Request, context: RouteContext) {
     if (!segment)
       return jsonError({
         status: 404,
-        body: { message: 'This segment was not found.' },
+        body: { message: t.dictation.api.segmentNotFound },
       })
 
     const video = await DictationVideoModel.findOne({
@@ -110,7 +114,7 @@ export async function POST(request: Request, context: RouteContext) {
       return jsonError({
         status: 400,
         body: {
-          message: 'The primary dictation language cannot be translated.',
+          message: t.dictation.api.primaryLanguageNotTranslatable,
         },
       })
 
@@ -127,9 +131,9 @@ export async function POST(request: Request, context: RouteContext) {
     if (error instanceof SyntaxError)
       return jsonError({
         status: 400,
-        body: { message: 'Request body must be valid JSON.' },
+        body: { message: t.dictation.api.invalidJson },
       })
 
-    return jsonError(toTranslateError(error))
+    return jsonError(toTranslateError(error, t))
   }
 }

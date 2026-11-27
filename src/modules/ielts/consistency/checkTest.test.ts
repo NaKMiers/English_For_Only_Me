@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
+import { format } from '@/i18n/format'
+import { en } from '@/i18n/messages/en'
+
 import { IELTS_SAMPLE_TEST } from '../fixtures/sampleTest'
 import type {
   IeltsQuestionGroup,
@@ -248,5 +251,24 @@ describe('question_stem_missing', () => {
     group.instruction =
       'Which THREE things can the public do? Choose THREE letters, A-G.'
     expect(warningsFor(owner, group)).toEqual([])
+  })
+})
+
+describe('issue text', () => {
+  it('matches the editor catalogue, so the editor can show it in any language', () => {
+    const test = clone()
+
+    section(test, 'reading-3').groups.at(-1)!.questions.pop()
+    section(test, 'listening-1').listening!.lines = []
+    section(test, 'writing-1').writing!.visual = null
+
+    const { errors, warnings } = checkTest(test)
+    const issues = [...errors, ...warnings]
+
+    expect(issues.length).toBeGreaterThan(3)
+    for (const issue of issues)
+      expect(format(en.ieltsEditor.issues[issue.code], issue.values)).toBe(
+        issue.message
+      )
   })
 })

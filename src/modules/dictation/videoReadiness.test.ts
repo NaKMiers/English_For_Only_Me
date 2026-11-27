@@ -58,28 +58,36 @@ describe('dictation video readiness', () => {
 
     // notStarted -> Start Practice, regardless of whether stats exist.
     expect(
-      getDictationResultsAction({ isEmpty: true, progress: 'notStarted', videoId })
-    ).toEqual({ href, label: 'Start Practice' })
+      getDictationResultsAction({
+        isEmpty: true,
+        progress: 'notStarted',
+        videoId,
+      })
+    ).toEqual({ href, kind: 'startPractice' })
     expect(
       getDictationResultsAction({
         isEmpty: false,
         progress: 'notStarted',
         videoId,
       })
-    ).toEqual({ href, label: 'Start Practice' })
+    ).toEqual({ href, kind: 'startPractice' })
 
     // inProgress -> Continue Practice, and it wins even with saved stats
     // (a completed-then-restarted video).
     expect(
-      getDictationResultsAction({ isEmpty: true, progress: 'inProgress', videoId })
-    ).toEqual({ href, label: 'Continue Practice' })
+      getDictationResultsAction({
+        isEmpty: true,
+        progress: 'inProgress',
+        videoId,
+      })
+    ).toEqual({ href, kind: 'continuePractice' })
     expect(
       getDictationResultsAction({
         isEmpty: false,
         progress: 'inProgress',
         videoId,
       })
-    ).toEqual({ href, label: 'Continue Practice' })
+    ).toEqual({ href, kind: 'continuePractice' })
 
     // completed with results -> Practice Again; completed but no attempts
     // yet (persistence lag) -> Start Practice.
@@ -89,9 +97,13 @@ describe('dictation video readiness', () => {
         progress: 'completed',
         videoId,
       })
-    ).toEqual({ href, label: 'Practice Again' })
+    ).toEqual({ href, kind: 'practiceAgain' })
     expect(
-      getDictationResultsAction({ isEmpty: true, progress: 'completed', videoId })
-    ).toEqual({ href, label: 'Start Practice' })
+      getDictationResultsAction({
+        isEmpty: true,
+        progress: 'completed',
+        videoId,
+      })
+    ).toEqual({ href, kind: 'startPractice' })
   })
 })

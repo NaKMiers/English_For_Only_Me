@@ -4,12 +4,15 @@ import {
   SkeletonPanel,
   SkeletonTileRow,
 } from '@/components/common/PageSkeletons'
+import { getMessages } from '@/i18n/server'
 
-export default function Loading() {
+export default async function Loading() {
+  const t = await getMessages()
+
   return (
     <SkeletonPageShell
       activeHref="/vocabulary"
-      subtitle="Vocabulary memory spine"
+      subtitle={t.vocabulary.page.subtitle}
     >
       <SkeletonHero />
       <SkeletonTileRow count={5} />

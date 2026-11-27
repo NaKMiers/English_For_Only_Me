@@ -1,6 +1,10 @@
 import { isValidObjectId } from 'mongoose'
 import { z } from 'zod'
 
+import { format, type MessageValues } from '@/i18n/format'
+import type { Messages } from '@/i18n/messages'
+import { ielts as enIelts } from '@/i18n/messages/en/ielts'
+
 import {
   IELTS_ANSWER_MAX_LENGTH,
   IELTS_ESSAY_MAX_LENGTH,
@@ -12,10 +16,16 @@ import {
 export type IeltsApiErrorStatus =
   400 | 401 | 403 | 404 | 409 | 422 | 429 | 500 | 503
 
+export type IeltsApiMessageKey = keyof Messages['ielts']['apiErrors']
+
 export interface IeltsApiError {
   ok: false
   status: IeltsApiErrorStatus
+  /** `message` is English; the route handler sends it in the learner's language. */
   body: { message: string }
+  /** Catalogue key of a learner-facing message, with its values. */
+  messageKey?: IeltsApiMessageKey
+  messageValues?: MessageValues
 }
 
 export type IeltsDecision<T> = { ok: true; data: T } | IeltsApiError
@@ -25,6 +35,46 @@ export function ieltsError(
   message: string
 ): IeltsApiError {
   return { ok: false, status, body: { message } }
+}
+
+/**
+ * Fills an API error message from a catalogue. A `type` value is a question
+ * type code, named in the catalogue's language.
+ */
+export function formatIeltsApiMessage(
+  catalogue: Messages['ielts'],
+  key: IeltsApiMessageKey,
+  values: MessageValues = {}
+): string {
+  const type = values.type
+  const named =
+    typeof type === 'string' && type in catalogue.questionTypes
+      ? {
+          ...values,
+          type: catalogue.questionTypes[
+            type as keyof Messages['ielts']['questionTypes']
+          ],
+        }
+      : values
+
+  return format(catalogue.apiErrors[key], named)
+}
+
+/** A learner-facing error: English in the body, localized by the route. */
+export function ieltsMessageError(
+  status: IeltsApiErrorStatus,
+  messageKey: IeltsApiMessageKey,
+  messageValues?: MessageValues
+): IeltsApiError {
+  return {
+    ok: false,
+    status,
+    body: {
+      message: formatIeltsApiMessage(enIelts, messageKey, messageValues),
+    },
+    messageKey,
+    messageValues,
+  }
 }
 
 const idempotencyKey = z.string().trim().min(8).max(120)
@@ -147,10 +197,10 @@ export function parseStartAttempt(body: unknown) {
   const { scope, skill } = parsed.data
 
   if (scope.kind === 'part' && scope.part > IELTS_PART_COUNTS[skill])
-    return ieltsError(
-      400,
-      `${skill} has only ${IELTS_PART_COUNTS[skill]} parts.`
-    )
+    return ieltsMessageError(400, 'tooFewParts', {
+      count: IELTS_PART_COUNTS[skill],
+      skill,
+    })
 
   return parsed
 }
@@ -187,7 +237,7 @@ export function validateAnswerLengths(
       typeof value === 'string' &&
       value.length > IELTS_ANSWER_MAX_LENGTH
     )
-      return ieltsError(400, `Answer ${key} is too long.`)
+      return ieltsMessageError(400, 'answerTooLong', { number: key })
 
     if (isWriting && Array.isArray(value))
       return ieltsError(400, 'Writing answers must be text.')
@@ -205,7 +255,7 @@ export function parseSubmitAttempt(body: unknown) {
 }
 
 export function parseAttemptId(value: string): IeltsDecision<string> {
-  if (!isValidObjectId(value)) return ieltsError(404, 'Attempt not found.')
+  if (!isValidObjectId(value)) return ieltsMessageError(404, 'attemptNotFound')
 
   return { ok: true, data: value }
 }
@@ -216,7 +266,7 @@ export function parseEvidenceNumber(
   const number = Number(value)
 
   if (!Number.isInteger(number) || number < 1 || number > 40)
-    return ieltsError(400, 'Question number must be 1 to 40.')
+    return ieltsMessageError(400, 'questionNumberRange')
 
   return { ok: true, data: number }
 }

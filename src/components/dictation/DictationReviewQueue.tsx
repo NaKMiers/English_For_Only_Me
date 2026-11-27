@@ -1,8 +1,12 @@
+'use client'
+
 import { ArrowRight, CheckCircle2 } from 'lucide-react'
 
 import { ContentPanel } from '@/components/common/ContentPanel'
 import { QueueRow } from '@/components/common/QueueRow'
 import { ActionButton } from '@/components/ui/ActionButton'
+import { useMessages } from '@/i18n/client'
+import { format } from '@/i18n/format'
 import type { DictationReviewItemApiRecord } from '@/modules/dictation/types'
 
 interface Props {
@@ -11,23 +15,19 @@ interface Props {
   title?: string
 }
 
-const reasonLabel: Record<DictationReviewItemApiRecord['reason'], string> = {
-  highRetry: 'High retry',
-  lowAccuracy: 'Low accuracy',
-  repeatedMistake: 'Repeated mistake',
-  revealed: 'Revealed',
-  skipped: 'Skipped',
-}
-
 export function DictationReviewQueue({
-  emptyMessage = 'No weak sentences are due yet.',
+  emptyMessage,
   reviewItems,
-  title = 'Review queue',
+  title,
 }: Props) {
+  const text = useMessages().dictation.reviewQueue
+  const reasonLabel: Record<DictationReviewItemApiRecord['reason'], string> =
+    text.reasons
+
   return (
     <ContentPanel
-      eyebrow="Review"
-      title={title}
+      eyebrow={text.eyebrow}
+      title={title ?? text.title}
       action={
         <ActionButton
           href="/dictation/review"
@@ -39,7 +39,7 @@ export function DictationReviewQueue({
             />
           }
         >
-          Open Queue
+          {text.open}
         </ActionButton>
       }
     >
@@ -50,7 +50,10 @@ export function DictationReviewQueue({
               key={item.id}
               href={`/dictation/videos/${item.videoId}/practice`}
               title={item.label}
-              meta={`${reasonLabel[item.reason]} - ${item.statsSnapshot.accuracy}% accuracy`}
+              meta={format(text.itemMeta, {
+                accuracy: item.statsSnapshot.accuracy,
+                reason: reasonLabel[item.reason],
+              })}
               status={`${item.priority}`}
               action={
                 item.status === 'completed' ? (
@@ -65,7 +68,7 @@ export function DictationReviewQueue({
         </div>
       ) : (
         <p className="text-ink-soft text-base leading-7 font-normal">
-          {emptyMessage}
+          {emptyMessage ?? text.empty}
         </p>
       )}
     </ContentPanel>

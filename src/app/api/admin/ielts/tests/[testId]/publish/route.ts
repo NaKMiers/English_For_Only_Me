@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server'
 
+import { plural } from '@/i18n/format'
+import type { Messages } from '@/i18n/messages'
+import { getMessages } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { requireAdmin } from '@/modules/dictation/services/getCurrentUser'
 import {
@@ -12,9 +15,17 @@ import {
   parsePublish,
   parseTestId,
 } from '@/modules/ielts/tests/testRouteDecisions'
+import type { IeltsConsistencyReport } from '@/modules/ielts/consistency/checkTest'
 import { publishTest } from '@/modules/ielts/tests/testService'
 
 export const runtime = 'nodejs'
+
+/** Why the publish stopped, in the admin's language. */
+function blockedMessage(report: IeltsConsistencyReport, t: Messages) {
+  return report.errors.length
+    ? plural(t.ieltsEditor.api.publishErrors, report.errors.length)
+    : plural(t.ieltsEditor.api.publishWarnings, report.warnings.length)
+}
 
 interface RouteContext {
   params: Promise<{ testId: string }>
@@ -48,7 +59,15 @@ export async function POST(request: Request, context: RouteContext) {
     })
 
     if (!outcome.ok)
-      return NextResponse.json(outcome.body, { status: outcome.status })
+      return 'report' in outcome.body
+        ? NextResponse.json(
+            {
+              ...outcome.body,
+              message: blockedMessage(outcome.body.report, await getMessages()),
+            },
+            { status: outcome.status }
+          )
+        : ieltsDecisionError(outcome)
 
     return NextResponse.json(outcome.data)
   } catch (error) {

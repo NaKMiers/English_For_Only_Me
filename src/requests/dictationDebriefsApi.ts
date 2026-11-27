@@ -12,16 +12,18 @@ export interface DictationDebriefResponse {
   mode: 'cache' | 'created'
 }
 
+// The server's message is already in the learner's language. Without one the
+// error carries no text, so the caller shows its own translated fallback.
 async function readApiError(response: Response) {
   try {
     const body = (await response.json()) as { message?: unknown }
 
     if (typeof body.message === 'string') return body.message
   } catch {
-    return 'The dictation debrief request failed.'
+    return ''
   }
 
-  return 'The dictation debrief request failed.'
+  return ''
 }
 
 export async function createDictationDebriefApi(

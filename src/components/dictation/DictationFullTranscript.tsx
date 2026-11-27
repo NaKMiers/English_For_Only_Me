@@ -4,6 +4,8 @@ import { useEffect, useRef } from 'react'
 
 import { MoveVertical, Play, Repeat } from 'lucide-react'
 
+import { useMessages } from '@/i18n/client'
+import { plural } from '@/i18n/format'
 import { cn } from '@/lib/utils'
 import type { DictationSegmentAttemptStatus } from '@/modules/dictation/types'
 
@@ -33,26 +35,23 @@ interface Props<TSegment extends FullTranscriptSegment> {
   translations?: Record<string, string>
 }
 
+// Pill labels come from `t.dictation.transcript.status`, keyed the same way.
 const STATUS_META: Record<
   DictationSegmentAttemptStatus,
-  { className: string; label: string } | null
+  { className: string } | null
 > = {
   attemptedIncorrect: {
     className: 'border-accent-orange bg-pastel-peach text-accent-orange',
-    label: 'Retry',
   },
   correct: {
     className: 'border-lesson-correct bg-lesson-correct/10 text-lesson-correct',
-    label: 'Correct',
   },
   notStarted: null,
   revealed: {
     className: 'border-accent-blue bg-pastel-sky text-accent-blue',
-    label: 'Revealed',
   },
   skipped: {
     className: 'border-danger bg-danger-soft text-danger',
-    label: 'Skipped',
   },
 }
 
@@ -82,6 +81,7 @@ export function DictationFullTranscript<
   segments,
   translations,
 }: Props<TSegment>) {
+  const text = useMessages().dictation.transcript
   const activeItemRef = useRef<HTMLButtonElement | null>(null)
   const highlightedId = playingSegmentId ?? currentSegmentId
 
@@ -95,12 +95,12 @@ export function DictationFullTranscript<
 
   return (
     <section
-      aria-label="Full transcript"
+      aria-label={text.title}
       className="border-line bg-surface rounded-panel grid min-h-0 min-w-0 grid-rows-[auto_minmax(0,1fr)] gap-2 border p-2"
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="font-sans text-sm leading-tight font-semibold tracking-normal">
-          Full transcript
+          {text.title}
         </h2>
         <div className="flex flex-wrap items-center gap-2">
           <button
@@ -119,7 +119,7 @@ export function DictationFullTranscript<
               aria-hidden="true"
               className="size-4"
             />
-            Repeat
+            {text.repeat}
           </button>
           <button
             type="button"
@@ -136,10 +136,10 @@ export function DictationFullTranscript<
               aria-hidden="true"
               className="size-4"
             />
-            Auto scroll
+            {text.autoScroll}
           </button>
           <span className="text-ink-soft text-xs font-normal">
-            {segments.length} sentences
+            {plural(text.sentenceCount, segments.length)}
           </span>
         </div>
       </div>
@@ -200,7 +200,11 @@ export function DictationFullTranscript<
                           statusMeta.className
                         )}
                       >
-                        {statusMeta.label}
+                        {
+                          text.status[
+                            segment.attemptStatus as keyof typeof text.status
+                          ]
+                        }
                       </span>
                     ) : null}
                     {segment.text}

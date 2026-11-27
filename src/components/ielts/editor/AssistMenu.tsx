@@ -28,6 +28,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { useMessages } from '@/i18n/client'
 import type { IeltsSection, IeltsSectionInput } from '@/modules/ielts/schema'
 import {
   assistIeltsSectionApi,
@@ -35,39 +36,19 @@ import {
   type IeltsAssistProposal,
 } from '@/requests/ieltsAdminApi'
 
+import { apiErrorText } from './apiErrorText'
 import { AreaField } from './fields'
 import { ExamButton } from '@/components/ielts/ui'
 
+/** Label and help text come from `ieltsEditor.assist.actions[action]`. */
 const ACTIONS: {
   action: IeltsAssistAction
-  label: string
-  help: string
   Icon: typeof Sparkles
 }[] = [
-  {
-    action: 'draft-questions',
-    label: 'Draft questions from the text',
-    help: 'Keeps the passage or script; AI adds question groups with answers and evidence.',
-    Icon: FileQuestion,
-  },
-  {
-    action: 'paraphrase-distractors',
-    label: 'Make it harder',
-    help: 'Rewords the questions and adds distractors without changing the answers.',
-    Icon: Shuffle,
-  },
-  {
-    action: 'suggest-evidence',
-    label: 'Suggest evidence and explanations',
-    help: 'Fills in verbatim quotes and explanations where questions lack them.',
-    Icon: Quote,
-  },
-  {
-    action: 'check-answers',
-    label: 'Check answers',
-    help: 'AI takes the test and flags questions with doubtful answers. Changes nothing.',
-    Icon: ListChecks,
-  },
+  { action: 'draft-questions', Icon: FileQuestion },
+  { action: 'paraphrase-distractors', Icon: Shuffle },
+  { action: 'suggest-evidence', Icon: Quote },
+  { action: 'check-answers', Icon: ListChecks },
 ]
 
 /**
@@ -94,6 +75,8 @@ export function AssistMenu({
   testId: string
   value: IeltsSectionInput
 }) {
+  const t = useMessages()
+  const copy = t.ieltsEditor.assist
   const [open, setOpen] = useState(false)
   const [action, setAction] = useState<IeltsAssistAction>('draft-questions')
   const [instruction, setInstruction] = useState('')
@@ -119,7 +102,7 @@ export function AssistMenu({
 
       setProposal(result.proposal)
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'AI request failed.')
+      setError(apiErrorText(caught, t, copy.failed))
     } finally {
       setBusy(false)
     }
@@ -161,16 +144,14 @@ export function AssistMenu({
             <>
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
-                <DropdownMenuLabel>
-                  Assist (review before use)
-                </DropdownMenuLabel>
+                <DropdownMenuLabel>{copy.menuLabel}</DropdownMenuLabel>
                 {ACTIONS.map(item => (
                   <DropdownMenuItem
                     key={item.action}
                     onClick={() => openAssist(item.action)}
                   >
                     <item.Icon aria-hidden="true" />
-                    {item.label}
+                    {copy.actions[item.action].label}
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuGroup>
@@ -184,10 +165,8 @@ export function AssistMenu({
       >
         <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-xl">
           <DialogHeader>
-            <DialogTitle>AI editing assist</DialogTitle>
-            <DialogDescription>
-              AI only proposes. Review it before you save.
-            </DialogDescription>
+            <DialogTitle>{copy.title}</DialogTitle>
+            <DialogDescription>{copy.description}</DialogDescription>
           </DialogHeader>
           {/* Option list (aria-pressed): documented raw exception. */}
           <div className="grid gap-2">
@@ -204,14 +183,16 @@ export function AssistMenu({
                 type="button"
               >
                 <span className="block font-sans text-sm font-semibold">
-                  {item.label}
+                  {copy.actions[item.action].label}
                 </span>
-                <span className="block text-xs">{item.help}</span>
+                <span className="block text-xs">
+                  {copy.actions[item.action].help}
+                </span>
               </button>
             ))}
           </div>
           <AreaField
-            label="Extra instructions (optional)"
+            label={copy.instructions}
             onChange={setInstruction}
             rows={2}
             value={instruction}
@@ -243,7 +224,7 @@ export function AssistMenu({
               tone="paper"
               type="button"
             >
-              {busy ? 'AI working...' : 'Run'}
+              {busy ? copy.working : copy.run}
             </ExamButton>
             {proposal?.section ? (
               <ExamButton
@@ -255,7 +236,7 @@ export function AssistMenu({
                 tone="ink"
                 type="button"
               >
-                Use proposal
+                {copy.use}
               </ExamButton>
             ) : null}
           </DialogFooter>

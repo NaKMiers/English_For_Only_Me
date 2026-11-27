@@ -13,12 +13,20 @@ import {
   listAdminTests,
 } from '@/modules/ielts/tests/testService'
 import { ExamCard, ExamSheet } from '@/components/ielts/ui'
+import { getMessages } from '@/i18n/server'
 
-export const metadata: Metadata = { title: 'Admin · IELTS' }
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getMessages()
+
+  return { title: t.ieltsEditor.meta.listTitle }
+}
+
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
 export default async function AdminIeltsPage() {
+  const t = await getMessages()
+  const copy = t.ieltsEditor.listPage
   let tests: IeltsAdminTestRow[] = []
   let error = ''
 
@@ -28,26 +36,26 @@ export default async function AdminIeltsPage() {
       tests = await listAdminTests()
     } catch (caught) {
       console.error('admin ielts list failed', { caught })
-      error = "Couldn't load the test list."
+      error = copy.loadFailed
     }
-  else error = 'Database is not configured.'
+  else error = copy.noDatabase
 
   const pageTitle = (
     <div className="grid min-w-0 gap-0.5">
       <nav
-        aria-label="Breadcrumb"
+        aria-label={copy.breadcrumb}
         className="text-muted-foreground text-xs font-semibold"
       >
         <Link
           className="hover:text-brand underline"
           href="/admin"
         >
-          Admin
+          {t.common.auth.admin}
         </Link>{' '}
         / IELTS
       </nav>
       <h1 className="font-sans text-2xl leading-none font-semibold wrap-break-word">
-        IELTS Tests
+        {copy.heading}
       </h1>
     </div>
   )
@@ -58,7 +66,7 @@ export default async function AdminIeltsPage() {
       topbar={
         <AppTopbar
           authControl={<AuthControl />}
-          subtitle="Admin"
+          subtitle={t.common.auth.admin}
         />
       }
     >
@@ -72,7 +80,7 @@ export default async function AdminIeltsPage() {
           {error || tests.length === 0 ? (
             <ExamCard>
               {pageTitle}
-              <p>{error || 'No tests yet. Create one manually or with AI.'}</p>
+              <p>{error || copy.empty}</p>
             </ExamCard>
           ) : (
             <ExamCard

@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import { notFound, redirect } from 'next/navigation'
 
 import { GrammarPlayerPage } from '@/components/grammar/player/GrammarPlayerPage'
+import { format } from '@/i18n/format'
+import { getMessages } from '@/i18n/server'
 import { grammarCourse } from '@/modules/grammar/course'
 import { createRng, randomSeed } from '@/modules/grammar/rng'
 import { loadGrammarPageData } from '@/modules/grammar/services/grammarPageData'
@@ -10,7 +12,9 @@ import { buildReviewSet } from '@/modules/grammar/session/buildPracticeSet'
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
-export const metadata: Metadata = { title: 'Grammar: review' }
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getMessages()).grammar.meta.review }
+}
 
 interface Props {
   params: Promise<{ lessonId: string }>
@@ -36,15 +40,18 @@ export default async function GrammarReviewPage({ params }: Props) {
     progress.misses,
     createRng(randomSeed())
   )
+  const t = await getMessages()
 
   return (
     <GrammarPlayerPage
       canSave={canSave}
       cards={cards}
-      intro="Quick review: get 80% or more right to keep this lesson fresh for longer."
+      intro={t.grammar.sessions.reviewIntro}
       mode="review"
       targetId={found.lesson.id}
-      title={`Review: ${found.lesson.title}`}
+      title={format(t.grammar.sessions.reviewTitle, {
+        title: found.lesson.title,
+      })}
     />
   )
 }

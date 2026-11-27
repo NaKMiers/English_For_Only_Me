@@ -16,6 +16,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ActionButton } from '@/components/ui/ActionButton'
 import { PageTag } from '@/components/ui/PageTag'
+import { format, plural } from '@/i18n/format'
+import { useMessages } from '@/i18n/client'
 import { cn } from '@/lib/utils'
 import {
   createSectionAction,
@@ -77,11 +79,13 @@ function AdminCardActionsMenu({
   label: string
   children: ReactNode
 }) {
+  const t = useMessages()
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
         aria-label={label}
-        title="Actions"
+        title={t.admin.menu.trigger}
         className="border-line bg-surface hover:bg-tint rounded-control grid size-9 shrink-0 place-items-center border transition-colors"
       >
         <EllipsisVertical
@@ -171,6 +175,7 @@ function SectionBlock({
     sourceSectionId: string
   ) => boolean
 }) {
+  const t = useMessages()
   const [open, setOpen] = useState(false)
   const [editingTitle, setEditingTitle] = useState(false)
 
@@ -191,7 +196,7 @@ function SectionBlock({
             <ReorderHandle
               mime={MIME_SECTION}
               id={section.id}
-              label={`Reorder ${section.title}`}
+              label={format(t.admin.section.reorder, { title: section.title })}
             />
             {editingTitle ? (
               <form
@@ -220,7 +225,7 @@ function SectionBlock({
                   tone="primary"
                   className="min-h-9 border px-3 text-xs shadow-none"
                 >
-                  Save
+                  {t.common.actions.save}
                 </ActionButton>
                 <ActionButton
                   type="button"
@@ -228,7 +233,7 @@ function SectionBlock({
                   onClick={() => setEditingTitle(false)}
                   className="min-h-9 border px-3 text-xs shadow-none"
                 >
-                  Cancel
+                  {t.common.actions.cancel}
                 </ActionButton>
               </form>
             ) : (
@@ -253,7 +258,9 @@ function SectionBlock({
             )}
           </div>
           {!editingTitle && (
-            <AdminCardActionsMenu label={`Actions for ${section.title}`}>
+            <AdminCardActionsMenu
+              label={format(t.admin.menu.triggerFor, { title: section.title })}
+            >
               <DropdownMenuItem
                 onClick={() => {
                   setEditingTitle(true)
@@ -261,7 +268,7 @@ function SectionBlock({
                 }}
               >
                 <Pencil aria-hidden="true" />
-                Edit
+                {t.common.actions.edit}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <form action={deleteSectionAction}>
@@ -271,18 +278,20 @@ function SectionBlock({
                   value={section.id}
                 />
                 <ConfirmSubmitButton
-                  confirmTitle="Remove section?"
-                  confirmMessage={`Remove "${section.title}"? This does not delete any video.`}
-                  confirmLabel="Remove section"
+                  confirmTitle={t.admin.section.removeTitle}
+                  confirmMessage={format(t.admin.section.removeMessage, {
+                    title: section.title,
+                  })}
+                  confirmLabel={t.admin.section.removeConfirm}
                   disabled={section.videos.length > 0}
-                  disabledReason="Move or remove its videos first - a section with videos can't be removed."
+                  disabledReason={t.admin.section.removeDisabled}
                   className={menuDangerButton}
                 >
                   <X
                     aria-hidden="true"
                     className="size-4"
                   />
-                  Remove
+                  {t.admin.section.remove}
                 </ConfirmSubmitButton>
               </form>
             </AdminCardActionsMenu>
@@ -314,14 +323,16 @@ function SectionBlock({
           >
             {section.videos.length === 0 ? (
               <li className="text-ink-soft p-2 text-sm">
-                No videos yet - drag one here.
+                {t.admin.section.empty}
               </li>
             ) : (
               section.videos.map(video => (
                 <AdminVideoRow
                   key={video.id}
                   video={video}
-                  gripLabel={`Reorder ${video.title}`}
+                  gripLabel={format(t.admin.videoRow.reorder, {
+                    title: video.title,
+                  })}
                   acceptReorderMime={MIME_VIDEO}
                   onDragStartData={dataTransfer => {
                     dataTransfer.setData(MIME_VIDEO, video.id)
@@ -347,7 +358,7 @@ function SectionBlock({
                         className="w-full"
                       >
                         <X aria-hidden="true" />
-                        Remove
+                        {t.admin.section.remove}
                       </DropdownMenuItem>
                     </form>
                   }
@@ -362,6 +373,7 @@ function SectionBlock({
 }
 
 export function AdminTopicCard({ topic }: { topic: AdminTopicData }) {
+  const t = useMessages()
   const [editing, setEditing] = useState(false)
   const [expanded, setExpanded] = useState(false)
   const [, startTransition] = useTransition()
@@ -476,12 +488,14 @@ export function AdminTopicCard({ topic }: { topic: AdminTopicData }) {
           <ReorderHandle
             mime={MIME_TOPIC}
             id={topic.id}
-            label={`Reorder ${topic.title}`}
+            label={format(t.admin.topicCard.reorder, { title: topic.title })}
           />
           <button
             type="button"
             aria-expanded={expanded}
-            aria-label={expanded ? 'Collapse topic' : 'Expand topic'}
+            aria-label={
+              expanded ? t.admin.topicCard.collapse : t.admin.topicCard.expand
+            }
             onClick={() => setExpanded(v => !v)}
             className="flex min-w-0 flex-1 flex-wrap items-center gap-2 self-stretch text-left"
           >
@@ -497,15 +511,21 @@ export function AdminTopicCard({ topic }: { topic: AdminTopicData }) {
             <span className="text-brand font-sans text-lg font-semibold">
               {topic.title}
             </span>
-            {topic.hasVideoMedia && <PageTag tone="yellow">Video</PageTag>}
-            <PageTag tone="pale">{topic.videoCount} videos</PageTag>
+            {topic.hasVideoMedia && (
+              <PageTag tone="yellow">{t.admin.topicCard.videoTag}</PageTag>
+            )}
+            <PageTag tone="pale">
+              {plural(t.admin.topicCard.videoCount, topic.videoCount)}
+            </PageTag>
             <span className="text-ink-soft text-xs">/{topic.slug}</span>
           </button>
         </div>
-        <AdminCardActionsMenu label={`Actions for ${topic.title}`}>
+        <AdminCardActionsMenu
+          label={format(t.admin.menu.triggerFor, { title: topic.title })}
+        >
           <DropdownMenuItem onClick={() => setEditing(v => !v)}>
             {editing ? <X aria-hidden="true" /> : <Pencil aria-hidden="true" />}
-            {editing ? 'Close' : 'Edit'}
+            {editing ? t.common.actions.close : t.common.actions.edit}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <form action={deleteTopicAction}>
@@ -515,18 +535,20 @@ export function AdminTopicCard({ topic }: { topic: AdminTopicData }) {
               value={topic.id}
             />
             <ConfirmSubmitButton
-              confirmTitle="Delete topic?"
-              confirmMessage={`Delete "${topic.title}"? Its (empty) sections are removed along with it.`}
-              confirmLabel="Delete topic"
+              confirmTitle={t.admin.topicCard.deleteTitle}
+              confirmMessage={format(t.admin.topicCard.deleteMessage, {
+                title: topic.title,
+              })}
+              confirmLabel={t.admin.topicCard.deleteConfirm}
               disabled={topic.videoCount > 0}
-              disabledReason="Move or remove its videos first - a topic with videos can't be deleted."
+              disabledReason={t.admin.topicCard.deleteDisabled}
               className={menuDangerButton}
             >
               <Trash2
                 aria-hidden="true"
                 className="size-4"
               />
-              Delete
+              {t.common.actions.delete}
             </ConfirmSubmitButton>
           </form>
         </AdminCardActionsMenu>
@@ -555,7 +577,7 @@ export function AdminTopicCard({ topic }: { topic: AdminTopicData }) {
             />
             <div className="grid gap-3">
               <Label className="grid gap-1 font-sans text-sm font-semibold">
-                Title
+                {t.admin.topicCard.titleLabel}
                 <Input
                   name="title"
                   defaultValue={topic.title}
@@ -564,7 +586,7 @@ export function AdminTopicCard({ topic }: { topic: AdminTopicData }) {
                 />
               </Label>
               <Label className="grid gap-1 font-sans text-sm font-semibold">
-                Description
+                {t.admin.topicCard.descriptionLabel}
                 <Input
                   name="description"
                   defaultValue={topic.description ?? ''}
@@ -574,7 +596,9 @@ export function AdminTopicCard({ topic }: { topic: AdminTopicData }) {
             </div>
           </div>
           <p className="text-ink-soft text-xs">
-            Renaming updates the topic&apos;s URL (/dictation/{topic.slug}).
+            {format(t.admin.topicCard.renameHint, {
+              path: `/dictation/${topic.slug}`,
+            })}
           </p>
           <div className="flex flex-wrap items-center gap-4">
             <Label className="font-sans text-sm font-semibold">
@@ -583,13 +607,13 @@ export function AdminTopicCard({ topic }: { topic: AdminTopicData }) {
                 value="on"
                 defaultChecked={topic.hasVideoMedia}
               />
-              Video badge
+              {t.admin.topicCard.videoBadge}
             </Label>
             <ActionButton
               type="submit"
               tone="primary"
             >
-              Save changes
+              {t.admin.topicCard.saveChanges}
             </ActionButton>
           </div>
         </form>
@@ -597,10 +621,7 @@ export function AdminTopicCard({ topic }: { topic: AdminTopicData }) {
 
       {expanded && (
         <>
-          <p className="text-ink-soft text-xs">
-            Drag the ⠿ handles to reorder sections; drag a video into a section
-            or another topic to move it.
-          </p>
+          <p className="text-ink-soft text-xs">{t.admin.topicCard.dragHint}</p>
 
           <div className="grid gap-2">
             {sections.map(section => (
@@ -621,14 +642,18 @@ export function AdminTopicCard({ topic }: { topic: AdminTopicData }) {
                 className="border-line bg-tint rounded-control border p-2"
               >
                 <p className="mb-2 font-sans text-sm font-semibold">
-                  Ungrouped in this topic ({topic.ungrouped.length})
+                  {format(t.admin.topicCard.ungrouped, {
+                    count: topic.ungrouped.length,
+                  })}
                 </p>
                 <ul className="grid gap-2">
                   {topic.ungrouped.map(video => (
                     <AdminVideoRow
                       key={video.id}
                       video={video}
-                      gripLabel={`Drag ${video.title}`}
+                      gripLabel={format(t.admin.videoRow.drag, {
+                        title: video.title,
+                      })}
                       acceptReorderMime={MIME_VIDEO}
                       onDragStartData={dataTransfer =>
                         dataTransfer.setData(MIME_VIDEO, video.id)
@@ -650,7 +675,7 @@ export function AdminTopicCard({ topic }: { topic: AdminTopicData }) {
               />
               <Input
                 name="title"
-                placeholder="New section title"
+                placeholder={t.admin.topicCard.newSectionPlaceholder}
                 required
                 className={`${input} flex-1`}
               />
@@ -658,7 +683,7 @@ export function AdminTopicCard({ topic }: { topic: AdminTopicData }) {
                 type="submit"
                 tone="primary"
               >
-                Add section
+                {t.admin.topicCard.addSection}
               </ActionButton>
             </form>
           </div>

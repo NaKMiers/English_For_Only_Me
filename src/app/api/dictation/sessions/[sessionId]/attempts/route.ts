@@ -2,6 +2,8 @@ import { Types } from 'mongoose'
 import { NextResponse } from 'next/server'
 
 import { MissingEnvironmentError } from '@/constants/environments'
+import type { Messages } from '@/i18n/messages'
+import { getMessages } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { DictationAttemptModel } from '@/models/dictation/DictationAttemptModel'
 import { DictationSegmentModel } from '@/models/dictation/DictationSegmentModel'
@@ -29,6 +31,7 @@ import {
 import type { DictationAttemptApiRecord } from '@/modules/dictation/types'
 import { parseSessionIdParam } from '@/modules/dictation/services/sessionRouteDecisions'
 import {
+  getAccessErrorMessage,
   type ApiErrorDecision,
   getMissingMongoResponse,
   MISSING_MONGODB_MESSAGE,
@@ -100,6 +103,7 @@ async function respondWithReplay({
   sessionId: string
   userId: string
 }) {
+  const t = await getMessages()
   const [session, progress] = await Promise.all([
     DictationSessionModel.findOne({ _id: sessionId, userId }).lean(),
     loadAttemptedSegmentProgress({
@@ -118,7 +122,7 @@ async function respondWithReplay({
     return jsonError({
       status: 404,
       body: {
-        message: 'This dictation session was not found.',
+        message: t.dictation.api.sessionNotFound,
       },
     })
 
@@ -133,7 +137,7 @@ async function respondWithReplay({
   })
 }
 
-function toAttemptError(error: unknown): ApiErrorDecision {
+function toAttemptError(error: unknown, t: Messages): ApiErrorDecision {
   if (
     typeof error === 'object' &&
     error !== null &&
@@ -143,7 +147,7 @@ function toAttemptError(error: unknown): ApiErrorDecision {
     return {
       status: error.status,
       body: {
-        message: (error as { message?: string }).message ?? 'Access denied.',
+        message: getAccessErrorMessage(error.status, t),
       },
     }
 
@@ -160,12 +164,13 @@ function toAttemptError(error: unknown): ApiErrorDecision {
   return {
     status: 500,
     body: {
-      message: 'Could not save this dictation attempt.',
+      message: t.dictation.api.attemptSaveFailed,
     },
   }
 }
 
 export async function POST(request: Request, context: RouteContext) {
+  const t = await getMessages()
   const missingMongo = getMissingMongoResponse()
 
   if (missingMongo) return jsonError(missingMongo)
@@ -212,7 +217,7 @@ export async function POST(request: Request, context: RouteContext) {
       return jsonError({
         status: 404,
         body: {
-          message: 'This dictation session was not found.',
+          message: t.dictation.api.sessionNotFound,
         },
       })
 
@@ -220,7 +225,7 @@ export async function POST(request: Request, context: RouteContext) {
       return jsonError({
         status: 409,
         body: {
-          message: 'This dictation session is not active.',
+          message: t.dictation.api.sessionNotActive,
         },
       })
 
@@ -238,7 +243,7 @@ export async function POST(request: Request, context: RouteContext) {
       return jsonError({
         status: 404,
         body: {
-          message: 'This dictation segment was not found.',
+          message: t.dictation.api.segmentNotFound,
         },
       })
 
@@ -357,10 +362,10 @@ export async function POST(request: Request, context: RouteContext) {
       return jsonError({
         status: 400,
         body: {
-          message: 'Request body must be valid JSON.',
+          message: t.dictation.api.invalidJson,
         },
       })
 
-    return jsonError(toAttemptError(error))
+    return jsonError(toAttemptError(error, t))
   }
 }

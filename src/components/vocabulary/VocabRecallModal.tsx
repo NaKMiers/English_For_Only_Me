@@ -12,6 +12,8 @@ import {
 } from '@/components/ui/dialog'
 import { ActionButton } from '@/components/ui/ActionButton'
 import { PageTag } from '@/components/ui/PageTag'
+import { useMessages } from '@/i18n/client'
+import { format } from '@/i18n/format'
 import { cn } from '@/lib/utils'
 import type {
   VocabRecallAnswerAction,
@@ -108,18 +110,6 @@ function playFeedbackSound(isCorrect: boolean) {
   window.setTimeout(() => void context.close(), 700)
 }
 
-function getInstruction(type: VocabRecallTaskType) {
-  if (type === 'listenChooseWord') return 'Listen, then choose the word.'
-  if (type === 'listenChooseDefinition')
-    return 'Listen, then choose the matching definition.'
-  if (type === 'exampleRemember')
-    return 'Read the sentence and decide whether you remember the highlighted word.'
-  if (type === 'definitionChooseWord')
-    return 'Choose the word that matches this definition.'
-
-  return 'Choose the definition that matches this word.'
-}
-
 function getDefinition(task: VocabRecallTaskRecord) {
   return getEnglishDefinition(task.entry)
 }
@@ -147,7 +137,7 @@ function getCorrectAnswerText(task: VocabRecallTaskRecord) {
   return option?.term ?? option?.definition ?? task.entry.term
 }
 
-function getQuestionText(task: VocabRecallTaskRecord) {
+function getQuestionText(task: VocabRecallTaskRecord, tapPlay: string) {
   if (task.type === 'definitionChooseWord')
     return getEnglishDefinition(task.entry)
 
@@ -155,7 +145,7 @@ function getQuestionText(task: VocabRecallTaskRecord) {
   if (task.type === 'exampleRemember')
     return task.exampleSentence ?? `I saw ${task.entry.term} today.`
 
-  return 'Tap play when you are ready.'
+  return tapPlay
 }
 
 function formatExample(task: VocabRecallTaskRecord) {
@@ -190,6 +180,9 @@ export function VocabRecallModal({
   taskNumber,
   taskTotal,
 }: Props) {
+  const messages = useMessages()
+  const vocab = messages.vocabulary
+  const t = vocab.modal
   const [selectedOption, setSelectedOption] = useState<{
     optionId: string
     taskId: string
@@ -277,19 +270,19 @@ export function VocabRecallModal({
             <DialogHeader className="border-surface/20 border-b p-3 sm:p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <PageTag tone="red">
-                  Review {taskNumber}/{taskTotal}
+                  {format(t.review, { number: taskNumber, total: taskTotal })}
                 </PageTag>
-                <PageTag tone="ink">Stage {task.item.recallStage}/7</PageTag>
+                <PageTag tone="ink">
+                  {format(t.stage, { stage: task.item.recallStage })}
+                </PageTag>
               </div>
-              <DialogTitle className="sr-only">
-                Vocabulary flashcard review
-              </DialogTitle>
+              <DialogTitle className="sr-only">{t.srTitle}</DialogTitle>
               <DialogDescription className="text-tint text-base leading-6 font-semibold">
                 {wrongFeedback
-                  ? 'Not quite. Check the correct answer, then continue.'
+                  ? t.wrong
                   : cardFeedback
-                    ? 'Counted as correct after all. Continue when ready.'
-                    : getInstruction(task.type)}
+                    ? t.countedCorrect
+                    : t.instructions[task.type]}
               </DialogDescription>
             </DialogHeader>
 
@@ -297,7 +290,7 @@ export function VocabRecallModal({
               {isListeningTask ? (
                 <div className="grid place-items-center gap-4 py-5">
                   <button
-                    aria-label={`Play ${task.entry.term}`}
+                    aria-label={format(t.play, { term: task.entry.term })}
                     className="text-ink border-line soft-press grid size-24 place-items-center rounded-full border bg-cyan-300 sm:size-32"
                     onClick={() => speakTerm(task.entry.term)}
                     type="button"
@@ -322,7 +315,7 @@ export function VocabRecallModal({
                       <p className="font-sans text-[clamp(1.45rem,3.4vw,3.25rem)] leading-snug font-medium wrap-break-word">
                         {task.type === 'exampleRemember'
                           ? formatExample(task)
-                          : getQuestionText(task)}
+                          : getQuestionText(task, t.tapPlay)}
                       </p>
                       {task.type === 'exampleRemember' ? (
                         <VocabTermHeader
@@ -348,7 +341,7 @@ export function VocabRecallModal({
                     onClick={() => submitAnswer('lookup')}
                     tone="paper"
                   >
-                    Look Up
+                    {t.lookUp}
                   </ActionButton>
                   <ActionButton
                     className="border-surface bg-tint text-ink"
@@ -356,7 +349,7 @@ export function VocabRecallModal({
                     icon={<Check className="size-4" />}
                     onClick={() => submitAnswer('remember')}
                   >
-                    I Remember
+                    {t.remember}
                   </ActionButton>
                 </div>
               ) : task.type !== 'exampleRemember' ? (
@@ -399,14 +392,19 @@ export function VocabRecallModal({
               {wrongFeedback ? (
                 <div className="border-danger bg-danger-soft text-ink rounded-control grid gap-3 border p-4">
                   <p className="text-danger text-sm font-semibold">
-                    Correct answer: {getCorrectAnswerText(task)}
+                    {format(t.correctAnswer, {
+                      answer: getCorrectAnswerText(task),
+                    })}
                   </p>
                   <VocabTermHeader
                     entry={task.entry}
                     size="lg"
                   />
                   <div className="border-line bg-tint rounded-tag border p-3 text-right text-sm leading-6 font-semibold sm:text-base">
-                    {getRequiredVietnameseMeaning(task.entry)}
+                    {getRequiredVietnameseMeaning(
+                      task.entry,
+                      vocab.word.needsMeaning
+                    )}
                   </div>
                   <div className="border-line bg-surface rounded-tag border p-3 text-sm leading-6 font-semibold sm:text-base">
                     {getDefinition(task)}
@@ -424,7 +422,7 @@ export function VocabRecallModal({
                   onClick={onListeningSkip}
                   tone="ink"
                 >
-                  I cannot listen now
+                  {t.cannotListen}
                 </ActionButton>
               ) : null}
             </div>
@@ -436,7 +434,7 @@ export function VocabRecallModal({
                   icon={<Check className="size-4" />}
                   onClick={continueAfterFeedback}
                 >
-                  Continue
+                  {messages.common.actions.continue}
                 </ActionButton>
               ) : (
                 <ActionButton
@@ -446,7 +444,7 @@ export function VocabRecallModal({
                   onClick={() => submitAnswer('notSure')}
                   tone="ink"
                 >
-                  Not Sure
+                  {t.notSure}
                 </ActionButton>
               )}
             </div>
@@ -454,7 +452,7 @@ export function VocabRecallModal({
         ) : loadError ? (
           <div className="grid place-items-center gap-3 p-8 text-center">
             <DialogTitle className="font-sans text-xl font-semibold">
-              Could not load more cards
+              {t.loadFailed}
             </DialogTitle>
             <DialogDescription className="text-tint text-sm font-semibold">
               {loadError}
@@ -465,7 +463,7 @@ export function VocabRecallModal({
                 icon={<RotateCcw className="size-4" />}
                 onClick={onRetryLoad}
               >
-                Try again
+                {messages.common.actions.retry}
               </ActionButton>
             ) : null}
           </div>
@@ -473,10 +471,10 @@ export function VocabRecallModal({
           // Between pages of the due queue: the next cards are on their way.
           <div className="grid place-items-center gap-2 p-8 text-center">
             <DialogTitle className="font-sans text-xl font-semibold">
-              Loading more cards
+              {t.loadingMore}
             </DialogTitle>
             <DialogDescription className="text-tint text-sm font-semibold">
-              One moment.
+              {t.oneMoment}
             </DialogDescription>
           </div>
         )}

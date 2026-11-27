@@ -1,6 +1,8 @@
 'use client'
 
 import { AudioPlayer } from '@/components/common/AudioPlayer'
+import { useMessages } from '@/i18n/client'
+import { format } from '@/i18n/format'
 import type { IeltsAudio, IeltsListeningLine } from '@/modules/ielts/schema'
 
 interface Props {
@@ -15,6 +17,8 @@ interface Props {
  * has no timings and falls back to 5 s skips. Key it by `audio.url`.
  */
 export function AdminAudioPlayer({ audio, lines }: Props) {
+  const t = useMessages()
+  const copy = t.ieltsEditor.audio
   const offsets = audio.lineOffsetsSec
 
   return (
@@ -25,7 +29,7 @@ export function AdminAudioPlayer({ audio, lines }: Props) {
         if (!offsets.length)
           return (
             <p className="text-ink-soft px-1 text-xs font-normal">
-              Uploaded mp3: no per-line timings, so skips jump 5 s.
+              {copy.uploadedHint}
             </p>
           )
 
@@ -48,7 +52,7 @@ export function AdminAudioPlayer({ audio, lines }: Props) {
               </>
             ) : (
               <span className="text-ink-soft font-normal">
-                {offsets.length} timed lines. Press play or step to a line.
+                {format(copy.timedLines, { count: offsets.length })}
               </span>
             )}
           </p>

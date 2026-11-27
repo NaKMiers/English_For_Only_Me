@@ -4,6 +4,8 @@ import dynamic from 'next/dynamic'
 import Image from 'next/image'
 import { useCallback, useState, type KeyboardEvent } from 'react'
 
+import { useMessages } from '@/i18n/client'
+
 interface Props {
   avatarUrl?: string | null
   label: string
@@ -42,6 +44,7 @@ export function UserMenu({
   isAdmin,
   signOutAction,
 }: Props) {
+  const t = useMessages()
   const [isActivated, setIsActivated] = useState(false)
   const [isPopupMounted, setIsPopupMounted] = useState(false)
   const handlePopupMounted = useCallback(() => setIsPopupMounted(true), [])
@@ -79,7 +82,9 @@ export function UserMenu({
           {label}
         </span>
         {isAdmin && (
-          <span className="text-ink-soft text-xs font-normal">Admin</span>
+          <span className="text-ink-soft text-xs font-normal">
+            {t.common.auth.admin}
+          </span>
         )}
       </span>
     </>

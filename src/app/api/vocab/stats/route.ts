@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 
+import { getMessages } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { requirePracticeActor } from '@/modules/dictation/services/getCurrentUser'
 import { toVocabApiError } from '@/modules/vocabulary/services/vocabApiErrors'
@@ -16,7 +17,8 @@ function jsonError(decision: VocabApiErrorDecision) {
 }
 
 export async function GET() {
-  const missingMongo = getMissingVocabMongoResponse()
+  const t = await getMessages()
+  const missingMongo = getMissingVocabMongoResponse(t)
 
   if (missingMongo) return jsonError(missingMongo)
 
@@ -29,6 +31,6 @@ export async function GET() {
       stats: await getVocabStatsForUser({ userId: actor.id }),
     })
   } catch (error) {
-    return jsonError(toVocabApiError(error))
+    return jsonError(toVocabApiError(error, t))
   }
 }

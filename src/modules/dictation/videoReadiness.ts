@@ -1,7 +1,4 @@
-import type {
-  DictationVideoApiRecord,
-  DictationVideoProgress,
-} from './types'
+import type { DictationVideoApiRecord, DictationVideoProgress } from './types'
 
 export function hasDictationTranscript(video: DictationVideoApiRecord) {
   return (
@@ -21,20 +18,21 @@ export function getDictationResultsAction({
 }) {
   const href = `/dictation/videos/${videoId}/practice`
 
+  // `kind` keys the button label in `t.dictation.resultsAction`.
   if (!isEmpty && progress === 'completed')
     return {
       href,
-      label: 'Practice Again',
+      kind: 'practiceAgain' as const,
     }
 
   if (progress === 'inProgress')
     return {
       href,
-      label: 'Continue Practice',
+      kind: 'continuePractice' as const,
     }
 
   return {
     href,
-    label: 'Start Practice',
+    kind: 'startPractice' as const,
   }
 }

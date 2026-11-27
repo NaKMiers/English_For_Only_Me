@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 
+import { getMessages } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { IeltsTestModel } from '@/models/ielts/IeltsTestModel'
 import { requireAdmin } from '@/modules/dictation/services/getCurrentUser'
@@ -31,6 +32,7 @@ async function readSlug(testId: string) {
 
 /** The words shown under the skill cards of this test, in order. */
 export async function GET(_request: Request, context: RouteContext) {
+  const t = await getMessages()
   const missing = ieltsMissingMongo()
 
   if (missing) return missing
@@ -45,7 +47,7 @@ export async function GET(_request: Request, context: RouteContext) {
 
     const slug = await readSlug(id.data)
 
-    if (!slug) return ieltsJsonError(404, 'Test not found.')
+    if (!slug) return ieltsJsonError(404, t.ieltsEditor.api.testNotFound)
 
     return NextResponse.json({
       entries: await listIeltsTestVocabForAdmin(slug),
@@ -57,6 +59,7 @@ export async function GET(_request: Request, context: RouteContext) {
 
 /** Replace the whole list (the editor always sends every word, in order). */
 export async function PUT(request: Request, context: RouteContext) {
+  const t = await getMessages()
   const missing = ieltsMissingMongo()
 
   if (missing) return missing
@@ -80,7 +83,7 @@ export async function PUT(request: Request, context: RouteContext) {
 
     const slug = await readSlug(id.data)
 
-    if (!slug) return ieltsJsonError(404, 'Test not found.')
+    if (!slug) return ieltsJsonError(404, t.ieltsEditor.api.testNotFound)
 
     return NextResponse.json({
       entries: await saveIeltsTestVocab({

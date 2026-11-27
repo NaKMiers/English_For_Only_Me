@@ -7,14 +7,19 @@ import { ContentPanel } from '@/components/common/ContentPanel'
 import { ActionButton } from '@/components/ui/ActionButton'
 import { VocabularyWordList } from '@/components/vocabulary/VocabularyWordList'
 import { hasMongoDbUri } from '@/constants/environments'
+import { getMessages } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { getPracticeActorId } from '@/modules/dictation/services/getCurrentUser'
 import { parseVocabWordListQuery } from '@/modules/vocabulary/services/vocabularyRouteDecisions'
 import { listVocabWordsForUser } from '@/modules/vocabulary/services/vocabWordListService'
 
-export const metadata: Metadata = {
-  title: 'Vocabulary Words',
-  description: 'Filtered vocabulary word lists for learning and known words.',
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getMessages()
+
+  return {
+    title: t.vocabulary.page.wordsMetaTitle,
+    description: t.vocabulary.page.wordsMetaDescription,
+  }
 }
 
 export const dynamic = 'force-dynamic'
@@ -30,6 +35,7 @@ export default async function VocabularyWordsPage({
   }>
 }) {
   const { page, perPage, view } = parseVocabWordListQuery(await searchParams)
+  const t = await getMessages()
 
   if (!hasMongoDbUri())
     return (
@@ -37,20 +43,22 @@ export default async function VocabularyWordsPage({
         topbar={
           <AppTopbar
             activeHref="/vocabulary"
-            subtitle="Vocabulary memory spine"
+            subtitle={t.vocabulary.page.subtitle}
             authControl={<AuthControl />}
           />
         }
       >
         <section className="px-4 pb-6 md:pr-6 md:pl-0">
           <ContentPanel
-            eyebrow="Vocabulary"
-            title="Database needed"
+            eyebrow={t.vocabulary.page.eyebrow}
+            title={t.vocabulary.page.dbNeededTitle}
           >
             <p className="text-ink-soft text-base leading-7 font-normal">
-              Set MONGODB_URI on the server before opening vocabulary lists.
+              {t.vocabulary.page.dbNeededWords}
             </p>
-            <ActionButton href="/vocabulary">Back To Vocab</ActionButton>
+            <ActionButton href="/vocabulary">
+              {t.vocabulary.page.backToVocab}
+            </ActionButton>
           </ContentPanel>
         </section>
       </PageShell>
@@ -69,7 +77,7 @@ export default async function VocabularyWordsPage({
       topbar={
         <AppTopbar
           activeHref="/vocabulary"
-          subtitle="Vocabulary memory spine"
+          subtitle={t.vocabulary.page.subtitle}
           authControl={<AuthControl />}
         />
       }

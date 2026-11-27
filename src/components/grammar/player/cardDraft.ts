@@ -1,4 +1,5 @@
 import type { CardAnswer, PracticeCard } from '@/modules/grammar/course/types'
+import { format } from '@/i18n/format'
 import { fillSentence } from '@/modules/grammar/grading/gradeCard'
 import type { PlayCard } from '@/modules/grammar/session/preparePlayCards'
 
@@ -74,8 +75,15 @@ export function toCardAnswer(play: PlayCard, draft: CardDraft): CardAnswer {
   }
 }
 
-/** A readable version of what the learner answered, for the recap. */
-export function describeAnswer(card: PracticeCard, answer: CardAnswer) {
+/**
+ * A readable version of what the learner answered, for the recap.
+ * `wrongWordTemplate` is the catalogue sentence for a fix card, with `{word}`.
+ */
+export function describeAnswer(
+  card: PracticeCard,
+  answer: CardAnswer,
+  wrongWordTemplate: string
+) {
   switch (answer.kind) {
     case 'choice':
       return card.kind === 'choice' ? (card.options[answer.value] ?? '') : ''
@@ -87,7 +95,7 @@ export function describeAnswer(card: PracticeCard, answer: CardAnswer) {
       return answer.value.join(' ')
     case 'fix':
       return card.kind === 'fix'
-        ? `"${card.tokens[answer.value] ?? ''}" is the wrong word`
+        ? format(wrongWordTemplate, { word: card.tokens[answer.value] ?? '' })
         : ''
   }
 }

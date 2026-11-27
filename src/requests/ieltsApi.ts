@@ -42,17 +42,28 @@ export class IeltsApiError extends Error {
   }
 }
 
+/**
+ * The server's message for a failed IELTS request (already in the learner's
+ * language), or `fallback` when there is none, e.g. a network failure.
+ */
+export function ieltsErrorMessage(caught: unknown, fallback: string): string {
+  return caught instanceof IeltsApiError && caught.message
+    ? caught.message
+    : fallback
+}
+
 async function readJson<T>(response: Response): Promise<T> {
   if (response.ok) return (await response.json()) as T
 
-  let message = 'IELTS request failed.'
+  // Empty when the body has no message: callers show their own fallback.
+  let message = ''
 
   try {
     const body = (await response.json()) as { message?: unknown }
 
     if (typeof body.message === 'string') message = body.message
   } catch {
-    // Keep the generic message.
+    // No message: the caller's fallback names the failure.
   }
 
   throw new IeltsApiError(message, response.status)

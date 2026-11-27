@@ -13,6 +13,7 @@ import {
 } from 'react'
 import { preconnect } from 'react-dom'
 
+import { useMessages } from '@/i18n/client'
 import { cn } from '@/lib/utils'
 import {
   useYoutubeDictationPlayer,
@@ -27,13 +28,6 @@ import {
 
 const SIZE_BUTTON_CLASS_NAME =
   'border-line inline-flex min-h-7 items-center rounded-control border px-1.5 font-sans text-[0.7rem] font-semibold'
-
-const VIDEO_SIZE_LABEL: Record<VideoSize, string> = {
-  small: 'Small',
-  normal: 'Normal',
-  large: 'Large',
-  max: 'Max',
-}
 
 interface YoutubeEvent {
   data?: number
@@ -223,6 +217,9 @@ export function DictationYoutubePlayer({
   videoSize,
   youtubeVideoId,
 }: Props) {
+  const t = useMessages()
+  const text = t.dictation.player
+  const videoSizeLabels: Record<VideoSize, string> = t.dictation.videoSizes
   const playerElementId = useId().replace(/:/g, '')
   const [isSizeMenuOpen, setIsSizeMenuOpen] = useState(false)
   const playerRef = useRef<YoutubeDictationPlayerAdapter | null>(null)
@@ -446,7 +443,7 @@ export function DictationYoutubePlayer({
 
   return (
     <section
-      aria-label="Segment video player"
+      aria-label={text.label}
       className={cn(
         'border-line bg-surface rounded-panel grid min-w-0 gap-2 border p-2',
         className
@@ -463,7 +460,7 @@ export function DictationYoutubePlayer({
           />
         ) : (
           <div className="grid min-h-40 place-items-center p-4 text-center text-sm font-semibold">
-            YouTube metadata is missing for this video.
+            {text.missingMetadata}
           </div>
         )}
         {/* Until the deferred player is ready, the video's own thumbnail holds
@@ -486,8 +483,7 @@ export function DictationYoutubePlayer({
             aria-hidden="true"
             className="bg-tint text-ink-soft absolute inset-0 grid place-items-center p-4 text-center text-sm leading-6 font-normal"
           >
-            Video hidden - listen and type. Replay still works for timed
-            segments.
+            {text.hiddenNotice}
           </div>
         ) : null}
       </div>
@@ -510,7 +506,7 @@ export function DictationYoutubePlayer({
               aria-hidden="true"
               className="size-3.5"
             />
-            {VIDEO_SIZE_LABEL[videoSize]}
+            {videoSizeLabels[videoSize]}
             <ChevronRight
               aria-hidden="true"
               className={cn(
@@ -536,7 +532,7 @@ export function DictationYoutubePlayer({
                       : 'bg-surface text-ink hover:bg-tint'
                   )}
                 >
-                  {VIDEO_SIZE_LABEL[size]}
+                  {videoSizeLabels[size]}
                 </button>
               ))
             : null}
@@ -545,7 +541,7 @@ export function DictationYoutubePlayer({
             onClick={toggleHidden}
             className="text-ink-soft ml-auto text-xs font-normal underline underline-offset-4"
           >
-            {hidden ? 'Show video' : 'Hide video'}
+            {hidden ? text.showVideo : text.hideVideo}
           </button>
         </div>
       ) : null}

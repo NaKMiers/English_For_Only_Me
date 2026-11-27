@@ -7,6 +7,8 @@ import { AuthControl } from '@/components/common/AuthControl'
 import { PageShell } from '@/components/common/PageShell'
 import { ObjectiveResult } from '@/components/ielts/review/ObjectiveResult'
 import { WritingResult } from '@/components/ielts/review/WritingResult'
+import { format } from '@/i18n/format'
+import { getMessages } from '@/i18n/server'
 import { IELTS_SKILL_LABELS } from '@/modules/ielts/constants'
 import { loadResultPageData } from '@/modules/ielts/services/resultPageData'
 import { ExamSheet, ExamHero } from '@/components/ielts/ui'
@@ -14,17 +16,22 @@ import { ExamSheet, ExamHero } from '@/components/ielts/ui'
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
-export const metadata: Metadata = { title: 'IELTS · Result' }
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getMessages()
+
+  return { title: t.ielts.meta.resultTitle }
+}
 
 interface Props {
   params: Promise<{ attemptId: string }>
 }
 
-const MODE_LABELS = { practice: 'Practice', mock: 'Mock', drill: 'Drill' }
-
 export default async function IeltsResultPage({ params }: Props) {
   const { attemptId } = await params
-  const data = await loadResultPageData(attemptId)
+  const [data, t] = await Promise.all([
+    loadResultPageData(attemptId),
+    getMessages(),
+  ])
 
   if (!data) notFound()
 
@@ -43,7 +50,17 @@ export default async function IeltsResultPage({ params }: Props) {
     )
   }
 
-  const title = attempt.testTitle || 'Drill'
+  const title = attempt.testTitle || t.ielts.history.drill
+  const skillLabel = IELTS_SKILL_LABELS[attempt.skill]
+  const summary = [
+    t.ielts.modes[attempt.mode],
+    attempt.scope.kind === 'part'
+      ? format(t.ielts.parts.part, { part: attempt.scope.part })
+      : null,
+    attempt.status === 'expired' ? t.ielts.result.timeUp : null,
+  ]
+    .filter(Boolean)
+    .join(' · ')
 
   return (
     <PageShell
@@ -51,14 +68,14 @@ export default async function IeltsResultPage({ params }: Props) {
         <AppTopbar
           activeHref="/ielts"
           authControl={<AuthControl />}
-          subtitle="IELTS practice: Listening, Reading, Writing"
+          subtitle={t.ielts.shell.subtitle}
         />
       }
     >
       <ExamSheet>
         <ExamHero>
           <nav
-            aria-label="Breadcrumb"
+            aria-label={t.ielts.shell.breadcrumb}
             className="text-muted-foreground text-sm font-semibold"
           >
             <Link
@@ -78,18 +95,12 @@ export default async function IeltsResultPage({ params }: Props) {
                 </Link>
               </>
             ) : null}{' '}
-            / {IELTS_SKILL_LABELS[attempt.skill]}
+            / {skillLabel}
           </nav>
           <h1 className="font-sans text-3xl leading-tight font-medium wrap-break-word sm:text-4xl">
-            {IELTS_SKILL_LABELS[attempt.skill]} result
+            {format(t.ielts.result.heading, { skill: skillLabel })}
           </h1>
-          <p>
-            {MODE_LABELS[attempt.mode]}
-            {attempt.scope.kind === 'part'
-              ? ` · Part ${attempt.scope.part}`
-              : ''}
-            {attempt.status === 'expired' ? ' · Time up' : ''}
-          </p>
+          <p>{summary}</p>
         </ExamHero>
         {attempt.skill === 'writing' ? (
           <WritingResult

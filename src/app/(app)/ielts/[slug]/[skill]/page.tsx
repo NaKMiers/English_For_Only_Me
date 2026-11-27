@@ -2,13 +2,18 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { AttemptLoader } from '@/components/ielts/runner/AttemptLoader'
+import { getMessages } from '@/i18n/server'
 import { IELTS_SKILL_LABELS, type IeltsSkill } from '@/modules/ielts/constants'
 import { loadRunnerPageData } from '@/modules/ielts/services/runnerPageData'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
-export const metadata: Metadata = { title: 'IELTS Practice' }
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getMessages()
+
+  return { title: t.ielts.meta.practiceTitle }
+}
 
 function skillLink(slug: string, skill: IeltsSkill | null) {
   return skill

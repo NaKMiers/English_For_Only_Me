@@ -7,35 +7,31 @@ import { PageShell } from '@/components/common/PageShell'
 import { PageHero } from '@/components/common/PageHero'
 import { PageTag } from '@/components/ui/PageTag'
 import { hasMongoDbUri } from '@/constants/environments'
+import { plural, format } from '@/i18n/format'
+import { getMessages } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import {
   countNoTopicVideos,
   listTopics,
 } from '@/modules/dictation/content/contentRepository'
 
-export const metadata: Metadata = { title: 'Admin' }
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getMessages()
+
+  return { title: t.admin.dashboard.metaTitle }
+}
+
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
 const LINKS = [
-  {
-    href: '/admin/dictation',
-    title: 'Dictation',
-    desc: 'Topics, sections and videos: organize, import and clean up.',
-  },
-  {
-    href: '/admin/ielts',
-    title: 'IELTS Tests',
-    desc: 'Write, generate with AI, check and publish IELTS tests.',
-  },
-  {
-    href: '/admin/vocab',
-    title: 'Vocabulary',
-    desc: 'Seed and enrich the global vocabulary cache.',
-  },
-]
+  { href: '/admin/dictation', key: 'dictation' },
+  { href: '/admin/ielts', key: 'ielts' },
+  { href: '/admin/vocab', key: 'vocab' },
+] as const
 
 export default async function AdminDashboard() {
+  const t = await getMessages()
   let topicCount = 0
   let uncategorized = 0
 
@@ -53,19 +49,25 @@ export default async function AdminDashboard() {
     <PageShell
       topbar={
         <AppTopbar
-          subtitle="Admin"
+          subtitle={t.admin.shell.admin}
           authControl={<AuthControl />}
         />
       }
     >
       <section className="grid gap-5 p-4 sm:p-6 lg:p-8">
         <PageHero>
-          <PageTag tone="ink">Admin</PageTag>
+          <PageTag tone="ink">{t.admin.dashboard.tag}</PageTag>
           <h1 className="font-sans text-[clamp(1.8rem,4vw,2.6rem)] leading-none font-medium">
-            Manage Content
+            {t.admin.dashboard.title}
           </h1>
           <p className="text-ink-soft text-sm">
-            {topicCount} topics · {uncategorized} uncategorized videos
+            {format(t.admin.dashboard.stats, {
+              topics: plural(t.admin.dashboard.topics, topicCount),
+              uncategorized: plural(
+                t.admin.dashboard.uncategorized,
+                uncategorized
+              ),
+            })}
           </p>
         </PageHero>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -76,9 +78,11 @@ export default async function AdminDashboard() {
               className="border-line bg-surface hover:bg-tint rounded-panel grid gap-1 border p-4"
             >
               <span className="font-sans text-lg font-semibold">
-                {link.title}
+                {t.admin.dashboard.links[link.key].title}
               </span>
-              <span className="text-ink-soft text-sm">{link.desc}</span>
+              <span className="text-ink-soft text-sm">
+                {t.admin.dashboard.links[link.key].desc}
+              </span>
             </Link>
           ))}
         </div>

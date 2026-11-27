@@ -2,6 +2,9 @@
 
 import Link from 'next/link'
 
+import { useMessages } from '@/i18n/client'
+import { format, plural } from '@/i18n/format'
+import type { Messages } from '@/i18n/messages'
 import { cn } from '@/lib/utils'
 import type { VocabStatsRecord } from '@/modules/vocabulary/types'
 
@@ -10,36 +13,39 @@ interface Props {
 }
 
 /** The word-list views, in the order a learner moves words through them. */
-export function vocabStatusLinks(stats: VocabStatsRecord) {
+export function vocabStatusLinks(
+  stats: VocabStatsRecord,
+  views: Messages['vocabulary']['views']
+) {
   return [
     {
       dot: 'bg-accent-blue',
       href: '/vocabulary/words?view=learning',
-      label: 'Learning',
+      label: views.learning,
       value: stats.learningCount,
     },
     {
       dot: 'bg-brand',
       href: '/vocabulary/words?view=dueToday',
-      label: 'Due Today',
+      label: views.dueToday,
       value: stats.dueTodayCount,
     },
     {
       dot: 'bg-accent-orange',
       href: '/vocabulary/words?view=alreadyKnow',
-      label: 'Already Know',
+      label: views.alreadyKnow,
       value: stats.alreadyKnowCount,
     },
     {
       dot: 'bg-accent-purple',
       href: '/vocabulary/words?view=mastered',
-      label: 'Mastered',
+      label: views.mastered,
       value: stats.masteredCount,
     },
     {
       dot: 'bg-accent-green',
       href: '/vocabulary/words?view=knownTotal',
-      label: 'Known Total',
+      label: views.knownTotal,
       value: stats.totalKnownCount,
     },
   ]
@@ -50,6 +56,7 @@ export function vocabStatusLinks(stats: VocabStatsRecord) {
  * last two weeks of growth and the hardest words side by side.
  */
 export function VocabularyStatsOverview({ stats }: Props) {
+  const { stats: t, views } = useMessages().vocabulary
   const maxGrowth = Math.max(1, ...stats.dailyGrowth.map(point => point.count))
   const progress =
     stats.totalStartedCount === 0
@@ -59,7 +66,7 @@ export function VocabularyStatsOverview({ stats }: Props) {
   return (
     <div className="grid min-w-0 content-start gap-3">
       <ul className="border-line bg-surface rounded-panel motion-stagger grid grid-cols-2 gap-1 border p-1.5 sm:grid-cols-5">
-        {vocabStatusLinks(stats).map(item => (
+        {vocabStatusLinks(stats, views).map(item => (
           <li
             className="last:col-span-2 sm:last:col-span-1"
             key={item.href}
@@ -93,10 +100,10 @@ export function VocabularyStatsOverview({ stats }: Props) {
               className="text-sm font-medium"
               id="vocab-growth-title"
             >
-              Daily word growth
+              {t.growthTitle}
             </h2>
             <span className="text-ink-soft text-xs tabular-nums">
-              {progress}% known
+              {format(t.knownShare, { percent: progress })}
             </span>
           </div>
           <div className="grid h-24 grid-cols-14 items-end gap-1">
@@ -131,7 +138,7 @@ export function VocabularyStatsOverview({ stats }: Props) {
             className="text-sm font-medium"
             id="vocab-hardest-title"
           >
-            Hardest words
+            {t.hardestTitle}
           </h2>
           {stats.hardestWords.length > 0 ? (
             <ul className="grid gap-1">
@@ -142,15 +149,15 @@ export function VocabularyStatsOverview({ stats }: Props) {
                 >
                   <span className="truncate font-medium">{word.term}</span>
                   <span className="text-ink-soft shrink-0 text-xs tabular-nums">
-                    {word.wrongCount} misses - {word.accuracyPercent}%
+                    {plural(t.misses, word.wrongCount, {
+                      percent: word.accuracyPercent,
+                    })}
                   </span>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="text-ink-soft text-xs leading-5">
-              No hard words yet. Missed recall answers will appear here.
-            </p>
+            <p className="text-ink-soft text-xs leading-5">{t.noHardWords}</p>
           )}
         </section>
       </div>

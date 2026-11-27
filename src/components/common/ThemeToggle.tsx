@@ -2,6 +2,7 @@
 
 import { Moon, Sun } from 'lucide-react'
 
+import { useMessages } from '@/i18n/client'
 import { cn } from '@/lib/utils'
 
 import { useTheme } from './ThemeProvider'
@@ -12,9 +13,10 @@ interface Props {
 
 /** Round day / night switch. The icon shows the theme a click moves to. */
 export function ThemeToggle({ className }: Props) {
+  const t = useMessages()
   const { theme, toggle } = useTheme()
   const night = theme === 'lightup'
-  const label = night ? 'Switch to day theme' : 'Switch to night theme'
+  const label = night ? t.common.theme.toDay : t.common.theme.toNight
 
   return (
     <button

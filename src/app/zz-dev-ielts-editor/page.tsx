@@ -6,6 +6,7 @@ import { PageShell } from '@/components/common/PageShell'
 import { TestEditor } from '@/components/ielts/editor/TestEditor'
 import { IELTS_SAMPLE_TEST } from '@/modules/ielts/fixtures/sampleTest'
 import type { IeltsAdminTest } from '@/modules/ielts/tests/testService'
+import { getMessages } from '@/i18n/server'
 
 export default async function Page({
   searchParams,
@@ -14,6 +15,7 @@ export default async function Page({
 }) {
   if (process.env.NODE_ENV !== 'development') notFound()
 
+  const t = await getMessages()
   const { status = 'draft' } = await searchParams
   const sections = structuredClone(IELTS_SAMPLE_TEST.sections)
 
@@ -48,7 +50,7 @@ export default async function Page({
       topbar={
         <AppTopbar
           compact
-          subtitle="Admin · IELTS"
+          subtitle={t.ieltsEditor.listPage.topbarSubtitle}
         />
       }
     >

@@ -4,19 +4,26 @@ import { AppTopbar } from '@/components/common/AppTopbar'
 import { AuthControl } from '@/components/common/AuthControl'
 import { PageShell } from '@/components/common/PageShell'
 import { GrammarPath } from '@/components/grammar/path/GrammarPath'
+import { getMessages } from '@/i18n/server'
 import { loadGrammarPageData } from '@/modules/grammar/services/grammarPageData'
 
-export const metadata: Metadata = {
-  title: 'Grammar',
-  description:
-    'A path of short Vietnamese-explained grammar lessons from A1 to C1, with stars, checkpoints, and spaced review.',
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getMessages()
+
+  return {
+    title: t.common.modules.grammar.title,
+    description: t.grammar.meta.description,
+  }
 }
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
 export default async function GrammarPage() {
-  const { path } = await loadGrammarPageData()
+  const [{ path }, t] = await Promise.all([
+    loadGrammarPageData(),
+    getMessages(),
+  ])
 
   return (
     <PageShell
@@ -24,7 +31,7 @@ export default async function GrammarPage() {
         <AppTopbar
           activeHref="/grammar"
           authControl={<AuthControl />}
-          subtitle="Grammar path, A1 to C1"
+          subtitle={t.grammar.subtitle}
         />
       }
     >

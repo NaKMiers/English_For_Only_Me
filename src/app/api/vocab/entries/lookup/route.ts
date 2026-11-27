@@ -1,5 +1,7 @@
 import { after, NextResponse } from 'next/server'
 
+import { format } from '@/i18n/format'
+import { getMessages } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { UserVocabItemModel } from '@/models/vocabulary/UserVocabItemModel'
 import { VocabEntryModel } from '@/models/vocabulary/VocabEntryModel'
@@ -25,13 +27,14 @@ function jsonError(decision: VocabApiErrorDecision) {
 }
 
 export async function POST(request: Request) {
-  const missingMongo = getMissingVocabMongoResponse()
+  const t = await getMessages()
+  const missingMongo = getMissingVocabMongoResponse(t)
 
   if (missingMongo) return jsonError(missingMongo)
 
   try {
     const body = await request.json()
-    const parsed = parseLookupEntryRequest(body)
+    const parsed = parseLookupEntryRequest(body, t)
 
     if (!parsed.ok) return jsonError(parsed)
 
@@ -44,7 +47,7 @@ export async function POST(request: Request) {
     if (!isEnglishTermCandidate(parsed.data.term))
       return jsonError({
         status: 400,
-        body: { message: 'Enter an English word to look up.' },
+        body: { message: t.vocabulary.api.notEnglish },
       })
 
     const shell = await findOrCreateVocabEntryShell({ term: parsed.data.term })
@@ -52,7 +55,7 @@ export async function POST(request: Request) {
     if (!shell)
       return jsonError({
         status: 400,
-        body: { message: 'Vocabulary term is invalid.' },
+        body: { message: t.vocabulary.api.invalidTerm },
       })
 
     const entry = await enrichVocabEntryIfNeeded({ entryId: shell.id })
@@ -73,7 +76,9 @@ export async function POST(request: Request) {
       return jsonError({
         status: 404,
         body: {
-          message: `No English dictionary entry found for "${shell.term}".`,
+          message: format(t.vocabulary.api.noDictionaryEntry, {
+            term: shell.term,
+          }),
         },
       })
     }
@@ -104,7 +109,7 @@ export async function POST(request: Request) {
     if (!record)
       return jsonError({
         status: 404,
-        body: { message: 'Vocabulary entry was not found.' },
+        body: { message: t.vocabulary.api.entryNotFound },
       })
 
     return NextResponse.json(record)
@@ -112,9 +117,9 @@ export async function POST(request: Request) {
     if (error instanceof SyntaxError)
       return jsonError({
         status: 400,
-        body: { message: 'Request body must be valid JSON.' },
+        body: { message: t.vocabulary.api.invalidJson },
       })
 
-    return jsonError(toVocabApiError(error))
+    return jsonError(toVocabApiError(error, t))
   }
 }

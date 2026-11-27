@@ -13,6 +13,8 @@ import {
   enqueueVocabItemStatus,
   type VocabMarkStatus,
 } from '@/components/vocabulary/vocabItemWrites'
+import { useMessages } from '@/i18n/client'
+import { format } from '@/i18n/format'
 import type {
   UserVocabItemApiRecord,
   VocabEntryWithUserStateRecord,
@@ -51,6 +53,7 @@ function toDecisions(entries: VocabEntryWithUserStateRecord[]) {
  * queue, "Already Know" marks it known, through the same outbox lane.
  */
 export function TestVocabPanel({ entries: initialEntries }: Props) {
+  const t = useMessages().ielts.testPage
   const outbox = useClientOutbox()
   const [entries, setEntries] = useState(initialEntries)
   const [decisions, setDecisions] = useState(() => toDecisions(initialEntries))
@@ -124,20 +127,20 @@ export function TestVocabPanel({ entries: initialEntries }: Props) {
 
   return (
     <section
-      aria-label="Words in this test"
+      aria-label={t.vocabLabel}
       className="grid gap-2"
     >
       <VocabularyExplorePanel
         activeIndex={activeIndex}
         decisions={decisions}
         entries={entries}
-        eyebrow={`Before you start · ${entries.length} words`}
+        eyebrow={format(t.vocabEyebrow, { count: entries.length })}
         markEntry={input => void markEntry(input)}
         moveExplore={delta => showIndex(activeIndex + delta)}
         numbering="position"
         showExploreIndex={showIndex}
         source="ielts"
-        title="Explore Words from the Tests"
+        title={t.vocabTitle}
       />
       {error ? (
         <p

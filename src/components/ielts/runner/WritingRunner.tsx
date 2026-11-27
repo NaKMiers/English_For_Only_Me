@@ -15,15 +15,21 @@ import { SampleAnswerPanel } from '@/components/ielts/widgets/SampleAnswerPanel'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
+import { INTL_LOCALES } from '@/i18n/config'
+import { useLocale, useMessages } from '@/i18n/client'
+import { format, plural } from '@/i18n/format'
 import { cn } from '@/lib/utils'
 import type {
   IeltsAttemptRecord,
   IeltsWritingTaskFeedback,
 } from '@/modules/ielts/attempts/attemptRecords'
-import { IELTS_ESSAY_MAX_LENGTH } from '@/modules/ielts/constants'
+import {
+  IELTS_ESSAY_MAX_LENGTH,
+  IELTS_SKILL_LABELS,
+} from '@/modules/ielts/constants'
 import type { IeltsPublicSection } from '@/modules/ielts/publicView'
 import { countEssayWords } from '@/modules/ielts/scoring/wordCount'
-import { checkIeltsTaskApi } from '@/requests/ieltsApi'
+import { checkIeltsTaskApi, ieltsErrorMessage } from '@/requests/ieltsApi'
 
 import { WritingFeedbackDetails } from '../review/WritingResult'
 import { TaskVisual } from '../visual/TaskVisual'
@@ -68,6 +74,9 @@ export function WritingRunner({
   startPart = null,
   testTitle,
 }: Props) {
+  const messages = useMessages()
+  const t = messages.ielts
+  const locale = useLocale()
   const router = useRouter()
   const isMock = attempt.mode === 'mock'
   const isPractice = attempt.mode === 'practice'
@@ -116,7 +125,7 @@ export function WritingRunner({
   const check = checks[taskKey]
   const checkScore =
     check?.feedback.band != null
-      ? `Band ${check.feedback.band.toFixed(1)}`
+      ? format(t.writing.band, { band: check.feedback.band.toFixed(1) })
       : null
 
   const checkTask = async () => {
@@ -124,7 +133,7 @@ export function WritingRunner({
     const text = essay
 
     if (!text.trim()) {
-      setNotice(`Write Task ${key} before checking it.`)
+      setNotice(format(t.writing.writeFirst, { task: key }))
       return
     }
 
@@ -140,12 +149,18 @@ export function WritingRunner({
       setChecks(current => ({ ...current, [key]: { essay: text, feedback } }))
       setNotice(
         feedback.band != null
-          ? `Task ${key}: band ${feedback.band.toFixed(1)} (estimate).`
-          : `Task ${key} checked.`
+          ? format(t.writing.checkedBand, {
+              band: feedback.band.toFixed(1),
+              task: key,
+            })
+          : format(t.writing.checked, { task: key })
       )
     } catch (error) {
       setNotice(
-        `Could not check Task ${key}: ${error instanceof Error ? error.message : 'try again.'}`
+        format(t.writing.checkFailed, {
+          message: ieltsErrorMessage(error, t.runner.tryAgain),
+          task: key,
+        })
       )
     } finally {
       setCheckingTask(null)
@@ -157,7 +172,7 @@ export function WritingRunner({
 
     clearAnswers([Number(key)])
     setChecks(({ [key]: _dropped, ...rest }) => rest)
-    setNotice(`Task ${key} reset.`)
+    setNotice(format(t.writing.taskReset, { task: key }))
   }
 
   const finish = useCallback(async () => {
@@ -172,8 +187,8 @@ export function WritingRunner({
     }
 
     setSubmitting(false)
-    setNotice(`Could not submit: ${outcome.message}`)
-  }, [attempt.id, router, submit])
+    setNotice(format(t.runner.submitFailed, { message: outcome.message }))
+  }, [attempt.id, router, submit, t])
 
   useEffect(() => {
     finishRef.current = () => void finish()
@@ -182,10 +197,10 @@ export function WritingRunner({
   const secondsLeft = useMockDeadline({
     deadlineAt: isMock && open ? attempt.deadlineAt : null,
     onExpire: () => {
-      setNotice('Time is up. Submitting...')
+      setNotice(t.runner.timeUpSubmitting)
       void finish()
     },
-    onWarning: () => setNotice('5 minutes remaining.'),
+    onWarning: () => setNotice(t.runner.fiveMinutes),
   })
 
   useEffect(() => {
@@ -209,11 +224,15 @@ export function WritingRunner({
           countEssayWords(typeof text === 'string' ? text : '') < item.minWords
         )
       })
-      .map(item => `Task ${item.task}`)
+      .map(item => format(t.parts.task, { part: item.task }))
 
     if (short.length)
       setConfirm(
-        `${short.join(' and ')} ${short.length > 1 ? 'are' : 'is'} under the minimum word count. Submit anyway?`
+        plural(t.writing.underMinimum, short.length, {
+          tasks: new Intl.ListFormat(INTL_LOCALES[locale], {
+            type: 'conjunction',
+          }).format(short),
+        })
       )
     else void finish()
   }
@@ -224,20 +243,20 @@ export function WritingRunner({
     <div className="flex h-full min-h-0 flex-col">
       <RunnerToolbar
         backHref={backHref}
-        modeLabel={isMock ? 'Mock' : 'Practice'}
+        modeLabel={isMock ? t.modes.mock : t.modes.practice}
         onBack={isMock && open ? () => setExitOpen(true) : undefined}
         onSubmit={requestSubmit}
         saveState={open ? saveState : 'saved'}
         secondsLeft={secondsLeft}
         submitDisabled={!open}
         submitting={submitting}
-        title={`${testTitle} · Writing`}
+        title={`${testTitle} · ${IELTS_SKILL_LABELS.writing}`}
         toggles={
           isMock ? null : (
             <div className="flex items-center gap-3">
               <ResetPartButton
                 disabled={locked}
-                name={`Task ${writing.task}`}
+                name={format(t.parts.task, { part: writing.task })}
                 onReset={resetTask}
               />
               <Label className="text-ink flex items-center gap-2 text-xs font-semibold">
@@ -245,7 +264,7 @@ export function WritingRunner({
                   checked={spellCheck}
                   onCheckedChange={setSpellCheck}
                 />
-                Spell check
+                {t.writing.spellCheck}
               </Label>
             </div>
           )
@@ -263,7 +282,7 @@ export function WritingRunner({
             onClick={() => setNotice('')}
             type="button"
           >
-            Close
+            {messages.common.actions.close}
           </button>
         </p>
       ) : null}
@@ -272,8 +291,8 @@ export function WritingRunner({
       <div className="border-line bg-exam-surface flex shrink-0 justify-end gap-2 border-b px-3 py-2 lg:hidden">
         {(
           [
-            ['task', 'Prompt'],
-            ['essay', 'Essay'],
+            ['task', t.writing.prompt],
+            ['essay', t.writing.essay],
           ] as const
         ).map(([value, label]) => (
           <button
@@ -297,7 +316,7 @@ export function WritingRunner({
         style={split.style}
       >
         <section
-          aria-label="Prompt"
+          aria-label={t.writing.prompt}
           className={cn(
             'bg-exam-surface min-h-0 overflow-y-auto px-3 py-4 sm:px-3 lg:block',
             mobileTab === 'task' ? 'block' : 'hidden'
@@ -305,7 +324,7 @@ export function WritingRunner({
         >
           <div className="font-body grid w-full gap-4 text-[17px] leading-[1.7]">
             <h2 className="text-muted-foreground font-sans text-lg leading-none font-semibold tracking-wide">
-              Task {writing.task}
+              {format(t.parts.task, { part: writing.task })}
             </h2>
             <WritingPrompt text={writing.prompt} />
             {writing.visual ? (
@@ -324,7 +343,7 @@ export function WritingRunner({
         </section>
         {split.divider}
         <section
-          aria-label="Essay"
+          aria-label={t.writing.essay}
           className={cn(
             'bg-exam-surface in-data-[theme=lightup]:bg-tint-soft/60 min-h-0 overflow-y-auto px-3 py-4 sm:px-3 lg:flex',
             mobileTab === 'essay' ? 'flex' : 'hidden',
@@ -335,7 +354,7 @@ export function WritingRunner({
             className="text-ink text-sm font-semibold"
             htmlFor={`ielts-essay-${taskKey}`}
           >
-            Task {writing.task} essay
+            {format(t.writing.essayLabel, { task: writing.task })}
           </Label>
           <Textarea
             autoCapitalize="off"
@@ -356,14 +375,14 @@ export function WritingRunner({
                 : 'text-lesson-correct'
             )}
           >
-            {words} words · minimum {writing.minWords}
+            {format(t.writing.wordsMin, { min: writing.minWords, words })}
           </p>
           {/* Phones and tablets: the footer has no room for it. */}
           {canCheck ? (
             <CheckButton
               busy={checkingTask === taskKey}
               className="w-full lg:hidden"
-              label={`Check Task ${writing.task}`}
+              label={format(t.writing.checkTask, { task: writing.task })}
               onCheck={() => void checkTask()}
               score={checkScore}
             />
@@ -371,15 +390,16 @@ export function WritingRunner({
           {check ? (
             <div className="border-line rounded-control bg-tint mt-2 grid gap-3 border p-3">
               <p className="font-sans text-base font-semibold">
-                AI check, Task {writing.task}
                 {check.feedback.band != null
-                  ? ` · Band ${check.feedback.band.toFixed(1)}`
-                  : ''}
+                  ? format(t.writing.aiCheckBand, {
+                      band: check.feedback.band.toFixed(1),
+                      task: writing.task,
+                    })
+                  : format(t.writing.aiCheck, { task: writing.task })}
               </p>
               {check.essay !== essay ? (
                 <p className="text-muted-foreground text-sm">
-                  The essay changed since this check. Check again for fresh
-                  feedback.
+                  {t.writing.essayChanged}
                 </p>
               ) : null}
               <WritingFeedbackDetails
@@ -398,7 +418,7 @@ export function WritingRunner({
             canCheck ? (
               <CheckButton
                 busy={checkingTask === taskKey}
-                label={`Check Task ${writing.task}`}
+                label={format(t.writing.checkTask, { task: writing.task })}
                 onCheck={() => void checkTask()}
                 score={checkScore}
               />
@@ -416,14 +436,22 @@ export function WritingRunner({
                 const count = countEssayWords(
                   typeof text === 'string' ? text : ''
                 )
-                const name = `Task ${item?.task ?? index + 1}`
+                const name = format(t.parts.task, {
+                  part: item?.task ?? index + 1,
+                })
 
                 return {
                   done: Boolean(item && count >= item.minWords),
-                  label: `${name}, ${count} words`,
+                  label: format(t.writing.taskWordsLabel, {
+                    count,
+                    task: name,
+                  }),
                   part: index,
                   text: name,
-                  title: `${name}: ${count} words`,
+                  title: format(t.writing.taskWordsTitle, {
+                    count,
+                    task: name,
+                  }),
                 }
               })}
               onChange={setTaskIndex}
@@ -438,7 +466,7 @@ export function WritingRunner({
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Submit?</DialogTitle>
+            <DialogTitle>{t.writing.submitTitle}</DialogTitle>
             <DialogDescription>{confirm}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -447,14 +475,14 @@ export function WritingRunner({
               tone="paper"
               type="button"
             >
-              Keep writing
+              {t.writing.keepWriting}
             </ExamButton>
             <ExamButton
               onClick={() => void finish()}
               tone="ink"
               type="button"
             >
-              Submit
+              {t.runner.submit}
             </ExamButton>
           </DialogFooter>
         </DialogContent>
@@ -466,10 +494,8 @@ export function WritingRunner({
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Leave the mock test?</DialogTitle>
-            <DialogDescription>
-              The timer keeps running. Come back from the IELTS page.
-            </DialogDescription>
+            <DialogTitle>{t.runner.leaveTitle}</DialogTitle>
+            <DialogDescription>{t.runner.leaveBody}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <ExamButton
@@ -477,13 +503,13 @@ export function WritingRunner({
               tone="paper"
               type="button"
             >
-              Stay
+              {t.runner.stay}
             </ExamButton>
             <ExamButton
               href={backHref}
               tone="ink"
             >
-              Leave
+              {t.runner.leave}
             </ExamButton>
           </DialogFooter>
         </DialogContent>

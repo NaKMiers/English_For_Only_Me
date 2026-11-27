@@ -2,6 +2,7 @@ import { ChevronDown } from 'lucide-react'
 
 import { DictationVideoThumbnail } from '@/components/dictation/DictationVideoThumbnail'
 import { PageTag } from '@/components/ui/PageTag'
+import { getMessages } from '@/i18n/server'
 
 import { AdminTrashVideoMenu } from './AdminTrashVideoMenu'
 
@@ -19,8 +20,14 @@ export interface AdminTrashVideo {
  * a video back in its old topic and section (archiving never clears them);
  * Delete permanently removes it with its transcripts and practice data.
  */
-export function AdminTrashPanel({ videos }: { videos: AdminTrashVideo[] }) {
+export async function AdminTrashPanel({
+  videos,
+}: {
+  videos: AdminTrashVideo[]
+}) {
   if (videos.length === 0) return null
+
+  const t = await getMessages()
 
   return (
     <details className="group border-line bg-surface rounded-panel border p-4">
@@ -30,15 +37,12 @@ export function AdminTrashPanel({ videos }: { videos: AdminTrashVideo[] }) {
           className="size-5 transition-transform group-open:rotate-180"
         />
         <span className="font-sans text-base font-semibold">
-          Deleted videos
+          {t.admin.trash.title}
         </span>
         <PageTag tone="pale">{videos.length}</PageTag>
       </summary>
 
-      <p className="text-ink-soft mt-3 text-xs">
-        Use a video&apos;s ⋯ menu to restore it where it was, or to delete it
-        permanently with its transcripts and practice history.
-      </p>
+      <p className="text-ink-soft mt-3 text-xs">{t.admin.trash.hint}</p>
 
       <ul className="mt-3 grid gap-2">
         {videos.map(video => (
@@ -58,7 +62,7 @@ export function AdminTrashPanel({ videos }: { videos: AdminTrashVideo[] }) {
                 {video.title}
               </span>
               <span className="text-ink-soft truncate text-xs font-normal">
-                {video.placement ?? 'No topic'}
+                {video.placement ?? t.admin.trash.noTopic}
               </span>
             </span>
             <AdminTrashVideoMenu

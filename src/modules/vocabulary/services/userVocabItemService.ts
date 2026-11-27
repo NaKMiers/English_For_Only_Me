@@ -33,7 +33,7 @@ export interface RecordOccurrenceInput {
   vocabEntryId: string
 }
 
-class MissingVietnameseMeaningError extends Error {
+export class MissingVietnameseMeaningError extends Error {
   status = 409 as const
 
   constructor() {

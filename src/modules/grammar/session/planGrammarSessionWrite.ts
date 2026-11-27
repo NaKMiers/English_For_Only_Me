@@ -99,13 +99,26 @@ export interface GrammarSessionWritePlan {
 
 export type PlanSessionOutcome =
   | { ok: true; plan: GrammarSessionWritePlan }
-  | { ok: false; status: 400 | 409; message: string }
+  | {
+      ok: false
+      status: 400 | 409
+      code: GrammarSessionErrorCode
+      message: string
+    }
+
+/** Why a session was refused; the route maps it to text in the UI language. */
+export type GrammarSessionErrorCode =
+  'stale' | 'locked' | 'notDue' | 'unitComplete' | 'busy'
 
 const STALE_CONTENT_MESSAGE =
   'This lesson was just updated. Go back to the path and try it again.'
 
-function reject(status: 400 | 409, message: string): PlanSessionOutcome {
-  return { message, ok: false, status }
+function reject(
+  status: 400 | 409,
+  message: string,
+  code: GrammarSessionErrorCode = 'stale'
+): PlanSessionOutcome {
+  return { code, message, ok: false, status }
 }
 
 interface GradedCard {
@@ -281,7 +294,7 @@ export function planGrammarSessionWrite({
       if (!sameCardSet(graded, course.practiceCards(target.lesson)))
         return reject(400, STALE_CONTENT_MESSAGE)
       if (!isLessonUnlocked({ ...progress, course }, target.lesson.id))
-        return reject(409, 'This lesson is still locked.')
+        return reject(409, 'This lesson is still locked.', 'locked')
 
       const before =
         lessonRows.get(target.lesson.id) ??
@@ -338,7 +351,7 @@ export function planGrammarSessionWrite({
         !before.dueAt ||
         before.dueAt.getTime() > now.getTime()
       )
-        return reject(409, 'This lesson is not due for review yet.')
+        return reject(409, 'This lesson is not due for review yet.', 'notDue')
 
       const passed = accuracy >= PASS_ACCURACY
 
@@ -368,7 +381,7 @@ export function planGrammarSessionWrite({
       const completed = new Set(progress.unitProgress.map(row => row.unitId))
 
       if (completed.has(unit.id))
-        return reject(409, 'This unit is already completed.')
+        return reject(409, 'This unit is already completed.', 'unitComplete')
 
       const unitIndex = course.units.findIndex(item => item.id === unit.id)
       const regular =

@@ -8,6 +8,8 @@ import { MetricTile } from '@/components/common/MetricTile'
 import { Input } from '@/components/ui/input'
 import { ActionButton } from '@/components/ui/ActionButton'
 import { PageTag } from '@/components/ui/PageTag'
+import { format } from '@/i18n/format'
+import { useMessages } from '@/i18n/client'
 import {
   enrichVocabularyAdminApi,
   getVocabAdminQueueApi,
@@ -28,6 +30,8 @@ const EMPTY_QUEUE: VocabAdminQueueSummaryRecord = {
 }
 
 export function AdminVocabPanel({ initialQueue, mongoConfigured }: Props) {
+  const t = useMessages()
+  const v = t.admin.vocab
   const [queue, setQueue] = useState(initialQueue ?? EMPTY_QUEUE)
   const [limit, setLimit] = useState(5)
   const [message, setMessage] = useState<string | null>(null)
@@ -45,15 +49,13 @@ export function AdminVocabPanel({ initialQueue, mongoConfigured }: Props) {
     const timeoutId = window.setTimeout(() => {
       refreshQueue().catch(currentError => {
         setError(
-          currentError instanceof Error
-            ? currentError.message
-            : 'Could not load vocabulary queue.'
+          currentError instanceof Error ? currentError.message : v.loadFailed
         )
       })
     }, 0)
 
     return () => window.clearTimeout(timeoutId)
-  }, [initialQueue, mongoConfigured, refreshQueue])
+  }, [initialQueue, mongoConfigured, refreshQueue, v.loadFailed])
 
   async function enrich() {
     setIsLoading(true)
@@ -65,13 +67,17 @@ export function AdminVocabPanel({ initialQueue, mongoConfigured }: Props) {
 
       setQueue(response.queue)
       setMessage(
-        `Processed ${response.result.processed}/${response.result.requested}. Ready ${response.result.ready}, failed ${response.result.failed}, not found ${response.result.notFound}.`
+        format(v.result, {
+          processed: response.result.processed,
+          requested: response.result.requested,
+          ready: response.result.ready,
+          failed: response.result.failed,
+          notFound: response.result.notFound,
+        })
       )
     } catch (currentError) {
       setError(
-        currentError instanceof Error
-          ? currentError.message
-          : 'Could not enrich vocabulary.'
+        currentError instanceof Error ? currentError.message : v.enrichFailed
       )
     } finally {
       setIsLoading(false)
@@ -81,11 +87,11 @@ export function AdminVocabPanel({ initialQueue, mongoConfigured }: Props) {
   if (!mongoConfigured)
     return (
       <ContentPanel
-        eyebrow="Admin"
-        title="Database needed"
+        eyebrow={v.eyebrow}
+        title={v.dbNeededTitle}
       >
         <p className="text-ink-soft text-sm leading-6 font-normal">
-          Set MONGODB_URI before seeding or enriching vocabulary entries.
+          {v.dbNeededBody}
         </p>
       </ContentPanel>
     )
@@ -94,21 +100,20 @@ export function AdminVocabPanel({ initialQueue, mongoConfigured }: Props) {
     <div className="grid gap-5">
       <header className="page-hero flex flex-wrap items-start justify-between gap-3">
         <div className="grid min-w-0 gap-2">
-          <PageTag tone="ink">Admin</PageTag>
+          <PageTag tone="ink">{v.tag}</PageTag>
           <h1 className="font-sans text-[clamp(1.8rem,4vw,2.6rem)] leading-none font-medium wrap-break-word">
-            Vocabulary queue
+            {v.title}
           </h1>
           <p className="text-ink-soft max-w-2xl text-sm leading-6 font-normal">
-            Seed the top words, then enrich small batches through the free
-            dictionary providers.
+            {v.intro}
           </p>
         </div>
         <button
-          aria-label="Refresh vocabulary queue"
+          aria-label={v.refresh}
           className="border-line bg-surface hover:bg-tint rounded-control soft-press inline-grid size-11 shrink-0 place-items-center border disabled:opacity-55"
           disabled={isLoading}
           onClick={() => refreshQueue()}
-          title="Refresh vocabulary queue"
+          title={v.refresh}
           type="button"
         >
           <RefreshCcw
@@ -120,34 +125,34 @@ export function AdminVocabPanel({ initialQueue, mongoConfigured }: Props) {
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         <MetricTile
-          label="Enrichable"
+          label={v.metrics.enrichable}
           value={String(queue.seededCount)}
         />
         <MetricTile
-          label="Ready"
+          label={v.metrics.ready}
           value={String(queue.readyCount)}
         />
         <MetricTile
-          label="Failed"
+          label={v.metrics.failed}
           value={String(queue.failedCount)}
         />
         <MetricTile
-          label="Not Found"
+          label={v.metrics.notFound}
           value={String(queue.notFoundCount)}
         />
         <MetricTile
-          label="Stale Locks"
+          label={v.metrics.staleLocks}
           value={String(queue.staleLeaseCount)}
         />
       </div>
 
       <ContentPanel
-        eyebrow="Vocabulary"
-        title="Enrich queue"
+        eyebrow={v.panelEyebrow}
+        title={v.panelTitle}
       >
         <div className="grid gap-3 sm:grid-cols-[180px_minmax(0,1fr)]">
           <Input
-            aria-label="Vocabulary enrich limit"
+            aria-label={v.limitLabel}
             className="border-line bg-surface rounded-control h-12 border px-3 font-sans font-semibold"
             max={10}
             min={1}
@@ -160,14 +165,12 @@ export function AdminVocabPanel({ initialQueue, mongoConfigured }: Props) {
             icon={<DatabaseZap className="size-4" />}
             onClick={enrich}
           >
-            Enrich N
+            {v.enrich}
           </ActionButton>
         </div>
 
         <p className="text-ink-soft text-sm leading-6 font-normal">
-          This action claims up to 10 eligible words with short leases, then
-          calls the free dictionary providers. Run the seed first with `bun run
-          vocab:seed` so this queue has the NGSL top 1000 shells.
+          {format(v.note, { command: '`bun run vocab:seed`' })}
         </p>
 
         {message ? (

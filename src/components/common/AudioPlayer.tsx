@@ -11,6 +11,8 @@ import {
 } from 'lucide-react'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 
+import { useMessages } from '@/i18n/client'
+import { format } from '@/i18n/format'
 import { cn } from '@/lib/utils'
 
 import { formatClock, lineIndexAt, lineSeekTarget } from './audioTimeline'
@@ -81,6 +83,7 @@ export function AudioMeter({
   label: string
   time: number
 }) {
+  const t = useMessages()
   const percent = duration > 0 ? Math.min(100, (time / duration) * 100) : 0
 
   return (
@@ -89,7 +92,10 @@ export function AudioMeter({
       aria-valuemax={Math.round(duration)}
       aria-valuemin={0}
       aria-valuenow={Math.round(time)}
-      aria-valuetext={`${formatClock(time)} of ${formatClock(duration)}`}
+      aria-valuetext={format(t.common.audio.clockOf, {
+        time: formatClock(time),
+        total: formatClock(duration),
+      })}
       className={TRACK_CLASS}
       role="progressbar"
     >
@@ -117,6 +123,8 @@ export function AudioPlayer({
   shortcuts = false,
   src,
 }: Props) {
+  const t = useMessages()
+  const audio = t.common.audio
   const ref = useRef<HTMLAudioElement>(null)
   const [playing, setPlaying] = useState(false)
   const [time, setTime] = useState(0)
@@ -197,7 +205,7 @@ export function AudioPlayer({
 
   /** "Play (Alt+K)" when the shortcuts are on. */
   const hint = (label: string, key: string) =>
-    shortcuts ? `${label} (Alt+${key})` : label
+    shortcuts ? format(audio.withShortcut, { key, label }) : label
 
   const BackIcon = timed ? SkipBack : RotateCcw
   const ForwardIcon = timed ? SkipForward : RotateCw
@@ -227,11 +235,11 @@ export function AudioPlayer({
         {/* Player transport (aria-pressed toggle): documented raw exception. */}
         <button
           aria-keyshortcuts={shortcuts ? 'Alt+K' : undefined}
-          aria-label={playing ? 'Pause' : 'Play'}
+          aria-label={playing ? audio.pause : audio.play}
           aria-pressed={playing}
           className={COMPACT_PLAY_BUTTON_CLASS}
           onClick={toggle}
-          title={hint(playing ? 'Pause' : 'Play', 'K')}
+          title={hint(playing ? audio.pause : audio.play, 'K')}
           type="button"
         >
           {playing ? (
@@ -248,10 +256,19 @@ export function AudioPlayer({
         </button>
         <button
           aria-keyshortcuts={shortcuts ? 'Alt+J' : undefined}
-          aria-label={timed ? 'Previous line' : `Back ${SKIP_SEC} seconds`}
+          aria-label={
+            timed
+              ? audio.previousLine
+              : format(audio.backSeconds, { seconds: SKIP_SEC })
+          }
           className={cn(GHOST_BUTTON_CLASS, 'ml-0.5 w-7')}
           onClick={() => step(-1)}
-          title={hint(timed ? 'Previous line' : `Back ${SKIP_SEC} s`, 'J')}
+          title={hint(
+            timed
+              ? audio.previousLine
+              : format(audio.backShort, { seconds: SKIP_SEC }),
+            'J'
+          )}
           type="button"
         >
           <BackIcon
@@ -261,10 +278,19 @@ export function AudioPlayer({
         </button>
         <button
           aria-keyshortcuts={shortcuts ? 'Alt+L' : undefined}
-          aria-label={timed ? 'Next line' : `Forward ${SKIP_SEC} seconds`}
+          aria-label={
+            timed
+              ? audio.nextLine
+              : format(audio.forwardSeconds, { seconds: SKIP_SEC })
+          }
           className={cn(GHOST_BUTTON_CLASS, 'w-7')}
           onClick={() => step(1)}
-          title={hint(timed ? 'Next line' : `Forward ${SKIP_SEC} s`, 'L')}
+          title={hint(
+            timed
+              ? audio.nextLine
+              : format(audio.forwardShort, { seconds: SKIP_SEC }),
+            'L'
+          )}
           type="button"
         >
           <ForwardIcon
@@ -295,9 +321,12 @@ export function AudioPlayer({
             </Slider.Track>
             <Slider.Thumb
               className="border-line bg-surface has-focus-visible:ring-brand/40 size-4 rounded-full border has-focus-visible:ring-4"
-              getAriaLabel={() => 'Seek'}
+              getAriaLabel={() => audio.seek}
               getAriaValueText={(_formatted, value) =>
-                `${formatClock(value)} of ${formatClock(total)}`
+                format(audio.clockOf, {
+                  time: formatClock(value),
+                  total: formatClock(total),
+                })
               }
             />
           </Slider.Control>
@@ -308,13 +337,13 @@ export function AudioPlayer({
           time={time}
         />
         <button
-          aria-label={`Playback speed ${rate}x`}
+          aria-label={format(audio.speed, { rate })}
           className={cn(
             GHOST_BUTTON_CLASS,
             'w-9 font-sans text-xs font-semibold'
           )}
           onClick={cycleRate}
-          title="Change speed"
+          title={audio.changeSpeed}
           type="button"
         >
           {rate}×

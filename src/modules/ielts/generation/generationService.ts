@@ -4,6 +4,9 @@ import {
   getOpenAiApiKey,
   getOpenAiIeltsGenerationModel,
 } from '@/constants/environments'
+import { format } from '@/i18n/format'
+import type { Messages } from '@/i18n/messages'
+import { en } from '@/i18n/messages/en'
 import { requestOpenAiStructuredOutput } from '@/lib/ai/openAiClientCore'
 import { IeltsTestModel } from '@/models/ielts/IeltsTestModel'
 
@@ -108,6 +111,7 @@ function promptContext(
  * matches nothing and the manual edit wins.
  */
 export async function generateSectionStep({
+  copy = en.ieltsEditor.generation,
   key,
   now = new Date(),
   request = openAiRequester(),
@@ -115,6 +119,8 @@ export async function generateSectionStep({
   step,
   testId,
 }: {
+  /** Messages the admin sees, in their language (English by default). */
+  copy?: Messages['ieltsEditor']['generation']
   key: IeltsSectionKey
   now?: Date
   request?: IeltsRequester
@@ -122,23 +128,21 @@ export async function generateSectionStep({
   step: IeltsGenerateStep
   testId: string
 }): Promise<IeltsDecision<{ test: IeltsAdminTest; message: string }>> {
-  if (!getOpenAiApiKey())
-    return ieltsError(503, 'OPENAI_API_KEY is not configured.')
+  if (!getOpenAiApiKey()) return ieltsError(503, copy.noApiKey)
 
   const doc = (await IeltsTestModel.findById(testId).lean()) as LeanDoc | null
 
-  if (!doc) return ieltsError(404, 'Test not found.')
+  if (!doc) return ieltsError(404, copy.testNotFound)
 
   const record = toIeltsTestRecord(doc)
   const section = record.sections.find(item => item.key === key)
 
-  if (!section) return ieltsError(404, 'Section not found.')
+  if (!section) return ieltsError(404, copy.sectionNotFound)
 
-  if (section.revision !== revision)
-    return ieltsError(409, 'Section was just updated elsewhere. Reload.')
+  if (section.revision !== revision) return ieltsError(409, copy.staleRevision)
 
   if (effectiveGenStatus(section, now) === 'generating')
-    return ieltsError(409, 'This section is already being generated.')
+    return ieltsError(409, copy.alreadyGenerating)
 
   const rawSection = ((doc.sections as LeanDoc[]) ?? []).find(
     item => item.key === key
@@ -150,11 +154,13 @@ export async function generateSectionStep({
   if (!kind)
     return ieltsError(
       400,
-      step === 'repair' ? 'Nothing to repair.' : `Step ${step} does not apply.`
+      step === 'repair'
+        ? copy.nothingToRepair
+        : format(copy.stepNotApplicable, { step })
     )
 
   if (kind === 'listening-questions' && !section.listening?.lines.length)
-    return ieltsError(400, 'Write or generate the script first.')
+    return ieltsError(400, copy.scriptFirst)
 
   const claimed = await IeltsTestModel.updateOne(
     {
@@ -171,8 +177,7 @@ export async function generateSectionStep({
     }
   )
 
-  if (claimed.matchedCount === 0)
-    return ieltsError(409, 'Section was just updated elsewhere. Reload.')
+  if (claimed.matchedCount === 0) return ieltsError(409, copy.staleRevision)
 
   const started = Date.now()
   const result = await runSectionJob({
@@ -260,11 +265,11 @@ export async function generateSectionStep({
       message:
         result.outcome === 'ok'
           ? kind === 'listening-script'
-            ? 'Script created. Next step: questions.'
-            : 'Done.'
+            ? copy.scriptCreated
+            : copy.done
           : result.outcome === 'needsRepair'
-            ? 'Needs fixes. Click "Auto-fix".'
-            : `Error: ${result.error}`,
+            ? copy.needsFixes
+            : format(copy.failed, { error: result.error }),
     },
   }
 }

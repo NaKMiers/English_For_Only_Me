@@ -13,6 +13,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { useMessages } from '@/i18n/client'
 import type { DictationLevel } from '@/modules/dictation/levels'
 
 import { DictationTranslationBar } from './DictationTranslationBar'
@@ -49,6 +50,8 @@ export function DictationPracticeHeader({
   translationLanguages,
   videoId,
 }: Props) {
+  const t = useMessages()
+
   return (
     <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1.5">
       {/* basis-64 rather than a bare flex-1: when the row runs out of room the
@@ -69,7 +72,7 @@ export function DictationPracticeHeader({
             >
               <Image
                 src="/logo.png"
-                alt="English For Only Me home"
+                alt={t.dictation.header.homeAlt}
                 width={58}
                 height={58}
                 priority
@@ -80,7 +83,7 @@ export function DictationPracticeHeader({
               side="bottom"
               className="rounded-tag font-sans font-semibold"
             >
-              English For Only Me
+              {t.common.app.name}
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -90,7 +93,7 @@ export function DictationPracticeHeader({
             tone="pale"
             className={CHIP_CLASS_NAME}
           >
-            Resume
+            {t.dictation.header.resume}
           </PageTag>
         ) : null}
         {/* Clamped to one line: a long TED-Ed title would otherwise eat three
@@ -121,7 +124,7 @@ export function DictationPracticeHeader({
         {completions > 0 ? (
           <IconButton
             href={`/dictation/videos/${videoId}/results`}
-            label="View results"
+            label={t.dictation.header.viewResults}
             className="size-9 border"
           >
             <Trophy

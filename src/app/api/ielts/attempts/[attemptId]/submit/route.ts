@@ -58,7 +58,7 @@ export async function POST(request: Request, context: RouteContext) {
     return ieltsRouteFailure(
       error,
       'ielts attempt submit failed',
-      'Could not submit. Try again later.'
+      'submitFailed'
     )
   }
 }

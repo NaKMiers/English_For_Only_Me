@@ -1,9 +1,12 @@
+'use client'
+
 import Image from 'next/image'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 
 import { TopbarMenu } from '@/components/common/TopbarMenu'
 import { PRIMARY_NAV_ITEMS, type NavItem } from '@/constants/modules'
+import { useMessages } from '@/i18n/client'
 import { cn } from '@/lib/utils'
 
 import { ThemeToggle } from './ThemeToggle'
@@ -12,7 +15,7 @@ interface Props {
   activeHref?: string
   /**
    * Optional auth control slot (injected as <AuthControl /> by server pages).
-   * Kept as a slot so AppTopbar stays client-safe: it must NOT statically import
+   * Kept as a slot so AppTopbar stays a client component: it must NOT statically import
    * the NextAuth/Mongoose chain, or client boundaries (error.tsx) that render
    * the topbar would drag server-only code into the browser bundle.
    */
@@ -40,9 +43,11 @@ export function AppTopbar({
   className,
   compact = false,
   navItems = PRIMARY_NAV_ITEMS,
-  subtitle = 'Your private English study board',
-  title = 'English For Only Me',
+  subtitle,
+  title,
 }: Props) {
+  const t = useMessages()
+
   return (
     <header
       className={cn(
@@ -57,7 +62,7 @@ export function AppTopbar({
       >
         <Image
           src="/logo.png"
-          alt="English For Only Me logo"
+          alt={t.common.app.logoAlt}
           width={56}
           height={56}
           priority
@@ -73,10 +78,10 @@ export function AppTopbar({
               compact ? 'text-base' : 'text-xl sm:text-2xl'
             )}
           >
-            {title}
+            {title ?? t.common.app.name}
           </strong>
           <span className="text-ink-soft truncate text-sm leading-tight">
-            {subtitle}
+            {subtitle ?? t.common.app.tagline}
           </span>
         </span>
       </Link>

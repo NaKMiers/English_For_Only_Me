@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server'
 
 import { MissingEnvironmentError } from '@/constants/environments'
+import type { Messages } from '@/i18n/messages'
+import { getMessages } from '@/i18n/server'
+import { authErrorResponse } from '@/lib/auth/authErrorMessage'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { revalidateDictationCatalog } from '@/lib/db/revalidateCatalog'
 import { getYouTubeVideoMetadata } from '@/lib/youtube/getYouTubeVideoMetadata'
@@ -21,20 +24,13 @@ function jsonError(decision: ApiErrorDecision) {
   return NextResponse.json(decision.body, { status: decision.status })
 }
 
-function toImportError(error: unknown): ApiErrorDecision {
+function toImportError(error: unknown, messages: Messages): ApiErrorDecision {
+  const t = messages.admin.api
+
   // Admin gate (requireAdmin) throws 401/403 - surface as JSON, not a 500.
-  if (
-    typeof error === 'object' &&
-    error !== null &&
-    'status' in error &&
-    (error.status === 401 || error.status === 403 || error.status === 409)
-  )
-    return {
-      status: error.status,
-      body: {
-        message: (error as { message?: string }).message ?? 'Access denied.',
-      },
-    }
+  const auth = authErrorResponse(error, messages)
+
+  if (auth) return { status: auth.status, body: { message: auth.message } }
 
   if (
     typeof error === 'object' &&
@@ -45,7 +41,7 @@ function toImportError(error: unknown): ApiErrorDecision {
     return {
       status: 409,
       body: {
-        message: 'This YouTube video is already in your dictation library.',
+        message: t.alreadyImported,
       },
     }
 
@@ -62,7 +58,7 @@ function toImportError(error: unknown): ApiErrorDecision {
   return {
     status: 500,
     body: {
-      message: 'Could not import this YouTube video.',
+      message: t.importFailed,
     },
   }
 }
@@ -72,13 +68,20 @@ export async function POST(request: Request) {
 
   if (missingMongo) return jsonError(missingMongo)
 
+  const messages = await getMessages()
+  const t = messages.admin.api
+
   try {
     await requireAdmin()
 
     const body = await request.json()
     const parsed = parseYouTubeImportRequest(body)
 
-    if (!parsed.ok) return jsonError(parsed)
+    if (!parsed.ok)
+      return jsonError({
+        status: parsed.status,
+        body: { message: t[parsed.code] },
+      })
 
     await connectDatabase()
 
@@ -105,17 +108,20 @@ export async function POST(request: Request) {
       return jsonError({
         status: 404,
         body: {
-          message: metadata.message,
+          message: t.videoNotFound,
         },
       })
 
-    if (metadata.state === 'failed')
+    if (metadata.state === 'failed') {
+      console.error('YouTube metadata failed', metadata.message)
+
       return jsonError({
         status: 500,
         body: {
-          message: metadata.message,
+          message: t.metadataFailed,
         },
       })
+    }
 
     const importWarning =
       metadata.state === 'apiKeyMissing' ? metadata.warning : metadata.warning
@@ -180,10 +186,10 @@ export async function POST(request: Request) {
       return jsonError({
         status: 400,
         body: {
-          message: 'Request body must be valid JSON.',
+          message: t.invalidJson,
         },
       })
 
-    return jsonError(toImportError(error))
+    return jsonError(toImportError(error, messages))
   }
 }

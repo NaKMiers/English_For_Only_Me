@@ -9,6 +9,9 @@ import { useClientOutbox } from '@/components/common/OutboxOwnerProvider'
 import { PageHeader } from '@/components/common/PageHeader'
 import { SkeletonHero, SkeletonPanel } from '@/components/common/PageSkeletons'
 import { ActionButton } from '@/components/ui/ActionButton'
+import { useMessages } from '@/i18n/client'
+import { format } from '@/i18n/format'
+import type { Messages } from '@/i18n/messages/en'
 import {
   VOCAB_EXPLORE_INITIAL_LIMIT,
   VOCAB_EXPLORE_MAX_LIMIT,
@@ -26,6 +29,7 @@ import type {
 import {
   getDueVocabRecallApi,
   getExploreVocabApi,
+  getVocabRequestErrorMessage,
   getVocabStatsApi,
   lookupVocabEntryApi,
   searchVocabApi,
@@ -125,17 +129,19 @@ function speakTerm(term: string) {
   window.speechSynthesis.speak(utterance)
 }
 
-function getErrorMessage(error: unknown, fallback: string) {
-  return error instanceof Error ? error.message : fallback
-}
-
-function getRecallStatusMessage(result: VocabRecallCardResult) {
+function getRecallStatusMessage(
+  result: VocabRecallCardResult,
+  t: Messages['vocabulary']['dashboard']
+) {
   if (result.item.status === 'mastered')
-    return `Mastered "${result.term}". That one is yours now.`
+    return format(t.mastered, { term: result.term })
   if (result.isCorrect)
-    return `Nice. "${result.term}" moved to stage ${result.item.recallStage}.`
+    return format(t.movedStage, {
+      stage: result.item.recallStage,
+      term: result.term,
+    })
 
-  return `"${result.term}" reset to stage 1.`
+  return format(t.resetStage, { term: result.term })
 }
 
 /** Append newly fetched Explore cards, keeping the ones already dealt. */
@@ -152,6 +158,8 @@ export function VocabularyDashboard({
   initialData = null,
   mongoConfigured,
 }: Props) {
+  const vocab = useMessages().vocabulary
+  const errorText = vocab.errors
   const outbox = useClientOutbox()
   const [stats, setStats] = useState<VocabStatsRecord>(
     initialData?.stats ?? EMPTY_STATS
@@ -217,7 +225,7 @@ export function VocabularyDashboard({
   )
 
   const reportError = useCallback((error: unknown, fallback: string) => {
-    setErrorMessage(getErrorMessage(error, fallback))
+    setErrorMessage(getVocabRequestErrorMessage(error, fallback))
   }, [])
 
   const refreshStats = useCallback(async () => {
@@ -379,11 +387,9 @@ export function VocabularyDashboard({
             recallModalOpenRef.current ? null : loadRecallFirstPage(),
           ])
         )
-        .catch(error =>
-          reportError(error, 'Could not refresh vocabulary progress.')
-        )
+        .catch(error => reportError(error, errorText.refreshProgress))
     }, PROGRESS_REFRESH_DELAY_MS)
-  }, [loadRecallFirstPage, outbox, refreshStats, reportError])
+  }, [errorText, loadRecallFirstPage, outbox, refreshStats, reportError])
 
   useEffect(
     () => () => {
@@ -405,9 +411,9 @@ export function VocabularyDashboard({
     // fresh ones instead of letting every answer come back "not saved".
     if (recallTasks.some(task => isVocabRecallTaskExpired(task)))
       loadRecallFirstPage({ whileOpen: true }).catch(error =>
-        reportError(error, 'Could not refresh recall.')
+        reportError(error, errorText.refreshRecall)
       )
-  }, [loadRecallFirstPage, recallTasks, reportError])
+  }, [errorText, loadRecallFirstPage, recallTasks, reportError])
 
   const closeRecallSession = useCallback(() => {
     recallModalOpenRef.current = false
@@ -418,8 +424,8 @@ export function VocabularyDashboard({
     outbox
       .whenIdle({ timeoutMs: OUTBOX_IDLE_TIMEOUT_MS })
       .then(() => Promise.all([refreshStats(), loadRecallFirstPage()]))
-      .catch(error => reportError(error, 'Could not refresh recall.'))
-  }, [loadRecallFirstPage, outbox, refreshStats, reportError])
+      .catch(error => reportError(error, errorText.refreshRecall))
+  }, [errorText, loadRecallFirstPage, outbox, refreshStats, reportError])
 
   // Without server data (the server read failed), load in the browser.
   useEffect(() => {
@@ -427,12 +433,13 @@ export function VocabularyDashboard({
 
     const timeoutId = window.setTimeout(() => {
       Promise.all([refreshStats(), loadRecallFirstPage(), refreshExploreData()])
-        .catch(error => reportError(error, 'Could not load vocabulary.'))
+        .catch(error => reportError(error, errorText.loadVocabulary))
         .finally(() => setIsInitialLoad(false))
     }, 0)
 
     return () => window.clearTimeout(timeoutId)
   }, [
+    errorText,
     initialData,
     loadRecallFirstPage,
     mongoConfigured,
@@ -471,12 +478,12 @@ export function VocabularyDashboard({
           mergeExploreEntries(current, response.entries)
         )
       })
-      .catch(error => reportError(error, 'Could not load more explore words.'))
+      .catch(error => reportError(error, errorText.loadMoreExplore))
 
     return () => {
       cancelled = true
     }
-  }, [initialData, reportError])
+  }, [errorText, initialData, reportError])
 
   // The server cannot see the "listening paused" flag (it lives in this
   // browser), so a server-dealt queue may need its listening cards swapped.
@@ -486,12 +493,12 @@ export function VocabularyDashboard({
 
     const timeoutId = window.setTimeout(() => {
       refreshRecallWithoutListening().catch(error =>
-        reportError(error, 'Could not refresh recall.')
+        reportError(error, errorText.refreshRecall)
       )
     }, 0)
 
     return () => window.clearTimeout(timeoutId)
-  }, [initialData, refreshRecallWithoutListening, reportError])
+  }, [errorText, initialData, refreshRecallWithoutListening, reportError])
 
   useEffect(() => {
     if (recallTasks.length === 0 || recallModalOpen) return
@@ -524,10 +531,11 @@ export function VocabularyDashboard({
 
     loadRecallNextPage(recallCursor).catch(error =>
       setRecallPageError(
-        getErrorMessage(error, 'Could not load more flashcards.')
+        getVocabRequestErrorMessage(error, errorText.loadMoreFlashcards)
       )
     )
   }, [
+    errorText,
     loadRecallNextPage,
     mongoConfigured,
     recallCursor,
@@ -569,12 +577,13 @@ export function VocabularyDashboard({
     outbox
       .whenIdle({ timeoutMs: OUTBOX_IDLE_TIMEOUT_MS })
       .then(() => refreshExploreData(generation))
-      .catch(error => reportError(error, 'Could not load more explore words.'))
+      .catch(error => reportError(error, errorText.loadMoreExplore))
       .finally(() => {
         exploreRefreshRef.current = false
       })
   }, [
     activeExploreIndex,
+    errorText,
     exploreDecisions,
     exploreEntries,
     mongoConfigured,
@@ -600,9 +609,11 @@ export function VocabularyDashboard({
 
       setSelectedEntry(entry)
       setSearchResults(results.entries)
-      setStatusMessage(`Loaded "${entry.entry.term}".`)
+      setStatusMessage(
+        format(vocab.dashboard.loaded, { term: entry.entry.term })
+      )
     } catch (error) {
-      reportError(error, 'Could not lookup this word.')
+      reportError(error, errorText.lookup)
     } finally {
       setIsLoading(false)
     }
@@ -626,8 +637,8 @@ export function VocabularyDashboard({
     setErrorMessage(null)
     setStatusMessage(
       status === 'shouldLearn'
-        ? `"${entry.entry.term}" is in your recall queue.`
-        : `"${entry.entry.term}" is marked as known.`
+        ? format(vocab.dashboard.queued, { term: entry.entry.term })
+        : format(vocab.dashboard.markedKnown, { term: entry.entry.term })
     )
     setEntryUserItem(
       entryId,
@@ -704,7 +715,8 @@ export function VocabularyDashboard({
   function advanceRecall(task: VocabRecallTaskRecord) {
     const result = recallResultsRef.current.get(task.taskId)
 
-    if (result) setStatusMessage(getRecallStatusMessage(result))
+    if (result)
+      setStatusMessage(getRecallStatusMessage(result, vocab.dashboard))
 
     setRecallTasks(current =>
       current.filter(recallTask => recallTask.taskId !== task.taskId)
@@ -717,21 +729,20 @@ export function VocabularyDashboard({
       LISTENING_SKIP_STORAGE_KEY,
       String(Date.now() + 15 * 60_000)
     )
-    setStatusMessage('Listening flashcards are paused for 15 minutes.')
+    setStatusMessage(vocab.dashboard.listeningPaused)
     refreshRecallWithoutListening().catch(error =>
-      reportError(error, 'Could not refresh recall.')
+      reportError(error, errorText.refreshRecall)
     )
   }
 
   if (!mongoConfigured)
     return (
       <ContentPanel
-        eyebrow="Vocabulary"
-        title="Database needed"
+        eyebrow={vocab.page.eyebrow}
+        title={vocab.page.dbNeededTitle}
       >
         <p className="text-ink-soft text-sm leading-6 font-normal">
-          Set MONGODB_URI on the server, then run the vocabulary seed script to
-          start with the NGSL top 1000 word shells.
+          {vocab.page.dbNeededDashboard}
         </p>
       </ContentPanel>
     )
@@ -765,7 +776,7 @@ export function VocabularyDashboard({
           <>
             <span
               className="bg-pastel-peach text-accent-orange flex min-h-11 items-center gap-2 rounded-full px-4"
-              title="Streak"
+              title={vocab.dashboard.streak}
             >
               <Flame
                 aria-hidden="true"
@@ -774,21 +785,21 @@ export function VocabularyDashboard({
               <strong className="font-sans text-xl leading-none font-medium tabular-nums">
                 {stats.activeStreakDays}
               </strong>
-              <span className="sr-only">day streak</span>
+              <span className="sr-only">{vocab.dashboard.streak}</span>
             </span>
             <ActionButton
               href="/vocabulary/words"
               icon={<List aria-hidden="true" />}
               tone="paper"
             >
-              Words
+              {vocab.dashboard.wordsLink}
             </ActionButton>
           </>
         }
         icon={<BookA />}
         iconClassName="bg-pastel-mint text-accent-green"
-        subtitle="Track known words, pull in free dictionary data, and review the words you chose to learn on a seven-touch schedule."
-        title="Vocab Spine"
+        subtitle={vocab.dashboard.intro}
+        title={vocab.dashboard.title}
       />
 
       {errorMessage ? (

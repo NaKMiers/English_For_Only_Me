@@ -27,6 +27,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { useLocale, useMessages } from '@/i18n/client'
+import { INTL_LOCALES, type Locale } from '@/i18n/config'
+import { format, plural } from '@/i18n/format'
+import type { Messages } from '@/i18n/messages/en'
 import { cn } from '@/lib/utils'
 import type {
   VocabWordListRecord,
@@ -61,32 +65,26 @@ interface Props {
 
 const VIEW_TABS: Array<{
   href: string
-  label: string
   view: VocabWordListView
 }> = [
   {
     href: '/vocabulary/words?view=learning',
-    label: 'Learning',
     view: 'learning',
   },
   {
     href: '/vocabulary/words?view=dueToday',
-    label: 'Due Today',
     view: 'dueToday',
   },
   {
     href: '/vocabulary/words?view=alreadyKnow',
-    label: 'Already Know',
     view: 'alreadyKnow',
   },
   {
     href: '/vocabulary/words?view=mastered',
-    label: 'Mastered',
     view: 'mastered',
   },
   {
     href: '/vocabulary/words?view=knownTotal',
-    label: 'Known Total',
     view: 'knownTotal',
   },
 ]
@@ -100,51 +98,54 @@ const VIEW_TAB_CLASS_NAMES: Record<VocabWordListView, string> = {
   mastered: 'bg-accent-purple',
 }
 
-const VIEW_LABELS: Record<VocabWordListView, string> = {
-  alreadyKnow: 'Already Know',
-  dueToday: 'Due Today',
-  knownTotal: 'Known Total',
-  learning: 'Learning',
-  mastered: 'Mastered',
-}
-
 const PER_PAGE_OPTIONS = [5, 10, 20, 30, 50, 100, 200] as const
 
 // Offline, or while a lane keeps retrying, the outbox never drains. A page
 // refill that waits on it goes ahead after this long.
 const REFILL_IDLE_TIMEOUT_MS = 8000
 
-function getVietnamesePreview(word: VocabWordListRecord) {
-  return getRequiredVietnameseMeaning(word.entry)
+function getVietnamesePreview(word: VocabWordListRecord, fallback: string) {
+  return getRequiredVietnameseMeaning(word.entry, fallback)
 }
 
 function getDefinitionPreview(word: VocabWordListRecord) {
   return getEnglishDefinition(word.entry)
 }
 
-function formatDate(value: Date | string | null) {
+function formatDate(value: Date | string | null, locale: Locale) {
   if (!value) return null
 
-  return new Date(value).toLocaleDateString()
+  return new Intl.DateTimeFormat(INTL_LOCALES[locale]).format(new Date(value))
 }
 
-function getStatusMeta(word: VocabWordListRecord) {
-  if (word.item.status === 'learning')
-    return formatDate(word.item.dueAt)
-      ? `Stage ${word.item.recallStage}/7 - due ${formatDate(word.item.dueAt)}`
-      : `Stage ${word.item.recallStage}/7`
+function getStatusMeta(
+  word: VocabWordListRecord,
+  t: Messages['vocabulary'],
+  locale: Locale
+) {
+  const stage = word.item.recallStage
 
-  if (word.item.status === 'mastered')
-    return formatDate(word.item.masteredAt)
-      ? `Mastered ${formatDate(word.item.masteredAt)}`
-      : 'Mastered'
+  if (word.item.status === 'learning') {
+    const date = formatDate(word.item.dueAt, locale)
 
-  if (word.item.status === 'alreadyKnow')
-    return formatDate(word.item.knownAt)
-      ? `Known ${formatDate(word.item.knownAt)}`
-      : 'Already known'
+    return date
+      ? format(t.wordList.stageDue, { date, stage })
+      : format(t.wordList.stage, { stage })
+  }
 
-  return word.item.status
+  if (word.item.status === 'mastered') {
+    const date = formatDate(word.item.masteredAt, locale)
+
+    return date ? format(t.wordList.masteredOn, { date }) : t.wordList.mastered
+  }
+
+  if (word.item.status === 'alreadyKnow') {
+    const date = formatDate(word.item.knownAt, locale)
+
+    return date ? format(t.wordList.knownOn, { date }) : t.wordList.alreadyKnown
+  }
+
+  return t.itemStatus[word.item.status]
 }
 
 function getStatusIcon(word: VocabWordListRecord) {
@@ -167,6 +168,9 @@ export function VocabularyWordList({
   total,
   words,
 }: Props) {
+  const messages = useMessages()
+  const t = messages.vocabulary
+  const locale = useLocale()
   const router = useRouter()
   const outbox = useClientOutbox()
   const [wordItems, setWordItems] = useState(words)
@@ -260,8 +264,8 @@ export function VocabularyWordList({
     )
     setMessage(
       status === 'shouldLearn'
-        ? `"${word.entry.term}" moved to Learning.`
-        : `"${word.entry.term}" marked as Already Know.`
+        ? format(t.wordList.movedToLearning, { term: word.entry.term })
+        : format(t.wordList.markedKnown, { term: word.entry.term })
     )
 
     const outcome = await enqueueVocabItemStatus(outbox, {
@@ -322,17 +326,17 @@ export function VocabularyWordList({
             icon={<ArrowLeft aria-hidden="true" />}
             tone="paper"
           >
-            Back To Vocab
+            {t.page.backToVocab}
           </ActionButton>
         }
         icon={<BookA />}
         iconClassName="bg-pastel-mint text-accent-green"
-        subtitle={`${visibleTotal} words in this view.`}
-        title={VIEW_LABELS[activeView]}
+        subtitle={plural(t.wordList.count, visibleTotal)}
+        title={t.views[activeView]}
       />
 
       <nav
-        aria-label="Vocabulary word views"
+        aria-label={t.wordList.viewsNav}
         className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:px-0"
       >
         {VIEW_TABS.map(tab => (
@@ -354,7 +358,7 @@ export function VocabularyWordList({
                 VIEW_TAB_CLASS_NAMES[tab.view]
               )}
             />
-            {tab.label}
+            {t.views[tab.view]}
           </Link>
         ))}
       </nav>
@@ -362,7 +366,9 @@ export function VocabularyWordList({
       <div className="border-line bg-surface rounded-panel grid gap-3 border p-2.5 sm:flex sm:flex-wrap sm:items-center sm:justify-between">
         <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center">
           <div className="flex items-center gap-2">
-            <span className="text-ink-soft shrink-0 text-xs">Per page</span>
+            <span className="text-ink-soft shrink-0 text-xs">
+              {t.wordList.perPage}
+            </span>
             <Select
               value={String(perPage)}
               onValueChange={value => {
@@ -371,7 +377,7 @@ export function VocabularyWordList({
               }}
             >
               <SelectTrigger
-                aria-label="Words per page"
+                aria-label={t.wordList.perPageLabel}
                 className="w-full sm:w-24"
               >
                 <SelectValue />
@@ -392,9 +398,11 @@ export function VocabularyWordList({
             </Select>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-ink-soft shrink-0 text-xs">Custom</span>
+            <span className="text-ink-soft shrink-0 text-xs">
+              {t.wordList.custom}
+            </span>
             <Input
-              aria-label="Custom words per page"
+              aria-label={t.wordList.customLabel}
               className="border-line bg-surface rounded-control h-10 w-full border px-3 font-sans sm:w-20"
               min={1}
               onBlur={() => updatePageSize(Number(customPageSize) || 1)}
@@ -416,7 +424,7 @@ export function VocabularyWordList({
             onClick={() => goTo(page - 1)}
             tone="paper"
           >
-            Prev
+            {t.wordList.prev}
           </ActionButton>
           <span className="text-sm tabular-nums">
             {firstItem}-{lastItem} / {visibleTotal}
@@ -427,7 +435,7 @@ export function VocabularyWordList({
             onClick={() => goTo(page + 1)}
             tone="paper"
           >
-            Next
+            {messages.common.actions.next}
           </ActionButton>
         </div>
       </div>
@@ -472,24 +480,24 @@ export function VocabularyWordList({
                   >
                     {getStatusIcon(word)}
                   </span>
-                  <span>{getStatusMeta(word)}</span>
+                  <span>{getStatusMeta(word, t, locale)}</span>
                   <span className="tabular-nums">
                     {word.entry.frequencyRank
                       ? `#${word.entry.frequencyRank}`
-                      : word.entry.enrichmentStatus}
+                      : t.enrichmentStatus[word.entry.enrichmentStatus]}
                   </span>
                 </p>
               </div>
 
               <div className="grid min-w-0 gap-0.5">
                 <p className="line-clamp-1 text-sm leading-6 font-medium">
-                  {getVietnamesePreview(word)}
+                  {getVietnamesePreview(word, t.word.needsMeaning)}
                 </p>
                 <p className="text-ink-soft line-clamp-2 text-xs leading-5">
                   {getDefinitionPreview(word)}
                 </p>
                 <p className="text-ink-soft flex min-w-0 flex-wrap items-center gap-x-2 text-[11px]">
-                  <span>{word.item.source}</span>
+                  <span>{t.sources[word.item.source]}</span>
                   {word.sourceVideo ? (
                     <a
                       className="hover:text-brand flex min-w-0 items-center gap-1"
@@ -503,7 +511,9 @@ export function VocabularyWordList({
                         className="size-3.5 shrink-0"
                       />
                       <span className="max-w-64 truncate">
-                        From: {word.sourceVideo.title}
+                        {format(t.wordList.fromVideo, {
+                          title: word.sourceVideo.title,
+                        })}
                       </span>
                     </a>
                   ) : null}
@@ -517,7 +527,7 @@ export function VocabularyWordList({
                   icon={<BookOpen className="size-4" />}
                   onClick={() => updateWordStatus(word, 'shouldLearn')}
                 >
-                  Should Learn
+                  {t.marks.shouldLearn}
                 </ActionButton>
                 <ActionButton
                   className="min-h-9 min-w-0 px-3 text-xs [&>span:last-child]:whitespace-nowrap"
@@ -526,7 +536,7 @@ export function VocabularyWordList({
                   onClick={() => updateWordStatus(word, 'alreadyKnow')}
                   tone="paper"
                 >
-                  Already Know
+                  {t.marks.alreadyKnow}
                 </ActionButton>
               </div>
             </li>
@@ -534,11 +544,11 @@ export function VocabularyWordList({
         </ul>
       ) : (
         <ContentPanel
-          eyebrow="Empty"
-          title="No words here yet"
+          eyebrow={t.wordList.emptyEyebrow}
+          title={t.wordList.emptyTitle}
         >
           <p className="text-ink-soft text-sm leading-6 font-normal">
-            Pick words from Explore or Dictionary and they will appear here.
+            {t.wordList.emptyBody}
           </p>
         </ContentPanel>
       )}

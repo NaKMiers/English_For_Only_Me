@@ -15,6 +15,7 @@ import {
   mergeVocabRecallPage,
   reconcileVocabRecallCardResult,
   shouldPrefetchVocabRecallPage,
+  VOCAB_RECALL_STALE_ERROR,
 } from './vocabRecallSession'
 
 const NOW = new Date('2026-10-24T10:00:00.000Z')
@@ -212,7 +213,7 @@ describe('recall answer delivery', () => {
         status: 409,
       })
     ).toMatchObject({
-      error: expect.stringContaining('expired'),
+      error: VOCAB_RECALL_STALE_ERROR,
       saveState: 'notSaved',
     })
   })

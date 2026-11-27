@@ -1,3 +1,8 @@
+'use client'
+
+import { useMessages } from '@/i18n/client'
+import { format } from '@/i18n/format'
+import { formatNodes } from '@/i18n/formatNodes'
 import { cn } from '@/lib/utils'
 
 const COPYRIGHT_YEAR = 2026
@@ -8,6 +13,8 @@ interface Props {
 
 /** The board's last line: copyright and author credit. */
 export function AppCredits({ className }: Props) {
+  const t = useMessages()
+
   return (
     <footer
       className={cn(
@@ -15,17 +22,20 @@ export function AppCredits({ className }: Props) {
         className
       )}
     >
-      <span>© {COPYRIGHT_YEAR} English For Only Me. All rights reserved.</span>
+      <span>{format(t.common.footer.rights, { year: COPYRIGHT_YEAR })}</span>
       <span>
-        Developed by{' '}
-        <a
-          href="https://anhkhoa.info"
-          target="_blank"
-          rel="noreferrer"
-          className="text-ink hover:text-brand font-medium transition-colors"
-        >
-          Nguyen Anh Khoa
-        </a>
+        {formatNodes(t.common.footer.developedBy, {
+          author: (
+            <a
+              href="https://anhkhoa.info"
+              target="_blank"
+              rel="noreferrer"
+              className="text-ink hover:text-brand font-medium transition-colors"
+            >
+              Nguyen Anh Khoa
+            </a>
+          ),
+        })}
       </span>
     </footer>
   )

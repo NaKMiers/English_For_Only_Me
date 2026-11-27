@@ -21,6 +21,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { ActionButton } from '@/components/ui/ActionButton'
+import { useMessages } from '@/i18n/client'
 
 interface Props {
   /** The identity chip contents, shared with the static placeholder button. */
@@ -45,6 +46,7 @@ export function UserMenuPopup({
   signOutAction,
   triggerClassName,
 }: Props) {
+  const t = useMessages()
   const [confirmOpen, setConfirmOpen] = useState(false)
   const triggerRef = useRef<HTMLButtonElement>(null)
 
@@ -71,12 +73,12 @@ export function UserMenuPopup({
         >
           <DropdownMenuItem render={<Link href="/dictation/favorites" />}>
             <Heart aria-hidden="true" />
-            Favorites
+            {t.common.auth.favorites}
           </DropdownMenuItem>
           {isAdmin && (
             <DropdownMenuItem render={<Link href="/admin" />}>
               <Shield aria-hidden="true" />
-              Admin
+              {t.common.auth.admin}
             </DropdownMenuItem>
           )}
           <DropdownMenuSeparator />
@@ -85,7 +87,7 @@ export function UserMenuPopup({
             onClick={() => setConfirmOpen(true)}
           >
             <LogOut aria-hidden="true" />
-            Sign out
+            {t.common.auth.signOut}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -97,10 +99,10 @@ export function UserMenuPopup({
         <DialogContent className="border-line bg-surface border">
           <DialogHeader>
             <DialogTitle className="font-sans text-xl leading-tight font-semibold tracking-normal">
-              Sign out?
+              {t.common.auth.signOutTitle}
             </DialogTitle>
             <DialogDescription className="text-ink-soft text-base leading-7 font-normal">
-              You will be signed out of English For Only Me.
+              {t.common.auth.signOutDescription}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="bg-tint border-line border-t">
@@ -110,7 +112,7 @@ export function UserMenuPopup({
                   type="button"
                   tone="paper"
                 >
-                  Cancel
+                  {t.common.actions.cancel}
                 </ActionButton>
               }
             />
@@ -124,7 +126,7 @@ export function UserMenuPopup({
                   />
                 }
               >
-                Sign out
+                {t.common.auth.signOut}
               </ActionButton>
             </form>
           </DialogFooter>

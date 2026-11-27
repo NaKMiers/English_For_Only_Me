@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 
+import { getMessages } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { requirePracticeActor } from '@/modules/dictation/services/getCurrentUser'
 import { listDueVocabRecallTasksForUser } from '@/modules/vocabulary/recall/recallTaskService'
@@ -17,11 +18,12 @@ function jsonError(decision: VocabApiErrorDecision) {
 }
 
 export async function GET(request: Request) {
-  const missingMongo = getMissingVocabMongoResponse()
+  const t = await getMessages()
+  const missingMongo = getMissingVocabMongoResponse(t)
 
   if (missingMongo) return jsonError(missingMongo)
 
-  const parsed = parseRecallDueRequest(new URL(request.url).searchParams)
+  const parsed = parseRecallDueRequest(new URL(request.url).searchParams, t)
 
   if (!parsed.ok) return jsonError(parsed)
 
@@ -39,6 +41,6 @@ export async function GET(request: Request) {
       })
     )
   } catch (error) {
-    return jsonError(toVocabApiError(error))
+    return jsonError(toVocabApiError(error, t))
   }
 }

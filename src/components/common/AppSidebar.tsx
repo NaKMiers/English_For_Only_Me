@@ -12,9 +12,11 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useLayoutEffect, useRef } from 'react'
 
-import { PRIMARY_NAV_ITEMS } from '@/constants/modules'
+import { navItemLabel, PRIMARY_NAV_ITEMS } from '@/constants/modules'
+import { useMessages } from '@/i18n/client'
 import { cn } from '@/lib/utils'
 
+import { LocaleToggle } from './LocaleToggle'
 import { ThemeToggle } from './ThemeToggle'
 
 /** Icon per primary route, shared by the rail and the phone tab bar. */
@@ -86,9 +88,11 @@ interface Props {
 /**
  * The dark icon rail on the left of the board: one pill holding the module
  * links (the current one sits in a lighter circle), and the day / night
- * toggle under it. Phones get the same links from the topbar menu instead.
+ * toggle and the EN / VI pill under it. Phones get the same links from the
+ * topbar menu instead.
  */
 export function AppSidebar({ className }: Props) {
+  const t = useMessages()
   const pathname = usePathname() ?? '/'
   const items = PRIMARY_NAV_ITEMS.filter(item => !item.disabled)
   const activeIndex = items.findIndex(item => isActiveHref(pathname, item.href))
@@ -102,7 +106,7 @@ export function AppSidebar({ className }: Props) {
       )}
     >
       <nav
-        aria-label="Primary"
+        aria-label={t.common.nav.primary}
         className="bg-rail relative flex w-14 flex-col items-center gap-2 rounded-full p-1.5"
       >
         {activeIndex >= 0 ? (
@@ -116,13 +120,14 @@ export function AppSidebar({ className }: Props) {
         {items.map(item => {
           const Icon = NAV_ICONS[item.href] ?? House
           const active = isActiveHref(pathname, item.href)
+          const label = navItemLabel(item, t)
 
           return (
             <Link
               key={item.href}
               href={item.href}
-              aria-label={item.label}
-              title={item.label}
+              aria-label={label}
+              title={label}
               aria-current={active ? 'page' : undefined}
               className={cn(
                 'soft-press text-rail-fg/55 hover:text-rail-fg relative grid size-11 place-items-center rounded-full',
@@ -138,6 +143,7 @@ export function AppSidebar({ className }: Props) {
         })}
       </nav>
       <ThemeToggle />
+      <LocaleToggle className="w-14" />
     </aside>
   )
 }

@@ -12,7 +12,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { deleteIeltsAttemptApi } from '@/requests/ieltsApi'
+import { useMessages } from '@/i18n/client'
+import { format } from '@/i18n/format'
+import { deleteIeltsAttemptApi, ieltsErrorMessage } from '@/requests/ieltsApi'
 import { ExamButton } from '@/components/ielts/ui'
 
 /**
@@ -27,6 +29,8 @@ export function DeleteAttemptButton({
   /** What the attempt is, e.g. "IELTS 21 Test 1 · Listening". */
   label: string
 }) {
+  const messages = useMessages()
+  const t = messages.ielts.deleteAttempt
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -41,9 +45,7 @@ export function DeleteAttemptButton({
       setOpen(false)
       router.refresh()
     } catch (caught) {
-      setError(
-        caught instanceof Error ? caught.message : 'Could not delete it.'
-      )
+      setError(ieltsErrorMessage(caught, t.failed))
     } finally {
       setBusy(false)
     }
@@ -53,10 +55,10 @@ export function DeleteAttemptButton({
     <>
       {/* Row action opening a confirm: a plain icon button by design. */}
       <button
-        aria-label={`Delete attempt: ${label}`}
+        aria-label={format(t.label, { name: label })}
         className="text-ink-soft hover:text-danger hover:bg-danger-soft rounded-tag grid size-8 place-items-center transition-colors"
         onClick={() => setOpen(true)}
-        title="Delete attempt"
+        title={t.title}
         type="button"
       >
         <Trash2
@@ -70,11 +72,9 @@ export function DeleteAttemptButton({
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete this attempt?</DialogTitle>
+            <DialogTitle>{t.dialogTitle}</DialogTitle>
             <DialogDescription>
-              {label}: its answers, score and writing feedback are deleted for
-              good, and your band estimate and weak spots are recalculated
-              without it.
+              {format(t.dialogBody, { name: label })}
             </DialogDescription>
           </DialogHeader>
           {error ? (
@@ -92,7 +92,7 @@ export function DeleteAttemptButton({
               tone="paper"
               type="button"
             >
-              Keep it
+              {t.keep}
             </ExamButton>
             <ExamButton
               disabled={busy}
@@ -100,7 +100,7 @@ export function DeleteAttemptButton({
               tone="danger"
               type="button"
             >
-              {busy ? 'Deleting...' : 'Delete'}
+              {busy ? t.deleting : messages.common.actions.delete}
             </ExamButton>
           </DialogFooter>
         </DialogContent>

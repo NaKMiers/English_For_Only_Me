@@ -14,6 +14,8 @@ import { ContentPanel } from '@/components/common/ContentPanel'
 import { IconButton } from '@/components/ui/IconButton'
 import { Input } from '@/components/ui/input'
 import { ActionButton } from '@/components/ui/ActionButton'
+import { format } from '@/i18n/format'
+import { useMessages } from '@/i18n/client'
 import { computeHints } from '@/modules/dictation/correction'
 import {
   filterHintsToSentence,
@@ -43,6 +45,8 @@ function effectiveHints(segment: DictationSegmentApiRecord): string[] {
 }
 
 export function DictationHintEditor({ onSegmentChange, segments }: Props) {
+  const t = useMessages()
+  const h = t.admin.hints
   const [drafts, setDrafts] = useState<Record<string, string>>({})
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [savingId, setSavingId] = useState<string | null>(null)
@@ -85,7 +89,7 @@ export function DictationHintEditor({ onSegmentChange, segments }: Props) {
     } catch (error) {
       setError(
         segment.id,
-        error instanceof Error ? error.message : 'Could not save hints.'
+        error instanceof Error ? error.message : h.saveFailed
       )
     } finally {
       setSavingId(null)
@@ -103,7 +107,7 @@ export function DictationHintEditor({ onSegmentChange, segments }: Props) {
     } catch (error) {
       setError(
         segment.id,
-        error instanceof Error ? error.message : 'Could not reset hints.'
+        error instanceof Error ? error.message : h.resetFailed
       )
     } finally {
       setSavingId(null)
@@ -116,7 +120,7 @@ export function DictationHintEditor({ onSegmentChange, segments }: Props) {
     if (word.length === 0) return
 
     if (!isWordInSentence(segment.text, word)) {
-      setError(segment.id, 'That word is not in this sentence.')
+      setError(segment.id, h.notInSentence)
       return
     }
 
@@ -162,11 +166,14 @@ export function DictationHintEditor({ onSegmentChange, segments }: Props) {
             />
           }
         >
-          Prev
+          {t.admin.pager.prev}
         </ActionButton>
         <span className="text-ink-soft text-center text-xs font-normal">
-          Sentences {pageStart + 1}-{pageStart + visibleSegments.length} of{' '}
-          {segments.length}
+          {format(t.admin.pager.range, {
+            from: pageStart + 1,
+            to: pageStart + visibleSegments.length,
+            total: segments.length,
+          })}
         </span>
         <ActionButton
           type="button"
@@ -182,25 +189,20 @@ export function DictationHintEditor({ onSegmentChange, segments }: Props) {
             />
           }
         >
-          Next
+          {t.common.actions.next}
         </ActionButton>
       </div>
     ) : null
 
   return (
     <ContentPanel
-      eyebrow="Hints"
-      title="Practice hints"
+      eyebrow={h.eyebrow}
+      title={h.title}
     >
-      <p className="text-ink-soft text-sm leading-6 font-normal">
-        Each sentence starts with the automatically detected hints. Add or
-        remove words to override a sentence, or reset it back to automatic.
-      </p>
+      <p className="text-ink-soft text-sm leading-6 font-normal">{h.intro}</p>
 
       {segments.length === 0 ? (
-        <p className="text-ink-soft text-sm font-normal">
-          Add a transcript first - hints are edited per sentence.
-        </p>
+        <p className="text-ink-soft text-sm font-normal">{h.needTranscript}</p>
       ) : (
         <>
           {pager}
@@ -225,14 +227,14 @@ export function DictationHintEditor({ onSegmentChange, segments }: Props) {
                       </p>
                     </div>
                     <span className="text-ink-soft shrink-0 font-sans text-xs font-normal">
-                      {segment.hintsOverridden ? 'Custom' : 'Auto'}
+                      {segment.hintsOverridden ? h.custom : h.auto}
                     </span>
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2">
                     {hints.length === 0 ? (
                       <span className="text-ink-soft text-xs font-normal">
-                        No hints
+                        {h.none}
                       </span>
                     ) : (
                       hints.map((hint, index) => (
@@ -260,7 +262,7 @@ export function DictationHintEditor({ onSegmentChange, segments }: Props) {
                           />
                           {hint}
                           <IconButton
-                            label={`Remove hint ${hint}`}
+                            label={format(h.removeHint, { hint })}
                             disabled={isSaving}
                             draggable={false}
                             onClick={() => handleRemoveHint(segment, hint)}
@@ -278,7 +280,9 @@ export function DictationHintEditor({ onSegmentChange, segments }: Props) {
 
                   <div className="flex flex-wrap items-center gap-2">
                     <Input
-                      aria-label={`Add a hint to sentence ${segment.order + 1}`}
+                      aria-label={format(h.addLabel, {
+                        number: segment.order + 1,
+                      })}
                       value={drafts[segment.id] ?? ''}
                       disabled={isSaving}
                       onChange={event =>
@@ -293,7 +297,7 @@ export function DictationHintEditor({ onSegmentChange, segments }: Props) {
                           handleAddHint(segment)
                         }
                       }}
-                      placeholder="Add a word from this sentence"
+                      placeholder={h.addPlaceholder}
                       className="border-line bg-surface rounded-control h-10 max-w-xs border font-semibold"
                     />
                     <ActionButton
@@ -308,7 +312,7 @@ export function DictationHintEditor({ onSegmentChange, segments }: Props) {
                         />
                       }
                     >
-                      Add
+                      {h.add}
                     </ActionButton>
                     {segment.hintsOverridden ? (
                       <ActionButton
@@ -323,7 +327,7 @@ export function DictationHintEditor({ onSegmentChange, segments }: Props) {
                           />
                         }
                       >
-                        Reset to auto
+                        {h.reset}
                       </ActionButton>
                     ) : null}
                   </div>

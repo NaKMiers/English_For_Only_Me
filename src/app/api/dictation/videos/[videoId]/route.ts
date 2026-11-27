@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 
 import { MissingEnvironmentError } from '@/constants/environments'
+import type { Messages } from '@/i18n/messages'
+import { getMessages } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { revalidateDictationCatalog } from '@/lib/db/revalidateCatalog'
 import { DictationSegmentModel } from '@/models/dictation/DictationSegmentModel'
@@ -11,6 +13,7 @@ import { toDictationTranscriptRecord } from '@/modules/dictation/services/dictat
 import { toDictationVideoRecord } from '@/modules/dictation/services/dictationVideoRecords'
 import { requireAdmin } from '@/modules/dictation/services/getCurrentUser'
 import {
+  getAccessErrorMessage,
   type ApiErrorDecision,
   getMissingMongoResponse,
   MISSING_MONGODB_MESSAGE,
@@ -30,7 +33,10 @@ function jsonError(decision: ApiErrorDecision) {
 }
 
 // requireAdmin throws 401/403 - map to JSON instead of a 500.
-function authErrorDecision(error: unknown): ApiErrorDecision | null {
+function authErrorDecision(
+  error: unknown,
+  t: Messages
+): ApiErrorDecision | null {
   if (
     typeof error === 'object' &&
     error !== null &&
@@ -40,15 +46,15 @@ function authErrorDecision(error: unknown): ApiErrorDecision | null {
     return {
       status: error.status,
       body: {
-        message: (error as { message?: string }).message ?? 'Access denied.',
+        message: getAccessErrorMessage(error.status, t),
       },
     }
 
   return null
 }
 
-function toArchiveError(error: unknown): ApiErrorDecision {
-  const authError = authErrorDecision(error)
+function toArchiveError(error: unknown, t: Messages): ApiErrorDecision {
+  const authError = authErrorDecision(error, t)
   if (authError) return authError
 
   if (error instanceof MissingEnvironmentError)
@@ -64,12 +70,13 @@ function toArchiveError(error: unknown): ApiErrorDecision {
   return {
     status: 500,
     body: {
-      message: 'Could not delete this dictation video.',
+      message: t.dictation.api.videoDeleteFailed,
     },
   }
 }
 
 export async function GET(_request: Request, { params }: Props) {
+  const t = await getMessages()
   const missingMongo = getMissingMongoResponse()
 
   if (missingMongo) return jsonError(missingMongo)
@@ -80,7 +87,7 @@ export async function GET(_request: Request, { params }: Props) {
     return jsonError({
       status: 400,
       body: {
-        message: 'Invalid video id.',
+        message: t.dictation.api.invalidVideoId,
       },
     })
 
@@ -100,7 +107,7 @@ export async function GET(_request: Request, { params }: Props) {
       return jsonError({
         status: 404,
         body: {
-          message: 'Dictation video was not found.',
+          message: t.dictation.api.videoNotFound,
         },
       })
 
@@ -124,11 +131,12 @@ export async function GET(_request: Request, { params }: Props) {
       video: toDictationVideoRecord(video),
     })
   } catch (error) {
-    return jsonError(toUpdateError(error))
+    return jsonError(toUpdateError(error, t))
   }
 }
 
 export async function DELETE(_request: Request, { params }: Props) {
+  const t = await getMessages()
   const missingMongo = getMissingMongoResponse()
 
   if (missingMongo) return jsonError(missingMongo)
@@ -139,7 +147,7 @@ export async function DELETE(_request: Request, { params }: Props) {
     return jsonError({
       status: 400,
       body: {
-        message: 'Invalid video id.',
+        message: t.dictation.api.invalidVideoId,
       },
     })
 
@@ -169,7 +177,7 @@ export async function DELETE(_request: Request, { params }: Props) {
       return jsonError({
         status: 404,
         body: {
-          message: 'Dictation video was not found.',
+          message: t.dictation.api.videoNotFound,
         },
       })
 
@@ -179,12 +187,12 @@ export async function DELETE(_request: Request, { params }: Props) {
       video: toDictationVideoRecord(video),
     })
   } catch (error) {
-    return jsonError(toArchiveError(error))
+    return jsonError(toArchiveError(error, t))
   }
 }
 
-function toUpdateError(error: unknown): ApiErrorDecision {
-  const authError = authErrorDecision(error)
+function toUpdateError(error: unknown, t: Messages): ApiErrorDecision {
+  const authError = authErrorDecision(error, t)
   if (authError) return authError
 
   if (error instanceof MissingEnvironmentError)
@@ -200,12 +208,13 @@ function toUpdateError(error: unknown): ApiErrorDecision {
   return {
     status: 500,
     body: {
-      message: 'Could not update this dictation video.',
+      message: t.dictation.api.videoUpdateFailed,
     },
   }
 }
 
 export async function PATCH(request: Request, { params }: Props) {
+  const t = await getMessages()
   const missingMongo = getMissingMongoResponse()
 
   if (missingMongo) return jsonError(missingMongo)
@@ -216,7 +225,7 @@ export async function PATCH(request: Request, { params }: Props) {
     return jsonError({
       status: 400,
       body: {
-        message: 'Invalid video id.',
+        message: t.dictation.api.invalidVideoId,
       },
     })
 
@@ -251,7 +260,7 @@ export async function PATCH(request: Request, { params }: Props) {
       return jsonError({
         status: 404,
         body: {
-          message: 'Dictation video was not found.',
+          message: t.dictation.api.videoNotFound,
         },
       })
 
@@ -265,10 +274,10 @@ export async function PATCH(request: Request, { params }: Props) {
       return jsonError({
         status: 400,
         body: {
-          message: 'Request body must be valid JSON.',
+          message: t.dictation.api.invalidJson,
         },
       })
 
-    return jsonError(toUpdateError(error))
+    return jsonError(toUpdateError(error, t))
   }
 }

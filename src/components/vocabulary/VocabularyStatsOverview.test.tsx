@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, test } from 'vitest'
 
+import { en } from '@/i18n/messages/en'
 import type { VocabStatsRecord } from '@/modules/vocabulary/types'
 
 import {
@@ -38,7 +39,10 @@ const stats: VocabStatsRecord = {
 describe('VocabularyStatsOverview', () => {
   test('links each count to its word-list view', () => {
     expect(
-      vocabStatusLinks(stats).map(item => [item.href, item.value])
+      vocabStatusLinks(stats, en.vocabulary.views).map(item => [
+        item.href,
+        item.value,
+      ])
     ).toEqual([
       ['/vocabulary/words?view=learning', 7],
       ['/vocabulary/words?view=dueToday', 5],

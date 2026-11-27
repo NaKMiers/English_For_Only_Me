@@ -30,8 +30,12 @@ export function hasVietnameseMeaning(entry: VocabEntryApiRecord) {
   return getVietnameseMeaning(entry) !== null
 }
 
-export function getRequiredVietnameseMeaning(entry: VocabEntryApiRecord) {
-  return getVietnameseMeaning(entry) ?? 'Needs Vietnamese meaning.'
+/** The Vietnamese meaning, or `fallback` (the translated "needs a meaning" note). */
+export function getRequiredVietnameseMeaning(
+  entry: VocabEntryApiRecord,
+  fallback: string
+) {
+  return getVietnameseMeaning(entry) ?? fallback
 }
 
 export function getEnglishDefinition(entry: VocabEntryApiRecord) {

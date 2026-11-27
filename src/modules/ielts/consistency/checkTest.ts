@@ -1,3 +1,5 @@
+import { format } from '@/i18n/format'
+
 import {
   IELTS_OBJECTIVE_TOTAL,
   IELTS_QUESTION_WIDGETS,
@@ -43,11 +45,56 @@ export type IeltsConsistencyRule =
   | 'visual_missing'
   | 'question_stem_missing'
 
+/**
+ * English text of every issue. It goes into repair prompts and logs, so it
+ * stays English; the editor shows `ieltsEditor.issues[code]` (same keys and
+ * placeholders) in the admin's language.
+ */
+const ISSUE_MESSAGES = {
+  rangeOrder: 'Questions {from}-{to} must be numbered {from} to {to} in order.',
+  html: 'HTML is not allowed.',
+  slotNoQuestion: 'Slot {{q{slot}}} has no question in this group.',
+  questionSlot: 'Question {number} needs exactly one {{q{number}}} slot.',
+  multiCount: 'Choose-{count} group needs {count} correct letters.',
+  keyNotOption: '"{key}" is not one of the options.',
+  needsExplanation: 'Question {number} needs an explanation.',
+  noAnswer: 'Question {number} has no accepted answer.',
+  wordLimit: '"{answer}" breaks the word limit of question {number}.',
+  invalidChoice: '"{answer}" is not a valid choice for question {number}.',
+  needsEvidence: 'Question {number} needs an evidence quote.',
+  evidenceNotInBlock:
+    'The evidence quote of question {number} is not in block {block}.',
+  passageEmpty: 'The passage is empty.',
+  passageLength: 'The passage has {words} words; it needs 600-1100.',
+  passageTypical: 'The passage has {words} words; 700-1000 is typical.',
+  tooFewLines: 'A listening part needs at least 12 script lines.',
+  unknownVoice: 'Unknown voice "{voice}".',
+  noDuration: 'Audio has no duration.',
+  offsetsMismatch: 'Audio line offsets do not match the script.',
+  writingEmpty: 'The writing prompt is empty.',
+  task1Visual: 'Task 1 needs a visual.',
+  minWords: 'Task {task} needs {minimum} words minimum.',
+  visualMissing:
+    'Questions {from}-{to} refer to a diagram, map or picture but the group has no image.',
+  stemMissing: 'Question {number} has options but no question text.',
+  numbering:
+    '{skill} must number its questions 1 to 40 in order (found {count}).',
+  noSections: 'The test has no sections.',
+} as const
+
+export type IeltsIssueCode = keyof typeof ISSUE_MESSAGES
+
+export type IeltsIssueValues = Record<string, string | number>
+
 export interface IeltsConsistencyIssue {
   rule: IeltsConsistencyRule
   sectionKey: string
   path: string
+  /** English text, for prompts and logs. */
   message: string
+  /** Picks the localized text in the editor. */
+  code: IeltsIssueCode
+  values: IeltsIssueValues
 }
 
 export interface IeltsConsistencyReport {
@@ -58,8 +105,26 @@ export interface IeltsConsistencyReport {
 type Report = (
   rule: IeltsConsistencyRule,
   path: string,
-  message: string
+  code: IeltsIssueCode,
+  values?: IeltsIssueValues
 ) => void
+
+function issueOf(
+  rule: IeltsConsistencyRule,
+  sectionKey: string,
+  path: string,
+  code: IeltsIssueCode,
+  values: IeltsIssueValues = {}
+): IeltsConsistencyIssue {
+  return {
+    rule,
+    sectionKey,
+    path,
+    message: format(ISSUE_MESSAGES[code], values),
+    code,
+    values,
+  }
+}
 
 const ROMAN_NUMERALS = [
   'I',
@@ -125,11 +190,10 @@ function checkGroup(
     numbers.length !== expected.length ||
     numbers.some((number, index) => number !== expected[index])
   )
-    report(
-      'group_range_matches',
-      at,
-      `Questions ${group.from}-${group.to} must be numbered ${group.from} to ${group.to} in order.`
-    )
+    report('group_range_matches', at, 'rangeOrder', {
+      from: group.from,
+      to: group.to,
+    })
 
   for (const [field, value] of [
     ['instruction', group.instruction],
@@ -137,19 +201,14 @@ function checkGroup(
     ['body', group.body],
     ...group.options.map((option, index) => [`options[${index}]`, option.text]),
   ] as const)
-    if (containsHtml(value))
-      report('html_in_body', `${at}.${field}`, 'HTML is not allowed.')
+    if (containsHtml(value)) report('html_in_body', `${at}.${field}`, 'html')
 
   if (widget === 'slot') {
     const slots = collectSlotsFromSource(group.body)
 
     for (const slot of slots)
       if (!numbers.includes(slot))
-        report(
-          'slot_has_question',
-          `${at}.body`,
-          `Slot {{q${slot}}} has no question in this group.`
-        )
+        report('slot_has_question', `${at}.body`, 'slotNoQuestion', { slot })
 
     for (const question of group.questions) {
       const count = slots.filter(slot => slot === question.number).length
@@ -159,28 +218,25 @@ function checkGroup(
         report(
           'question_has_slot',
           `${at}.questions[${question.number}]`,
-          `Question ${question.number} needs exactly one {{q${question.number}}} slot.`
+          'questionSlot',
+          { number: question.number }
         )
     }
   }
 
   if (group.type === 'multiple-choice-multi') {
     if (group.correctKeys.length !== group.questions.length)
-      report(
-        'answers_present',
-        `${at}.correctKeys`,
-        `Choose-${group.questions.length} group needs ${group.questions.length} correct letters.`
-      )
+      report('answers_present', `${at}.correctKeys`, 'multiCount', {
+        count: group.questions.length,
+      })
 
     const valid = validLetterKeys(group)
 
     for (const key of group.correctKeys)
       if (!valid.includes(normalizeIeltsKey(key)))
-        report(
-          'letter_answers_valid',
-          `${at}.correctKeys`,
-          `"${key}" is not one of the options.`
-        )
+        report('letter_answers_valid', `${at}.correctKeys`, 'keyNotOption', {
+          key,
+        })
   }
 
   const blocks = blockTexts(section).map(collapse)
@@ -189,34 +245,27 @@ function checkGroup(
     const path = `${at}.questions[${question.number}]`
 
     if (containsHtml(question.prompt) || containsHtml(question.explanation))
-      report('html_in_body', path, 'HTML is not allowed.')
+      report('html_in_body', path, 'html')
 
     if (!question.explanation.trim())
-      report(
-        'explanation_present',
-        path,
-        `Question ${question.number} needs an explanation.`
-      )
+      report('explanation_present', path, 'needsExplanation', {
+        number: question.number,
+      })
 
     if (group.type === 'multiple-choice-multi') continue
 
     if (question.answers.length === 0) {
-      report(
-        'answers_present',
-        path,
-        `Question ${question.number} has no accepted answer.`
-      )
+      report('answers_present', path, 'noAnswer', { number: question.number })
       continue
     }
 
     if (widget === 'slot')
       for (const answer of question.answers)
         if (!isWithinWordLimit(answer, group.wordLimit))
-          report(
-            'answer_within_limit',
-            path,
-            `"${answer}" breaks the word limit of question ${question.number}.`
-          )
+          report('answer_within_limit', path, 'wordLimit', {
+            answer,
+            number: question.number,
+          })
 
     if (widget !== 'slot') {
       const valid =
@@ -226,49 +275,41 @@ function checkGroup(
 
       for (const answer of question.answers)
         if (!valid.includes(normalizeIeltsKey(answer)))
-          report(
-            'letter_answers_valid',
-            path,
-            `"${answer}" is not a valid choice for question ${question.number}.`
-          )
+          report('letter_answers_valid', path, 'invalidChoice', {
+            answer,
+            number: question.number,
+          })
     }
 
     if (isNotGiven(question)) continue
 
     if (!question.evidence) {
-      report(
-        'evidence_found',
-        path,
-        `Question ${question.number} needs an evidence quote.`
-      )
+      report('evidence_found', path, 'needsEvidence', {
+        number: question.number,
+      })
       continue
     }
 
     const block = blocks[question.evidence.blockIndex]
 
     if (!block || !block.includes(collapse(question.evidence.quote)))
-      report(
-        'evidence_found',
-        path,
-        `The evidence quote of question ${question.number} is not in block ${question.evidence.blockIndex}.`
-      )
+      report('evidence_found', path, 'evidenceNotInBlock', {
+        number: question.number,
+        block: question.evidence.blockIndex,
+      })
   }
 }
 
 function checkMaterial(section: IeltsSection, report: Report, warn: Report) {
   if (section.skill === 'reading') {
     if (!section.reading || section.reading.paragraphs.length === 0) {
-      report('passage_length', 'reading', 'The passage is empty.')
+      report('passage_length', 'reading', 'passageEmpty')
       return
     }
 
     for (const [index, paragraph] of section.reading.paragraphs.entries())
       if (containsHtml(paragraph.text))
-        report(
-          'html_in_body',
-          `reading.paragraphs[${index}]`,
-          'HTML is not allowed.'
-        )
+        report('html_in_body', `reading.paragraphs[${index}]`, 'html')
 
     const words = section.reading.paragraphs.reduce(
       (sum, paragraph) => sum + countWords(paragraph.text),
@@ -276,52 +317,34 @@ function checkMaterial(section: IeltsSection, report: Report, warn: Report) {
     )
 
     if (words < 600 || words > 1100)
-      report(
-        'passage_length',
-        'reading',
-        `The passage has ${words} words; it needs 600-1100.`
-      )
+      report('passage_length', 'reading', 'passageLength', { words })
     else if (words < 700 || words > 1000)
-      warn(
-        'passage_length',
-        'reading',
-        `The passage has ${words} words; 700-1000 is typical.`
-      )
+      warn('passage_length', 'reading', 'passageTypical', { words })
   }
 
   if (section.skill === 'listening') {
     const listening = section.listening
 
     if (!listening || listening.lines.length < 12) {
-      report(
-        'listening_lines',
-        'listening',
-        'A listening part needs at least 12 script lines.'
-      )
+      report('listening_lines', 'listening', 'tooFewLines')
       return
     }
 
     for (const [index, line] of listening.lines.entries()) {
       if (!LISTENING_VOICE_IDS.includes(line.voice as never))
-        report(
-          'listening_lines',
-          `listening.lines[${index}]`,
-          `Unknown voice "${line.voice}".`
-        )
+        report('listening_lines', `listening.lines[${index}]`, 'unknownVoice', {
+          voice: line.voice,
+        })
 
       if (containsHtml(line.text))
-        report(
-          'html_in_body',
-          `listening.lines[${index}]`,
-          'HTML is not allowed.'
-        )
+        report('html_in_body', `listening.lines[${index}]`, 'html')
     }
 
     const audio = listening.audio
 
     if (audio) {
       if (audio.durationSec <= 0)
-        report('audio_duration', 'listening.audio', 'Audio has no duration.')
+        report('audio_duration', 'listening.audio', 'noDuration')
 
       // A manually uploaded mp3 has no offsets; only check offsets when present.
       const offsets = audio.lineOffsetsSec
@@ -335,11 +358,7 @@ function checkMaterial(section: IeltsSection, report: Report, warn: Report) {
               (index > 0 && offset <= offsets[index - 1])
           ))
       )
-        report(
-          'audio_offsets',
-          'listening.audio',
-          'Audio line offsets do not match the script.'
-        )
+        report('audio_offsets', 'listening.audio', 'offsetsMismatch')
     }
   }
 
@@ -347,24 +366,23 @@ function checkMaterial(section: IeltsSection, report: Report, warn: Report) {
     const writing = section.writing
 
     if (!writing || !writing.prompt.trim()) {
-      report('writing_task', 'writing', 'The writing prompt is empty.')
+      report('writing_task', 'writing', 'writingEmpty')
       return
     }
 
     if (containsHtml(writing.prompt) || containsHtml(writing.sampleAnswer))
-      report('html_in_body', 'writing', 'HTML is not allowed.')
+      report('html_in_body', 'writing', 'html')
 
     if (writing.task === 1 && !writing.visual)
-      report('writing_task', 'writing.visual', 'Task 1 needs a visual.')
+      report('writing_task', 'writing.visual', 'task1Visual')
 
     const minimum = writing.task === 1 ? 150 : 250
 
     if (writing.minWords !== minimum)
-      report(
-        'writing_task',
-        'writing.minWords',
-        `Task ${writing.task} needs ${minimum} words minimum.`
-      )
+      report('writing_task', 'writing.minWords', 'minWords', {
+        task: writing.task,
+        minimum,
+      })
   }
 }
 
@@ -381,11 +399,10 @@ const VISUAL_WORDS =
 function checkVisual(group: IeltsQuestionGroup, index: number, warn: Report) {
   if (group.imageUrl || !VISUAL_WORDS.test(group.instruction)) return
 
-  warn(
-    'visual_missing',
-    `groups.${index}.imageUrl`,
-    `Questions ${group.from}-${group.to} refer to a diagram, map or picture but the group has no image.`
-  )
+  warn('visual_missing', `groups.${index}.imageUrl`, 'visualMissing', {
+    from: group.from,
+    to: group.to,
+  })
 }
 
 /**
@@ -413,7 +430,8 @@ function checkStems(group: IeltsQuestionGroup, index: number, warn: Report) {
     warn(
       'question_stem_missing',
       `groups.${index}.questions.${questionIndex}.prompt`,
-      `Question ${question.number} has options but no question text.`
+      'stemMissing',
+      { number: question.number }
     )
   })
 }
@@ -421,10 +439,10 @@ function checkStems(group: IeltsQuestionGroup, index: number, warn: Report) {
 export function checkSection(section: IeltsSection): IeltsConsistencyReport {
   const errors: IeltsConsistencyIssue[] = []
   const warnings: IeltsConsistencyIssue[] = []
-  const report: Report = (rule, path, message) =>
-    errors.push({ rule, sectionKey: section.key, path, message })
-  const warn: Report = (rule, path, message) =>
-    warnings.push({ rule, sectionKey: section.key, path, message })
+  const report: Report = (rule, path, code, values) =>
+    errors.push(issueOf(rule, section.key, path, code, values))
+  const warn: Report = (rule, path, code, values) =>
+    warnings.push(issueOf(rule, section.key, path, code, values))
 
   checkMaterial(section, report, warn)
   section.groups.forEach((group, index) => {
@@ -481,21 +499,16 @@ export function checkTest(test: IeltsTestContent): IeltsConsistencyReport {
     const contiguous = numbers.every((number, index) => number === index + 1)
 
     if (!contiguous || numbers.length !== IELTS_OBJECTIVE_TOTAL)
-      errors.push({
-        rule: 'numbering_contiguous',
-        sectionKey: skill,
-        path: skill,
-        message: `${skill} must number its questions 1 to 40 in order (found ${numbers.length}).`,
-      })
+      errors.push(
+        issueOf('numbering_contiguous', skill, skill, 'numbering', {
+          skill,
+          count: numbers.length,
+        })
+      )
   }
 
   if (test.sections.length === 0)
-    errors.push({
-      rule: 'sections_complete',
-      sectionKey: 'test',
-      path: 'sections',
-      message: 'The test has no sections.',
-    })
+    errors.push(issueOf('sections_complete', 'test', 'sections', 'noSections'))
 
   return { errors, warnings }
 }

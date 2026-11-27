@@ -18,6 +18,10 @@ import { PageShell } from '@/components/common/PageShell'
 import { Sparkline } from '@/components/common/Sparkline'
 import { APP_MODULES } from '@/constants/modules'
 import { MODULE_THEMES } from '@/constants/theme'
+import { DEFAULT_LOCALE, INTL_LOCALES, type Locale } from '@/i18n/config'
+import { format, plural } from '@/i18n/format'
+import type { Messages } from '@/i18n/messages'
+import { en } from '@/i18n/messages/en'
 import { cn } from '@/lib/utils'
 import type { DictationGlobalStatsRecord } from '@/modules/dictation/types'
 import type { VocabStatsRecord } from '@/modules/vocabulary/types'
@@ -34,6 +38,9 @@ export interface GrammarTodayRecord {
 interface Props {
   dictationStats?: DictationGlobalStatsRecord | null
   grammarToday?: GrammarTodayRecord | null
+  /** UI language; the page passes the learner's, tests use English. */
+  locale?: Locale
+  messages?: Messages
   /** Clock for the greeting date; injectable for tests. */
   now?: Date
   userName?: string | null
@@ -220,16 +227,19 @@ function ScheduleRow({
 export function HomeStudyDesk({
   dictationStats = null,
   grammarToday = null,
+  locale = DEFAULT_LOCALE,
+  messages = en,
   now = new Date(),
   userName = null,
   vocabStats = null,
 }: Props) {
+  const t = messages.home
   const firstName = userName?.trim().split(/\s+/)[0]
   const dueToday =
     (dictationStats?.dueReviewItemCount ?? 0) +
     (vocabStats?.dueTodayCount ?? 0) +
     (grammarToday?.dueCount ?? 0)
-  const dateLabel = now.toLocaleDateString('en-GB', {
+  const dateLabel = now.toLocaleDateString(INTL_LOCALES[locale], {
     day: 'numeric',
     month: 'long',
     weekday: 'long',
@@ -242,22 +252,31 @@ export function HomeStudyDesk({
   const progress: ProgressStat[] = [
     {
       accent: 'text-accent-orange',
-      detail: `${weeklyMinutes} min of listening this week, ${dictationStats?.completedVideoCount ?? 0} of ${dictationStats?.totalVideoCount ?? 0} saved videos done.`,
+      detail: format(t.progress.dictationDetail, {
+        done: dictationStats?.completedVideoCount ?? 0,
+        minutes: weeklyMinutes,
+        total: dictationStats?.totalVideoCount ?? 0,
+      }),
       href: '/dictation/stats',
       icon: Headphones,
-      label: 'Dictation',
-      meta: `${dictationStats?.activeStreakDays ?? 0} day streak`,
+      label: t.progress.dictation,
+      meta: format(t.progress.streak, {
+        count: dictationStats?.activeStreakDays ?? 0,
+      }),
       tint: 'bg-pastel-peach',
       trend: accuracyTrend,
       value: latestAccuracy === undefined ? '0%' : `${latestAccuracy}%`,
     },
     {
       accent: 'text-accent-green',
-      detail: `${vocabStats?.totalKnownCount ?? 0} words known, ${vocabStats?.learnedTodayCount ?? 0} learned today.`,
+      detail: format(t.progress.vocabularyDetail, {
+        known: vocabStats?.totalKnownCount ?? 0,
+        today: vocabStats?.learnedTodayCount ?? 0,
+      }),
       href: '/vocabulary',
       icon: BookA,
-      label: 'Vocabulary',
-      meta: `${vocabStats?.dueTodayCount ?? 0} due`,
+      label: t.progress.vocabulary,
+      meta: format(t.progress.due, { count: vocabStats?.dueTodayCount ?? 0 }),
       tint: 'bg-pastel-mint',
       trend: vocabStats?.dailyGrowth.map(day => day.count) ?? [],
       value: `${vocabStats?.accuracyPercent ?? 0}%`,
@@ -265,10 +284,14 @@ export function HomeStudyDesk({
   ]
 
   const facts = {
-    dictation: `${dictationStats?.totalVideoCount ?? 0} saved videos`,
-    grammar: grammarToday?.nextTitle ?? 'A1 to C1 path',
-    ielts: 'Listening, Reading, Writing',
-    vocabulary: `${vocabStats?.totalKnownCount ?? 0} words known`,
+    dictation: format(t.facts.savedVideos, {
+      count: dictationStats?.totalVideoCount ?? 0,
+    }),
+    grammar: grammarToday?.nextTitle ?? t.facts.grammarPath,
+    ielts: t.facts.ielts,
+    vocabulary: format(t.facts.wordsKnown, {
+      count: vocabStats?.totalKnownCount ?? 0,
+    }),
   }
 
   return (
@@ -276,8 +299,12 @@ export function HomeStudyDesk({
       topbar={
         <AppTopbar
           activeHref="/"
-          title={firstName ? `Hello, ${firstName}` : 'English For Only Me'}
-          subtitle={`${dateLabel} · ${dueToday} ${dueToday === 1 ? 'review' : 'reviews'} due today`}
+          title={
+            firstName
+              ? format(t.greeting, { name: firstName })
+              : messages.common.app.name
+          }
+          subtitle={plural(t.dueToday, dueToday, { date: dateLabel })}
           authControl={<AuthControl />}
         />
       }
@@ -288,10 +315,10 @@ export function HomeStudyDesk({
             id="home-title"
             className="font-sans text-4xl font-medium tracking-tight sm:text-5xl"
           >
-            Dashboard
+            {t.dashboard}
           </h1>
           <nav
-            aria-label="Modules"
+            aria-label={t.modulesNav}
             className="flex flex-wrap gap-2"
           >
             {APP_MODULES.filter(module => module.status === 'active').map(
@@ -313,7 +340,7 @@ export function HomeStudyDesk({
                       aria-hidden="true"
                       className="size-4"
                     />
-                    {module.shortTitle}
+                    {messages.common.modules[module.key].shortTitle}
                   </Link>
                 )
               }
@@ -336,7 +363,7 @@ export function HomeStudyDesk({
                       className="size-4"
                     />
                   </span>
-                  Learning progress
+                  {t.learningProgress}
                 </span>
                 <span className="border-line grid size-9 place-items-center rounded-full border">
                   <ArrowRight
@@ -355,11 +382,14 @@ export function HomeStudyDesk({
               </div>
             </Card>
 
-            <HomeModuleTiles facts={facts} />
+            <HomeModuleTiles
+              facts={facts}
+              messages={messages}
+            />
 
             <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
               <Card className="bg-pastel-sky/60 grid content-start gap-3 p-4">
-                <span className="text-sm font-medium">Weak words</span>
+                <span className="text-sm font-medium">{t.weakWords}</span>
                 {dictationStats?.weakWords.length ? (
                   <ul className="flex flex-wrap gap-1.5">
                     {dictationStats.weakWords.slice(0, 6).map(word => (
@@ -373,25 +403,25 @@ export function HomeStudyDesk({
                   </ul>
                 ) : (
                   <p className="text-ink-soft text-xs leading-5">
-                    Words you miss in dictation collect here.
+                    {t.weakWordsEmpty}
                   </p>
                 )}
               </Card>
               <Card className="grid grid-cols-3 items-center p-4 text-center">
                 {[
                   {
-                    label: 'Videos',
+                    label: t.counters.videos,
                     value: dictationStats?.completedVideoCount ?? 0,
                   },
                   {
-                    label: 'Streak',
+                    label: t.counters.streak,
                     value: Math.max(
                       dictationStats?.activeStreakDays ?? 0,
                       vocabStats?.activeStreakDays ?? 0
                     ),
                   },
                   {
-                    label: 'Words',
+                    label: t.counters.words,
                     value: vocabStats?.totalKnownCount ?? 0,
                   },
                 ].map((item, index) => (
@@ -415,71 +445,83 @@ export function HomeStudyDesk({
           {/* Column 2: today's plan and schedule */}
           <div className="grid min-w-0 content-start gap-4">
             <h2 className="font-sans text-xl leading-snug font-medium tracking-tight">
-              Your study plan for today{' '}
-              <span className="marker text-brand">made for you</span>
+              {t.plan.title}{' '}
+              <span className="marker text-brand">{t.plan.madeForYou}</span>
             </h2>
             <PlanGroup
-              title="Listen"
-              count={`${weeklyMinutes} min this week`}
+              title={t.plan.listen}
+              count={format(t.plan.minutesThisWeek, { count: weeklyMinutes })}
               tint="bg-pastel-sky/70"
               items={[
                 {
-                  hint: `${dictationStats?.totalVideoCount ?? 0} videos`,
+                  hint: format(t.plan.videos, {
+                    count: dictationStats?.totalVideoCount ?? 0,
+                  }),
                   href: '/dictation',
                   icon: Headphones,
-                  label: 'Dictation',
+                  label: t.plan.dictation,
                   tone: 'text-accent-blue',
                 },
                 {
-                  hint: `${dictationStats?.weakWords.length ?? 0} words`,
+                  hint: format(t.plan.words, {
+                    count: dictationStats?.weakWords.length ?? 0,
+                  }),
                   href: '/dictation/review',
                   icon: RotateCcw,
-                  label: 'Weak words',
+                  label: t.plan.weakWords,
                   tone: 'text-accent-orange',
                 },
                 {
-                  hint: 'Add one',
+                  hint: t.plan.addOne,
                   href: '/dictation',
                   icon: Plus,
-                  label: 'New clip',
+                  label: t.plan.newClip,
                   tone: 'text-ink-soft',
                 },
               ]}
             />
             <PlanGroup
-              title="Read and write"
-              count={`${grammarToday?.dueCount ?? 0} to review`}
+              title={t.plan.readWrite}
+              count={format(t.plan.toReview, {
+                count: grammarToday?.dueCount ?? 0,
+              })}
               tint="bg-pastel-rose/70"
               items={[
                 {
-                  hint: `${vocabStats?.dueTodayCount ?? 0} due`,
+                  hint: format(t.plan.due, {
+                    count: vocabStats?.dueTodayCount ?? 0,
+                  }),
                   href: '/vocabulary',
                   icon: BookA,
-                  label: 'Words',
+                  label: t.plan.vocabulary,
                   tone: 'text-accent-green',
                 },
                 {
-                  hint: grammarToday?.nextTitle ? 'Next lesson' : 'Start',
+                  hint: grammarToday?.nextTitle
+                    ? t.plan.nextLesson
+                    : t.plan.start,
                   href: '/grammar',
                   icon: PenLine,
-                  label: 'Grammar',
+                  label: t.plan.grammar,
                   tone: 'text-accent-purple',
                 },
                 {
-                  hint: 'Full tests',
+                  hint: t.plan.fullTests,
                   href: '/ielts',
                   icon: MODULE_ICONS.ielts ?? Sparkles,
-                  label: 'IELTS',
+                  label: t.plan.ielts,
                   tone: 'text-accent-orange',
                 },
               ]}
             />
             <div className="grid gap-2">
               <div className="flex items-center justify-between">
-                <h2 className="font-sans text-lg font-medium">Schedule</h2>
+                <h2 className="font-sans text-lg font-medium">
+                  {t.schedule.title}
+                </h2>
                 <Link
                   href="/dictation/review"
-                  aria-label="Open the review queue"
+                  aria-label={t.schedule.openReview}
                   className="soft-press bg-pastel-lemon grid size-10 place-items-center rounded-full"
                 >
                   <Plus
@@ -493,20 +535,26 @@ export function HomeStudyDesk({
                   <ScheduleRow
                     href="/dictation/review"
                     icon={RotateCcw}
-                    label="Dictation review"
-                    value={`${dictationStats?.dueReviewItemCount ?? 0} due`}
+                    label={t.schedule.dictationReview}
+                    value={format(t.schedule.due, {
+                      count: dictationStats?.dueReviewItemCount ?? 0,
+                    })}
                   />
                   <ScheduleRow
                     href="/vocabulary"
                     icon={BookA}
-                    label="Vocabulary recall"
-                    value={`${vocabStats?.dueTodayCount ?? 0} due`}
+                    label={t.schedule.vocabularyRecall}
+                    value={format(t.schedule.due, {
+                      count: vocabStats?.dueTodayCount ?? 0,
+                    })}
                   />
                   <ScheduleRow
                     href="/grammar"
                     icon={PenLine}
-                    label="Grammar review"
-                    value={`${grammarToday?.dueCount ?? 0} due`}
+                    label={t.schedule.grammarReview}
+                    value={format(t.schedule.due, {
+                      count: grammarToday?.dueCount ?? 0,
+                    })}
                   />
                 </ul>
               </Card>
@@ -516,6 +564,7 @@ export function HomeStudyDesk({
           {/* Column 3: the highlight card */}
           <HomeBuddyCard
             completedVideoCount={dictationStats?.completedVideoCount ?? 0}
+            messages={messages}
             monthlyMinutes={minutes(dictationStats?.monthlyPracticeTimeMs ?? 0)}
             nextGrammarTitle={grammarToday?.nextTitle ?? null}
             streakDays={Math.max(

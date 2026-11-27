@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { useMessages } from '@/i18n/client'
 import { DICTATION_LEVELS } from '@/modules/dictation/levels'
 
 const controlClass =
@@ -30,6 +31,7 @@ export function BrowseToolbar({
   level: string | null
   sort: string
 }) {
+  const text = useMessages().dictation.browse
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -59,8 +61,8 @@ export function BrowseToolbar({
     <div className="flex flex-wrap items-center gap-2">
       <Input
         type="search"
-        aria-label="Search lessons"
-        placeholder="Search"
+        aria-label={text.searchLabel}
+        placeholder={text.search}
         value={search}
         onChange={event => setSearch(event.target.value)}
         className={`${controlClass} min-w-40 flex-1`}
@@ -69,11 +71,11 @@ export function BrowseToolbar({
         value={level ?? ''}
         onValueChange={value => commit({ level: value ?? '' })}
       >
-        <SelectTrigger aria-label="Level">
+        <SelectTrigger aria-label={text.level}>
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="">All levels</SelectItem>
+          <SelectItem value="">{text.allLevels}</SelectItem>
           {DICTATION_LEVELS.map(l => (
             <SelectItem
               key={l}
@@ -88,14 +90,14 @@ export function BrowseToolbar({
         value={sort}
         onValueChange={value => commit({ sort: value ?? '' })}
       >
-        <SelectTrigger aria-label="Sort">
+        <SelectTrigger aria-label={text.sort}>
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="order">Custom order</SelectItem>
-          <SelectItem value="newest">Newest</SelectItem>
-          <SelectItem value="oldest">Oldest</SelectItem>
-          <SelectItem value="title">Title A–Z</SelectItem>
+          <SelectItem value="order">{text.sortOrder}</SelectItem>
+          <SelectItem value="newest">{text.sortNewest}</SelectItem>
+          <SelectItem value="oldest">{text.sortOldest}</SelectItem>
+          <SelectItem value="title">{text.sortTitle}</SelectItem>
         </SelectContent>
       </Select>
     </div>

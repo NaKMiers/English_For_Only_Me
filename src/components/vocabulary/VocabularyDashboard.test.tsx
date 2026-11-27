@@ -24,7 +24,8 @@ const mocks = vi.hoisted(() => ({
   searchVocabApi: vi.fn(),
 }))
 
-vi.mock('@/requests/vocabularyApi', () => ({
+vi.mock('@/requests/vocabularyApi', async importOriginal => ({
+  ...(await importOriginal<typeof import('@/requests/vocabularyApi')>()),
   getDueVocabRecallApi: mocks.getDueVocabRecallApi,
   getExploreVocabApi: mocks.getExploreVocabApi,
   getVocabStatsApi: mocks.getVocabStatsApi,

@@ -7,7 +7,7 @@ import { IeltsTestModel } from '@/models/ielts/IeltsTestModel'
 import { isDuplicateKeyError } from '@/modules/dictation/practice/duplicateKeyError'
 
 import {
-  ieltsError,
+  ieltsMessageError,
   type IeltsDecision,
 } from '../attempts/attemptRouteDecisions'
 import {
@@ -263,9 +263,9 @@ export function adoptSaved(raw: unknown): IeltsAdminTest {
 async function explainConflict(testId: string): Promise<IeltsDecision<never>> {
   const current = await IeltsTestModel.exists({ _id: testId })
 
-  if (!current) return ieltsError(404, 'Test not found.')
+  if (!current) return ieltsMessageError(404, 'testNotFound')
 
-  return ieltsError(409, 'Section was just updated elsewhere. Reload.')
+  return ieltsMessageError(409, 'sectionChanged')
 }
 
 /**
@@ -296,10 +296,10 @@ export async function saveTestSection({
     (skill === 'writing' &&
       (!input.writing || input.listening || input.reading))
   )
-    return ieltsError(400, `A ${skill} section carries only ${skill} material.`)
+    return ieltsMessageError(400, 'sectionMaterial', { skill })
 
   if (skill === 'writing' && input.groups.length)
-    return ieltsError(400, 'Writing sections have no question groups.')
+    return ieltsMessageError(400, 'writingNoGroups')
 
   const next: IeltsSection = {
     ...input,
@@ -350,10 +350,10 @@ export async function publishTest({
 > {
   const draft = await IeltsTestModel.findById(testId).lean()
 
-  if (!draft) return ieltsError(404, 'Test not found.')
+  if (!draft) return ieltsMessageError(404, 'testNotFound')
 
   if (draft.status !== 'draft')
-    return ieltsError(409, 'Only a draft can be published.')
+    return ieltsMessageError(409, 'onlyDraftPublish')
 
   const record = toIeltsTestRecord(draft as unknown as LeanDoc)
   const report = checkTest(record)
@@ -402,7 +402,7 @@ export async function publishTest({
       isDuplicateKeyError(error) ||
       (error as Error).message?.includes('Draft changed')
     )
-      return ieltsError(409, 'Test was just published elsewhere. Reload.')
+      return ieltsMessageError(409, 'publishedElsewhere')
 
     throw error
   } finally {
@@ -430,7 +430,7 @@ export async function archiveTest(
     { new: true }
   ).lean()
 
-  if (!updated) return ieltsError(409, 'Only a published test can be archived.')
+  if (!updated) return ieltsMessageError(409, 'onlyPublishedArchive')
 
   expireCacheTags([CACHE_TAGS.ieltsContent])
 
@@ -449,21 +449,17 @@ export async function unarchiveTest(
     status: 1,
   }).lean()
 
-  if (!test) return ieltsError(404, 'Test not found.')
+  if (!test) return ieltsMessageError(404, 'testNotFound')
 
   if (test.status !== 'archived')
-    return ieltsError(409, 'Only an archived test can be unarchived.')
+    return ieltsMessageError(409, 'onlyArchivedUnarchive')
 
   const live = await IeltsTestModel.findOne(
     { slug: test.slug, status: 'published' },
     { version: 1 }
   ).lean()
 
-  if (live)
-    return ieltsError(
-      409,
-      'Another test with this slug is live. Archive it first.'
-    )
+  if (live) return ieltsMessageError(409, 'slugLive')
 
   try {
     const updated = await IeltsTestModel.findOneAndUpdate(
@@ -472,7 +468,7 @@ export async function unarchiveTest(
       { new: true }
     ).lean()
 
-    if (!updated) return ieltsError(409, 'Test status just changed. Reload.')
+    if (!updated) return ieltsMessageError(409, 'statusChanged')
 
     expireCacheTags([CACHE_TAGS.ieltsContent])
 
@@ -480,7 +476,7 @@ export async function unarchiveTest(
   } catch (error) {
     // The partial unique index: another version went live meanwhile.
     if (isDuplicateKeyError(error))
-      return ieltsError(409, 'Another version was just published. Reload.')
+      return ieltsMessageError(409, 'versionPublished')
 
     throw error
   }
@@ -512,10 +508,10 @@ export async function deleteTest({
     version: 1,
   }).lean()
 
-  if (!test) return ieltsError(404, 'Test not found.')
+  if (!test) return ieltsMessageError(404, 'testNotFound')
 
   if (test.status === 'published')
-    return ieltsError(409, 'Archive the test before deleting it.')
+    return ieltsMessageError(409, 'archiveBeforeDelete')
 
   // Attempts find their test by slug + version (drills per item).
   const attemptFilter = {
@@ -544,8 +540,7 @@ export async function deleteTest({
     status: test.status,
   })
 
-  if (result.deletedCount === 0)
-    return ieltsError(409, 'Test status just changed. Reload.')
+  if (result.deletedCount === 0) return ieltsMessageError(409, 'statusChanged')
 
   const attempts = attemptCount
     ? await IeltsAttemptModel.deleteMany(attemptFilter)

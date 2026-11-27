@@ -10,6 +10,7 @@ import {
   type BrowseVideoItem,
 } from '@/components/dictation/browse/SectionAccordion'
 import { hasMongoDbUri } from '@/constants/environments'
+import { getMessages } from '@/i18n/server'
 import { connectDatabaseWhen } from '@/lib/db/connectDatabase'
 import { toBrowseItem } from '@/modules/dictation/content/browseItem'
 import { getCachedNoTopicVideos } from '@/modules/dictation/content/catalogReaders'
@@ -23,15 +24,20 @@ import {
   getPracticeActorId,
 } from '@/modules/dictation/services/getCurrentUser'
 
-export const metadata: Metadata = {
-  title: 'Uncategorized',
-  description: 'Dictation videos not yet filed under a topic.',
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getMessages()
+
+  return {
+    title: t.dictation.browse.uncategorized,
+    description: t.dictation.noTopic.metaDescription,
+  }
 }
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
 export default async function NoTopicPage() {
+  const t = await getMessages()
   let canFavorite = false
   let items: BrowseVideoItem[] = []
 
@@ -67,25 +73,29 @@ export default async function NoTopicPage() {
       topbar={
         <AppTopbar
           activeHref="/dictation"
-          subtitle="Browse dictation topics"
+          subtitle={t.dictation.meta.browseSubtitle}
           authControl={<AuthControl />}
         />
       }
     >
       <section className="grid gap-5 p-4 sm:p-6 lg:p-8">
         <PageHero>
-          <BrowseBreadcrumb current="Uncategorized" />
+          <BrowseBreadcrumb
+            current={t.dictation.browse.uncategorized}
+            labels={t.dictation.browse}
+          />
           <h1 className="font-sans text-[clamp(1.8rem,4vw,2.6rem)] leading-none font-medium">
-            Uncategorized
+            {t.dictation.browse.uncategorized}
           </h1>
           <p className="text-ink-soft max-w-2xl text-sm leading-6">
-            Lessons not yet filed under a topic.
+            {t.dictation.noTopic.description}
           </p>
         </PageHero>
         <BrowseVideoList
           videos={items}
           canFavorite={canFavorite}
-          emptyLabel="No uncategorized lessons."
+          emptyLabel={t.dictation.noTopic.empty}
+          labels={t.dictation.browse.card}
         />
       </section>
     </PageShell>

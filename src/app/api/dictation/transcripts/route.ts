@@ -2,6 +2,8 @@ import { Types } from 'mongoose'
 import { NextResponse } from 'next/server'
 
 import { MissingEnvironmentError } from '@/constants/environments'
+import type { Messages } from '@/i18n/messages'
+import { getMessages } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { revalidateDictationCatalog } from '@/lib/db/revalidateCatalog'
 import { DictationSegmentModel } from '@/models/dictation/DictationSegmentModel'
@@ -16,6 +18,7 @@ import {
 } from '@/modules/dictation/services/rebuildTranscriptSegments'
 import { parseTranscriptRequest } from '@/modules/dictation/services/transcriptRouteDecisions'
 import {
+  getAccessErrorMessage,
   type ApiErrorDecision,
   getMissingMongoResponse,
   MISSING_MONGODB_MESSAGE,
@@ -69,7 +72,7 @@ async function autoBuildPrimarySegments(
     await persistRebuiltSegments({ transcript, video, built })
 }
 
-function toTranscriptError(error: unknown): ApiErrorDecision {
+function toTranscriptError(error: unknown, t: Messages): ApiErrorDecision {
   if (
     typeof error === 'object' &&
     error !== null &&
@@ -79,7 +82,7 @@ function toTranscriptError(error: unknown): ApiErrorDecision {
     return {
       status: error.status,
       body: {
-        message: (error as { message?: string }).message ?? 'Access denied.',
+        message: getAccessErrorMessage(error.status, t),
       },
     }
 
@@ -92,7 +95,7 @@ function toTranscriptError(error: unknown): ApiErrorDecision {
     return {
       status: 409,
       body: {
-        message: 'This transcript source is already attached to the video.',
+        message: t.dictation.api.transcriptDuplicate,
       },
     }
 
@@ -109,12 +112,13 @@ function toTranscriptError(error: unknown): ApiErrorDecision {
   return {
     status: 500,
     body: {
-      message: 'Could not save this transcript.',
+      message: t.dictation.api.transcriptSaveFailed,
     },
   }
 }
 
 export async function POST(request: Request) {
+  const t = await getMessages()
   const missingMongo = getMissingMongoResponse()
 
   if (missingMongo) return jsonError(missingMongo)
@@ -140,7 +144,7 @@ export async function POST(request: Request) {
       return jsonError({
         status: 404,
         body: {
-          message: 'This dictation video was not found.',
+          message: t.dictation.api.videoNotFound,
         },
       })
 
@@ -277,10 +281,10 @@ export async function POST(request: Request) {
       return jsonError({
         status: 400,
         body: {
-          message: 'Request body must be valid JSON.',
+          message: t.dictation.api.invalidJson,
         },
       })
 
-    return jsonError(toTranscriptError(error))
+    return jsonError(toTranscriptError(error, t))
   }
 }

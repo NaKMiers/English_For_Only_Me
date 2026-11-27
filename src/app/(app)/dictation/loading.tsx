@@ -4,12 +4,15 @@ import {
   SkeletonTileRow,
   SkeletonVideoGrid,
 } from '@/components/common/PageSkeletons'
+import { getMessages } from '@/i18n/server'
 
-export default function Loading() {
+export default async function Loading() {
+  const t = await getMessages()
+
   return (
     <SkeletonPageShell
       activeHref="/dictation"
-      subtitle="Browse dictation topics"
+      subtitle={t.dictation.meta.browseSubtitle}
     >
       <SkeletonHero />
       <SkeletonVideoGrid count={8} />

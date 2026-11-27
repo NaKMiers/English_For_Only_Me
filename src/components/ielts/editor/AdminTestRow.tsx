@@ -20,6 +20,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { useMessages } from '@/i18n/client'
+import { format, plural } from '@/i18n/format'
 import { cn } from '@/lib/utils'
 import type { IeltsTestStatus } from '@/modules/ielts/constants'
 import {
@@ -29,6 +31,8 @@ import {
   publishIeltsTestApi,
   unarchiveIeltsTestApi,
 } from '@/requests/ieltsAdminApi'
+
+import { apiErrorText } from './apiErrorText'
 
 export interface AdminTestRowItem {
   detail: string
@@ -50,6 +54,9 @@ export interface AdminTestRowItem {
  * delete an archived one) without opening it.
  */
 export function AdminTestRow({ row }: { row: AdminTestRowItem }) {
+  const t = useMessages()
+  const copy = t.ieltsEditor.row
+  const actions = t.ieltsEditor.actions
   const router = useRouter()
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
@@ -62,9 +69,7 @@ export function AdminTestRow({ row }: { row: AdminTestRowItem }) {
     try {
       await action()
     } catch (caught) {
-      setError(
-        caught instanceof Error ? caught.message : 'Something went wrong.'
-      )
+      setError(apiErrorText(caught, t))
     } finally {
       setBusy(false)
     }
@@ -83,7 +88,7 @@ export function AdminTestRow({ row }: { row: AdminTestRowItem }) {
           !report ||
           report.errors.length > 0 ||
           !window.confirm(
-            `${report.warnings.length} warnings left. Publish anyway?`
+            plural(actions.confirmPublishWarnings, report.warnings.length)
           )
         )
           throw caught
@@ -107,7 +112,7 @@ export function AdminTestRow({ row }: { row: AdminTestRowItem }) {
     })
 
   const remove = () => {
-    if (!window.confirm("Delete this test? This can't be undone.")) return
+    if (!window.confirm(actions.confirmDelete)) return
 
     void run(async () => {
       try {
@@ -119,9 +124,7 @@ export function AdminTestRow({ row }: { row: AdminTestRowItem }) {
         // Old reviews read this test: deleting it takes them along.
         if (
           !count ||
-          !window.confirm(
-            `${count} attempts use this test and will be deleted with it (reviews included). Delete anyway?`
-          )
+          !window.confirm(plural(actions.confirmDeleteAttempts, count))
         )
           throw caught
 
@@ -161,17 +164,17 @@ export function AdminTestRow({ row }: { row: AdminTestRowItem }) {
           </span>
           <span className="text-muted-foreground flex flex-wrap justify-between gap-x-2 text-[11px] font-semibold tabular-nums">
             <span>
-              {row.ready}/{row.total} ready
+              {format(copy.ready, { ready: row.ready, total: row.total })}
             </span>
             {row.updated ? <span>{row.updated}</span> : null}
           </span>
         </Link>
         <DropdownMenu>
           <DropdownMenuTrigger
-            aria-label={`Actions for ${row.title}`}
+            aria-label={format(copy.actionsFor, { title: row.title })}
             className="border-line bg-surface hover:bg-tint rounded-control grid size-8 shrink-0 place-items-center border transition-colors disabled:opacity-50"
             disabled={busy}
-            title="Actions"
+            title={copy.actions}
           >
             <EllipsisVertical
               aria-hidden="true"
@@ -184,18 +187,18 @@ export function AdminTestRow({ row }: { row: AdminTestRowItem }) {
           >
             <DropdownMenuItem render={<Link href={editHref} />}>
               <Pencil aria-hidden="true" />
-              Edit test
+              {actions.editTest}
             </DropdownMenuItem>
             {row.status === 'draft' ? (
               <DropdownMenuItem onClick={() => void publish()}>
                 <Send aria-hidden="true" />
-                Publish
+                {actions.publish}
               </DropdownMenuItem>
             ) : null}
             {row.status === 'published' ? (
               <DropdownMenuItem render={<Link href={`/ielts/${row.slug}`} />}>
                 <Eye aria-hidden="true" />
-                View as learner
+                {actions.viewAsLearner}
               </DropdownMenuItem>
             ) : null}
             {row.status === 'published' ? (
@@ -203,7 +206,7 @@ export function AdminTestRow({ row }: { row: AdminTestRowItem }) {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => void archive()}>
                   <Archive aria-hidden="true" />
-                  Archive
+                  {actions.archive}
                 </DropdownMenuItem>
               </>
             ) : null}
@@ -213,7 +216,7 @@ export function AdminTestRow({ row }: { row: AdminTestRowItem }) {
                 {row.status === 'archived' ? (
                   <DropdownMenuItem onClick={() => void unarchive()}>
                     <ArchiveRestore aria-hidden="true" />
-                    Publish again
+                    {actions.publishAgain}
                   </DropdownMenuItem>
                 ) : null}
                 <DropdownMenuItem
@@ -221,7 +224,7 @@ export function AdminTestRow({ row }: { row: AdminTestRowItem }) {
                   variant="destructive"
                 >
                   <Trash2 aria-hidden="true" />
-                  Delete test
+                  {actions.deleteTest}
                 </DropdownMenuItem>
               </>
             )}

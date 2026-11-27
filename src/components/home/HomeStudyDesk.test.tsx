@@ -2,6 +2,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, test } from 'vitest'
 
 import { APP_MODULES } from '@/constants/modules'
+import { en } from '@/i18n/messages/en'
 
 import { HomeStudyDesk } from './HomeStudyDesk'
 
@@ -19,10 +20,9 @@ describe('HomeStudyDesk', () => {
     for (const activeModule of APP_MODULES.filter(
       module => module.status === 'active'
     ))
-      expect(
-        html,
-        `${activeModule.title} should be on the study desk`
-      ).toContain(activeModule.title)
+      expect(html, `${activeModule.key} should be on the study desk`).toContain(
+        en.common.modules[activeModule.key].title
+      )
 
     expect(html).toContain('Dictation Lab')
     expect(html).toContain('Vocabulary')
