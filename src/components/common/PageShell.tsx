@@ -50,9 +50,12 @@ export function PageShell({
         <div className="hidden md:col-span-2 md:block md:h-6" />
       )}
       <AppSidebar className="hidden md:flex" />
+      {/* Each route renders its own shell, so `main` is new on every
+          navigation and its entrance replays. Work screens only fade. */}
       <main
         className={cn(
           'relative z-10 min-w-0',
+          fullHeight === true ? 'page-enter-quick' : 'page-enter',
           fullHeight === true && 'min-h-0 overflow-hidden',
           fullHeight === 'lg' && 'lg:min-h-0 lg:overflow-hidden'
         )}

@@ -81,7 +81,7 @@ function TopicCard({
     <Link
       href={href}
       className={cn(
-        'border-line hover:bg-tint-soft rounded-panel grid grid-cols-[auto_1fr] items-center gap-3 border p-3 transition-colors',
+        'border-line hover:bg-tint-soft rounded-panel hover-lift soft-press grid grid-cols-[auto_1fr] items-center gap-3 border p-3',
         muted ? 'bg-tint' : 'bg-surface'
       )}
     >
@@ -133,7 +133,7 @@ export function TopicGrid({
     )
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+    <div className="motion-stagger grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
       {topics.map(topic => (
         <TopicCard
           key={topic.id}

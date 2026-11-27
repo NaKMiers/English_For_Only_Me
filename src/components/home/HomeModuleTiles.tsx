@@ -41,7 +41,7 @@ export function HomeModuleTiles({ facts, messages }: Props) {
       >
         {messages.home.modulesTitle}
       </h2>
-      <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <ul className="motion-stagger grid grid-cols-2 gap-3 sm:grid-cols-4">
         {modules.map(module => {
           const Icon = MODULE_ICONS[module.key] ?? Star
           const theme = MODULE_THEMES[module.key]
@@ -54,7 +54,7 @@ export function HomeModuleTiles({ facts, messages }: Props) {
             >
               <Link
                 href={module.href}
-                className="soft-press border-line hover:shadow-float group grid h-full gap-3 rounded-[22px] border p-2 pb-3"
+                className="soft-press hover-lift border-line group grid h-full gap-3 rounded-[22px] border p-2 pb-3"
               >
                 <span
                   className={cn(

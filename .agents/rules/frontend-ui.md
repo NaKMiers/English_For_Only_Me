@@ -106,6 +106,13 @@ backdrop, with a dark icon rail (`AppSidebar`) on the left and the topbar
 - A child's radius is never larger than its parent's.
 - Pressable things use `soft-press` (a small scale on press) instead of
   `transition-all`.
+- Motion is calm and short, transform / opacity only, and every helper
+  lives in the MOTION block of `globals.css`: `page-enter` (PageShell `main`,
+  replays per route), `motion-stagger` on a card grid or list, `hover-lift`
+  on a clickable card, `motion-grow-x` / `motion-grow-y` for bars,
+  `motion-draw` for an SVG line. Entrances use `backwards` fill so no
+  transform stays behind. Work screens (practice, lesson player, IELTS
+  runner) get a quick fade at most. Reduced motion turns movement off.
 - Night mode remaps the same tokens under `:root[data-theme='lightup']`; the
   rail keeps its own `rail` / `rail-fg` colours so it stays dark. Check both
   themes after a visual change.

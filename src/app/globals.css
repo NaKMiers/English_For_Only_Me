@@ -316,12 +316,31 @@ body {
   font-family: var(--font-app), system-ui, sans-serif;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  html,
-  body {
-    transition:
-      background-color 0.4s ease,
-      color 0.4s ease;
+/* Day / night switch. Browsers with view transitions cross-fade one snapshot
+   of the page (see toggleTheme in ThemeProvider), so the page itself must not
+   run a second, slower colour transition underneath it. */
+@supports not (view-transition-name: none) {
+  @media (prefers-reduced-motion: no-preference) {
+    html,
+    body {
+      transition:
+        background-color 0.4s ease,
+        color 0.4s ease;
+    }
+  }
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 320ms;
+  animation-timing-function: ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
   }
 }
 
@@ -371,6 +390,154 @@ body {
     transition:
       background-color 150ms linear,
       color 150ms linear;
+  }
+}
+
+/* ============================================================
+   MOTION
+   Calm and short: everything moves with transform / opacity only, so no
+   animation ever triggers layout. Entrances use `backwards` fill (never
+   `both`), so once they finish the element carries no transform and keeps no
+   containing block or stacking context. With reduced motion, entrances and
+   lifts are off; only colour changes remain.
+   ============================================================ */
+@keyframes soft-rise {
+  from {
+    opacity: 0;
+    transform: translateY(var(--rise, 10px));
+  }
+}
+
+@keyframes soft-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes soft-grow-x {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes soft-grow-y {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+@keyframes soft-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Page content arriving after a navigation (PageShell's `main`). A route
+     change mounts a new page tree, so this replays on every navigation but
+     not on a search-param change that keeps the same page. */
+  .page-enter {
+    --rise: 8px;
+    animation: soft-rise 320ms var(--ease-out-soft) backwards;
+  }
+  /* Work screens (practice, lesson player): a quick fade, no movement. */
+  .page-enter-quick {
+    animation: soft-fade 140ms ease-out backwards;
+  }
+
+  /* Cards in a grid or list rise in one after another. Past the twelfth the
+     rest arrive together, so a long list never waits. */
+  .motion-stagger > * {
+    animation: soft-rise 420ms var(--ease-out-soft) backwards;
+    animation-delay: 480ms;
+  }
+  .motion-stagger > :nth-child(1) {
+    animation-delay: 40ms;
+  }
+  .motion-stagger > :nth-child(2) {
+    animation-delay: 80ms;
+  }
+  .motion-stagger > :nth-child(3) {
+    animation-delay: 120ms;
+  }
+  .motion-stagger > :nth-child(4) {
+    animation-delay: 160ms;
+  }
+  .motion-stagger > :nth-child(5) {
+    animation-delay: 200ms;
+  }
+  .motion-stagger > :nth-child(6) {
+    animation-delay: 240ms;
+  }
+  .motion-stagger > :nth-child(7) {
+    animation-delay: 280ms;
+  }
+  .motion-stagger > :nth-child(8) {
+    animation-delay: 320ms;
+  }
+  .motion-stagger > :nth-child(9) {
+    animation-delay: 360ms;
+  }
+  .motion-stagger > :nth-child(10) {
+    animation-delay: 400ms;
+  }
+  .motion-stagger > :nth-child(11) {
+    animation-delay: 440ms;
+  }
+
+  /* Bars and lines filling in once, when they mount. */
+  .motion-grow-x {
+    transform-origin: left center;
+    animation: soft-grow-x 700ms var(--ease-out-soft) 120ms backwards;
+  }
+  .motion-grow-y {
+    transform-origin: center bottom;
+    animation: soft-grow-y 600ms var(--ease-out-soft) backwards;
+  }
+  /* An SVG path drawn once (the path needs pathLength="1"). */
+  .motion-draw {
+    stroke-dasharray: 1;
+    animation: soft-draw 900ms var(--ease-out-soft) 200ms backwards;
+  }
+}
+
+/* Clickable card: lifts 2px and gains a soft shadow on hover. Uses the
+   `translate` property, so it composes with soft-press's `transform` squish.
+   Listed after .soft-press so its transition list (a superset) wins. */
+.hover-lift {
+  transition:
+    translate 220ms var(--ease-out-soft),
+    transform 160ms var(--ease-out-soft),
+    box-shadow 220ms var(--ease-out-soft),
+    background-color 150ms linear,
+    border-color 150ms linear,
+    color 150ms linear;
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .hover-lift:hover {
+    translate: 0 -2px;
+    box-shadow: 0 18px 40px -20px var(--shadow-color);
+  }
+}
+
+/* tw-animate-css enter / exit (dialogs, menus, selects, tooltips): with
+   reduced motion keep the fade, drop the zoom and slide. Matched by class
+   substring because the classes come with variants (`data-open:animate-in`).
+   Unlayered, so it beats the zoom-in-* / slide-in-* utilities. */
+@media (prefers-reduced-motion: reduce) {
+  [class*='animate-in'],
+  [class*='animate-out'] {
+    --tw-enter-scale: 1;
+    --tw-enter-translate-x: 0;
+    --tw-enter-translate-y: 0;
+    --tw-enter-rotate: 0;
+    --tw-exit-scale: 1;
+    --tw-exit-translate-x: 0;
+    --tw-exit-translate-y: 0;
+    --tw-exit-rotate: 0;
+  }
+  [data-slot='sheet-content'] {
+    translate: none !important;
   }
 }
 

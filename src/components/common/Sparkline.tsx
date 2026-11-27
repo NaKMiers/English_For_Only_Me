@@ -40,6 +40,8 @@ export function Sparkline({ className, values }: Props) {
     >
       <path
         d={d}
+        className="motion-draw"
+        pathLength={1}
         fill="none"
         stroke="currentColor"
         strokeWidth="1.8"
