@@ -16,6 +16,9 @@ import { GrammarCardMissModel } from '@/models/grammar/GrammarCardMissModel'
 import { GrammarLessonProgressModel } from '@/models/grammar/GrammarLessonProgressModel'
 import { GrammarSessionModel } from '@/models/grammar/GrammarSessionModel'
 import { GrammarUnitProgressModel } from '@/models/grammar/GrammarUnitProgressModel'
+import { IeltsAttemptModel } from '@/models/ielts/IeltsAttemptModel'
+import { IeltsGradingLedgerModel } from '@/models/ielts/IeltsGradingLedgerModel'
+import { IeltsTestModel } from '@/models/ielts/IeltsTestModel'
 import { IeltsTestVocabModel } from '@/models/ielts/IeltsTestVocabModel'
 import { UserModel } from '@/models/UserModel'
 import { UserVocabItemModel } from '@/models/vocabulary/UserVocabItemModel'
@@ -66,6 +69,9 @@ const MODELS: Model<never>[] = [
   GrammarLessonProgressModel,
   GrammarSessionModel,
   GrammarUnitProgressModel,
+  IeltsAttemptModel,
+  IeltsGradingLedgerModel,
+  IeltsTestModel,
   IeltsTestVocabModel,
   UserModel,
   UserVocabItemModel,

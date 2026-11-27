@@ -3,6 +3,7 @@ import 'server-only'
 import { mergeGuestDataIntoUser } from '@/modules/dictation/services/mergeGuestData'
 import { mergeGrammarGuestData } from '@/modules/grammar/services/mergeGrammarGuestData'
 import { mergeIeltsGuestData } from '@/modules/ielts/services/mergeIeltsGuestData'
+import { mergeVocabGuestData } from '@/modules/vocabulary/services/mergeVocabGuestData'
 
 import {
   clearGuestCookie,
@@ -72,6 +73,7 @@ export async function foldGuestIntoUser(userId: string) {
       await attempt('practice', () => mergeGuestDataIntoUser(guestId, userId)),
       await attempt('grammar', () => mergeGrammarGuestData(guestId, userId)),
       await attempt('IELTS', () => mergeIeltsGuestData(guestId, userId)),
+      await attempt('vocabulary', () => mergeVocabGuestData(guestId, userId)),
     ]
 
     if (results.every(Boolean)) await clearGuestCookie()

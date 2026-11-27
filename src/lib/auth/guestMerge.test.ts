@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => ({
   mergeDictation: vi.fn(),
   mergeGrammar: vi.fn(),
   mergeIelts: vi.fn(),
+  mergeVocab: vi.fn(),
   setGuestMergeOwner: vi.fn(),
 }))
 
@@ -24,6 +25,9 @@ vi.mock('@/modules/grammar/services/mergeGrammarGuestData', () => ({
 }))
 vi.mock('@/modules/ielts/services/mergeIeltsGuestData', () => ({
   mergeIeltsGuestData: mocks.mergeIelts,
+}))
+vi.mock('@/modules/vocabulary/services/mergeVocabGuestData', () => ({
+  mergeVocabGuestData: mocks.mergeVocab,
 }))
 
 import { foldGuestIntoUser, guestMergeStep } from './guestMerge'
@@ -65,6 +69,7 @@ describe('foldGuestIntoUser', () => {
     await foldGuestIntoUser('A')
 
     expect(mocks.mergeIelts).toHaveBeenCalledWith(GUEST, 'A')
+    expect(mocks.mergeVocab).toHaveBeenCalledWith(GUEST, 'A')
     expect(mocks.clearGuestCookie).toHaveBeenCalled()
     expect(mocks.setGuestMergeOwner).not.toHaveBeenCalled()
   })
@@ -86,6 +91,17 @@ describe('foldGuestIntoUser', () => {
 
     expect(mocks.mergeDictation).not.toHaveBeenCalled()
     expect(mocks.mergeIelts).not.toHaveBeenCalled()
+    expect(mocks.mergeVocab).not.toHaveBeenCalled()
     expect(mocks.clearGuestCookie).toHaveBeenCalled()
+  })
+
+  it('keeps the guest when only the vocabulary merge fails', async () => {
+    mocks.mergeVocab.mockRejectedValue(new Error('db blip'))
+
+    await foldGuestIntoUser('A')
+
+    expect(mocks.mergeIelts).toHaveBeenCalled()
+    expect(mocks.clearGuestCookie).not.toHaveBeenCalled()
+    expect(mocks.setGuestMergeOwner).toHaveBeenCalledWith('A')
   })
 })
