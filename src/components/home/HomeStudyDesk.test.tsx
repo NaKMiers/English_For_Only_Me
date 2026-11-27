@@ -8,11 +8,11 @@ import { HomeStudyDesk } from './HomeStudyDesk'
 
 describe('HomeStudyDesk', () => {
   test('renders the parent homepage with module cards and Dictation link', () => {
-    const html = renderToStaticMarkup(<HomeStudyDesk />)
+    const html = renderToStaticMarkup(<HomeStudyDesk view="full" />)
 
     expect(html).toContain('English For Only Me')
     expect(html).toContain('English For Only Me logo')
-    expect(html).toContain('Dashboard')
+    expect(html).toContain('Study Desk')
     // Every active module is guaranteed a launcher slot; placeholders fill the
     // rest. Grammar became active, so it displaced AI Coach (a planned module
     // with no route) rather than being left off the desk; IELTS Tests, the
@@ -37,6 +37,7 @@ describe('HomeStudyDesk', () => {
   test('renders real dictation global stats when provided', () => {
     const html = renderToStaticMarkup(
       <HomeStudyDesk
+        view="full"
         dictationStats={{
           activeStreakDays: 5,
           completedSegmentCount: 42,
@@ -75,5 +76,40 @@ describe('HomeStudyDesk', () => {
 
     expect(html).toContain('Hello, Khoa')
     expect(html).toContain('27 November')
+  })
+
+  test('the simple view lists what is due and the streak, not the charts', () => {
+    const html = renderToStaticMarkup(
+      <HomeStudyDesk
+        grammarToday={{
+          dueCount: 2,
+          nextTitle: 'Present simple',
+        }}
+      />
+    )
+
+    expect(html).toContain('Up next')
+    expect(html).toContain('2 due')
+    expect(html).toContain('Present simple')
+    expect(html).toContain('href="/dictation/review"')
+    expect(html).toContain('Start here')
+    expect(html).toContain('Study buddy')
+    expect(html).not.toContain('Learning progress')
+    expect(html).not.toContain('Your modules')
+  })
+
+  test('the buddy wears the mood of the current numbers', () => {
+    const html = renderToStaticMarkup(
+      <HomeStudyDesk
+        grammarToday={{
+          dueCount: 25,
+          nextTitle: null,
+        }}
+      />
+    )
+
+    expect(html).toContain('data-mood="worried"')
+    expect(html).toContain('A bit worried')
+    expect(html).toContain('25 reviews are piling up')
   })
 })

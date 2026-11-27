@@ -33,7 +33,7 @@ for (const name of [
   'DictationSegmentModel',
   'DictationSessionModel',
   'DictationTranscriptModel',
-]) 
+])
   vi.doMock(`@/models/dictation/${name}`, () => ({
     [name]: { deleteMany: (...a: unknown[]) => childDeleteMany(name, ...a) },
   }))

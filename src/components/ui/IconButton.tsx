@@ -34,7 +34,7 @@ export function IconButton(props: Props) {
   const { children, className, label, title = label } = props
   const sharedClassName = cn(
     buttonVariants({ variant: 'outline', size: 'icon-lg' }),
-    'soft-press inline-grid size-11 shrink-0 place-items-center rounded-full border border-line bg-surface text-ink hover:bg-tint-soft disabled:opacity-55',
+    'soft-press hover-pop inline-grid size-11 shrink-0 place-items-center rounded-full border border-line bg-surface text-ink hover:bg-tint-soft disabled:opacity-55',
     className
   )
 

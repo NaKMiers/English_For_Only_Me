@@ -85,9 +85,7 @@ export function HomeModuleTiles({ facts, messages }: Props) {
                     <span className="hidden xl:inline 2xl:hidden">
                       {text.shortTitle}
                     </span>
-                    <span className="xl:hidden 2xl:inline">
-                      {text.title}
-                    </span>
+                    <span className="xl:hidden 2xl:inline">{text.title}</span>
                   </strong>
                   <span className="text-ink-soft truncate text-xs">
                     {facts[module.key] ?? text.skill}

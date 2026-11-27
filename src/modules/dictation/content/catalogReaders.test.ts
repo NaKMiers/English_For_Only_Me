@@ -23,6 +23,10 @@ const { repository } = vi.hoisted(() => {
       listVideosForTopic: vi.fn(async (topicId: string) => [
         { createdAt: at, id: 'v1', topicId, updatedAt: at },
       ]),
+      listVideoTopicIds: vi.fn(async () => [
+        { id: 'v1', topicId: 't1' },
+        { id: 'v2', topicId: null },
+      ]),
     },
   }
 })
@@ -44,6 +48,7 @@ const {
   getCachedTopicCatalog,
   getCachedTopics,
   getCachedVideoCount,
+  getCachedVideoTopicIds,
 } = await import('./catalogReaders')
 
 describe('dictation catalog readers', () => {
@@ -68,5 +73,12 @@ describe('dictation catalog readers', () => {
     expect(await getCachedNoTopicCount()).toBe(4)
     expect(await getCachedVideoCount()).toBe(9)
     expect((await getCachedTopics())[0]?.createdAt).toBeInstanceOf(Date)
+  })
+
+  it('keeps each video id with its topic through the cache', async () => {
+    await expect(getCachedVideoTopicIds()).resolves.toEqual([
+      { id: 'v1', topicId: 't1' },
+      { id: 'v2', topicId: null },
+    ])
   })
 })

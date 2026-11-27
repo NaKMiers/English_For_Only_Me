@@ -8,7 +8,10 @@ import {
 
 export default function Loading() {
   return (
-    <SkeletonPageShell activeHref="/">
+    <SkeletonPageShell
+      activeHref="/"
+      showAccount
+    >
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1.12fr)_minmax(360px,0.88fr)]">
         <section className="border-line bg-surface rounded-panel grid gap-4 border p-4 sm:p-5">
           <div className="grid gap-2">

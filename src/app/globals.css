@@ -552,6 +552,167 @@ body {
   }
 }
 
+/* Clickable control: on hover it rises 2px with a soft shadow and its icon
+   grows a little, so whatever can be clicked reads as clickable and what
+   cannot stays still. Built into ActionButton and IconButton; add it to any
+   other raw button or link. Uses the individual `translate` / `scale`
+   properties, so it composes with soft-press's squish and with icons that
+   rotate through Tailwind's `rotate-*`. Not while pressed (the press wins)
+   or disabled. An inline box-shadow (the 3D path nodes) keeps its ledge. */
+.hover-pop {
+  transition:
+    translate 200ms var(--ease-out-soft),
+    transform 160ms var(--ease-out-soft),
+    box-shadow 200ms var(--ease-out-soft),
+    background-color 150ms linear,
+    border-color 150ms linear,
+    color 150ms linear,
+    opacity 150ms linear;
+}
+.hover-pop svg {
+  transition:
+    scale 220ms var(--ease-out-soft),
+    rotate 300ms var(--ease-out-soft),
+    transform 300ms var(--ease-out-soft),
+    translate 220ms var(--ease-out-soft);
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .hover-pop:hover:not(:active, :disabled, [aria-disabled='true']) {
+    translate: 0 -2px;
+    box-shadow: 0 10px 22px -14px var(--shadow-color);
+  }
+  .hover-pop:hover:not(:disabled, [aria-disabled='true']) svg {
+    scale: 1.12;
+  }
+}
+
+/* Rail link name: on hover (or keyboard focus) the icon lifts out of the
+   rail as a dark pill, and the module name unrolls from the icon's left edge
+   to its right. Not a tooltip: the pill is the link, drawn larger. */
+.rail-flyout {
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  padding-right: 0;
+  border-radius: 9999px;
+  background: var(--rail-bg);
+  color: var(--rail-fg);
+  box-shadow: 0 0 0 0 transparent;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(0) scale(0.94);
+  transition:
+    opacity 140ms linear,
+    transform 260ms var(--ease-out-soft),
+    padding 320ms var(--ease-out-soft),
+    box-shadow 260ms var(--ease-out-soft);
+}
+[aria-current='page'] > .rail-flyout {
+  background: color-mix(in oklab, var(--rail-fg) 16%, var(--rail-bg));
+}
+.rail-flyout-label {
+  max-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  font-size: 0.875rem;
+  font-weight: 500;
+  opacity: 0;
+  clip-path: inset(0 100% 0 0);
+  transition:
+    max-width 340ms var(--ease-out-soft),
+    clip-path 380ms var(--ease-out-soft) 40ms,
+    opacity 220ms linear 40ms;
+}
+@media (hover: hover) {
+  .rail-link:hover > .rail-flyout {
+    opacity: 1;
+    padding-right: 1.1rem;
+    transform: translateY(-2px) scale(1);
+    box-shadow:
+      0 0 0 1px color-mix(in oklab, var(--rail-fg) 12%, transparent),
+      0 14px 28px -12px rgb(0 0 0 / 0.45);
+  }
+  .rail-link:hover .rail-flyout-label {
+    max-width: 12rem;
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+  }
+}
+.rail-link:focus-visible > .rail-flyout {
+  opacity: 1;
+  padding-right: 1.1rem;
+  transform: scale(1);
+}
+.rail-link:focus-visible .rail-flyout-label {
+  max-width: 12rem;
+  opacity: 1;
+  clip-path: inset(0 0 0 0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .rail-flyout,
+  .rail-flyout-label {
+    transform: none !important;
+    transition: opacity 140ms linear;
+  }
+}
+
+/* Study buddy mascot (HomeBuddyMascot): a slow bob, quicker when happy or
+   proud, slower when sleepy. Reduced motion keeps it still. */
+@media (prefers-reduced-motion: no-preference) {
+  .buddy-bob {
+    animation: buddy-bob 4.2s ease-in-out infinite;
+  }
+  [data-mood='sleepy'].buddy-bob {
+    animation-duration: 6.5s;
+  }
+  [data-mood='happy'].buddy-bob,
+  [data-mood='proud'].buddy-bob {
+    animation-duration: 2.4s;
+  }
+}
+@keyframes buddy-bob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-2deg);
+  }
+  50% {
+    transform: translateY(-6px) rotate(0deg);
+  }
+}
+
+/* Dictation journey: the waveform bars right behind the playhead bounce like
+   a live meter, records on the "playing" shelf turn slowly, and any record
+   spins up a little on hover. Reduced motion keeps them still. */
+@media (prefers-reduced-motion: no-preference) {
+  .eq-live {
+    animation: eq-live 900ms ease-in-out infinite alternate;
+  }
+  .record-turning {
+    animation: record-turn 9s linear infinite;
+  }
+  .record-link:hover .record-disc {
+    rotate: 40deg;
+  }
+}
+.record-disc {
+  transition: rotate 700ms var(--ease-out-soft);
+}
+@keyframes eq-live {
+  from {
+    scale: 1 0.55;
+  }
+  to {
+    scale: 1 1;
+  }
+}
+@keyframes record-turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* tw-animate-css enter / exit (dialogs, menus, selects, tooltips): with
    reduced motion keep the fade, drop the zoom and slide. Matched by class
    substring because the classes come with variants (`data-open:animate-in`).

@@ -7,8 +7,33 @@ export const home: Messages['home'] = {
     one: '{date} · hôm nay có {count} mục cần ôn',
     other: '{date} · hôm nay có {count} mục cần ôn',
   },
-  dashboard: 'Tổng quan',
+  dashboard: 'Bàn học',
   modulesNav: 'Các phần học',
+  view: {
+    simple: 'Đơn giản',
+    full: 'Đầy đủ',
+    switchToFull: 'Chuyển sang tổng quan đầy đủ',
+    switchToSimple: 'Chuyển sang tổng quan đơn giản',
+  },
+  simple: {
+    upNext: 'Việc tiếp theo',
+    allClear: 'Đã xong hết',
+    due: '{count} cần ôn',
+    dictationReview: 'Ôn chính tả',
+    vocabularyRecall: 'Ôn từ vựng',
+    grammar: 'Ngữ pháp',
+    grammarStart: 'Bắt đầu lộ trình',
+    ielts: 'Luyện IELTS',
+    ieltsHint: 'Đề đầy đủ và bài luyện',
+    focus: 'Bắt đầu từ đây',
+    focusDue: '{count} mục đang chờ ôn',
+    focusLesson: 'Bài học tiếp theo',
+    start: 'Bắt đầu',
+    numbersTitle: 'Nhìn nhanh',
+    thisWeek: 'Số phút tuần này',
+    wordsKnown: 'Từ đã thuộc',
+    accuracy: 'Độ chính xác chính tả',
+  },
   learningProgress: 'Tiến độ học',
   progress: {
     dictation: 'Chép chính tả',
@@ -69,9 +94,34 @@ export const home: Messages['home'] = {
     nextUp: 'Tiếp theo',
     pickLesson: 'Chọn một bài học',
     dayStreak: 'Chuỗi ngày học',
-    advice:
-      'Học ngắn mà đều đặn hiệu quả hơn học dồn. Giữ chuỗi ngày bằng một clip nghe và một bài ngữ pháp.',
     minutesThisMonth: 'Số phút tháng này',
     videosDone: 'Video đã xong',
+    moods: {
+      ready: {
+        label: 'Sẵn sàng',
+        message:
+          'Chọn một việc và bắt đầu: một clip, một nhóm từ hay một bài học.',
+      },
+      fired: {
+        label: 'Hừng hực',
+        message: '{streak} ngày liên tiếp. Giữ lửa bằng phần ôn hôm nay nhé.',
+      },
+      happy: {
+        label: 'Vui vẻ',
+        message: 'Không còn gì cần ôn. Học thêm clip hay bài mới là điểm cộng.',
+      },
+      proud: {
+        label: 'Tự hào',
+        message: '{streak} ngày liên tiếp. Thành thói quen thật rồi đó.',
+      },
+      worried: {
+        label: 'Hơi lo',
+        message: '{due} mục ôn đang dồn lại. Mười phút là bớt được kha khá.',
+      },
+      sleepy: {
+        label: 'Buồn ngủ',
+        message: 'Tuần này hơi im ắng. Đánh thức mình bằng một clip ngắn nhé.',
+      },
+    },
   },
 }

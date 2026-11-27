@@ -52,10 +52,9 @@ describe('VocabularyStatsOverview', () => {
     ])
   })
 
-  test('renders the strip, the known share and the hardest words', () => {
+  test('renders the known share and the hardest words', () => {
     const html = renderToStaticMarkup(<VocabularyStatsOverview stats={stats} />)
 
-    expect(html).toContain('href="/vocabulary/words?view=dueToday"')
     expect(html).toContain('65% known')
     expect(html).toContain('ubiquitous')
     expect(html).toContain('3 misses - 25%')

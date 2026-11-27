@@ -29,6 +29,8 @@ interface Props {
   isAdmin: boolean
   /** Called once mounted, so the placeholder chip can step aside. */
   onMounted: () => void
+  /** Which side the menu opens on: below the chip, right of the rail. */
+  side?: 'bottom' | 'right'
   signOutAction: () => Promise<void>
   triggerClassName: string
 }
@@ -43,6 +45,7 @@ export function UserMenuPopup({
   chip,
   isAdmin,
   onMounted,
+  side = 'bottom',
   signOutAction,
   triggerClassName,
 }: Props) {
@@ -70,6 +73,8 @@ export function UserMenuPopup({
         <DropdownMenuContent
           align="end"
           className="w-56"
+          side={side}
+          sideOffset={side === 'right' ? 12 : 4}
         >
           <DropdownMenuItem render={<Link href="/dictation/favorites" />}>
             <Heart aria-hidden="true" />

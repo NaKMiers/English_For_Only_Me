@@ -7,8 +7,6 @@ import {
   Check,
   ChevronDown,
   Crown,
-  Dumbbell,
-  Loader2,
   Lock,
   PenLine,
   Play,
@@ -58,9 +56,10 @@ import {
   initialOpenUnitIds,
   summarizeUnit,
   unitOfNext,
-  type UnitSummary,
 } from '@/modules/grammar/path/unitSummary'
 import { hasPendingGrammarSessions } from '@/requests/grammarSessionsApi'
+
+import { GrammarJourneyHero } from './GrammarJourneyHero'
 
 interface Props {
   path: GrammarPathView
@@ -154,7 +153,7 @@ function nextNodeId(next: PathNext) {
 }
 
 const NODE_BASE =
-  'relative grid place-items-center rounded-full transition-[translate,box-shadow] duration-100 active:translate-y-[5px] active:shadow-none motion-reduce:active:translate-y-0'
+  'hover-pop relative grid place-items-center rounded-full transition-[translate,box-shadow] duration-100 active:translate-y-[5px] active:shadow-none motion-reduce:active:translate-y-0'
 
 function nodeLedge(color: string): CSSProperties {
   return {
@@ -356,7 +355,7 @@ function UnitTrail({
       <h2 className="sticky top-2 z-20 font-normal">
         <CollapsibleTrigger
           className={cn(
-            'group/unit soft-press flex w-full items-center gap-3 rounded-3xl p-3 text-left shadow-sm sm:gap-4 sm:p-4',
+            'group/unit soft-press hover-pop flex w-full items-center gap-3 rounded-3xl p-3 text-left shadow-sm sm:gap-4 sm:p-4',
             tone.banner,
             isCurrent && 'ring-brand/40 ring-2'
           )}
@@ -470,75 +469,6 @@ function UnitTrail({
   )
 }
 
-function UnitIndex({
-  currentUnitId,
-  onJump,
-  summaries,
-}: {
-  currentUnitId: string | null
-  onJump: (unitId: string) => void
-  summaries: UnitSummary[]
-}) {
-  const t = useMessages().grammar.path
-
-  return (
-    <nav
-      aria-label={t.units}
-      className="min-w-0 lg:sticky lg:top-6 lg:self-start"
-    >
-      <h2 className="text-ink-soft mb-2 hidden px-1 text-xs font-medium lg:block">
-        {t.units}
-      </h2>
-      <ol className="-mx-4 flex snap-x gap-2 overflow-x-auto px-4 pb-1 lg:mx-0 lg:grid lg:max-h-[calc(100dvh-7rem)] lg:snap-none lg:grid-cols-1 lg:gap-1 lg:overflow-x-hidden lg:overflow-y-auto lg:px-0 lg:pb-0">
-        {summaries.map(summary => {
-          const current = summary.id === currentUnitId
-
-          return (
-            <li
-              className="shrink-0 snap-start"
-              key={summary.id}
-            >
-              {/* Raw button: a jump link that also unfolds the unit. */}
-              <button
-                aria-current={current ? 'step' : undefined}
-                className={cn(
-                  'soft-press hover:bg-tint lg:rounded-control flex min-h-11 items-center gap-2.5 rounded-full border px-2 py-1 text-left text-sm lg:w-full lg:border-transparent',
-                  current
-                    ? 'border-brand/40 bg-brand-soft/50 lg:bg-brand-soft/50'
-                    : 'border-line bg-surface lg:bg-transparent',
-                  summary.state === 'locked' && 'text-ink-soft'
-                )}
-                onClick={() => onJump(summary.id)}
-                type="button"
-              >
-                <ProgressRing
-                  className="text-[10px]"
-                  percent={summary.state === 'complete' ? 100 : summary.percent}
-                  ringClassName={
-                    summary.state === 'complete'
-                      ? 'text-accent-green'
-                      : 'text-brand'
-                  }
-                  size={28}
-                  strokeWidth={3}
-                >
-                  {summary.order}
-                </ProgressRing>
-                <span className="max-w-40 min-w-0 truncate lg:max-w-none lg:flex-1">
-                  {summary.title}
-                </span>
-                <span className="text-ink-soft hidden shrink-0 text-[11px] lg:inline">
-                  {summary.level}
-                </span>
-              </button>
-            </li>
-          )
-        })}
-      </ol>
-    </nav>
-  )
-}
-
 export function GrammarPath({ path }: Props) {
   const messages = useMessages()
   const t = messages.grammar.path
@@ -559,7 +489,6 @@ export function GrammarPath({ path }: Props) {
     setOpenIds(current => new Set([...current, ...initialOpenUnitIds(path)]))
   }
   const href = nextHref(path.next)
-  const summaries = path.units.map(summarizeUnit)
   const nextUnit = unitOfNext(path)
   const nextSummary = nextUnit ? summarizeUnit(nextUnit) : null
   const dueLesson = firstDueLesson(path.units)
@@ -640,7 +569,7 @@ export function GrammarPath({ path }: Props) {
     }
   }, [nextUnitId, targetNodeId, targetUnitOpen])
 
-  // Index click: unfold the unit, then scroll once the panel is in the DOM.
+  // Jump button: unfold the unit, then scroll once the panel is in the DOM.
   const jumpTimer = useRef<number | null>(null)
 
   useEffect(
@@ -675,11 +604,6 @@ export function GrammarPath({ path }: Props) {
     })
   }
 
-  function jumpToUnit(unitId: string) {
-    setUnitOpen(unitId, true)
-    scrollToElement(`unit-${unitId}`, 'start')
-  }
-
   function jumpToTarget() {
     if (!targetNodeId) return
     if (nextUnit) setUnitOpen(nextUnit.id, true)
@@ -691,194 +615,48 @@ export function GrammarPath({ path }: Props) {
   return (
     <div className="grid gap-5 px-4 pb-6 md:pr-6 md:pl-0">
       <PageHeader
-        actions={
-          <dl className="flex gap-2">
-            {[
-              {
-                label: t.statStars,
-                value: `${path.totals.stars}/${path.totals.maxStars}`,
-              },
-              {
-                label: t.statLessons,
-                value: `${path.totals.passedLessons}/${path.totals.totalLessons}`,
-              },
-            ].map(item => (
-              <div
-                className="border-line bg-surface grid min-w-24 gap-0.5 rounded-2xl border px-3 py-1.5"
-                key={item.label}
-              >
-                <dt className="text-ink-soft text-[11px]">{item.label}</dt>
-                <dd className="font-sans text-lg leading-tight font-medium tabular-nums">
-                  {item.value}
-                </dd>
-              </div>
-            ))}
-          </dl>
-        }
         icon={<PenLine />}
         iconClassName="bg-pastel-lilac text-accent-purple"
         subtitle={format(t.introShort, { count: path.totals.totalLessons })}
         title={t.title}
       />
 
-      {/* Continue card: where the learner is, one big action, and the two
-          side doors (review due, weak spots). */}
-      <section
-        aria-label={t.continue}
-        className="bg-pastel-lilac rounded-panel grid gap-4 p-4 sm:p-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)] lg:items-stretch"
-      >
-        <div className="grid content-between gap-4">
-          <div className="grid gap-2">
-            {nextUnit ? (
-              <span className="bg-surface/80 w-fit rounded-full px-3 py-1 text-xs font-medium">
-                {format(messages.grammar.unitLevel, {
-                  level: nextUnit.level,
-                  order: nextUnit.order,
-                })}{' '}
-                · {nextUnit.title}
-              </span>
-            ) : null}
-            <h2 className="font-sans text-2xl leading-tight font-medium tracking-tight sm:text-3xl">
-              {nextLabel(t.next, path.next)}
-            </h2>
-            {nextSummary ? (
-              <div className="flex max-w-md items-center gap-3">
-                <div
-                  aria-label={format(t.unitProgress, {
-                    done: nextSummary.done,
-                    total: nextSummary.total,
-                  })}
-                  className="bg-surface/80 h-2 flex-1 overflow-hidden rounded-full"
-                  role="img"
-                >
-                  <div
-                    className="bg-accent-purple motion-grow-x h-full rounded-full"
-                    style={{ width: `${nextSummary.percent}%` }}
-                  />
-                </div>
-                <span className="text-ink-soft text-xs tabular-nums">
-                  {nextSummary.done}/{nextSummary.total}
-                </span>
-              </div>
-            ) : null}
-          </div>
-          <div className="flex flex-wrap items-center gap-3">
-            {href ? (
-              <ActionButton
-                className="w-full sm:w-auto"
-                href={href}
-                icon={
-                  <Play
-                    aria-hidden
-                    className="fill-current"
-                  />
-                }
-                tone="ink"
-              >
-                {path.next.kind === 'lesson' ? t.startLesson : t.go}
-              </ActionButton>
-            ) : null}
-            {syncing ? (
-              <p
-                aria-live="polite"
-                className="text-ink-soft flex items-center gap-2 text-sm"
-              >
-                <Loader2
-                  aria-hidden
-                  className="size-4 motion-safe:animate-spin"
-                />
-                {t.syncing}
-              </p>
-            ) : null}
-          </div>
-        </div>
+      <GrammarJourneyHero
+        dueHref={dueLesson ? `/grammar/lessons/${dueLesson.id}/review` : null}
+        nextHref={href}
+        nextLabel={nextLabel(t.next, path.next)}
+        nextSummary={nextSummary}
+        nextUnit={nextUnit}
+        path={path}
+        syncing={syncing}
+      />
 
-        <div className="grid grid-cols-2 gap-2">
-          {[
-            {
-              count: path.totals.dueCount,
-              href: dueLesson
-                ? `/grammar/lessons/${dueLesson.id}/review`
-                : null,
-              icon: RotateCcw,
-              label: t.reviewDue,
-              tone: 'text-brand-ink',
-            },
-            {
-              count: path.totals.weakCount,
-              href: path.totals.weakCount > 0 ? '/grammar/practice' : null,
-              icon: Dumbbell,
-              label: t.weakSpotsLabel,
-              tone: 'text-accent-orange',
-            },
-          ].map(item => {
-            const Icon = item.icon
-            const body = (
-              <>
-                <span className="flex items-center justify-between gap-2">
-                  <span
-                    className={cn(
-                      'bg-surface grid size-9 place-items-center rounded-full',
-                      item.tone
-                    )}
-                  >
-                    <Icon
-                      aria-hidden
-                      className="size-4"
-                    />
-                  </span>
-                  <strong className="font-sans text-2xl leading-none font-medium tabular-nums">
-                    {item.count}
-                  </strong>
-                </span>
-                <span className="text-sm font-medium">{item.label}</span>
-              </>
-            )
-
-            return item.href ? (
-              <Link
-                className="soft-press hover-lift bg-surface/70 hover:bg-surface rounded-control grid content-between gap-3 p-3"
-                href={item.href}
-                key={item.label}
-              >
-                {body}
-              </Link>
-            ) : (
-              <div
-                className="bg-surface/40 text-ink-soft rounded-control grid content-between gap-3 p-3"
-                key={item.label}
-              >
-                {body}
-              </div>
-            )
-          })}
-        </div>
-      </section>
-
-      <div className="grid gap-5 lg:grid-cols-[15rem_minmax(0,1fr)]">
-        <UnitIndex
-          currentUnitId={path.currentUnitId}
-          onJump={jumpToUnit}
-          summaries={summaries}
-        />
-
-        <div className="grid min-w-0 content-start gap-4 lg:mx-auto lg:w-full lg:max-w-2xl">
-          {path.units.map(unit => (
+      <div className="mx-auto grid w-full max-w-xl min-w-0 content-start gap-4 lg:max-w-2xl">
+        {/* Units sway left and right around the centre line, like the
+            lessons inside them. */}
+        {path.units.map((unit, index) => (
+          <div
+            className={cn(
+              'relative min-w-0',
+              index % 2 === 0
+                ? 'md:right-8 lg:right-20'
+                : 'md:left-8 lg:left-20'
+            )}
+            key={unit.id}
+          >
             <UnitTrail
               isCurrent={unit.id === path.currentUnitId}
-              key={unit.id}
               onOpenChange={open => setUnitOpen(unit.id, open)}
               onSelectLesson={item => setSelected({ lesson: item, unit })}
               open={openIds.has(unit.id)}
               unit={unit}
             />
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
-
       {targetDirection && targetNodeId ? (
         <button
-          className="soft-press bg-cta text-cta-fg hover:shadow-float motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-2 fixed right-4 bottom-[calc(max(12px,env(safe-area-inset-bottom))+5rem)] z-30 flex min-h-11 items-center gap-2 rounded-full px-4 text-sm font-medium shadow-lg md:right-8 md:bottom-8"
+          className="soft-press hover-pop bg-cta text-cta-fg motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-2 fixed right-4 bottom-[calc(max(12px,env(safe-area-inset-bottom))+5rem)] z-30 flex min-h-11 items-center gap-2 rounded-full px-4 text-sm font-medium shadow-lg md:right-8 md:bottom-8"
           onClick={jumpToTarget}
           type="button"
         >

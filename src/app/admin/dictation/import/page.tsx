@@ -4,7 +4,6 @@ import { redirect } from 'next/navigation'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { PageShell } from '@/components/common/PageShell'
-import { AuthControl } from '@/components/common/AuthControl'
 import { DictationImportForm } from '@/components/dictation/DictationImportForm'
 import { PageTag } from '@/components/ui/PageTag'
 import { getMessages } from '@/i18n/server'
@@ -37,7 +36,6 @@ export default async function DictationImportPage() {
         <AppTopbar
           activeHref="/dictation"
           subtitle={t.admin.shell.importDesk}
-          authControl={<AuthControl />}
         />
       }
       footer={

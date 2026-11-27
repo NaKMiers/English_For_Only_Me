@@ -21,7 +21,6 @@ export const vocabulary: Messages['vocabulary'] = {
   dashboard: {
     wordsLink: 'Danh sách từ',
     title: 'Trục từ vựng',
-    streak: 'Chuỗi ngày',
     intro:
       'Theo dõi từ đã biết, lấy dữ liệu từ điển miễn phí và ôn lại những từ bạn chọn học theo lịch bảy lượt.',
     loaded: 'Đã tải "{term}".',
@@ -39,6 +38,37 @@ export const vocabulary: Messages['vocabulary'] = {
     loadMoreExplore: 'Không thể tải thêm từ để khám phá.',
     loadMoreFlashcards: 'Không thể tải thêm flashcard.',
     lookup: 'Không thể tra từ này.',
+  },
+  garden: {
+    title: 'Khu vườn từ vựng',
+    words: 'từ đã thuộc',
+    hint: 'Mỗi từ bạn thuộc làm khu vườn lớn thêm.',
+    stages: {
+      seed: 'Hạt giống',
+      sprout: 'Mầm non',
+      sapling: 'Cây con',
+      youngTree: 'Cây non',
+      tree: 'Cây lớn',
+      grove: 'Rừng nhỏ',
+      forest: 'Khu rừng',
+    },
+    levelAbout: 'khoảng {level}',
+    toNext: {
+      one: 'Còn {count} từ tới {stage}',
+      other: 'Còn {count} từ tới {stage}',
+    },
+    forest: 'Đã thành rừng. Ôn đều để lá luôn xanh.',
+    guide: 'Mức CEFR chỉ là ước lượng theo số từ vựng thường gặp.',
+    stageState: {
+      reached: '{stage}: đã đạt',
+      current: '{stage}: bạn đang ở đây',
+      ahead: '{stage}: còn {count} từ',
+    },
+    flowTitle: 'Hành trình của một từ',
+    today: 'Hôm nay',
+    learnedToday: 'Đã học',
+    reviewsToday: 'Đã ôn',
+    streak: 'Chuỗi ngày',
   },
   views: {
     learning: 'Đang học',

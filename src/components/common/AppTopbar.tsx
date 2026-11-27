@@ -9,17 +9,16 @@ import { PRIMARY_NAV_ITEMS, type NavItem } from '@/constants/modules'
 import { useMessages } from '@/i18n/client'
 import { cn } from '@/lib/utils'
 
+import { AccountControl } from './AccountControl'
 import { ThemeToggle } from './ThemeToggle'
 
 interface Props {
   activeHref?: string
   /**
-   * Optional auth control slot (injected as <AuthControl /> by server pages).
-   * Kept as a slot so AppTopbar stays a client component: it must NOT statically import
-   * the NextAuth/Mongoose chain, or client boundaries (error.tsx) that render
-   * the topbar would drag server-only code into the browser bundle.
+   * Page content for the right end of the row (md and up), where the home
+   * page keeps the account chip. The IELTS page puts its heading here.
    */
-  authControl?: ReactNode
+  aside?: ReactNode
   className?: string
   /**
    * One slim row (smaller logo and title) for work screens that need the
@@ -28,21 +27,27 @@ interface Props {
   compact?: boolean
   /** Links for the phone menu. The rail (AppSidebar) carries them from md. */
   navItems?: NavItem[]
+  /** The account chip on the right (home only; the rail always has it). */
+  showAccount?: boolean
   subtitle?: string
   title?: string
 }
 
 /**
  * The board's top row: the logo above the icon rail, a greeting-style title,
- * and the account controls on the right. Module links live in AppSidebar; on
- * phones they move into the menu button here.
+ * and an optional `aside` on the right. The account avatar sits at the foot
+ * of the rail on every page; only the home page repeats it here as a chip
+ * (`showAccount`). On phones, where there is no rail, the account lives in
+ * the menu. The account comes from the root layout's AccountProvider, so it
+ * never blinks during navigation.
  */
 export function AppTopbar({
   activeHref = '/',
-  authControl,
+  aside,
   className,
   compact = false,
   navItems = PRIMARY_NAV_ITEMS,
+  showAccount = false,
   subtitle,
   title,
 }: Props) {
@@ -87,12 +92,17 @@ export function AppTopbar({
       </Link>
 
       <div className="flex min-w-0 items-center justify-end gap-2 md:pr-6">
+        {aside ? <div className="hidden min-w-0 md:flex">{aside}</div> : null}
         {/* On phones the account control lives in the menu instead. */}
-        <div className="hidden min-w-0 sm:flex">{authControl}</div>
+        {showAccount ? (
+          <div className="hidden min-w-0 sm:flex">
+            <AccountControl />
+          </div>
+        ) : null}
         <ThemeToggle className="size-11 md:hidden" />
         <TopbarMenu
           activeHref={activeHref}
-          authControl={authControl}
+          authControl={<AccountControl />}
           navItems={navItems}
           className="md:hidden"
         />

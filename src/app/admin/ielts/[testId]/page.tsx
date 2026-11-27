@@ -2,7 +2,6 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
-import { AuthControl } from '@/components/common/AuthControl'
 import { PageShell } from '@/components/common/PageShell'
 import { TestEditor } from '@/components/ielts/editor/TestEditor'
 import { hasMongoDbUri } from '@/constants/environments'
@@ -50,7 +49,6 @@ export default async function AdminIeltsEditorPage({ params }: Props) {
       className="overflow-clip"
       topbar={
         <AppTopbar
-          authControl={<AuthControl />}
           compact
           subtitle={t.ieltsEditor.listPage.topbarSubtitle}
         />

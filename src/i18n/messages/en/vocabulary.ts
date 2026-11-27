@@ -19,7 +19,6 @@ export const vocabulary = {
   dashboard: {
     wordsLink: 'Words',
     title: 'Vocab Spine',
-    streak: 'Streak',
     intro:
       'Track known words, pull in free dictionary data, and review the words you chose to learn on a seven-touch schedule.',
     loaded: 'Loaded "{term}".',
@@ -37,6 +36,37 @@ export const vocabulary = {
     loadMoreExplore: 'Could not load more explore words.',
     loadMoreFlashcards: 'Could not load more flashcards.',
     lookup: 'Could not lookup this word.',
+  },
+  garden: {
+    title: 'Your word garden',
+    words: 'words known',
+    hint: 'Every word you know grows the garden.',
+    stages: {
+      seed: 'Seed',
+      sprout: 'Sprout',
+      sapling: 'Sapling',
+      youngTree: 'Young tree',
+      tree: 'Tree',
+      grove: 'Grove',
+      forest: 'Forest',
+    },
+    levelAbout: 'about {level}',
+    toNext: {
+      one: '{count} word to {stage}',
+      other: '{count} words to {stage}',
+    },
+    forest: 'A full forest. Keep the leaves green with reviews.',
+    guide: 'Levels are a rough guide from common vocabulary-size estimates.',
+    stageState: {
+      reached: '{stage}: reached',
+      current: '{stage}: you are here',
+      ahead: '{stage}: {count} words away',
+    },
+    flowTitle: 'How a word grows',
+    today: 'Today',
+    learnedToday: 'Learned',
+    reviewsToday: 'Reviewed',
+    streak: 'Day streak',
   },
   views: {
     learning: 'Learning',

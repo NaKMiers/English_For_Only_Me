@@ -151,6 +151,25 @@ export async function listNoTopicVideos(): Promise<DictationVideoApiRecord[]> {
   return videos.map(toDictationVideoRecord)
 }
 
+/**
+ * Every visible video's id and topic (null for uncategorized), so the landing
+ * page can count each topic's finished videos from the learner's completions
+ * without loading whole video records.
+ */
+export async function listVideoTopicIds(): Promise<
+  Array<{ id: string; topicId: string | null }>
+> {
+  const rows = await DictationVideoModel.find(VISIBLE_VIDEO_FILTER, {
+    _id: 1,
+    topicId: 1,
+  }).lean()
+
+  return rows.map(row => ({
+    id: String(row._id),
+    topicId: row.topicId ? String(row.topicId) : null,
+  }))
+}
+
 /** Every video in the catalog, archived included (the stats card total). */
 export async function countAllVideos(): Promise<number> {
   return DictationVideoModel.countDocuments({})

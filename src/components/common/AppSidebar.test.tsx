@@ -4,6 +4,7 @@ import { describe, expect, test, vi } from 'vitest'
 import { I18nProvider } from '@/i18n/client'
 import { vi as viMessages } from '@/i18n/messages/vi'
 
+import { AccountProvider } from './AccountProvider'
 import { AppSidebar, isActiveHref } from './AppSidebar'
 
 vi.mock('next/navigation', () => ({ usePathname: () => '/dictation/review' }))
@@ -41,6 +42,26 @@ describe('AppSidebar', () => {
     expect(html).toContain('aria-label="Điều hướng chính"')
     expect(html).toMatch(/aria-label="Chính tả"[^>]*aria-current="page"/)
     expect(html).toMatch(/lang="vi"[^>]*>.*VI</)
+  })
+
+  test('puts the account avatar at the foot of the rail', () => {
+    const html = renderToStaticMarkup(
+      <AccountProvider
+        value={{
+          account: {
+            firstName: 'Khoa',
+            image: null,
+            initial: 'K',
+            isAdmin: false,
+          },
+          enabled: true,
+        }}
+      >
+        <AppSidebar />
+      </AccountProvider>
+    )
+
+    expect(html).toMatch(/aria-haspopup="menu"[^>]*>.*>K<.*sr-only">Khoa</)
   })
 
   test('home only matches itself, modules match their subtree', () => {

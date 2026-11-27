@@ -2,7 +2,6 @@ import { Headphones } from 'lucide-react'
 import type { Metadata } from 'next'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
-import { AuthControl } from '@/components/common/AuthControl'
 import { PageShell } from '@/components/common/PageShell'
 import { PageHeader } from '@/components/common/PageHeader'
 import { BrowseBreadcrumb } from '@/components/dictation/browse/BrowseBreadcrumb'
@@ -75,7 +74,6 @@ export default async function NoTopicPage() {
         <AppTopbar
           activeHref="/dictation"
           subtitle={t.dictation.meta.browseSubtitle}
-          authControl={<AuthControl />}
         />
       }
     >

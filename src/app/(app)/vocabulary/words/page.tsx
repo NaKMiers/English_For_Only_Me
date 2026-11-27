@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
-import { AuthControl } from '@/components/common/AuthControl'
 import { PageShell } from '@/components/common/PageShell'
 import { ContentPanel } from '@/components/common/ContentPanel'
 import { ActionButton } from '@/components/ui/ActionButton'
@@ -44,7 +43,6 @@ export default async function VocabularyWordsPage({
           <AppTopbar
             activeHref="/vocabulary"
             subtitle={t.vocabulary.page.subtitle}
-            authControl={<AuthControl />}
           />
         }
       >
@@ -78,7 +76,6 @@ export default async function VocabularyWordsPage({
         <AppTopbar
           activeHref="/vocabulary"
           subtitle={t.vocabulary.page.subtitle}
-          authControl={<AuthControl />}
         />
       }
     >

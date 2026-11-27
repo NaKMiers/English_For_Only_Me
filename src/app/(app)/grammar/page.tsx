@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
-import { AuthControl } from '@/components/common/AuthControl'
 import { PageShell } from '@/components/common/PageShell'
 import { GrammarPath } from '@/components/grammar/path/GrammarPath'
 import { getMessages } from '@/i18n/server'
@@ -30,7 +29,6 @@ export default async function GrammarPage() {
       topbar={
         <AppTopbar
           activeHref="/grammar"
-          authControl={<AuthControl />}
           subtitle={t.grammar.subtitle}
         />
       }

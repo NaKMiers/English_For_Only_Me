@@ -117,6 +117,17 @@ weight.
 - A child's radius is never larger than its parent's.
 - Pressable things use `soft-press` (a small scale on press) instead of
   `transition-all`.
+- Progress you can feel (the app-wide product rule, first applied on
+  `/ielts`): measure the learner in small steps (one skill with a band, one
+  lesson, one clip), show how far they have come before what is left, name
+  the next milestone and how few steps it is away, and give one obvious "next
+  stop" to click. Visualise a module as a journey (lines, stations, trails),
+  not as a grid of identical cards. Each module gets its own metaphor: the
+  grammar path winds, the IELTS books are metro lines.
+- Everything clickable shows it on hover: `hover-pop` (rises 2px, soft
+  shadow, its icon grows a little). `ActionButton` and `IconButton` carry it;
+  add it to any raw clickable button or link. Static blocks (stats, labels)
+  never get it, so clickable and not clickable stay easy to tell apart.
 - Motion is calm and short, transform / opacity only, and every helper
   lives in the MOTION block of `globals.css`: `page-enter` (PageShell `main`,
   replays per route), `motion-stagger` on a card grid or list, `hover-lift`

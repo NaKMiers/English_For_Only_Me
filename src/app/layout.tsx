@@ -2,10 +2,16 @@ import type { Metadata, Viewport } from 'next'
 import { Be_Vietnam_Pro } from 'next/font/google'
 import './globals.css'
 
+import {
+  AccountProvider,
+  type AccountState,
+} from '@/components/common/AccountProvider'
 import { ThemeProvider } from '@/components/common/ThemeProvider'
+import { hasGoogleAuth } from '@/constants/environments'
 import { I18nProvider } from '@/i18n/client'
 import { DEFAULT_LOCALE } from '@/i18n/config'
 import { getLocale, getMessages } from '@/i18n/server'
+import { auth } from '@/lib/auth/auth'
 import { cn } from '@/lib/utils'
 
 // One geometric sans for the whole app, headings and body alike. Be Vietnam
@@ -62,12 +68,37 @@ export const viewport: Viewport = {
   themeColor: '#f3eaf2',
 }
 
+/**
+ * The session, read once here. The root layout outlives every navigation, so
+ * the topbar account control keeps it instead of re-reading it per route.
+ */
+async function readAccount(): Promise<AccountState> {
+  if (!hasGoogleAuth()) return { account: null, enabled: false }
+
+  const user = (await auth())?.user
+  if (!user) return { account: null, enabled: true }
+
+  // First word of the name, or the mailbox part of the email without one.
+  const firstName =
+    user.name?.trim().split(/\s+/)[0] || user.email?.split('@')[0] || ''
+
+  return {
+    account: {
+      firstName,
+      image: user.image ?? null,
+      initial: firstName.charAt(0).toUpperCase(),
+      isAdmin: user.role === 'admin',
+    },
+    enabled: true,
+  }
+}
+
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const locale = await getLocale()
+  const [locale, account] = await Promise.all([getLocale(), readAccount()])
   const messages = locale === DEFAULT_LOCALE ? undefined : await getMessages()
 
   return (
@@ -82,7 +113,9 @@ export default async function RootLayout({
           locale={locale}
           messages={messages}
         >
-          <ThemeProvider>{children}</ThemeProvider>
+          <AccountProvider value={account}>
+            <ThemeProvider>{children}</ThemeProvider>
+          </AccountProvider>
         </I18nProvider>
       </body>
     </html>

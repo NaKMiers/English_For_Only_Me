@@ -104,3 +104,36 @@ export function unitOfNext(
 
   return path.units.find(unit => unit.id === path.currentUnitId) ?? null
 }
+
+export interface LevelProgress {
+  done: number
+  level: CefrLevel
+  total: number
+}
+
+/**
+ * Lessons done per CEFR level, in path order: the steps of the level
+ * staircase on the grammar page.
+ */
+export function levelProgress(units: PathUnit[]): LevelProgress[] {
+  const levels = new Map<CefrLevel, LevelProgress>()
+
+  for (const unit of units) {
+    const row = levels.get(unit.level) ?? {
+      done: 0,
+      level: unit.level,
+      total: 0,
+    }
+
+    row.done += unit.lessons.filter(isLessonDone).length
+    row.total += unit.lessons.length
+    levels.set(unit.level, row)
+  }
+
+  return [...levels.values()]
+}
+
+/** The first level not yet finished, or null when every level is climbed. */
+export function currentLevel(levels: LevelProgress[]): LevelProgress | null {
+  return levels.find(row => row.done < row.total) ?? null
+}

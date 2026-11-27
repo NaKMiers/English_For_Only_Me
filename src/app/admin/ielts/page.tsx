@@ -2,7 +2,6 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
-import { AuthControl } from '@/components/common/AuthControl'
 import { PageShell } from '@/components/common/PageShell'
 import { AdminTestCatalogue } from '@/components/ielts/editor/AdminTestCatalogue'
 import { CreateTestPanel } from '@/components/ielts/editor/CreateTestPanel'
@@ -63,12 +62,7 @@ export default async function AdminIeltsPage() {
   return (
     <PageShell
       fullHeight="lg"
-      topbar={
-        <AppTopbar
-          authControl={<AuthControl />}
-          subtitle={t.common.auth.admin}
-        />
-      }
+      topbar={<AppTopbar subtitle={t.common.auth.admin} />}
     >
       {/* From lg the page is one screen: the list and the form scroll inside
           their own cards. Smaller screens scroll the page as usual. */}

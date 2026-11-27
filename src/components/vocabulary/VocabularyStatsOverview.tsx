@@ -1,7 +1,5 @@
 'use client'
 
-import Link from 'next/link'
-
 import { useMessages } from '@/i18n/client'
 import { format, plural } from '@/i18n/format'
 import type { Messages } from '@/i18n/messages'
@@ -52,11 +50,11 @@ export function vocabStatusLinks(
 }
 
 /**
- * Word counts as one compact strip of links into the word list, then the
- * last two weeks of growth and the hardest words side by side.
+ * The last two weeks of growth and the hardest words side by side. The word
+ * counts live in WordGardenHero ("How a word grows"), linked into the list.
  */
 export function VocabularyStatsOverview({ stats }: Props) {
-  const { stats: t, views } = useMessages().vocabulary
+  const { stats: t } = useMessages().vocabulary
   const maxGrowth = Math.max(1, ...stats.dailyGrowth.map(point => point.count))
   const progress =
     stats.totalStartedCount === 0
@@ -65,31 +63,6 @@ export function VocabularyStatsOverview({ stats }: Props) {
 
   return (
     <div className="grid min-w-0 content-start gap-3">
-      <ul className="border-line bg-surface rounded-panel motion-stagger grid grid-cols-2 gap-1 border p-1.5 sm:grid-cols-5">
-        {vocabStatusLinks(stats, views).map(item => (
-          <li
-            className="last:col-span-2 sm:last:col-span-1"
-            key={item.href}
-          >
-            <Link
-              className="soft-press hover:bg-tint-soft rounded-control grid gap-1 px-3 py-2.5"
-              href={item.href}
-            >
-              <span className="text-ink-soft flex items-center gap-1.5 text-xs">
-                <span
-                  aria-hidden="true"
-                  className={cn('size-2 shrink-0 rounded-full', item.dot)}
-                />
-                <span className="truncate">{item.label}</span>
-              </span>
-              <strong className="font-sans text-2xl leading-none font-medium tabular-nums">
-                {item.value}
-              </strong>
-            </Link>
-          </li>
-        ))}
-      </ul>
-
       <div className="grid gap-3 sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
         <section
           aria-labelledby="vocab-growth-title"

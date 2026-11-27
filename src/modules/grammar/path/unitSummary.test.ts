@@ -9,8 +9,10 @@ import {
 
 import { buildGrammarPath } from './buildGrammarPath'
 import {
+  currentLevel,
   firstDueLesson,
   initialOpenUnitIds,
+  levelProgress,
   pathLevels,
   summarizeUnit,
   unitOfNext,
@@ -120,6 +122,25 @@ describe('unitOfNext', () => {
     expect(unitOfNext(view, { kind: 'done' })?.id).toBe('u01')
     expect(
       unitOfNext({ ...view, currentUnitId: null }, { count: 2, kind: 'weak' })
+    ).toBeNull()
+  })
+})
+
+describe('levelProgress', () => {
+  it('adds up lessons per level and finds the level being climbed', () => {
+    const units = build({
+      lessonProgress: [passedLesson('u01-l01'), passedLesson('u01-l02')],
+    }).units
+    const levels = levelProgress(units)
+
+    expect(levels.map(row => row.level)).toEqual(pathLevels(units))
+    expect(levels.reduce((sum, row) => sum + row.total, 0)).toBe(
+      units.reduce((sum, unit) => sum + unit.lessons.length, 0)
+    )
+    expect(levels[0]?.done).toBe(2)
+    expect(currentLevel(levels)?.level).toBe(levels[0]?.level)
+    expect(
+      currentLevel(levels.map(row => ({ ...row, done: row.total })))
     ).toBeNull()
   })
 })

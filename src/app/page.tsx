@@ -1,4 +1,7 @@
+import { cookies } from 'next/headers'
+
 import { HomeStudyDesk } from '@/components/home/HomeStudyDesk'
+import { HOME_VIEW_COOKIE, parseHomeView } from '@/components/home/homeView'
 import { hasMongoDbUri } from '@/constants/environments'
 import { getLocale, getMessages } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
@@ -13,8 +16,16 @@ export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
 export default async function Home() {
-  const [locale, messages] = await Promise.all([getLocale(), getMessages()])
-  const text = { locale, messages }
+  const [locale, messages, cookieStore] = await Promise.all([
+    getLocale(),
+    getMessages(),
+    cookies(),
+  ])
+  const text = {
+    locale,
+    messages,
+    view: parseHomeView(cookieStore.get(HOME_VIEW_COOKIE)?.value),
+  }
 
   if (!hasMongoDbUri()) return <HomeStudyDesk {...text} />
 

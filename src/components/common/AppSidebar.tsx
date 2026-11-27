@@ -16,6 +16,7 @@ import { navItemLabel, PRIMARY_NAV_ITEMS } from '@/constants/modules'
 import { useMessages } from '@/i18n/client'
 import { cn } from '@/lib/utils'
 
+import { AccountControl } from './AccountControl'
 import { LocaleToggle } from './LocaleToggle'
 import { ThemeToggle } from './ThemeToggle'
 
@@ -87,9 +88,10 @@ interface Props {
 
 /**
  * The dark icon rail on the left of the board: one pill holding the module
- * links (the current one sits in a lighter circle), and the day / night
- * toggle and the EN / VI pill under it. Phones get the same links from the
- * topbar menu instead.
+ * links (the current one sits in a lighter circle), pinned to the top while
+ * the page scrolls, and the day / night and EN / VI toggles and the account
+ * avatar pinned to the bottom of the rail column. Hovering a link lifts it into a wider pill that
+ * unrolls the module name. Phones get the same links from the topbar menu.
  */
 export function AppSidebar({ className }: Props) {
   const t = useMessages()
@@ -101,13 +103,16 @@ export function AppSidebar({ className }: Props) {
   return (
     <aside
       className={cn(
-        'sticky top-6 flex-col items-center gap-4 self-start pt-2 pb-6',
+        // Stretches over the whole content row: the nav sticks to the top of
+        // the viewport, the toggles to its bottom (or the row's end on a
+        // short page). Above `main`, so a hover pill can overlap the page.
+        'relative z-20 flex-col items-center self-stretch pt-2 pb-6',
         className
       )}
     >
       <nav
         aria-label={t.common.nav.primary}
-        className="bg-rail relative flex w-14 flex-col items-center gap-2 rounded-full p-1.5"
+        className="bg-rail sticky top-6 flex w-14 flex-col items-center gap-2 rounded-full p-1.5"
       >
         {activeIndex >= 0 ? (
           <span
@@ -127,10 +132,9 @@ export function AppSidebar({ className }: Props) {
               key={item.href}
               href={item.href}
               aria-label={label}
-              title={label}
               aria-current={active ? 'page' : undefined}
               className={cn(
-                'soft-press text-rail-fg/55 hover:text-rail-fg relative grid size-11 place-items-center rounded-full',
+                'rail-link soft-press text-rail-fg/55 hover:text-rail-fg relative grid size-11 place-items-center rounded-full',
                 active && 'text-rail-fg'
               )}
             >
@@ -138,12 +142,24 @@ export function AppSidebar({ className }: Props) {
                 aria-hidden="true"
                 className="size-5"
               />
+              <span
+                aria-hidden="true"
+                className="rail-flyout"
+              >
+                <span className="grid size-11 shrink-0 place-items-center">
+                  <Icon className="size-5" />
+                </span>
+                <span className="rail-flyout-label">{label}</span>
+              </span>
             </Link>
           )
         })}
       </nav>
-      <ThemeToggle />
-      <LocaleToggle variant="round" />
+      <div className="sticky bottom-6 mt-auto flex flex-col items-center gap-3 pt-6">
+        <ThemeToggle />
+        <LocaleToggle variant="round" />
+        <AccountControl variant="rail" />
+      </div>
     </aside>
   )
 }

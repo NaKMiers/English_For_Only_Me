@@ -40,7 +40,7 @@ export function ActionButton(props: Props) {
   const { children, className, icon, tone = 'primary' } = props
   const sharedClassName = cn(
     buttonVariants({ variant: 'default', size: 'lg' }),
-    'soft-press inline-flex min-h-11 max-w-full items-center justify-center gap-2 rounded-full border px-5 py-2 font-sans text-sm leading-tight font-medium tracking-normal disabled:opacity-55',
+    'soft-press hover-pop inline-flex min-h-11 max-w-full items-center justify-center gap-2 rounded-full border px-5 py-2 font-sans text-sm leading-tight font-medium tracking-normal disabled:opacity-55',
     toneClassName[tone],
     className
   )

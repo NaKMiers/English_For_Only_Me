@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
-import { AuthControl } from '@/components/common/AuthControl'
 import { PageShell } from '@/components/common/PageShell'
 import { AdminVocabPanel } from '@/components/vocabulary/AdminVocabPanel'
 import { hasMongoDbUri } from '@/constants/environments'
@@ -34,7 +33,6 @@ export default async function AdminVocabularyPage() {
         <AppTopbar
           activeHref="/admin/vocab"
           subtitle={t.admin.shell.vocab}
-          authControl={<AuthControl />}
         />
       }
     >

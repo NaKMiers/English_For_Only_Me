@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { beforeAll, describe, expect, test, vi } from 'vitest'
 
 import { buildGrammarPath } from '@/modules/grammar/path/buildGrammarPath'
@@ -58,20 +58,13 @@ describe('GrammarPath', () => {
     expect(screen.queryByRole('button', { name: /Lesson u02-l01/ })).toBeNull()
   })
 
-  test('the unit index unfolds a folded unit', () => {
+  test('climbs the level staircase from the first level', () => {
     render(<GrammarPath path={path()} />)
 
-    const index = screen.getByRole('navigation', { name: 'Units' })
-    const unitThree = Array.from(index.querySelectorAll('button')).find(
-      button => button.textContent?.includes('Unit 3')
-    )
-
-    expect(unitThree).toBeTruthy()
-    fireEvent.click(unitThree as HTMLButtonElement)
-
     expect(
-      screen.getByRole('button', { name: /Lesson u03-l01, locked/ })
-    ).toBeTruthy()
+      screen.getAllByRole('listitem', { name: /you are here/ })
+    ).toHaveLength(1)
+    expect(screen.getByText(/lessons? to finish/)).toBeTruthy()
   })
 
   test('links Review due to the first due lesson', () => {

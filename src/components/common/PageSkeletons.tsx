@@ -172,11 +172,14 @@ export function SkeletonRows({
  */
 export function SkeletonPageShell({
   activeHref,
+  showAccount,
   subtitle,
   footer,
   children,
 }: {
   activeHref?: string
+  /** The home topbar's account chip, so it does not pop in after loading. */
+  showAccount?: boolean
   subtitle?: string
   footer?: ReactNode
   children: ReactNode
@@ -187,6 +190,7 @@ export function SkeletonPageShell({
       topbar={
         <AppTopbar
           activeHref={activeHref}
+          showAccount={showAccount}
           subtitle={subtitle}
         />
       }

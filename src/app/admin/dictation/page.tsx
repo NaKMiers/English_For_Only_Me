@@ -3,7 +3,6 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
-import { AuthControl } from '@/components/common/AuthControl'
 import { PageShell } from '@/components/common/PageShell'
 import { AdminCreateTopicForm } from '@/components/dictation/admin/AdminCreateTopicForm'
 import {
@@ -182,14 +181,7 @@ export default async function AdminDictationPage({ searchParams }: Props) {
   }
 
   return (
-    <PageShell
-      topbar={
-        <AppTopbar
-          subtitle={t.admin.shell.dictation}
-          authControl={<AuthControl />}
-        />
-      }
-    >
+    <PageShell topbar={<AppTopbar subtitle={t.admin.shell.dictation} />}>
       <section className="grid gap-5 px-4 pb-6 md:pr-6 md:pl-0">
         <header className="page-hero grid gap-4">
           <div className="flex flex-wrap items-center justify-between gap-3">

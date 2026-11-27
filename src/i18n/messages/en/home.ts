@@ -5,8 +5,33 @@ export const home = {
     one: '{date} · {count} review due today',
     other: '{date} · {count} reviews due today',
   },
-  dashboard: 'Dashboard',
+  dashboard: 'Study Desk',
   modulesNav: 'Modules',
+  view: {
+    simple: 'Simple',
+    full: 'Full',
+    switchToFull: 'Switch to the full dashboard',
+    switchToSimple: 'Switch to the simple dashboard',
+  },
+  simple: {
+    upNext: 'Up next',
+    allClear: 'All clear',
+    due: '{count} due',
+    dictationReview: 'Dictation review',
+    vocabularyRecall: 'Vocabulary recall',
+    grammar: 'Grammar',
+    grammarStart: 'Start the path',
+    ielts: 'IELTS practice',
+    ieltsHint: 'Full tests and drills',
+    focus: 'Start here',
+    focusDue: '{count} reviews waiting',
+    focusLesson: 'Your next lesson',
+    start: 'Start',
+    numbersTitle: 'At a glance',
+    thisWeek: 'Minutes this week',
+    wordsKnown: 'Words known',
+    accuracy: 'Dictation accuracy',
+  },
   learningProgress: 'Learning progress',
   progress: {
     dictation: 'Dictation',
@@ -67,9 +92,35 @@ export const home = {
     nextUp: 'Next up',
     pickLesson: 'Pick a lesson',
     dayStreak: 'Day streak',
-    advice:
-      'Short, steady sessions beat long ones. Keep the streak going with one listening clip and one grammar lesson.',
     minutesThisMonth: 'Minutes this month',
     videosDone: 'Videos done',
+    moods: {
+      ready: {
+        label: 'Ready',
+        message: 'Pick one thing and start: a clip, a word set or a lesson.',
+      },
+      fired: {
+        label: 'Fired up',
+        message:
+          "{streak} days in a row. Keep the fire going with today's reviews.",
+      },
+      happy: {
+        label: 'Happy',
+        message: 'Nothing is waiting. A new clip or lesson is a bonus today.',
+      },
+      proud: {
+        label: 'Proud of you',
+        message: '{streak} days in a row. That is a real habit now.',
+      },
+      worried: {
+        label: 'A bit worried',
+        message:
+          '{due} reviews are piling up. Ten minutes will clear a good chunk.',
+      },
+      sleepy: {
+        label: 'Sleepy',
+        message: 'A quiet week. Wake me up with one short clip.',
+      },
+    },
   },
 }

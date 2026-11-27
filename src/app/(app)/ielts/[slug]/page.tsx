@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
-import { AuthControl } from '@/components/common/AuthControl'
 import { PageHeader } from '@/components/common/PageHeader'
 import { PageShell } from '@/components/common/PageShell'
 import { hasGoogleAuth, hasMongoDbUri } from '@/constants/environments'
@@ -113,7 +112,6 @@ export default async function IeltsTestPage({ params }: Props) {
       topbar={
         <AppTopbar
           activeHref="/ielts"
-          authControl={<AuthControl />}
           subtitle={t.shell.subtitle}
         />
       }

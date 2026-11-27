@@ -4,19 +4,28 @@ import dynamic from 'next/dynamic'
 import Image from 'next/image'
 import { useCallback, useState, type KeyboardEvent } from 'react'
 
-import { useMessages } from '@/i18n/client'
+import { cn } from '@/lib/utils'
 
 interface Props {
   avatarUrl?: string | null
   label: string
   initial: string
   isAdmin: boolean
-  /** NextAuth signOut() wrapped in a server action, passed from AuthControl. */
+  /** NextAuth signOut() wrapped in a server action, passed from AccountControl. */
   signOutAction: () => Promise<void>
+  /**
+   * `chip`: avatar and first name (the home topbar). `rail`: the avatar
+   * alone, the size of the rail's toggles, with the menu opening sideways.
+   */
+  variant?: 'chip' | 'rail'
 }
 
-const TRIGGER_CLASS_NAME =
-  'border-line bg-surface hover:bg-tint rounded-control flex min-h-11 min-w-0 items-center gap-2 border px-2 transition-colors'
+const TRIGGER_CLASS_NAMES = {
+  chip: 'soft-press hover-pop border-line bg-surface-muted hover:bg-tint rounded-control flex min-h-11 min-w-0 items-center gap-2.5 border py-1 pr-3 pl-1',
+  // A squircle in a brand gradient ring: unlike the round, grey toggles
+  // above it, it reads as "you", not as a setting.
+  rail: 'soft-press hover-pop from-brand via-accent-pink to-accent-orange grid size-12 place-items-center rounded-[18px] bg-linear-135 p-[2.5px] shadow-sm',
+} as const
 
 const loadUserMenuPopup = () => import('./UserMenuPopup')
 
@@ -30,7 +39,8 @@ function prefetchPopup() {
 }
 
 /**
- * Account menu in the topbar. The identity chip renders as a plain button; the
+ * Account menu: a chip in the home topbar, the avatar alone at the foot of
+ * the rail. The identity chip renders as a plain button; the
  * dropdown (app shortcuts, the admin console for admins, sign-out) and the
  * sign-out dialog load on the first interaction, keeping the base-ui popup
  * code off every page's initial bundle. Hover or focus prefetches the chunk.
@@ -43,8 +53,10 @@ export function UserMenu({
   initial,
   isAdmin,
   signOutAction,
+  variant = 'chip',
 }: Props) {
-  const t = useMessages()
+  const triggerClassName = TRIGGER_CLASS_NAMES[variant]
+  const rail = variant === 'rail'
   const [isActivated, setIsActivated] = useState(false)
   const [isPopupMounted, setIsPopupMounted] = useState(false)
   const handlePopupMounted = useCallback(() => setIsPopupMounted(true), [])
@@ -56,6 +68,7 @@ export function UserMenu({
     setIsActivated(true)
   }
 
+  // A rounded-square avatar and the first name: the role lives in the menu.
   const chip = (
     <>
       {avatarUrl ? (
@@ -63,29 +76,36 @@ export function UserMenu({
           src={avatarUrl}
           alt=""
           aria-hidden="true"
-          width={28}
-          height={28}
+          width={36}
+          height={36}
           unoptimized
           referrerPolicy="no-referrer"
-          className="border-line bg-surface rounded-tag size-7 shrink-0 border object-cover"
+          className={cn(
+            'bg-surface shrink-0 object-cover',
+            rail
+              ? 'border-board size-full rounded-[15px] border-2'
+              : 'border-line rounded-control size-9 border'
+          )}
         />
       ) : (
         <span
           aria-hidden="true"
-          className="bg-brand-soft text-brand-ink grid size-7 shrink-0 place-items-center font-sans text-sm font-semibold"
+          className={cn(
+            'bg-brand-soft text-brand-ink grid shrink-0 place-items-center font-sans text-sm font-semibold',
+            rail
+              ? 'border-board size-full rounded-[15px] border-2'
+              : 'rounded-control size-9'
+          )}
         >
           {initial}
         </span>
       )}
-      <span className="grid min-w-0 leading-tight">
-        <span className="truncate font-sans text-sm font-semibold">
-          {label}
-        </span>
-        {isAdmin && (
-          <span className="text-ink-soft text-xs font-normal">
-            {t.common.auth.admin}
-          </span>
-        )}
+      <span
+        className={
+          rail ? 'sr-only' : 'max-w-32 truncate font-sans text-sm font-medium'
+        }
+      >
+        {label}
       </span>
     </>
   )
@@ -102,7 +122,7 @@ export function UserMenu({
           onFocus={prefetchPopup}
           onClick={() => setIsActivated(true)}
           onKeyDown={handleKeyDown}
-          className={TRIGGER_CLASS_NAME}
+          className={triggerClassName}
         >
           {chip}
         </button>
@@ -112,8 +132,9 @@ export function UserMenu({
           chip={chip}
           isAdmin={isAdmin}
           onMounted={handlePopupMounted}
+          side={rail ? 'right' : 'bottom'}
           signOutAction={signOutAction}
-          triggerClassName={TRIGGER_CLASS_NAME}
+          triggerClassName={triggerClassName}
         />
       )}
     </>

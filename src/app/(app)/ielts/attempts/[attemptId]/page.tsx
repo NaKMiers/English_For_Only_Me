@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
-import { AuthControl } from '@/components/common/AuthControl'
 import { PageHeader } from '@/components/common/PageHeader'
 import { PageShell } from '@/components/common/PageShell'
 import { ObjectiveResult } from '@/components/ielts/review/ObjectiveResult'
@@ -69,7 +68,6 @@ export default async function IeltsResultPage({ params }: Props) {
       topbar={
         <AppTopbar
           activeHref="/ielts"
-          authControl={<AuthControl />}
           subtitle={t.ielts.shell.subtitle}
         />
       }

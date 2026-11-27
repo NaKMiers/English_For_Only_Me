@@ -18,6 +18,7 @@ import {
   listTopics,
   listTopicSummaries,
   listVideosForTopic,
+  listVideoTopicIds,
 } from './contentRepository'
 
 /**
@@ -72,6 +73,13 @@ export const getCachedNoTopicVideos = createCatalogReader({
   load: listNoTopicVideos,
   revive: videos =>
     reviveDatesInList<DictationVideoApiRecord>(videos, RECORD_DATES),
+  tag: CACHE_TAGS.dictationCatalog,
+})
+
+export const getCachedVideoTopicIds = createCatalogReader({
+  key: 'dictation-video-topic-ids',
+  load: listVideoTopicIds,
+  revive: rows => rows,
   tag: CACHE_TAGS.dictationCatalog,
 })
 

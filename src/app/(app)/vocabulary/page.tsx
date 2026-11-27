@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
-import { AuthControl } from '@/components/common/AuthControl'
 import { PageShell } from '@/components/common/PageShell'
 import { VocabularyDashboard } from '@/components/vocabulary/VocabularyDashboard'
 import { hasMongoDbUri } from '@/constants/environments'
@@ -51,7 +50,6 @@ export default async function VocabularyPage() {
         <AppTopbar
           activeHref="/vocabulary"
           subtitle={t.vocabulary.page.subtitle}
-          authControl={<AuthControl />}
         />
       }
     >

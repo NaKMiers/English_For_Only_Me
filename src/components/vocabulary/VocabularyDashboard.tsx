@@ -1,6 +1,6 @@
 'use client'
 
-import { AlertCircle, BookA, Flame, List } from 'lucide-react'
+import { AlertCircle, BookA, List } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
@@ -43,6 +43,7 @@ import {
 import { VocabularyRecallLauncher } from './VocabularyRecallLauncher'
 import { VocabularySearchPanel } from './VocabularySearchPanel'
 import { VocabularyStatsOverview } from './VocabularyStatsOverview'
+import { WordGardenHero } from './WordGardenHero'
 import {
   buildOptimisticUserItem,
   createEntryWriteTracker,
@@ -774,19 +775,6 @@ export function VocabularyDashboard({
       <PageHeader
         actions={
           <>
-            <span
-              className="bg-pastel-peach text-accent-orange flex min-h-11 items-center gap-2 rounded-full px-4"
-              title={vocab.dashboard.streak}
-            >
-              <Flame
-                aria-hidden="true"
-                className="size-5 fill-current"
-              />
-              <strong className="font-sans text-xl leading-none font-medium tabular-nums">
-                {stats.activeStreakDays}
-              </strong>
-              <span className="sr-only">{vocab.dashboard.streak}</span>
-            </span>
             <ActionButton
               href="/vocabulary/words"
               icon={<List aria-hidden="true" />}
@@ -822,6 +810,8 @@ export function VocabularyDashboard({
           {statusMessage}
         </div>
       ) : null}
+
+      <WordGardenHero stats={stats} />
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,20rem)_minmax(0,1fr)]">
         <VocabularyRecallLauncher

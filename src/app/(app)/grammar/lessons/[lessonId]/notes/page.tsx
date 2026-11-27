@@ -3,7 +3,6 @@ import type { Metadata } from 'next'
 import { notFound, redirect } from 'next/navigation'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
-import { AuthControl } from '@/components/common/AuthControl'
 import { PageHeader } from '@/components/common/PageHeader'
 import { PageShell } from '@/components/common/PageShell'
 import { ContentPanel } from '@/components/common/ContentPanel'
@@ -58,7 +57,6 @@ export default async function GrammarNotesPage({ params }: Props) {
       topbar={
         <AppTopbar
           activeHref="/grammar"
-          authControl={<AuthControl />}
           subtitle={t.grammar.subtitle}
         />
       }

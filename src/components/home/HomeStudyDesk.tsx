@@ -13,11 +13,8 @@ import Link from 'next/link'
 import type { ReactNode } from 'react'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
-import { AuthControl } from '@/components/common/AuthControl'
 import { PageShell } from '@/components/common/PageShell'
 import { Sparkline } from '@/components/common/Sparkline'
-import { APP_MODULES } from '@/constants/modules'
-import { MODULE_THEMES } from '@/constants/theme'
 import { DEFAULT_LOCALE, INTL_LOCALES, type Locale } from '@/i18n/config'
 import { format, plural } from '@/i18n/format'
 import type { Messages } from '@/i18n/messages'
@@ -27,7 +24,12 @@ import type { DictationGlobalStatsRecord } from '@/modules/dictation/types'
 import type { VocabStatsRecord } from '@/modules/vocabulary/types'
 
 import { HomeBuddyCard } from './HomeBuddyCard'
+import { HomeModuleNav } from './HomeModuleNav'
 import { HomeModuleTiles, MODULE_ICONS } from './HomeModuleTiles'
+import { HomeSimpleView } from './HomeSimpleView'
+import { HomeViewSwitch } from './HomeViewSwitch'
+import { pickBuddyMood } from './buddyMood'
+import { DEFAULT_HOME_VIEW, type HomeView } from './homeView'
 
 /** What the grammar path wants next, for the plan. */
 export interface GrammarTodayRecord {
@@ -44,6 +46,8 @@ interface Props {
   /** Clock for the greeting date; injectable for tests. */
   now?: Date
   userName?: string | null
+  /** Simple or full dashboard; the page reads the learner's cookie. */
+  view?: HomeView
   vocabStats?: VocabStatsRecord | null
 }
 
@@ -231,6 +235,7 @@ export function HomeStudyDesk({
   messages = en,
   now = new Date(),
   userName = null,
+  view = DEFAULT_HOME_VIEW,
   vocabStats = null,
 }: Props) {
   const t = messages.home
@@ -248,6 +253,30 @@ export function HomeStudyDesk({
   const accuracyTrend =
     dictationStats?.firstTryAccuracyTrend.map(point => point.accuracy) ?? []
   const latestAccuracy = accuracyTrend.at(-1)
+  const streakDays = Math.max(
+    dictationStats?.activeStreakDays ?? 0,
+    vocabStats?.activeStreakDays ?? 0
+  )
+  const hasStats = Boolean(dictationStats || vocabStats || grammarToday)
+  const mood = pickBuddyMood({
+    hasStats,
+    learnedToday: vocabStats?.learnedTodayCount ?? 0,
+    streakDays,
+    totalDue: dueToday,
+    weeklyMinutes,
+  })
+  const buddy = (variant: 'full' | 'simple') => (
+    <HomeBuddyCard
+      completedVideoCount={dictationStats?.completedVideoCount ?? 0}
+      messages={messages}
+      monthlyMinutes={minutes(dictationStats?.monthlyPracticeTimeMs ?? 0)}
+      mood={mood}
+      nextGrammarTitle={grammarToday?.nextTitle ?? null}
+      streakDays={streakDays}
+      totalDue={dueToday}
+      variant={variant}
+    />
+  )
 
   const progress: ProgressStat[] = [
     {
@@ -298,6 +327,7 @@ export function HomeStudyDesk({
     <PageShell
       topbar={
         <AppTopbar
+          showAccount
           activeHref="/"
           title={
             firstName
@@ -305,274 +335,253 @@ export function HomeStudyDesk({
               : messages.common.app.name
           }
           subtitle={plural(t.dueToday, dueToday, { date: dateLabel })}
-          authControl={<AuthControl />}
         />
       }
     >
       <div className="grid gap-6 px-4 pb-6 md:pr-6 md:pl-0">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <h1
-            id="home-title"
-            className="font-sans text-4xl font-medium tracking-tight sm:text-5xl"
-          >
-            {t.dashboard}
-          </h1>
-          <nav
-            aria-label={t.modulesNav}
-            className="flex flex-wrap gap-2"
-          >
-            {APP_MODULES.filter(module => module.status === 'active').map(
-              module => {
-                const Icon = MODULE_ICONS[module.key] ?? Sparkles
-                const theme = MODULE_THEMES[module.key]
-
-                return (
-                  <Link
-                    key={module.key}
-                    href={module.href}
-                    className={cn(
-                      'soft-press bg-surface hover:bg-tint-soft inline-flex min-h-11 items-center gap-2 rounded-full border-[1.5px] px-4 text-sm font-medium',
-                      theme.outline,
-                      theme.accent
-                    )}
-                  >
-                    <Icon
-                      aria-hidden="true"
-                      className="size-4"
-                    />
-                    {messages.common.modules[module.key].shortTitle}
-                  </Link>
-                )
-              }
-            )}
-          </nav>
-        </div>
-
-        <div className="motion-stagger grid gap-5 md:grid-cols-2 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_minmax(0,0.95fr)]">
-          {/* Column 1: progress, modules, counters */}
-          <div className="grid min-w-0 content-start gap-5 md:col-span-2 xl:col-span-1">
-            <Card className="grid gap-3">
-              <Link
-                href="/dictation/stats"
-                className="hover:bg-tint-soft flex items-center justify-between gap-3 rounded-2xl px-2 py-1.5 transition-colors"
-              >
-                <span className="flex items-center gap-3 text-sm font-medium">
-                  <span className="bg-pastel-sky text-accent-blue grid size-9 place-items-center rounded-full">
-                    <Sparkles
-                      aria-hidden="true"
-                      className="size-4"
-                    />
-                  </span>
-                  {t.learningProgress}
-                </span>
-                <span className="border-line grid size-9 place-items-center rounded-full border">
-                  <ArrowRight
-                    aria-hidden="true"
-                    className="size-4"
-                  />
-                </span>
-              </Link>
-              <div className="grid gap-3 sm:grid-cols-2">
-                {progress.map(stat => (
-                  <ProgressTile
-                    key={stat.label}
-                    stat={stat}
-                  />
-                ))}
-              </div>
-            </Card>
-
-            <HomeModuleTiles
-              facts={facts}
+        <HomeViewSwitch
+          initialView={view}
+          labels={{
+            full: t.view.full,
+            simple: t.view.simple,
+            switchToFull: t.view.switchToFull,
+            switchToSimple: t.view.switchToSimple,
+            title: t.dashboard,
+          }}
+          nav={<HomeModuleNav messages={messages} />}
+          simple={
+            <HomeSimpleView
+              accuracyPercent={latestAccuracy ?? null}
+              buddy={buddy('simple')}
+              dictationDue={dictationStats?.dueReviewItemCount ?? 0}
+              grammarDue={grammarToday?.dueCount ?? 0}
               messages={messages}
+              nextGrammarTitle={grammarToday?.nextTitle ?? null}
+              vocabularyDue={vocabStats?.dueTodayCount ?? 0}
+              weeklyMinutes={weeklyMinutes}
+              wordsKnown={vocabStats?.totalKnownCount ?? 0}
             />
-
-            <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
-              <Card className="bg-pastel-sky/60 grid content-start gap-3 p-4">
-                <span className="text-sm font-medium">{t.weakWords}</span>
-                {dictationStats?.weakWords.length ? (
-                  <ul className="flex flex-wrap gap-1.5">
-                    {dictationStats.weakWords.slice(0, 6).map(word => (
-                      <li
-                        key={word.word}
-                        className="bg-surface rounded-full px-2.5 py-1 text-xs font-medium"
-                      >
-                        {word.word}
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-ink-soft text-xs leading-5">
-                    {t.weakWordsEmpty}
-                  </p>
-                )}
-              </Card>
-              <Card className="grid grid-cols-3 items-center p-4 text-center">
-                {[
-                  {
-                    label: t.counters.videos,
-                    value: dictationStats?.completedVideoCount ?? 0,
-                  },
-                  {
-                    label: t.counters.streak,
-                    value: Math.max(
-                      dictationStats?.activeStreakDays ?? 0,
-                      vocabStats?.activeStreakDays ?? 0
-                    ),
-                  },
-                  {
-                    label: t.counters.words,
-                    value: vocabStats?.totalKnownCount ?? 0,
-                  },
-                ].map((item, index) => (
-                  <div
-                    key={item.label}
-                    className={cn(
-                      'grid gap-1',
-                      index > 0 && 'border-line border-l'
-                    )}
+          }
+          full={
+            <div className="motion-stagger grid gap-5 md:grid-cols-2 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_minmax(0,0.95fr)]">
+              {/* Column 1: progress, modules, counters */}
+              <div className="grid min-w-0 content-start gap-5 md:col-span-2 xl:col-span-1">
+                <Card className="grid gap-3">
+                  <Link
+                    href="/dictation/stats"
+                    className="hover:bg-tint-soft flex items-center justify-between gap-3 rounded-2xl px-2 py-1.5 transition-colors"
                   >
-                    <span className="text-ink-soft text-xs">{item.label}</span>
-                    <strong className="font-sans text-2xl font-medium">
-                      {item.value}
-                    </strong>
+                    <span className="flex items-center gap-3 text-sm font-medium">
+                      <span className="bg-pastel-sky text-accent-blue grid size-9 place-items-center rounded-full">
+                        <Sparkles
+                          aria-hidden="true"
+                          className="size-4"
+                        />
+                      </span>
+                      {t.learningProgress}
+                    </span>
+                    <span className="border-line grid size-9 place-items-center rounded-full border">
+                      <ArrowRight
+                        aria-hidden="true"
+                        className="size-4"
+                      />
+                    </span>
+                  </Link>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {progress.map(stat => (
+                      <ProgressTile
+                        key={stat.label}
+                        stat={stat}
+                      />
+                    ))}
                   </div>
-                ))}
-              </Card>
-            </div>
-          </div>
+                </Card>
 
-          {/* Column 2: today's plan and schedule */}
-          <div className="grid min-w-0 content-start gap-4">
-            <h2 className="font-sans text-xl leading-snug font-medium tracking-tight">
-              {t.plan.title}{' '}
-              <span className="marker text-brand">{t.plan.madeForYou}</span>
-            </h2>
-            <PlanGroup
-              title={t.plan.listen}
-              count={format(t.plan.minutesThisWeek, { count: weeklyMinutes })}
-              tint="bg-pastel-sky/70"
-              items={[
-                {
-                  hint: format(t.plan.videos, {
-                    count: dictationStats?.totalVideoCount ?? 0,
-                  }),
-                  href: '/dictation',
-                  icon: Headphones,
-                  label: t.plan.dictation,
-                  tone: 'text-accent-blue',
-                },
-                {
-                  hint: format(t.plan.words, {
-                    count: dictationStats?.weakWords.length ?? 0,
-                  }),
-                  href: '/dictation/review',
-                  icon: RotateCcw,
-                  label: t.plan.weakWords,
-                  tone: 'text-accent-orange',
-                },
-                {
-                  hint: t.plan.addOne,
-                  href: '/dictation',
-                  icon: Plus,
-                  label: t.plan.newClip,
-                  tone: 'text-ink-soft',
-                },
-              ]}
-            />
-            <PlanGroup
-              title={t.plan.readWrite}
-              count={format(t.plan.toReview, {
-                count: grammarToday?.dueCount ?? 0,
-              })}
-              tint="bg-pastel-rose/70"
-              items={[
-                {
-                  hint: format(t.plan.due, {
-                    count: vocabStats?.dueTodayCount ?? 0,
-                  }),
-                  href: '/vocabulary',
-                  icon: BookA,
-                  label: t.plan.vocabulary,
-                  tone: 'text-accent-green',
-                },
-                {
-                  hint: grammarToday?.nextTitle
-                    ? t.plan.nextLesson
-                    : t.plan.start,
-                  href: '/grammar',
-                  icon: PenLine,
-                  label: t.plan.grammar,
-                  tone: 'text-accent-purple',
-                },
-                {
-                  hint: t.plan.fullTests,
-                  href: '/ielts',
-                  icon: MODULE_ICONS.ielts ?? Sparkles,
-                  label: t.plan.ielts,
-                  tone: 'text-accent-orange',
-                },
-              ]}
-            />
-            <div className="grid gap-2">
-              <div className="flex items-center justify-between">
-                <h2 className="font-sans text-lg font-medium">
-                  {t.schedule.title}
-                </h2>
-                <Link
-                  href="/dictation/review"
-                  aria-label={t.schedule.openReview}
-                  className="soft-press bg-pastel-lemon grid size-10 place-items-center rounded-full"
-                >
-                  <Plus
-                    aria-hidden="true"
-                    className="size-4"
-                  />
-                </Link>
+                <HomeModuleTiles
+                  facts={facts}
+                  messages={messages}
+                />
+
+                <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
+                  <Card className="bg-pastel-sky/60 grid content-start gap-3 p-4">
+                    <span className="text-sm font-medium">{t.weakWords}</span>
+                    {dictationStats?.weakWords.length ? (
+                      <ul className="flex flex-wrap gap-1.5">
+                        {dictationStats.weakWords.slice(0, 6).map(word => (
+                          <li
+                            key={word.word}
+                            className="bg-surface rounded-full px-2.5 py-1 text-xs font-medium"
+                          >
+                            {word.word}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-ink-soft text-xs leading-5">
+                        {t.weakWordsEmpty}
+                      </p>
+                    )}
+                  </Card>
+                  <Card className="grid grid-cols-3 items-center p-4 text-center">
+                    {[
+                      {
+                        label: t.counters.videos,
+                        value: dictationStats?.completedVideoCount ?? 0,
+                      },
+                      {
+                        label: t.counters.streak,
+                        value: streakDays,
+                      },
+                      {
+                        label: t.counters.words,
+                        value: vocabStats?.totalKnownCount ?? 0,
+                      },
+                    ].map((item, index) => (
+                      <div
+                        key={item.label}
+                        className={cn(
+                          'grid gap-1',
+                          index > 0 && 'border-line border-l'
+                        )}
+                      >
+                        <span className="text-ink-soft text-xs">
+                          {item.label}
+                        </span>
+                        <strong className="font-sans text-2xl font-medium">
+                          {item.value}
+                        </strong>
+                      </div>
+                    ))}
+                  </Card>
+                </div>
               </div>
-              <Card className="p-1.5">
-                <ul className="grid">
-                  <ScheduleRow
-                    href="/dictation/review"
-                    icon={RotateCcw}
-                    label={t.schedule.dictationReview}
-                    value={format(t.schedule.due, {
-                      count: dictationStats?.dueReviewItemCount ?? 0,
-                    })}
-                  />
-                  <ScheduleRow
-                    href="/vocabulary"
-                    icon={BookA}
-                    label={t.schedule.vocabularyRecall}
-                    value={format(t.schedule.due, {
-                      count: vocabStats?.dueTodayCount ?? 0,
-                    })}
-                  />
-                  <ScheduleRow
-                    href="/grammar"
-                    icon={PenLine}
-                    label={t.schedule.grammarReview}
-                    value={format(t.schedule.due, {
-                      count: grammarToday?.dueCount ?? 0,
-                    })}
-                  />
-                </ul>
-              </Card>
-            </div>
-          </div>
 
-          {/* Column 3: the highlight card */}
-          <HomeBuddyCard
-            completedVideoCount={dictationStats?.completedVideoCount ?? 0}
-            messages={messages}
-            monthlyMinutes={minutes(dictationStats?.monthlyPracticeTimeMs ?? 0)}
-            nextGrammarTitle={grammarToday?.nextTitle ?? null}
-            streakDays={Math.max(
-              dictationStats?.activeStreakDays ?? 0,
-              vocabStats?.activeStreakDays ?? 0
-            )}
-          />
-        </div>
+              {/* Column 2: today's plan and schedule */}
+              <div className="grid min-w-0 content-start gap-4">
+                <h2 className="font-sans text-xl leading-snug font-medium tracking-tight">
+                  {t.plan.title}{' '}
+                  <span className="marker text-brand">{t.plan.madeForYou}</span>
+                </h2>
+                <PlanGroup
+                  title={t.plan.listen}
+                  count={format(t.plan.minutesThisWeek, {
+                    count: weeklyMinutes,
+                  })}
+                  tint="bg-pastel-sky/70"
+                  items={[
+                    {
+                      hint: format(t.plan.videos, {
+                        count: dictationStats?.totalVideoCount ?? 0,
+                      }),
+                      href: '/dictation',
+                      icon: Headphones,
+                      label: t.plan.dictation,
+                      tone: 'text-accent-blue',
+                    },
+                    {
+                      hint: format(t.plan.words, {
+                        count: dictationStats?.weakWords.length ?? 0,
+                      }),
+                      href: '/dictation/review',
+                      icon: RotateCcw,
+                      label: t.plan.weakWords,
+                      tone: 'text-accent-orange',
+                    },
+                    {
+                      hint: t.plan.addOne,
+                      href: '/dictation',
+                      icon: Plus,
+                      label: t.plan.newClip,
+                      tone: 'text-ink-soft',
+                    },
+                  ]}
+                />
+                <PlanGroup
+                  title={t.plan.readWrite}
+                  count={format(t.plan.toReview, {
+                    count: grammarToday?.dueCount ?? 0,
+                  })}
+                  tint="bg-pastel-rose/70"
+                  items={[
+                    {
+                      hint: format(t.plan.due, {
+                        count: vocabStats?.dueTodayCount ?? 0,
+                      }),
+                      href: '/vocabulary',
+                      icon: BookA,
+                      label: t.plan.vocabulary,
+                      tone: 'text-accent-green',
+                    },
+                    {
+                      hint: grammarToday?.nextTitle
+                        ? t.plan.nextLesson
+                        : t.plan.start,
+                      href: '/grammar',
+                      icon: PenLine,
+                      label: t.plan.grammar,
+                      tone: 'text-accent-purple',
+                    },
+                    {
+                      hint: t.plan.fullTests,
+                      href: '/ielts',
+                      icon: MODULE_ICONS.ielts ?? Sparkles,
+                      label: t.plan.ielts,
+                      tone: 'text-accent-orange',
+                    },
+                  ]}
+                />
+                <div className="grid gap-2">
+                  <div className="flex items-center justify-between">
+                    <h2 className="font-sans text-lg font-medium">
+                      {t.schedule.title}
+                    </h2>
+                    <Link
+                      href="/dictation/review"
+                      aria-label={t.schedule.openReview}
+                      className="soft-press bg-pastel-lemon grid size-10 place-items-center rounded-full"
+                    >
+                      <Plus
+                        aria-hidden="true"
+                        className="size-4"
+                      />
+                    </Link>
+                  </div>
+                  <Card className="p-1.5">
+                    <ul className="grid">
+                      <ScheduleRow
+                        href="/dictation/review"
+                        icon={RotateCcw}
+                        label={t.schedule.dictationReview}
+                        value={format(t.schedule.due, {
+                          count: dictationStats?.dueReviewItemCount ?? 0,
+                        })}
+                      />
+                      <ScheduleRow
+                        href="/vocabulary"
+                        icon={BookA}
+                        label={t.schedule.vocabularyRecall}
+                        value={format(t.schedule.due, {
+                          count: vocabStats?.dueTodayCount ?? 0,
+                        })}
+                      />
+                      <ScheduleRow
+                        href="/grammar"
+                        icon={PenLine}
+                        label={t.schedule.grammarReview}
+                        value={format(t.schedule.due, {
+                          count: grammarToday?.dueCount ?? 0,
+                        })}
+                      />
+                    </ul>
+                  </Card>
+                </div>
+              </div>
+
+              {/* Column 3: the highlight card */}
+              {buddy('full')}
+            </div>
+          }
+        />
       </div>
     </PageShell>
   )

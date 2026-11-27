@@ -3,7 +3,6 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
-import { AuthControl } from '@/components/common/AuthControl'
 import { PageShell } from '@/components/common/PageShell'
 import { PageHeader } from '@/components/common/PageHeader'
 import { hasMongoDbUri } from '@/constants/environments'
@@ -63,14 +62,7 @@ export default async function AdminDashboard() {
   }
 
   return (
-    <PageShell
-      topbar={
-        <AppTopbar
-          subtitle={t.admin.shell.admin}
-          authControl={<AuthControl />}
-        />
-      }
-    >
+    <PageShell topbar={<AppTopbar subtitle={t.admin.shell.admin} />}>
       <section className="grid gap-5 px-4 pb-6 md:pr-6 md:pl-0">
         <PageHeader
           eyebrow={t.admin.dashboard.tag}
