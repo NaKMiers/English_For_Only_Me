@@ -43,7 +43,7 @@ export function HomeBuddyCard({
     <section
       aria-labelledby="home-buddy-title"
       className={cn(
-        'border-line via-pastel-cream to-surface relative grid content-between gap-5 overflow-hidden rounded-[28px] border bg-linear-170 via-55% p-5 transition-colors duration-500',
+        'border-line via-pastel-cream to-surface rounded-panel relative grid content-between gap-5 overflow-hidden border bg-linear-170 via-55% p-5 transition-colors duration-500',
         moodStyle.glow,
         variant === 'full' ? 'min-h-[560px]' : 'min-h-[480px]'
       )}
@@ -58,7 +58,7 @@ export function HomeBuddyCard({
         <Link
           href="/grammar"
           aria-label={t.openGrammar}
-          className="soft-press hover-lift group/grammar bg-surface/70 hover:bg-surface hover:ring-ink/10 grid size-11 place-items-center rounded-full ring-0 ring-transparent transition-[box-shadow,background-color] hover:ring-4"
+          className="soft-press hover-pop group/grammar bg-surface/70 hover:bg-surface hover:ring-ink/10 grid size-11 place-items-center rounded-full ring-0 ring-transparent transition-[box-shadow,background-color] hover:ring-4"
         >
           <ListChecks
             aria-hidden="true"
@@ -124,7 +124,7 @@ export function HomeBuddyCard({
         </div>
         {variant === 'full' ? (
           <div className="grid grid-cols-2 gap-3">
-            <div className="bg-surface/80 grid gap-1 rounded-2xl p-3">
+            <div className="bg-surface/80 rounded-control grid gap-1 p-3">
               <span className="text-ink-soft flex items-center justify-between text-xs">
                 {t.minutesThisMonth}
                 <Clock3
@@ -136,7 +136,7 @@ export function HomeBuddyCard({
                 {monthlyMinutes}
               </strong>
             </div>
-            <div className="bg-surface/80 grid gap-1 rounded-2xl p-3">
+            <div className="bg-surface/80 rounded-control grid gap-1 p-3">
               <span className="text-ink-soft flex items-center justify-between text-xs">
                 {t.videosDone}
                 <Trophy

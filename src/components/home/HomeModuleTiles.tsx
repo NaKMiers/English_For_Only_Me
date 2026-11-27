@@ -44,11 +44,11 @@ export function HomeModuleTiles({ facts, messages }: Props) {
             >
               <Link
                 href={module.href}
-                className="soft-press hover-lift border-line group grid h-full gap-3 rounded-[22px] border p-2 pb-3"
+                className="soft-press hover-pop border-line group rounded-panel grid h-full gap-3 border p-2 pb-3"
               >
                 <span
                   className={cn(
-                    'relative grid aspect-[5/4] place-items-center overflow-hidden rounded-2xl',
+                    'rounded-control relative grid aspect-[5/4] place-items-center overflow-hidden',
                     theme.tint
                   )}
                 >

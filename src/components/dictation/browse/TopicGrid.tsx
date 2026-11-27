@@ -39,7 +39,7 @@ function ThumbTile({
     <div
       aria-hidden="true"
       className={cn(
-        'border-line grid size-14 shrink-0 place-items-center overflow-hidden rounded-2xl border font-sans text-xl font-semibold',
+        'border-line rounded-control grid size-14 shrink-0 place-items-center overflow-hidden border font-sans text-xl font-medium',
         muted ? 'bg-tint text-ink-soft' : 'bg-tint-soft text-ink'
       )}
     >
@@ -81,7 +81,7 @@ function TopicCard({
     <Link
       href={href}
       className={cn(
-        'border-line hover:bg-tint-soft hover-lift soft-press grid grid-cols-[auto_1fr] items-center gap-3 rounded-[22px] border p-2.5',
+        'border-line hover:bg-tint-soft hover-pop soft-press rounded-panel grid grid-cols-[auto_1fr] items-center gap-3 border p-2.5',
         muted ? 'bg-tint' : 'bg-surface'
       )}
     >

@@ -59,7 +59,7 @@ export function HomeViewSwitch({
           <button
             type="button"
             onClick={toggle}
-            className="group -mx-2 inline-flex items-center gap-4 rounded-2xl px-2 py-1 text-left"
+            className="group rounded-control -mx-2 inline-flex items-center gap-4 px-2 py-1 text-left"
           >
             {labels.title}
             {/* Icon only; the view's name unrolls beside it on hover. */}

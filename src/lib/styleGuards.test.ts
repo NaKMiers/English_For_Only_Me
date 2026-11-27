@@ -82,18 +82,12 @@ const CORNERS: Guard = {
   allow: [
     // IELTS exam paper (paper fidelity) and the editor keep their own look.
     'src/components/ielts/widgets/TaskVisual.tsx',
+    // The account avatar's squircle ring (owner design), not a block corner.
+    'src/components/common/UserMenu.tsx',
   ],
   baseline: [
     'src/components/common/RouteError.tsx',
-    'src/components/common/UserMenu.tsx',
     'src/components/dictation/GuidedAnswerInput.tsx',
-    'src/components/dictation/browse/RecordShelves.tsx',
-    'src/components/dictation/browse/TopicGrid.tsx',
-    'src/components/home/HomeBuddyCard.tsx',
-    'src/components/home/HomeModuleTiles.tsx',
-    'src/components/home/HomeSimpleView.tsx',
-    'src/components/home/HomeStudyDesk.tsx',
-    'src/components/home/HomeViewSwitch.tsx',
     'src/components/ielts/catalogue/ProgressTabs.tsx',
     'src/components/ielts/catalogue/TestPath.tsx',
     'src/components/ui/tooltip.tsx',
@@ -177,11 +171,6 @@ const HOVER_LIFT: Guard = {
     'src/app/admin/page.tsx',
     'src/components/common/MetricTile.tsx',
     'src/components/dictation/browse/BrowseVideoList.tsx',
-    'src/components/dictation/browse/TopicGrid.tsx',
-    'src/components/home/HomeBuddyCard.tsx',
-    'src/components/home/HomeModuleTiles.tsx',
-    'src/components/home/HomeSimpleView.tsx',
-    'src/components/home/HomeStudyDesk.tsx',
   ],
   pattern: /\bhover-lift\b/,
   roots: COMPONENTS_AND_APP,

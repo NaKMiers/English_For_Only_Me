@@ -1,6 +1,7 @@
 import {
   ArrowRight,
   BookA,
+  CircleCheck,
   Clock3,
   GraduationCap,
   PenLine,
@@ -11,10 +12,12 @@ import {
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 
-import { ActionButton } from '@/components/ui/ActionButton'
+import { NextStopCard } from '@/components/journey/NextStopCard'
+import { StatChip, StatStrip } from '@/components/journey/StatChip'
 import { MODULE_THEMES } from '@/constants/theme'
 import { format } from '@/i18n/format'
 import type { Messages } from '@/i18n/messages'
+import { pickNextStop } from '@/lib/journey/nextStop'
 import { cn } from '@/lib/utils'
 
 type SimpleModule = 'dictation' | 'vocabulary' | 'grammar' | 'ielts'
@@ -51,11 +54,11 @@ function UpNextRow({ row, messages }: { row: NextRow; messages: Messages }) {
     <li>
       <Link
         href={row.href}
-        className="soft-press hover:bg-tint-soft group flex min-h-20 items-center gap-4 rounded-[20px] px-3 py-3 transition-colors"
+        className="soft-press hover-pop hover:bg-tint-soft group rounded-control flex min-h-20 items-center gap-4 px-3 py-3"
       >
         <span
           className={cn(
-            'grid size-14 shrink-0 place-items-center rounded-2xl',
+            'rounded-control grid size-14 shrink-0 place-items-center',
             theme.tint,
             theme.accent
           )}
@@ -72,16 +75,20 @@ function UpNextRow({ row, messages }: { row: NextRow; messages: Messages }) {
           </span>
           <span className="text-ink-soft truncate text-sm">{row.hint}</span>
         </span>
-        {row.due !== null ? (
-          <span
-            className={cn(
-              'shrink-0 rounded-full px-3 py-1 text-sm font-medium tabular-nums',
-              waiting ? 'bg-brand-soft text-brand-ink' : 'text-ink-soft'
-            )}
-          >
+        {row.due === null ? null : waiting ? (
+          <span className="bg-brand-soft text-brand-ink shrink-0 rounded-full px-3 py-1 text-sm font-medium tabular-nums">
             {format(messages.home.simple.due, { count: row.due })}
           </span>
-        ) : null}
+        ) : (
+          // Cleared today: a tick, the small win of the row.
+          <span className="text-lesson-correct flex shrink-0 items-center gap-1 text-sm">
+            <CircleCheck
+              aria-hidden="true"
+              className="size-5"
+            />
+            <span className="sr-only">{messages.common.journey.allClear}</span>
+          </span>
+        )}
         <ArrowRight
           aria-hidden="true"
           className="text-ink-soft size-4 shrink-0 transition-transform group-hover:translate-x-0.5"
@@ -93,8 +100,9 @@ function UpNextRow({ row, messages }: { row: NextRow; messages: Messages }) {
 
 /**
  * The calm dashboard. Same three-column frame as the full view, but each
- * block says one thing in large type: what is waiting in each module, the
- * one task to start with, three headline numbers, and the study buddy.
+ * block says one thing in large type: what is waiting in each module (a
+ * tick once a module is cleared), the one next stop, three headline
+ * numbers as big stat chips, and the study buddy.
  */
 export function HomeSimpleView({
   accuracyPercent,
@@ -143,39 +151,47 @@ export function HomeSimpleView({
       module: 'ielts',
     },
   ]
-  // The one task to start with: the module with the most reviews waiting,
-  // or the next grammar lesson when nothing is due.
+  // The one task to start with (one rule for every module): the module
+  // with the most reviews waiting, else the next grammar lesson.
   const busiest = rows
     .filter(row => (row.due ?? 0) > 0)
     .sort((left, right) => (right.due ?? 0) - (left.due ?? 0))[0]
-  const focus = busiest
-    ? {
-        detail: format(t.focusDue, { count: busiest.due ?? 0 }),
-        row: busiest,
-      }
-    : {
+  const picked = pickNextStop([
+    busiest
+      ? {
+          data: {
+            detail: format(t.focusDue, { count: busiest.due ?? 0 }),
+            row: busiest,
+          },
+          kind: 'due' as const,
+        }
+      : null,
+    {
+      data: {
         detail: t.focusLesson,
         row: { ...rows[2], label: nextGrammarTitle ?? t.grammarStart },
-      }
-  const FocusIcon = focus.row.icon
-  const focusTheme = MODULE_THEMES[focus.row.module]
+      },
+      kind: 'next' as const,
+    },
+  ])
+  const focus = picked.kind === 'done' ? null : picked.data
   const numbers = [
     {
       icon: Clock3,
       label: t.thisWeek,
-      tone: 'bg-pastel-sky text-accent-blue',
+      tone: 'dictation' as const,
       value: String(weeklyMinutes),
     },
     {
       icon: BookA,
       label: t.wordsKnown,
-      tone: 'bg-pastel-mint text-accent-green',
+      tone: 'vocabulary' as const,
       value: String(wordsKnown),
     },
     {
       icon: Target,
       label: t.accuracy,
-      tone: 'bg-pastel-peach text-accent-orange',
+      tone: 'ielts' as const,
       value: accuracyPercent === null ? '-' : `${accuracyPercent}%`,
     },
   ]
@@ -185,7 +201,7 @@ export function HomeSimpleView({
       {/* Column 1: what is waiting, module by module. */}
       <section
         aria-labelledby="home-next-title"
-        className="border-line bg-surface grid min-w-0 content-start gap-2 rounded-[26px] border p-3 sm:p-4 md:col-span-2 xl:col-span-1"
+        className="border-line bg-surface rounded-panel grid min-w-0 content-start gap-2 border p-3 sm:p-4 md:col-span-2 xl:col-span-1"
       >
         <div className="flex items-center justify-between gap-3 px-2 pt-1 pb-2">
           <h2
@@ -218,98 +234,40 @@ export function HomeSimpleView({
 
       {/* Column 2: the one task to start with, then three numbers. */}
       <div className="grid min-w-0 content-start gap-5">
-        <section
-          aria-labelledby="home-focus-title"
-          className={cn(
-            'grid min-w-0 gap-5 rounded-[26px] p-5',
-            focusTheme.tint
-          )}
-        >
-          <div className="flex items-start justify-between gap-3">
-            <span className="bg-surface/80 rounded-full px-3 py-1 text-xs font-medium">
-              {t.focus}
-            </span>
-            {/* The icon is a second way in: it lifts, fills and turns on
-                hover so it reads as a button, not a picture. */}
-            <Link
-              href={focus.row.href}
-              aria-label={`${t.start}: ${focus.row.label}`}
-              className={cn(
-                'soft-press hover-lift group/focus bg-surface/80 hover:bg-surface grid size-16 place-items-center rounded-full ring-0 ring-current/0 transition-[box-shadow,background-color] hover:ring-4 hover:ring-current/25',
-                focusTheme.accent
-              )}
-            >
-              <FocusIcon
-                aria-hidden="true"
-                className="size-8 transition-transform duration-300 ease-out group-hover/focus:scale-110 group-hover/focus:-rotate-45"
-                strokeWidth={1.6}
-              />
-            </Link>
-          </div>
-          <div className="grid gap-1">
-            <h2
-              id="home-focus-title"
-              className="font-sans text-3xl leading-tight font-medium tracking-tight wrap-break-word"
-            >
-              {focus.row.label}
-            </h2>
-            <p className="text-ink-soft text-sm">{focus.detail}</p>
-          </div>
-          <ActionButton
+        {focus ? (
+          <NextStopCard
+            actionLabel={t.start}
+            className="border-line border"
+            detail={focus.detail}
             href={focus.row.href}
-            tone="ink"
-            className="justify-self-start"
-            icon={
-              <ArrowRight
-                aria-hidden="true"
-                className="size-4"
-              />
-            }
-          >
-            {t.start}
-          </ActionButton>
-        </section>
+            pinLabel={messages.common.journey.nextStop}
+            title={focus.row.label}
+          />
+        ) : null}
 
         <section
           aria-labelledby="home-numbers-title"
-          className="border-line bg-surface grid min-w-0 gap-1 rounded-[26px] border p-3 sm:p-4"
+          className="border-line bg-surface rounded-panel grid min-w-0 gap-3 border p-3 sm:p-4"
         >
           <h2
             id="home-numbers-title"
-            className="px-2 pb-1 font-sans text-lg font-medium"
+            className="px-2 font-sans text-lg font-medium"
           >
             {t.numbersTitle}
           </h2>
-          <dl className="grid">
-            {numbers.map(item => {
-              const Icon = item.icon
-
-              return (
-                <div
-                  key={item.label}
-                  className="flex items-center gap-4 rounded-2xl px-2 py-2.5"
-                >
-                  <span
-                    className={cn(
-                      'grid size-12 shrink-0 place-items-center rounded-full',
-                      item.tone
-                    )}
-                  >
-                    <Icon
-                      aria-hidden="true"
-                      className="size-5"
-                    />
-                  </span>
-                  <dt className="text-ink-soft min-w-0 flex-1 truncate text-sm">
-                    {item.label}
-                  </dt>
-                  <dd className="font-sans text-3xl font-light tabular-nums">
-                    {item.value}
-                  </dd>
-                </div>
-              )
-            })}
-          </dl>
+          <StatStrip className="grid">
+            {numbers.map(item => (
+              <StatChip
+                className="bg-tint-soft"
+                icon={item.icon}
+                key={item.label}
+                label={item.label}
+                size="lg"
+                tone={item.tone}
+                value={item.value}
+              />
+            ))}
+          </StatStrip>
         </section>
       </div>
 

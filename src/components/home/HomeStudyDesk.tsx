@@ -1,7 +1,6 @@
 import {
   ArrowRight,
   BookA,
-  Clock3,
   Headphones,
   PenLine,
   Plus,
@@ -66,7 +65,7 @@ function Card({
   return (
     <div
       className={cn(
-        'border-line bg-surface min-w-0 rounded-[26px] border p-3',
+        'border-line bg-surface rounded-panel min-w-0 border p-3',
         className
       )}
     >
@@ -94,7 +93,7 @@ function ProgressTile({ stat }: { stat: ProgressStat }) {
     <Link
       href={stat.href}
       className={cn(
-        'soft-press hover-lift grid min-w-0 gap-3 rounded-[20px] p-4',
+        'soft-press hover-pop rounded-panel grid min-w-0 gap-3 p-4',
         stat.tint
       )}
     >
@@ -149,7 +148,7 @@ function PlanGroup({
   title: string
 }) {
   return (
-    <div className={cn('grid gap-3 rounded-[22px] p-3', tint)}>
+    <div className={cn('rounded-panel grid gap-3 p-3', tint)}>
       <div className="flex items-center justify-between gap-2 text-xs">
         <span className="bg-surface/80 rounded-full px-3 py-1 font-medium">
           {title}
@@ -164,7 +163,7 @@ function PlanGroup({
             <li key={item.label}>
               <Link
                 href={item.href}
-                className="soft-press hover:bg-surface/60 grid justify-items-center gap-1.5 rounded-2xl px-1 py-2 text-center"
+                className="soft-press hover-pop hover:bg-surface/60 rounded-control grid justify-items-center gap-1.5 px-1 py-2 text-center"
               >
                 <span
                   className={cn(
@@ -181,7 +180,7 @@ function PlanGroup({
                 <span className="text-sm leading-tight font-medium">
                   {item.label}
                 </span>
-                <span className="text-ink-soft text-[11px] leading-tight">
+                <span className="text-ink-soft text-xs leading-tight">
                   {item.hint}
                 </span>
               </Link>
@@ -190,42 +189,6 @@ function PlanGroup({
         })}
       </ul>
     </div>
-  )
-}
-
-function ScheduleRow({
-  href,
-  icon: Icon,
-  label,
-  value,
-}: {
-  href: string
-  icon: LucideIcon
-  label: string
-  value: string
-}) {
-  return (
-    <li>
-      <Link
-        href={href}
-        className="hover:bg-tint-soft flex min-h-12 items-center gap-3 rounded-2xl px-3 transition-colors"
-      >
-        <Icon
-          aria-hidden="true"
-          className="text-brand size-4 shrink-0"
-        />
-        <span className="min-w-0 flex-1 truncate text-sm font-medium">
-          {label}
-        </span>
-        <span className="text-ink-soft flex shrink-0 items-center gap-1.5 text-xs">
-          <Clock3
-            aria-hidden="true"
-            className="size-3.5"
-          />
-          {value}
-        </span>
-      </Link>
-    </li>
   )
 }
 
@@ -365,12 +328,12 @@ export function HomeStudyDesk({
           }
           full={
             <div className="motion-stagger grid gap-5 md:grid-cols-2 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_minmax(0,0.95fr)]">
-              {/* Column 1: progress, modules, counters */}
+              {/* Column 1: progress, modules, weak words */}
               <div className="grid min-w-0 content-start gap-5 md:col-span-2 xl:col-span-1">
                 <Card className="grid gap-3">
                   <Link
                     href="/dictation"
-                    className="hover:bg-tint-soft flex items-center justify-between gap-3 rounded-2xl px-2 py-1.5 transition-colors"
+                    className="soft-press hover-pop hover:bg-tint-soft rounded-control flex items-center justify-between gap-3 px-2 py-1.5"
                   >
                     <span className="flex items-center gap-3 text-sm font-medium">
                       <span className="bg-pastel-sky text-accent-blue grid size-9 place-items-center rounded-full">
@@ -403,61 +366,28 @@ export function HomeStudyDesk({
                   messages={messages}
                 />
 
-                <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
-                  <Card className="bg-pastel-sky/60 grid content-start gap-3 p-4">
-                    <span className="text-sm font-medium">{t.weakWords}</span>
-                    {dictationStats?.weakWords.length ? (
-                      <ul className="flex flex-wrap gap-1.5">
-                        {dictationStats.weakWords.slice(0, 6).map(word => (
-                          <li
-                            key={word.word}
-                            className="bg-surface rounded-full px-2.5 py-1 text-xs font-medium"
-                          >
-                            {word.word}
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <p className="text-ink-soft text-xs leading-5">
-                        {t.weakWordsEmpty}
-                      </p>
-                    )}
-                  </Card>
-                  <Card className="grid grid-cols-3 items-center p-4 text-center">
-                    {[
-                      {
-                        label: t.counters.videos,
-                        value: dictationStats?.completedVideoCount ?? 0,
-                      },
-                      {
-                        label: t.counters.streak,
-                        value: streakDays,
-                      },
-                      {
-                        label: t.counters.words,
-                        value: vocabStats?.totalKnownCount ?? 0,
-                      },
-                    ].map((item, index) => (
-                      <div
-                        key={item.label}
-                        className={cn(
-                          'grid gap-1',
-                          index > 0 && 'border-line border-l'
-                        )}
-                      >
-                        <span className="text-ink-soft text-xs">
-                          {item.label}
-                        </span>
-                        <strong className="font-sans text-2xl font-medium">
-                          {item.value}
-                        </strong>
-                      </div>
-                    ))}
-                  </Card>
-                </div>
+                <Card className="bg-pastel-sky/60 grid content-start gap-3 p-4">
+                  <span className="text-sm font-medium">{t.weakWords}</span>
+                  {dictationStats?.weakWords.length ? (
+                    <ul className="flex flex-wrap gap-1.5">
+                      {dictationStats.weakWords.slice(0, 6).map(word => (
+                        <li
+                          key={word.word}
+                          className="bg-surface rounded-full px-2.5 py-1 text-xs font-medium"
+                        >
+                          {word.word}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-ink-soft text-xs leading-5">
+                      {t.weakWordsEmpty}
+                    </p>
+                  )}
+                </Card>
               </div>
 
-              {/* Column 2: today's plan and schedule */}
+              {/* Column 2: today's plan (with what is due) */}
               <div className="grid min-w-0 content-start gap-4">
                 <h2 className="font-sans text-xl leading-snug font-medium tracking-tight">
                   {t.plan.title}{' '}
@@ -480,8 +410,8 @@ export function HomeStudyDesk({
                       tone: 'text-accent-blue',
                     },
                     {
-                      hint: format(t.plan.words, {
-                        count: dictationStats?.weakWords.length ?? 0,
+                      hint: format(t.plan.due, {
+                        count: dictationStats?.dueReviewItemCount ?? 0,
                       }),
                       href: '/dictation/review',
                       icon: RotateCcw,
@@ -514,9 +444,11 @@ export function HomeStudyDesk({
                       tone: 'text-accent-green',
                     },
                     {
-                      hint: grammarToday?.nextTitle
-                        ? t.plan.nextLesson
-                        : t.plan.start,
+                      hint: grammarToday?.dueCount
+                        ? format(t.plan.due, { count: grammarToday.dueCount })
+                        : grammarToday?.nextTitle
+                          ? t.plan.nextLesson
+                          : t.plan.start,
                       href: '/grammar',
                       icon: PenLine,
                       label: t.plan.grammar,
@@ -531,51 +463,6 @@ export function HomeStudyDesk({
                     },
                   ]}
                 />
-                <div className="grid gap-2">
-                  <div className="flex items-center justify-between">
-                    <h2 className="font-sans text-lg font-medium">
-                      {t.schedule.title}
-                    </h2>
-                    <Link
-                      href="/dictation/review"
-                      aria-label={t.schedule.openReview}
-                      className="soft-press bg-pastel-lemon grid size-10 place-items-center rounded-full"
-                    >
-                      <Plus
-                        aria-hidden="true"
-                        className="size-4"
-                      />
-                    </Link>
-                  </div>
-                  <Card className="p-1.5">
-                    <ul className="grid">
-                      <ScheduleRow
-                        href="/dictation/review"
-                        icon={RotateCcw}
-                        label={t.schedule.dictationReview}
-                        value={format(t.schedule.due, {
-                          count: dictationStats?.dueReviewItemCount ?? 0,
-                        })}
-                      />
-                      <ScheduleRow
-                        href="/vocabulary"
-                        icon={BookA}
-                        label={t.schedule.vocabularyRecall}
-                        value={format(t.schedule.due, {
-                          count: vocabStats?.dueTodayCount ?? 0,
-                        })}
-                      />
-                      <ScheduleRow
-                        href="/grammar"
-                        icon={PenLine}
-                        label={t.schedule.grammarReview}
-                        value={format(t.schedule.due, {
-                          count: grammarToday?.dueCount ?? 0,
-                        })}
-                      />
-                    </ul>
-                  </Card>
-                </div>
               </div>
 
               {/* Column 3: the highlight card */}

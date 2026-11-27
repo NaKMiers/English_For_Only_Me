@@ -4,6 +4,10 @@ import { describe, expect, test } from 'vitest'
 import { APP_MODULES } from '@/constants/modules'
 import { en } from '@/i18n/messages/en'
 
+import { render } from '@testing-library/react'
+
+import { expectLandingBudget } from '@/test/landingBudget'
+
 import { HomeStudyDesk } from './HomeStudyDesk'
 
 describe('HomeStudyDesk', () => {
@@ -99,7 +103,7 @@ describe('HomeStudyDesk', () => {
     expect(html).toContain('2 due')
     expect(html).toContain('Present simple')
     expect(html).toContain('href="/dictation/review"')
-    expect(html).toContain('Start here')
+    expect(html).toContain('Next stop')
     expect(html).toContain('Study buddy')
     expect(html).not.toContain('Learning progress')
     expect(html).not.toContain('Your modules')
@@ -118,5 +122,25 @@ describe('HomeStudyDesk', () => {
     expect(html).toContain('data-mood="worried"')
     expect(html).toContain('A bit worried')
     expect(html).toContain('25 reviews are piling up')
+  })
+
+  test('the simple view has one next stop, one cta, and ticks cleared rows', () => {
+    const { container } = render(
+      <HomeStudyDesk
+        grammarToday={{ dueCount: 2, nextTitle: 'Present simple' }}
+        view="simple"
+      />
+    )
+
+    expectLandingBudget(container)
+    // Dictation and vocabulary have nothing due: two cleared ticks.
+    expect(container.querySelectorAll('.lucide-circle-check')).toHaveLength(2)
+  })
+
+  test('the full view holds at most 5 blocks and no counters or schedule', () => {
+    const html = renderToStaticMarkup(<HomeStudyDesk view="full" />)
+
+    expect(html).not.toContain('Schedule')
+    expect(html).not.toContain('Open the review queue')
   })
 })

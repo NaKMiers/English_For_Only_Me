@@ -55,7 +55,7 @@ function Record({
     <li className="w-32 shrink-0 sm:w-36">
       <Link
         aria-label={format(t.recordLabel, { done, title: topic.title, total })}
-        className="record-link soft-press hover-pop group hover:bg-surface/80 grid justify-items-center gap-2.5 rounded-[22px] p-2 text-center"
+        className="record-link soft-press hover-pop group hover:bg-surface/80 rounded-panel grid justify-items-center gap-2.5 p-2 text-center"
         href={topic.href}
       >
         {/* The ring around the record fills with the topic's progress. */}

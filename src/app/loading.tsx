@@ -2,42 +2,40 @@ import {
   SkeletonBlock,
   SkeletonLine,
   SkeletonPageShell,
-  SkeletonPanel,
-  SkeletonTag,
 } from '@/components/common/PageSkeletons'
+import { Skeleton } from '@/components/ui/skeleton'
 
+/**
+ * The home simple view (the default): up-next rows, the next stop and the
+ * numbers, then the buddy, in the same three columns.
+ */
 export default function Loading() {
   return (
     <SkeletonPageShell
       activeHref="/"
       showAccount
     >
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1.12fr)_minmax(360px,0.88fr)]">
-        <section className="border-line bg-surface rounded-panel grid gap-4 border p-4 sm:p-5">
-          <div className="grid gap-2">
-            <SkeletonTag />
-            <SkeletonLine className="h-10 w-3/4" />
-            <SkeletonLine className="w-2/3" />
+      <div className="grid gap-6">
+        <div className="flex items-center justify-between gap-4">
+          <SkeletonLine className="h-9 w-48" />
+          <Skeleton className="size-11 rounded-full" />
+        </div>
+        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_minmax(0,0.95fr)]">
+          <div className="border-line bg-surface rounded-panel grid content-start gap-2 border p-3 sm:p-4 md:col-span-2 xl:col-span-1">
+            <SkeletonLine className="m-2 h-7 w-32" />
+            {Array.from({ length: 4 }).map((_, index) => (
+              <Skeleton
+                className="rounded-control h-20 w-full"
+                key={index}
+              />
+            ))}
           </div>
-          <div className="grid gap-4 lg:grid-cols-[1fr_minmax(260px,340px)]">
-            <SkeletonBlock className="h-48" />
-            <SkeletonBlock className="h-48" />
+          <div className="grid content-start gap-5">
+            <SkeletonBlock className="h-56" />
+            <SkeletonBlock className="h-64" />
           </div>
-          <SkeletonBlock className="h-32" />
-        </section>
-        <aside className="grid gap-4">
-          <div className="grid gap-2">
-            <SkeletonTag />
-            <SkeletonLine className="h-8 w-1/2" />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <SkeletonBlock className="h-24" />
-            <SkeletonBlock className="h-24" />
-            <SkeletonBlock className="h-24" />
-            <SkeletonBlock className="h-24" />
-          </div>
-          <SkeletonPanel lines={2} />
-        </aside>
+          <SkeletonBlock className="h-[28rem]" />
+        </div>
       </div>
     </SkeletonPageShell>
   )
