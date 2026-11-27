@@ -788,15 +788,15 @@ transcript excerpt capped at `TRANSCRIPT_EXCERPT_LIMIT = 4000` chars.
 `keyVocabulary` (<= 8 objects of `term`/`meaning`/`example`), `listeningTraps` (<= 6),
 `weakPatterns` (<= 6), `nextActions` (1-3), `confidence` (0..1), and `caveats` (1-4). A
 hand-written JSON-Schema mirror `dictationDebriefJsonSchema` (with
-`DICTATION_DEBRIEF_SCHEMA_NAME = 'dictation_ielts_debrief'`) is sent to the OpenAI
-structured-output API; the per-string length caps live only in the Zod validator.
+`DICTATION_DEBRIEF_SCHEMA_NAME = 'dictation_ielts_debrief'`) is sent to Qwen's
+structured-output API (thinking off, `store: false`); the per-string length caps live only in the Zod validator.
 `parseDictationDebriefJson` parses then Zod-validates the model's text.
 
 ### Graceful failure
 
-The OpenAI key is read via `getOpenAiApiKey()` which returns `null` (never throws) when
-unset. In `src/lib/ai/openAiClientCore.ts`, `requestOpenAiStructuredOutput` returns
-`{ ok: false, message: 'OpenAI provider is not configured.' }` immediately when `apiKey`
+The Qwen key is read via `getQwenApiKey()` (`DASHSCOPE_API_KEY`), which returns `null`
+(never throws) when unset. In `src/lib/ai/qwenClientCore.ts`, `requestQwenStructuredOutput`
+returns `{ ok: false, message: 'AI provider is not configured.' }` immediately when `apiKey`
 is null (no network call). In `generateDictationDebriefForUser`, any `!providerResult.ok`
 (missing key, provider error, incomplete/empty response) causes `createFailedDebrief` to
 persist a `status: 'failed'` debrief (confidence 0, canned caveats/next actions,
