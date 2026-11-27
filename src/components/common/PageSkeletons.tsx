@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import type { ComponentProps, ReactNode } from 'react'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { PageShell } from '@/components/common/PageShell'
@@ -252,12 +252,15 @@ export function SkeletonRows({
  */
 export function SkeletonPageShell({
   activeHref,
+  page,
   showAccount,
   subtitle,
   footer,
   children,
 }: {
   activeHref?: string
+  /** The page's topbar title (AppTopbar `page`), so it does not pop in. */
+  page?: ComponentProps<typeof AppTopbar>['page']
   /** The home topbar's account chip, so it does not pop in after loading. */
   showAccount?: boolean
   subtitle?: string
@@ -270,6 +273,7 @@ export function SkeletonPageShell({
       topbar={
         <AppTopbar
           activeHref={activeHref}
+          page={page}
           showAccount={showAccount}
           subtitle={subtitle}
         />

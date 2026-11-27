@@ -1,7 +1,9 @@
+import { render } from '@testing-library/react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, test } from 'vitest'
 
 import { en } from '@/i18n/messages/en'
+import { expectLandingBudget } from '@/test/landingBudget'
 import type { IeltsCatalogEntry } from '@/modules/ielts/tests/testReaders'
 
 import { groupCatalogue } from './catalogueGroups'
@@ -41,5 +43,36 @@ describe('JourneyHero', () => {
     expect(html).toContain('aria-label="1 of 4 steps')
     expect(html).toContain('href="/ielts/t3/reading"')
     expect(html).toContain('Base camp')
+  })
+
+  test('meets the landing budget: one next stop, one cta, 4 chips', () => {
+    const { container } = render(
+      <JourneyHero
+        attempts={[]}
+        bands={{}}
+        groups={groupCatalogue([entry('t1', 1)])}
+        messages={en}
+        now={new Date('2026-11-28T00:00:00Z')}
+        overall={null}
+      />
+    )
+
+    expectLandingBudget(container)
+  })
+
+  test('everything banded shows the all-clear instead of a button', () => {
+    const html = renderToStaticMarkup(
+      <JourneyHero
+        attempts={[]}
+        bands={{ t1: { listening: 7, reading: 7 } }}
+        groups={groupCatalogue([entry('t1', 1)])}
+        messages={en}
+        now={new Date('2026-11-28T00:00:00Z')}
+        overall={null}
+      />
+    )
+
+    expect(html).toContain(en.ielts.journey.allDone)
+    expect(html).not.toContain('href="/ielts/t1/')
   })
 })

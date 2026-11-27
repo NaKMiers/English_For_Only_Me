@@ -5,18 +5,23 @@ import {
   CircleCheck,
   Footprints,
   GraduationCap,
-  MapPin,
   Mountain,
   MountainSnow,
   Tent,
   Trophy,
   type LucideIcon,
 } from 'lucide-react'
-import Link from 'next/link'
 
 import { format, plural } from '@/i18n/format'
 import type { Messages } from '@/i18n/messages'
+import {
+  JourneyCard,
+  JourneyHeadline,
+  MilestoneNote,
+} from '@/components/journey/JourneyCard'
+import { NextStopCard } from '@/components/journey/NextStopCard'
 import { DrawerHandle } from '@/components/journey/SideDrawer'
+import { StatChip, StatStrip } from '@/components/journey/StatChip'
 import { cn } from '@/lib/utils'
 import type { IeltsAttemptSummary } from '@/modules/ielts/attempts/attemptQueries'
 import type { IeltsTestBands } from '@/modules/ielts/attempts/testBands'
@@ -54,10 +59,10 @@ const MILESTONE_ICONS: Record<JourneyMilestoneKey, LucideIcon> = {
 }
 
 /**
- * The IELTS journey in one compact card. The trail is the hero: four big
- * milestones on a thick path, the learner's footprints on it and the next
- * milestone ringed. Around it, as little text as possible: the step count,
- * four numbers as icon chips, and one link straight into the next skill.
+ * The IELTS journey on the shared `JourneyCard`. The trail is the metaphor:
+ * four big milestones on a thick path, the learner's footprints on it and
+ * the next milestone ringed. Around it: the step count, four numbers as
+ * chips, and one compact next stop straight into the next skill.
  */
 export function JourneyHero({
   attempts,
@@ -106,76 +111,34 @@ export function JourneyHero({
   ]
 
   return (
-    <section
-      aria-labelledby="ielts-journey-title"
-      className={cn(
-        // Right padding leaves room for the side card's handle.
-        'border-line rounded-panel from-pastel-peach to-pastel-cream/60 relative grid min-w-0 content-between gap-5 border bg-linear-160 p-4 pr-8 sm:p-5 sm:pr-9',
-        className
-      )}
-    >
-      <h2
-        className="sr-only"
-        id="ielts-journey-title"
-      >
-        {t.title}
-      </h2>
-
-      {/* Steps on the left, the four numbers as icon chips on the right. */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p
+    <JourneyCard
+      className={className}
+      handle={
+        <DrawerHandle
+          accentClassName="text-accent-orange"
+          hideLabel={t.progress.hide}
+          showLabel={t.progress.show}
+        />
+      }
+      headline={
+        <span
           aria-label={format(t.stepsLabel, {
             done: totals.steps,
             total: totals.totalSteps,
           })}
-          className="flex items-center gap-2.5"
+          className="block"
+          role="img"
         >
-          <span
-            aria-hidden="true"
-            className="bg-accent-orange text-surface grid size-10 place-items-center rounded-full"
-          >
-            <Footprints className="size-5" />
-          </span>
-          <span
-            aria-hidden="true"
-            className="font-sans text-3xl leading-none font-medium tabular-nums"
-          >
-            {totals.steps}
-            <span className="text-ink-soft text-base font-normal">
-              /{totals.totalSteps}
-            </span>
-          </span>
-        </p>
-        <div className="flex flex-wrap items-center gap-1.5">
-          <dl className="flex flex-wrap gap-1.5">
-            {chips.map(chip => {
-              const Icon = chip.icon
-
-              return (
-                <div
-                  className="bg-surface/80 flex items-center gap-1.5 rounded-full py-1 pr-3 pl-1.5"
-                  key={chip.label}
-                  title={chip.label}
-                >
-                  <dt>
-                    <Icon
-                      aria-hidden="true"
-                      className="text-accent-orange size-4"
-                    />
-                    <span className="sr-only">{chip.label}</span>
-                  </dt>
-                  <dd className="font-sans text-sm font-medium tabular-nums">
-                    {chip.value}
-                  </dd>
-                </div>
-              )
-            })}
-          </dl>
-        </div>
-      </div>
-
-      {/* The trail: thick path, big milestones, footprints where you are. */}
-      <div className="grid gap-1">
+          <JourneyHeadline
+            total={format(t.ofSteps, { total: totals.totalSteps })}
+            unit={t.stepsUnit}
+            value={totals.steps}
+          />
+        </span>
+      }
+      layout="stacked"
+      metaphor={
+        // The trail: thick path, big milestones, footprints where you are.
         <div className="relative mx-7 h-[92px]">
           <div
             aria-label={format(t.trail, {
@@ -230,70 +193,60 @@ export function JourneyHero({
               </span>
             )
           })}
-          {/* Footprints: the learner's spot on the trail. */}
+          {/* Footprints: the learner's spot on the trail (a marker). */}
           <span
             aria-hidden="true"
-            className="bg-ink text-surface absolute top-[14px] grid size-7 -translate-x-1/2 place-items-center rounded-full shadow-sm"
+            className="bg-accent-orange text-surface border-surface absolute top-[14px] grid size-7 -translate-x-1/2 place-items-center rounded-full border-2 shadow-sm"
             style={{ left: `${percent}%` }}
-            title={t.youAreAt}
+            title={messages.common.journey.youAreHere}
           >
             <Footprints className="size-3.5" />
           </span>
         </div>
-        <p className="text-ink-soft text-center text-sm">
+      }
+      milestone={
+        <MilestoneNote className="text-ink-soft font-normal">
           {milestone
-            ? plural(t.toNext, milestone.left, {
+            ? plural(messages.common.journey.toMilestone, milestone.left, {
                 milestone: t.milestones[milestone.key],
               })
             : t.summit}
-        </p>
-      </div>
-
-      {/* Next stop: one link straight into the skill to do next. */}
-      {next && nextLabel && nextSkill ? (
-        <Link
-          aria-label={`${t.nextStop}: ${next.heading} ${nextLabel}, ${format(
-            t.startSkill,
-            { skill: IELTS_SKILL_LABELS[nextSkill] }
-          )}`}
-          className="soft-press hover-pop bg-surface group flex items-center gap-3 rounded-[20px] p-2 pl-3"
-          href={`/ielts/${next.entry.slug}/${nextSkill}`}
-        >
-          <MapPin
-            aria-hidden="true"
-            className="text-brand size-5 shrink-0"
-          />
-          <span className="min-w-0 flex-1 truncate text-sm">
-            <span className="text-ink-soft">{next.heading} · </span>
-            <span className="font-medium">{nextLabel}</span>
-          </span>
-          <span className="bg-cta text-cta-fg inline-flex min-h-10 shrink-0 items-center gap-2 rounded-full px-4 text-sm font-medium">
-            <NextIcon
-              aria-hidden="true"
-              className="size-4"
+        </MilestoneNote>
+      }
+      module="ielts"
+      nextStop={
+        <NextStopCard
+          actionIcon={<NextIcon aria-hidden="true" />}
+          actionLabel={nextSkill ? IELTS_SKILL_LABELS[nextSkill] : ''}
+          detail={next?.heading}
+          done={
+            next && nextLabel && nextSkill
+              ? undefined
+              : { icon: <Trophy aria-hidden="true" />, text: t.allDone }
+          }
+          href={
+            next && nextSkill ? `/ielts/${next.entry.slug}/${nextSkill}` : null
+          }
+          pinLabel={messages.common.journey.nextStop}
+          title={nextLabel ?? ''}
+          variant="compact"
+        />
+      }
+      stats={
+        <StatStrip>
+          {chips.map(chip => (
+            <StatChip
+              icon={chip.icon}
+              key={chip.label}
+              label={chip.label}
+              tone="ielts"
+              value={chip.value}
             />
-            {IELTS_SKILL_LABELS[nextSkill]}
-            <ArrowRight
-              aria-hidden="true"
-              className="size-4 transition-transform group-hover:translate-x-0.5"
-            />
-          </span>
-        </Link>
-      ) : (
-        <p className="bg-surface flex items-center gap-3 rounded-[20px] p-3 text-sm">
-          <Trophy
-            aria-hidden="true"
-            className="text-accent-orange size-5 shrink-0"
-          />
-          {t.allDone}
-        </p>
-      )}
-
-      <DrawerHandle
-        accentClassName="text-accent-orange"
-        hideLabel={t.progress.hide}
-        showLabel={t.progress.show}
-      />
-    </section>
+          ))}
+        </StatStrip>
+      }
+      title={t.title}
+      titleId="ielts-journey-title"
+    />
   )
 }

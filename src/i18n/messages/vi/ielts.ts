@@ -83,9 +83,9 @@ export const ielts: Messages['ielts'] = {
     percentCorrect: 'Đúng {percent}%',
   },
   journey: {
-    continueFloat: 'Học tiếp',
     stepsLabel: '{done}/{total} bước: mỗi kỹ năng có band là một bước',
-    youAreAt: 'Bạn đang ở đây',
+    stepsUnit: 'bước đã đi',
+    ofSteps: 'trên {total}',
     progress: {
       show: 'Hiện bài làm gần đây và điểm yếu',
       hide: 'Ẩn bài làm gần đây và điểm yếu',
@@ -104,19 +104,12 @@ export const ielts: Messages['ielts'] = {
       peak: 'Gần đỉnh',
       summit: 'Đỉnh núi',
     },
-    toNext: {
-      one: 'Còn {count} bước tới {milestone}',
-      other: 'Còn {count} bước tới {milestone}',
-    },
     summit: 'Đã lên đỉnh: kỹ năng nào cũng có band.',
     band: 'Band ước tính',
     testsCleared: 'Đề đã xong',
     booksCleared: 'Bộ sách đã xong',
     thisWeek: 'Tuần này',
-    nextStop: 'Trạm tiếp theo',
-    startSkill: 'Làm {skill}',
     allDone: 'Đã xong mọi đề. Làm lại một đề để vượt band cao nhất.',
-    youAreHere: 'Bạn đang ở đây',
     station: {
       new: '{test}: chưa làm',
       partial: '{test}: xong {done}/{total} kỹ năng',

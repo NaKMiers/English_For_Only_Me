@@ -97,7 +97,6 @@ const CORNERS: Guard = {
     'src/components/home/HomeSimpleView.tsx',
     'src/components/home/HomeStudyDesk.tsx',
     'src/components/home/HomeViewSwitch.tsx',
-    'src/components/ielts/catalogue/JourneyHero.tsx',
     'src/components/ielts/catalogue/ProgressTabs.tsx',
     'src/components/ielts/catalogue/TestPath.tsx',
     'src/components/ui/tooltip.tsx',
@@ -111,10 +110,7 @@ const CORNERS: Guard = {
 
 // `bg-ink` turns into a white slab at night: controls use `cta`.
 const INK_CONTROL: Guard = {
-  allow: [
-    // The learner's footprints on the IELTS trail: a marker, not a control.
-    'src/components/ielts/catalogue/JourneyHero.tsx',
-  ],
+  allow: [],
   baseline: [
     'src/components/dictation/browse/ListeningJourneyHero.tsx',
     'src/components/ielts/runner/IeltsRunner.tsx',

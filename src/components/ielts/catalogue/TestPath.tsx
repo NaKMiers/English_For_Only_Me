@@ -74,7 +74,8 @@ const LINE_TONES = [
  * lines themselves are the way to browse.
  */
 export function TestPath({ bands, catalog }: Props) {
-  const t = useMessages().ielts
+  const messages = useMessages()
+  const t = messages.ielts
   // Newest books first, the same order the journey card reads.
   const groups = groupCatalogue(sortCatalogue(catalog, 'newest'))
   const next = pickNextTest(groups, bands)
@@ -162,7 +163,7 @@ export function TestPath({ bands, catalog }: Props) {
                               aria-hidden="true"
                               className="size-3"
                             />
-                            {t.journey.youAreHere}
+                            {messages.common.journey.youAreHere}
                           </span>
                         ) : null}
                         <span className="flex items-center justify-between gap-2 font-sans text-sm font-medium">

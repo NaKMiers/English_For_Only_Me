@@ -37,9 +37,9 @@ export async function IeltsHome({
 
   return (
     <ExamSheet>
-      {/* From md the heading sits in the topbar (the page's AppTopbar aside). */}
+      {/* From md the heading sits in the topbar (AppTopbar page). */}
       <PageHeader
-        className="md:hidden"
+        inTopbar
         icon={<GraduationCap />}
         iconClassName="bg-pastel-peach text-accent-orange"
         subtitle={t.home.intro}
@@ -101,7 +101,7 @@ export async function IeltsHome({
 
       {next ? (
         <ContinueFloat
-          label={t.journey.continueFloat}
+          label={messages.common.journey.continue}
           targetId={HERE_STATION_ID}
         />
       ) : null}

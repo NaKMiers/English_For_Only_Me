@@ -81,9 +81,9 @@ export const ielts = {
     percentCorrect: '{percent}% correct',
   },
   journey: {
-    continueFloat: 'Continue',
     stepsLabel: '{done} of {total} steps: every skill with a band is one step',
-    youAreAt: 'You are here',
+    stepsUnit: 'steps taken',
+    ofSteps: 'of {total}',
     progress: {
       show: 'Show recent attempts and weak spots',
       hide: 'Hide recent attempts and weak spots',
@@ -102,19 +102,12 @@ export const ielts = {
       peak: 'Peak',
       summit: 'Summit',
     },
-    toNext: {
-      one: '{count} step to {milestone}',
-      other: '{count} steps to {milestone}',
-    },
     summit: 'Summit reached: every skill has a band.',
     band: 'Band estimate',
     testsCleared: 'Tests cleared',
     booksCleared: 'Books cleared',
     thisWeek: 'This week',
-    nextStop: 'Next stop',
-    startSkill: 'Start {skill}',
     allDone: 'Every test is cleared. Retake one to beat your best band.',
-    youAreHere: 'You are here',
     station: {
       new: '{test}: not started',
       partial: '{test}: {done} of {total} skills',

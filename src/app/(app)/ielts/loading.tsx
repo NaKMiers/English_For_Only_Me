@@ -1,5 +1,7 @@
-import { PageShell } from '@/components/common/PageShell'
-import { SkeletonHero } from '@/components/common/PageSkeletons'
+import {
+  SkeletonJourney,
+  SkeletonPageShell,
+} from '@/components/common/PageSkeletons'
 import { Skeleton } from '@/components/ui/skeleton'
 import { getMessages } from '@/i18n/server'
 
@@ -7,23 +9,35 @@ export default async function IeltsLoading() {
   const t = await getMessages()
 
   return (
-    <PageShell>
+    <SkeletonPageShell
+      activeHref="/ielts"
+      page={{
+        module: 'ielts',
+        subtitle: t.ielts.home.intro,
+        title: t.common.modules.ielts.title,
+      }}
+      subtitle={t.ielts.shell.subtitle}
+    >
       <div
         aria-busy
         aria-label={t.ielts.loading.tests}
-        className="grid gap-5 px-4 pb-6 md:pr-6 md:pl-0"
+        className="grid gap-5"
       >
-        <SkeletonHero withEyebrow={false} />
-        <Skeleton className="h-10 w-full max-w-2xl rounded-full" />
-        <div className="grid items-start gap-4 xl:grid-cols-2">
-          {[0, 1, 2, 3].map(index => (
-            <Skeleton
-              className="rounded-panel h-44 w-full"
-              key={index}
-            />
-          ))}
-        </div>
+        <SkeletonJourney
+          layout="stacked"
+          metaphorClassName="h-[92px]"
+        />
+        {/* The metro lines: one row of stations per book. */}
+        {[0, 1, 2].map(index => (
+          <div
+            className="grid gap-3"
+            key={index}
+          >
+            <Skeleton className="rounded-tag h-5 w-40" />
+            <Skeleton className="h-16 w-full rounded-full" />
+          </div>
+        ))}
       </div>
-    </PageShell>
+    </SkeletonPageShell>
   )
 }
