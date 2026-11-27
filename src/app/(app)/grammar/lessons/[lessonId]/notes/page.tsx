@@ -1,9 +1,10 @@
-import { ArrowLeft, Play } from 'lucide-react'
+import { ArrowLeft, BookOpen, Play } from 'lucide-react'
 import type { Metadata } from 'next'
 import { notFound, redirect } from 'next/navigation'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { AuthControl } from '@/components/common/AuthControl'
+import { PageHeader } from '@/components/common/PageHeader'
 import { PageShell } from '@/components/common/PageShell'
 import { ContentPanel } from '@/components/common/ContentPanel'
 import { ExplainCardView } from '@/components/grammar/player/PlayerCard'
@@ -54,37 +55,37 @@ export default async function GrammarNotesPage({ params }: Props) {
         />
       }
     >
-      <div className="mx-auto grid w-full max-w-2xl gap-5 p-4 sm:p-6 lg:p-8">
-        <div className="flex flex-wrap gap-3">
-          <ActionButton
-            href="/grammar"
-            icon={<ArrowLeft aria-hidden />}
-            tone="paper"
-          >
-            Path
-          </ActionButton>
-          <ActionButton
-            href={`/grammar/lessons/${found.lesson.id}`}
-            icon={
-              <Play
-                aria-hidden
-                className="fill-current"
-              />
-            }
-            tone="ink"
-          >
-            Redo this lesson
-          </ActionButton>
-        </div>
-        <header className="grid gap-1">
-          <p className="text-ink-soft text-xs font-normal">
-            Unit {found.unit.order} · {found.unit.level} · Notes
-          </p>
-          <h1 className="font-sans text-3xl leading-tight font-medium sm:text-4xl">
-            {found.lesson.title}
-          </h1>
-          <p className="text-ink-soft">{found.lesson.summary}</p>
-        </header>
+      <div className="mx-auto grid w-full max-w-3xl gap-5 px-4 pb-6 md:pr-6 md:pl-0">
+        <PageHeader
+          actions={
+            <>
+              <ActionButton
+                href="/grammar"
+                icon={<ArrowLeft aria-hidden />}
+                tone="paper"
+              >
+                Path
+              </ActionButton>
+              <ActionButton
+                href={`/grammar/lessons/${found.lesson.id}`}
+                icon={
+                  <Play
+                    aria-hidden
+                    className="fill-current"
+                  />
+                }
+                tone="ink"
+              >
+                Redo this lesson
+              </ActionButton>
+            </>
+          }
+          eyebrow={`Unit ${found.unit.order} · ${found.unit.level} · Notes`}
+          icon={<BookOpen />}
+          iconClassName="bg-pastel-lilac text-accent-purple"
+          subtitle={found.lesson.summary}
+          title={found.lesson.title}
+        />
         {explains.map(card => (
           <ContentPanel key={card.id}>
             <ExplainCardView card={card} />
