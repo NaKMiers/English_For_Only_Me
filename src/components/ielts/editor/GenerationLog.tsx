@@ -2,18 +2,21 @@
 
 import { useState } from 'react'
 
+import { INTL_LOCALES } from '@/i18n/config'
+import { useLocale, useMessages } from '@/i18n/client'
+import { format } from '@/i18n/format'
 import type { IeltsAdminTest } from '@/modules/ielts/tests/testService'
 
 import { MetaChip, PageControls } from './fields'
 
 const PAGE_SIZE = 10
 
-const timeFormat = new Intl.DateTimeFormat('en-GB', {
+const TIME_FORMAT: Intl.DateTimeFormatOptions = {
   hour: '2-digit',
   minute: '2-digit',
   day: '2-digit',
   month: '2-digit',
-})
+}
 
 /**
  * Every AI request on this test, newest first and ten to a page: kind,
@@ -24,14 +27,19 @@ export function GenerationLog({
 }: {
   rows: IeltsAdminTest['generationLog']
 }) {
+  const t = useMessages()
+  const locale = useLocale()
+  const copy = t.ieltsEditor.log
   const [page, setPage] = useState(0)
 
   if (!rows.length)
     return (
       <p className="text-muted-foreground text-sm font-semibold">
-        No AI requests on this test yet.
+        {copy.empty}
       </p>
     )
+
+  const timeFormat = new Intl.DateTimeFormat(INTL_LOCALES[locale], TIME_FORMAT)
 
   const newest = [...rows].reverse()
   const visible = newest.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
@@ -42,17 +50,22 @@ export function GenerationLog({
         <table className="w-full min-w-[560px] border-collapse text-left text-xs">
           <thead>
             <tr className="border-line border-b font-sans">
-              {['When', 'Section', 'Kind', 'Result', 'Tokens', 'Time'].map(
-                label => (
-                  <th
-                    className="py-1.5 pr-2"
-                    key={label}
-                    scope="col"
-                  >
-                    {label}
-                  </th>
-                )
-              )}
+              {[
+                copy.when,
+                copy.section,
+                copy.kind,
+                copy.result,
+                copy.tokens,
+                copy.time,
+              ].map(label => (
+                <th
+                  className="py-1.5 pr-2"
+                  key={label}
+                  scope="col"
+                >
+                  {label}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
@@ -85,7 +98,9 @@ export function GenerationLog({
                     {row.inputTokens}/{row.outputTokens}
                   </td>
                   <td className="py-1.5 tabular-nums">
-                    {(row.durationMs / 1000).toFixed(1)}s
+                    {format(copy.seconds, {
+                      seconds: (row.durationMs / 1000).toFixed(1),
+                    })}
                   </td>
                 </tr>
               )
@@ -94,7 +109,7 @@ export function GenerationLog({
         </table>
       </div>
       <PageControls
-        label="AI log"
+        label={copy.label}
         onPageChange={setPage}
         page={page}
         pageSize={PAGE_SIZE}

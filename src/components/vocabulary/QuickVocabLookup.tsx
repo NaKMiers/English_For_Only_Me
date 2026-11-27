@@ -16,6 +16,8 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { ActionButton } from '@/components/ui/ActionButton'
+import { useMessages } from '@/i18n/client'
+import { format } from '@/i18n/format'
 import type {
   UserVocabItemApiRecord,
   VocabEntryWithUserStateRecord,
@@ -25,7 +27,10 @@ import {
   getRequiredVietnameseMeaning,
   hasVietnameseMeaning,
 } from '@/modules/vocabulary/vietnameseMeaning'
-import type { VocabOccurrenceInput } from '@/requests/vocabularyApi'
+import {
+  getVocabRequestErrorMessage,
+  type VocabOccurrenceInput,
+} from '@/requests/vocabularyApi'
 
 import { VocabTermHeader } from './VocabTermHeader'
 import {
@@ -62,8 +67,8 @@ interface WordButtonProps {
   videoId?: string | null
 }
 
-function getVietnamese(entry: VocabEntryWithUserStateRecord) {
-  return getRequiredVietnameseMeaning(entry.entry)
+function getVietnamese(entry: VocabEntryWithUserStateRecord, fallback: string) {
+  return getRequiredVietnameseMeaning(entry.entry, fallback)
 }
 
 function getDefinition(entry: VocabEntryWithUserStateRecord) {
@@ -174,6 +179,8 @@ export function QuickVocabDialog({
   onOpenChange,
   open,
 }: QuickVocabDialogProps) {
+  const t = useMessages().vocabulary
+
   return (
     <Dialog
       open={open}
@@ -185,13 +192,13 @@ export function QuickVocabDialog({
             <DialogHeader>
               <DialogTitle className="sr-only">{entry.entry.term}</DialogTitle>
               <DialogDescription className="text-ink-soft text-sm font-normal">
-                {entry.entry.enrichmentStatus}
+                {t.enrichmentStatus[entry.entry.enrichmentStatus]}
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-3">
               <VocabTermHeader entry={entry.entry} />
               <div className="border-line bg-tint rounded-control border p-3 text-right text-base leading-7 font-semibold">
-                {getVietnamese(entry)}
+                {getVietnamese(entry, t.word.needsMeaning)}
               </div>
               <div className="border-line bg-surface rounded-control border p-3 text-base leading-7 font-semibold">
                 {getDefinition(entry)}
@@ -203,7 +210,7 @@ export function QuickVocabDialog({
                   icon={<BookOpen className="size-4" />}
                   onClick={() => onMark('shouldLearn')}
                 >
-                  Should Learn
+                  {t.marks.shouldLearn}
                 </ActionButton>
                 <ActionButton
                   className="[&>span:last-child]:whitespace-nowrap"
@@ -212,20 +219,21 @@ export function QuickVocabDialog({
                   onClick={() => onMark('alreadyKnow')}
                   tone="paper"
                 >
-                  Already Know
+                  {t.marks.alreadyKnow}
                 </ActionButton>
               </div>
               <p className="text-ink-soft flex items-center gap-2 text-xs font-normal">
                 <Search className="size-4" />
-                {entry.userItem?.status ?? 'Not picked yet'}
+                {entry.userItem
+                  ? t.itemStatus[entry.userItem.status]
+                  : t.itemStatus.notPicked}
               </p>
               {error ? (
                 <p className="text-danger text-sm font-semibold">{error}</p>
               ) : null}
               {!hasVietnameseMeaning(entry.entry) ? (
                 <p className="text-brand text-sm font-semibold">
-                  Vietnamese meaning is required before this word can be
-                  learned.
+                  {t.word.meaningRequired}
                 </p>
               ) : null}
             </div>
@@ -247,6 +255,7 @@ export function QuickVocabWordButton({
   term,
   videoId = null,
 }: WordButtonProps) {
+  const t = useMessages().vocabulary
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const { entry, lookup, mark, open, setOpen } = useQuickVocabEntry({
@@ -281,10 +290,7 @@ export function QuickVocabWordButton({
         term: lookupTerm,
       })
     } catch (requestError) {
-      const message =
-        requestError instanceof Error
-          ? requestError.message
-          : 'Could not lookup this word.'
+      const message = getVocabRequestErrorMessage(requestError, t.errors.lookup)
 
       if (onError) onError(message)
       else setError(message)
@@ -301,7 +307,7 @@ export function QuickVocabWordButton({
   return (
     <>
       <button
-        aria-label={`Lookup ${lookupTerm}`}
+        aria-label={format(t.word.lookup, { term: lookupTerm })}
         className={className}
         disabled={busy}
         onClick={lookupWord}
@@ -329,6 +335,7 @@ export function QuickVocabLookup({
   segmentId = null,
   videoId = null,
 }: Props) {
+  const t = useMessages().vocabulary
   const [error, setError] = useState<string | null>(null)
   const [busyTerm, setBusyTerm] = useState<string | null>(null)
   const { entry, lookup, mark, open, setOpen } = useQuickVocabEntry({
@@ -352,11 +359,7 @@ export function QuickVocabLookup({
         term,
       })
     } catch (requestError) {
-      setError(
-        requestError instanceof Error
-          ? requestError.message
-          : 'Could not lookup this word.'
-      )
+      setError(getVocabRequestErrorMessage(requestError, t.errors.lookup))
     } finally {
       setBusyTerm(null)
     }

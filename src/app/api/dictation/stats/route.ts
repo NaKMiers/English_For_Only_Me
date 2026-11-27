@@ -1,10 +1,13 @@
 import { NextResponse } from 'next/server'
 
 import { MissingEnvironmentError } from '@/constants/environments'
+import type { Messages } from '@/i18n/messages'
+import { getMessages } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { requirePracticeActor } from '@/modules/dictation/services/getCurrentUser'
 import { parseStatsSearchParams } from '@/modules/dictation/services/statsRouteDecisions'
 import {
+  getAccessErrorMessage,
   type ApiErrorDecision,
   getMissingMongoResponse,
   MISSING_MONGODB_MESSAGE,
@@ -18,7 +21,7 @@ function jsonError(decision: ApiErrorDecision) {
   return NextResponse.json(decision.body, { status: decision.status })
 }
 
-function toStatsError(error: unknown): ApiErrorDecision {
+function toStatsError(error: unknown, t: Messages): ApiErrorDecision {
   if (
     typeof error === 'object' &&
     error !== null &&
@@ -28,7 +31,7 @@ function toStatsError(error: unknown): ApiErrorDecision {
     return {
       status: error.status,
       body: {
-        message: (error as { message?: string }).message ?? 'Access denied.',
+        message: getAccessErrorMessage(error.status, t),
       },
     }
 
@@ -45,12 +48,13 @@ function toStatsError(error: unknown): ApiErrorDecision {
   return {
     status: 500,
     body: {
-      message: 'Could not load dictation stats.',
+      message: t.dictation.api.statsLoadFailed,
     },
   }
 }
 
 export async function GET(request: Request) {
+  const t = await getMessages()
   const missingMongo = getMissingMongoResponse()
 
   if (missingMongo) return jsonError(missingMongo)
@@ -76,6 +80,6 @@ export async function GET(request: Request) {
       }),
     })
   } catch (error) {
-    return jsonError(toStatsError(error))
+    return jsonError(toStatsError(error, t))
   }
 }

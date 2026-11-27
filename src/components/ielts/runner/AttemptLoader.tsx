@@ -4,11 +4,16 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { useOutboxOwnerKey } from '@/components/common/OutboxOwnerProvider'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useMessages } from '@/i18n/client'
 import { ensureGuestIdentity } from '@/lib/sync/clientOutbox'
 import type { IeltsAttemptRecord } from '@/modules/ielts/attempts/attemptRecords'
 import type { IeltsSkill } from '@/modules/ielts/constants'
 import type { IeltsPublicSection } from '@/modules/ielts/publicView'
-import { IeltsApiError, startIeltsAttemptApi } from '@/requests/ieltsApi'
+import {
+  IeltsApiError,
+  ieltsErrorMessage,
+  startIeltsAttemptApi,
+} from '@/requests/ieltsApi'
 
 import { IeltsRunner } from './IeltsRunner'
 import { WritingRunner } from './WritingRunner'
@@ -57,10 +62,12 @@ function readStartKey(name: string, fresh = false) {
 }
 
 export function RunnerSkeleton() {
+  const t = useMessages()
+
   return (
     <div
       aria-busy
-      aria-label="Loading test"
+      aria-label={t.ielts.loading.test}
       className="flex h-full flex-col"
     >
       <Skeleton className="h-16 w-full" />
@@ -84,6 +91,8 @@ export function AttemptLoader({
   testSlug,
   testTitle,
 }: Props) {
+  const t = useMessages()
+  const openFailed = t.ielts.runner.openFailed
   const ownerKey = useOutboxOwnerKey()
   const [attempt, setAttempt] = useState<IeltsAttemptRecord | null>(null)
   const [error, setError] = useState('')
@@ -126,11 +135,9 @@ export function AttemptLoader({
 
       setAttempt(result.attempt)
     } catch (caught) {
-      setError(
-        caught instanceof Error ? caught.message : 'Could not open the test.'
-      )
+      setError(ieltsErrorMessage(caught, openFailed))
     }
-  }, [keyName, mode, ownerKey, skill, testSlug])
+  }, [keyName, mode, openFailed, ownerKey, skill, testSlug])
 
   useEffect(() => {
     if (startedRef.current) return
@@ -146,7 +153,7 @@ export function AttemptLoader({
         role="alert"
       >
         <p className="font-sans text-lg font-semibold">
-          Could not open the test
+          {t.ielts.runner.openFailedTitle}
         </p>
         <p className="font-semibold">{error}</p>
         <div className="flex flex-wrap justify-center gap-3">
@@ -155,13 +162,13 @@ export function AttemptLoader({
             tone="ink"
             type="button"
           >
-            Try again
+            {t.common.actions.retry}
           </ExamButton>
           <ExamButton
             href={backHref}
             tone="paper"
           >
-            Back
+            {t.common.actions.back}
           </ExamButton>
         </div>
       </div>

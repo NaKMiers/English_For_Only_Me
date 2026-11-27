@@ -5,6 +5,8 @@ import { useState } from 'react'
 
 import { useClientOutbox } from '@/components/common/OutboxOwnerProvider'
 import { enqueueVocabItemStatus } from '@/components/vocabulary/vocabItemWrites'
+import { useMessages } from '@/i18n/client'
+import { format } from '@/i18n/format'
 import { lookupVocabEntryApi } from '@/requests/vocabularyApi'
 import { ExamIconButton } from '@/components/ielts/ui'
 
@@ -20,6 +22,7 @@ export function SaveWordButton({
   context: string
   term: string
 }) {
+  const t = useMessages().ielts.saveWord
   const outbox = useClientOutbox()
   const [state, setState] = useState<'idle' | 'busy' | 'saved' | 'failed'>(
     'idle'
@@ -54,9 +57,9 @@ export function SaveWordButton({
       <ExamIconButton
         className="size-9"
         disabled={state === 'busy' || state === 'saved'}
-        label={
-          state === 'saved' ? `Saved "${term}"` : `Save "${term}" to Vocabulary`
-        }
+        label={format(state === 'saved' ? t.savedLabel : t.saveLabel, {
+          term,
+        })}
         onClick={() => void save()}
         type="button"
       >
@@ -77,10 +80,10 @@ export function SaveWordButton({
         className="text-xs font-semibold"
       >
         {state === 'saved'
-          ? 'Saved'
+          ? t.saved
           : state === 'failed'
-            ? 'Could not save'
-            : `Save "${term}"`}
+            ? t.failed
+            : format(t.save, { term })}
       </span>
     </span>
   )

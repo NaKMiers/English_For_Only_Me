@@ -9,6 +9,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { ExamButton, segmentClass } from '@/components/ielts/ui'
+import { useMessages } from '@/i18n/client'
 import { IELTS_TRACKS, type IeltsTrack } from '@/modules/ielts/constants'
 
 import { AreaField, BandField, ListField, TextField } from './fields'
@@ -43,6 +44,9 @@ export function TestDetailsDialog({
   open,
   seriesOptions,
 }: Props) {
+  const t = useMessages()
+  const copy = t.ieltsEditor.details
+
   return (
     <Dialog
       onOpenChange={onOpenChange}
@@ -50,33 +54,30 @@ export function TestDetailsDialog({
     >
       <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Test details</DialogTitle>
-          <DialogDescription>
-            Shown on the learner catalogue card.
-          </DialogDescription>
+          <DialogTitle>{copy.title}</DialogTitle>
+          <DialogDescription>{copy.description}</DialogDescription>
         </DialogHeader>
         <div className="grid min-w-0 gap-3">
           <TextField
-            label="Test title"
+            label={t.ieltsEditor.fields.testTitle}
             onChange={title => onChange({ ...meta, title })}
             value={meta.title}
           />
           <div className="grid gap-1">
             <TextField
-              label="Series"
+              label={copy.series}
               onChange={series => onChange({ ...meta, series })}
               placeholder="IELTS 21"
               suggestions={seriesOptions}
               value={meta.series}
             />
-            <p className="text-muted-foreground text-xs">
-              Groups tests on the IELTS page. Pick an existing one to keep them
-              together; leave empty to group by the title.
-            </p>
+            <p className="text-muted-foreground text-xs">{copy.seriesHint}</p>
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div className="grid gap-1">
-              <span className="font-sans text-xs font-semibold">Track</span>
+              <span className="font-sans text-xs font-semibold">
+                {t.ieltsEditor.fields.track}
+              </span>
               <div className="flex gap-1.5">
                 {IELTS_TRACKS.map(track => (
                   // Segmented toggle (aria-pressed): documented raw exception.
@@ -90,7 +91,7 @@ export function TestDetailsDialog({
                     onClick={() => onChange({ ...meta, track })}
                     type="button"
                   >
-                    {track === 'academic' ? 'Academic' : 'General'}
+                    {t.ieltsEditor.tracks[track]}
                   </button>
                 ))}
               </div>
@@ -101,13 +102,13 @@ export function TestDetailsDialog({
             />
           </div>
           <ListField
-            label="Tags"
+            label={copy.tags}
             onChange={tags => onChange({ ...meta, tags })}
             separator=","
             value={meta.tags}
           />
           <AreaField
-            label="Description"
+            label={copy.descriptionLabel}
             onChange={description => onChange({ ...meta, description })}
             rows={3}
             value={meta.description}
@@ -119,7 +120,7 @@ export function TestDetailsDialog({
             tone="paper"
             type="button"
           >
-            Cancel
+            {t.common.actions.cancel}
           </ExamButton>
           <ExamButton
             disabled={busy}
@@ -127,7 +128,7 @@ export function TestDetailsDialog({
             tone="ink"
             type="button"
           >
-            {busy ? 'Saving...' : 'Save details'}
+            {busy ? t.common.actions.saving : copy.save}
           </ExamButton>
         </DialogFooter>
       </DialogContent>

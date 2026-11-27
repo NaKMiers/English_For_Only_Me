@@ -21,6 +21,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { useMessages } from '@/i18n/client'
+import { format } from '@/i18n/format'
+import { formatNodes } from '@/i18n/formatNodes'
 import { useLessonSfx } from '@/lib/audio/useLessonSfx'
 import { cn } from '@/lib/utils'
 import type { GrammarSessionMode } from '@/modules/grammar/constants'
@@ -64,6 +67,8 @@ export function LessonPlayer({
   title,
 }: Props) {
   const router = useRouter()
+  const messages = useMessages()
+  const t = messages.grammar.player
   const reducer = useMemo(() => createPlayerReducer(plays), [plays])
   const [state, dispatch] = useReducer(reducer, plays, initialPlayerState)
   const [confirmLeave, setConfirmLeave] = useState(false)
@@ -235,13 +240,15 @@ export function LessonPlayer({
     <div className="lesson-stage grid h-full grid-rows-[auto_minmax(0,1fr)_auto]">
       <header className="border-line flex items-center gap-3 border-b p-3 sm:p-4">
         <IconButton
-          label="Leave lesson"
+          label={t.leave}
           onClick={requestExit}
         >
           <X aria-hidden />
         </IconButton>
         <div
-          aria-label={`Progress: ${Math.round(progress * 100)}%`}
+          aria-label={format(t.progress, {
+            percent: Math.round(progress * 100),
+          })}
           aria-valuemax={100}
           aria-valuemin={0}
           aria-valuenow={Math.round(progress * 100)}
@@ -261,7 +268,7 @@ export function LessonPlayer({
             comboFlash !== null &&
               'motion-safe:animate-in motion-safe:zoom-in-150'
           )}
-          title="Correct answer streak"
+          title={t.streak}
         >
           <Flame
             aria-hidden
@@ -270,7 +277,7 @@ export function LessonPlayer({
           {state.combo}
         </span>
         <IconButton
-          label={soundOn ? 'Mute sound' : 'Turn sound on'}
+          label={soundOn ? t.mute : t.unmute}
           onClick={toggleSound}
         >
           {soundOn ? <Volume2 aria-hidden /> : <VolumeX aria-hidden />}
@@ -293,7 +300,7 @@ export function LessonPlayer({
           ) : null}
           {comboFlash !== null ? (
             <p className="text-brand motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-2 text-center font-sans text-lg font-semibold">
-              {comboFlash} in a row!
+              {format(t.combo, { count: comboFlash })}
             </p>
           ) : null}
           {card?.kind === 'explain' ? <ExplainCardView card={card} /> : null}
@@ -323,7 +330,7 @@ export function LessonPlayer({
                 {state.grade.correct ? null : (
                   <p className="flex items-start gap-1 font-bold">
                     <span className="min-w-0">
-                      <span className="text-danger">Answer: </span>
+                      <span className="text-danger">{t.answerLabel} </span>
                       {state.grade.expected}
                     </span>
                     {card.kind !== 'choice' ||
@@ -364,15 +371,17 @@ export function LessonPlayer({
                     className="size-4 stroke-3"
                   />
                 )}
-                {state.grade.correct ? 'Correct!' : 'Not quite'}
+                {state.grade.correct ? t.correct : t.notQuite}
               </p>
             ) : (
               <p className="hidden text-sm opacity-70 sm:block">
-                Press{' '}
-                <kbd className="border-line rounded-tag border px-1.5 font-sans text-xs font-semibold">
-                  Enter
-                </kbd>{' '}
-                {isPractice ? 'to check' : 'to continue'}
+                {formatNodes(isPractice ? t.pressToCheck : t.pressToContinue, {
+                  key: (
+                    <kbd className="border-line rounded-tag border px-1.5 font-sans text-xs font-semibold">
+                      {t.enter}
+                    </kbd>
+                  ),
+                })}
               </p>
             )}
           </div>
@@ -382,7 +391,9 @@ export function LessonPlayer({
             onClick={advance}
             tone={state.grade || !isPractice ? 'ink' : 'primary'}
           >
-            {isPractice && !state.grade ? 'Check' : 'Continue'}
+            {isPractice && !state.grade
+              ? t.check
+              : messages.common.actions.continue}
           </ActionButton>
         </div>
       </footer>
@@ -394,25 +405,22 @@ export function LessonPlayer({
         <DialogContent className="border-line bg-surface border">
           <DialogHeader>
             <DialogTitle className="font-sans text-lg font-semibold">
-              Leave this lesson?
+              {t.leaveTitle}
             </DialogTitle>
-            <DialogDescription>
-              Your progress in this lesson will be lost. You can start it again
-              any time.
-            </DialogDescription>
+            <DialogDescription>{t.leaveDescription}</DialogDescription>
           </DialogHeader>
           <DialogFooter className="bg-surface border-line border-t">
             <ActionButton
               onClick={() => setConfirmLeave(false)}
               tone="paper"
             >
-              Keep going
+              {t.keepGoing}
             </ActionButton>
             <ActionButton
               href={exitHref}
               tone="ink"
             >
-              Leave
+              {t.leaveConfirm}
             </ActionButton>
           </DialogFooter>
         </DialogContent>

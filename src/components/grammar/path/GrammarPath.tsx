@@ -25,6 +25,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { useMessages } from '@/i18n/client'
+import { format, plural } from '@/i18n/format'
+import type { Messages } from '@/i18n/messages'
 import { cn } from '@/lib/utils'
 import type {
   GrammarPathView,
@@ -56,25 +59,27 @@ function nextHref(next: PathNext) {
   }
 }
 
-function nextLabel(next: PathNext) {
+function nextLabel(t: Messages['grammar']['path']['next'], next: PathNext) {
   switch (next.kind) {
     case 'lesson':
-      return `Continue: ${next.title}`
+      return format(t.lesson, { title: next.title })
     case 'checkpoint':
-      return `Checkpoint: ${next.title}`
+      return format(t.checkpoint, { title: next.title })
     case 'review':
-      return `Review: ${next.title}`
+      return format(t.review, { title: next.title })
     case 'weak':
-      return `Practise ${next.count} weak ${next.count === 1 ? 'question' : 'questions'}`
+      return plural(t.weak, next.count)
     case 'done':
-      return 'You finished the whole path'
+      return t.done
   }
 }
 
 function StarsInline({ stars }: { stars: number }) {
+  const t = useMessages()
+
   return (
     <span
-      aria-label={`${stars} of 3 stars`}
+      aria-label={format(t.grammar.stars, { stars })}
       className="flex gap-0.5"
       role="img"
     >
@@ -94,14 +99,6 @@ function StarsInline({ stars }: { stars: number }) {
   )
 }
 
-const NODE_STATE_LABEL: Record<PathLesson['state'], string> = {
-  due: 'due for review',
-  locked: 'locked',
-  mastered: 'mastered',
-  open: 'open',
-  passed: 'done',
-}
-
 function LessonNode({
   lesson,
   offset,
@@ -111,6 +108,7 @@ function LessonNode({
   offset: number
   onSelect: () => void
 }) {
+  const t = useMessages().grammar.path
   const isOpen = lesson.state === 'open'
 
   return (
@@ -124,12 +122,15 @@ function LessonNode({
     >
       {isOpen ? (
         <span className="border-line bg-surface rounded-tag absolute -top-9 border px-2 py-0.5 text-xs font-semibold whitespace-nowrap motion-safe:animate-bounce">
-          Start
+          {t.start}
         </span>
       ) : null}
       {/* Raw button: a circular path node, not a labelled action button. */}
       <button
-        aria-label={`${lesson.title}, ${NODE_STATE_LABEL[lesson.state]}`}
+        aria-label={format(t.nodeLabel, {
+          state: t.states[lesson.state],
+          title: lesson.title,
+        })}
         className={cn(
           'border-line soft-press grid place-items-center rounded-full border',
           isOpen ? 'bg-brand text-surface size-20' : 'size-16',
@@ -186,7 +187,7 @@ function LessonNode({
       lesson.state === 'mastered' ? (
         lesson.passedByTest ? (
           <span className="text-ink-soft text-[11px] font-normal">
-            Tested out
+            {t.testedOut}
           </span>
         ) : (
           <StarsInline stars={lesson.stars} />
@@ -206,6 +207,8 @@ function UnitSection({
   onSelectLesson: (lesson: PathLesson, unit: PathUnit) => void
   unit: PathUnit
 }) {
+  const messages = useMessages()
+  const t = messages.grammar.path
   const passedCount = unit.lessons.filter(
     lesson => lesson.state !== 'open' && lesson.state !== 'locked'
   ).length
@@ -225,12 +228,18 @@ function UnitSection({
       >
         <div className="flex flex-wrap items-center justify-between gap-2">
           <PageTag tone="pale">
-            Unit {unit.order} · {unit.level}
+            {format(messages.grammar.unitLevel, {
+              level: unit.level,
+              order: unit.order,
+            })}
           </PageTag>
           <span className="text-xs font-semibold">
             {unit.state === 'complete'
-              ? 'Completed'
-              : `${passedCount}/${unit.lessons.length} lessons`}
+              ? t.completed
+              : format(t.lessonsCount, {
+                  done: passedCount,
+                  total: unit.lessons.length,
+                })}
           </span>
         </div>
         <h2
@@ -254,7 +263,7 @@ function UnitSection({
             icon={<Trophy aria-hidden />}
             tone="paper"
           >
-            Test out
+            {t.testOut}
           </ActionButton>
         ) : null}
       </header>
@@ -286,7 +295,7 @@ function UnitSection({
           tabIndex={unit.checkpoint === 'locked' ? -1 : undefined}
           tone={unit.checkpoint === 'open' ? 'ink' : 'paper'}
         >
-          {unit.checkpoint === 'passed' ? 'Checkpoint passed' : 'Checkpoint'}
+          {unit.checkpoint === 'passed' ? t.checkpointPassed : t.checkpoint}
         </ActionButton>
       </div>
     </section>
@@ -295,6 +304,8 @@ function UnitSection({
 
 export function GrammarPath({ path }: Props) {
   const router = useRouter()
+  const messages = useMessages()
+  const t = messages.grammar.path
   const [selected, setSelected] = useState<{
     lesson: PathLesson
     unit: PathUnit
@@ -338,27 +349,25 @@ export function GrammarPath({ path }: Props) {
     <div className="grid gap-6 p-4 sm:p-6 lg:p-8">
       <section className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-end">
         <div className="page-hero grid gap-2">
-          <PageTag tone="pale">Grammar</PageTag>
+          <PageTag tone="pale">{messages.common.modules.grammar.title}</PageTag>
           <h1 className="font-sans text-4xl leading-none font-medium sm:text-5xl">
-            Grammar path
+            {t.title}
           </h1>
           <p className="text-ink-soft max-w-xl text-sm sm:text-base">
-            {path.totals.totalLessons} short lessons from A1 to C1, about 5
-            minutes each. Finish one to unlock the next; finished lessons fade
-            when they are due for review.
+            {format(t.intro, { count: path.totals.totalLessons })}
           </p>
         </div>
         <dl className="grid grid-cols-3 gap-2 sm:gap-3">
           {[
             {
-              label: 'Stars',
+              label: t.statStars,
               value: `${path.totals.stars}/${path.totals.maxStars}`,
             },
             {
-              label: 'Lessons done',
+              label: t.statLessons,
               value: `${path.totals.passedLessons}/${path.totals.totalLessons}`,
             },
-            { label: 'Due', value: String(path.totals.dueCount) },
+            { label: t.statDue, value: String(path.totals.dueCount) },
           ].map(item => (
             <div
               className="border-line bg-surface rounded-control grid min-w-24 gap-0.5 border px-3 py-2"
@@ -386,10 +395,12 @@ export function GrammarPath({ path }: Props) {
             }
             tone="ink"
           >
-            {nextLabel(path.next)}
+            {nextLabel(t.next, path.next)}
           </ActionButton>
         ) : (
-          <p className="font-sans font-semibold">{nextLabel(path.next)}</p>
+          <p className="font-sans font-semibold">
+            {nextLabel(t.next, path.next)}
+          </p>
         )}
         {path.totals.weakCount > 0 && path.next.kind !== 'weak' ? (
           <ActionButton
@@ -397,7 +408,7 @@ export function GrammarPath({ path }: Props) {
             icon={<Dumbbell aria-hidden />}
             tone="paper"
           >
-            Weak spots ({path.totals.weakCount})
+            {format(t.weakSpots, { count: path.totals.weakCount })}
           </ActionButton>
         ) : null}
         {syncing ? (
@@ -409,7 +420,7 @@ export function GrammarPath({ path }: Props) {
               aria-hidden
               className="size-4 motion-safe:animate-spin"
             />
-            Saving your last lesson...
+            {t.syncing}
           </p>
         ) : null}
       </div>
@@ -440,7 +451,10 @@ export function GrammarPath({ path }: Props) {
                   className="w-fit"
                   tone="pale"
                 >
-                  Unit {selected.unit.order} · {NODE_STATE_LABEL[lesson.state]}
+                  {format(t.unitState, {
+                    order: selected.unit.order,
+                    state: t.states[lesson.state],
+                  })}
                 </PageTag>
                 <DialogTitle className="font-sans text-xl font-semibold">
                   {lesson.title}
@@ -449,10 +463,9 @@ export function GrammarPath({ path }: Props) {
               </DialogHeader>
               {lesson.state === 'locked' ? (
                 <p className="text-ink-soft text-sm font-bold">
-                  Finish the previous lesson to unlock this one
                   {selected.unit.state === 'locked'
-                    ? ', or take the unit test-out.'
-                    : '.'}
+                    ? t.lockedHintTestOut
+                    : t.lockedHint}
                 </p>
               ) : (
                 <div className="grid gap-2">
@@ -465,7 +478,7 @@ export function GrammarPath({ path }: Props) {
                       icon={<RotateCcw aria-hidden />}
                       tone="ink"
                     >
-                      Review (about 2 minutes)
+                      {t.review}
                     </ActionButton>
                   ) : null}
                   <ActionButton
@@ -479,10 +492,10 @@ export function GrammarPath({ path }: Props) {
                     tone={lesson.state === 'open' ? 'ink' : 'paper'}
                   >
                     {lesson.state === 'open'
-                      ? 'Start lesson'
+                      ? t.startLesson
                       : lesson.stars < 3
-                        ? 'Redo for 3 stars'
-                        : 'Redo lesson'}
+                        ? messages.grammar.redoForStars
+                        : t.redoLesson}
                   </ActionButton>
                   {lesson.state !== 'open' ? (
                     <ActionButton
@@ -490,7 +503,7 @@ export function GrammarPath({ path }: Props) {
                       icon={<BookOpen aria-hidden />}
                       tone="paper"
                     >
-                      Open notes
+                      {t.openNotes}
                     </ActionButton>
                   ) : null}
                 </div>

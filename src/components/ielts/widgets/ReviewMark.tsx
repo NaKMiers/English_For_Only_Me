@@ -1,10 +1,11 @@
+'use client'
+
 import { ArrowRight, Check, CircleDashed, X } from 'lucide-react'
 
+import { useMessages } from '@/i18n/client'
 import { cn } from '@/lib/utils'
 
 import type { IeltsReviewMark } from './answerContext'
-
-const LABELS = { correct: 'Correct', wrong: 'Wrong', blank: 'Blank' } as const
 
 /**
  * Colour always paired with an icon and a word (a11y rule). Blank shows its
@@ -20,6 +21,8 @@ export function ReviewMark({
   mark: IeltsReviewMark
   showAccepted?: boolean
 }) {
+  const t = useMessages().ielts.widgets
+  const labels = t.marks
   const Icon =
     mark.outcome === 'correct'
       ? Check
@@ -37,16 +40,16 @@ export function ReviewMark({
             'bg-danger-soft text-danger',
         className
       )}
-      title={mark.outcome === 'blank' ? LABELS.blank : undefined}
+      title={mark.outcome === 'blank' ? labels.blank : undefined}
     >
       <Icon
         aria-hidden="true"
         className="size-4"
       />
       {mark.outcome === 'blank' ? (
-        <span className="sr-only">{LABELS.blank}</span>
+        <span className="sr-only">{labels.blank}</span>
       ) : (
-        LABELS[mark.outcome]
+        labels[mark.outcome]
       )}
       {showAccepted && mark.outcome !== 'correct' && mark.accepted.length ? (
         <>
@@ -55,7 +58,7 @@ export function ReviewMark({
             className="text-ink size-3.5"
           />
           <span className="text-lesson-correct font-bold">
-            <span className="sr-only">Answer: </span>
+            <span className="sr-only">{t.answerPrefix} </span>
             {mark.accepted.join(' / ')}
           </span>
         </>

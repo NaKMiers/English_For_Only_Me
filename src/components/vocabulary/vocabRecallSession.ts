@@ -32,6 +32,7 @@ export const VOCAB_RECALL_LANE = 'vocab:recall'
 export type VocabRecallSaveState = 'notSaved' | 'saved' | 'saving'
 
 export interface VocabRecallCardResult {
+  /** Why the save failed: the server's message, or `VOCAB_RECALL_STALE_ERROR`. */
   error: string | null
   isCorrect: boolean
   item: UserVocabItemApiRecord
@@ -47,8 +48,11 @@ export interface VocabRecallAnswerInput {
   task: VocabRecallTaskRecord
 }
 
-const STALE_CARD_MESSAGE =
-  'This card expired before it was saved. It stays due for your next review.'
+/**
+ * Marks a card that expired before it was saved. The summary shows its
+ * translated text; every other error is the server's own message.
+ */
+export const VOCAB_RECALL_STALE_ERROR = 'vocab-recall:stale'
 
 /**
  * One key per task, derived from the server-minted task id, so a double click,
@@ -99,7 +103,7 @@ export function createVocabRecallCardResult(
   if (!local)
     return {
       ...base,
-      error: STALE_CARD_MESSAGE,
+      error: VOCAB_RECALL_STALE_ERROR,
       isCorrect: false,
       item: input.task.item,
       saveState: 'notSaved',
@@ -141,7 +145,7 @@ export function reconcileVocabRecallCardResult(
   if (!outcome.ok)
     return {
       ...result,
-      error: outcome.status === 409 ? STALE_CARD_MESSAGE : outcome.error,
+      error: outcome.status === 409 ? VOCAB_RECALL_STALE_ERROR : outcome.error,
       saveState: 'notSaved',
     }
 

@@ -2,12 +2,17 @@ import type { Metadata } from 'next'
 import { notFound, redirect } from 'next/navigation'
 
 import { IeltsRunner } from '@/components/ielts/runner/IeltsRunner'
+import { getMessages } from '@/i18n/server'
 import { loadResultPageData } from '@/modules/ielts/services/resultPageData'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
-export const metadata: Metadata = { title: 'IELTS Drill' }
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getMessages()
+
+  return { title: t.ielts.meta.drillTitle }
+}
 
 interface Props {
   params: Promise<{ attemptId: string }>

@@ -7,12 +7,7 @@ export const COMPLETION_BADGE_TIERS = [
 
 export type CompletionBadgeTier = (typeof COMPLETION_BADGE_TIERS)[number]
 
-export const COMPLETION_BADGE_LABELS: Record<CompletionBadgeTier, string> = {
-  copper: 'Copper',
-  silver: 'Silver',
-  gold: 'Gold',
-  diamond: 'Diamond',
-}
+// Tier names are UI text: see `t.dictation.badges`.
 
 /**
  * Completion count -> badge tier: 1st completion earns copper, 2nd silver,

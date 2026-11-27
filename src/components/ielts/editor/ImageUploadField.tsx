@@ -3,8 +3,10 @@
 import { Upload } from 'lucide-react'
 import { useId, useRef, useState } from 'react'
 
+import { useMessages } from '@/i18n/client'
 import { uploadIeltsFileApi } from '@/requests/ieltsAdminApi'
 
+import { apiErrorText } from './apiErrorText'
 import { TextField } from './fields'
 import { ExamButton } from '@/components/ielts/ui'
 
@@ -18,6 +20,8 @@ export function ImageUploadField({
   onChange: (url: string) => void
   value: string
 }) {
+  const t = useMessages()
+  const copy = t.ieltsEditor.upload
   const inputRef = useRef<HTMLInputElement>(null)
   const inputId = useId()
   const [busy, setBusy] = useState(false)
@@ -30,7 +34,7 @@ export function ImageUploadField({
     try {
       onChange((await uploadIeltsFileApi('image', file)).url)
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'Upload failed.')
+      setError(apiErrorText(caught, t, copy.failed))
     } finally {
       setBusy(false)
     }
@@ -71,7 +75,7 @@ export function ImageUploadField({
           tone="paper"
           type="button"
         >
-          {busy ? 'Uploading...' : 'Upload image'}
+          {busy ? copy.uploading : copy.uploadImage}
         </ExamButton>
       </div>
       {error ? (

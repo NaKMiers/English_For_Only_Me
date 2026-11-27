@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useRef, useState } from 'react'
 
+import { useMessages } from '@/i18n/client'
 import { cn } from '@/lib/utils'
 import { setFavoriteAction } from '@/modules/dictation/content/favoriteActions'
 
@@ -22,6 +23,7 @@ export function FavoriteButton({
   initialFavorited: boolean
   canFavorite: boolean
 }) {
+  const text = useMessages().dictation.browse
   const router = useRouter()
   const [favorited, setFavorited] = useState(initialFavorited)
   // Every click sets a desired state (never a toggle) and gets a sequence
@@ -36,7 +38,7 @@ export function FavoriteButton({
     return (
       <Link
         href={SIGN_IN_HREF}
-        aria-label="Sign in to save favorites"
+        aria-label={text.signInToFavorite}
         className={cn(base, 'hover:bg-tint-soft')}
       >
         <Star
@@ -80,7 +82,7 @@ export function FavoriteButton({
       type="button"
       onClick={onClick}
       aria-pressed={favorited}
-      aria-label={favorited ? 'Remove favorite' : 'Add favorite'}
+      aria-label={favorited ? text.removeFavorite : text.addFavorite}
       className={cn(base, 'hover:bg-tint-soft')}
     >
       <Star

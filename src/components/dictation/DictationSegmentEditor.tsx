@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ActionButton } from '@/components/ui/ActionButton'
 import { Textarea } from '@/components/ui/textarea'
+import { useMessages } from '@/i18n/client'
 import { cn } from '@/lib/utils'
 import {
   applyLocalSegmentEdit,
@@ -58,6 +59,8 @@ function parseTimeValue(value: string) {
 }
 
 export function DictationSegmentEditor({ className, initialSegments }: Props) {
+  const t = useMessages()
+  const s = t.admin.segmentEditor
   const [segments, setSegments] = useState(
     initialSegments.map(toEditableSegment)
   )
@@ -102,8 +105,8 @@ export function DictationSegmentEditor({ className, initialSegments }: Props) {
 
   return (
     <ContentPanel
-      eyebrow="Segment editor"
-      title="Sentence source cleanup"
+      eyebrow={s.eyebrow}
+      title={s.title}
       className={className}
     >
       <div className="grid gap-3">
@@ -134,7 +137,7 @@ export function DictationSegmentEditor({ className, initialSegments }: Props) {
 
               <div className="flex shrink-0 flex-wrap gap-2">
                 <IconButton
-                  label="Split segment"
+                  label={s.split}
                   onClick={() =>
                     applyAction(segment, {
                       action: 'split',
@@ -148,7 +151,7 @@ export function DictationSegmentEditor({ className, initialSegments }: Props) {
                   />
                 </IconButton>
                 <IconButton
-                  label="Merge with previous segment"
+                  label={s.mergePrevious}
                   onClick={() =>
                     applyAction(segment, { action: 'mergePrevious' })
                   }
@@ -159,7 +162,7 @@ export function DictationSegmentEditor({ className, initialSegments }: Props) {
                   />
                 </IconButton>
                 <IconButton
-                  label="Merge with next segment"
+                  label={s.mergeNext}
                   onClick={() => applyAction(segment, { action: 'mergeNext' })}
                 >
                   <Merge
@@ -175,7 +178,7 @@ export function DictationSegmentEditor({ className, initialSegments }: Props) {
                 htmlFor={`segment-text-${segment.id}`}
                 className="font-sans text-xs font-semibold tracking-normal"
               >
-                Segment text
+                {s.text}
               </Label>
               <Textarea
                 id={`segment-text-${segment.id}`}
@@ -188,7 +191,7 @@ export function DictationSegmentEditor({ className, initialSegments }: Props) {
             <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
               <Label className="grid gap-2">
                 <span className="font-sans text-xs font-semibold tracking-normal">
-                  Start ms
+                  {s.startMs}
                 </span>
                 <Input
                   type="number"
@@ -202,7 +205,7 @@ export function DictationSegmentEditor({ className, initialSegments }: Props) {
               </Label>
               <Label className="grid gap-2">
                 <span className="font-sans text-xs font-semibold tracking-normal">
-                  End ms
+                  {s.endMs}
                 </span>
                 <Input
                   type="number"
@@ -234,9 +237,7 @@ export function DictationSegmentEditor({ className, initialSegments }: Props) {
                   applyAction(segment, { action: 'acceptWarning' })
                 }
               >
-                {segment.warningAccepted
-                  ? 'Warning Accepted'
-                  : 'Accept Warning'}
+                {segment.warningAccepted ? s.warningAccepted : s.acceptWarning}
               </ActionButton>
             </div>
           </article>

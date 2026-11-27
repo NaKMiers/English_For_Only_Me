@@ -12,6 +12,7 @@ import { TopicGrid } from '@/components/dictation/browse/TopicGrid'
 import { ActionButton } from '@/components/ui/ActionButton'
 import { PageTag } from '@/components/ui/PageTag'
 import { hasMongoDbUri } from '@/constants/environments'
+import { getMessages } from '@/i18n/server'
 import { connectDatabaseWhen } from '@/lib/db/connectDatabase'
 import { toBrowseItem } from '@/modules/dictation/content/browseItem'
 import {
@@ -35,26 +36,31 @@ import type {
   DictationVideoApiRecord,
 } from '@/modules/dictation/types'
 
-export const metadata: Metadata = {
-  title: 'All Topics',
-  description:
-    'Browse dictation practice topics by level and section - short stories, conversations, TOEIC, IELTS listening and more.',
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getMessages()
+
+  return {
+    title: t.dictation.meta.allTopicsTitle,
+    description: t.dictation.meta.allTopicsDescription,
+  }
 }
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
-function BrowseFooter() {
+function BrowseFooter({ appName }: { appName: string }) {
   return (
     <div className="border-line bg-ink text-surface border-t px-5 py-4">
       <strong className="font-sans text-base font-semibold tracking-normal">
-        English For Only Me
+        {appName}
       </strong>
     </div>
   )
 }
 
 export default async function DictationPage() {
+  const t = await getMessages()
+  const text = t.dictation.landing
   let topics: DictationTopicSummaryRecord[] = []
   let globalStats: DictationGlobalStatsRecord | null = null
   let hasPracticeActor = false
@@ -119,16 +125,16 @@ export default async function DictationPage() {
       topbar={
         <AppTopbar
           activeHref="/dictation"
-          subtitle="Browse dictation topics"
+          subtitle={t.dictation.meta.browseSubtitle}
           authControl={<AuthControl />}
         />
       }
-      footer={<BrowseFooter />}
+      footer={<BrowseFooter appName={t.common.app.name} />}
     >
       <section className="grid gap-5 p-4 sm:p-6 lg:p-8">
         <PageHero>
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <PageTag tone="red">Listening</PageTag>
+            <PageTag tone="red">{text.eyebrow}</PageTag>
             <div className="flex flex-wrap items-center justify-end gap-2">
               {latestCompletedVideo ? (
                 <ActionButton
@@ -142,31 +148,33 @@ export default async function DictationPage() {
                     />
                   }
                 >
-                  View Latest Results
+                  {text.latestResults}
                 </ActionButton>
               ) : null}
               <Link
                 href="/dictation/favorites"
                 className="text-brand text-sm font-semibold hover:underline"
               >
-                ★ Favorites
+                {text.favoritesLink}
               </Link>
             </div>
           </div>
           <h1 className="font-sans text-[clamp(1.8rem,4vw,2.6rem)] leading-none font-medium">
-            All topics
+            {text.title}
           </h1>
           <p className="text-ink-soft max-w-2xl text-sm leading-6">
             {hasPracticeActor
-              ? 'Pick a topic, then a section, then continue building your listening history.'
-              : 'Pick a topic, then a section, then practice a lesson. Sign in to save your progress and favorites.'}
+              ? text.descriptionSignedIn
+              : text.descriptionGuest}
           </p>
         </PageHero>
         <InProgressSection
           videos={inProgressItems}
           canFavorite={canFavorite}
+          labels={t.dictation.browse}
         />
         <TopicGrid
+          labels={t.dictation.browse}
           topics={topics}
           noTopicCount={noTopicCount}
         />

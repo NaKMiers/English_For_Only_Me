@@ -1,5 +1,9 @@
+'use client'
+
 import Image from 'next/image'
 
+import { useMessages } from '@/i18n/client'
+import { format } from '@/i18n/format'
 import { cn } from '@/lib/utils'
 
 interface Props {
@@ -58,6 +62,7 @@ export function DictationVideoThumbnail({
   title,
   youtubeVideoId,
 }: Props) {
+  const text = useMessages().dictation.thumbnail
   const safeThumbnailUrl = getSafeThumbnailUrl({
     thumbnailUrl,
     youtubeVideoId,
@@ -73,7 +78,7 @@ export function DictationVideoThumbnail({
       {safeThumbnailUrl ? (
         <Image
           src={safeThumbnailUrl}
-          alt={`Thumbnail for ${title}`}
+          alt={format(text.alt, { title })}
           fill
           loading={priority ? 'eager' : 'lazy'}
           fetchPriority={priority ? 'high' : fetchPriority}
@@ -84,7 +89,7 @@ export function DictationVideoThumbnail({
       ) : (
         <div className="grid h-full place-items-center p-4 text-center">
           <span className="font-sans text-sm leading-5 font-semibold tracking-normal">
-            No thumbnail
+            {text.none}
           </span>
         </div>
       )}

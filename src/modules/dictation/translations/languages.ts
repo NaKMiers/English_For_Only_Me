@@ -48,25 +48,37 @@ export function isValidTranslationLanguage(value: string) {
   )
 }
 
-// Intl.DisplayNames is a runtime built-in (Node + browser). Cache one instance;
-// it turns 'vi' -> 'Vietnamese' without us maintaining a name table.
-let displayNames: Intl.DisplayNames | null | undefined
+// Intl.DisplayNames is a runtime built-in (Node + browser). Cache one instance
+// per display language; it turns 'vi' -> 'Vietnamese' (or 'Tiếng Việt' when
+// displayed in Vietnamese) without us maintaining a name table.
+const displayNamesByLocale = new Map<string, Intl.DisplayNames | null>()
 
-function getDisplayNames() {
-  if (displayNames !== undefined) return displayNames
+function getDisplayNames(displayLocale: string) {
+  const cached = displayNamesByLocale.get(displayLocale)
+
+  if (cached !== undefined) return cached
+
+  let names: Intl.DisplayNames | null
 
   try {
-    displayNames = new Intl.DisplayNames(['en'], { type: 'language' })
+    names = new Intl.DisplayNames([displayLocale], { type: 'language' })
   } catch {
-    displayNames = null
+    names = null
   }
 
-  return displayNames
+  displayNamesByLocale.set(displayLocale, names)
+
+  return names
 }
 
-export function getLanguageLabel(code: string) {
+/**
+ * Human name of a language code, written in `displayLocale` (English by
+ * default, which the AI translation prompt relies on). UI callers pass the
+ * learner's `INTL_LOCALES[locale]`.
+ */
+export function getLanguageLabel(code: string, displayLocale = 'en') {
   const normalized = normalizeTranslationLanguage(code)
-  const names = getDisplayNames()
+  const names = getDisplayNames(displayLocale)
 
   if (names)
     try {

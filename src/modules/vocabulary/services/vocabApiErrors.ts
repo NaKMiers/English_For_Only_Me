@@ -1,8 +1,25 @@
 import { MissingEnvironmentError } from '@/constants/environments'
-import type { VocabApiErrorDecision } from './vocabularyRouteDecisions'
-import { VOCAB_MISSING_MONGODB_MESSAGE } from './vocabularyRouteDecisions'
+import { en, type Messages } from '@/i18n/messages/en'
 
-export function toVocabApiError(error: unknown): VocabApiErrorDecision {
+import { MissingVietnameseMeaningError } from './userVocabItemService'
+import type { VocabApiErrorDecision } from './vocabularyRouteDecisions'
+
+function getStatusErrorMessage(
+  error: { message?: string; status: 401 | 403 | 409 },
+  t: Messages
+) {
+  if (error.status === 401) return t.common.errors.unauthorized
+  if (error.status === 403) return t.common.errors.forbidden
+  if (error instanceof MissingVietnameseMeaningError)
+    return t.vocabulary.api.needsMeaning
+
+  return error.message ?? t.common.errors.forbidden
+}
+
+export function toVocabApiError(
+  error: unknown,
+  t: Messages = en
+): VocabApiErrorDecision {
   if (
     typeof error === 'object' &&
     error !== null &&
@@ -12,7 +29,10 @@ export function toVocabApiError(error: unknown): VocabApiErrorDecision {
     return {
       status: error.status,
       body: {
-        message: (error as { message?: string }).message ?? 'Access denied.',
+        message: getStatusErrorMessage(
+          error as { message?: string; status: 401 | 403 | 409 },
+          t
+        ),
       },
     }
 
@@ -20,7 +40,7 @@ export function toVocabApiError(error: unknown): VocabApiErrorDecision {
     return {
       status: 500,
       body: {
-        message: VOCAB_MISSING_MONGODB_MESSAGE,
+        message: t.vocabulary.api.missingMongo,
       },
     }
 
@@ -29,7 +49,7 @@ export function toVocabApiError(error: unknown): VocabApiErrorDecision {
   return {
     status: 500,
     body: {
-      message: 'Could not complete the vocabulary request.',
+      message: t.vocabulary.api.failed,
     },
   }
 }

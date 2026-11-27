@@ -4,6 +4,8 @@ import { ArrowRight } from 'lucide-react'
 import { useState } from 'react'
 
 import { segmentClass } from '@/components/ielts/ui'
+import { useMessages } from '@/i18n/client'
+import { format } from '@/i18n/format'
 import type {
   IeltsConsistencyIssue,
   IeltsConsistencyReport,
@@ -24,13 +26,16 @@ function IssueRow({
   issue: IeltsConsistencyIssue
   onJump?: (sectionKey: string) => void
 }) {
+  const t = useMessages()
   const body = (
     <>
       <span className="flex min-w-0 flex-wrap items-baseline gap-x-2">
         <code className="font-sans text-xs font-semibold">{issue.rule}</code>
         <span className="text-muted-foreground text-xs">{issue.path}</span>
       </span>
-      <span className="text-sm">{issue.message}</span>
+      <span className="text-sm">
+        {format(t.ieltsEditor.issues[issue.code], issue.values)}
+      </span>
     </>
   )
 
@@ -63,6 +68,7 @@ export function IssueList({
   issues: IeltsConsistencyIssue[]
   onJump?: (sectionKey: string) => void
 }) {
+  const t = useMessages()
   const [page, setPage] = useState(0)
 
   if (!issues.length) return null
@@ -84,7 +90,7 @@ export function IssueList({
           ))}
       </ul>
       <PageControls
-        label="Issues"
+        label={t.ieltsEditor.checks.issues}
         onPageChange={setPage}
         page={safePage}
         pageSize={PAGE_SIZE}
@@ -102,16 +108,14 @@ export function ChecksPanel({
   onJump?: (sectionKey: string) => void
   report: IeltsConsistencyReport
 }) {
+  const t = useMessages()
+  const copy = t.ieltsEditor.checks
   const [kind, setKind] = useState<'errors' | 'warnings'>(
     report.errors.length || !report.warnings.length ? 'errors' : 'warnings'
   )
 
   if (!report.errors.length && !report.warnings.length)
-    return (
-      <p className="text-sm font-semibold">
-        All checks pass. Nothing blocks publishing.
-      </p>
-    )
+    return <p className="text-sm font-semibold">{copy.allPass}</p>
 
   return (
     <div className="grid gap-3">
@@ -125,7 +129,7 @@ export function ChecksPanel({
             onClick={() => setKind(value)}
             type="button"
           >
-            {value} ({report[value].length})
+            {format(copy[value], { count: report[value].length })}
           </button>
         ))}
       </div>
@@ -136,7 +140,7 @@ export function ChecksPanel({
       />
       {report[kind].length ? null : (
         <p className="text-muted-foreground text-sm font-semibold">
-          No {kind}.
+          {kind === 'errors' ? copy.noErrors : copy.noWarnings}
         </p>
       )}
     </div>

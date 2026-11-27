@@ -7,6 +7,8 @@ import { ContentPanel } from '@/components/common/ContentPanel'
 import { Label } from '@/components/ui/label'
 import { ActionButton } from '@/components/ui/ActionButton'
 import { Textarea } from '@/components/ui/textarea'
+import { useMessages } from '@/i18n/client'
+import { format } from '@/i18n/format'
 import { cn } from '@/lib/utils'
 import type { DictationDebriefApiRecord } from '@/modules/dictation/types'
 import { createDictationDebriefApi } from '@/requests/dictationDebriefsApi'
@@ -44,6 +46,7 @@ export function DictationDebriefPanel({
   initialDebrief = null,
   videoId,
 }: Props) {
+  const text = useMessages().dictation.debrief
   const [debrief, setDebrief] = useState(initialDebrief)
   const [error, setError] = useState<string | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
@@ -64,9 +67,9 @@ export function DictationDebriefPanel({
       setDebrief(response.debrief)
     } catch (requestError) {
       setError(
-        requestError instanceof Error
+        requestError instanceof Error && requestError.message
           ? requestError.message
-          : 'AI debrief is unavailable right now.'
+          : text.unavailable
       )
     } finally {
       setIsGenerating(false)
@@ -77,8 +80,8 @@ export function DictationDebriefPanel({
 
   return (
     <ContentPanel
-      eyebrow="AI coach"
-      title="End-of-video debrief"
+      eyebrow={text.eyebrow}
+      title={text.title}
       className={className}
       action={
         <ActionButton
@@ -105,31 +108,30 @@ export function DictationDebriefPanel({
           tone={hasReadyDebrief ? 'paper' : 'ink'}
         >
           {isGenerating
-            ? 'Generating'
+            ? text.generating
             : hasReadyDebrief
-              ? 'Regenerate'
-              : 'Generate Debrief'}
+              ? text.regenerate
+              : text.generate}
         </ActionButton>
       }
     >
       <p className="text-ink-soft text-base leading-7 font-normal">
-        AI debrief appears only after video completion and uses saved attempts,
-        transcript data, missed words, traps, and your notes.
+        {text.description}
       </p>
 
       <Label className="grid gap-2 text-sm font-semibold">
-        Notes for this debrief
+        {text.notesLabel}
         <Textarea
           value={notes}
           onChange={event => setNotes(event.target.value)}
-          placeholder="Optional: what felt hard, what IELTS target you care about, or what to focus on next."
+          placeholder={text.notesPlaceholder}
           className="border-line bg-surface rounded-control min-h-24 border text-base"
         />
       </Label>
 
       {!canGenerate ? (
         <div className="border-line bg-tint rounded-control border p-3 text-sm leading-6 font-semibold">
-          Complete this video before asking the AI coach for a debrief.
+          {text.locked}
         </div>
       ) : null}
 
@@ -138,7 +140,7 @@ export function DictationDebriefPanel({
           role="alert"
           className="border-brand bg-tint-soft rounded-control border p-3 text-sm leading-6 font-semibold"
         >
-          {error} Your stats are still saved; retry when the provider is ready.
+          {format(text.error, { error })}
         </div>
       ) : null}
 
@@ -154,7 +156,7 @@ export function DictationDebriefPanel({
 
           {debrief.keyVocabulary.length > 0 ? (
             <div className="grid gap-2">
-              <h3 className="text-sm font-semibold">IELTS vocabulary</h3>
+              <h3 className="text-sm font-semibold">{text.vocabulary}</h3>
               <div className="grid gap-2 md:grid-cols-2">
                 {debrief.keyVocabulary.map(item => (
                   <div
@@ -171,19 +173,19 @@ export function DictationDebriefPanel({
           ) : null}
 
           <DebriefList
-            title="Listening traps"
+            title={text.listeningTraps}
             items={debrief.listeningTraps}
           />
           <DebriefList
-            title="Weak patterns"
+            title={text.weakPatterns}
             items={debrief.weakPatterns}
           />
           <DebriefList
-            title="Next actions"
+            title={text.nextActions}
             items={debrief.nextActions}
           />
           <DebriefList
-            title="Caveats"
+            title={text.caveats}
             items={debrief.caveats}
           />
         </div>

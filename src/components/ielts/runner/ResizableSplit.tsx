@@ -8,6 +8,7 @@ import {
   useSyncExternalStore,
 } from 'react'
 
+import { useMessages } from '@/i18n/client'
 import { cn } from '@/lib/utils'
 
 const MIN_PERCENT = 30
@@ -72,6 +73,7 @@ export function useResizableSplit({
   dividerClassName,
   storageKey,
 }: Options) {
+  const t = useMessages().ielts.split
   const stored = useSyncExternalStore(
     subscribe,
     () => readStored(storageKey),
@@ -130,7 +132,7 @@ export function useResizableSplit({
 
   const divider = (
     <div
-      aria-label="Resize panels"
+      aria-label={t.resize}
       aria-orientation="vertical"
       aria-valuemax={MAX_PERCENT}
       aria-valuemin={MIN_PERCENT}
@@ -155,7 +157,7 @@ export function useResizableSplit({
       onPointerUp={onPointerUp}
       role="separator"
       tabIndex={0}
-      title="Drag to resize, double-click to reset"
+      title={t.resizeTitle}
     >
       <span
         aria-hidden="true"

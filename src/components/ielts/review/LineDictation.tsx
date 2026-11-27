@@ -3,6 +3,8 @@
 import { useState } from 'react'
 
 import { Input } from '@/components/ui/input'
+import { useMessages } from '@/i18n/client'
+import { format } from '@/i18n/format'
 import { cn } from '@/lib/utils'
 import { buildDictationCorrection } from '@/modules/dictation/correction'
 import type { DictationCorrectionResult } from '@/modules/dictation/correction'
@@ -13,6 +15,7 @@ import { ExamButton } from '@/components/ielts/ui'
  * with the Dictation Lab's word correction. Nothing is stored (v1).
  */
 export function LineDictation({ line }: { line: string }) {
+  const t = useMessages().ielts.lineDictation
   const [open, setOpen] = useState(false)
   const [typed, setTyped] = useState('')
   const [result, setResult] = useState<DictationCorrectionResult | null>(null)
@@ -27,7 +30,7 @@ export function LineDictation({ line }: { line: string }) {
           tone="paper"
           type="button"
         >
-          Retype this line
+          {t.open}
         </ExamButton>
       </div>
     )
@@ -43,13 +46,10 @@ export function LineDictation({ line }: { line: string }) {
 
   return (
     <div className="border-line rounded-control bg-surface grid gap-2 border p-3">
-      <p className="text-sm">
-        Recall the line from the audio and type it without looking at the
-        transcript.
-      </p>
+      <p className="text-sm">{t.hint}</p>
       <div className="flex flex-wrap gap-2">
         <Input
-          aria-label="The line you heard"
+          aria-label={t.inputLabel}
           autoComplete="off"
           className="border-line bg-surface h-11 min-w-0 flex-1 border text-base"
           onChange={event => setTyped(event.target.value)}
@@ -64,7 +64,7 @@ export function LineDictation({ line }: { line: string }) {
           tone="ink"
           type="button"
         >
-          Check
+          {t.check}
         </ExamButton>
       </div>
       {result ? (
@@ -93,8 +93,8 @@ export function LineDictation({ line }: { line: string }) {
           ))}
           <span className="block text-sm font-bold">
             {result.isPassed
-              ? 'All correct.'
-              : `${result.stats.accuracy}% correct.`}
+              ? t.allCorrect
+              : format(t.accuracy, { accuracy: result.stats.accuracy })}
           </span>
         </p>
       ) : null}

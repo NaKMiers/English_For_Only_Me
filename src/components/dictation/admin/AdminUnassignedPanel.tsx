@@ -4,6 +4,8 @@ import { ChevronDown } from 'lucide-react'
 import { useState, useTransition } from 'react'
 
 import { PageTag } from '@/components/ui/PageTag'
+import { format } from '@/i18n/format'
+import { useMessages } from '@/i18n/client'
 import { cn } from '@/lib/utils'
 import { moveVideoAction } from '@/modules/dictation/content/adminActions'
 
@@ -20,6 +22,7 @@ export function AdminUnassignedPanel({
 }: {
   videos: AdminSectionVideo[]
 }) {
+  const t = useMessages()
   const [open, setOpen] = useState(true)
   const [, startTransition] = useTransition()
 
@@ -45,7 +48,7 @@ export function AdminUnassignedPanel({
           className={cn('size-5 transition-transform', open && 'rotate-180')}
         />
         <span className="font-sans text-base font-semibold">
-          Unassigned videos
+          {t.admin.unassigned.title}
         </span>
         <PageTag tone="pale">{videos.length}</PageTag>
       </button>
@@ -57,16 +60,15 @@ export function AdminUnassignedPanel({
           onEnter={() => setOpen(true)}
           className="grid gap-2"
         >
-          <p className="text-ink-soft text-xs">
-            Drag a video into a topic&apos;s section below to organize it. Drop
-            a video here to unassign it.
-          </p>
+          <p className="text-ink-soft text-xs">{t.admin.unassigned.hint}</p>
           <ul className="grid gap-2">
             {videos.map(video => (
               <AdminVideoRow
                 key={video.id}
                 video={video}
-                gripLabel={`Drag ${video.title}`}
+                gripLabel={format(t.admin.videoRow.drag, {
+                  title: video.title,
+                })}
                 acceptReorderMime={MIME_VIDEO}
                 onDragStartData={dataTransfer =>
                   dataTransfer.setData(MIME_VIDEO, video.id)

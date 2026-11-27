@@ -6,6 +6,8 @@ import { createPortal } from 'react-dom'
 
 import { PageTag } from '@/components/ui/PageTag'
 import { Input } from '@/components/ui/input'
+import { useMessages } from '@/i18n/client'
+import { format } from '@/i18n/format'
 import { cn } from '@/lib/utils'
 import type { ExplainCard, PracticeCard } from '@/modules/grammar/course/types'
 import type { PlayCard } from '@/modules/grammar/session/preparePlayCards'
@@ -118,9 +120,11 @@ interface ExplainProps {
 }
 
 export function ExplainCardView({ card }: ExplainProps) {
+  const t = useMessages().grammar.card
+
   return (
     <div className="grid gap-4">
-      <Prompt>Remember</Prompt>
+      <Prompt>{t.remember}</Prompt>
       <h2 className="font-sans text-2xl leading-tight font-semibold sm:text-3xl">
         {card.title}
       </h2>
@@ -149,14 +153,14 @@ export function ExplainCardView({ card }: ExplainProps) {
       {card.pitfall ? (
         <div className="border-danger rounded-control grid gap-1.5 border border-dashed px-3 py-2">
           <span className="text-danger text-xs font-semibold">
-            Common mistake
+            {t.commonMistake}
           </span>
           <span className="flex items-center gap-2">
             <X
               aria-hidden
               className="text-danger size-4 shrink-0"
             />
-            <span className="sr-only">Sai:</span>
+            <span className="sr-only">{t.wrong}</span>
             <span className="line-through decoration-2">
               {card.pitfall.wrong}
             </span>
@@ -166,7 +170,7 @@ export function ExplainCardView({ card }: ExplainProps) {
               aria-hidden
               className="text-lesson-correct size-4 shrink-0"
             />
-            <span className="sr-only">Correct:</span>
+            <span className="sr-only">{t.correct}</span>
             {card.pitfall.right}
             <SpeakButton text={card.pitfall.right} />
           </span>
@@ -204,6 +208,8 @@ export function PracticeCardView(props: PracticeProps) {
 }
 
 function ChoiceView({ card, checked, draft, onDraft, play }: PracticeProps) {
+  const t = useMessages().grammar.card
+
   if (card.kind !== 'choice' || draft.kind !== 'choice') return null
 
   const order = play.optionOrder ?? card.options.map((_, index) => index)
@@ -225,7 +231,7 @@ function ChoiceView({ card, checked, draft, onDraft, play }: PracticeProps) {
         </p>
       ) : null}
       <div
-        aria-label="Choices"
+        aria-label={t.choices}
         className="grid gap-3"
         role="group"
       >
@@ -264,6 +270,8 @@ function FillView({
   onSubmit,
   play,
 }: PracticeProps) {
+  const t = useMessages().grammar.card
+
   if (card.kind !== 'fill' || draft.kind !== 'fill') return null
 
   return (
@@ -275,7 +283,7 @@ function FillView({
       />
       {play.tiles ? (
         <div
-          aria-label="Words to pick"
+          aria-label={t.wordsToPick}
           className="flex flex-wrap gap-3"
           role="group"
         >
@@ -303,7 +311,7 @@ function FillView({
         </div>
       ) : (
         <Input
-          aria-label="Answer"
+          aria-label={t.answer}
           autoCapitalize="off"
           autoComplete="off"
           autoCorrect="off"
@@ -321,7 +329,7 @@ function FillView({
               onSubmit()
             }
           }}
-          placeholder="Type your answer"
+          placeholder={t.answerPlaceholder}
           spellCheck={false}
           value={draft.text}
         />
@@ -361,6 +369,7 @@ function OrderBoard({
   sentence: string
   tiles: string[]
 }) {
+  const t = useMessages().grammar.card
   const lineRef = useRef<HTMLDivElement>(null)
   const bankRef = useRef<HTMLDivElement>(null)
   const { drag, startPress, wasDragged } = useTileDrag({
@@ -386,7 +395,7 @@ function OrderBoard({
   return (
     <>
       <div
-        aria-label="Your sentence"
+        aria-label={t.yourSentence}
         aria-live="polite"
         className={cn(
           'border-line rounded-control flex min-h-16 flex-wrap content-start gap-2 border-b border-dashed pb-3 transition-colors',
@@ -396,7 +405,7 @@ function OrderBoard({
       >
         {picked.length === 0 ? (
           <span className="text-ink-soft self-center text-sm">
-            Tap or drag the words here in the right order.
+            {t.orderHint}
           </span>
         ) : null}
         {picked.map((tileIndex, position) => (
@@ -418,7 +427,7 @@ function OrderBoard({
                 drag?.tileIndex === tileIndex && 'opacity-40'
               )}
               disabled={!answering}
-              label={`Remove "${tiles[tileIndex]}"`}
+              label={format(t.removeWord, { word: tiles[tileIndex] ?? '' })}
               onClick={() => {
                 if (wasDragged()) return
                 onPick(picked.filter((_, index) => index !== position))
@@ -434,7 +443,7 @@ function OrderBoard({
         ))}
         {endMark ? (
           <span
-            aria-label={endMark === '?' ? 'Question' : 'Statement'}
+            aria-label={endMark === '?' ? t.question : t.statement}
             className="self-end font-sans text-2xl leading-none font-semibold"
           >
             {endMark}
@@ -442,7 +451,7 @@ function OrderBoard({
         ) : null}
       </div>
       <div
-        aria-label="Words to arrange"
+        aria-label={t.wordsToArrange}
         className={cn(
           'rounded-control flex flex-wrap gap-2 transition-colors',
           overBank &&
@@ -459,7 +468,9 @@ function OrderBoard({
             )}
             disabled={!answering || used.has(tileIndex)}
             key={`${tile}-${tileIndex}`}
-            label={used.has(tileIndex) ? `${tile} (used)` : tile}
+            label={
+              used.has(tileIndex) ? format(t.usedWord, { word: tile }) : tile
+            }
             onClick={() => {
               if (wasDragged()) return
               onPick([...picked, tileIndex])
@@ -511,11 +522,13 @@ function DropMarker({ side }: { side: 'left' | 'right' }) {
 }
 
 function FixView({ card, checked, draft, onDraft }: PracticeProps) {
+  const t = useMessages().grammar.card
+
   if (card.kind !== 'fix' || draft.kind !== 'fix') return null
 
   return (
     <div
-      aria-label="Words in the sentence"
+      aria-label={t.wordsInSentence}
       className="flex flex-wrap gap-2"
       role="group"
     >

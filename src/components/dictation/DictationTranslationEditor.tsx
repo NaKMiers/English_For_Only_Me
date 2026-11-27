@@ -12,6 +12,9 @@ import { useState } from 'react'
 import { ContentPanel } from '@/components/common/ContentPanel'
 import { ActionButton } from '@/components/ui/ActionButton'
 import { Textarea } from '@/components/ui/textarea'
+import { INTL_LOCALES } from '@/i18n/config'
+import { format } from '@/i18n/format'
+import { useLocale, useMessages } from '@/i18n/client'
 import type { CaptionCue } from '@/modules/dictation/translations/captionOverlap'
 import { getLanguageLabel } from '@/modules/dictation/translations/languages'
 import { resolveSegmentTranslation } from '@/modules/dictation/translations/segmentTranslation'
@@ -39,6 +42,9 @@ export function DictationTranslationEditor({
   segments,
   translationTracks,
 }: Props) {
+  const t = useMessages()
+  const tr = t.admin.translations
+  const intlLocale = INTL_LOCALES[useLocale()]
   const languages = translationTracks.map(track => track.language)
   const [language, setLanguage] = useState(languages[0] ?? '')
   const [drafts, setDrafts] = useState<Record<string, string>>({})
@@ -108,7 +114,7 @@ export function DictationTranslationEditor({
     } catch (error) {
       setError(
         segment.id,
-        error instanceof Error ? error.message : 'Could not save translation.'
+        error instanceof Error ? error.message : tr.saveFailed
       )
     } finally {
       setBusyId(null)
@@ -129,7 +135,7 @@ export function DictationTranslationEditor({
     } catch (error) {
       setError(
         segment.id,
-        error instanceof Error ? error.message : 'Could not translate.'
+        error instanceof Error ? error.message : tr.translateFailed
       )
     } finally {
       setBusyId(null)
@@ -151,11 +157,14 @@ export function DictationTranslationEditor({
             />
           }
         >
-          Prev
+          {t.admin.pager.prev}
         </ActionButton>
         <span className="text-ink-soft text-center text-xs font-normal">
-          Sentences {pageStart + 1}-{pageStart + visibleSegments.length} of{' '}
-          {segments.length}
+          {format(t.admin.pager.range, {
+            from: pageStart + 1,
+            to: pageStart + visibleSegments.length,
+            total: segments.length,
+          })}
         </span>
         <ActionButton
           type="button"
@@ -171,27 +180,22 @@ export function DictationTranslationEditor({
             />
           }
         >
-          Next
+          {t.common.actions.next}
         </ActionButton>
       </div>
     ) : null
 
   return (
     <ContentPanel
-      eyebrow="Translations"
-      title="Edit translations"
+      eyebrow={tr.eyebrow}
+      title={tr.title}
     >
       {languages.length === 0 ? (
-        <p className="text-ink-soft text-sm font-normal">
-          Add a non-primary caption track first, then edit its translation per
-          sentence here.
-        </p>
+        <p className="text-ink-soft text-sm font-normal">{tr.needTrack}</p>
       ) : (
         <>
           <p className="text-ink-soft text-sm leading-6 font-normal">
-            Each sentence loads its translation from the uploaded captions. Edit
-            it by hand, or use AI to translate, then save. Changes show in
-            practice.
+            {tr.intro}
           </p>
 
           {languages.length > 1 ? (
@@ -206,13 +210,13 @@ export function DictationTranslationEditor({
                     setPage(0)
                   }}
                 >
-                  {getLanguageLabel(code)}
+                  {getLanguageLabel(code, intlLocale)}
                 </ActionButton>
               ))}
             </div>
           ) : (
             <p className="font-sans text-xs font-semibold tracking-normal">
-              {getLanguageLabel(language)}
+              {getLanguageLabel(language, intlLocale)}
             </p>
           )}
 
@@ -243,12 +247,14 @@ export function DictationTranslationEditor({
                       </p>
                     </div>
                     <span className="text-ink-soft shrink-0 font-sans text-xs font-normal">
-                      {isOverridden ? 'Custom' : 'From captions'}
+                      {isOverridden ? tr.custom : tr.fromCaptions}
                     </span>
                   </div>
 
                   <Textarea
-                    aria-label={`Translation for sentence ${segment.order + 1}`}
+                    aria-label={format(tr.fieldLabel, {
+                      number: segment.order + 1,
+                    })}
                     value={value}
                     disabled={isBusy}
                     onChange={event => setDraft(segment.id, event.target.value)}
@@ -268,7 +274,7 @@ export function DictationTranslationEditor({
                         />
                       }
                     >
-                      Save
+                      {t.common.actions.save}
                     </ActionButton>
                     <ActionButton
                       type="button"
@@ -282,7 +288,7 @@ export function DictationTranslationEditor({
                         />
                       }
                     >
-                      {isBusy ? 'Working' : 'AI translate'}
+                      {isBusy ? tr.working : tr.aiTranslate}
                     </ActionButton>
                     {isOverridden ? (
                       <ActionButton
@@ -297,7 +303,7 @@ export function DictationTranslationEditor({
                           />
                         }
                       >
-                        Reset to captions
+                        {tr.reset}
                       </ActionButton>
                     ) : null}
                   </div>

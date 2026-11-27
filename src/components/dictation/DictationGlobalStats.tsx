@@ -1,3 +1,5 @@
+'use client'
+
 import { CalendarClock, Flame, ListChecks, Video } from 'lucide-react'
 
 import { ContentPanel } from '@/components/common/ContentPanel'
@@ -5,27 +7,36 @@ import { MetricTile } from '@/components/common/MetricTile'
 import { QueueRow } from '@/components/common/QueueRow'
 import { SketchChart } from '@/components/common/SketchChart'
 import { ActionButton } from '@/components/ui/ActionButton'
+import { useMessages } from '@/i18n/client'
+import { format, plural } from '@/i18n/format'
+import type { Messages } from '@/i18n/messages'
 import type { DictationGlobalStatsRecord } from '@/modules/dictation/types'
 
 interface Props {
   stats: DictationGlobalStatsRecord
 }
 
-function formatDuration(durationMs: number) {
+function formatDuration(
+  text: Messages['dictation']['duration'],
+  durationMs: number
+) {
   const totalMinutes = Math.round(durationMs / 60000)
 
-  if (totalMinutes <= 0) return '0m'
+  if (totalMinutes <= 0) return format(text.minutes, { minutes: 0 })
 
   const hours = Math.floor(totalMinutes / 60)
   const minutes = totalMinutes % 60
 
-  if (hours === 0) return `${minutes}m`
-  if (minutes === 0) return `${hours}h`
+  if (hours === 0) return format(text.minutes, { minutes })
+  if (minutes === 0) return format(text.hours, { hours })
 
-  return `${hours}h ${minutes}m`
+  return format(text.hoursMinutes, { hours, minutes })
 }
 
 export function DictationGlobalStats({ stats }: Props) {
+  const t = useMessages()
+  const text = t.dictation.globalStats
+  const duration = t.dictation.duration
   const isEmpty =
     stats.totalVideoCount === 0 &&
     stats.completedSegmentCount === 0 &&
@@ -35,9 +46,9 @@ export function DictationGlobalStats({ stats }: Props) {
     <div className="grid min-w-0 gap-5">
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         <MetricTile
-          label="Completed videos"
+          label={text.completedVideos}
           value={`${stats.completedVideoCount}`}
-          detail={`${stats.totalVideoCount} saved videos`}
+          detail={plural(text.savedVideos, stats.totalVideoCount)}
           tone="red"
           icon={
             <Video
@@ -47,9 +58,9 @@ export function DictationGlobalStats({ stats }: Props) {
           }
         />
         <MetricTile
-          label="Completed segments"
+          label={text.completedSegments}
           value={`${stats.completedSegmentCount}`}
-          detail="Correct, revealed, or skipped"
+          detail={text.completedSegmentsDetail}
           icon={
             <ListChecks
               aria-hidden="true"
@@ -58,9 +69,11 @@ export function DictationGlobalStats({ stats }: Props) {
           }
         />
         <MetricTile
-          label="This week"
-          value={formatDuration(stats.weeklyPracticeTimeMs)}
-          detail={`${formatDuration(stats.monthlyPracticeTimeMs)} this month`}
+          label={text.thisWeek}
+          value={formatDuration(duration, stats.weeklyPracticeTimeMs)}
+          detail={format(text.thisMonth, {
+            duration: formatDuration(duration, stats.monthlyPracticeTimeMs),
+          })}
           icon={
             <CalendarClock
               aria-hidden="true"
@@ -69,9 +82,9 @@ export function DictationGlobalStats({ stats }: Props) {
           }
         />
         <MetricTile
-          label="Active streak"
+          label={text.streak}
           value={`${stats.activeStreakDays}`}
-          detail={`${stats.dueReviewItemCount} review items due`}
+          detail={plural(text.reviewDue, stats.dueReviewItemCount)}
           tone="ink"
           icon={
             <Flame
@@ -84,33 +97,32 @@ export function DictationGlobalStats({ stats }: Props) {
 
       {isEmpty ? (
         <ContentPanel
-          eyebrow="Empty"
-          title="No saved practice yet"
+          eyebrow={text.emptyEyebrow}
+          title={text.emptyTitle}
         >
           <p className="text-ink-soft text-base leading-7 font-normal">
-            Import a video, build segments, and finish a practice session. This
-            page will then show where Dictation Lab should push you next.
+            {text.emptyDescription}
           </p>
           <div className="flex flex-wrap gap-3">
             <ActionButton href="/admin/dictation/import">
-              Import Video
+              {text.importVideo}
             </ActionButton>
             <ActionButton
               href="/dictation"
               tone="paper"
             >
-              Back To Lab
+              {text.backToLab}
             </ActionButton>
           </div>
         </ContentPanel>
       ) : (
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(320px,0.8fr)]">
           <ContentPanel
-            eyebrow="Trend"
-            title="First-try accuracy"
+            eyebrow={text.trendEyebrow}
+            title={text.trendTitle}
           >
             <SketchChart
-              label="Last 7 practice days"
+              label={text.trendLabel}
               points={stats.firstTryAccuracyTrend.map(point => point.accuracy)}
             />
             <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
@@ -125,15 +137,15 @@ export function DictationGlobalStats({ stats }: Props) {
           </ContentPanel>
 
           <ContentPanel
-            eyebrow="Taxonomy"
-            title="Repeated mistake types"
+            eyebrow={t.dictation.stats.taxonomyEyebrow}
+            title={text.mistakeTypesTitle}
           >
             <div className="grid gap-3">
               {stats.repeatedMistakeTypes.map(item => (
                 <QueueRow
                   key={item.type}
-                  title={item.label}
-                  meta={`${item.count} tokens`}
+                  title={t.dictation.stats.mistakeTypes[item.type]}
+                  meta={plural(t.dictation.stats.tokens, item.count)}
                   status={item.count > 0 ? 'watch' : 'quiet'}
                 />
               ))}
@@ -144,8 +156,8 @@ export function DictationGlobalStats({ stats }: Props) {
 
       <div className="grid items-start gap-5 lg:grid-cols-2">
         <ContentPanel
-          eyebrow="Words"
-          title="Weak words"
+          eyebrow={t.dictation.stats.wordsEyebrow}
+          title={text.weakWords}
         >
           {stats.weakWords.length > 0 ? (
             <div className="grid gap-3">
@@ -153,30 +165,33 @@ export function DictationGlobalStats({ stats }: Props) {
                 <QueueRow
                   key={word.word}
                   title={word.word}
-                  meta={`${word.count} misses`}
+                  meta={plural(t.dictation.stats.misses, word.count)}
                 />
               ))}
             </div>
           ) : (
             <p className="text-ink-soft text-base leading-7 font-normal">
-              No weak words yet. The list starts after real attempts.
+              {text.weakWordsEmpty}
             </p>
           )}
         </ContentPanel>
 
         <ContentPanel
-          eyebrow="Next"
-          title="Where to practice"
+          eyebrow={text.nextEyebrow}
+          title={text.nextTitle}
         >
           <div className="grid gap-3">
             <QueueRow
-              title="Review due items"
-              meta={`${stats.dueReviewItemCount} waiting`}
+              title={text.reviewDueItems}
+              meta={plural(text.waiting, stats.dueReviewItemCount)}
               href="/dictation/review"
             />
             <QueueRow
-              title="Continue saved videos"
-              meta={`${Math.max(stats.totalVideoCount - stats.completedVideoCount, 0)} unfinished`}
+              title={text.continueVideos}
+              meta={plural(
+                text.unfinished,
+                Math.max(stats.totalVideoCount - stats.completedVideoCount, 0)
+              )}
               href="/dictation"
             />
           </div>

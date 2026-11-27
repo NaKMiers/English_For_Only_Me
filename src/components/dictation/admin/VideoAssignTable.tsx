@@ -13,6 +13,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { format } from '@/i18n/format'
+import { useMessages } from '@/i18n/client'
 import { cn } from '@/lib/utils'
 import {
   assignVideosAction,
@@ -57,10 +59,6 @@ interface Props {
   sections: Array<{ id: string; topicId: string; title: string }>
 }
 
-const LEVEL_ITEMS = [
-  { value: '', label: 'No level' },
-  ...DICTATION_LEVELS.map(level => ({ value: level, label: level })),
-]
 const VIDEO_ORDER_MIME = 'application/x-efom-admin-video-order'
 
 /**
@@ -73,6 +71,7 @@ export function VideoAssignTable({
   topics,
   sections,
 }: Props) {
+  const t = useMessages()
   const [pending, startTransition] = useTransition()
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [topicId, setTopicId] = useState('')
@@ -99,22 +98,29 @@ export function VideoAssignTable({
     () => sections.filter(s => s.topicId === topicId),
     [sections, topicId]
   )
+  const levelItems = useMemo(
+    () => [
+      { value: '', label: t.admin.table.noLevel },
+      ...DICTATION_LEVELS.map(level => ({ value: level, label: level })),
+    ],
+    [t]
+  )
   const topicItems = useMemo(
     () => [
-      { value: '', label: 'No topic' },
+      { value: '', label: t.admin.table.noTopic },
       ...topics.map(topic => ({ value: topic.id, label: topic.title })),
     ],
-    [topics]
+    [topics, t]
   )
   const sectionItems = useMemo(
     () => [
-      { value: '', label: 'No section' },
+      { value: '', label: t.admin.table.noSection },
       ...topicSections.map(section => ({
         value: section.id,
         label: section.title,
       })),
     ],
-    [topicSections]
+    [topicSections, t]
   )
 
   const visibleVideos = useMemo(
@@ -232,12 +238,12 @@ export function VideoAssignTable({
               onCheckedChange={checked => toggleAllShown(checked)}
             />
             {selected.size
-              ? `${selected.size} selected`
-              : `Select all ${visibleIds.length} shown`}
+              ? format(t.admin.table.selected, { count: selected.size })
+              : format(t.admin.table.selectAll, { count: visibleIds.length })}
           </Label>
           {selectedHidden ? (
             <span className="text-ink-soft text-xs font-normal">
-              ({selectedHidden} hidden by filters)
+              {format(t.admin.table.hiddenByFilters, { count: selectedHidden })}
             </span>
           ) : null}
           {selected.size ? (
@@ -247,11 +253,11 @@ export function VideoAssignTable({
               type="button"
               variant="link"
             >
-              Clear selection
+              {t.admin.table.clearSelection}
             </Button>
           ) : (
             <span className="text-ink-soft text-xs font-normal">
-              Then set topic, section and level together.
+              {t.admin.table.thenSet}
             </span>
           )}
         </div>
@@ -268,7 +274,7 @@ export function VideoAssignTable({
             >
               <SelectTrigger
                 size="sm"
-                aria-label="Topic"
+                aria-label={t.admin.table.topic}
               >
                 <SelectValue />
               </SelectTrigger>
@@ -291,7 +297,7 @@ export function VideoAssignTable({
             >
               <SelectTrigger
                 size="sm"
-                aria-label="Section"
+                aria-label={t.admin.table.section}
               >
                 <SelectValue />
               </SelectTrigger>
@@ -308,17 +314,17 @@ export function VideoAssignTable({
             </Select>
             <Select
               value={level}
-              items={LEVEL_ITEMS}
+              items={levelItems}
               onValueChange={value => setLevel(value ?? '')}
             >
               <SelectTrigger
                 size="sm"
-                aria-label="Level"
+                aria-label={t.admin.table.level}
               >
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {LEVEL_ITEMS.map(item => (
+                {levelItems.map(item => (
                   <SelectItem
                     key={item.value}
                     value={item.value}
@@ -335,7 +341,9 @@ export function VideoAssignTable({
               disabled={pending}
               className="min-h-9 border max-sm:flex-1"
             >
-              {pending ? 'Applying…' : `Apply to ${selected.size}`}
+              {pending
+                ? t.admin.table.applying
+                : format(t.admin.table.applyTo, { count: selected.size })}
             </ActionButton>
           </div>
         ) : null}
@@ -343,7 +351,7 @@ export function VideoAssignTable({
 
       {canReorder ? null : (
         <p className="text-ink-soft text-xs font-normal">
-          Drag to reorder works in Custom order.
+          {t.admin.table.reorderCustomOnly}
         </p>
       )}
 
@@ -351,7 +359,7 @@ export function VideoAssignTable({
         {visibleVideos.length === 0 ? (
           <li className="border-line/40 rounded-control grid justify-items-center gap-2 border border-dashed p-6 text-center">
             <span className="text-ink-soft text-sm font-normal">
-              No videos match these filters.
+              {t.admin.table.noMatches}
             </span>
           </li>
         ) : (
@@ -359,7 +367,9 @@ export function VideoAssignTable({
             <AdminVideoRow
               key={video.id}
               video={video}
-              gripLabel={`Reorder ${video.title}`}
+              gripLabel={format(t.admin.videoRow.reorder, {
+                title: video.title,
+              })}
               acceptReorderMime={VIDEO_ORDER_MIME}
               onDragStartData={dataTransfer =>
                 dataTransfer.setData(VIDEO_ORDER_MIME, video.id)
@@ -374,8 +384,12 @@ export function VideoAssignTable({
               onToggleSelect={() => toggle(video.id)}
               meta={
                 <span className="text-ink-soft hidden shrink-0 text-xs font-normal sm:block">
-                  {video.topicTitle ?? 'No topic'}
-                  {video.sectionTitle ? ` · ${video.sectionTitle}` : ''}
+                  {video.sectionTitle
+                    ? format(t.admin.table.placement, {
+                        topic: video.topicTitle ?? t.admin.table.noTopic,
+                        section: video.sectionTitle,
+                      })
+                    : (video.topicTitle ?? t.admin.table.noTopic)}
                 </span>
               }
             />

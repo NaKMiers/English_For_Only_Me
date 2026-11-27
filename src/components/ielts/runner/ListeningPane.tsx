@@ -21,6 +21,8 @@ import {
   CollapsiblePanel,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
+import { useMessages } from '@/i18n/client'
+import { format } from '@/i18n/format'
 import { cn } from '@/lib/utils'
 import type { IeltsAttemptRecord } from '@/modules/ielts/attempts/attemptRecords'
 import { IELTS_MAX_AUDIO_INTERRUPTIONS } from '@/modules/ielts/constants'
@@ -54,6 +56,7 @@ function Transcript({
   lineNumbers?: boolean
   section: IeltsPublicSection
 }) {
+  const t = useMessages().ielts.listening
   const lines = section.listening?.lines
   const rootRef = useRef<HTMLOListElement>(null)
   const evidence = highlight?.sectionKey === section.key ? highlight : null
@@ -71,7 +74,7 @@ function Transcript({
 
   return (
     <ol
-      aria-label="Transcript"
+      aria-label={t.transcript}
       data-highlight-scope={`transcript:${section.key}`}
       className="font-body grid gap-2.5 text-[15px] leading-[1.6]"
       ref={rootRef}
@@ -116,6 +119,7 @@ function MockAudio({
   | 'onPartChange'
   | 'sections'
 >) {
+  const t = useMessages().ielts.listening
   const audioRef = useRef<HTMLAudioElement>(null)
   const startedParts = attempt.audioEvents
     .filter(event => event.kind === 'part-started')
@@ -152,10 +156,10 @@ function MockAudio({
 
         onAttemptChange(result.attempt)
       } catch {
-        onNotice('Could not save the audio position. The timer keeps running.')
+        onNotice(t.positionFailed)
       }
     },
-    [attempt.id, onAttemptChange, onNotice]
+    [attempt.id, onAttemptChange, onNotice, t]
   )
 
   const playPart = useCallback(
@@ -173,10 +177,10 @@ function MockAudio({
           setPlaying(true)
           void post({ kind: 'part-started', part: next.order })
         },
-        () => onNotice('The browser blocked the audio. Press Start again.')
+        () => onNotice(t.blocked)
       )
     },
-    [onNotice, onPartChange, post, sections]
+    [onNotice, onPartChange, post, sections, t]
   )
 
   // 30 s preview between parts.
@@ -199,7 +203,7 @@ function MockAudio({
       setPreview(30)
     } else {
       setFinished(true)
-      onNotice('The audio has ended. Check your answers, then submit.')
+      onNotice(t.ended)
     }
   }
 
@@ -240,16 +244,19 @@ function MockAudio({
   }
 
   const canStart = !playing && !finished && preview === 0 && !locked
-  const startLabel = startedParts.length ? 'Resume audio' : 'Start audio'
+  const startLabel = startedParts.length ? t.resumeAudio : t.startAudio
   const status = finished
-    ? 'Audio ended'
+    ? t.statusEnded
     : preview > 0
-      ? `Preview Part ${sections[partIndex + 1]?.order}: ${preview}s`
+      ? format(t.preview, {
+          part: sections[partIndex + 1]?.order ?? '',
+          seconds: preview,
+        })
       : playing
-        ? `Playing Part ${section?.order}`
+        ? format(t.playing, { part: section?.order ?? '' })
         : canStart
-          ? `${startLabel}. It plays once and cannot be rewound.`
-          : 'The audio plays once. You cannot rewind it.'
+          ? format(t.startHint, { label: startLabel })
+          : t.playsOnce
   const StatusIcon = finished
     ? Check
     : preview > 0
@@ -311,14 +318,17 @@ function MockAudio({
             </div>
             <AudioMeter
               duration={duration}
-              label="Audio progress"
+              label={t.progress}
               time={position}
             />
           </div>
         </div>
         {interruptions ? (
           <p className="text-ink-soft text-xs font-normal">
-            Interruptions {interruptions}/{IELTS_MAX_AUDIO_INTERRUPTIONS}
+            {format(t.interruptions, {
+              count: interruptions,
+              max: IELTS_MAX_AUDIO_INTERRUPTIONS,
+            })}
           </p>
         ) : null}
         {stalled ? (
@@ -326,19 +336,17 @@ function MockAudio({
             className="bg-tint-soft rounded-tag grid gap-2 p-2 text-sm font-semibold"
             role="alert"
           >
-            The audio was interrupted.
+            {t.interrupted}
             {!overCap ? (
               <ExamButton
                 onClick={resume}
                 tone="paper"
                 type="button"
               >
-                Resume
+                {t.resume}
               </ExamButton>
             ) : (
-              <span>
-                Too many interruptions. Submit your answers as they are.
-              </span>
+              <span>{t.tooMany}</span>
             )}
           </div>
         ) : null}
@@ -367,6 +375,7 @@ function visibleSection(
  * play-once controls.
  */
 export function ListeningPlayer(props: Props) {
+  const t = useMessages().ielts.listening
   const section = visibleSection(props)
 
   if (!section) return null
@@ -386,7 +395,7 @@ export function ListeningPlayer(props: Props) {
     />
   ) : (
     <p className="border-line bg-tint-soft rounded-control border p-2 text-sm font-semibold">
-      This part has no audio yet. Read the transcript to practise.
+      {t.noAudio}
     </p>
   )
 }
@@ -410,6 +419,7 @@ export function ListeningPart({
   section: IeltsPublicSection
   showTranscript: boolean
 }) {
+  const t = useMessages().ielts.listening
   const hasLines = Boolean(section.listening?.lines?.length)
   const context = section.listening?.context ?? ''
   // The announcer reads the context aloud, so the audioscript repeats it.
@@ -452,7 +462,7 @@ export function ListeningPart({
           open={showTranscript}
         >
           <CollapsibleTrigger className="group/transcript flex min-h-11 w-full items-center justify-between gap-2 font-sans text-sm font-semibold focus-visible:underline focus-visible:ring-0">
-            Audioscript
+            {t.audioscript}
             <ChevronDown
               aria-hidden="true"
               className="size-4 transition-transform group-data-[panel-open]/transcript:rotate-180"

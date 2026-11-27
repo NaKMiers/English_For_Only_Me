@@ -18,6 +18,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
+import { useMessages } from '@/i18n/client'
+import { format } from '@/i18n/format'
 import { cn } from '@/lib/utils'
 import { IELTS_TARGET_BANDS } from '@/modules/ielts/constants'
 import { ExamButton, ExamIconButton } from '@/components/ielts/ui'
@@ -125,7 +127,7 @@ export function NumberField({
 /** Target band picker: the half-band steps from 4 to 9. */
 export function BandField({
   className,
-  label = 'Target band',
+  label,
   onChange,
   value,
 }: {
@@ -135,6 +137,7 @@ export function BandField({
   value: number
 }) {
   const id = useId()
+  const t = useMessages()
 
   return (
     <div className={cn('grid gap-1', className)}>
@@ -142,7 +145,7 @@ export function BandField({
         className="font-sans text-xs font-semibold"
         htmlFor={id}
       >
-        {label}
+        {label ?? t.ieltsEditor.fields.targetBand}
       </Label>
       <Select
         onValueChange={next => onChange(Number(next ?? value))}
@@ -160,7 +163,7 @@ export function BandField({
               key={band}
               value={String(band)}
             >
-              Band {band.toFixed(1)}
+              {format(t.ieltsEditor.fields.band, { band: band.toFixed(1) })}
             </SelectItem>
           ))}
         </SelectContent>
@@ -222,10 +225,12 @@ export function ListField({
   separator?: string
   value: string[]
 }) {
+  const t = useMessages()
+
   return (
     <TextField
       className={className}
-      label={`${label} (separated by ${separator})`}
+      label={format(t.ieltsEditor.fields.separatedBy, { label, separator })}
       onChange={text =>
         onChange(
           text
@@ -398,6 +403,8 @@ export function EntryPager({
   pageSize: number
   total: number
 }) {
+  const t = useMessages()
+  const copy = t.ieltsEditor.fields
   const pageCount = Math.ceil(total / pageSize)
 
   if (pageCount <= 1) return null
@@ -407,13 +414,13 @@ export function EntryPager({
 
   return (
     <nav
-      aria-label={`${label} pages`}
+      aria-label={format(copy.pages, { label })}
       className="flex items-center gap-1.5"
     >
       <ExamIconButton
         className="size-9"
         disabled={page === 0}
-        label="Previous page"
+        label={copy.previousPage}
         onClick={() => onPageChange(page - 1)}
         type="button"
       >
@@ -427,12 +434,19 @@ export function EntryPager({
         value={String(page)}
       >
         <SelectTrigger
-          aria-label={`${label} page`}
+          aria-label={format(copy.page, { label })}
           className="min-w-0 flex-1 tabular-nums"
           size="sm"
         >
           <SelectValue>
-            {() => `${label} ${rangeOf(page)} · ${page + 1}/${pageCount}`}
+            {() =>
+              format(copy.entryPage, {
+                label,
+                range: rangeOf(page),
+                page: page + 1,
+                pageCount,
+              })
+            }
           </SelectValue>
         </SelectTrigger>
         <SelectContent>
@@ -441,7 +455,7 @@ export function EntryPager({
               key={value}
               value={String(value)}
             >
-              {label} {rangeOf(value)}
+              {format(copy.entryRange, { label, range: rangeOf(value) })}
             </SelectItem>
           ))}
         </SelectContent>
@@ -449,7 +463,7 @@ export function EntryPager({
       <ExamIconButton
         className="size-9"
         disabled={page >= pageCount - 1}
-        label="Next page"
+        label={copy.nextPage}
         onClick={() => onPageChange(page + 1)}
         type="button"
       >
@@ -476,23 +490,28 @@ export function PageControls({
   pageSize: number
   total: number
 }) {
+  const t = useMessages()
+  const copy = t.ieltsEditor.fields
   const pageCount = Math.ceil(total / pageSize)
 
   if (pageCount <= 1) return null
 
   return (
     <nav
-      aria-label={`${label} pages`}
+      aria-label={format(copy.pages, { label })}
       className="flex items-center justify-end gap-2"
     >
       <span className="text-muted-foreground font-sans text-xs font-semibold tabular-nums">
-        {page * pageSize + 1}-{Math.min(total, (page + 1) * pageSize)} of{' '}
-        {total}
+        {format(copy.pageRange, {
+          from: page * pageSize + 1,
+          to: Math.min(total, (page + 1) * pageSize),
+          total,
+        })}
       </span>
       <ExamIconButton
         className="size-9"
         disabled={page === 0}
-        label="Previous page"
+        label={copy.previousPage}
         onClick={() => onPageChange(page - 1)}
         type="button"
       >
@@ -504,7 +523,7 @@ export function PageControls({
       <ExamIconButton
         className="size-9"
         disabled={page >= pageCount - 1}
-        label="Next page"
+        label={copy.nextPage}
         onClick={() => onPageChange(page + 1)}
         type="button"
       >
@@ -540,11 +559,6 @@ export function AddButton({
       {children}
     </ExamButton>
   )
-}
-
-/** "1 error", "3 errors". */
-export function countLabel(count: number, word: string) {
-  return `${count} ${word}${count === 1 ? '' : 's'}`
 }
 
 /** Immutable helpers for list editing. */

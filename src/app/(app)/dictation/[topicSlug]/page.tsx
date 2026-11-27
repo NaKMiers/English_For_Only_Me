@@ -14,6 +14,9 @@ import {
   SectionAccordion,
 } from '@/components/dictation/browse/SectionAccordion'
 import { getSiteUrl, hasMongoDbUri } from '@/constants/environments'
+import { format, plural } from '@/i18n/format'
+import type { Messages } from '@/i18n/messages'
+import { getMessages } from '@/i18n/server'
 import { connectDatabase, connectDatabaseWhen } from '@/lib/db/connectDatabase'
 import { toBrowseItem } from '@/modules/dictation/content/browseItem'
 import {
@@ -48,16 +51,18 @@ export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
   const { topicSlug } = await params
+  const t = await getMessages()
 
   if (!hasMongoDbUri()) return { title: topicSlug }
 
   // Shared with the page body through React cache(): one cache read.
   const topic = (await getCachedTopicCatalog(topicSlug))?.topic
 
-  if (!topic) return { title: 'Topic not found' }
+  if (!topic) return { title: t.dictation.topic.notFound }
 
   const description =
-    topic.description ?? `Dictation practice lessons in ${topic.title}.`
+    topic.description ??
+    format(t.dictation.topic.metaDescription, { title: topic.title })
   const url = `${getSiteUrl()}/dictation/${topic.slug}`
 
   return {
@@ -110,13 +115,15 @@ export default async function TopicPage({ params, searchParams }: PageProps) {
       filtering ? searchVideosInTopic(topic.id, query) : Promise.resolve(null),
     ])
   const favoritedSet = new Set(favoritedIds)
+  const t = await getMessages()
+  const labels = t.dictation.browse
 
   return (
     <PageShell
       topbar={
         <AppTopbar
           activeHref="/dictation"
-          subtitle="Browse dictation topics"
+          subtitle={t.dictation.meta.browseSubtitle}
           authControl={<AuthControl />}
         />
       }
@@ -124,12 +131,15 @@ export default async function TopicPage({ params, searchParams }: PageProps) {
       <section className="grid gap-5 p-4 sm:p-6 lg:p-8">
         <PageHero>
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <BrowseBreadcrumb current={topic.title} />
+            <BrowseBreadcrumb
+              current={topic.title}
+              labels={labels}
+            />
             <Link
               href="/dictation/favorites"
               className="text-brand text-sm font-semibold hover:underline"
             >
-              ★ Favorites
+              {t.dictation.landing.favoritesLink}
             </Link>
           </div>
           <h1 className="font-sans text-[clamp(1.8rem,4vw,2.6rem)] leading-none font-medium">
@@ -157,6 +167,7 @@ export default async function TopicPage({ params, searchParams }: PageProps) {
             favoritedSet={favoritedSet}
             completionCounts={completionCounts}
             inProgressSet={inProgressSet}
+            labels={labels}
           />
         ) : (
           <TopicAccordion
@@ -165,6 +176,7 @@ export default async function TopicPage({ params, searchParams }: PageProps) {
             favoritedSet={favoritedSet}
             completionCounts={completionCounts}
             inProgressSet={inProgressSet}
+            labels={labels}
           />
         )}
       </section>
@@ -178,12 +190,14 @@ function TopicAccordion({
   favoritedSet,
   completionCounts,
   inProgressSet,
+  labels,
 }: {
   catalog: TopicCatalog
   canFavorite: boolean
   favoritedSet: Set<string>
   completionCounts: Map<string, number>
   inProgressSet: Set<string>
+  labels: Messages['dictation']['browse']
 }) {
   const groups = buildSectionGroups(
     sections.map(section => ({ id: section.id, title: section.title })),
@@ -201,6 +215,7 @@ function TopicAccordion({
     <SectionAccordion
       groups={groups}
       canFavorite={canFavorite}
+      labels={labels}
     />
   )
 }
@@ -213,6 +228,7 @@ function FlatResults({
   favoritedSet,
   completionCounts,
   inProgressSet,
+  labels,
 }: {
   result: Awaited<ReturnType<typeof searchVideosInTopic>>
   query: ReturnType<typeof parseBrowseQuery>
@@ -221,6 +237,7 @@ function FlatResults({
   favoritedSet: Set<string>
   completionCounts: Map<string, number>
   inProgressSet: Set<string>
+  labels: Messages['dictation']['browse']
 }) {
   const items = videos.map(video =>
     toBrowseItem(video, { completionCounts, favoritedSet, inProgressSet })
@@ -229,17 +246,19 @@ function FlatResults({
   return (
     <div className="grid gap-4">
       <p className="text-sm font-semibold opacity-80">
-        {pagination.total} {pagination.total === 1 ? 'lesson' : 'lessons'}
+        {plural(labels.lessons, pagination.total)}
       </p>
       <BrowseVideoList
         videos={items}
         canFavorite={canFavorite}
-        emptyLabel="No lessons match. Clear the filters to see all."
+        emptyLabel={labels.noMatches}
+        labels={labels.card}
       />
       <BrowsePagination
         pagination={pagination}
         query={query}
         basePath={basePath}
+        labels={labels}
       />
     </div>
   )

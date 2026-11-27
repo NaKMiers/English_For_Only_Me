@@ -9,6 +9,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { format } from '@/i18n/format'
+import { useMessages } from '@/i18n/client'
 import {
   purgeVideoAction,
   restoreVideoAction,
@@ -24,11 +26,13 @@ export function AdminTrashVideoMenu({
   id: string
   title: string
 }) {
+  const t = useMessages()
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        aria-label={`Actions for ${title}`}
-        title="Actions"
+        aria-label={format(t.admin.menu.triggerFor, { title })}
+        title={t.admin.menu.trigger}
         className="border-line bg-surface hover:bg-tint rounded-control grid size-9 shrink-0 place-items-center border transition-colors"
       >
         <EllipsisVertical
@@ -52,7 +56,7 @@ export function AdminTrashVideoMenu({
             className="w-full"
           >
             <RotateCcw aria-hidden="true" />
-            Restore
+            {t.admin.trash.restore}
           </DropdownMenuItem>
         </form>
         <DropdownMenuSeparator />
@@ -63,16 +67,16 @@ export function AdminTrashVideoMenu({
             value={id}
           />
           <ConfirmSubmitButton
-            confirmTitle="Delete permanently?"
-            confirmMessage={`Delete "${title}" for good? Its transcripts, segments and every learner's practice history for it are removed too. This cannot be undone.`}
-            confirmLabel="Delete permanently"
+            confirmTitle={t.admin.trash.purgeTitle}
+            confirmMessage={format(t.admin.trash.purgeMessage, { title })}
+            confirmLabel={t.admin.trash.purge}
             className="focus:bg-brand focus:text-surface text-brand hover:bg-brand hover:text-surface rounded-tag flex min-h-11 w-full items-center gap-2 px-3 font-sans text-sm font-semibold whitespace-nowrap transition-colors"
           >
             <Trash2
               aria-hidden="true"
               className="size-4"
             />
-            Delete permanently
+            {t.admin.trash.purge}
           </ConfirmSubmitButton>
         </form>
       </DropdownMenuContent>

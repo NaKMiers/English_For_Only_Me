@@ -1,6 +1,9 @@
 import 'server-only'
 
 import { getOpenAiApiKey } from '@/constants/environments'
+import { format } from '@/i18n/format'
+import type { Messages } from '@/i18n/messages'
+import { en } from '@/i18n/messages/en'
 
 import {
   ieltsError,
@@ -69,25 +72,25 @@ function materialText(section: IeltsSectionInput) {
  */
 export async function assistSection({
   action,
+  copy = en.ieltsEditor.generation,
   instruction,
   key,
   request = openAiRequester(),
   section,
 }: {
   action: IeltsAssistAction
+  /** Messages the admin sees, in their language (English by default). */
+  copy?: Messages['ieltsEditor']['generation']
   instruction: string
   key: IeltsSectionKey
   request?: IeltsRequester
   section: IeltsSectionInput
 }): Promise<IeltsDecision<IeltsAssistProposal>> {
-  if (key.startsWith('writing'))
-    return ieltsError(400, 'Assist works on listening and reading sections.')
+  if (key.startsWith('writing')) return ieltsError(400, copy.assistSkills)
 
-  if (!getOpenAiApiKey())
-    return ieltsError(503, 'OPENAI_API_KEY is not configured.')
+  if (!getOpenAiApiKey()) return ieltsError(503, copy.noApiKey)
 
-  if (!materialText(section).trim())
-    return ieltsError(400, 'Write the passage or script first.')
+  if (!materialText(section).trim()) return ieltsError(400, copy.materialFirst)
 
   const { from, to } = numberRange(key)
   const response = await request({
@@ -126,13 +129,12 @@ export async function assistSection({
   try {
     json = JSON.parse(response.text)
   } catch {
-    return ieltsError(500, 'The AI returned invalid JSON.')
+    return ieltsError(500, copy.invalidJson)
   }
 
   const parsed = assistOutput.safeParse(json)
 
-  if (!parsed.success)
-    return ieltsError(500, 'The AI output did not match the expected shape.')
+  if (!parsed.success) return ieltsError(500, copy.badShape)
 
   if (!parsed.data.groups || action === 'check-answers')
     return {
@@ -161,7 +163,7 @@ export async function assistSection({
       section: next,
       notes: [
         ...parsed.data.notes,
-        ...issues.slice(0, 10).map(issue => `Check: ${issue}`),
+        ...issues.slice(0, 10).map(issue => format(copy.checkNote, { issue })),
       ],
     },
   }

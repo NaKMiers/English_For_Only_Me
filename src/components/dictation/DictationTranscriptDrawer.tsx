@@ -12,6 +12,9 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet'
+import { useMessages } from '@/i18n/client'
+import { format } from '@/i18n/format'
+import type { Messages } from '@/i18n/messages'
 import { cn } from '@/lib/utils'
 import type { DictationSegmentApiRecord } from '@/modules/dictation/types'
 
@@ -21,12 +24,16 @@ interface Props {
   segments: DictationSegmentApiRecord[]
 }
 
-function formatTiming(segment: DictationSegmentApiRecord) {
-  if (segment.startMs === null || segment.endMs === null) return 'untimed'
+function formatTiming(
+  text: Messages['dictation']['transcript'],
+  segment: DictationSegmentApiRecord
+) {
+  if (segment.startMs === null || segment.endMs === null) return text.untimed
 
-  return `${(segment.startMs / 1000).toFixed(1)}s - ${(
-    segment.endMs / 1000
-  ).toFixed(1)}s`
+  return format(text.timing, {
+    end: (segment.endMs / 1000).toFixed(1),
+    start: (segment.startMs / 1000).toFixed(1),
+  })
 }
 
 function TranscriptSegmentList({
@@ -36,6 +43,8 @@ function TranscriptSegmentList({
   currentSegmentId: string
   segments: DictationSegmentApiRecord[]
 }) {
+  const text = useMessages().dictation.transcript
+
   return (
     <div className="grid snap-y snap-proximity gap-3 overflow-y-auto p-4">
       {segments.map(segment => (
@@ -52,7 +61,7 @@ function TranscriptSegmentList({
               #{segment.order + 1}
             </Badge>
             <Badge className="border-line bg-tint-soft text-ink rounded-tag border font-semibold">
-              {formatTiming(segment)}
+              {formatTiming(text, segment)}
             </Badge>
           </div>
           <p className="text-sm leading-6 font-semibold">{segment.text}</p>
@@ -67,6 +76,8 @@ export function DictationTranscriptDrawer({
   defaultOpen,
   segments,
 }: Props) {
+  const text = useMessages().dictation.transcript
+
   if (defaultOpen)
     return (
       <div className="border-line bg-surface rounded-panel overflow-hidden border">
@@ -91,17 +102,17 @@ export function DictationTranscriptDrawer({
               />
             }
           >
-            Full Transcript
+            {text.open}
           </ActionButton>
         }
       />
       <SheetContent className="border-line bg-surface w-[min(92vw,520px)] border-l">
         <SheetHeader className="border-line border-b">
           <SheetTitle className="font-sans text-2xl font-semibold">
-            Full transcript
+            {text.title}
           </SheetTitle>
           <SheetDescription className="text-ink-soft font-normal">
-            Current sentence stays marked while you move through practice.
+            {text.drawerDescription}
           </SheetDescription>
         </SheetHeader>
 

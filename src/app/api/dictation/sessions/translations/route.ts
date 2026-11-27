@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 
 import { MissingEnvironmentError } from '@/constants/environments'
+import { getMessages } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
 import { loadTranslationTrack } from '@/modules/dictation/practice/practiceTranslations'
@@ -25,6 +26,7 @@ function jsonError(decision: ApiErrorDecision) {
  * switches. Public content like the practice page itself, so no actor needed.
  */
 export async function GET(request: Request) {
+  const t = await getMessages()
   const missingMongo = getMissingMongoResponse()
 
   if (missingMongo) return jsonError(missingMongo)
@@ -54,7 +56,7 @@ export async function GET(request: Request) {
     if (!track)
       return jsonError({
         status: 404,
-        body: { message: 'This translation was not found.' },
+        body: { message: t.dictation.api.translationNotFound },
       })
 
     return NextResponse.json({ track })
@@ -69,7 +71,7 @@ export async function GET(request: Request) {
 
     return jsonError({
       status: 500,
-      body: { message: 'Could not load this translation.' },
+      body: { message: t.dictation.api.translationLoadFailed },
     })
   }
 }

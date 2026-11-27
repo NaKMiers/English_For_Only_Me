@@ -5,15 +5,19 @@ import { AuthControl } from '@/components/common/AuthControl'
 import { PageShell } from '@/components/common/PageShell'
 import { VocabularyDashboard } from '@/components/vocabulary/VocabularyDashboard'
 import { hasMongoDbUri } from '@/constants/environments'
+import { getMessages } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { getPracticeActorId } from '@/modules/dictation/services/getCurrentUser'
 import { getVocabularyDashboardData } from '@/modules/vocabulary/services/vocabDashboardService'
 import type { VocabularyDashboardInitialData } from '@/modules/vocabulary/types'
 
-export const metadata: Metadata = {
-  title: 'Vocabulary',
-  description:
-    'Personal vocabulary dashboard with free dictionary lookup, Explore, and seven-touch recall.',
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getMessages()
+
+  return {
+    title: t.vocabulary.page.metaTitle,
+    description: t.vocabulary.page.metaDescription,
+  }
 }
 
 export const dynamic = 'force-dynamic'
@@ -37,6 +41,7 @@ async function loadInitialData(): Promise<VocabularyDashboardInitialData | null>
 }
 
 export default async function VocabularyPage() {
+  const t = await getMessages()
   const mongoConfigured = hasMongoDbUri()
   const initialData = mongoConfigured ? await loadInitialData() : null
 
@@ -45,7 +50,7 @@ export default async function VocabularyPage() {
       topbar={
         <AppTopbar
           activeHref="/vocabulary"
-          subtitle="Vocabulary memory spine"
+          subtitle={t.vocabulary.page.subtitle}
           authControl={<AuthControl />}
         />
       }

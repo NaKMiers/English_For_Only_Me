@@ -1,4 +1,6 @@
 import { PageTag } from '@/components/ui/PageTag'
+import type { Messages } from '@/i18n/messages'
+import { en } from '@/i18n/messages/en'
 
 import { BrowseDisclosure } from './BrowseDisclosure'
 import type { BrowseVideoItem } from './BrowseVideoList'
@@ -18,12 +20,16 @@ export interface BrowseSectionGroup {
  * server-rendered cards as children instead would serialize every closed
  * section's full card tree into the page payload.
  */
+type BrowseLabels = Messages['dictation']['browse']
+
 function SectionPanel({
   group,
   canFavorite,
+  labels,
 }: {
   group: BrowseSectionGroup
   canFavorite: boolean
+  labels: BrowseLabels
 }) {
   const panelId = `section-${group.key}`
   const doneCount = group.videos.filter(video => video.completions > 0).length
@@ -48,7 +54,8 @@ function SectionPanel({
         id={panelId}
         videos={group.videos}
         canFavorite={canFavorite}
-        emptyLabel="No lessons in this section yet."
+        emptyLabel={labels.emptySection}
+        labels={labels.card}
         className="border-line border-t p-3"
         priorityCount={0}
       />
@@ -59,17 +66,18 @@ function SectionPanel({
 export function SectionAccordion({
   groups,
   canFavorite,
+  labels = en.dictation.browse,
 }: {
   groups: BrowseSectionGroup[]
   canFavorite: boolean
+  /** From the page's `getMessages()`: this stays a server component. */
+  labels?: BrowseLabels
 }) {
   if (groups.length === 0)
     return (
       <div className="border-line bg-surface rounded-panel border p-6 text-center">
-        <p className="font-sans text-lg font-semibold">Nothing here yet</p>
-        <p className="text-ink-soft mt-1 text-sm">
-          This topic has no lessons yet.
-        </p>
+        <p className="font-sans text-lg font-semibold">{labels.nothingHere}</p>
+        <p className="text-ink-soft mt-1 text-sm">{labels.topicEmpty}</p>
       </div>
     )
 
@@ -80,6 +88,7 @@ export function SectionAccordion({
           key={group.key}
           group={group}
           canFavorite={canFavorite}
+          labels={labels}
         />
       ))}
     </div>

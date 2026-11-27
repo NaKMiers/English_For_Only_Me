@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server'
 
 import { hasMongoDbUri } from '@/constants/environments'
-import { OutboxOwnerMismatchError } from '@/lib/auth/clientOwnerKey'
+import { getMessages } from '@/i18n/server'
+import { authErrorResponse } from '@/lib/auth/authErrorMessage'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { requirePracticeActor } from '@/modules/dictation/services/getCurrentUser'
 import { parseSessionRequest } from '@/modules/grammar/session/parseSessionRequest'
@@ -20,19 +21,22 @@ function jsonError(status: number, message: string) {
  * with the same idempotency key.
  */
 export async function POST(request: Request) {
-  if (!hasMongoDbUri()) return jsonError(503, 'The database is not configured.')
+  const messages = await getMessages()
+  const t = messages.grammar.api
+
+  if (!hasMongoDbUri()) return jsonError(503, t.notConfigured)
 
   let body: unknown
 
   try {
     body = await request.json()
   } catch {
-    return jsonError(400, 'Request body must be valid JSON.')
+    return jsonError(400, t.invalidJson)
   }
 
   const parsed = parseSessionRequest(body)
 
-  if (!parsed.ok) return jsonError(400, parsed.message)
+  if (!parsed.ok) return jsonError(400, t.invalidResult)
 
   try {
     const actor = await requirePracticeActor()
@@ -55,15 +59,16 @@ export async function POST(request: Request) {
         targetId: parsed.submission.targetId,
       })
 
-      return jsonError(outcome.status, outcome.message)
+      return jsonError(outcome.status, t.errors[outcome.code])
     }
 
     return NextResponse.json(outcome.result)
   } catch (error) {
-    // Queued in a tab for another learner (signed in or out since): final, so
-    // the outbox settles it instead of retrying.
-    if (error instanceof OutboxOwnerMismatchError)
-      return jsonError(error.status, error.message)
+    // Signed out, or queued in a tab for another learner (signed in or out
+    // since): final, so the outbox settles it instead of retrying.
+    const auth = authErrorResponse(error, messages)
+
+    if (auth) return jsonError(auth.status, auth.message)
 
     console.error('grammar session failed', {
       error,
@@ -71,6 +76,6 @@ export async function POST(request: Request) {
       targetId: parsed.submission.targetId,
     })
 
-    return jsonError(500, 'Could not save this result. Please try again later.')
+    return jsonError(500, t.saveFailed)
   }
 }

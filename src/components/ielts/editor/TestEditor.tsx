@@ -20,6 +20,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { useMessages } from '@/i18n/client'
+import { format, plural } from '@/i18n/format'
 import { cn } from '@/lib/utils'
 import {
   checkSection,
@@ -43,10 +45,11 @@ import {
   unarchiveIeltsTestApi,
 } from '@/requests/ieltsAdminApi'
 
+import { apiErrorText } from './apiErrorText'
 import { AssistMenu } from './AssistMenu'
 import { ChecksPanel, IssueList } from './ChecksPanel'
 import { EditorHeader } from './EditorHeader'
-import { countLabel, Disclosure, MetaChip } from './fields'
+import { Disclosure, MetaChip } from './fields'
 import { GenerationLog } from './GenerationLog'
 import { SectionForm } from './SectionForm'
 import { isDone, SectionPicker, statusOf } from './SectionPicker'
@@ -77,10 +80,11 @@ function nextNumberFor(sections: IeltsSection[], section: IeltsSection) {
 
 type Pane = 'edit' | 'split' | 'preview'
 
-const PANES: { value: Pane; label: string; Icon: typeof Eye }[] = [
-  { value: 'edit', label: 'Edit', Icon: PenLine },
-  { value: 'split', label: 'Split', Icon: Columns2 },
-  { value: 'preview', label: 'Preview', Icon: Eye },
+/** Labels come from `ieltsEditor.editor.panes[value]`. */
+const PANES: { value: Pane; Icon: typeof Eye }[] = [
+  { value: 'edit', Icon: PenLine },
+  { value: 'split', Icon: Columns2 },
+  { value: 'preview', Icon: Eye },
 ]
 
 function metaOf(test: IeltsAdminTest): TestMeta {
@@ -109,6 +113,8 @@ export function TestEditor({
   initial: IeltsAdminTest
   seriesOptions: string[]
 }) {
+  const t = useMessages()
+  const copy = t.ieltsEditor.editor
   const router = useRouter()
   const [test, setTest] = useState(initial)
   const [selectedKey, setSelectedKey] = useState(initial.sections[0]?.key)
@@ -150,9 +156,7 @@ export function TestEditor({
   }
 
   const fail = (caught: unknown) => {
-    setMessage(
-      caught instanceof Error ? caught.message : 'Something went wrong.'
-    )
+    setMessage(apiErrorText(caught, t))
 
     if (caught instanceof IeltsAdminApiError && caught.report)
       setPublishReport(caught.report)
@@ -186,7 +190,7 @@ export function TestEditor({
       )
 
       adopt(next, [section.key])
-      setMessage('Saved.')
+      setMessage(copy.savedMessage)
     } catch (caught) {
       fail(caught)
     } finally {
@@ -207,7 +211,7 @@ export function TestEditor({
 
       adopt(next)
       setDialog(null)
-      setMessage('Test details saved.')
+      setMessage(copy.detailsSaved)
     } catch (caught) {
       fail(caught)
     } finally {
@@ -364,7 +368,7 @@ export function TestEditor({
       )
 
       adopt(next, [section.key])
-      setMessage('Audio generated.')
+      setMessage(copy.audioGenerated)
     } catch (caught) {
       fail(caught)
     } finally {
@@ -382,7 +386,7 @@ export function TestEditor({
 
       adopt(next)
       setConfirmWarnings(false)
-      setMessage('Published.')
+      setMessage(copy.published)
     } catch (caught) {
       if (
         caught instanceof IeltsAdminApiError &&
@@ -422,7 +426,7 @@ export function TestEditor({
   }
 
   const remove = async () => {
-    if (!window.confirm("Delete this test? This can't be undone.")) return
+    if (!window.confirm(t.ieltsEditor.actions.confirmDelete)) return
 
     setBusy('delete')
 
@@ -437,7 +441,7 @@ export function TestEditor({
         if (
           !count ||
           !window.confirm(
-            `${count} attempts use this test and will be deleted with it (reviews included). Delete anyway?`
+            plural(t.ieltsEditor.actions.confirmDeleteAttempts, count)
           )
         )
           throw caught
@@ -511,16 +515,9 @@ export function TestEditor({
           : 'script'
         : 'draft'
     : null
-  const generateLabel =
-    generateStep === 'repair'
-      ? 'Auto-fix with AI'
-      : generateStep === 'questions'
-        ? 'Generate questions'
-        : generateStep === 'script'
-          ? 'Generate script with AI'
-          : 'Generate with AI'
+  const generateLabel = copy.generate[generateStep ?? 'draft']
   const sectionStatus = section
-    ? statusOf(section, busy === `gen:${section.key}`)
+    ? statusOf(section, busy === `gen:${section.key}`, t)
     : null
   const showEditor = pane !== 'preview'
   const showPreview = pane !== 'edit'
@@ -575,7 +572,7 @@ export function TestEditor({
             <p className="min-w-0 flex-1 text-sm font-semibold">{message}</p>
             <ExamIconButton
               className="size-8 border shadow-none"
-              label="Dismiss"
+              label={copy.dismiss}
               onClick={() => setMessage('')}
               type="button"
             >
@@ -597,7 +594,7 @@ export function TestEditor({
         >
           {showEditor ? (
             <section
-              aria-label="Edit section"
+              aria-label={copy.editSection}
               className="border-line bg-surface rounded-panel grid min-w-0 content-start border"
             >
               {/* Sticks under the header bar while the page scrolls. */}
@@ -605,7 +602,7 @@ export function TestEditor({
                 <ExamIconButton
                   className="size-9"
                   disabled={!prevSection}
-                  label="Previous section"
+                  label={copy.previousSection}
                   onClick={() => prevSection && setSelectedKey(prevSection.key)}
                   type="button"
                 >
@@ -617,7 +614,7 @@ export function TestEditor({
                 <ExamIconButton
                   className="size-9"
                   disabled={!nextSection}
-                  label="Next section"
+                  label={copy.nextSection}
                   onClick={() => nextSection && setSelectedKey(nextSection.key)}
                   type="button"
                 >
@@ -652,9 +649,11 @@ export function TestEditor({
                       </MetaChip>
                     ) : null}
                     <MetaChip className="tabular-nums">
-                      rev {section.revision}
+                      {format(copy.revision, { revision: section.revision })}
                     </MetaChip>
-                    {dirty ? <MetaChip tone="pale">Unsaved</MetaChip> : null}
+                    {dirty ? (
+                      <MetaChip tone="pale">{copy.unsaved}</MetaChip>
+                    ) : null}
                   </div>
                 </div>
 
@@ -690,11 +689,15 @@ export function TestEditor({
                       />
                     }
                     onClick={() => void saveSection()}
-                    title="Save section (Ctrl+S)"
+                    title={copy.saveTitle}
                     tone="ink"
                     type="button"
                   >
-                    {busy === 'save' ? 'Saving...' : dirty ? 'Save' : 'Saved'}
+                    {busy === 'save'
+                      ? t.common.actions.saving
+                      : dirty
+                        ? t.common.actions.save
+                        : copy.saved}
                   </ExamButton>
                 </div>
               </div>
@@ -713,8 +716,7 @@ export function TestEditor({
                     className="border-line rounded-control border bg-yellow-100 px-3 py-2 text-sm font-semibold"
                     role="note"
                   >
-                    This test is live: learners see each saved change right
-                    away, past results included.
+                    {copy.liveNote}
                   </p>
                 ) : null}
                 {sectionIssues &&
@@ -727,20 +729,23 @@ export function TestEditor({
                       <>
                         {sectionIssues.errors.length ? (
                           <MetaChip tone="red">
-                            {countLabel(sectionIssues.errors.length, 'error')}
+                            {plural(
+                              t.ieltsEditor.counts.error,
+                              sectionIssues.errors.length
+                            )}
                           </MetaChip>
                         ) : null}
                         {sectionIssues.warnings.length ? (
                           <MetaChip tone="warn">
-                            {countLabel(
-                              sectionIssues.warnings.length,
-                              'warning'
+                            {plural(
+                              t.ieltsEditor.counts.warning,
+                              sectionIssues.warnings.length
                             )}
                           </MetaChip>
                         ) : null}
                       </>
                     }
-                    title="Section check"
+                    title={copy.sectionCheck}
                   >
                     <ChecksPanel report={sectionIssues} />
                   </Disclosure>
@@ -767,7 +772,7 @@ export function TestEditor({
 
           {showPreview ? (
             <section
-              aria-label="Preview"
+              aria-label={copy.panes.preview}
               className={cn(
                 'border-line bg-surface rounded-panel grid min-w-0 content-start border',
                 // Beside the editor it stays in view and scrolls on its own.
@@ -782,8 +787,10 @@ export function TestEditor({
                       aria-hidden="true"
                       className="size-4"
                     />
-                    Learner preview
-                    {dirty ? <MetaChip tone="pale">Live draft</MetaChip> : null}
+                    {copy.learnerPreview}
+                    {dirty ? (
+                      <MetaChip tone="pale">{copy.liveDraft}</MetaChip>
+                    ) : null}
                   </h2>
                   <ShowAnswersSwitch
                     checked={showAnswers}
@@ -815,7 +822,7 @@ export function TestEditor({
         </div>
       ) : (
         <p className="text-muted-foreground p-4 text-sm font-semibold">
-          This test has no sections.
+          {copy.noSections}
         </p>
       )}
 
@@ -841,11 +848,8 @@ export function TestEditor({
       >
         <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-xl">
           <DialogHeader>
-            <DialogTitle>Test checks</DialogTitle>
-            <DialogDescription>
-              Errors block publishing; warnings ask first. Pick an issue to open
-              its section.
-            </DialogDescription>
+            <DialogTitle>{copy.checksTitle}</DialogTitle>
+            <DialogDescription>{copy.checksDescription}</DialogDescription>
           </DialogHeader>
           <ChecksPanel
             onJump={key => {
@@ -866,10 +870,8 @@ export function TestEditor({
       >
         <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-3xl">
           <DialogHeader>
-            <DialogTitle>AI log</DialogTitle>
-            <DialogDescription>
-              Every AI request on this test, newest first.
-            </DialogDescription>
+            <DialogTitle>{t.ieltsEditor.log.label}</DialogTitle>
+            <DialogDescription>{copy.logDescription}</DialogDescription>
           </DialogHeader>
           <GenerationLog rows={test.generationLog} />
         </DialogContent>
@@ -881,10 +883,8 @@ export function TestEditor({
       >
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Publish with warnings?</DialogTitle>
-            <DialogDescription>
-              No blocking errors, but the warnings below remain.
-            </DialogDescription>
+            <DialogTitle>{copy.warningsTitle}</DialogTitle>
+            <DialogDescription>{copy.warningsDescription}</DialogDescription>
           </DialogHeader>
           <IssueList issues={publishReport?.warnings ?? []} />
           <DialogFooter>
@@ -893,14 +893,14 @@ export function TestEditor({
               tone="paper"
               type="button"
             >
-              Cancel
+              {t.common.actions.cancel}
             </ExamButton>
             <ExamButton
               onClick={() => void publish(true)}
               tone="ink"
               type="button"
             >
-              Publish anyway
+              {copy.publishAnyway}
             </ExamButton>
           </DialogFooter>
         </DialogContent>
@@ -917,16 +917,19 @@ function ViewSwitch({
   onChange: (pane: Pane) => void
   value: Pane
 }) {
+  const t = useMessages()
+  const labels = t.ieltsEditor.editor.panes
+
   return (
     <div
-      aria-label="Workspace view"
+      aria-label={t.ieltsEditor.editor.view}
       className="flex gap-1"
       role="group"
     >
       {PANES.map(item => (
         // Segmented toggle (aria-pressed): documented raw exception.
         <button
-          aria-label={item.label}
+          aria-label={labels[item.value]}
           aria-pressed={value === item.value}
           className={segmentClass(
             value === item.value,
@@ -934,14 +937,14 @@ function ViewSwitch({
           )}
           key={item.value}
           onClick={() => onChange(item.value)}
-          title={item.label}
+          title={labels[item.value]}
           type="button"
         >
           <item.Icon
             aria-hidden="true"
             className="size-3.5"
           />
-          <span className="hidden 2xl:inline">{item.label}</span>
+          <span className="hidden 2xl:inline">{labels[item.value]}</span>
         </button>
       ))}
     </div>

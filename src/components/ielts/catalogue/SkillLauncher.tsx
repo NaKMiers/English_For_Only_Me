@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { useState } from 'react'
 
 import { ExamButton } from '@/components/ielts/ui'
+import { useMessages } from '@/i18n/client'
+import { format } from '@/i18n/format'
 import { cn } from '@/lib/utils'
 import type { IeltsSkill } from '@/modules/ielts/constants'
 
@@ -25,10 +27,7 @@ interface Props {
   title: string
 }
 
-const MODES: Array<{ label: string; value: Mode }> = [
-  { label: 'Practice', value: 'practice' },
-  { label: 'Mock', value: 'mock' },
-]
+const MODES: Mode[] = ['practice', 'mock']
 
 export function launchHref(
   slug: string,
@@ -58,6 +57,7 @@ export function SkillLauncher({
   slug,
   title,
 }: Props) {
+  const t = useMessages().ielts
   const [mode, setMode] = useState<Mode>('practice')
   const [choice, setChoice] = useState<Choice>('full')
   const isMock = mode === 'mock'
@@ -69,7 +69,7 @@ export function SkillLauncher({
       meta: item.meta,
       value: item.part as Choice,
     })),
-    { label: 'Full test', meta: fullMeta[mode], value: 'full' },
+    { label: t.launcher.fullTest, meta: fullMeta[mode], value: 'full' },
   ]
 
   return (
@@ -86,31 +86,31 @@ export function SkillLauncher({
         </div>
         {/* Mode toggle (aria-pressed): documented raw-button exception. */}
         <div
-          aria-label={`${title} mode`}
+          aria-label={format(t.launcher.modeGroup, { skill: title })}
           className="border-line rounded-control flex shrink-0 overflow-hidden border"
           role="group"
         >
           {MODES.map(item => (
             <button
-              aria-pressed={mode === item.value}
+              aria-pressed={mode === item}
               className={cn(
                 'border-line h-8 border-l px-2.5 font-sans text-xs font-semibold transition-colors first:border-l-0',
-                mode === item.value
+                mode === item
                   ? 'bg-ink text-surface'
                   : 'bg-surface hover:bg-tint'
               )}
-              key={item.value}
-              onClick={() => setMode(item.value)}
+              key={item}
+              onClick={() => setMode(item)}
               type="button"
             >
-              {item.label}
+              {t.modes[item]}
             </button>
           ))}
         </div>
       </header>
 
       <fieldset className="grid py-1.5">
-        <legend className="sr-only">Choose what to {mode}</legend>
+        <legend className="sr-only">{t.launcher.choose[mode]}</legend>
         {options.map(option => {
           const disabled =
             (isMock && option.value !== 'full') ||
@@ -164,7 +164,7 @@ export function SkillLauncher({
             className="hover:text-brand flex items-center justify-between gap-3 text-sm font-semibold transition-colors"
             href={latest.href}
           >
-            Latest result
+            {t.launcher.latestResult}
             <span className="font-sans text-xs font-semibold tabular-nums">
               {latest.label}
             </span>
@@ -182,7 +182,7 @@ export function SkillLauncher({
             tone="ink"
             type="button"
           >
-            Go
+            {t.launcher.go}
           </ExamButton>
         ) : (
           <ExamButton
@@ -196,7 +196,7 @@ export function SkillLauncher({
             }
             tone="ink"
           >
-            Go
+            {t.launcher.go}
           </ExamButton>
         )}
       </div>

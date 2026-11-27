@@ -2,6 +2,8 @@
 
 import { useEffect } from 'react'
 
+import { useMessages } from '@/i18n/client'
+
 interface Props {
   error: Error & { digest?: string }
   unstable_retry: () => void
@@ -12,6 +14,8 @@ interface Props {
  * shared tokens, so this client bundle stays small.
  */
 export default function Error({ error, unstable_retry }: Props) {
+  const t = useMessages()
+
   useEffect(() => {
     console.error(error)
   }, [error])
@@ -23,20 +27,20 @@ export default function Error({ error, unstable_retry }: Props) {
         role="alert"
       >
         <span className="bg-danger-soft text-danger inline-flex min-h-7 w-fit items-center rounded-full px-3 py-1 font-sans text-xs leading-tight font-medium">
-          IELTS
+          {t.ielts.boundary.tag}
         </span>
         <h1 className="font-sans text-2xl leading-tight font-medium tracking-tight">
-          IELTS page error
+          {t.ielts.boundary.title}
         </h1>
         <p className="text-ink-soft max-w-2xl text-base leading-7 font-normal">
-          Your saved attempts are safe. Try reloading the page.
+          {t.ielts.boundary.body}
         </p>
         <button
           className="bg-ink text-surface hover:bg-ink/85 soft-press inline-flex min-h-11 w-fit items-center justify-center rounded-full px-5 py-2 font-sans text-sm leading-tight font-medium"
           onClick={() => unstable_retry()}
           type="button"
         >
-          Try again
+          {t.common.actions.retry}
         </button>
       </section>
     </div>

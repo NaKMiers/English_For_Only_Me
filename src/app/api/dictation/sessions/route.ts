@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 
 import { MissingEnvironmentError } from '@/constants/environments'
+import type { Messages } from '@/i18n/messages'
+import { getMessages } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { DictationSegmentModel } from '@/models/dictation/DictationSegmentModel'
 import { DictationSessionModel } from '@/models/dictation/DictationSessionModel'
@@ -14,6 +16,7 @@ import {
   resolveSessionStart,
 } from '@/modules/dictation/services/sessionRouteDecisions'
 import {
+  getAccessErrorMessage,
   type ApiErrorDecision,
   getMissingMongoResponse,
   MISSING_MONGODB_MESSAGE,
@@ -25,7 +28,7 @@ function jsonError(decision: ApiErrorDecision) {
   return NextResponse.json(decision.body, { status: decision.status })
 }
 
-function toSessionError(error: unknown): ApiErrorDecision {
+function toSessionError(error: unknown, t: Messages): ApiErrorDecision {
   if (
     typeof error === 'object' &&
     error !== null &&
@@ -35,7 +38,7 @@ function toSessionError(error: unknown): ApiErrorDecision {
     return {
       status: error.status,
       body: {
-        message: (error as { message?: string }).message ?? 'Access denied.',
+        message: getAccessErrorMessage(error.status, t),
       },
     }
 
@@ -52,12 +55,13 @@ function toSessionError(error: unknown): ApiErrorDecision {
   return {
     status: 500,
     body: {
-      message: 'Could not start this dictation session.',
+      message: t.dictation.api.sessionStartFailed,
     },
   }
 }
 
 export async function POST(request: Request) {
+  const t = await getMessages()
   const missingMongo = getMissingMongoResponse()
 
   if (missingMongo) return jsonError(missingMongo)
@@ -88,6 +92,7 @@ export async function POST(request: Request) {
         : null
     const guardDecision = getSessionStartGuardDecision({
       firstSegment,
+      text: t.dictation.api,
       video,
     })
 
@@ -96,7 +101,7 @@ export async function POST(request: Request) {
       return jsonError({
         status: 404,
         body: {
-          message: 'This dictation video was not found.',
+          message: t.dictation.api.videoNotFound,
         },
       })
 
@@ -185,10 +190,10 @@ export async function POST(request: Request) {
       return jsonError({
         status: 400,
         body: {
-          message: 'Request body must be valid JSON.',
+          message: t.dictation.api.invalidJson,
         },
       })
 
-    return jsonError(toSessionError(error))
+    return jsonError(toSessionError(error, t))
   }
 }

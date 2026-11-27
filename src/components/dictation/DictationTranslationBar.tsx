@@ -9,6 +9,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { INTL_LOCALES } from '@/i18n/config'
+import { useLocale, useMessages } from '@/i18n/client'
 import { cn } from '@/lib/utils'
 import { getLanguageLabel } from '@/modules/dictation/translations/languages'
 
@@ -33,6 +35,9 @@ export function DictationTranslationBar({
   onChange,
   value,
 }: Props) {
+  const t = useMessages()
+  const locale = useLocale()
+
   if (languages.length === 0) return null
 
   return (
@@ -48,7 +53,9 @@ export function DictationTranslationBar({
         className="text-brand size-4 shrink-0"
       />
       {compact ? null : (
-        <span className="font-sans text-xs tracking-normal">Translation</span>
+        <span className="font-sans text-xs tracking-normal">
+          {t.dictation.translation.label}
+        </span>
       )}
       <Select
         value={value}
@@ -56,19 +63,19 @@ export function DictationTranslationBar({
       >
         <SelectTrigger
           size="sm"
-          aria-label="Translation language"
+          aria-label={t.dictation.translation.language}
           className="min-w-0 flex-1 px-2"
         >
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="">None</SelectItem>
+          <SelectItem value="">{t.dictation.translation.none}</SelectItem>
           {languages.map(language => (
             <SelectItem
               key={language}
               value={language}
             >
-              {getLanguageLabel(language)}
+              {getLanguageLabel(language, INTL_LOCALES[locale])}
             </SelectItem>
           ))}
         </SelectContent>

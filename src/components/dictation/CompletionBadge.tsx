@@ -1,10 +1,10 @@
+'use client'
+
 import { Medal } from 'lucide-react'
 
 import { PageTag } from '@/components/ui/PageTag'
-import {
-  COMPLETION_BADGE_LABELS,
-  getCompletionBadgeTier,
-} from '@/modules/dictation/completionBadges'
+import { useMessages } from '@/i18n/client'
+import { getCompletionBadgeTier } from '@/modules/dictation/completionBadges'
 
 /** Small tiered badge for how many times the current user has completed a video. */
 export function CompletionBadge({
@@ -14,6 +14,7 @@ export function CompletionBadge({
   completions: number
   className?: string
 }) {
+  const t = useMessages()
   const tier = getCompletionBadgeTier(completions)
   if (!tier) return null
 
@@ -27,7 +28,7 @@ export function CompletionBadge({
           aria-hidden="true"
           className="size-3"
         />
-        {COMPLETION_BADGE_LABELS[tier]}
+        {t.dictation.badges[tier]}
       </span>
     </PageTag>
   )

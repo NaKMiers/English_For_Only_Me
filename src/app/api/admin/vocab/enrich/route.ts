@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 
+import { getMessages } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { requireAdmin } from '@/modules/dictation/services/getCurrentUser'
 import {
@@ -62,7 +63,7 @@ export async function POST(request: Request) {
     if (error instanceof SyntaxError)
       return jsonError({
         status: 400,
-        body: { message: 'Request body must be valid JSON.' },
+        body: { message: (await getMessages()).admin.api.invalidJson },
       })
 
     return jsonError(toVocabApiError(error))

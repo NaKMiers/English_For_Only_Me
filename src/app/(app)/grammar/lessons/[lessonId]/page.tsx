@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import { notFound, redirect } from 'next/navigation'
 
 import { GrammarPlayerPage } from '@/components/grammar/player/GrammarPlayerPage'
+import { format } from '@/i18n/format'
+import { getMessages } from '@/i18n/server'
 import { grammarCourse } from '@/modules/grammar/course'
 import { isLessonUnlocked } from '@/modules/grammar/path/buildGrammarPath'
 import { loadGrammarPageData } from '@/modules/grammar/services/grammarPageData'
@@ -15,8 +17,13 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const found = grammarCourse.getLesson((await params).lessonId)
+  const t = await getMessages()
 
-  return { title: found ? `Grammar: ${found.lesson.title}` : 'Grammar' }
+  return {
+    title: found
+      ? format(t.grammar.meta.lesson, { title: found.lesson.title })
+      : t.common.modules.grammar.title,
+  }
 }
 
 export default async function GrammarLessonPage({ params }: Props) {

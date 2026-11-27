@@ -22,6 +22,8 @@ import {
 } from '@/components/dictation/admin/VideoAssignTable'
 import { ActionButton } from '@/components/ui/ActionButton'
 import { hasMongoDbUri } from '@/constants/environments'
+import { format } from '@/i18n/format'
+import { getMessages } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { cn } from '@/lib/utils'
 import { parseAdminVideoFilter } from '@/modules/dictation/content/adminVideoFilter'
@@ -43,7 +45,12 @@ import type {
   DictationVideoApiRecord,
 } from '@/modules/dictation/types'
 
-export const metadata: Metadata = { title: 'Admin · Dictation' }
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getMessages()
+
+  return { title: t.admin.dictationPage.metaTitle }
+}
+
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
@@ -53,21 +60,22 @@ interface Props {
   searchParams: Promise<Record<string, string | string[] | undefined>>
 }
 
-const VIEWS: Array<{ Icon: typeof List; label: string; view: View }> = [
-  { Icon: FolderTree, label: 'Topics & Sections', view: 'topics' },
-  { Icon: List, label: 'List', view: 'list' },
+const VIEWS: Array<{ Icon: typeof List; view: View }> = [
+  { Icon: FolderTree, view: 'topics' },
+  { Icon: List, view: 'list' },
 ]
 
 function placementOf(
   video: DictationVideoApiRecord,
   topicTitle: Map<string, string>,
-  sectionTitle: Map<string, string>
+  sectionTitle: Map<string, string>,
+  template: string
 ) {
   const topic = video.topicId ? topicTitle.get(video.topicId) : undefined
   if (!topic) return null
 
   const section = video.sectionId ? sectionTitle.get(video.sectionId) : null
-  return section ? `${topic} · ${section}` : topic
+  return section ? format(template, { topic, section }) : topic
 }
 
 /** Topics view: four flat queries, grouped in memory - not two per topic. */
@@ -97,6 +105,7 @@ async function loadTopicBoard(
  * queried.
  */
 export default async function AdminDictationPage({ searchParams }: Props) {
+  const t = await getMessages()
   const params = await searchParams
   const view: View = params.view === 'list' ? 'list' : 'topics'
   const initialFilter = parseAdminVideoFilter(
@@ -127,7 +136,12 @@ export default async function AdminDictationPage({ searchParams }: Props) {
 
     trash = archived.map(video => ({
       id: video.id,
-      placement: placementOf(video, topicTitle, sectionTitle),
+      placement: placementOf(
+        video,
+        topicTitle,
+        sectionTitle,
+        t.admin.table.placement
+      ),
       thumbnailUrl: video.thumbnailUrl,
       title: video.title,
       youtubeVideoId: video.youtubeVideoId,
@@ -171,7 +185,7 @@ export default async function AdminDictationPage({ searchParams }: Props) {
     <PageShell
       topbar={
         <AppTopbar
-          subtitle="Admin · Dictation"
+          subtitle={t.admin.shell.dictation}
           authControl={<AuthControl />}
         />
       }
@@ -180,21 +194,21 @@ export default async function AdminDictationPage({ searchParams }: Props) {
         <header className="page-hero grid gap-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h1 className="font-sans text-[clamp(1.6rem,4vw,2.4rem)] leading-none font-medium">
-              Dictation
+              {t.admin.dictationPage.title}
             </h1>
             <Link
               href="/admin"
               className="text-brand text-sm font-semibold hover:underline"
             >
-              ← Admin
+              {t.admin.dictationPage.backToAdmin}
             </Link>
           </div>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <nav
-              aria-label="View"
+              aria-label={t.admin.dictationPage.viewNav}
               className="border-line bg-surface rounded-control flex border p-1"
             >
-              {VIEWS.map(({ Icon, label, view: option }) => (
+              {VIEWS.map(({ Icon, view: option }) => (
                 <Link
                   key={option}
                   href={
@@ -212,7 +226,7 @@ export default async function AdminDictationPage({ searchParams }: Props) {
                     aria-hidden="true"
                     className="size-4"
                   />
-                  {label}
+                  {t.admin.dictationPage.views[option]}
                 </Link>
               ))}
             </nav>
@@ -221,7 +235,7 @@ export default async function AdminDictationPage({ searchParams }: Props) {
               tone="ink"
               icon={<Upload aria-hidden="true" />}
             >
-              Import video
+              {t.admin.dictationPage.importVideo}
             </ActionButton>
           </div>
         </header>
@@ -234,7 +248,7 @@ export default async function AdminDictationPage({ searchParams }: Props) {
 
             {topics.length === 0 ? (
               <p className="text-ink-soft text-sm">
-                No topics yet. Create one above.
+                {t.admin.dictationPage.noTopics}
               </p>
             ) : (
               <AdminTopicList topics={topics} />

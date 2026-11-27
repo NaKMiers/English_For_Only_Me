@@ -12,10 +12,8 @@ import { DictationTranslationEditor } from '@/components/dictation/DictationTran
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ActionButton } from '@/components/ui/ActionButton'
-import {
-  getDictationStatusLabel,
-  getDictationStatusTone,
-} from '@/modules/dictation/statusDisplay'
+import { useMessages } from '@/i18n/client'
+import { getDictationStatusTone } from '@/modules/dictation/statusDisplay'
 import type { CaptionCue } from '@/modules/dictation/translations/captionOverlap'
 import {
   DEFAULT_DICTATION_LANGUAGE,
@@ -104,6 +102,7 @@ function SavedVideoPreview({
   translationTracks: TranslationTrack[]
   video: DictationVideoApiRecord
 }) {
+  const t = useMessages()
   const videoStatus = video.status
 
   return (
@@ -137,8 +136,8 @@ function SavedVideoPreview({
       )}
       <QueueRow
         title={video.title}
-        meta={video.channelTitle ?? 'URL-only draft'}
-        status={getDictationStatusLabel(videoStatus)}
+        meta={video.channelTitle ?? t.admin.importForm.urlOnlyDraft}
+        status={t.admin.status[videoStatus]}
         statusTone={getDictationStatusTone(videoStatus)}
         action={
           <CheckCircle2
@@ -159,6 +158,7 @@ export function DictationImportForm({
   initialVideo = null,
   mode = 'import',
 }: Props) {
+  const t = useMessages()
   const router = useRouter()
   const [youtubeUrl, setYoutubeUrl] = useState(initialVideo?.youtubeUrl ?? '')
   const [video, setVideo] = useState<DictationVideoApiRecord | null>(
@@ -210,7 +210,7 @@ export function DictationImportForm({
       setErrorMessage(
         error instanceof Error
           ? error.message
-          : 'Captions were saved, but the preview could not refresh.'
+          : t.admin.importForm.previewRefreshFailed
       )
     }
   }
@@ -235,14 +235,13 @@ export function DictationImportForm({
       setTracks([])
       setTranslationTracks([])
       setStage('videoSaved')
-      setMessage(
-        response.warning ??
-          'Video saved. Add captions per language below to prepare it for practice.'
-      )
+      setMessage(response.warning ?? t.admin.importForm.videoSaved)
     } catch (error) {
       setStage('idle')
       setErrorMessage(
-        error instanceof Error ? error.message : 'Could not save this video.'
+        error instanceof Error && error.message
+          ? error.message
+          : t.admin.importForm.saveFailed
       )
     }
   }
@@ -250,8 +249,14 @@ export function DictationImportForm({
   return (
     <div className="grid min-w-0 gap-5 lg:grid-cols-2 lg:items-start">
       <ContentPanel
-        eyebrow={isEditMode || video ? 'Video' : 'Import'}
-        title={video ? 'Saved YouTube video' : 'Save a YouTube video'}
+        eyebrow={
+          isEditMode || video
+            ? t.admin.importForm.eyebrowVideo
+            : t.admin.importForm.eyebrowImport
+        }
+        title={
+          video ? t.admin.importForm.savedTitle : t.admin.importForm.saveTitle
+        }
         className={!video ? 'lg:col-span-2' : undefined}
       >
         {video ? (
@@ -263,9 +268,7 @@ export function DictationImportForm({
         ) : (
           <>
             <p className="text-ink-soft text-base leading-7 font-normal">
-              The app stores metadata from the official YouTube API when
-              available. If the key is missing, it saves a URL-only draft and
-              waits for your captions.
+              {t.admin.importForm.intro}
             </p>
 
             <form
@@ -277,7 +280,7 @@ export function DictationImportForm({
                   htmlFor="youtube-import-url"
                   className="font-sans text-xs font-semibold tracking-normal"
                 >
-                  YouTube URL
+                  {t.admin.importForm.urlLabel}
                 </Label>
                 <Input
                   id="youtube-import-url"
@@ -298,7 +301,9 @@ export function DictationImportForm({
                   />
                 }
               >
-                {stage === 'savingVideo' ? 'Saving Video' : 'Save Video'}
+                {stage === 'savingVideo'
+                  ? t.admin.importForm.savingVideo
+                  : t.admin.importForm.saveVideo}
               </ActionButton>
             </form>
           </>
@@ -317,7 +322,7 @@ export function DictationImportForm({
               aria-hidden="true"
               className="size-5"
             />
-            Save a YouTube URL first, then upload captions.
+            {t.admin.importForm.saveUrlFirst}
           </div>
         ) : null}
       </ContentPanel>

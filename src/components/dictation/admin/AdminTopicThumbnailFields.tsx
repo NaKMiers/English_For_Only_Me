@@ -3,6 +3,8 @@
 import { ImagePlus } from 'lucide-react'
 import { useRef, useState, useTransition } from 'react'
 
+import { format } from '@/i18n/format'
+import { useMessages } from '@/i18n/client'
 import { cn } from '@/lib/utils'
 import { uploadTopicThumbnailAction } from '@/modules/dictation/content/adminActions'
 
@@ -25,6 +27,7 @@ interface Props {
 }
 
 export function AdminTopicThumbnailFields({ defaultUrl = null, title }: Props) {
+  const t = useMessages()
   const inputRef = useRef<HTMLInputElement>(null)
   const [thumbnailUrl, setThumbnailUrl] = useState(defaultUrl ?? '')
   const [error, setError] = useState<string | null>(null)
@@ -49,7 +52,7 @@ export function AdminTopicThumbnailFields({ defaultUrl = null, title }: Props) {
         setThumbnailUrl(result.url)
       } catch (cause) {
         const message =
-          cause instanceof Error ? cause.message : 'Thumbnail upload failed.'
+          cause instanceof Error ? cause.message : t.admin.thumbnail.failed
         setError(message)
       } finally {
         if (inputRef.current) inputRef.current.value = ''
@@ -66,7 +69,7 @@ export function AdminTopicThumbnailFields({ defaultUrl = null, title }: Props) {
       />
       <button
         type="button"
-        aria-label={`Upload thumbnail for ${title}`}
+        aria-label={format(t.admin.thumbnail.upload, { title })}
         onClick={() => inputRef.current?.click()}
         className={cn(
           'border-line bg-surface group focus-visible:outline-brand rounded-control relative grid size-28 shrink-0 place-items-center overflow-hidden border transition-transform hover:-translate-y-0.5 focus-visible:outline-3 focus-visible:outline-offset-2',
@@ -89,7 +92,7 @@ export function AdminTopicThumbnailFields({ defaultUrl = null, title }: Props) {
         )}
         {isPending && (
           <span className="bg-ink/80 text-surface absolute inset-x-0 bottom-0 px-1 py-1 text-center font-sans text-[10px] font-semibold">
-            Uploading
+            {t.admin.thumbnail.uploading}
           </span>
         )}
       </button>

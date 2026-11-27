@@ -31,6 +31,8 @@ import { ActionButton } from '@/components/ui/ActionButton'
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { QuickVocabWordButton } from '@/components/vocabulary/QuickVocabLookup'
+import { useMessages } from '@/i18n/client'
+import { format } from '@/i18n/format'
 import { ensureGuestIdentity } from '@/lib/sync/clientOutbox'
 import type { OutboxEnqueueInput } from '@/lib/sync/outbox'
 import { cn } from '@/lib/utils'
@@ -222,6 +224,8 @@ export function DictationPracticeShell({
   translationLanguages,
   video,
 }: Props) {
+  const t = useMessages()
+  const text = t.dictation.practice
   const router = useRouter()
   const outbox = useClientOutbox()
   const ownerKey = useOutboxOwnerKey()
@@ -677,12 +681,7 @@ export function DictationPracticeShell({
               run.request = null
 
               if (run === runRef.current && isMountedRef.current)
-                setSessionError(
-                  toErrorMessage(
-                    error,
-                    'Could not start this practice session.'
-                  )
-                )
+                setSessionError(toErrorMessage(error, text.sessionStartError))
             }
 
             throw error
@@ -693,7 +692,7 @@ export function DictationPracticeShell({
 
       return run.request
     },
-    [requestSession, segments.length]
+    [requestSession, segments.length, text.sessionStartError]
   )
 
   useEffect(() => {
@@ -776,10 +775,12 @@ export function DictationPracticeShell({
                 return
               }
 
+              // Status 0 is a client-side failure (network down, queue
+              // handed over): its text is not learner copy, so say it here.
               recordFailedWrite(
                 writeId,
                 { kind, retry: send, run, status: result.status },
-                result.error
+                result.status === 0 ? text.saveError : result.error
               )
               onSettled?.({ data: null, ok: false })
             })
@@ -788,7 +789,7 @@ export function DictationPracticeShell({
             recordFailedWrite(
               writeId,
               { kind, retry: send, run, status: 0 },
-              toErrorMessage(error, 'Could not start this practice session.')
+              toErrorMessage(error, text.sessionStartError)
             )
             onSettled?.({ data: null, ok: false })
           }
@@ -803,6 +804,8 @@ export function DictationPracticeShell({
       ensurePracticeSession,
       outbox,
       recordFailedWrite,
+      text.saveError,
+      text.sessionStartError,
     ]
   )
 
@@ -952,13 +955,11 @@ export function DictationPracticeShell({
           // A language the learner already moved away from fails quietly;
           // picking it again refetches.
           if (isMountedRef.current && selectedLanguageRef.current === language)
-            setTranslationError(
-              toErrorMessage(error, 'Could not load this translation.')
-            )
+            setTranslationError(toErrorMessage(error, text.translationError))
         })
         .finally(() => translationRequestsRef.current.delete(language))
     },
-    [translationTracks, video.id]
+    [text.translationError, translationTracks, video.id]
   )
 
   // Settle a segment's progress once it has no attempt in flight: the server's
@@ -1498,22 +1499,22 @@ export function DictationPracticeShell({
   // instead (see the `isCompleted` initializer above).
   const hasResumableProgress = (initialSession?.currentSegmentOrder ?? 0) > 0
   const readyActionLabel = hasResumableProgress
-    ? 'Continue Dictation'
-    : 'Start Dictation'
+    ? text.continueAction
+    : text.startAction
   const readyActionTitle = hasResumableProgress
-    ? 'Continue dictation'
-    : 'Start dictation'
+    ? text.continueTitle
+    : text.startTitle
 
   if (!currentSegment)
     return (
       <ContentPanel
-        eyebrow="Practice"
-        title="No segments ready"
+        eyebrow={text.emptyEyebrow}
+        title={text.emptyTitle}
       >
         <p className="text-ink-soft text-base leading-7 font-normal">
-          Build segments from the transcript before opening practice.
+          {text.emptyDescription}
         </p>
-        <ActionButton href="/dictation">Back To Dictation Lab</ActionButton>
+        <ActionButton href="/dictation">{text.backToLab}</ActionButton>
       </ContentPanel>
     )
 
@@ -1533,11 +1534,10 @@ export function DictationPracticeShell({
         <DialogContent className="border-line bg-surface rounded-panel border">
           <DialogHeader>
             <DialogTitle className="font-sans text-xl leading-tight font-semibold tracking-normal">
-              Leave this practice?
+              {text.leaveTitle}
             </DialogTitle>
             <DialogDescription className="text-ink-soft text-base leading-7 font-normal">
-              You have not finished this exercise yet. Your progress is saved,
-              so you can pick up right where you left off.
+              {text.leaveDescription}
             </DialogDescription>
           </DialogHeader>
 
@@ -1547,7 +1547,7 @@ export function DictationPracticeShell({
               tone="paper"
               onClick={() => setPendingLeaveHref(null)}
             >
-              Keep practicing
+              {text.keepPracticing}
             </ActionButton>
             <ActionButton
               type="button"
@@ -1559,7 +1559,7 @@ export function DictationPracticeShell({
                 if (destination) router.push(destination)
               }}
             >
-              Leave
+              {text.leave}
             </ActionButton>
           </DialogFooter>
         </DialogContent>
@@ -1629,7 +1629,7 @@ export function DictationPracticeShell({
 
             <TabsList
               variant="line"
-              aria-label="Practice views"
+              aria-label={text.views}
               className="rounded-control ml-auto flex h-auto! w-auto min-w-0 shrink-0 flex-wrap justify-end gap-2 p-0"
             >
               {/* Icon plus label, and below sm the label goes sr-only so the
@@ -1642,7 +1642,7 @@ export function DictationPracticeShell({
                   aria-hidden="true"
                   className="size-4"
                 />
-                <span className="max-sm:sr-only">Listen &amp; Type</span>
+                <span className="max-sm:sr-only">{text.listenTab}</span>
               </TabsTrigger>
               <TabsTrigger
                 value="transcript"
@@ -1652,7 +1652,7 @@ export function DictationPracticeShell({
                   aria-hidden="true"
                   className="size-4"
                 />
-                <span className="max-sm:sr-only">Full Transcript</span>
+                <span className="max-sm:sr-only">{text.transcriptTab}</span>
               </TabsTrigger>
             </TabsList>
           </div>
@@ -1705,8 +1705,8 @@ export function DictationPracticeShell({
               >
                 {isCompleted ? (
                   <ContentPanel
-                    eyebrow="Done"
-                    title="You have completed this exercise, good job!"
+                    eyebrow={text.doneEyebrow}
+                    title={text.doneTitle}
                   >
                     <div className="flex flex-wrap gap-2">
                       <ActionButton
@@ -1728,33 +1728,33 @@ export function DictationPracticeShell({
                           if (!isSavingResults) void openResults()
                         }}
                       >
-                        {isSavingResults ? 'Saving...' : 'View Results'}
+                        {isSavingResults ? text.saving : text.viewResults}
                       </ActionButton>
                       <ActionButton
                         href="/dictation"
                         tone="paper"
                         icon={undefined}
                       >
-                        Next Exercise
+                        {text.nextExercise}
                       </ActionButton>
                       <ActionButton
                         type="button"
                         tone="paper"
                         onClick={restartProgress}
                       >
-                        Repeat this exercise
+                        {text.repeatExercise}
                       </ActionButton>
                     </div>
                     <ActionButton
                       href="/dictation"
                       tone="paper"
                     >
-                      View all exercises
+                      {text.allExercises}
                     </ActionButton>
                   </ContentPanel>
                 ) : !hasStarted ? (
                   <ContentPanel
-                    eyebrow="Ready"
+                    eyebrow={text.readyEyebrow}
                     title={readyActionTitle}
                     className={
                       hasResumableProgress ? 'bg-pastel-sky' : undefined
@@ -1762,8 +1762,12 @@ export function DictationPracticeShell({
                   >
                     <p className="text-ink-soft text-base leading-7 font-normal">
                       {hasResumableProgress
-                        ? `Pick up from sentence ${(initialSession?.currentSegmentOrder ?? 0) + 1} of ${segments.length} and keep going.`
-                        : 'Press start to play the first sentence and begin typing.'}
+                        ? format(text.resumeDescription, {
+                            current:
+                              (initialSession?.currentSegmentOrder ?? 0) + 1,
+                            total: segments.length,
+                          })
+                        : text.startDescription}
                     </p>
                     <ActionButton
                       type="button"
@@ -1777,7 +1781,7 @@ export function DictationPracticeShell({
                         tone="paper"
                         onClick={restartProgress}
                       >
-                        Restart from the beginning
+                        {text.restartFromStart}
                       </ActionButton>
                     ) : null}
                   </ContentPanel>
@@ -1838,7 +1842,7 @@ export function DictationPracticeShell({
                                   className="min-h-9 px-3 py-1 text-sm"
                                   onClick={() => setShowAnswerWords(true)}
                                 >
-                                  Show answer words
+                                  {text.showAnswerWords}
                                 </ActionButton>
                               ) : null}
                               <ActionButton
@@ -1846,7 +1850,7 @@ export function DictationPracticeShell({
                                 className="min-h-9 px-3 py-1 text-sm"
                                 onClick={advanceAfterAttempt}
                               >
-                                {canGoNext ? 'Next' : 'Finish'}
+                                {canGoNext ? text.next : text.finish}
                               </ActionButton>
                             </>
                           ) : (
@@ -1856,7 +1860,7 @@ export function DictationPracticeShell({
                                 className="min-h-9 px-3 py-1 text-sm"
                                 onClick={checkDraft}
                               >
-                                Check
+                                {text.check}
                               </ActionButton>
                               <ActionButton
                                 type="button"
@@ -1864,7 +1868,7 @@ export function DictationPracticeShell({
                                 className="min-h-9 px-3 py-1 text-sm"
                                 onClick={skipSegment}
                               >
-                                Skip
+                                {text.skip}
                               </ActionButton>
                             </>
                           )}
@@ -1875,7 +1879,7 @@ export function DictationPracticeShell({
                               className="min-h-9 px-3 py-1 text-sm"
                               onClick={retryCurrent}
                             >
-                              Retry
+                              {text.retry}
                             </ActionButton>
                           ) : null}
                         </>
@@ -1916,7 +1920,7 @@ export function DictationPracticeShell({
                             }))
                           }
                         />
-                        Show answer immediately
+                        {text.showAnswerImmediately}
                       </Label>
                       <Label className="flex items-center gap-2 text-xs font-semibold">
                         <Switch
@@ -1929,7 +1933,7 @@ export function DictationPracticeShell({
                             }))
                           }
                         />
-                        Show full answer
+                        {text.showFullAnswer}
                       </Label>
                     </div>
                   </>
@@ -1993,28 +1997,29 @@ export function DictationPracticeShell({
             )}
           >
             {sessionError ??
-              (isSessionStartRetrying
-                ? 'Could not reach the server. Retrying - your answers will save once it connects.'
-                : null) ??
+              (isSessionStartRetrying ? text.retryingConnection : null) ??
               translationError ??
               (currentSegment.startMs === null || currentSegment.endMs === null
-                ? 'Untimed segment. Use the normal player controls, then type.'
-                : `Sentence ${currentIndex + 1} of ${segments.length}. Replay uses this segment's timestamp window.`)}
+                ? text.untimedSegment
+                : format(text.sentencePosition, {
+                    current: currentIndex + 1,
+                    total: segments.length,
+                  }))}
             {sessionError && failedWriteCount > 0 ? (
               <button
                 type="button"
                 onClick={retryFailedWrites}
                 className="text-ink decoration-brand ml-2 font-semibold underline underline-offset-2"
               >
-                Retry saving
+                {text.retrySaving}
               </button>
             ) : null}
           </p>
           {preferences.showShortcuts ? (
             <div className="text-ink-soft hidden flex-wrap gap-x-3 gap-y-1 text-xs font-normal md:flex">
-              <span>Command / Alt · replay</span>
-              <span>Enter · check</span>
-              <span>Ctrl + [ ] · move</span>
+              <span>{text.shortcutReplay}</span>
+              <span>{text.shortcutCheck}</span>
+              <span>{text.shortcutMove}</span>
             </div>
           ) : null}
           <Label className="flex shrink-0 items-center gap-2 text-xs font-semibold">
@@ -2025,7 +2030,7 @@ export function DictationPracticeShell({
                 updateSessionPreferences({ showShortcuts: checked })
               }
             />
-            Shortcut hints
+            {text.shortcutHints}
           </Label>
         </footer>
       </section>

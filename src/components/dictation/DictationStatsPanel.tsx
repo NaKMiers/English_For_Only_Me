@@ -1,3 +1,5 @@
+'use client'
+
 import {
   ChartNoAxesColumnIncreasing,
   Clock3,
@@ -8,34 +10,46 @@ import {
 import { ContentPanel } from '@/components/common/ContentPanel'
 import { MetricTile } from '@/components/common/MetricTile'
 import { QueueRow } from '@/components/common/QueueRow'
+import { useMessages } from '@/i18n/client'
+import { format, plural } from '@/i18n/format'
+import type { Messages } from '@/i18n/messages'
 import type { DictationVideoStatsRecord } from '@/modules/dictation/types'
 
 interface Props {
   stats: DictationVideoStatsRecord
 }
 
-function formatDuration(durationMs: number) {
+function formatDuration(
+  text: Messages['dictation']['duration'],
+  durationMs: number
+) {
   const totalMinutes = Math.round(durationMs / 60000)
 
-  if (totalMinutes <= 0) return '0m'
+  if (totalMinutes <= 0) return format(text.minutes, { minutes: 0 })
 
   const hours = Math.floor(totalMinutes / 60)
   const minutes = totalMinutes % 60
 
-  if (hours === 0) return `${minutes}m`
-  if (minutes === 0) return `${hours}h`
+  if (hours === 0) return format(text.minutes, { minutes })
+  if (minutes === 0) return format(text.hours, { hours })
 
-  return `${hours}h ${minutes}m`
+  return format(text.hoursMinutes, { hours, minutes })
 }
 
 export function DictationStatsPanel({ stats }: Props) {
+  const t = useMessages()
+  const text = t.dictation.stats
+
   return (
     <div className="grid min-w-0 gap-5">
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         <MetricTile
-          label="Completion"
+          label={text.completion}
           value={`${stats.completionPercentage}%`}
-          detail={`${stats.completedSegmentCount}/${stats.segmentCount} sentences resolved`}
+          detail={format(text.resolved, {
+            done: stats.completedSegmentCount,
+            total: stats.segmentCount,
+          })}
           tone="red"
           icon={
             <ChartNoAxesColumnIncreasing
@@ -45,19 +59,19 @@ export function DictationStatsPanel({ stats }: Props) {
           }
         />
         <MetricTile
-          label="First Try"
+          label={text.firstTry}
           value={`${stats.firstTryWordAccuracy}%`}
-          detail="Word accuracy on first checks"
+          detail={text.firstTryDetail}
         />
         <MetricTile
-          label="Overall"
+          label={text.overall}
           value={`${stats.overallWordAccuracy}%`}
-          detail="All checked attempts"
+          detail={text.overallDetail}
         />
         <MetricTile
-          label="Time"
-          value={formatDuration(stats.timeSpentMs)}
-          detail={`${stats.retryCount} retries`}
+          label={text.time}
+          value={formatDuration(t.dictation.duration, stats.timeSpentMs)}
+          detail={plural(text.retries, stats.retryCount)}
           icon={
             <Clock3
               aria-hidden="true"
@@ -69,8 +83,8 @@ export function DictationStatsPanel({ stats }: Props) {
 
       <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(320px,0.8fr)]">
         <ContentPanel
-          eyebrow="Weakest"
-          title="Hardest segments"
+          eyebrow={text.hardestEyebrow}
+          title={text.hardestTitle}
         >
           {stats.hardestSegments.length > 0 ? (
             <div className="grid gap-3">
@@ -78,42 +92,43 @@ export function DictationStatsPanel({ stats }: Props) {
                 <QueueRow
                   key={segment.segmentId}
                   title={segment.label}
-                  meta={`${segment.accuracy}% accuracy across ${segment.attemptCount} attempts`}
+                  meta={plural(text.hardestMeta, segment.attemptCount, {
+                    accuracy: segment.accuracy,
+                  })}
                   status="review"
                 />
               ))}
             </div>
           ) : (
             <p className="text-ink-soft text-base leading-7 font-normal">
-              No attempts yet. Finish a few sentences and this panel will show
-              what to review.
+              {text.hardestEmpty}
             </p>
           )}
         </ContentPanel>
 
         <ContentPanel
-          eyebrow="Taxonomy"
-          title="Mistake map"
+          eyebrow={text.taxonomyEyebrow}
+          title={text.mistakeMap}
         >
           <div className="grid gap-3">
             <QueueRow
-              title="Missing words"
-              meta={`${stats.mistakeTaxonomy.missing} tokens`}
+              title={text.mistakeTypes.missing}
+              meta={plural(text.tokens, stats.mistakeTaxonomy.missing)}
               status="gap"
             />
             <QueueRow
-              title="Wrong words"
-              meta={`${stats.mistakeTaxonomy.wrong} tokens`}
+              title={text.mistakeTypes.wrong}
+              meta={plural(text.tokens, stats.mistakeTaxonomy.wrong)}
               status="swap"
             />
             <QueueRow
-              title="Extra words"
-              meta={`${stats.mistakeTaxonomy.extra} tokens`}
+              title={text.mistakeTypes.extra}
+              meta={plural(text.tokens, stats.mistakeTaxonomy.extra)}
               status="extra"
             />
             <QueueRow
-              title="Spelling variants"
-              meta={`${stats.mistakeTaxonomy.spellingVariant} tokens`}
+              title={text.mistakeTypes.spellingVariant}
+              meta={plural(text.tokens, stats.mistakeTaxonomy.spellingVariant)}
               status="spell"
             />
           </div>
@@ -122,8 +137,8 @@ export function DictationStatsPanel({ stats }: Props) {
 
       <div className="grid items-start gap-5 lg:grid-cols-2">
         <ContentPanel
-          eyebrow="Words"
-          title="Common missed words"
+          eyebrow={text.wordsEyebrow}
+          title={text.missedWords}
         >
           {stats.commonMissedWords.length > 0 ? (
             <div className="grid gap-3">
@@ -131,25 +146,25 @@ export function DictationStatsPanel({ stats }: Props) {
                 <QueueRow
                   key={word.word}
                   title={word.word}
-                  meta={`${word.count} misses`}
+                  meta={plural(text.misses, word.count)}
                 />
               ))}
             </div>
           ) : (
             <p className="text-ink-soft text-base leading-7 font-normal">
-              No missed words have been recorded yet.
+              {text.missedWordsEmpty}
             </p>
           )}
         </ContentPanel>
 
         <ContentPanel
-          eyebrow="Behavior"
-          title="Recovery signals"
+          eyebrow={text.behaviorEyebrow}
+          title={text.recoveryTitle}
         >
           <div className="grid gap-3">
             <QueueRow
-              title="Replays"
-              meta={`${stats.replayCount} segment replays`}
+              title={text.replays}
+              meta={plural(text.replaysMeta, stats.replayCount)}
               action={
                 <RotateCcw
                   aria-hidden="true"
@@ -158,8 +173,8 @@ export function DictationStatsPanel({ stats }: Props) {
               }
             />
             <QueueRow
-              title="Reveals"
-              meta={`${stats.revealCount} answers revealed`}
+              title={text.reveals}
+              meta={plural(text.revealsMeta, stats.revealCount)}
               action={
                 <Eye
                   aria-hidden="true"
@@ -168,8 +183,8 @@ export function DictationStatsPanel({ stats }: Props) {
               }
             />
             <QueueRow
-              title="Skips"
-              meta={`${stats.skipCount} sentences skipped`}
+              title={text.skips}
+              meta={plural(text.skipsMeta, stats.skipCount)}
             />
           </div>
         </ContentPanel>

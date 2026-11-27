@@ -10,6 +10,7 @@ import Link from 'next/link'
 
 import { APP_MODULES, type AppModuleKey } from '@/constants/modules'
 import { MODULE_THEMES } from '@/constants/theme'
+import type { Messages } from '@/i18n/messages'
 import { cn } from '@/lib/utils'
 
 export const MODULE_ICONS: Partial<Record<AppModuleKey, LucideIcon>> = {
@@ -22,10 +23,11 @@ export const MODULE_ICONS: Partial<Record<AppModuleKey, LucideIcon>> = {
 interface Props {
   /** One short fact per module, shown under its title. */
   facts: Partial<Record<AppModuleKey, string>>
+  messages: Messages
 }
 
 /** The four live modules as big pastel tiles, like a course shelf. */
-export function HomeModuleTiles({ facts }: Props) {
+export function HomeModuleTiles({ facts, messages }: Props) {
   const modules = APP_MODULES.filter(module => module.status === 'active')
 
   return (
@@ -37,12 +39,13 @@ export function HomeModuleTiles({ facts }: Props) {
         id="home-modules-title"
         className="font-sans text-lg font-medium"
       >
-        Your modules
+        {messages.home.modulesTitle}
       </h2>
       <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {modules.map(module => {
           const Icon = MODULE_ICONS[module.key] ?? Star
           const theme = MODULE_THEMES[module.key]
+          const text = messages.common.modules[module.key]
 
           return (
             <li
@@ -78,10 +81,10 @@ export function HomeModuleTiles({ facts }: Props) {
                 </span>
                 <span className="grid gap-1 px-1.5">
                   <strong className="truncate font-sans text-sm font-medium">
-                    {module.title}
+                    {text.title}
                   </strong>
                   <span className="text-ink-soft truncate text-xs">
-                    {facts[module.key] ?? module.skill}
+                    {facts[module.key] ?? text.skill}
                   </span>
                 </span>
               </Link>

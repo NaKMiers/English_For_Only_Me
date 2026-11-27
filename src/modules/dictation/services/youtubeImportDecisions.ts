@@ -8,6 +8,7 @@ export function parseYouTubeImportRequest(body: unknown) {
     return {
       ok: false,
       status: 400,
+      code: 'invalidUrl',
       body: {
         message: parsed.error.issues[0]?.message ?? 'Invalid YouTube import.',
       },
@@ -19,6 +20,7 @@ export function parseYouTubeImportRequest(body: unknown) {
     return {
       ok: false,
       status: 400,
+      code: extracted.code,
       body: {
         message: extracted.message,
       },

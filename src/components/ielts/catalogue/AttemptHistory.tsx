@@ -1,30 +1,26 @@
 import Link from 'next/link'
 
+import { INTL_LOCALES } from '@/i18n/config'
+import { format } from '@/i18n/format'
+import { getLocale, getMessages } from '@/i18n/server'
 import type { IeltsAttemptSummary } from '@/modules/ielts/attempts/attemptQueries'
 import { IELTS_SKILL_LABELS } from '@/modules/ielts/constants'
 
 import { DeleteAttemptButton } from './DeleteAttemptButton'
 
-const MODE_LABELS = { practice: 'Practice', mock: 'Mock', drill: 'Drill' }
-const STATUS_LABELS = {
-  in_progress: 'In progress',
-  submitted: 'Submitted',
-  scored: 'Scored',
-  expired: 'Time up',
-}
-
-const dateFormat = new Intl.DateTimeFormat('en-GB', {
-  day: '2-digit',
-  month: '2-digit',
-  hour: '2-digit',
-  minute: '2-digit',
-})
-
-export function AttemptHistory({
+export async function AttemptHistory({
   attempts,
 }: {
   attempts: IeltsAttemptSummary[]
 }) {
+  const [messages, locale] = await Promise.all([getMessages(), getLocale()])
+  const t = messages.ielts
+  const dateFormat = new Intl.DateTimeFormat(INTL_LOCALES[locale], {
+    day: '2-digit',
+    month: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
   const finished = attempts.filter(attempt => attempt.status !== 'in_progress')
 
   // Nothing finished yet: no card, the test cards are the call to action.
@@ -33,7 +29,7 @@ export function AttemptHistory({
   return (
     <section className="grid min-w-0 content-start gap-2">
       <h2 className="font-sans text-sm font-semibold">
-        Recent attempts{' '}
+        {t.history.heading}{' '}
         <span className="text-muted-foreground tabular-nums">
           ({finished.length})
         </span>
@@ -48,38 +44,40 @@ export function AttemptHistory({
                   className="py-1 pr-2"
                   scope="col"
                 >
-                  Date
+                  {t.history.date}
                 </th>
                 <th
                   className="py-1 pr-2"
                   scope="col"
                 >
-                  Test
+                  {t.history.test}
                 </th>
                 <th
                   className="py-1 pr-2"
                   scope="col"
                 >
-                  Skill
+                  {t.history.skill}
                 </th>
                 <th
                   className="py-1 pr-2"
                   scope="col"
                 >
-                  Score
+                  {t.history.score}
                 </th>
                 <th
                   className="py-1 pr-2"
                   scope="col"
                 >
-                  Band
+                  {t.history.band}
                 </th>
                 <th
                   // Pinned right: the table scrolls sideways on phones.
                   className="bg-surface sticky right-0 w-8 py-1"
                   scope="col"
                 >
-                  <span className="sr-only">Delete</span>
+                  <span className="sr-only">
+                    {messages.common.actions.delete}
+                  </span>
                 </th>
               </tr>
             </thead>
@@ -97,18 +95,20 @@ export function AttemptHistory({
                       className="font-semibold underline"
                       href={`/ielts/attempts/${attempt.id}`}
                     >
-                      {attempt.testTitle || attempt.testSlug || 'Drill'}
+                      {attempt.testTitle || attempt.testSlug || t.history.drill}
                     </Link>
                   </td>
                   <td className="py-1 pr-2">
                     {IELTS_SKILL_LABELS[attempt.skill]}
-                    {attempt.part ? ` P${attempt.part}` : ''} ·{' '}
-                    {MODE_LABELS[attempt.mode]}
+                    {attempt.part
+                      ? ` ${format(t.history.partShort, { part: attempt.part })}`
+                      : ''}{' '}
+                    · {t.modes[attempt.mode]}
                   </td>
                   <td className="py-1 pr-2 tabular-nums">
                     {attempt.raw !== null
                       ? `${attempt.raw}/${attempt.total}`
-                      : STATUS_LABELS[attempt.status]}
+                      : t.statuses[attempt.status]}
                   </td>
                   <td className="py-1 pr-2 font-sans font-semibold tabular-nums">
                     {attempt.band === null ? '-' : attempt.band.toFixed(1)}
@@ -116,7 +116,7 @@ export function AttemptHistory({
                   <td className="bg-surface sticky right-0 py-0.5">
                     <DeleteAttemptButton
                       attemptId={attempt.id}
-                      label={`${attempt.testTitle || attempt.testSlug || 'Drill'} · ${IELTS_SKILL_LABELS[attempt.skill]}`}
+                      label={`${attempt.testTitle || attempt.testSlug || t.history.drill} · ${IELTS_SKILL_LABELS[attempt.skill]}`}
                     />
                   </td>
                 </tr>

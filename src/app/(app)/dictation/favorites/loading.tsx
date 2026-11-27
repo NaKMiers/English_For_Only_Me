@@ -3,12 +3,15 @@ import {
   SkeletonPageShell,
   SkeletonVideoGrid,
 } from '@/components/common/PageSkeletons'
+import { getMessages } from '@/i18n/server'
 
-export default function Loading() {
+export default async function Loading() {
+  const t = await getMessages()
+
   return (
     <SkeletonPageShell
       activeHref="/dictation"
-      subtitle="Your favorites"
+      subtitle={t.dictation.meta.favoritesSubtitle}
     >
       <SkeletonHero />
       <SkeletonVideoGrid count={8} />

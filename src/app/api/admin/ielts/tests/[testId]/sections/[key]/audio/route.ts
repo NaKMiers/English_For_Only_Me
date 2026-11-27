@@ -1,5 +1,6 @@
 import { z } from 'zod'
 
+import { getMessages } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { requireAdmin } from '@/modules/dictation/services/getCurrentUser'
 import { generateSectionAudio } from '@/modules/ielts/audio/audioService'
@@ -28,6 +29,7 @@ interface RouteContext {
 
 /** Generate the audio for one listening part of a draft. */
 export async function POST(request: Request, context: RouteContext) {
+  const t = await getMessages()
   const missing = ieltsMissingMongo()
 
   if (missing) return missing
@@ -47,7 +49,8 @@ export async function POST(request: Request, context: RouteContext) {
 
   const parsed = audioSchema.safeParse(body.data)
 
-  if (!parsed.success) return ieltsJsonError(400, 'revision is required.')
+  if (!parsed.success)
+    return ieltsJsonError(400, t.ieltsEditor.api.revisionRequired)
 
   try {
     await requireAdmin()

@@ -2,6 +2,7 @@
 
 import { memo, type ReactNode, useEffect, useRef } from 'react'
 
+import { useMessages } from '@/i18n/client'
 import { cn } from '@/lib/utils'
 import { passageStandfirst } from '@/modules/ielts/passageStandfirst'
 import type { IeltsReadingMaterial } from '@/modules/ielts/schema'
@@ -75,6 +76,7 @@ export const PassagePane = memo(function PassagePane({
   material,
   partLabel,
 }: Props) {
+  const t = useMessages().ielts.runner
   const rootRef = useRef<HTMLElement>(null)
   const { bodyStart, standfirst } = passageStandfirst(material)
   // Highlights index the stored paragraphs, so a standfirst lifted out of
@@ -94,7 +96,7 @@ export const PassagePane = memo(function PassagePane({
 
   return (
     <article
-      aria-label="Reading passage"
+      aria-label={t.readingPassage}
       data-highlight-scope={`passage:${partLabel}`}
       className={cn(
         'text-ink grid w-full gap-2.5 text-[17px] leading-[1.7]',

@@ -1,5 +1,6 @@
 import { z } from 'zod'
 
+import { getMessages } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { requireAdmin } from '@/modules/dictation/services/getCurrentUser'
 import {
@@ -31,6 +32,7 @@ const assistSchema = z
 
 /** An AI proposal for the section being edited (nothing is saved). */
 export async function POST(request: Request) {
+  const t = await getMessages()
   const body = await readJsonBody(request)
 
   if (!body.ok) return ieltsDecisionError(body)
@@ -40,7 +42,7 @@ export async function POST(request: Request) {
   if (!parsed.success)
     return ieltsJsonError(
       400,
-      parsed.error.issues[0]?.message ?? 'Invalid assist request.'
+      parsed.error.issues[0]?.message ?? t.ieltsEditor.api.invalidAssist
     )
 
   try {
@@ -50,6 +52,7 @@ export async function POST(request: Request) {
     return ieltsDecisionResponse(
       await assistSection({
         action: parsed.data.action,
+        copy: t.ieltsEditor.generation,
         instruction: parsed.data.instruction,
         key: parsed.data.key,
         section: parsed.data.section,

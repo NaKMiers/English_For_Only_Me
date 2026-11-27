@@ -14,13 +14,11 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
+import { useMessages } from '@/i18n/client'
+import { format } from '@/i18n/format'
 import { cn } from '@/lib/utils'
 
-import {
-  CATALOGUE_SORT_LABELS,
-  CATALOGUE_SORT_SHORT_LABELS,
-  type CatalogueSort,
-} from './catalogueFilters'
+import type { CatalogueSort } from './catalogueFilters'
 
 export interface CatalogueFilter {
   id: string
@@ -64,6 +62,8 @@ export function CatalogueToolbar({
   sort,
   sortOptions,
 }: Props) {
+  const t = useMessages().ielts.catalogue
+  const sortLabel = format(t.sortLabel, { sort: t.sort[sort] })
   const activeFilters = filters.filter(
     filter => filter.value !== filter.options[0]?.value
   )
@@ -76,13 +76,13 @@ export function CatalogueToolbar({
           className="text-ink-soft pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2"
         />
         <Input
-          aria-label="Search tests"
+          aria-label={t.search}
           className="border-line bg-surface h-9 border pr-8 pl-8 font-semibold [&::-webkit-search-cancel-button]:appearance-none"
           onChange={event => onQueryChange(event.target.value)}
           onKeyDown={event => {
             if (event.key === 'Escape') onQueryChange('')
           }}
-          placeholder="Search tests"
+          placeholder={t.search}
           type="search"
           value={query}
         />
@@ -90,7 +90,7 @@ export function CatalogueToolbar({
             44px sticker frame cannot fit. */}
         {query ? (
           <button
-            aria-label="Clear search"
+            aria-label={t.clearSearch}
             className="hover:bg-tint rounded-tag absolute top-1/2 right-1 grid size-7 -translate-y-1/2 place-items-center"
             onClick={() => onQueryChange('')}
             type="button"
@@ -105,17 +105,15 @@ export function CatalogueToolbar({
 
       <DropdownMenu>
         <DropdownMenuTrigger
-          aria-label={`Sort: ${CATALOGUE_SORT_LABELS[sort]}`}
+          aria-label={sortLabel}
           className={TRIGGER_CLASS_NAME}
-          title={`Sort: ${CATALOGUE_SORT_LABELS[sort]}`}
+          title={sortLabel}
         >
           <ArrowDownUp
             aria-hidden="true"
             className="size-4"
           />
-          <span className="hidden sm:inline">
-            {CATALOGUE_SORT_SHORT_LABELS[sort]}
-          </span>
+          <span className="hidden sm:inline">{t.sortShort[sort]}</span>
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="end"
@@ -126,7 +124,7 @@ export function CatalogueToolbar({
             value={sort}
           >
             <DropdownMenuLabel className={GROUP_LABEL_CLASS_NAME}>
-              Sort by
+              {t.sortBy}
             </DropdownMenuLabel>
             {sortOptions.map(option => (
               <DropdownMenuRadioItem
@@ -134,7 +132,7 @@ export function CatalogueToolbar({
                 key={option}
                 value={option}
               >
-                {CATALOGUE_SORT_LABELS[option]}
+                {t.sort[option]}
               </DropdownMenuRadioItem>
             ))}
           </DropdownMenuRadioGroup>
@@ -146,20 +144,20 @@ export function CatalogueToolbar({
           <DropdownMenuTrigger
             aria-label={
               activeFilters.length
-                ? `Filters, ${activeFilters.length} on`
-                : 'Filters'
+                ? format(t.filtersOn, { count: activeFilters.length })
+                : t.filters
             }
             className={cn(
               TRIGGER_CLASS_NAME,
               activeFilters.length && 'bg-tint-soft'
             )}
-            title="Filters"
+            title={t.filters}
           >
             <ListFilter
               aria-hidden="true"
               className="size-4"
             />
-            <span className="hidden sm:inline">Filter</span>
+            <span className="hidden sm:inline">{t.filter}</span>
             {activeFilters.length ? (
               <span className="rounded-tag bg-ink text-surface min-w-5 px-1 text-center text-[0.65rem] tabular-nums">
                 {activeFilters.length}
@@ -205,7 +203,7 @@ export function CatalogueToolbar({
                     )
                   }
                 >
-                  Clear filters
+                  {t.clearFilters}
                 </DropdownMenuItem>
               </>
             ) : null}

@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import { notFound, redirect } from 'next/navigation'
 
 import { GrammarPlayerPage } from '@/components/grammar/player/GrammarPlayerPage'
+import { format } from '@/i18n/format'
+import { getMessages } from '@/i18n/server'
 import { CHECKPOINT_SIZE, PASS_ACCURACY } from '@/modules/grammar/constants'
 import { grammarCourse } from '@/modules/grammar/course'
 import { createRng, randomSeed } from '@/modules/grammar/rng'
@@ -11,7 +13,9 @@ import { buildCheckpointSet } from '@/modules/grammar/session/buildPracticeSet'
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
-export const metadata: Metadata = { title: 'Grammar: checkpoint' }
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getMessages()).grammar.meta.checkpoint }
+}
 
 interface Props {
   params: Promise<{ unitId: string }>
@@ -27,13 +31,17 @@ export default async function GrammarCheckpointPage({ params }: Props) {
 
   if (!node || node.state === 'complete') redirect('/grammar')
 
+  const t = await getMessages()
   const passMark = Math.ceil(CHECKPOINT_SIZE * PASS_ACCURACY)
+  const values = { order: unit.order, passMark, size: CHECKPOINT_SIZE }
   // A checkpoint taken before the unit's lessons are done is a test-out:
   // passing it skips this unit and every earlier one.
-  const intro =
+  const intro = format(
     node.checkpoint === 'open'
-      ? `Unit ${unit.order} checkpoint: ${CHECKPOINT_SIZE} questions from all 5 lessons. Get ${passMark} or more right to unlock the next unit.`
-      : `Test-out: ${CHECKPOINT_SIZE} questions from Unit ${unit.order}. Get ${passMark} or more right to skip this unit and every unit before it.`
+      ? t.grammar.sessions.checkpointIntro
+      : t.grammar.sessions.testOutIntro,
+    values
+  )
 
   return (
     <GrammarPlayerPage
@@ -42,7 +50,10 @@ export default async function GrammarCheckpointPage({ params }: Props) {
       intro={intro}
       mode="checkpoint"
       targetId={unit.id}
-      title={`Unit ${unit.order}: ${unit.title}`}
+      title={format(t.grammar.sessions.checkpointTitle, {
+        order: unit.order,
+        title: unit.title,
+      })}
     />
   )
 }

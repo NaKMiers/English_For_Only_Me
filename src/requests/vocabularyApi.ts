@@ -34,20 +34,42 @@ export interface VocabAdminEnrichResponse {
   result: AdminEnrichResult
 }
 
+/**
+ * A failed vocabulary request. `fromServer` is false when the response held
+ * no message (a proxy error page, say): callers then show their own
+ * translated text through `getVocabRequestErrorMessage`.
+ */
+export class VocabRequestError extends Error {
+  readonly fromServer: boolean
+
+  constructor(message: string | null) {
+    super(message ?? 'The vocabulary request failed.')
+    this.name = 'VocabRequestError'
+    this.fromServer = message !== null
+  }
+}
+
+/** The server's (already translated) message, or `fallback` when it sent none. */
+export function getVocabRequestErrorMessage(error: unknown, fallback: string) {
+  if (error instanceof VocabRequestError && !error.fromServer) return fallback
+
+  return error instanceof Error ? error.message : fallback
+}
+
 async function readApiError(response: Response) {
   try {
     const body = (await response.json()) as { message?: unknown }
 
     if (typeof body.message === 'string') return body.message
   } catch {
-    return 'The vocabulary request failed.'
+    return null
   }
 
-  return 'The vocabulary request failed.'
+  return null
 }
 
 async function readJson<T>(response: Response): Promise<T> {
-  if (!response.ok) throw new Error(await readApiError(response))
+  if (!response.ok) throw new VocabRequestError(await readApiError(response))
 
   return (await response.json()) as T
 }

@@ -28,6 +28,9 @@
  * MAX_SET_STATE_ITEM_AGE_MS on replay.
  */
 
+import { getActiveMessages } from '@/i18n/active'
+import { format } from '@/i18n/format'
+
 export type OutboxMethod = 'DELETE' | 'PATCH' | 'POST' | 'PUT'
 
 export interface OutboxItem {
@@ -193,7 +196,7 @@ function readErrorMessage(data: unknown, status: number) {
     if (typeof message === 'string' && message) return message
   }
 
-  return `Request failed with status ${status}.`
+  return format(getActiveMessages().common.errors.requestFailed, { status })
 }
 
 interface StoredQueue {
@@ -221,10 +224,12 @@ function getMergeSlot(lane: string, mergeKey: string) {
   return `${lane}\u0000${mergeKey}`
 }
 
-const DISPOSED_RESULT: OutboxResult = {
-  error: 'This write was not sent: the learner changed. It is kept for later.',
-  ok: false,
-  status: 0,
+function disposedResult(): OutboxResult {
+  return {
+    error: getActiveMessages().common.errors.writeKept,
+    ok: false,
+    status: 0,
+  }
 }
 
 /** Reads both the per-tab `{heartbeatAt, items}` shape and the legacy array. */
@@ -478,10 +483,11 @@ export function createOutbox({
         ok: false,
         status: response.status,
       }
-    } catch (error) {
+    } catch {
       return {
-        error:
-          error instanceof Error ? error.message : 'Network request failed.',
+        // The browser's own fetch error ("Failed to fetch") is not
+        // learner-facing, so every network failure reads the same.
+        error: getActiveMessages().common.errors.network,
         ok: false,
         status: 0,
       }
@@ -638,7 +644,7 @@ export function createOutbox({
   }
 
   function enqueue(input: OutboxEnqueueInput): Promise<OutboxResult> {
-    if (disposed) return Promise.resolve(DISPOSED_RESULT)
+    if (disposed) return Promise.resolve(disposedResult())
 
     const item: OutboxItem = {
       attempts: 0,
@@ -760,7 +766,7 @@ export function createOutbox({
     const pending = [...waiters.values()]
 
     waiters.clear()
-    for (const resolve of pending) resolve(DISPOSED_RESULT)
+    for (const resolve of pending) resolve(disposedResult())
   }
 
   function markReleased() {

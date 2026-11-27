@@ -1,5 +1,6 @@
 import { z } from 'zod'
 
+import { getMessages } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { requireAdmin } from '@/modules/dictation/services/getCurrentUser'
 import { generateSectionStep } from '@/modules/ielts/generation/generationService'
@@ -33,6 +34,7 @@ interface RouteContext {
 
 /** One generation step for one draft section. */
 export async function POST(request: Request, context: RouteContext) {
+  const t = await getMessages()
   const missing = ieltsMissingMongo()
 
   if (missing) return missing
@@ -52,7 +54,8 @@ export async function POST(request: Request, context: RouteContext) {
 
   const parsed = generateSchema.safeParse(body.data)
 
-  if (!parsed.success) return ieltsJsonError(400, 'Invalid generate request.')
+  if (!parsed.success)
+    return ieltsJsonError(400, t.ieltsEditor.api.invalidGenerate)
 
   try {
     await requireAdmin()
@@ -60,6 +63,7 @@ export async function POST(request: Request, context: RouteContext) {
 
     return ieltsDecisionResponse(
       await generateSectionStep({
+        copy: t.ieltsEditor.generation,
         key: key.data,
         revision: parsed.data.revision,
         step: parsed.data.step,

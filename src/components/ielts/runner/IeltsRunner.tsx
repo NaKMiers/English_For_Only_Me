@@ -19,13 +19,20 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { useMessages } from '@/i18n/client'
+import { format, plural } from '@/i18n/format'
+import type { Messages } from '@/i18n/messages'
 import { cn } from '@/lib/utils'
 import type { IeltsAttemptRecord } from '@/modules/ielts/attempts/attemptRecords'
 import { IELTS_SKILL_LABELS } from '@/modules/ielts/constants'
 import { passageIntro } from '@/modules/ielts/passageIntro'
 import type { IeltsPublicSection } from '@/modules/ielts/publicView'
 import { sharedGroupHeaders } from '@/modules/ielts/sharedGroupHeaders'
-import { checkIeltsPartApi, readIeltsEvidenceApi } from '@/requests/ieltsApi'
+import {
+  checkIeltsPartApi,
+  ieltsErrorMessage,
+  readIeltsEvidenceApi,
+} from '@/requests/ieltsApi'
 
 import {
   IeltsAnswerContext,
@@ -59,18 +66,23 @@ interface Props {
   testTitle: string
 }
 
-const MODE_LABELS = { practice: 'Practice', mock: 'Mock', drill: 'Drill' }
-
 /** The two panes a phone switches between. */
 type PaneTab = 'material' | 'questions'
 
 /** Alt+Q swaps panes; `code` so Option+Q on a Mac still matches. */
 const PANE_SHORTCUT_CODE = 'KeyQ'
 
-function partName(skill: string, part: number, mode?: string) {
-  if (mode === 'drill') return `Group ${part}`
+function partName(
+  t: Messages['ielts'],
+  skill: string,
+  part: number,
+  mode?: string
+) {
+  if (mode === 'drill') return format(t.parts.group, { part })
 
-  return skill === 'listening' ? `Part ${part}` : `Passage ${part}`
+  return format(skill === 'listening' ? t.parts.part : t.parts.passage, {
+    part,
+  })
 }
 
 /**
@@ -88,6 +100,8 @@ export function IeltsRunner({
   startPart = null,
   testTitle,
 }: Props) {
+  const messages = useMessages()
+  const t = messages.ielts
   const router = useRouter()
   const isMock = attempt.mode === 'mock'
   const isPractice = attempt.mode === 'practice'
@@ -155,7 +169,7 @@ export function IeltsRunner({
     const next = index.find(entry => !answered.has(entry.number))
 
     return open && answered.size && next
-      ? `Continue from question ${next.number}`
+      ? format(t.runner.continueFrom, { number: next.number })
       : ''
   })
   const [confirmBlanks, setConfirmBlanks] = useState<number | null>(null)
@@ -177,8 +191,8 @@ export function IeltsRunner({
     }
 
     setSubmitting(false)
-    setNotice(`Could not submit: ${outcome.message}`)
-  }, [attempt.id, router, submit])
+    setNotice(format(t.runner.submitFailed, { message: outcome.message }))
+  }, [attempt.id, router, submit, t])
 
   useEffect(() => {
     finishRef.current = () => void finish()
@@ -187,10 +201,10 @@ export function IeltsRunner({
   const secondsLeft = useMockDeadline({
     deadlineAt: isMock && open ? deadlineAt : null,
     onExpire: () => {
-      setNotice('Time is up. Submitting...')
+      setNotice(t.runner.timeUpSubmitting)
       void finish()
     },
-    onWarning: () => setNotice('5 minutes remaining.'),
+    onWarning: () => setNotice(t.runner.fiveMinutes),
   })
 
   // Alt+Q (Option+Q on Mac) swaps between the material and the questions:
@@ -287,9 +301,12 @@ export function IeltsRunner({
 
         if (!result.evidence) {
           setNotice(
-            result.notGiven
-              ? `Question ${number}: not in the text (NOT GIVEN).`
-              : `Question ${number}: no evidence yet.`
+            format(
+              result.notGiven
+                ? t.runner.evidenceNotGiven
+                : t.runner.evidenceMissing,
+              { number }
+            )
           )
           return
         }
@@ -301,10 +318,10 @@ export function IeltsRunner({
 
         if (attempt.skill === 'listening') setShowTranscript(true)
       } catch {
-        setNotice('Could not load the evidence.')
+        setNotice(t.runner.evidenceFailed)
       }
     },
-    [attempt.id, attempt.skill, sections]
+    [attempt.id, attempt.skill, sections, t]
   )
 
   // Practice "check this part": the marks shown under each question, and
@@ -379,13 +396,15 @@ export function IeltsRunner({
         }))
       } catch (caught) {
         setNotice(
-          `Could not check the answers: ${caught instanceof Error ? caught.message : 'try again.'}`
+          format(t.runner.checkFailed, {
+            message: ieltsErrorMessage(caught, t.runner.tryAgain),
+          })
         )
       } finally {
         setCheckingPart(null)
       }
     },
-    [answers, attempt.id, index]
+    [answers, attempt.id, index, t]
   )
 
   const resetPart = (part: number) => {
@@ -408,7 +427,11 @@ export function IeltsRunner({
     )
     setPartChecks(({ [part]: _dropped, ...rest }) => rest)
     setHighlight(null)
-    setNotice(`${partName(attempt.skill, part, attempt.mode)} reset.`)
+    setNotice(
+      format(t.runner.partReset, {
+        part: partName(t, attempt.skill, part, attempt.mode),
+      })
+    )
   }
 
   const context = useMemo<IeltsAnswerContextValue>(
@@ -464,12 +487,12 @@ export function IeltsRunner({
     <PassagePane
       highlight={highlight?.sectionKey === section.key ? highlight : null}
       material={section.reading}
-      heading={partName(attempt.skill, section.order, attempt.mode)}
+      heading={partName(t, attempt.skill, section.order, attempt.mode)}
       intro={attempt.mode === 'drill' ? undefined : passageIntro(section)}
-      partLabel={`${testTitle} · ${partName(attempt.skill, section.order, attempt.mode)}`}
+      partLabel={`${testTitle} · ${partName(t, attempt.skill, section.order, attempt.mode)}`}
     />
   ) : null
-  const currentPartName = partName(attempt.skill, currentPart, attempt.mode)
+  const currentPartName = partName(t, attempt.skill, currentPart, attempt.mode)
   const canCheck = isPractice && open && Boolean(section)
   const currentCheck = section ? (partChecks[section.order] ?? null) : null
   const groupHeaders = sharedGroupHeaders(section?.groups ?? [])
@@ -490,7 +513,7 @@ export function IeltsRunner({
           check={partChecks[section.order] ?? null}
           className="lg:hidden"
           checking={checkingPart === section.order}
-          label={partName(attempt.skill, section.order, attempt.mode)}
+          label={partName(t, attempt.skill, section.order, attempt.mode)}
           onCheck={() => void checkPart(section.order)}
         />
       ) : null}
@@ -509,7 +532,7 @@ export function IeltsRunner({
       <ToolbarToggle
         checked={guided}
         icon={<Lightbulb aria-hidden="true" />}
-        label="Guided"
+        label={t.runner.guided}
         onCheckedChange={checked => {
           setGuided(checked)
           // Guided off hides every hint, including the evidence highlight.
@@ -523,14 +546,14 @@ export function IeltsRunner({
   // the documented raw-button exception.
   const panes = (
     <div
-      aria-label="Choose panel"
+      aria-label={t.runner.choosePanel}
       className="border-line bg-tint rounded-control flex h-9 border p-0.5"
       role="group"
     >
       {(
         [
-          ['material', 'Passage', BookOpen],
-          ['questions', 'Questions', ListChecks],
+          ['material', t.runner.passage, BookOpen],
+          ['questions', t.runner.questions, ListChecks],
         ] as const
       ).map(([value, label, Icon]) => {
         const active = mobileTab === value
@@ -545,7 +568,7 @@ export function IeltsRunner({
             )}
             key={value}
             onClick={() => setMobileTab(value)}
-            title={`${label} (Alt+Q to switch)`}
+            title={format(t.runner.switchPane, { label })}
             type="button"
           >
             <Icon
@@ -574,7 +597,7 @@ export function IeltsRunner({
       <div className="flex h-full min-h-0 flex-col">
         <RunnerToolbar
           backHref={backHref}
-          modeLabel={MODE_LABELS[attempt.mode]}
+          modeLabel={t.modes[attempt.mode]}
           onBack={isMock && open ? () => setExitOpen(true) : undefined}
           onSubmit={requestSubmit}
           panes={isListening ? undefined : panes}
@@ -597,7 +620,7 @@ export function IeltsRunner({
               onClick={() => setNotice('')}
               type="button"
             >
-              Close
+              {messages.common.actions.close}
             </button>
           </p>
         ) : null}
@@ -628,7 +651,7 @@ export function IeltsRunner({
             >
               {material ? (
                 <section
-                  aria-label="Audio"
+                  aria-label={t.runner.audio}
                   className="bg-exam-surface px-3 pt-4 pb-6 outline-none sm:px-3 lg:col-start-1 lg:row-start-2 lg:min-h-0 lg:overflow-y-auto"
                   ref={materialRef}
                   tabIndex={-1}
@@ -637,7 +660,7 @@ export function IeltsRunner({
                 </section>
               ) : null}
               <section
-                aria-label="Questions"
+                aria-label={t.runner.questions}
                 className={cn(
                   questionsPaneClass,
                   'lg:col-start-3 lg:row-span-2 lg:row-start-1',
@@ -661,7 +684,7 @@ export function IeltsRunner({
             style={split.style}
           >
             <section
-              aria-label="Reading passage"
+              aria-label={t.runner.readingPassage}
               className={cn(
                 'bg-exam-surface min-h-0 overflow-y-auto px-3 py-4 outline-none sm:px-3 lg:block',
                 mobileTab === 'material' ? 'block' : 'hidden'
@@ -673,7 +696,7 @@ export function IeltsRunner({
             </section>
             {split.divider}
             <section
-              aria-label="Questions"
+              aria-label={t.runner.questions}
               className={cn(
                 questionsPaneClass,
                 'min-h-0 overflow-y-auto lg:block',
@@ -694,7 +717,7 @@ export function IeltsRunner({
             canCheck && section ? (
               <CheckButton
                 busy={checkingPart === section.order}
-                label={`Check ${currentPartName}`}
+                label={format(t.runner.checkPart, { part: currentPartName })}
                 onCheck={() => void checkPart(section.order)}
                 score={
                   currentCheck
@@ -711,7 +734,7 @@ export function IeltsRunner({
           next={isPractice ? next : null}
           prev={isPractice ? prev : null}
           onPartChange={setCurrentPart}
-          partLabel={part => partName(attempt.skill, part, attempt.mode)}
+          partLabel={part => partName(t, attempt.skill, part, attempt.mode)}
         />
       </div>
 
@@ -722,11 +745,9 @@ export function IeltsRunner({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {confirmBlanks} questions are blank. Submit?
+              {plural(t.runner.blanksTitle, confirmBlanks ?? 0)}
             </DialogTitle>
-            <DialogDescription>
-              Blank questions are marked wrong.
-            </DialogDescription>
+            <DialogDescription>{t.runner.blanksBody}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <ExamButton
@@ -734,14 +755,14 @@ export function IeltsRunner({
               tone="paper"
               type="button"
             >
-              Keep going
+              {t.runner.keepGoing}
             </ExamButton>
             <ExamButton
               onClick={() => void finish()}
               tone="ink"
               type="button"
             >
-              Submit
+              {t.runner.submit}
             </ExamButton>
           </DialogFooter>
         </DialogContent>
@@ -753,10 +774,8 @@ export function IeltsRunner({
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Leave the mock test?</DialogTitle>
-            <DialogDescription>
-              The timer keeps running. Come back from the IELTS page.
-            </DialogDescription>
+            <DialogTitle>{t.runner.leaveTitle}</DialogTitle>
+            <DialogDescription>{t.runner.leaveBody}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <ExamButton
@@ -764,13 +783,13 @@ export function IeltsRunner({
               tone="paper"
               type="button"
             >
-              Stay
+              {t.runner.stay}
             </ExamButton>
             <ExamButton
               href={backHref}
               tone="ink"
             >
-              Leave
+              {t.runner.leave}
             </ExamButton>
           </DialogFooter>
         </DialogContent>

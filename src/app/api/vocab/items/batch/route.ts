@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 
+import { getMessages } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { requirePracticeActor } from '@/modules/dictation/services/getCurrentUser'
 import { toVocabApiError } from '@/modules/vocabulary/services/vocabApiErrors'
@@ -18,13 +19,14 @@ function jsonError(decision: VocabApiErrorDecision) {
 }
 
 export async function POST(request: Request) {
-  const missingMongo = getMissingVocabMongoResponse()
+  const t = await getMessages()
+  const missingMongo = getMissingVocabMongoResponse(t)
 
   if (missingMongo) return jsonError(missingMongo)
 
   try {
     const body = await request.json()
-    const parsed = parseItemStatusBatchRequest(body)
+    const parsed = parseItemStatusBatchRequest(body, t)
 
     if (!parsed.ok) return jsonError(parsed)
 
@@ -42,9 +44,9 @@ export async function POST(request: Request) {
     if (error instanceof SyntaxError)
       return jsonError({
         status: 400,
-        body: { message: 'Request body must be valid JSON.' },
+        body: { message: t.vocabulary.api.invalidJson },
       })
 
-    return jsonError(toVocabApiError(error))
+    return jsonError(toVocabApiError(error, t))
   }
 }

@@ -12,8 +12,14 @@ import {
   listIeltsSeries,
   readAdminTest,
 } from '@/modules/ielts/tests/testService'
+import { getMessages } from '@/i18n/server'
 
-export const metadata: Metadata = { title: 'Admin · Edit IELTS test' }
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getMessages()
+
+  return { title: t.ieltsEditor.meta.editTitle }
+}
+
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
@@ -35,6 +41,8 @@ export default async function AdminIeltsEditorPage({ params }: Props) {
 
   if (!test) notFound()
 
+  const t = await getMessages()
+
   // The shell grows with the editor and the page scrolls; `overflow-clip`
   // (not hidden) keeps the editor's sticky header bar working.
   return (
@@ -44,7 +52,7 @@ export default async function AdminIeltsEditorPage({ params }: Props) {
         <AppTopbar
           authControl={<AuthControl />}
           compact
-          subtitle="Admin · IELTS"
+          subtitle={t.ieltsEditor.listPage.topbarSubtitle}
         />
       }
     >

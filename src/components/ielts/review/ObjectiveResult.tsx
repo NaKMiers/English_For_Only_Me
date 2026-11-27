@@ -3,10 +3,11 @@
 import { ChevronDown } from 'lucide-react'
 import { Fragment, useMemo, useState } from 'react'
 
+import { useMessages } from '@/i18n/client'
+import { format } from '@/i18n/format'
 import { cn } from '@/lib/utils'
 import type { IeltsAttemptRecord } from '@/modules/ielts/attempts/attemptRecords'
 import {
-  IELTS_QUESTION_TYPE_LABELS,
   IELTS_SKILL_LABELS,
   type IeltsQuestionType,
 } from '@/modules/ielts/constants'
@@ -28,11 +29,7 @@ interface Props {
 
 type Filter = 'all' | 'wrong' | 'blank'
 
-const FILTERS: [Filter, string][] = [
-  ['all', 'All'],
-  ['wrong', 'Wrong'],
-  ['blank', 'Blank'],
-]
+const FILTERS: Filter[] = ['all', 'wrong', 'blank']
 
 /** The block the evidence points at: a passage paragraph or a script line. */
 function EvidenceContext({
@@ -93,6 +90,7 @@ function weakestType(rows: IeltsReviewRow[]): IeltsQuestionType | null {
 
 /** Listening / Reading result: band row, next actions, filterable review. */
 export function ObjectiveResult({ attempt, rows, sections }: Props) {
+  const t = useMessages().ielts
   const [filter, setFilter] = useState<Filter>('all')
   const [openRow, setOpenRow] = useState<number | null>(null)
   const result = attempt.result
@@ -106,7 +104,9 @@ export function ObjectiveResult({ attempt, rows, sections }: Props) {
         : row.outcome === 'blank'
   )
   const partLabel = (part: number) =>
-    attempt.skill === 'listening' ? `Part ${part}` : `Passage ${part}`
+    format(attempt.skill === 'listening' ? t.parts.part : t.parts.passage, {
+      part,
+    })
 
   return (
     <div className="grid gap-6">
@@ -118,18 +118,23 @@ export function ObjectiveResult({ attempt, rows, sections }: Props) {
           className="border-line bg-tint-soft rounded-control border px-3 py-2"
           role="status"
         >
-          Time ran out. Saved answers were graded.
+          {t.result.timeRanOut}
         </p>
       ) : null}
 
       <section
-        aria-label="Result"
+        aria-label={t.result.label}
         className="grid grid-cols-2 gap-3 md:grid-cols-4"
       >
         {result?.band !== null && result?.band !== undefined ? (
           <StatTile
-            detail={`${result.raw}/${result.total} correct`}
-            label={`${IELTS_SKILL_LABELS[attempt.skill]} band`}
+            detail={format(t.result.correctCount, {
+              raw: result.raw,
+              total: result.total,
+            })}
+            label={format(t.result.skillBand, {
+              skill: IELTS_SKILL_LABELS[attempt.skill],
+            })}
             tone="ink"
             value={result.band.toFixed(1)}
           />
@@ -137,10 +142,10 @@ export function ObjectiveResult({ attempt, rows, sections }: Props) {
           <StatTile
             detail={
               attempt.mode === 'drill'
-                ? 'A drill does not give a band'
-                : 'Only a full 40-question test gives a band'
+                ? t.result.drillNoBand
+                : t.result.partNoBand
             }
-            label="Score"
+            label={t.result.score}
             tone="ink"
             value={`${result?.raw ?? 0}/${result?.total ?? 0}`}
           />
@@ -155,14 +160,14 @@ export function ObjectiveResult({ attempt, rows, sections }: Props) {
       </section>
 
       <ExamCard
-        eyebrow="Next"
-        title={`${wrong} wrong or blank`}
+        eyebrow={t.result.next}
+        title={format(t.result.wrongOrBlank, { count: wrong })}
       >
         <div className="flex flex-wrap items-center gap-3">
           {weakest && attempt.skill !== 'writing' ? (
             <>
               <span className="font-semibold">
-                Weakest: {IELTS_QUESTION_TYPE_LABELS[weakest]}
+                {format(t.result.weakest, { type: t.questionTypes[weakest] })}
               </span>
               <DrillButton
                 skill={attempt.skill as 'listening' | 'reading'}
@@ -170,30 +175,30 @@ export function ObjectiveResult({ attempt, rows, sections }: Props) {
               />
             </>
           ) : (
-            <span className="font-semibold">No wrong answers. Well done.</span>
+            <span className="font-semibold">{t.result.noWrong}</span>
           )}
           {attempt.testSlug ? (
             <ExamButton
               href={`/ielts/${attempt.testSlug}`}
               tone="paper"
             >
-              Back to test
+              {t.result.backToTest}
             </ExamButton>
           ) : null}
         </div>
       </ExamCard>
 
       <ExamCard
-        eyebrow="Review"
-        title="Answers"
+        eyebrow={t.result.review}
+        title={t.result.answers}
       >
         {/* Segmented filter (aria-pressed): the documented raw-button exception. */}
         <div
-          aria-label="Filter questions"
+          aria-label={t.result.filterLabel}
           className="flex flex-wrap gap-2"
           role="group"
         >
-          {FILTERS.map(([value, label]) => (
+          {FILTERS.map(value => (
             <button
               aria-pressed={filter === value}
               className={cn(
@@ -206,7 +211,7 @@ export function ObjectiveResult({ attempt, rows, sections }: Props) {
               onClick={() => setFilter(value)}
               type="button"
             >
-              {label}
+              {t.result.filters[value]}
             </button>
           ))}
         </div>
@@ -224,25 +229,25 @@ export function ObjectiveResult({ attempt, rows, sections }: Props) {
                   className="py-2 pr-2"
                   scope="col"
                 >
-                  Type
+                  {t.result.type}
                 </th>
                 <th
                   className="py-2 pr-2"
                   scope="col"
                 >
-                  Your answer
+                  {t.result.yourAnswer}
                 </th>
                 <th
                   className="py-2 pr-2"
                   scope="col"
                 >
-                  Answer
+                  {t.result.answer}
                 </th>
                 <th
                   className="py-2"
                   scope="col"
                 >
-                  Result
+                  {t.result.outcome}
                 </th>
               </tr>
             </thead>
@@ -275,13 +280,13 @@ export function ObjectiveResult({ attempt, rows, sections }: Props) {
                         </button>
                       </td>
                       <td className="py-2 pr-2 text-sm">
-                        {IELTS_QUESTION_TYPE_LABELS[row.type]}
+                        {t.questionTypes[row.type]}
                       </td>
                       <td className="py-2 pr-2 font-semibold">
                         {row.given || '-'}
                         {row.overLimit ? (
                           <span className="text-danger block text-xs">
-                            Over the word limit
+                            {t.result.overLimit}
                           </span>
                         ) : null}
                       </td>
@@ -310,7 +315,7 @@ export function ObjectiveResult({ attempt, rows, sections }: Props) {
                               />
                             ) : (
                               <p className="text-muted-foreground text-sm">
-                                Not in the text (NOT GIVEN).
+                                {t.result.notGiven}
                               </p>
                             )}
                             {row.outcome !== 'correct' &&

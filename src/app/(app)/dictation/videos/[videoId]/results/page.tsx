@@ -10,6 +10,7 @@ import { DictationReviewQueue } from '@/components/dictation/DictationReviewQueu
 import { DictationStatsPanel } from '@/components/dictation/DictationStatsPanel'
 import { ActionButton } from '@/components/ui/ActionButton'
 import { hasMongoDbUri } from '@/constants/environments'
+import { getMessages } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { DictationDebriefModel } from '@/models/dictation/DictationDebriefModel'
 import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
@@ -22,9 +23,13 @@ import { getVideoStatsForUser } from '@/modules/dictation/stats/videoStatsServic
 import type { DictationVideoProgress } from '@/modules/dictation/types'
 import { hasDictationTranscript } from '@/modules/dictation/videoReadiness'
 
-export const metadata: Metadata = {
-  title: 'Dictation Results',
-  description: 'Review one video result and the weak sentences to drill next.',
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getMessages()
+
+  return {
+    title: t.dictation.meta.resultsTitle,
+    description: t.dictation.meta.resultsDescription,
+  }
 }
 
 export const runtime = 'nodejs'
@@ -35,7 +40,7 @@ interface Props {
   }>
 }
 
-function ResultsSetupState({
+async function ResultsSetupState({
   message,
   title,
   videoId,
@@ -44,35 +49,38 @@ function ResultsSetupState({
   title: string
   videoId?: string | null
 }) {
+  const t = await getMessages()
+  const text = t.dictation.setup
+
   return (
     <PageShell
       topbar={
         <AppTopbar
           activeHref="/dictation"
-          subtitle="Dictation Lab listening module"
+          subtitle={t.dictation.meta.labSubtitle}
         />
       }
     >
       <section className="p-4 sm:p-6 lg:p-8">
         <ContentPanel
-          eyebrow="Results"
+          eyebrow={t.dictation.results.eyebrow.notStarted}
           title={title}
         >
           <p className="text-ink-soft text-base leading-7 font-normal">
             {message}
           </p>
           <div className="flex flex-wrap gap-3">
-            <ActionButton href="/dictation">Back To Dictation Lab</ActionButton>
+            <ActionButton href="/dictation">{text.backToLab}</ActionButton>
             {videoId ? (
               <ActionButton href={`/admin/dictation/videos/${videoId}/edit`}>
-                Add Transcript
+                {text.addTranscript}
               </ActionButton>
             ) : null}
             <ActionButton
               href="/admin/dictation/import"
               tone="paper"
             >
-              Import Video
+              {text.importVideo}
             </ActionButton>
           </div>
         </ContentPanel>
@@ -86,11 +94,14 @@ export default async function Page({ params }: Props) {
 
   if (!/^[a-f\d]{24}$/i.test(videoId)) notFound()
 
+  const t = await getMessages()
+  const text = t.dictation.results
+
   if (!hasMongoDbUri())
     return (
       <ResultsSetupState
-        title="MongoDB is not configured"
-        message="Set MONGODB_URI on the server before opening saved results."
+        title={t.dictation.setup.noDatabaseTitle}
+        message={t.dictation.setup.resultsNoDatabase}
       />
     )
 
@@ -138,8 +149,8 @@ export default async function Page({ params }: Props) {
   if (!hasDictationTranscript(videoRecord))
     return (
       <ResultsSetupState
-        title="Transcript is needed"
-        message="Attach an English transcript before opening results for this video."
+        title={t.dictation.setup.transcriptNeededTitle}
+        message={t.dictation.setup.resultsTranscriptNeeded}
         videoId={videoId}
       />
     )
@@ -151,7 +162,7 @@ export default async function Page({ params }: Props) {
       topbar={
         <AppTopbar
           activeHref="/dictation"
-          subtitle="Dictation Lab listening module"
+          subtitle={t.dictation.meta.labSubtitle}
         />
       }
     >
@@ -169,38 +180,39 @@ export default async function Page({ params }: Props) {
         {isEmpty ? (
           stats.segmentCount === 0 ? (
             <ContentPanel
-              eyebrow="Not ready"
-              title="No practice segments yet"
+              eyebrow={text.notReadyEyebrow}
+              title={text.notReadyTitle}
             >
               <p className="text-ink-soft text-base leading-7 font-normal">
-                This video has no practice segments built from its transcript
-                yet. Segments are created automatically when the transcript is
-                saved.
+                {text.notReadyDescription}
               </p>
             </ContentPanel>
           ) : progress === 'completed' ? (
             <ContentPanel
-              eyebrow="Saving"
-              title="Finishing up"
+              eyebrow={text.savingEyebrow}
+              title={text.savingTitle}
             >
               <p className="text-ink-soft text-base leading-7 font-normal">
-                Your final attempts are still saving. Give it a moment, then
-                refresh to see your full results.
+                {text.savingDescription}
               </p>
             </ContentPanel>
           ) : (
             <ContentPanel
-              eyebrow={progress === 'inProgress' ? 'Keep going' : 'Empty'}
+              eyebrow={
+                progress === 'inProgress'
+                  ? text.keepGoingEyebrow
+                  : text.emptyEyebrow
+              }
               title={
                 progress === 'inProgress'
-                  ? 'Practice in progress'
-                  : 'Practice first'
+                  ? text.inProgressTitle
+                  : text.practiceFirstTitle
               }
             >
               <p className="text-ink-soft text-base leading-7 font-normal">
                 {progress === 'inProgress'
-                  ? 'Resolve a few sentences, then your stats and weak-segment queue appear here.'
-                  : 'The review queue stays quiet until there is a real weak sentence to drill.'}
+                  ? text.inProgressDescription
+                  : text.practiceFirstDescription}
               </p>
             </ContentPanel>
           )
@@ -216,7 +228,7 @@ export default async function Page({ params }: Props) {
             />
             <DictationReviewQueue
               reviewItems={reviewItems}
-              title="Weak segments from this video"
+              title={text.weakSegments}
             />
           </>
         )}

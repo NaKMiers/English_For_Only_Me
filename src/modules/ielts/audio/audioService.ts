@@ -8,7 +8,7 @@ import { uploadAudioBuffer } from '@/lib/cloudinary/uploadAudio'
 import { IeltsTestModel } from '@/models/ielts/IeltsTestModel'
 
 import {
-  ieltsError,
+  ieltsMessageError,
   type IeltsDecision,
 } from '../attempts/attemptRouteDecisions'
 import { IELTS_GENERATION_LOG_LIMIT, type IeltsSectionKey } from '../constants'
@@ -40,24 +40,24 @@ export async function generateSectionAudio({
   testId: string
 }): Promise<IeltsDecision<{ test: IeltsAdminTest }>> {
   if (!key.startsWith('listening'))
-    return ieltsError(400, 'Only listening sections have audio.')
+    return ieltsMessageError(400, 'onlyListeningAudio')
 
   const apiKey = getOpenAiApiKey()
 
-  if (!apiKey) return ieltsError(503, 'OPENAI_API_KEY is not configured.')
+  if (!apiKey) return ieltsMessageError(503, 'aiNotConfigured')
 
   const doc = (await IeltsTestModel.findById(testId).lean()) as LeanDoc | null
 
-  if (!doc) return ieltsError(404, 'Test not found.')
+  if (!doc) return ieltsMessageError(404, 'testNotFound')
 
   const record = toIeltsTestRecord(doc)
   const section = record.sections.find(item => item.key === key)
 
   if (!section?.listening?.lines.length)
-    return ieltsError(400, 'This part has no script yet.')
+    return ieltsMessageError(400, 'noScript')
 
   if (section.revision !== revision)
-    return ieltsError(409, 'Section was just updated elsewhere. Reload.')
+    return ieltsMessageError(409, 'sectionChanged')
 
   const signal = AbortSignal.timeout(AUDIO_BUDGET_MS)
   const started = Date.now()
@@ -148,7 +148,7 @@ export async function generateSectionAudio({
     }
   )
 
-  if (!audio) return ieltsError(500, `Could not create audio: ${error}`)
+  if (!audio) return ieltsMessageError(500, 'audioFailed', { reason: error })
 
   const updated = await IeltsTestModel.findOneAndUpdate(
     {
@@ -164,8 +164,7 @@ export async function generateSectionAudio({
     { new: true }
   ).lean()
 
-  if (!updated)
-    return ieltsError(409, 'Section was updated while creating audio. Reload.')
+  if (!updated) return ieltsMessageError(409, 'sectionChangedDuringAudio')
 
   return {
     ok: true,

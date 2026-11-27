@@ -4,6 +4,8 @@ import { ArrowLeft, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 
+import { useMessages } from '@/i18n/client'
+import { format } from '@/i18n/format'
 import { cn } from '@/lib/utils'
 
 export interface SkillLinkTarget {
@@ -37,6 +39,7 @@ function SkillLink({
   direction: 'prev' | 'next'
   link: SkillLinkTarget
 }) {
+  const t = useMessages().ielts.navigator
   const Icon = direction === 'prev' ? ArrowLeft : ArrowRight
   const icon = (
     <Icon
@@ -49,7 +52,7 @@ function SkillLink({
     <Link
       className={SKILL_LINK_CLASS}
       href={link.href}
-      title={`Go to ${link.label}. Your answers here stay saved.`}
+      title={format(t.goTo, { skill: link.label })}
     >
       {direction === 'prev' ? icon : null}
       <span className={cn(compact && 'max-sm:sr-only')}>{link.label}</span>
@@ -71,12 +74,13 @@ export function RunnerFooter({
   prev = null,
   top,
 }: Props) {
+  const t = useMessages().ielts.navigator
   // With both skill links the row is too wide for a phone: arrows only there.
   const compact = Boolean(prev && next)
 
   return (
     <nav
-      aria-label="Test navigation"
+      aria-label={t.label}
       className="border-line bg-exam-surface shrink-0 border-t px-3 py-2"
     >
       {top}
@@ -135,10 +139,12 @@ export function PartSwitcher({
   items: PartSwitcherItem[]
   onChange: (part: number) => void
 }) {
+  const t = useMessages().ielts.navigator
+
   return (
     // Segmented part switcher (aria-pressed): documented raw exception.
     <div
-      aria-label="Choose part"
+      aria-label={t.choosePart}
       className="border-line rounded-control flex overflow-hidden border"
       role="group"
     >

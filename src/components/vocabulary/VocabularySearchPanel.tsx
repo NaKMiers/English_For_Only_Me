@@ -5,9 +5,10 @@ import { BookOpen, Check, Search } from 'lucide-react'
 import { ContentPanel } from '@/components/common/ContentPanel'
 import { Input } from '@/components/ui/input'
 import { ActionButton } from '@/components/ui/ActionButton'
+import { useMessages } from '@/i18n/client'
+import { format } from '@/i18n/format'
 import type { VocabEntryWithUserStateRecord } from '@/modules/vocabulary/types'
 import {
-  getRequiredVietnameseMeaning,
   hasVietnameseMeaning,
   getVietnameseMeaning,
 } from '@/modules/vocabulary/vietnameseMeaning'
@@ -39,10 +40,13 @@ export function VocabularySearchPanel({
   selectedEntry,
   speakTerm,
 }: Props) {
+  const vocab = useMessages().vocabulary
+  const t = vocab.search
+
   return (
     <ContentPanel
-      eyebrow="Dictionary"
-      title="Search a word"
+      eyebrow={t.eyebrow}
+      title={t.title}
       className="bg-tint"
     >
       <form
@@ -53,10 +57,10 @@ export function VocabularySearchPanel({
         }}
       >
         <Input
-          aria-label="Search vocabulary term"
+          aria-label={t.inputLabel}
           className="border-line bg-surface rounded-control h-14 border px-4 font-sans text-lg font-semibold"
           onChange={event => onQueryChange(event.target.value)}
-          placeholder="Search any word..."
+          placeholder={t.placeholder}
           type="search"
           value={query}
         />
@@ -66,7 +70,7 @@ export function VocabularySearchPanel({
           icon={<Search className="size-4" />}
           type="submit"
         >
-          Lookup
+          {t.submit}
         </ActionButton>
       </form>
 
@@ -77,16 +81,17 @@ export function VocabularySearchPanel({
             speakTerm={speakTerm}
           />
           <p className="text-ink-soft text-xs font-normal">
-            {selectedEntry.entry.enrichmentStatus}
+            {vocab.enrichmentStatus[selectedEntry.entry.enrichmentStatus]}
             {selectedEntry.entry.partOfSpeech
               ? ` · ${selectedEntry.entry.partOfSpeech}`
               : ''}
           </p>
 
           <div className="border-line bg-tint rounded-tag border p-3 text-right">
-            <p className="text-xs font-semibold">Vietnamese meaning</p>
+            <p className="text-xs font-semibold">{t.vietnameseMeaning}</p>
             <p className="mt-1 text-base leading-7 font-semibold">
-              {getRequiredVietnameseMeaning(selectedEntry.entry)}
+              {getVietnameseMeaning(selectedEntry.entry) ??
+                vocab.word.needsMeaning}
             </p>
           </div>
 
@@ -97,7 +102,7 @@ export function VocabularySearchPanel({
                 className="border-line bg-surface rounded-tag border p-3"
               >
                 <p className="text-ink-soft text-xs font-normal">
-                  English definition
+                  {t.englishDefinition}
                 </p>
                 <p className="text-sm leading-6 font-semibold">
                   {definition.definition}
@@ -111,15 +116,16 @@ export function VocabularySearchPanel({
             ))}
             {selectedEntry.entry.definitions.length === 0 ? (
               <p className="text-ink-soft text-sm leading-6 font-normal">
-                This word is saved, but no free provider definition is available
-                yet.
+                {t.noDefinition}
               </p>
             ) : null}
           </div>
 
           {selectedEntry.entry.synonyms.length > 0 ? (
             <p className="text-ink-soft text-xs leading-5 font-normal">
-              Synonyms: {selectedEntry.entry.synonyms.slice(0, 8).join(', ')}
+              {format(t.synonyms, {
+                list: selectedEntry.entry.synonyms.slice(0, 8).join(', '),
+              })}
             </p>
           ) : null}
 
@@ -136,7 +142,7 @@ export function VocabularySearchPanel({
                 })
               }
             >
-              Should Learn
+              {vocab.marks.shouldLearn}
             </ActionButton>
             <ActionButton
               className="[&>span:last-child]:whitespace-nowrap"
@@ -151,12 +157,12 @@ export function VocabularySearchPanel({
               }
               tone="paper"
             >
-              Already Know
+              {vocab.marks.alreadyKnow}
             </ActionButton>
           </div>
           {!hasVietnameseMeaning(selectedEntry.entry) ? (
             <p className="text-brand text-sm font-semibold">
-              Vietnamese meaning is required before this word can be learned.
+              {vocab.word.meaningRequired}
             </p>
           ) : null}
         </div>
@@ -175,11 +181,12 @@ export function VocabularySearchPanel({
                 speakTerm={speakTerm}
               />
               <p className="text-ink-soft text-xs font-normal">
-                {result.userItem?.status ?? result.entry.enrichmentStatus}
+                {result.userItem
+                  ? vocab.itemStatus[result.userItem.status]
+                  : vocab.enrichmentStatus[result.entry.enrichmentStatus]}
               </p>
               <p className="line-clamp-2 text-right text-sm leading-6 font-semibold">
-                {getVietnameseMeaning(result.entry) ??
-                  'Needs Vietnamese meaning.'}
+                {getVietnameseMeaning(result.entry) ?? vocab.word.needsMeaning}
               </p>
             </div>
           ))}
