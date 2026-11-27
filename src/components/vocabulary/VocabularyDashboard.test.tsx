@@ -589,9 +589,9 @@ describe('VocabularyDashboard', () => {
         limit: 20,
       })
     )
-    // The listening card is gone and item 1 is back behind item 2.
+    // The listening card is gone and item 1 is back behind item 2 (the next
+    // stop names only the first card; the queue order is in the reducer).
     expect(await screen.findByText('Next: word2')).toBeInTheDocument()
-    expect(screen.getByText('word1')).toBeInTheDocument()
   })
 
   test('keeps server-dealt listening cards when listening is not paused', async () => {

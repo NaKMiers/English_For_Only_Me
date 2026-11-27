@@ -151,7 +151,8 @@ function TopbarPageTitle({
   const theme = MODULE_THEMES[page.module]
 
   return (
-    <div className="flex min-w-0 items-center gap-3">
+    // Capped so a long subtitle truncates instead of squeezing the app name.
+    <div className="flex max-w-md min-w-0 items-center gap-3 lg:max-w-lg">
       <span className="grid min-w-0 justify-items-end text-right">
         {page.breadcrumb ? (
           <Breadcrumb

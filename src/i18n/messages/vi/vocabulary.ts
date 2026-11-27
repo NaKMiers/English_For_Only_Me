@@ -42,7 +42,6 @@ export const vocabulary: Messages['vocabulary'] = {
   garden: {
     title: 'Khu vườn từ vựng',
     words: 'từ đã thuộc',
-    hint: 'Mỗi từ bạn thuộc làm khu vườn lớn thêm.',
     stages: {
       seed: 'Hạt giống',
       sprout: 'Mầm non',
@@ -64,6 +63,15 @@ export const vocabulary: Messages['vocabulary'] = {
       current: '{stage}: bạn đang ở đây',
       ahead: '{stage}: còn {count} từ',
     },
+    dueTitle: {
+      one: '{count} từ đến hạn ôn',
+      other: '{count} từ đến hạn ôn',
+    },
+    plantTitle: 'Gieo thêm từ mới',
+    plantDetail: 'Hiện chưa có từ nào đến hạn',
+    plantAction: 'Khám phá từ',
+    showSide: 'Xem cách từ lớn lên',
+    hideSide: 'Ẩn cách từ lớn lên',
     flowTitle: 'Hành trình của một từ',
     today: 'Hôm nay',
     learnedToday: 'Đã học',
@@ -156,18 +164,8 @@ export const vocabulary: Messages['vocabulary'] = {
     legendAlreadyKnow: 'Xanh lá là đã biết',
   },
   launcher: {
-    dueLabel: 'đến hạn',
-    stageShort: '{stage}/7',
-    eyebrow: 'Ôn tập',
-    title: 'Ôn flashcard',
     start: 'Bắt đầu ôn',
-    due: '{count} đến hạn',
     next: 'Tiếp theo: {term}',
-    intro:
-      'Phần ôn tập mở trong một cửa sổ riêng với các câu nghe, định nghĩa, chọn từ và nhớ ví dụ. Mỗi ngày phần này tự mở một lần khi có thẻ đến hạn.',
-    stage: 'Mức {stage}/7',
-    empty:
-      'Chưa có flashcard nào đến hạn. Thêm từ từ Tìm kiếm hoặc Khám phá, chúng sẽ hiện ở đây ngay.',
   },
   summary: {
     eyebrow: 'Ôn tập',

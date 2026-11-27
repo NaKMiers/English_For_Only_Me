@@ -1,5 +1,8 @@
+import { fireEvent, render, screen } from '@testing-library/react'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { describe, expect, test } from 'vitest'
+import { describe, expect, test, vi } from 'vitest'
+
+import { expectLandingBudget } from '@/test/landingBudget'
 
 import type { VocabStatsRecord } from '@/modules/vocabulary/types'
 
@@ -21,9 +24,16 @@ const stats: VocabStatsRecord = {
   totalStartedCount: 3300,
 }
 
+const plant = { href: '#vocab-explore', kind: 'plant' as const }
+
 describe('WordGardenHero', () => {
   test('grows the garden to the stage the known words reach', () => {
-    const html = renderToStaticMarkup(<WordGardenHero stats={stats} />)
+    const html = renderToStaticMarkup(
+      <WordGardenHero
+        next={plant}
+        stats={stats}
+      />
+    )
 
     expect(html).toContain('3,196')
     expect(html).toContain('aria-label="Young tree (about B1): you are here"')
@@ -31,12 +41,34 @@ describe('WordGardenHero', () => {
     expect(html).toContain('aria-label="Forest (about C2): 1804 words away"')
   })
 
-  test('links each step of a word into the word list', () => {
-    const html = renderToStaticMarkup(<WordGardenHero stats={stats} />)
+  test('the next stop starts recall when words are due', () => {
+    const onStart = vi.fn()
+    const { container } = render(
+      <WordGardenHero
+        next={{ due: 12, kind: 'due', nextTerm: 'ubiquitous', onStart }}
+        stats={stats}
+        withDrawer
+      />
+    )
 
-    expect(html).toContain('href="/vocabulary/words?view=learning"')
-    expect(html).toContain('href="/vocabulary/words?view=dueToday"')
-    expect(html).toContain('href="/vocabulary/words?view=mastered"')
-    expect(html).toContain('href="/vocabulary/words?view=knownTotal"')
+    expectLandingBudget(container)
+    expect(screen.getByText('12 words due')).toBeInTheDocument()
+    expect(screen.getByText('Next: ubiquitous')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: /Start Recall/ }))
+    expect(onStart).toHaveBeenCalledTimes(1)
+  })
+
+  test('with nothing due the next stop plants new words', () => {
+    render(
+      <WordGardenHero
+        next={plant}
+        stats={stats}
+      />
+    )
+
+    expect(screen.getByRole('link', { name: 'Explore words' })).toHaveAttribute(
+      'href',
+      '#vocab-explore'
+    )
   })
 })

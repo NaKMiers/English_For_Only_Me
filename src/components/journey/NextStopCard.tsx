@@ -20,9 +20,15 @@ interface Props {
   done?: { icon: ReactNode; text: string }
   /** Quiet line beside the button, e.g. a "syncing" note. */
   footer?: ReactNode
+  /** A link into the work screen; `null` with `onAction` for a button. */
   href: string | null
   /** Observed by `ContinueFloat` (`nextStopId`). */
   id?: string
+  /**
+   * For a next stop that opens on this page (the vocabulary recall modal):
+   * a button instead of a link. Client trees only.
+   */
+  onAction?: () => void
   /** The pin chip text, `common.journey.nextStop`. */
   pinLabel: string
   title: string
@@ -46,6 +52,7 @@ export function NextStopCard({
   footer,
   href,
   id = NEXT_STOP_ID,
+  onAction,
   pinLabel,
   title,
   variant = 'card',
@@ -59,19 +66,27 @@ export function NextStopCard({
       {pinLabel}
     </span>
   )
-  const showAction = !done && href !== null
-  const action = showAction ? (
+  const icon = actionIcon ?? (
+    <ArrowRight
+      aria-hidden="true"
+      className="size-4"
+    />
+  )
+  const actionClassName = variant === 'compact' ? 'shrink-0' : undefined
+  const action = done ? null : onAction ? (
     <ActionButton
-      className={variant === 'compact' ? 'shrink-0' : undefined}
+      className={actionClassName}
+      icon={icon}
+      onClick={onAction}
+      tone="ink"
+    >
+      {actionLabel}
+    </ActionButton>
+  ) : href !== null ? (
+    <ActionButton
+      className={actionClassName}
       href={href}
-      icon={
-        actionIcon ?? (
-          <ArrowRight
-            aria-hidden="true"
-            className="size-4"
-          />
-        )
-      }
+      icon={icon}
       tone="ink"
     >
       {actionLabel}

@@ -98,7 +98,6 @@ const CORNERS: Guard = {
     'src/components/ielts/catalogue/TestPath.tsx',
     'src/components/ui/tooltip.tsx',
     'src/components/vocabulary/VocabRecallModal.tsx',
-    'src/components/vocabulary/WordGardenHero.tsx',
   ],
   pattern: /\brounded(-[trblxyse]{1,2})?-(\[\d+(\.\d+)?px\]|2xl|3xl)/,
   roots: COMPONENTS_AND_APP,

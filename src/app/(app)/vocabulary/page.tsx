@@ -49,6 +49,11 @@ export default async function VocabularyPage() {
       topbar={
         <AppTopbar
           activeHref="/vocabulary"
+          page={{
+            module: 'vocabulary',
+            subtitle: t.vocabulary.dashboard.intro,
+            title: t.vocabulary.dashboard.title,
+          }}
           subtitle={t.vocabulary.page.subtitle}
         />
       }

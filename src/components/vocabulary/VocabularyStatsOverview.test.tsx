@@ -67,4 +67,14 @@ describe('VocabularyStatsOverview', () => {
 
     expect(html).toContain('No hard words yet.')
   })
+
+  test('the drawer links each step of a word into the word list', () => {
+    const html = renderToStaticMarkup(<VocabularyStatsOverview stats={stats} />)
+
+    expect(html).toContain('href="/vocabulary/words?view=learning"')
+    expect(html).toContain('href="/vocabulary/words?view=dueToday"')
+    expect(html).toContain('href="/vocabulary/words?view=mastered"')
+    expect(html).toContain('href="/vocabulary/words?view=knownTotal"')
+    expect(html).toContain('How a word grows')
+  })
 })

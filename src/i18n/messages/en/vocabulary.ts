@@ -40,7 +40,6 @@ export const vocabulary = {
   garden: {
     title: 'Your word garden',
     words: 'words known',
-    hint: 'Every word you know grows the garden.',
     stages: {
       seed: 'Seed',
       sprout: 'Sprout',
@@ -62,6 +61,15 @@ export const vocabulary = {
       current: '{stage}: you are here',
       ahead: '{stage}: {count} words away',
     },
+    dueTitle: {
+      one: '{count} word due',
+      other: '{count} words due',
+    },
+    plantTitle: 'Plant new words',
+    plantDetail: 'Nothing is due right now',
+    plantAction: 'Explore words',
+    showSide: 'Show how your words grow',
+    hideSide: 'Hide how your words grow',
     flowTitle: 'How a word grows',
     today: 'Today',
     learnedToday: 'Learned',
@@ -154,18 +162,8 @@ export const vocabulary = {
     legendAlreadyKnow: 'Green means already know',
   },
   launcher: {
-    dueLabel: 'due',
-    stageShort: '{stage}/7',
-    eyebrow: 'Recall',
-    title: 'Flashcard review',
     start: 'Start Recall',
-    due: '{count} due',
     next: 'Next: {term}',
-    intro:
-      'Review opens as a focused modal with listening, definition, word-choice, and example-memory prompts. It will auto-open once per day when cards are due.',
-    stage: 'Stage {stage}/7',
-    empty:
-      'No flashcards are due. Add words from Search or Explore and they will appear here immediately.',
   },
   summary: {
     eyebrow: 'Recall',

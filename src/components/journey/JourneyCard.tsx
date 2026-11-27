@@ -143,9 +143,19 @@ export function JourneyHeadline({ icon, total, unit, value }: HeadlineProps) {
 export function MilestoneNote({
   children,
   className,
+  title,
 }: {
   children: ReactNode
   className?: string
+  /** A quiet hint on hover, e.g. how the milestones were chosen. */
+  title?: string
 }) {
-  return <p className={cn('text-sm font-medium', className)}>{children}</p>
+  return (
+    <p
+      className={cn('text-sm font-medium', className)}
+      title={title}
+    >
+      {children}
+    </p>
+  )
 }

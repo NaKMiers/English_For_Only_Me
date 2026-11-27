@@ -1,14 +1,14 @@
 'use client'
 
-import { AlertCircle, BookA, List } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { ContentPanel } from '@/components/common/ContentPanel'
 import { useClientOutbox } from '@/components/common/OutboxOwnerProvider'
-import { PageHeader } from '@/components/common/PageHeader'
-import { SkeletonHero, SkeletonPanel } from '@/components/common/PageSkeletons'
-import { ActionButton } from '@/components/ui/ActionButton'
+import {
+  SkeletonJourney,
+  SkeletonPanel,
+} from '@/components/common/PageSkeletons'
 import { useMessages } from '@/i18n/client'
 import { format } from '@/i18n/format'
 import type { Messages } from '@/i18n/messages/en'
@@ -40,10 +40,8 @@ import {
   VocabularyExplorePanel,
   type ExploreDecision,
 } from './VocabularyExplorePanel'
-import { VocabularyRecallLauncher } from './VocabularyRecallLauncher'
+import { VOCAB_EXPLORE_ID, VocabularyLanding } from './VocabularyLanding'
 import { VocabularySearchPanel } from './VocabularySearchPanel'
-import { VocabularyStatsOverview } from './VocabularyStatsOverview'
-import { WordGardenHero } from './WordGardenHero'
 import {
   buildOptimisticUserItem,
   createEntryWriteTracker,
@@ -751,11 +749,7 @@ export function VocabularyDashboard({
   if (isInitialLoad)
     return (
       <div className="grid gap-5 px-4 pb-6 md:pr-6 md:pl-0">
-        <SkeletonHero />
-        <div className="grid gap-5 lg:grid-cols-[minmax(0,20rem)_minmax(0,1fr)]">
-          <SkeletonPanel lines={3} />
-          <SkeletonPanel lines={3} />
-        </div>
+        <SkeletonJourney metaphorClassName="h-24" />
         <div className="grid gap-5 xl:grid-cols-2">
           <SkeletonPanel lines={2} />
           <SkeletonPanel lines={4} />
@@ -771,82 +765,48 @@ export function VocabularyDashboard({
     : heldRecallTotal
 
   return (
-    <div className="grid gap-5 px-4 pb-6 md:pr-6 md:pl-0">
-      <PageHeader
-        actions={
-          <>
-            <ActionButton
-              href="/vocabulary/words"
-              icon={<List aria-hidden="true" />}
-              tone="paper"
-            >
-              {vocab.dashboard.wordsLink}
-            </ActionButton>
-          </>
+    <>
+      <VocabularyLanding
+        dueCount={
+          activeRecall ? Math.max(stats.dueTodayCount, recallTasks.length) : 0
         }
-        icon={<BookA />}
-        iconClassName="bg-pastel-mint text-accent-green"
-        subtitle={vocab.dashboard.intro}
-        title={vocab.dashboard.title}
-      />
+        errorMessage={errorMessage}
+        nextTerm={activeRecall?.entry.term ?? null}
+        onStartRecall={openRecallModal}
+        stats={stats}
+        statusMessage={statusMessage}
+      >
+        {recallModalOpen ? null : (
+          <VocabRecallSessionSummary results={recallResults} />
+        )}
 
-      {errorMessage ? (
-        <div
-          className="border-danger/30 bg-danger-soft text-ink rounded-control flex items-center gap-2 border p-3 text-sm"
-          role="alert"
-        >
-          <AlertCircle
-            aria-hidden="true"
-            className="text-danger size-4 shrink-0"
+        <div className="grid items-start gap-5 xl:grid-cols-2">
+          <VocabularySearchPanel
+            isLoading={isLoading}
+            markEntry={markEntry}
+            onQueryChange={setQuery}
+            query={query}
+            runLookup={runLookup}
+            searchResults={searchResults}
+            selectedEntry={selectedEntry}
+            speakTerm={speakTerm}
           />
-          {errorMessage}
+
+          <div
+            className="scroll-mt-6"
+            id={VOCAB_EXPLORE_ID}
+          >
+            <VocabularyExplorePanel
+              activeIndex={activeExploreIndex}
+              decisions={exploreDecisions}
+              entries={exploreEntries}
+              markEntry={markEntry}
+              moveExplore={moveExplore}
+              showExploreIndex={showExploreIndex}
+            />
+          </div>
         </div>
-      ) : null}
-      {statusMessage ? (
-        <div
-          aria-live="polite"
-          className="border-line bg-surface rounded-control border p-3 text-sm"
-        >
-          {statusMessage}
-        </div>
-      ) : null}
-
-      <WordGardenHero stats={stats} />
-
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,20rem)_minmax(0,1fr)]">
-        <VocabularyRecallLauncher
-          dueCount={stats.dueTodayCount}
-          onOpenRecall={openRecallModal}
-          tasks={recallTasks}
-        />
-        <VocabularyStatsOverview stats={stats} />
-      </div>
-
-      {recallModalOpen ? null : (
-        <VocabRecallSessionSummary results={recallResults} />
-      )}
-
-      <div className="grid items-start gap-5 xl:grid-cols-2">
-        <VocabularySearchPanel
-          isLoading={isLoading}
-          markEntry={markEntry}
-          onQueryChange={setQuery}
-          query={query}
-          runLookup={runLookup}
-          searchResults={searchResults}
-          selectedEntry={selectedEntry}
-          speakTerm={speakTerm}
-        />
-
-        <VocabularyExplorePanel
-          activeIndex={activeExploreIndex}
-          decisions={exploreDecisions}
-          entries={exploreEntries}
-          markEntry={markEntry}
-          moveExplore={moveExplore}
-          showExploreIndex={showExploreIndex}
-        />
-      </div>
+      </VocabularyLanding>
 
       {recallModalMounted ? (
         <VocabRecallModal
@@ -866,6 +826,6 @@ export function VocabularyDashboard({
           taskTotal={recallTaskTotal}
         />
       ) : null}
-    </div>
+    </>
   )
 }
