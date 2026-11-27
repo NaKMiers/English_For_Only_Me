@@ -26,7 +26,6 @@ export const dictation = {
     journeyResume: 'Pick up where you left off',
     eyebrow: 'Listening',
     title: 'All topics',
-    latestResults: 'View Latest Results',
     favoritesLink: '★ Favorites',
     topicsHeading: 'Topics',
     descriptionSignedIn:
@@ -37,7 +36,6 @@ export const dictation = {
   journey: {
     title: 'Your listening journey',
     sentences: 'sentences',
-    hint: 'Every sentence you write by ear is one step.',
     nowPlaying: 'Now playing: Track {number}',
     toNext: {
       one: '{count} sentence to Track {number}',
@@ -48,10 +46,25 @@ export const dictation = {
     streak: 'Day streak',
     thisWeek: 'This week',
     reviewDue: 'To review',
-    nextStop: 'Next stop',
     continueVideo: 'Continue',
     openTopic: 'Open topic',
     pickTopic: 'Pick a topic below to start your first track.',
+    side: {
+      show: 'Show recent videos and favorites',
+      hide: 'Hide recent videos and favorites',
+      title: 'Your listening',
+      recent: 'Recent',
+      recentEmpty: 'Videos you start show up here.',
+      latestResults: 'Latest results',
+      favorites: 'Favorites',
+      favoritesHint: 'Videos you starred',
+    },
+    dueTitle: {
+      one: '{count} sentence to review',
+      other: '{count} sentences to review',
+    },
+    dueDetail: 'Spaced review',
+    startReview: 'Start review',
     shelves: {
       playing: 'On the turntable',
       new: 'New records',
@@ -94,7 +107,6 @@ export const dictation = {
     sortNewest: 'Newest',
     sortOldest: 'Oldest',
     sortTitle: 'Title A–Z',
-    inProgress: 'In Progress',
     emptySection: 'No lessons in this section yet.',
     noMatches: 'No lessons match. Clear the filters to see all.',
     nothingHere: 'Nothing here yet',

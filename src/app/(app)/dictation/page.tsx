@@ -1,10 +1,10 @@
 import type { Metadata } from 'next'
-import { Headphones, Trophy } from 'lucide-react'
+import { Headphones } from 'lucide-react'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { PageShell } from '@/components/common/PageShell'
 import { PageHeader } from '@/components/common/PageHeader'
-import { InProgressSection } from '@/components/dictation/browse/InProgressSection'
+import { DictationSide } from '@/components/dictation/browse/DictationSide'
 import {
   finishedByTopic,
   NO_TOPIC_KEY,
@@ -19,11 +19,12 @@ import {
   type RecordTopic,
 } from '@/components/dictation/browse/RecordShelves'
 import { TopicGrid } from '@/components/dictation/browse/TopicGrid'
-import { ActionButton } from '@/components/ui/ActionButton'
+import { DrawerRow } from '@/components/journey/SideDrawer'
 import { hasMongoDbUri } from '@/constants/environments'
-import { format } from '@/i18n/format'
+import { format, plural } from '@/i18n/format'
 import { getMessages } from '@/i18n/server'
 import { connectDatabaseWhen } from '@/lib/db/connectDatabase'
+import { pickNextStop } from '@/lib/journey/nextStop'
 import { toBrowseItem } from '@/modules/dictation/content/browseItem'
 import {
   getCachedNoTopicCount,
@@ -145,80 +146,99 @@ export default async function DictationPage() {
       total: noTopicCount,
     })
   const shelves = shelveTopics(recordTopics, doneByTopic)
-  // Next stop: the last video left half done, else the topic nearest gold,
-  // else the first new one.
+  // Next stop (one rule for every module): the last video left half done,
+  // else due review sentences, else the topic nearest gold, else the first
+  // new one.
   const resume = inProgressItems.find(item => item.practiceHref)
   const nearGold = shelves.playing[0] ?? shelves.new[0]
-  const nextStop: ListeningNextStop | null = resume?.practiceHref
-    ? {
-        detail: text.journeyResume,
-        href: resume.practiceHref,
-        kind: 'video',
-        title: resume.title,
-      }
-    : nearGold
+  const dueCount = globalStats?.dueReviewItemCount ?? 0
+  const picked = pickNextStop<ListeningNextStop>([
+    resume?.practiceHref
       ? {
-          detail: format(t.dictation.journey.recordProgress, {
-            done: nearGold.done,
-            total: nearGold.total,
-          }),
-          href: nearGold.topic.href,
-          kind: 'topic',
-          title: nearGold.topic.title,
+          data: {
+            detail: text.journeyResume,
+            href: resume.practiceHref,
+            kind: 'video',
+            title: resume.title,
+          },
+          kind: 'resume',
         }
-      : null
+      : null,
+    dueCount > 0
+      ? {
+          data: {
+            detail: t.dictation.journey.dueDetail,
+            href: '/dictation/review',
+            kind: 'review',
+            title: plural(t.dictation.journey.dueTitle, dueCount),
+          },
+          kind: 'due',
+        }
+      : null,
+    nearGold
+      ? {
+          data: {
+            detail: format(t.dictation.journey.recordProgress, {
+              done: nearGold.done,
+              total: nearGold.total,
+            }),
+            href: nearGold.topic.href,
+            kind: 'topic',
+            title: nearGold.topic.title,
+          },
+          kind: 'next',
+        }
+      : null,
+  ])
+  const nextStop = picked.kind === 'done' ? null : picked.data
+  const subtitle = hasPracticeActor
+    ? text.descriptionSignedIn
+    : text.descriptionGuest
 
   return (
     <PageShell
       topbar={
         <AppTopbar
           activeHref="/dictation"
+          page={{ module: 'dictation', subtitle, title: text.title }}
           subtitle={t.dictation.meta.browseSubtitle}
         />
       }
     >
       <section className="grid gap-4 px-4 pb-6 md:pr-6 md:pl-0">
         <PageHeader
-          actions={
-            <>
-              {latestCompletedVideo ? (
-                <ActionButton
-                  href={`/dictation/videos/${latestCompletedVideo.id}/results`}
-                  icon={
-                    <Trophy
-                      aria-hidden="true"
-                      className="size-4"
-                    />
-                  }
-                  tone="paper"
-                >
-                  {text.latestResults}
-                </ActionButton>
-              ) : null}
-              <ActionButton href="/dictation/favorites">
-                {text.favoritesLink}
-              </ActionButton>
-            </>
-          }
           icon={<Headphones />}
           iconClassName="bg-pastel-sky text-accent-blue"
-          subtitle={
-            hasPracticeActor ? text.descriptionSignedIn : text.descriptionGuest
-          }
+          inTopbar
+          subtitle={subtitle}
           title={text.title}
         />
         {globalStats ? (
-          <ListeningJourneyHero
-            labels={t.dictation}
-            next={nextStop}
-            stats={globalStats}
-          />
+          <DrawerRow
+            side={
+              <DictationSide
+                className="h-full lg:min-w-[280px]"
+                labels={t.dictation.journey.side}
+                latestResultsHref={
+                  latestCompletedVideo
+                    ? `/dictation/videos/${latestCompletedVideo.id}/results`
+                    : null
+                }
+                recent={inProgressItems}
+                showFavorites={canFavorite}
+              />
+            }
+            sideId="dictation-side"
+          >
+            <ListeningJourneyHero
+              journey={t.common.journey}
+              labels={t.dictation}
+              next={nextStop}
+              stats={globalStats}
+              withDrawer
+            />
+          </DrawerRow>
         ) : null}
-        <InProgressSection
-          videos={inProgressItems}
-          canFavorite={canFavorite}
-          labels={t.dictation.browse}
-        />
         <section
           aria-labelledby="dictation-topics-title"
           className="grid gap-3"

@@ -6,7 +6,6 @@ import { describe, expect, test, vi } from 'vitest'
 import { BrowseDisclosure } from './BrowseDisclosure'
 import { BrowseVideoListClient } from './BrowseVideoListClient'
 import { FavoriteButton } from './FavoriteButton'
-import { InProgressSection } from './InProgressSection'
 import {
   BrowseVideoList,
   SectionAccordion,
@@ -153,35 +152,5 @@ describe('SectionAccordion payload', () => {
     expect(JSON.stringify(list.props)).not.toContain(
       'rounded-panel relative grid'
     )
-  })
-})
-
-describe('InProgressSection', () => {
-  test('starts open and collapses on click', () => {
-    render(
-      <InProgressSection
-        videos={videos.slice(0, 2)}
-        canFavorite={false}
-      />
-    )
-
-    const toggle = screen.getByRole('button', { name: /In Progress/ })
-    expect(toggle).toHaveAttribute('aria-expanded', 'true')
-    expect(screen.getByText('Lesson 2')).toBeInTheDocument()
-
-    fireEvent.click(toggle)
-
-    expect(screen.queryByText('Lesson 2')).toBeNull()
-  })
-
-  test('renders nothing without in-progress videos', () => {
-    const { container } = render(
-      <InProgressSection
-        videos={[]}
-        canFavorite={false}
-      />
-    )
-
-    expect(container).toBeEmptyDOMElement()
   })
 })

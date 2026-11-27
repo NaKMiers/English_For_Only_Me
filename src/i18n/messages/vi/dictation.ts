@@ -28,7 +28,6 @@ export const dictation: Messages['dictation'] = {
     journeyResume: 'Học tiếp chỗ đang dở',
     eyebrow: 'Listening',
     title: 'Tất cả chủ đề',
-    latestResults: 'Xem kết quả gần nhất',
     favoritesLink: '★ Yêu thích',
     topicsHeading: 'Chủ đề',
     descriptionSignedIn:
@@ -39,7 +38,6 @@ export const dictation: Messages['dictation'] = {
   journey: {
     title: 'Hành trình luyện nghe',
     sentences: 'câu',
-    hint: 'Mỗi câu bạn nghe và chép đúng là một bước.',
     nowPlaying: 'Đang phát: Track {number}',
     toNext: {
       one: 'Còn {count} câu tới Track {number}',
@@ -50,10 +48,25 @@ export const dictation: Messages['dictation'] = {
     streak: 'Chuỗi ngày',
     thisWeek: 'Tuần này',
     reviewDue: 'Cần ôn',
-    nextStop: 'Trạm tiếp theo',
     continueVideo: 'Học tiếp',
     openTopic: 'Mở chủ đề',
     pickTopic: 'Chọn một chủ đề bên dưới để bắt đầu track đầu tiên.',
+    side: {
+      show: 'Xem video gần đây và yêu thích',
+      hide: 'Ẩn video gần đây và yêu thích',
+      title: 'Việc luyện nghe của bạn',
+      recent: 'Gần đây',
+      recentEmpty: 'Video bạn đã bắt đầu sẽ hiện ở đây.',
+      latestResults: 'Kết quả gần nhất',
+      favorites: 'Yêu thích',
+      favoritesHint: 'Những video bạn đã gắn sao',
+    },
+    dueTitle: {
+      one: '{count} câu cần ôn',
+      other: '{count} câu cần ôn',
+    },
+    dueDetail: 'Ôn tập ngắt quãng',
+    startReview: 'Bắt đầu ôn',
     shelves: {
       playing: 'Đang nghe',
       new: 'Đĩa mới',
@@ -96,7 +109,6 @@ export const dictation: Messages['dictation'] = {
     sortNewest: 'Mới nhất',
     sortOldest: 'Cũ nhất',
     sortTitle: 'Tên A–Z',
-    inProgress: 'Đang học',
     emptySection: 'Phần này chưa có bài nào.',
     noMatches: 'Không có bài phù hợp. Xóa bộ lọc để xem tất cả.',
     nothingHere: 'Chưa có gì ở đây',

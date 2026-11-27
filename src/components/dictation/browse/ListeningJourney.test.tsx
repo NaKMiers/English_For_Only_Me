@@ -1,8 +1,11 @@
+import { render, screen } from '@testing-library/react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, test } from 'vitest'
 
 import { en } from '@/i18n/messages/en'
+import { expectLandingBudget } from '@/test/landingBudget'
 
+import { DictationSide } from './DictationSide'
 import { ListeningJourneyHero } from './ListeningJourneyHero'
 import { RecordShelves, type RecordTopic } from './RecordShelves'
 import { shelveTopics } from './listeningJourney'
@@ -20,6 +23,7 @@ describe('ListeningJourneyHero', () => {
   test('plays toward the next track and names the next stop', () => {
     const html = renderToStaticMarkup(
       <ListeningJourneyHero
+        journey={en.common.journey}
         labels={en.dictation}
         next={{
           detail: 'Pick up where you left off',
@@ -47,6 +51,92 @@ describe('ListeningJourneyHero', () => {
     expect(html).toContain('3/20')
     expect(html).toContain('href="/dictation/videos/v1/practice"')
     expect(html).toContain('href="/dictation/review"')
+  })
+})
+
+const stats = {
+  activeStreakDays: 0,
+  completedSegmentCount: 0,
+  completedVideoCount: 0,
+  dueReviewItemCount: 0,
+  firstTryAccuracyTrend: [],
+  monthlyPracticeTimeMs: 0,
+  repeatedMistakeTypes: [],
+  totalVideoCount: 4,
+  weakWords: [],
+  weeklyPracticeTimeMs: 0,
+}
+
+describe('ListeningJourneyHero budget', () => {
+  test('one next stop, one cta, at most 4 chips, drawer handle closed', () => {
+    const { container } = render(
+      <ListeningJourneyHero
+        journey={en.common.journey}
+        labels={en.dictation}
+        next={{
+          detail: 'Spaced review',
+          href: '/dictation/review',
+          kind: 'review',
+          title: '3 sentences to review',
+        }}
+        stats={stats}
+        withDrawer
+      />
+    )
+
+    expectLandingBudget(container)
+    expect(
+      screen.getByRole('link', { name: en.dictation.journey.startReview })
+    ).toHaveAttribute('href', '/dictation/review')
+    expect(
+      screen.getByRole('button', { name: en.dictation.journey.side.show })
+    ).toHaveAttribute('aria-expanded', 'false')
+  })
+
+  test('with nothing to suggest it shows the pick-a-topic line', () => {
+    const html = renderToStaticMarkup(
+      <ListeningJourneyHero
+        journey={en.common.journey}
+        labels={en.dictation}
+        next={null}
+        stats={stats}
+      />
+    )
+
+    expect(html).toContain(en.dictation.journey.pickTopic)
+  })
+})
+
+describe('DictationSide', () => {
+  test('recent videos first, then latest results and favorites', () => {
+    render(
+      <DictationSide
+        labels={en.dictation.journey.side}
+        latestResultsHref="/dictation/videos/v9/results"
+        recent={[
+          {
+            completions: 0,
+            favorited: false,
+            id: 'v1',
+            inProgress: true,
+            level: null,
+            practiceHref: '/dictation/videos/v1/practice',
+            thumbnailUrl: null,
+            title: 'A day in London',
+            youtubeVideoId: null,
+          },
+        ]}
+        showFavorites
+      />
+    )
+
+    const links = screen.getAllByRole('link')
+    expect(links.map(link => link.getAttribute('href'))).toEqual([
+      '/dictation/videos/v1/practice',
+      '/dictation/videos/v9/results',
+      '/dictation/favorites',
+    ])
+    for (const link of links) expect(link.className).toContain('hover-pop')
   })
 })
 

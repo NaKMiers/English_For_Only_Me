@@ -87,7 +87,6 @@ const CORNERS: Guard = {
     'src/components/common/RouteError.tsx',
     'src/components/common/UserMenu.tsx',
     'src/components/dictation/GuidedAnswerInput.tsx',
-    'src/components/dictation/browse/ListeningJourneyHero.tsx',
     'src/components/dictation/browse/RecordShelves.tsx',
     'src/components/dictation/browse/TopicGrid.tsx',
     'src/components/home/HomeBuddyCard.tsx',
@@ -110,7 +109,6 @@ const CORNERS: Guard = {
 const INK_CONTROL: Guard = {
   allow: [],
   baseline: [
-    'src/components/dictation/browse/ListeningJourneyHero.tsx',
     'src/components/ielts/runner/IeltsRunner.tsx',
     'src/components/ielts/runner/RunnerFooter.tsx',
     'src/components/ielts/runner/RunnerToolbar.tsx',
