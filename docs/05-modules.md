@@ -1,16 +1,19 @@
 # 05 - Domain and Business-Logic Modules
 
-This document describes the domain/business-logic layer of "English For Only Me", a
-Next.js IELTS practice app. Logic lives under `src/modules/`, organized into
-cohesive subsystems: dictation answer grading, a transcript-to-segments
-pipeline, transcript ingestion, translation-caption alignment, a review queue,
-analytics, an LLM debrief generator, the content hierarchy, local preferences,
-the YouTube player hook, and the vocabulary lookup/enrichment/recall spine. The
-layer follows one dominant pattern: small, side-effect-free "decision"/"aggregation" functions that
-are heavily unit-tested (the many `*.test.ts` files), kept strictly separate from the
-thin `server-only` I/O modules that read/write MongoDB and call external providers.
-Every path below is repo-relative to the project root
-`/home/KHOANA/ME/IT_IT/Webs/English_For_Only_Me`.
+This document describes the domain/business-logic layer of "English For Only Me" under
+`src/modules/` for the **dictation** and **vocabulary** subsystems, plus the shared
+`src/modules/learning/recall` ladder that vocabulary and grammar both schedule on.
+Dictation covers answer grading, the transcript-to-segments pipeline, transcript
+ingestion, translation captions and overrides, per-learner practice progress and
+the offline write outbox contract, a review queue, analytics, an LLM debrief, the
+cached content catalog, local preferences, and the YouTube player hook. Vocabulary
+covers lookup, enrichment, the Vietnamese-meaning gate, word lists, paged recall
+tasks with signed tokens, and facet-based stats. Grammar and IELTS domain logic live
+in `docs/08-grammar.md` and `docs/09-ielts.md`. The layer follows one dominant
+pattern: small, side-effect-free "decision"/"aggregation"/"pipeline builder"
+functions that are heavily unit-tested (the many `*.test.ts` files), kept strictly
+separate from the thin `server-only` I/O modules that read/write MongoDB and call
+external providers. Every path below is relative to the repo root.
 
 Note on notation: this document uses plain ASCII throughout. Where the source code
 emits a Unicode range separator (an en dash) in a level range string such as
@@ -18,26 +21,67 @@ emits a Unicode range separator (an en dash) in a level range string such as
 
 ---
 
+## Module map
+
+| Directory                                                           | Scope                                                  | Doc                             |
+| ------------------------------------------------------------------- | ------------------------------------------------------ | ------------------------------- |
+| `src/modules/dictation/`                                            | Dictation practice domain (this doc)                   | 05                              |
+| `src/modules/vocabulary/`                                           | Dictionary cache, enrichment, recall, stats (this doc) | 05                              |
+| `src/modules/learning/recall/`                                      | Shared 7-stage recall ladder (this doc)                | 05                              |
+| `src/modules/grammar/`                                              | Grammar lessons, grading, sessions                     | `docs/08-grammar.md`            |
+| `src/modules/ielts/`                                                | IELTS tests, attempts, drills                          | `docs/09-ielts.md`              |
+| `src/modules/dictation/services/*Route*`, `*Records.ts`, `schemas/` | API glue (parse/guard decisions, record mappers)       | also `docs/04-api-reference.md` |
+
+Dictation subdirectories:
+
+| Subdir          | Key files                                                                                                | Responsibility                                                     |
+| --------------- | -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `correction/`   | `normalizeAnswer`, `compareAnswer`, `buildCharCorrection`, `hintWords`, `createLocalAttempt`             | Grade typed answers (word + char level), validate admin hints      |
+| `segmenting/`   | `buildSegments`, `editSegments`, `resegmentAll`, `text`                                                  | Transcript -> practice segments, manual edits, bulk rebuild        |
+| `transcripts/`  | `normalizeTranscriptSource`, `formatCuesAsCaptionText`, `sourceHash`                                     | Caption/plain-text ingestion, hashing, SRT reconstruction          |
+| `translations/` | `captionOverlap`, `segmentTranslation`, `languages`                                                      | Time-overlap captions, manual overrides, language codes and labels |
+| `practice/`     | `segmentProgress`, `attemptCursor`, `practiceSync`, `practicePageData`, `practiceTranslations`, ...      | Per-learner progress overlay, attempt cursor, outbox writes        |
+| `review/`       | `reviewScheduler`, `reviewItemService`                                                                   | Review candidates and idempotent insertion                         |
+| `stats/`        | `globalStats`, `globalStatsService`, `videoStats`, `videoStatsService`                                   | Global (facet pipeline) and per-video analytics                    |
+| `ai/`           | `debriefDecisions`, `debriefPrompt`, `debriefSchema`, `debriefService`                                   | LLM post-video debrief                                             |
+| `content/`      | `contentRepository`, `catalogReaders`, `adminContentRepository`, `adminActions`, `adminVideoFilter`, ... | Topic/Section/Video catalog, caching, admin, favorites, progress   |
+| `preferences/`  | `dictationPreferences`, `shortcuts`                                                                      | Local preferences store, per-owner drafts, keyboard shortcuts      |
+| `player/`       | `useYoutubeDictationPlayer`                                                                              | YouTube playback control hook                                      |
+| `services/`     | `*RouteDecisions`, `dictation*Records`, `getCurrentUser`, `mergeGuestData`, `rebuildTranscriptSegments`  | Route building blocks, identity, guest merge                       |
+| (root)          | `levels`, `completionBadges`, `videoReadiness`, `statusDisplay`, `types`                                 | Shared enums, badge tiers, CTAs, status tones, type contracts      |
+
+---
+
 ## Design pattern: pure decisions vs record I/O
 
-Two conventions recur across every subsystem and are worth stating once:
+Conventions that recur across every subsystem:
 
 - Pure functions (no DB, no network, no cookies, no ambient clock beyond an injected
   `now`) compute a plain result object from plain inputs. They live in files like
-  `compareAnswer.ts`, `buildSegments.ts`, `reviewScheduler.ts`, `globalStats.ts`,
-  `browseQuery.ts`, and all `*RouteDecisions.ts`. They are trivially unit-testable and
-  carry the corresponding `*.test.ts` siblings.
+  `compareAnswer.ts`, `buildSegments.ts`, `reviewScheduler.ts`, `browseQuery.ts`,
+  `adminVideoFilter.ts`, `practice/attemptCursor.ts`, `practice/segmentProgress.ts`,
+  and all `*RouteDecisions.ts`. They carry `*.test.ts` siblings.
+- Mongo aggregation pipelines are built by pure functions too, so their shape is
+  unit-tested without a database: `buildGlobalStatsPipeline`
+  (`src/modules/dictation/stats/globalStats.ts`), `buildSegmentProgressPipeline`
+  (`src/modules/dictation/practice/segmentProgress.ts`), `buildVocabItemFacetPipeline` /
+  `buildVocabAttemptFacetPipeline` (`src/modules/vocabulary/stats/vocabStatsFacets.ts`),
+  and `buildVocabWordListPipeline` (`src/modules/vocabulary/services/vocabWordListService.ts`).
 - I/O modules are marked `import 'server-only'` and perform the actual Mongoose
   queries, `insertMany`/`bulkWrite`, and provider calls. They are thin: fetch data,
-  hand plain objects to a pure function, persist the pure function's verdict. Examples:
-  `reviewItemService.ts`, `globalStatsService.ts`, `debriefService.ts`,
-  `contentRepository.ts`, `adminContentRepository.ts`.
-- Serialization is centralized in `services/dictation*Records.ts` mappers
-  (`toDictationXRecord`) that coerce Mongo documents (`_id`, `ObjectId` refs) to string
-  ids and default every optional field, so pure code never sees `undefined`.
-- Vocabulary follows the same split: pure normalization, recall, stats, and
-  route-decision helpers are separate from provider calls, Mongoose services,
-  and record mappers.
+  hand plain objects to a pure function, persist the verdict. Examples:
+  `reviewItemService.ts`, `globalStatsService.ts`, `segmentProgressService.ts`,
+  `debriefService.ts`, `contentRepository.ts`, `adminContentRepository.ts`.
+- Serialization is centralized in `services/dictation*Records.ts` and
+  `vocabulary/services/*Records.ts` mappers that coerce Mongo documents (`_id`,
+  `ObjectId` refs) to string ids and default every optional field, so pure code never
+  sees `undefined`.
+- Shared content (videos, segments, vocab entries) never carries per-learner state.
+  Per-user progress is derived from the learner's own rows (attempts, sessions, user
+  items) at read time; see `practice/` and `content/progressRepository.ts`.
+- User-facing strings are no longer hard-coded in modules: helpers take a `Messages`
+  slice from `src/i18n/messages` (English `en` by default), for example
+  `getDictationStatusLabel`, `getAccessErrorMessage`, `toVocabApiError`.
 
 The correction engine takes this further with a tested invariant called "correction
 parity" (see the correction deep dive).
@@ -46,7 +90,7 @@ parity" (see the correction deep dive).
 
 ## correction/ - the answer-grading engine
 
-Files: `src/modules/dictation/correction/{normalizeAnswer,compareAnswer,buildCharCorrection,createLocalAttempt,types,index}.ts`
+Files: `src/modules/dictation/correction/{normalizeAnswer,compareAnswer,buildCharCorrection,hintWords,createLocalAttempt,types,index}.ts`
 plus tests including `correctionParity.test.ts`.
 
 Responsibility: grade a learner's typed answer against the expected segment text,
@@ -58,13 +102,19 @@ grade offline so feedback is instant.
 
 - `buildDictationCorrection` (word-level analytics) from `compareAnswer.ts`.
 - `buildCharCorrection`, `autoCorrectAnswer`, `computeHints`, `renderAnswerLine` and the
-  char types from `buildCharCorrection.ts`.
+  char types (`CharBoundary`, `CharBoundaryKind`, `CharCell`, `WordSegment`, ...) from
+  `buildCharCorrection.ts`.
 - `createLocalDictationAttempt` from `createLocalAttempt.ts`.
-- `normalizeAnswer` and the `CorrectionOptions` / `NormalizedAnswer` types.
+- `normalizeAnswer` and the `CorrectionOptions` / `DictationCorrectionResult` /
+  `NormalizedAnswer` types.
+
+`hintWords.ts` is imported directly (not via `index.ts`); see below.
 
 `DEFAULT_CORRECTION_OPTIONS` (`types.ts`) turns everything lenient by default:
 `acceptBritishAmericanVariants`, `acceptMeasurementVariants`, `acceptNumberVariants`,
-`expandContractions`, and `ignorePunctuation` are all `true`.
+`expandContractions`, and `ignorePunctuation` are all `true`;
+`ignoreStructuralPunctuation` is `false` (and `ignorePunctuation: true`
+short-circuits it anyway).
 
 ### Deep dive: normalization (`normalizeAnswer.ts`)
 
@@ -83,21 +133,22 @@ with `tokens`). Pipeline, in order:
    table (`it's` -> `it is`, `won't` -> `will not`, etc.). Note this can change word
    count, which is the source of a known char-level limitation (below).
 4. Punctuation, one of three ways, checked in this order:
-   - `ignorePunctuation` (optional): replace anything that is not a
+   - `ignorePunctuation` (optional): `removePunctuation` replaces anything that is not a
      letter/number/space with a space. The blunt instrument - it tokenizes
      `he's` as `["he", "s"]`, which is correct for transcription and fatal for a
      tense drill.
-   - `ignoreStructuralPunctuation` (optional): `stripStructuralPunctuation`
+   - `ignoreStructuralPunctuation` (optional): the exported `stripStructuralPunctuation`
      drops commas, hyphens, quotes, brackets and semicolons but KEEPS an
      apostrophe that sits inside a word, so `don't` survives while `'quoted'`
-     does not become a token. Added for grammar v2 drills; unused since grammar
-     v3 grades with its own `normalizeGrammarAnswer`.
+     does not become a token. No caller in `src/` currently sets this option
+     (grammar grades with its own `normalizeGrammarAnswer` in
+     `src/modules/grammar/grading/gradeCard.ts`, see `docs/08-grammar.md`).
    - neither: punctuation is left alone.
 
    Position matters: this step runs AFTER `expandSymbolicVariants`, so `50%`
    has already become `50 percent` by the time the `%` would be stripped.
    Stripping punctuation before step 2 would collapse `50%` to `50` and break
-   every drill containing `%`, `$` or a degree sign.
+   every answer containing `%`, `$` or a degree sign.
 
 5. Tokenize on whitespace, then `canonicalizeTokenList`.
 
@@ -130,12 +181,13 @@ For `action === 'check'`:
 
 1. Normalize both sides, then align token streams with `alignTokens`. This is a
    Needleman-Wunsch style edit-distance alignment over token arrays using a cost matrix.
-   Substitution cost comes from `getSubstitutionCost`, which classifies a pair via
-   `getTokenStatus`:
+   Substitution cost comes from the exported `getSubstitutionCost` (also used by the
+   char engine's skipped-word check), which classifies a pair via `getTokenStatus`:
    - equal tokens -> `correct` (cost 0),
-   - otherwise compute character-level Levenshtein distance (`getEditDistance`); if it is
-     within a near-miss limit (1 for expected tokens of length <= 4, else 2) ->
-     `spellingVariant` (cost 1.25),
+   - otherwise, with a near-miss limit of 1 for expected tokens of length <= 4, else 2:
+     if the length gap alone exceeds the limit it is `wrong` without building the
+     distance matrix; else compute character-level Levenshtein distance
+     (`getEditDistance`) and, if within the limit -> `spellingVariant` (cost 1.25),
    - else `wrong` (cost 1.5).
      Insertions/deletions each cost 1, producing `extra` (typed but not expected) and
      `missing` (expected but not typed) steps during backtrace.
@@ -148,7 +200,7 @@ For `action === 'check'`:
 4. `isPassed` is true only when there is at least one expected token and every feedback
    token has status `correct`.
 
-Token status vocabulary (`DictationCorrectionTokenStatus` in `types.ts`):
+Token status vocabulary (`DictationCorrectionTokenStatus` in `src/modules/dictation/types.ts`):
 `correct | extra | missing | spellingVariant | wrong`.
 
 ### Deep dive: character-level correction (`buildCharCorrection.ts`)
@@ -164,7 +216,8 @@ the learner got right (case/punctuation-insensitive, using `normalizeUnit` +
 
 - `matched` - fully correct leading words (shown in full, green),
 - `boundaryReveal` - the first diverging word revealed in full (the fix target; used
-  both when nothing was typed there and when the typed text is wrong),
+  when nothing was typed there, when the typed text is wrong, and when the word was
+  skipped),
 - `boundaryPartial` - a clean incomplete prefix of the last typed word
   (`isCleanPrefix`),
 - `remaining` - everything after the boundary (masked with `*` when "Show full answer"
@@ -173,27 +226,26 @@ the learner got right (case/punctuation-insensitive, using `normalizeUnit` +
 `buildCharCells` computes per-character `CharCell`s for a word: `correct`/`wrong`
 (case-insensitive compare), `missing` (expected char not yet typed), `extra` (typed past
 the expected word). `locateBoundary` finds the boundary word's `[start, end)` offsets in
-the raw draft and lists `wrongOffsets` so the guided input can underline in place and
-park the caret just past the boundary (`caretOffset`) without discarding text typed
-after the mistake.
+the raw draft and returns a `CharBoundary { kind, start, end, wrongOffsets }` so the
+guided input can underline in place and park the caret just past the boundary
+(`caretOffset`) without discarding text typed after the mistake.
 
-A skipped word is reported as missing, not wrong. When the typed word at the boundary
-belongs to a later expected word (expected "No contagion, because there is", typed
-"No contagion, there is"), `isSkippedWord` runs a suffix alignment from the boundary
-with the same word costs as `compareAnswer` (`getSubstitutionCost`; skipping a word
-costs 1). Expected words after the last typed word are free there, because a draft may
-stop mid-sentence and those words are not typed yet. It returns true only when dropping
-the expected word is strictly cheaper than reading the typed word as a substitution, and
-no costlier than reading it as an extra word (a tie means the typed word is exactly the
-next expected word). Typos, substitutions (also in an unfinished draft such as "I like
-that" for "I like this one more than that one."), extra words, and an unfinished last
-word keep the `wrong` boundary. A missing
-boundary has `kind: 'missing'`, `start === end` at the insertion point, and no
-`wrongOffsets`; the boundary segment is `boundaryReveal` with `typed: null` (every char
-`missing`). `autoCorrectAnswer` uses the same check to open one extra space at the gap,
-so the caret lands between two spaces and the learner types the word straight in. The
-guided input draws an amber wedge at that point instead of underlining the correct word,
-and the status reads "Incorrect - a word is missing".
+A skipped word is reported as missing, not wrong (`CharBoundaryKind = 'missing' | 'wrong'`).
+When the typed word at the boundary belongs to a later expected word (expected
+"No contagion, because there is", typed "No contagion, there is"), `isSkippedWord` runs a
+suffix alignment (`getSuffixAlignmentCosts`) from the boundary with the same word costs
+as `compareAnswer` (`getSubstitutionCost`; skipping a word costs 1). Expected words after
+the last typed word are free there, because a draft may stop mid-sentence and those words
+are not typed yet. It returns true only when dropping the expected word is strictly
+cheaper than reading the typed word as a substitution, and no costlier than reading it as
+an extra word (a tie means the typed word is exactly the next expected word). A single
+typed word that is a clean prefix of the expected word is treated as in progress, not
+skipped. Typos, substitutions, extra words, and an unfinished last word keep the `wrong`
+boundary. A missing boundary has `kind: 'missing'`, `start === end` at the insertion
+point (`getInsertionOffset`, past one separator space), and no `wrongOffsets`; the
+boundary segment is `boundaryReveal` with every char `missing`. `autoCorrectAnswer` uses
+the same check to open one extra space at the gap, so the caret lands between two spaces
+and the learner types the word straight in.
 
 Additional outputs:
 
@@ -208,9 +260,19 @@ Additional outputs:
 - `renderAnswerLine(result, { showFullAnswer })` masks `remaining` words with `*` when
   the toggle is off.
 
-Documented known limitation (in-file, T1): contraction equivalence that changes word
-count ("he would" vs "he'd") is not yet aligned at the char/word level here; the
-alternatives list is where accepted forms would be surfaced for the UI.
+Documented known limitation (in-file): contraction equivalence that changes word
+count ("he would" vs "he'd") is not yet aligned at the char/word level here.
+
+### Admin hint validation (`hintWords.ts`)
+
+Shared by the admin hint editor (`src/components/dictation/DictationHintEditor.tsx`) and
+the segment route (`src/app/api/dictation/segments/[segmentId]/route.ts`) so both agree
+on what a valid manual hint is. `filterHintsToSentence(sentence, hints)` keeps only hints
+that appear as a whole word of the sentence (case/punctuation-insensitive key via
+`toKey`), dedupes them, returns each in the sentence's own surface spelling, and keeps
+the CALLER's order (the admin's drag order is the Tab-fill order in practice).
+`isWordInSentence(sentence, word)` is the single-word check. It does not change the
+automatic hints from `computeHints`.
 
 ### Deep dive: correction parity (`correctionParity.test.ts`)
 
@@ -244,7 +306,7 @@ plus the shared persister `src/modules/dictation/services/rebuildTranscriptSegme
 
 Responsibility: convert a transcript (either timed cues or a plain text blob) into an
 ordered list of practice segments, each with quality flags, support manual editing
-of that list, and persist/rebuild the segment set (including a one-shot bulk backfill).
+of that list, and persist/rebuild the segment set (including a bulk re-segmentation).
 
 ### Deep dive: `buildDictationSegments` (`buildSegments.ts`)
 
@@ -256,7 +318,19 @@ unit, and a long sentence is only cut where a speaker would naturally pause. The
 guiding rule is integrity over brevity - a meaningful span is kept whole even if that
 leaves a long segment.
 
-The pipeline (`cues -> per-word time -> sentences -> pause-split -> segments`):
+```mermaid
+flowchart LR
+  A[rawCues or rawText] --> B[TimedWord stream<br/>per-word time interpolated]
+  B --> C[splitWordsIntoSentences]
+  C --> D{sentence <= 15 words?}
+  D -->|yes| S[segment]
+  D -->|no| E[findBestSplit<br/>pause punctuation = 2<br/>silence gap >= 400ms = 1]
+  E -->|found| D
+  E -->|no pause| F{exceedsHardLimit<br/>> 80 words or > 700 chars?}
+  F -->|no| S
+  F -->|yes| G[forceSplitSpan<br/>widest gap, else middle]
+  G --> S
+```
 
 - Build a flat `TimedWord[]` stream. With `rawCues.length > 0`, `cueToTimedWords`
   interpolates a per-word `startMs`/`endMs` inside each cue by character position (so
@@ -266,17 +340,17 @@ The pipeline (`cues -> per-word time -> sentences -> pause-split -> segments`):
   abbreviation-aware `splitTextIntoSentences` (see below).
 - `splitSentenceWords` splits each sentence recursively. A chunk of
   `<= MAX_SEGMENT_WORDS = 15` words is kept as is. Longer chunks are cut at the best
-  pause found by `findBestSplit`, which scores candidate boundaries and only ever cuts
-  on a real pause: priority 2 when the previous word ends with pause punctuation
-  (`,` `;` `:` or a dash - `PAUSE_PUNCTUATION`; a period never applies since sentences
-  are already split on `.` `!` `?`), priority 1 on a real silence gap
-  (`>= PAUSE_GAP_MS = 400`), and 0 (never cut) otherwise. Ties break toward the middle,
-  and both sides keep `>= MIN_SPLIT_SIDE_WORDS = 2`.
+  pause found by `findBestSplit`, which only ever cuts on a real pause (`breakPriority`):
+  priority 2 when the previous word ends with pause punctuation (`,` `;` `:` or a dash -
+  `PAUSE_PUNCTUATION`; a period never applies since sentences are already split on
+  `.` `!` `?`), priority 1 on a real silence gap (`>= PAUSE_GAP_MS = 400`), and 0
+  (never cut) otherwise. Ties break toward the middle, and both sides keep
+  `>= MIN_SPLIT_SIDE_WORDS = 2`.
 - If a long chunk has no pause at all, it stays whole - unless it is a degenerate run
   (`exceedsHardLimit`: `> HARD_MAX_WORDS = 80` words or `> HARD_MAX_CHARS = 700` chars,
   e.g. a punctuation-stripped transcript that would exceed the stored-text limit). Only
   then does `forceSplitSpan` chop it down to `<= MAX_SEGMENT_WORDS` at the widest
-  silence gap (else the nearest-middle word) as a last resort.
+  silence gap (`findForcedSplit`, else the nearest-middle word) as a last resort.
 - `createSegmentFromWords` builds each `SegmentDraft`: joined text, `startMs`/`endMs`
   only when every word is timed (else null), `cueIndexes`, and timing flags `untimed`
   (no word timed) or `partialTiming` (some untimed). It intentionally drops the
@@ -318,7 +392,9 @@ Operates on `EditableSegment` (a subset of `DictationSegmentApiRecord`). The dis
 - `mergePrevious` / `mergeNext` - `mergeSegments` concatenates text, takes min start / max
   end when both are timed, unions and sorts `cueIndexes`, and re-normalizes.
 
-All edits re-densify `order` so the list stays contiguous.
+All edits re-densify `order` so the list stays contiguous. Hint and translation edits
+(`setHints`, `resetHints`, `setTranslation`) are separate segment-route actions parsed in
+`src/modules/dictation/services/segmentRouteDecisions.ts` (see `docs/04-api-reference.md`).
 
 ### Persisting and bulk rebuild (`services/rebuildTranscriptSegments.ts`, `resegmentAll.ts`)
 
@@ -339,13 +415,17 @@ Two callers share this writer:
   `buildDictationSegments` then `persistRebuiltSegments` right after a transcript is
   saved, so a video always has practice segments the moment captions are stored (no
   separate build step). An empty build yields a 409 at the route.
-- Bulk backfill (`resegmentAll.ts`): `resegmentAllTranscripts({ dryRun })` scans every
-  `isActive: true` transcript, processes only the one the video's `activeTranscriptId`
-  actually points at (skipping stray active records, translation tracks, and missing
-  videos), and rebuilds each via `persistRebuiltSegments` so existing videos pick up the
-  current pause-based logic. Dry-run by default reports old-vs-new segment counts;
-  `dryRun: false` rebuilds. It is idempotent and exposed through
-  `scripts/resegmentAllTranscripts.ts`.
+- Bulk re-segmentation (`resegmentAll.ts`): `resegmentAllTranscripts({ dryRun })` scans
+  every `isActive: true` transcript, processes only the one the video's
+  `activeTranscriptId` actually points at (skipping stray active records, translation
+  tracks, and missing videos), and rebuilds each via `persistRebuiltSegments` so existing
+  videos pick up the current pause-based logic. Dry-run reports old-vs-new segment
+  counts; `dryRun: false` rebuilds. It is idempotent and exposed through
+  `scripts/resegmentAllTranscripts.ts` (`bun run resegment` in `package.json`).
+
+The segment document's `attemptStatus`/`attemptCount`/`lastAttemptAt` fields are legacy:
+progress is now per learner (see `practice/`). `scripts/resetSharedSegmentProgress.ts`
+is a one-shot, dry-run-by-default cleanup that resets stale values on shared segments.
 
 ---
 
@@ -390,28 +470,142 @@ timing-stripped, so cues are the only place per-line timing survives for editing
 
 ---
 
-## translations/ - caption overlap and language codes
+## translations/ - captions, overrides, language codes
 
-Files: `src/modules/dictation/translations/{captionOverlap,languages}.ts`.
+Files: `src/modules/dictation/translations/{captionOverlap,segmentTranslation,languages}.ts`.
 
 `resolveCaptionForWindow(cues, startMs, endMs)` (`captionOverlap.ts`) aligns a foreign
 translation caption track to an English segment purely by time overlap. Returns `''` for
 an untimed window (either bound null). Otherwise it keeps cues satisfying the half-open
 overlap `cue.startMs < endMs && cue.endMs > startMs`, sorts by `startMs`, trims and
 de-duplicates their text (a `Set` collapses repeated adjacent lines), and joins with a
-single space. There is no sentence-level alignment: the "translation" of a segment is
-simply whichever caption cues overlap its `[startMs, endMs)`.
+single space. There is no sentence-level alignment.
+
+`resolveSegmentTranslation({ cues, language, segment })` (`segmentTranslation.ts`) is the
+single resolver shared by practice and the admin preview/editor: the admin's manual
+per-segment override `segment.translations[language]` (trimmed, non-empty) wins,
+otherwise it falls back to `resolveCaptionForWindow`. Overrides are stored on the segment
+as a language-keyed map (`DictationSegmentApiRecord.translations`) and written by the
+segment route's `setTranslation` action (an empty text clears it).
 
 `languages.ts` defines translation-language handling: `CURATED_TRANSLATION_LANGUAGE_CODES`
 (a picker list with `vi` first), `normalizeTranslationLanguage` (trim + lowercase),
 `isValidTranslationLanguage` (length 2-12 and a BCP-47-ish pattern
-`^[a-z]{2,3}(?:-[a-z0-9]{2,8})*$`), `getLanguageLabel` (a cached `Intl.DisplayNames`
-lookup that falls back to the code when the label is unknown), and
-`getCuratedLanguageOptions` (maps curated codes to `{ code, label }`).
+`^[a-z]{2,3}(?:-[a-z0-9]{2,8})*$`), `getLanguageLabel(code, displayLocale = 'en')` (an
+`Intl.DisplayNames` lookup cached per display locale that falls back to the code; UI
+callers pass the learner's locale, while English stays the default the AI translation
+prompt relies on), and `getCuratedLanguageOptions` (maps curated codes to
+`{ code, label }`).
 
 ---
 
-## review/ - review queue (spaced-repetition-style)
+## practice/ - per-learner progress and the practice write contract
+
+Files: `src/modules/dictation/practice/{types,segmentProgress,segmentProgressService,attemptCursor,practiceSync,practicePageData,practiceTranslations,translationTrackRequest,sessionCompletion,sessionStartRetry,duplicateKeyError}.ts`.
+
+Responsibility: everything the practice page and the session/attempt routes share that
+is not grading. The core invariant: `DictationSegment` is shared content, so a learner's
+progress is never read from or written to it. Progress is derived from the learner's own
+`DictationAttempt` rows and overlaid onto the segments sent to the browser.
+
+| File                         | Kind        | Key exports                                                                                                                                                         | Used by                                                                              |
+| ---------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `types.ts`                   | types       | `DictationPracticeSegmentContent`, `DictationPracticeSegment`, `PracticeTranslationTrack`                                                                           | practice page, `src/requests/dictationSessionsApi.ts`                                |
+| `segmentProgress.ts`         | pure        | `buildSegmentProgressPipeline`, `getSegmentStatusForAttempt`, `applyAttemptToProgress`, `overlaySegmentProgress`                                                    | attempts route, `DictationPracticeShell.tsx`                                         |
+| `segmentProgressService.ts`  | server-only | `loadSegmentProgressRows`                                                                                                                                           | practice page, attempts route                                                        |
+| `attemptCursor.ts`           | pure        | `resolveAttemptCursor`, `canRecordAttemptForSession`                                                                                                                | `src/app/api/dictation/sessions/[sessionId]/attempts/route.ts`                       |
+| `practiceSync.ts`            | pure        | `getPracticeLane`, `buildAttemptWrite`, `buildCursorWrite`, `buildPreferencesWrite`, `buildCompletionWrite`, `readSessionFromWriteResult`, `readAttemptWriteResult` | `src/components/dictation/DictationPracticeShell.tsx`                                |
+| `practicePageData.ts`        | pure        | `buildPracticeSegments`, `buildInitialTranslationTrack`                                                                                                             | `src/app/(app)/dictation/videos/[videoId]/practice/page.tsx`                         |
+| `practiceTranslations.ts`    | server-only | `toCaptionCues`, `loadInitialTranslationCues`, `loadTranslationTrack`                                                                                               | practice page, `src/app/api/dictation/sessions/translations/route.ts`                |
+| `translationTrackRequest.ts` | pure        | `parseTranslationTrackRequest`                                                                                                                                      | translations route                                                                   |
+| `sessionCompletion.ts`       | pure        | `resolveSessionCompletedAt`                                                                                                                                         | `src/app/api/dictation/sessions/[sessionId]/route.ts`                                |
+| `sessionStartRetry.ts`       | pure        | `isRetryableSessionStartError`, `getSessionStartRetryDelayMs`                                                                                                       | `DictationPracticeShell.tsx`                                                         |
+| `duplicateKeyError.ts`       | pure        | `isDuplicateKeyError` (Mongo code 11000)                                                                                                                            | sessions and attempts routes, `reviewItemService.ts`, several `src/modules/ielts/**` |
+
+### Deep dive: progress overlay (`segmentProgress.ts`, `segmentProgressService.ts`)
+
+- `buildSegmentProgressPipeline(match)` is one aggregation over `DictationAttempt`:
+  `$match` (userId + videoId, or + segmentId) then `$sort: { createdAt: -1 }` then
+  `$group` by `segmentId` taking `$first` action/isPassed/createdAt and a count. The
+  match+sort line up with the `{userId, videoId, createdAt: -1}` (or
+  `{userId, segmentId, createdAt: -1}`) index, so `$first` is the latest attempt without
+  an in-memory sort.
+- `getSegmentStatusForAttempt({ action, isPassed })`: `reveal` -> `revealed`, `skip` ->
+  `skipped`, else `correct` / `attemptedIncorrect`. Kept local (not imported from the
+  route decisions) so the browser bundle does not pull in the route's zod schema; a
+  parity test pins it to the route mapping.
+- `toSegmentProgressRow` maps a group to `SegmentProgressRow { segmentId, attemptCount,
+attemptStatus, lastAttemptAt }`; `applyAttemptToProgress` is the client-side optimistic
+  step after a locally graded attempt.
+- `overlaySegmentProgress(segments, rows)` replaces every segment's progress fields with
+  the learner's own; segments without a row reset to `EMPTY_SEGMENT_PROGRESS`
+  (`notStarted`, 0, null), so legacy values on the shared document are ignored.
+- `loadSegmentProgressRows({ userId, videoId, segmentId? })` runs the pipeline; a null
+  owner (first-time visitor) returns `[]` without querying.
+
+`buildPracticeSegments` (`practicePageData.ts`) maps segment docs through
+`toDictationPracticeSegmentContent` (`services/dictationSegmentRecords.ts`, which drops
+admin-only fields and sends `hints` only when `hintsOverridden`) and then overlays
+progress. `buildInitialTranslationTrack` attaches only the opening language's overrides
+(`pickSegmentTranslationOverrides`).
+
+### Deep dive: attempt cursor (`attemptCursor.ts`)
+
+The browser grades locally and queues attempts, so a queued attempt may land after the
+learner moved on. The attempts route accepts an attempt for ANY segment of the session's
+transcript and moves the cursor to follow the attempt, not the old server position:
+
+| Session status | Attempt advances (pass / skip)? | Result                                                              |
+| -------------- | ------------------------------- | ------------------------------------------------------------------- |
+| not `active`   | any                             | `keep` (attempt still recorded; a finished session is not reopened) |
+| `active`       | yes, next segment exists        | `move` to the segment after the ATTEMPTED one                       |
+| `active`       | yes, no next segment            | `complete`                                                          |
+| `active`       | no, attempted != current        | `move` to the attempted segment                                     |
+| `active`       | no, attempted == current        | `keep`                                                              |
+
+`canRecordAttemptForSession(status)` accepts every status except `abandoned` (a completed
+session still takes attempts when the learner revisits an earlier sentence; an abandoned
+one was superseded by a newer session).
+
+### Deep dive: practice write lanes (`practiceSync.ts`)
+
+Practice writes go through the client outbox (`src/lib/sync/outbox.ts`, documented in
+`docs/02-architecture.md`). `practiceSync.ts` builds the `OutboxEnqueueInput`s:
+
+| Builder                 | Method + URL                                    | Body                                                      | Merge key                   |
+| ----------------------- | ----------------------------------------------- | --------------------------------------------------------- | --------------------------- |
+| `buildAttemptWrite`     | `POST` `getDictationAttemptsApiPath(sessionId)` | the attempt payload                                       | none; `id = idempotencyKey` |
+| `buildCursorWrite`      | `PATCH` `getDictationSessionApiPath(sessionId)` | `currentSegmentId`, `currentSegmentOrder`                 | `cursor`                    |
+| `buildPreferencesWrite` | `PATCH` session                                 | `isVideoHidden`, `playbackSpeed`, `showShortcuts` (whole) | `preferences`               |
+| `buildCompletionWrite`  | `PATCH` session                                 | `{ status: 'completed' }`                                 | none                        |
+
+All writes for one session share the lane `dictation:<sessionId>` (`getPracticeLane`), so
+attempts, cursor moves, preference changes and completion reach the server in the order
+the learner made them. Cursor and preference writes SET a desired state, so consecutive
+ones collapse through their merge key. The attempt's idempotency key doubles as the
+outbox id, so a replay after reload is deduped by the route's prior-attempt lookup.
+`readSessionFromWriteResult` returns null for a merged-away write (`{ superseded: true }`);
+`readAttemptWriteResult` extracts `{ attempt, progress }` from the attempt route response.
+
+### Smaller helpers
+
+- `practiceTranslations.ts` (`server-only`): `loadInitialTranslationCues` does two
+  parallel reads (distinct non-primary languages with `cueCount > 0`, and the cues of the
+  alphabetically first one); `loadTranslationTrack` loads one language's cues plus
+  per-segment overrides on demand (projection `translations.<language>`, returns null for
+  the primary language).
+- `translationTrackRequest.ts`: `parseTranslationTrackRequest(searchParams)` requires a
+  24-hex `videoId` and a valid language tag (it becomes part of a projection path, so
+  anything with dots or `$` is refused with 400).
+- `sessionCompletion.ts`: `resolveSessionCompletedAt` stamps `completedAt = now` only when
+  the status actually moves to `completed`; a replayed completion keeps the original time.
+- `sessionStartRetry.ts`: a failed session start is retried when fetch threw a
+  `TypeError` or the status is 0, 408, 429 or 5xx; delay is
+  `min(500 * 2^(failures - 1), 30000)` ms.
+
+---
+
+## review/ - review queue
 
 Files: `src/modules/dictation/review/{reviewScheduler,reviewItemService}.ts`.
 
@@ -443,25 +637,37 @@ feedback tokens). `getFirstCheckAccuracy` reads the first `check` attempt's accu
 
 Scheduling model: `dueAt` defaults to "now" - there is no forward day-offset interval in
 this version; items become due immediately and are ordered by due date then priority.
-The spaced-repetition character comes from which segments re-enter the queue and their
-priority ranking, not from computed future intervals.
+Dictation review does not use the shared recall ladder (`learning/recall`).
 
-De-duplication: `mergeReviewCandidates({ candidates, existingItems })` drops candidates
-whose `${segmentId}:${reason}` key already matches an active (`due` or `scheduled`) item,
-and also de-dupes within the incoming batch. Lifecycle helpers `dismissReviewItem` and
-`completeReviewItem` stamp `lastReviewedAt` and set status to `dismissed`/`completed`;
-`getReviewActionStatus(action)` maps `complete|dismiss` to the stored status.
+Lifecycle helpers `dismissReviewItem` and `completeReviewItem` stamp `lastReviewedAt` and
+set status to `dismissed`/`completed`; `getReviewActionStatus(action)` maps
+`complete|dismiss` to the stored status. `mergeReviewCandidates` (a pure dedupe on
+`${segmentId}:${reason}` against `due`/`scheduled` items) is still exported but has no
+production caller; the service dedupes with `selectNewReviewCandidates` instead.
 
 ### `reviewItemService.ts` (I/O)
 
-`recomputeReviewItemsForVideo({ userId, videoId })` loads the user's attempts (ascending),
-the video's segments (by order), and existing active items in parallel; maps docs via the
-record mappers; calls `buildReviewCandidates`; filters out candidates matching existing
-`${segmentId}:${kind}:${reason}` keys; and `insertMany`s the survivors with
-`status: 'due'`. `listDueReviewItemsForUser` returns active items sorted by
-`dueAt: 1, priority: -1, updatedAt: -1` with a default limit of 20.
-`markReviewItemForUser` sets `lastReviewedAt` and the completed/dismissed status via
-`findOneAndUpdate` scoped to the user's id.
+- `selectNewReviewCandidates({ attempts, existingItems, segments })` (exported, pure):
+  runs `buildReviewCandidates` and drops candidates whose
+  `${segmentId}:${kind}:${reason}` matches an existing active item. Because candidates
+  are grouped per segment, feeding one segment's attempts yields exactly that segment's
+  share of the video-wide result.
+- `recomputeReviewItemsForVideo({ userId, videoId })` loads the user's attempts
+  (ascending), the video's segments, and existing active items, then inserts.
+- `recomputeReviewItemsForSegment({ userId, videoId, segmentId })` is the incremental
+  path the attempts route runs after each attempt: only that segment's attempts (served
+  by `{userId, segmentId, createdAt}`), the segment, and its active items. Idempotent, so
+  a replayed attempt can run it again.
+- `insertReviewCandidates` inserts with `status: 'due'` via unordered `insertMany`. A
+  partial unique index on active items (`partialFilterExpression` on `due`/`scheduled` in
+  `src/models/dictation/DictationReviewItemModel.ts`) rejects a concurrent
+  duplicate with E11000; `isOnlyDuplicateKeyErrors` tolerates that (reading both
+  `writeError.code` and `writeError.err.code`) and returns only the rows actually
+  inserted. Correctness does not depend on the index existing.
+- `listDueReviewItemsForUser({ userId, videoId?, limit = 20 })` returns `[]` for a null
+  owner; otherwise active items sorted `dueAt: 1, priority: -1, updatedAt: -1`.
+- `markReviewItemForUser` sets `lastReviewedAt` and the completed/dismissed status via
+  `findOneAndUpdate` scoped to the user's id.
 
 ---
 
@@ -469,46 +675,68 @@ record mappers; calls `buildReviewCandidates`; filters out candidates matching e
 
 Files: `src/modules/dictation/stats/{globalStats,globalStatsService,videoStats,videoStatsService}.ts`.
 
-`globalStats.ts` and `videoStats.ts` are pure aggregators; the `*Service.ts` files fetch
-the Mongo data (ascending by `createdAt`, which matters for "first-check" logic) and
-delegate.
+### Global stats (`globalStats.ts` + `globalStatsService.ts`)
 
-### `aggregateGlobalDictationStats` (`globalStats.ts`)
+Cost stays flat as history grows: whole-history counts are reduced inside MongoDB by one
+`$facet` pass, and only a capped window of recent feedback tokens is shipped to the app.
 
-Takes global `videos` plus per-user `attempts` and `reviewItems` and a `userId`; filters
-attempts and review items to that user (videos stay global). Returns
-`DictationGlobalStatsRecord`:
+```mermaid
+flowchart TD
+  S[getGlobalStatsForUser userId] -->|null owner| Z[zeroed stats<br/>totalVideoCount from cache]
+  S --> P[aggregate buildGlobalStatsPipeline<br/>completedSegments, firstChecks,<br/>practiceDays, practiceTime]
+  S --> T[find newest 500 attempts<br/>GLOBAL_STATS_TOKEN_PROJECTION]
+  S --> R[count active review items]
+  S --> V[getCachedVideoCount]
+  S --> C[completion counts -> existing videos]
+  P --> M[toGlobalStatsSummary]
+  M --> X[computeGlobalDictationStats]
+  T --> X
+  R --> X
+  V --> X
+  C --> X
+```
 
-- `activeStreakDays` - `getActiveStreakDays` builds a `Set` of UTC day-keys (`YYYY-MM-DD`)
-  from attempt dates, starts a cursor at the most recent practice day, and walks backward
-  one day at a time counting consecutive practiced days. The streak is the consecutive run
-  ending on the latest practice day (not necessarily today).
-- `completedSegmentCount` - distinct segment ids among "completed" attempts, where
-  completed means `isPassed || action === 'reveal' || action === 'skip'`.
-- `completedVideoCount` - videos with `status === 'completed'`; `totalVideoCount` - all.
-- `dueReviewItemCount` - review items with status `due` or `scheduled`.
-- `firstTryAccuracyTrend` - a 7-point daily series. It keeps the first `check` attempt per
-  segment, buckets those first-checks into the last 7 UTC days (oldest first), and per day
-  computes `round(sum correctCount / sum totalExpected * 100)`. Labels are `MM-DD`.
-- `weeklyPracticeTimeMs` / `monthlyPracticeTimeMs` - sum of `timeSpentMs` over the last 7 /
-  30 days.
-- `weakWords` - top 10 missed words (skipping `correct`/`extra` tokens; keyed by lowercased
-  `expectedOriginal`), sorted by count then word.
-- `repeatedMistakeTypes` - fixed 4-entry list (`missing`/`wrong`/`extra`/`spellingVariant`
-  with labels), sorted by count.
+- `buildGlobalStatsPipeline({ now, userId })` (pure) facets the user's attempts:
+  `completedSegments` (distinct segments with `isPassed` or a `reveal`/`skip`),
+  `firstChecks` (each segment's earliest `check` via `$min` on
+  `{createdAt, id, correctCount, totalExpected}`, kept only inside the 7-day trend
+  window), `practiceDays` (distinct UTC `%Y-%m-%d` days), and `practiceTime` (rolling
+  30-day sum with a 7-day conditional sum). Windows come from `getGlobalStatsWindows`.
+- `toGlobalStatsSummary` maps the facet document to `GlobalStatsSummary`
+  (`EMPTY_GLOBAL_STATS_SUMMARY` when absent).
+- `computeGlobalDictationStats(...)` (pure) returns `DictationGlobalStatsRecord`:
+  - `activeStreakDays` - consecutive UTC days ending on the latest practice day (not
+    necessarily today).
+  - `completedSegmentCount`, `weeklyPracticeTimeMs`, `monthlyPracticeTimeMs` from the
+    summary.
+  - `completedVideoCount` - per-user: videos with at least one completed session that
+    still exist (`countCompletedVideos` in the service), never the shared video status.
+  - `totalVideoCount` - `getCachedVideoCount()` (archived included).
+  - `dueReviewItemCount` - review items with status `due` or `scheduled`.
+  - `firstTryAccuracyTrend` - 7 daily points (oldest first, labels `MM-DD`),
+    `round(sum correctCount / sum totalExpected * 100)` per day.
+  - `weakWords` (top 10 missed words, keyed by lowercased `expectedOriginal`, skipping
+    `correct`/`extra`) and `repeatedMistakeTypes` (4 fixed entries sorted by count) come
+    only from the newest `RECENT_TOKEN_ATTEMPT_LIMIT = 500` attempts: "weak spots
+    lately", not all-time.
+- `getGlobalStatsForUser(userId | null, { completionCounts? })` accepts an
+  already-started completion-count promise so `/dictation` does not run that
+  aggregation twice.
 
-### `aggregateVideoStats` (`videoStats.ts`)
+### Per-video stats (`videoStats.ts` + `videoStatsService.ts`)
 
-Takes a single video's `attempts` and `segments`; returns `DictationVideoStatsRecord`:
+`getVideoStatsForUser({ userId | null, videoId })` fetches attempts (ascending by
+`createdAt`, which matters for first-check logic; skipped entirely for a null owner) and
+segments, then calls the pure `aggregateVideoStats`, returning
+`DictationVideoStatsRecord`:
 
-- `commonMissedWords` - same as weak words but top 8.
+- `commonMissedWords` - same rule as weak words but top 8.
 - `completedSegmentCount` / `completionPercentage` - distinct completed segments over
   `segments.length`.
 - `firstTryWordAccuracy` - accuracy over the first `check` attempt per segment.
 - `overallWordAccuracy` - accuracy over all `check` attempts.
-- `hardestSegments` - group by segment, compute per-segment accuracy and attempt count,
-  keep groups with attempts, sort by accuracy ascending then attempt count descending
-  (lowest accuracy / most attempts = hardest), take top 6. Labels truncated to 96 chars.
+- `hardestSegments` - per-segment accuracy and attempt count, sorted by accuracy ascending
+  then attempt count descending, top 6. Labels truncated to 96 chars.
 - `mistakeTaxonomy` - `extra/missing/spellingVariant/wrong` counts across feedback tokens.
 - `revealCount`, `skipCount`, `retryCount` (failed checks), `replayCount`
   (sum of `replayCountDelta`), `segmentCount`, `timeSpentMs`.
@@ -578,47 +806,104 @@ remain intact, so the user can retry without a crash.
 
 ---
 
-## content/ - hierarchy, browse, favorites, progress
+## content/ - catalog, caching, admin, favorites, progress
 
-Files: `src/modules/dictation/content/{contentRepository,adminContentRepository,adminActions,browseQuery,favoriteRepository,favoriteActions,progressRepository,reorder,sectionGroups,slugify,topicSummaries,backfill}.ts`.
+Files: `src/modules/dictation/content/{contentRepository,catalogReaders,adminContentRepository,adminActions,adminTopicBoard,adminVideoFilter,browseQuery,browseItem,favoriteRepository,favoriteActions,progressRepository,reorder,sectionGroups,slugify,topicSummaries,videoTrash}.ts`.
 
-Responsibility: the Topic -> Section -> Video content hierarchy, its browse/search
-experience, favorites, completion progress, and a one-time backfill migration. Pure logic
-(`slugify`, `reorder`, `sectionGroups`, `topicSummaries`, `browseQuery`, `backfill` via an
-injected model) is separated from `server-only` repositories and `'use server'` actions.
+Responsibility: the Topic -> Section -> Video content hierarchy, its cached public reads,
+browse/search, the admin board and video list, favorites, and per-user completion
+progress. Pure logic (`slugify`, `reorder`, `sectionGroups`, `topicSummaries`,
+`browseQuery`, `browseItem`, `adminTopicBoard`, `adminVideoFilter`, `videoTrash`) is
+separated from `server-only` repositories and `'use server'` actions.
 
-### Hierarchy operations
+```mermaid
+flowchart LR
+  subgraph Public pages
+    P1[/dictation, topic,<br/>no-topic, sitemap/]
+  end
+  subgraph Admin pages
+    A1[/admin/dictation/]
+  end
+  P1 --> CR[catalogReaders.ts<br/>createCatalogReader<br/>tag dictationCatalog]
+  CR --> R[contentRepository.ts]
+  A1 --> R
+  A1 --> ACT[adminActions.ts<br/>guardAdmin]
+  ACT --> W[adminContentRepository.ts]
+  ACT -->|updateTag + revalidatePath| CR
+```
+
+### Hierarchy reads and the catalog cache
 
 - `slugify(input)` (`slugify.ts`): lowercase, trim, replace non-`[a-z0-9]` runs with a
   single `-`, strip leading/trailing dashes, cap at 100 chars, strip trailing dashes again.
   Falls back to `'topic'` when nothing usable remains.
-- `contentRepository.ts` (read side, `server-only`): `listTopics`, `getTopicBySlug`
-  (wrapped in React `cache` so metadata and body share one query per request),
-  `listSectionsForTopic`, `listVideosForTopic`, `listNoTopicVideos`/`countNoTopicVideos`
-  (the `{ topicId: null }` filter matches both explicit null and absent field),
-  `searchVideosInTopic` (flat-list mode), `listManageableVideos`, `listArchivedVideos`
-  (the admin trash), `listAllSections`, and
-  `listTopicSummaries` (runs `listTopics` plus two Mongo aggregations for live lesson/level
-  and section counts, then delegates to `buildTopicSummaries`). A shared
-  `VISIBLE_VIDEO_FILTER = { status: { $ne: 'archived' } }` excludes soft-deleted videos.
-- `adminContentRepository.ts` (write side, `server-only`): `createTopic`/`updateTopic`
-  (slug uniqueness via `uniqueTopicSlug`, which appends `-2`, `-3`, ... until no clash;
+- `contentRepository.ts` (read side, `server-only`, uncached): `listTopics`,
+  `getTopicBySlug` (wrapped in React `cache`), `listSectionsForTopic`,
+  `listVideosForTopic`, `listFiledVideos` (every non-archived video with a topic, for the
+  admin board), `listNoTopicVideos`/`countNoTopicVideos` (the `{ topicId: null }` filter
+  matches both explicit null and absent field), `countAllVideos` (archived included, the
+  stats total), `searchVideosInTopic` (flat-list mode), `listManageableVideos`,
+  `listArchivedVideos` (the admin trash), `listAllSections`, and `listTopicSummaries`
+  (runs `listTopics` plus two aggregations for live lesson/level and section counts, then
+  `buildTopicSummaries`). A shared `VISIBLE_VIDEO_FILTER = { status: { $ne: 'archived' } }`
+  excludes soft-deleted videos.
+- `catalogReaders.ts` (`server-only`): public browse pages read through cached wrappers
+  built with `createCatalogReader` (`src/lib/db/catalogCache.ts`: Next `unstable_cache`
+  keyed by reader key plus `CATALOG_CACHE_VERSION`, JSON round-tripped, then React
+  `cache` for per-request dedupe). Readers: `getCachedTopics`,
+  `getCachedTopicSummaries`, `getCachedNoTopicCount`, `getCachedVideoCount`,
+  `getCachedNoTopicVideos`, and `getCachedTopicCatalog(slug)` (one entry holding the
+  topic, its sections and visible videos; slug lowercased). Dates are revived with
+  `reviveDates`/`reviveDatesInList`. All share `CACHE_TAGS.dictationCatalog`. Invariant:
+  every catalog write must invalidate that tag (admin actions do; so does
+  `/api/admin/revalidate`). Admin pages keep the uncached repository so editors always
+  see the database.
+- `browseItem.ts`: `toBrowseItem(video, { completionCounts, favoritedSet, inProgressSet })`
+  is the single browse-card view-model mapper for topic, favorites, uncategorized and
+  in-progress surfaces (`practiceHref` only when `hasDictationTranscript`).
+
+### Admin writes (`adminContentRepository.ts`, `adminActions.ts`)
+
+- `adminContentRepository.ts` (`server-only`): `createTopic`/`updateTopic` (slug
+  uniqueness via `uniqueTopicSlug`, which appends `-2`, `-3`, ... until no clash;
   renaming a topic regenerates its slug and changes the public URL), `createSection`/
   `updateSection`, `deleteTopic`/`deleteSection` (guarded: refuse while non-archived videos
   remain; deleting a topic also deletes its empty sections), `deleteVideo` (soft delete via
   `status: 'archived'`), `restoreVideo` (status rebuilt by `restoredVideoStatus` in
-  `videoTrash.ts`: segments → `ready`, active transcript → `transcriptReady`, else
+  `videoTrash.ts`: segments -> `ready`, active transcript -> `transcriptReady`, else
   `needsTranscript`), `purgeVideo` (archived only: deletes transcripts, segments,
-  sessions, attempts, debriefs, review items and favorites, unlinks vocab occurrences,
-  then the video), `assignVideos` (bulk set topic/section/level; `null` clears a
-  field), and the `reorder*` persisters.
-- `adminActions.ts` (`'use server'`): thin wrappers that call `guardAdmin()`
-  (`requireAdmin` + `connectDatabase`, re-checking the admin role server-side), then a
-  repository function, then `revalidateBrowse()` (revalidates `/dictation`,
-  `/dictation/no-topic`, `/admin/dictation`). Includes `restoreVideoAction`/
-  `purgeVideoAction` for the trash,
-  `moveVideoAction`/`assignVideosAction` for drag-and-drop moves and
-  `uploadTopicThumbnailAction` (Cloudinary).
+  sessions, attempts, debriefs, review items and favorites, unlinks vocab occurrences by
+  nulling `videoId`/`segmentId`/`attemptId`, then deletes the video last so a failed
+  cleanup leaves it in the trash), `assignVideos` (bulk set topic/section/level; `null`
+  clears a field), and the `reorder*` persisters.
+- `adminActions.ts` (`'use server'`): each action calls `guardAdmin()` (`requireAdmin` +
+  `connectDatabase`, re-checking the role server-side), then a repository function, then
+  `revalidateBrowse()`, which runs `updateTag(CACHE_TAGS.dictationCatalog)` first and
+  then `revalidatePath` for `/dictation`, `/dictation/no-topic`, `/admin/dictation`.
+  Actions: topic/section create/update/delete/reorder, `deleteVideoAction`,
+  `restoreVideoAction`, `purgeVideoAction`, `reorderVideosAction`,
+  `removeVideoFromSectionAction`, `moveVideoAction` (topic + section only),
+  `updateVideoLevelAction`, `assignVideosAction`, and `uploadTopicThumbnailAction`
+  (Cloudinary; its error text comes from `getMessages()`).
+
+### Admin board and video list (pure)
+
+- `adminTopicBoard.ts`: `buildAdminTopicBoard({ topics, sections, videos })` assembles the
+  admin topic board from three flat, already-sorted lists (instead of two queries per
+  topic), keeping input order within each group; videos without a section land in
+  `ungrouped`. `toAdminSectionVideo` is the row mapper.
+- `adminVideoFilter.ts`: the in-memory filter for the admin video list
+  (`/admin/dictation?view=list`, consumed by `src/components/dictation/admin/VideoFilterBar.tsx`
+  and `VideoAssignTable.tsx`). `AdminVideoFilter { search, levels, statuses, topicId,
+sectionId, sort }` with `ADMIN_FILTER_NONE = 'none'` for "no level/topic/section".
+  Sorts: `order` (keeps drag order), `newest`, `oldest`, `title`, `longest`, `shortest`
+  (missing durations last). `filterAdminVideos` requires every search word to appear in
+  title, channel, topic or section title. `countAdminVideoFacets` computes per-option
+  counts with each facet ignoring its own selection. `ADMIN_QUICK_VIEWS` (`No topic`,
+  `No level`, `Not ready`) replace the facets. `parseAdminVideoFilter` /
+  `writeAdminVideoFilter` round-trip the filter through URL params (`q`, `level`,
+  `status`, `topic`, `section`, `sort`), dropping unknown values and defaults; a section
+  only applies inside a picked topic.
 
 ### Reorder (drag-and-drop ordering)
 
@@ -626,21 +911,20 @@ Ordering is dense-integer, not fractional. `reorderIds(ids, draggedId, beforeId)
 (`reorder.ts`, pure) returns the id array with `draggedId` removed and re-inserted at
 `beforeId`'s index (no-op when they are equal or `beforeId` is absent). The persisters
 `reorderTopics`/`reorderSections`/`reorderVideos` then `bulkWrite` `order = arrayIndex` for
-each id. There is no gap allocation or midpoint math anywhere; positions are always the
-contiguous index in the id list.
+each id.
 
 ### Browse query (search/filter/sort/pagination)
 
-`browseQuery.ts` (pure) is shared by the public browse grid and the admin table so behavior
-stays identical. `parseBrowseQuery` coerces raw params into
+`browseQuery.ts` (pure): `parseBrowseQuery` coerces raw params into
 `BrowseQuery { search, level, sort, page }` (search trimmed and capped at 100 chars, level
 validated via `isDictationLevel`, sort restricted to `order|newest|oldest|title` defaulting
 to `order`, page a positive integer defaulting to 1). `isBrowseQueryActive` distinguishes
 flat-list mode (a search or level filter is set) from the section accordion.
 `buildVideoMongoFilter` builds a case-insensitive `title` regex (metacharacters escaped) and
 an optional `level` equality; `buildVideoMongoSort` maps the sort to a Mongo sort spec
-(`order` -> `{ order: 1, createdAt: -1 }`, etc.). `matchesBrowseQuery` is the in-memory
-mirror for the admin table. `paginate(page, total, pageSize = BROWSE_PAGE_SIZE (20))` clamps
+(`order` -> `{ order: 1, createdAt: -1 }`, etc.). `matchesBrowseQuery` is an in-memory
+mirror that currently has no caller outside tests (the admin list uses
+`adminVideoFilter.ts`). `paginate(page, total, pageSize = BROWSE_PAGE_SIZE (20))` clamps
 the page to `[1, totalPages]` and returns `skip`, `hasPrev`, `hasNext`.
 
 `sectionGroups.buildSectionGroups` buckets a topic's videos by `sectionId` into section
@@ -652,17 +936,28 @@ counts to 0.
 ### Favorites and progress
 
 - `favoriteRepository.ts` (`server-only`): `addFavorite` (upsert with `$setOnInsert`,
-  returning whether it was newly created, catching duplicate-key code 11000 for concurrent
-  double-clicks), `removeFavorite`, `toggleFavorite`, `listFavoriteVideoIds`, and
-  `listFavoriteVideosForUser` (preserves favorite recency order and drops archived/missing
-  videos). `favoriteActions.toggleFavoriteAction` returns `{ favorited: null, needsAuth: true }`
-  for anonymous users so the client can prompt sign-in.
-- `progressRepository.ts` (`server-only`): completion is counted as sessions with
-  `status: 'completed'` (replays create new sessions, so counting sessions counts replays).
-  `getCompletionCountsForUser` returns a `Map<videoId, count>` via aggregation;
-  `getCompletionCountForVideo` counts for one video. These counts feed the completion badge
-  tiers. `getLatestCompletedVideoForUser` returns the user's most recently completed,
-  non-archived video (sorted by `completedAt` then `updatedAt`) for a prominent results CTA.
+  returning whether it was newly created, treating duplicate-key code 11000 as already
+  favorited), `isFavoritableVideo` (exists and not archived), `removeFavorite`,
+  `listFavoriteVideoIds`, and `listFavoriteVideosForUser` (favorite recency order, drops
+  archived/missing videos).
+- `favoriteActions.ts` (`'use server'`): `setFavoriteAction(videoId, desired)` is
+  idempotent set-state (upsert when true, delete when false; never a toggle) so outbox
+  replays land on the last desired state. It throws for a malformed id or for adding an
+  archived/missing video (removal stays allowed), and returns
+  `{ favorited: null, needsAuth: true }` for anonymous users.
+- `progressRepository.ts` (`server-only`): per-user progress is derived from sessions,
+  never stored on the shared video.
+  - `getCompletionCountsForUser` - `Map<videoId, count>` of `status: 'completed'`
+    sessions (replays open new sessions, so this counts replays); feeds badge tiers.
+  - `getInProgressVideoIdsForUser` / `listInProgressVideosForUser` - videos with an
+    active session that has at least one attempt (`listStartedActiveSessions`, one
+    aggregation with a `$lookup` limited to one attempt); merely opening a video does not
+    count. The list is most-recent first and drops archived videos.
+  - `getCompletionCountForVideo`, `getLatestCompletedVideoForUser` (most recent completed,
+    non-archived video for a results CTA).
+  - `getVideoProgressForUser({ userId | null, videoId })` -> `DictationVideoProgress`:
+    `inProgress` when a started active session exists, else `completed` when any
+    completed session exists, else `notStarted` (also for a null owner).
 
 ---
 
@@ -671,18 +966,32 @@ counts to 0.
 Files: `src/modules/dictation/preferences/{dictationPreferences,shortcuts}.ts` (both
 `'use client'`).
 
-`dictationPreferences.ts` persists practice preferences to `localStorage` under
-`english-for-only-me:dictation-preferences`, and per-video answer drafts under
-`english-for-only-me:dictation-answer-drafts:${videoId}`. The `DictationPracticePreferences`
-shape covers `answerTextSize` (S/M/L/XL sizing tokens in `ANSWER_TEXT_STYLE`),
-`playbackSpeed` (`0.75|1|1.25|1.5`), `videoSize`, `isVideoHidden`, `showAnswerImmediately`,
-`showFullAnswer`, and `showShortcuts`. `DEFAULT_DICTATION_PREFERENCES` mirrors DailyDictation
-(reveal the marked answer after Check but keep the not-yet-correct part masked).
-`normalizePreferences` validates each stored field against its option set, falling back to
-defaults; `readStoredDictationPreferences` returns `null` on SSR or parse error. The
-`useDictationPreferences` hook merges default -> caller-initial -> stored (stored wins) and
-writes back to `localStorage` on every change. `readDictationAnswerDrafts` /
-`writeDictationAnswerDrafts` manage the per-video draft map (removing the key when empty).
+`dictationPreferences.ts`:
+
+- Preferences live in `localStorage` under `english-for-only-me:dictation-preferences`.
+  `DictationPracticePreferences` covers `answerTextSize` (`small|normal|large|xlarge`,
+  sizing in `ANSWER_TEXT_STYLE`, labels S/M/L/XL), `playbackSpeed` (`0.75|1|1.25|1.5`),
+  `videoSize` (`small|normal|large|max`), `isVideoHidden`, `showAnswerImmediately`,
+  `showFullAnswer`, and `showShortcuts`. `DEFAULT_DICTATION_PREFERENCES` mirrors
+  DailyDictation (reveal the marked answer after Check but keep the not-yet-correct part
+  masked; text size `large`). `normalizePreferences` validates each field against its
+  option set.
+- `useDictationPreferences(initialPreferences)` is an external store over
+  `useSyncExternalStore`: the snapshot is cached by raw string (stable object identity),
+  the server snapshot is `null` (server HTML renders the session's/default values, saved
+  values apply after hydration), changes in other tabs arrive through the `storage`
+  event, and blocked storage falls back to an in-memory copy for the visit. Saved values
+  win over the session's `initialPreferences`. `setPreferences` reads the store (so two
+  updates in one event compose) and returns the saved value for callers that sync it
+  through `buildPreferencesWrite`. `readDictationPreferences` is the non-hook read.
+- Answer drafts are per owner AND per video:
+  `getDictationAnswerDraftsStorageKey(videoId, ownerKey)` ->
+  `english-for-only-me:dictation-answer-drafts:<owner|anonymous>:<videoId>`, so two
+  accounts sharing a browser never see each other's typing. `readDictationAnswerDrafts`
+  adopts drafts typed under `anonymous` once an owner key exists (owner's own drafts win,
+  anonymous key removed) and migrates the legacy un-namespaced key once (then removes
+  it). `writeDictationAnswerDrafts` removes the key when empty and swallows storage
+  errors.
 
 `shortcuts.ts` defines the keyboard model. `getDictationShortcutAction(event)` maps keys to a
 `DictationShortcutAction` (`check | escape | next | previous | replay`): `Alt` or `Meta`
@@ -690,8 +999,9 @@ alone (or `Alt+Space`) -> `replay`, `Enter` -> `check`, `Escape` -> `escape`, `C
 `next`, `Ctrl+[` -> `previous`. `shouldIgnoreDictationShortcut` suppresses shortcuts while
 focus is inside editable elements (inputs, textareas, contentEditable, combobox/searchbox/
 spinbutton roles) unless the element opts in via `[data-dictation-shortcuts="allow"]`. The
-`useDictationShortcuts({ enabled, handlers })` hook wires a `window` keydown listener that
-resolves the action, `preventDefault`s, and calls the matching handler.
+`useDictationShortcuts({ enabled, handlers })` hook binds one `window` keydown listener per
+`enabled` change and reads handlers through a ref, so it is not re-bound on every
+keystroke render.
 
 ---
 
@@ -716,19 +1026,24 @@ and `canReplay`. Controls returned:
 - `playSegment(startMs, endMs, { loop })` - play an arbitrary window; with `loop` it re-seeks
   to start at the end (no timeout while looping).
 - `playFromMs(startMs)` - continuous playback with no stop timer (caption follow-along).
-- `seekToMs(startMs, { play })` - seek with caller-controlled play state.
+- `seekToMs(startMs, { play })` - seek with caller-controlled play state. Before the
+  first real play (`hasStartedPlaybackRef` false), a paused seek instead primes the
+  iframe: it calls `playVideo()`, sets `buffering`, and `markPlaying` pauses as soon as
+  YouTube reports PLAYING (`pauseAfterFirstPlayRef`). This avoids the black frame the
+  iframe shows when it gets `seekTo` + `pauseVideo` before ever playing.
 - `pause()`, `getCurrentTimeMs()`.
 
 Effects apply the rate on `playbackSpeed` change, and pause/clear timers whenever the segment
-(`replayWindow`) changes or on unmount. `getYoutubeReplayMessage` produces the user-facing
-status line (no timestamps, player error, player loading, or the normal replay hint).
+(`replayWindow`) changes (keeping a pending first-play pause) or on unmount.
+`getYoutubeReplayMessage` produces the user-facing status line (no timestamps, player
+error, player loading, or the normal replay hint).
 
 ---
 
 ## services/ - shared route building blocks
 
-Directory: `src/modules/dictation/services/`. The API endpoint contracts are documented
-separately; here the focus is the shared building blocks. Three roles:
+Directory: `src/modules/dictation/services/`. Endpoint contracts are documented in
+`docs/04-api-reference.md`; here the focus is the shared building blocks.
 
 ### `*RouteDecisions.ts` - pure decision functions
 
@@ -736,9 +1051,8 @@ Files: `attemptRouteDecisions`, `sessionRouteDecisions`, `segmentRouteDecisions`
 `transcriptRouteDecisions`, `videoRouteDecisions`, `reviewItemRouteDecisions`,
 `statsRouteDecisions`, `youtubeImportDecisions`. Each contains pure functions that take a
 parsed request body, query params, or already-fetched plain documents, and return a plain
-decision object. They perform no I/O; all Mongo/network work stays in the route handler. The
-shared return contract is a discriminated union on `ok`, built on the canonical error shape
-in `videoRouteDecisions.ts`:
+decision object. They perform no I/O. The shared return contract is a discriminated union
+on `ok`, built on the canonical error shape in `videoRouteDecisions.ts`:
 
 ```ts
 export interface ApiErrorDecision {
@@ -754,41 +1068,75 @@ Two categories appear: parse/validate functions that wrap a Zod `safeParse` and 
 failure into a 400 (`parseSessionStartRequest`, `parseAttemptPayload`,
 `parseSegmentEditRequest`, `parseCreateVideoRequest`, `parseYouTubeImportRequest`, ...); and
 guard/resolve functions that branch over fetched state (`getSessionStartGuardDecision`
-returns 404/409/null; `resolveSessionStart` returns a `{ mode: 'resume' | 'start', ... }`
-plan; `resolveAttemptSubmissionMode` returns `{ mode: 'idempotent' | 'create', attempt }`;
-`getSegmentEditGuardDecision` adds a `sourceHash` stale-segment 409). Purity is the point:
-these are exercised directly by their `*.test.ts` fixtures with no DB.
+returns 404/409/null with messages from the request's `t.dictation.api`;
+`resolveSessionStart` returns a `{ mode: 'resume' | 'start', ... }` plan;
+`resolveAttemptSubmissionMode` returns `{ mode: 'idempotent' | 'create', attempt }`;
+`getSegmentEditGuardDecision` adds a `sourceHash` stale-segment 409).
+`videoRouteDecisions.getAccessErrorMessage(status, t)` maps 401/403/409 errors to
+localized learner-facing text (409 = outbox owner mismatch).
 
-### `dictation*Records.ts` - DB record mappers (I/O boundary)
+### `dictation*Records.ts` - DB record mappers
 
 Files: `dictationAttemptRecords`, `dictationSessionRecords`, `dictationSegmentRecords`,
 `dictationTranscriptRecords`, `dictationVideoRecords`, `dictationReviewItemRecords`,
-`dictationDebriefRecords`. Each exports a `toDictationXRecord(doc)` that maps a loosely-typed
-Mongo document to the domain API record: `_id` and every ObjectId reference are coerced with
-`String(...)`, optional fields get `??` defaults, enum-array fields are filtered against an
-allow-list `Set` (dropping legacy values), and nested sub-objects use their own private
-mappers with constant empty defaults (for example `EMPTY_ATTEMPT_STATS`,
-`EMPTY_STATS_SNAPSHOT`). These are the deterministic serialization seam; the actual query
-and write helpers live in the route handlers and in `mergeGuestData.ts`.
+`dictationDebriefRecords`. Each exports a `toDictationXRecord(doc)` that coerces `_id` and
+ObjectId references with `String(...)`, defaults optional fields with `??`, filters
+enum-array fields against an allow-list `Set`, and uses constant empty sub-objects (for
+example `EMPTY_ATTEMPT_STATS`, `EMPTY_STATS_SNAPSHOT`).
+
+`dictationSegmentRecords.ts` additionally exports:
+
+- `normalizeTranslations(value)` - a Mongoose `Map` or plain object to a
+  `Record<string, string>` with blank values dropped.
+- `toDictationSegmentRecord` now carries `hints`, `hintsOverridden`, and `translations`.
+- `PRACTICE_SEGMENT_FIELDS` (the practice query projection),
+  `toDictationPracticeSegmentContent` (content-only mapper, no progress fields), and
+  `pickSegmentTranslationOverrides(segments, language)`.
+
+`toDictationVideoRecord` no longer maps `completedSessionCount` or `lastPracticedAt`
+(per-user progress is not stored on the video).
 
 ### Identity: `getCurrentUser.ts` and `mergeGuestData.ts`
 
-`getCurrentUser.ts` (`server-only`) resolves the actor. Practice does not require login, so
-it exposes both authed and guest resolution: `getOptionalUser` (null when anonymous),
-`requireUser` (throws `UnauthenticatedError`/401), `requireAdmin` (throws
-`ForbiddenError`/403 unless `role === 'admin'`), and the guest-vs-authed unifier
-`requirePracticeActor` returning `PracticeActor { id, isGuest }` (mints the guest cookie, so
-route-handler/server-function only) with a read-only `getPracticeActorId` variant for server
-components. Per-user queries are always scoped to this resolved id, never a client-supplied
-id.
+`getCurrentUser.ts` (`server-only`) resolves the actor. Practice does not require login:
+
+- `getOptionalUser` - null when anonymous; wrapped in React `cache` so the JWT is decoded
+  once per request.
+- `requireUser` (throws `UnauthenticatedError`/401), `requireAdmin` (throws
+  `ForbiddenError`/403 unless `role === 'admin'`).
+- `requirePracticeActor()` -> `PracticeActor { id, isGuest }` (mints the guest cookie, so
+  route-handler/server-function only). The id passes through `assertOwnerKey`
+  (`src/lib/auth/ownerKey.ts`), the write-boundary guard that rejects a null/empty/malformed
+  owner. It also reads the `OUTBOX_OWNER_HEADER` and calls
+  `assertOutboxOwnerMatchesActor` (`src/lib/auth/clientOwnerKey.ts`), throwing a 409 when
+  a write queued for a previous learner (tab left open across sign-in/out) arrives.
+- `getPracticeActorId()` - read-only variant for Server Components: user id, existing
+  guest id, or null; never writes a cookie.
+
+Per-user queries are always scoped to this resolved id, never a client-supplied id.
 
 `mergeGuestData.ts` (`server-only`) promotes cookie-scoped guest data on first sign-in.
-`mergeGuestDataIntoUser(guestId, userId)` guards against non-guest or identical ids, connects,
-then runs `updateMany({ userId: guestId }, { $set: { userId } })` in parallel across sessions,
-attempts, review items, and debriefs - a bulk ownership reassignment, not a row-by-row copy.
-It is best-effort (must never block login) and only touches collision-safe collections;
-favorites are intentionally excluded because they are login-gated and their
-`{ userId, videoId }` unique index would risk a merge collision.
+`mergeGuestDataIntoUser(guestId, userId)` guards against non-guest or identical ids, then:
+
+1. `dismissCollidingGuestReviewItems` marks `dismissed` any guest active review item whose
+   `segmentId:kind:reason` already has an active twin for the user (kept as history), so
+   the move cannot break the partial unique index.
+2. `updateMany({ userId: guestId }, { $set: { userId } })` in parallel across sessions,
+   attempts, review items, and debriefs.
+3. Logs an audit line with per-collection moved counts when anything moved.
+
+Favorites are excluded (login-gated, unique `{ userId, videoId }` index). IELTS has its own
+merge (`src/modules/ielts/services/mergeIeltsGuestData.ts`, see `docs/09-ielts.md`).
+
+Vocabulary merges through `mergeVocabGuestData`
+(`src/modules/vocabulary/services/mergeVocabGuestData.ts`). Items are unique per
+`(userId, vocabEntryId)`, so the pure `planVocabGuestMerge`
+(`src/modules/vocabulary/services/planVocabGuestMerge.ts`) splits guest items into
+words to move as they are and words both sides saved. For a shared word the user's
+status, stage and schedule win; review counts are summed, the earliest
+`firstSeenAt` and latest `lastReviewedAt` are kept, the guest's recall attempts are
+repointed at the user's item and the guest item is deleted. Recall attempts whose
+`idempotencyKey` the user already has are dropped; occurrences always move.
 
 ---
 
@@ -800,26 +1148,91 @@ Files: `src/modules/dictation/{levels,completionBadges,videoReadiness,statusDisp
   `isDictationLevel` guard, and `formatLevelRange` which returns null for no levels, a single
   level when min equals max, or a `min-max` range (joined with an en dash in source, for
   example `A1-C1`) shown on topic cards.
-- `completionBadges.ts`: badge tiers `copper, silver, gold, diamond` with labels, and
-  `getCompletionBadgeTier(completions)` thresholds: `>=5` diamond, `>=3` gold, `>=2` silver,
-  `>=1` copper, else null.
-- `videoReadiness.ts`: derives CTA `{ href, label }` from a video's transcript state and
-  status. `hasDictationTranscript` requires `transcriptStatus === 'manualAdded'` and an
-  `activeTranscriptId`. `getDictationVideoAction` routes to Add Transcript / Continue Setup
-  (admin) or Start/Continue Practice / Open Results (`ready`/`inProgress`/`completed`).
-  `getDictationResultsAction` chooses Practice Again / Continue Practice / Start Practice.
-- `statusDisplay.ts`: maps the video/transcript/import/quality status unions to human
-  `STATUS_LABELS` and `STATUS_TONES` (theme tone keys such as `red`, `sky`, `yellow`, `ink`,
-  `pale`, `default`) via `getDictationStatusLabel` / `getDictationStatusTone`.
-- `types.ts`: the central type module (no runtime code). It defines every status/flag union
-  (`DictationVideoStatus`, `DictationTranscriptStatus`, `DictationImportStatus`,
-  `DictationSegmentQualityFlag`, `DictationAttemptAction`, `DictationCorrectionTokenStatus`,
-  `DictationReviewItemReason`, `DictationDebriefStatus`, ...) and every API record consumed
-  across subsystems (`DictationVideoApiRecord`, `DictationTranscriptApiRecord`,
-  `DictationSegmentApiRecord`, `DictationSessionApiRecord`, `DictationAttemptApiRecord` with
-  its `feedbackTokens`/`stats`, `DictationVideoStatsRecord`, `DictationGlobalStatsRecord`,
-  `DictationReviewItemApiRecord`, `DictationDebriefApiRecord`). It is the shared contract that
-  lets the pure and I/O layers pass data without duplication.
+- `completionBadges.ts`: `COMPLETION_BADGE_TIERS` = `copper, silver, gold, diamond` and
+  `getCompletionBadgeTier(completions)`: `>=5` diamond, `>=3` gold, `>=2` silver, `>=1`
+  copper, else null. Tier display names are UI text in `t.dictation.badges`, not here.
+- `videoReadiness.ts`: `hasDictationTranscript(video)` requires
+  `transcriptStatus === 'manualAdded'` and an `activeTranscriptId`.
+  `getDictationResultsAction({ isEmpty, progress, videoId })` always links to
+  `/dictation/videos/<id>/practice` and returns a `kind` that keys the label in
+  `t.dictation.resultsAction`: `practiceAgain` (not empty and `progress === 'completed'`),
+  `continuePractice` (`inProgress`), else `startPractice`. `progress` is the per-user
+  `DictationVideoProgress` from `getVideoProgressForUser`.
+- `statusDisplay.ts`: `DictationDisplayStatus` is the union of video, transcript, import
+  and transcript-quality statuses. `getDictationStatusLabel(status, labels =
+en.dictation.status)` reads labels from the i18n catalogue; `getDictationStatusTone`
+  maps to `PAGE_TAG_TONES` keys via `STATUS_TONES` (`red`, `sky`, `yellow`, `ink`, `pale`,
+  `default`).
+- `types.ts`: the central type module (no runtime code).
+  - `DictationVideoStatus` is content lifecycle only: `draft | needsTranscript |
+transcriptReady | segmenting | ready | failed | archived` (`inProgress`/`completed`
+    were removed).
+  - `DictationVideoProgress = 'notStarted' | 'inProgress' | 'completed'` is per user,
+    derived from sessions.
+  - `DictationSegmentApiRecord` gained `hints`, `hintsOverridden`, and optional
+    `translations` (language -> override text).
+  - It also defines every other status/flag union (`DictationTranscriptStatus`,
+    `DictationImportStatus`, `DictationSegmentQualityFlag`, `DictationAttemptAction`,
+    `DictationCorrectionTokenStatus`, `DictationReviewItemReason`,
+    `DictationDebriefStatus`, ...) and the API records (`DictationVideoApiRecord`,
+    `DictationTranscriptApiRecord`, `DictationSessionApiRecord`,
+    `DictationAttemptApiRecord`, `DictationVideoStatsRecord`,
+    `DictationGlobalStatsRecord`, `DictationReviewItemApiRecord`,
+    `DictationDebriefApiRecord`).
+
+---
+
+## learning/recall - the shared recall ladder
+
+File: `src/modules/learning/recall/recallLadder.ts` (pure, no `server-only`, so it also
+runs in the browser).
+
+Responsibility: the single 7-stage spaced-recall ladder. It lives outside any subject
+module because two modules schedule on it: vocabulary per word
+(`src/modules/vocabulary/recall/recallScheduler.ts` re-exports it, and
+`src/components/vocabulary/vocabRecallSession.ts` applies it client-side for instant
+feedback) and grammar per lesson (`src/modules/grammar/session/planGrammarSessionWrite.ts`,
+see `docs/08-grammar.md`). Dictation review does not use it.
+
+| Export                                                    | Meaning                                                                         |
+| --------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| `RECALL_STAGES`, `RecallStage`                            | `1..7`                                                                          |
+| `RECALL_MASTERY_STAGE`                                    | `7`                                                                             |
+| `RECALL_STAGE_INTERVAL_DAYS`                              | `{ 1:1, 2:1, 3:4, 4:7, 5:14, 6:17 }` - sums to 44 days at scale 1               |
+| `RecallDifficulty`                                        | `'low'`, `'medium'`, or `'high'`                                                |
+| `RECALL_DIFFICULTY_INTERVAL_SCALE`                        | `high: 0.6`, `medium: 1`, `low: 1.5`                                            |
+| `normalizeRecallStage`                                    | anything outside `1..7` -> `1`                                                  |
+| `getRecallIntervalDays`                                   | `max(1, round(base * scale))`; null at stage 7                                  |
+| `getInitialRecallState(now)`                              | stage 1, due now, `status: 'learning'`, counters 0, known/mastered fields null  |
+| `getAlreadyKnownState(now)`                               | `status: 'alreadyKnow'`, `dueAt: null`, `knownAt: now`, `knownReason: 'manual'` |
+| `applyRecallAnswer({ item, isCorrect, now, difficulty })` | returns the patch to persist (below)                                            |
+
+`applyRecallAnswer` always increments `reviewCount` and stamps `lastReviewedAt`:
+
+- wrong answer, from any stage: stage 1, `dueAt = now`, `wrongCount + 1`, status `learning`.
+- correct at stage 7: `status: 'mastered'`, `dueAt: null`, `masteredAt: now`,
+  `masteredReason: 'recallMastery'`, `correctCount + 1`.
+- correct below 7: stage + 1, `dueAt = now + getRecallIntervalDays(stage)` days.
+
+`difficulty` defaults to `medium` (scale exactly 1), which is what made moving vocabulary
+onto this module behaviour-preserving; no caller passes a difficulty yet.
+
+```mermaid
+flowchart LR
+  L[first touch<br/>stage 1, due now] --> S1[stage 1]
+  S1 -->|correct| S2[stage 2 +1d]
+  S2 -->|correct| S3[stage 3 +1d]
+  S3 -->|correct| S4[stage 4 +4d]
+  S4 -->|correct| S5[stage 5 +7d]
+  S5 -->|correct| S6[stage 6 +14d]
+  S6 -->|correct| S7[stage 7 +17d]
+  S7 -->|correct| M[mastered<br/>dueAt null]
+  S1 -.any wrong answer.-> L
+  S7 -.any wrong answer.-> L
+```
+
+Intervals shown are at `medium`. A perfectly spaced item reaches `mastered` 44 days after
+the first correct answer.
 
 ---
 
@@ -827,47 +1240,68 @@ Files: `src/modules/dictation/{levels,completionBadges,videoReadiness,statusDisp
 
 Files: `src/modules/vocabulary/**`.
 
-Responsibility: seed common English words, normalize lookup terms, enrich entries
-through free dictionary + translation providers, gate every user-facing word on a
-Vietnamese meaning, manage per-user word status, schedule spaced recall as server-signed
-tasks, power Explore, and aggregate vocabulary stats. It reuses the same pure-vs-`server-only`
-split as dictation, and shares the identity/actor helpers in `dictation/services`.
+Responsibility: seed English word lists, normalize lookup terms, enrich entries through
+free dictionary + translation providers, gate every user-facing word on a Vietnamese
+meaning, manage per-user word status, schedule spaced recall as server-signed tasks with
+paged delivery, power Explore and the dashboard, and aggregate vocabulary stats. It
+reuses the same pure-vs-`server-only` split as dictation, and shares the identity/actor
+helpers in `src/modules/dictation/services/getCurrentUser.ts`.
 
-The three MongoDB collections it revolves around are `VocabEntry` (global, deduped word
-shells enriched by providers), `UserVocabItem` (per-user learning state and recall
-schedule for one entry), and `VocabRecallAttempt` (an append-only, idempotent answer log).
-`VocabOccurrence` records where a user met a word.
+The MongoDB collections it revolves around are `VocabEntry` (global, deduped word shells
+enriched by providers), `UserVocabItem` (per-user learning state and recall schedule for
+one entry), `VocabRecallAttempt` (an append-only, idempotent answer log), and
+`VocabOccurrence` (where a user met a word).
 
-| Subdir        | Files                                                                                                                                                | Responsibility                                                                            |
-| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| (root)        | `types.ts`, `constants.ts`, `normalizeVocabTerm.ts`, `vietnameseMeaning.ts`                                                                          | Shared records/unions, limits + policy, term normalization, VI-meaning gate               |
-| `seed/`       | `seedVocabulary.ts`                                                                                                                                  | Download + parse NGSL, upsert the top 1000 word shells                                    |
-| `providers/`  | `index.ts`, `types.ts`, `providerUtils.ts`, `dictionaryApiDev.ts`, `freeDictionaryApi.ts`, `myMemoryTranslate.ts`                                    | Normalize free dictionary APIs + a Vietnamese translation API behind one adapter contract |
-| `enrichment/` | `enrichmentService.ts`                                                                                                                               | Leased, fallback provider pipeline that fills entries and the admin batch/queue           |
-| `explore/`    | `exploreService.ts`                                                                                                                                  | Frequency-ranked unclassified words via an in-DB anti-join                                |
-| `recall/`     | `recallScheduler.ts`, `recallTaskService.ts`, `recallTaskToken.ts`, `recallAnswerService.ts`                                                         | Spaced-repetition scheduler, signed task builder, HMAC token, trusted answer path         |
-| `stats/`      | `vocabStats.ts`, `vocabStatsService.ts`                                                                                                              | Pure and aggregation-backed vocabulary analytics                                          |
-| `services/`   | `vocabEntryService.ts`, `userVocabItemService.ts`, `vocabWordListService.ts`, `vocabularyRouteDecisions.ts`, `vocab*Records.ts`, `vocabApiErrors.ts` | Entry/item/word-list business logic, route decisions, record mappers, error mapping       |
+| Subdir        | Files                                                                                                                                                                            | Responsibility                                                                                |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| (root)        | `types.ts`, `constants.ts`, `normalizeVocabTerm.ts`, `vietnameseMeaning.ts`                                                                                                      | Shared records/unions, limits + policy, term normalization, VI-meaning gate                   |
+| `seed/`       | `seedVocabulary.ts`                                                                                                                                                              | Parse NGSL-family CSVs, upsert/insert word shells                                             |
+| `providers/`  | `index.ts`, `types.ts`, `providerUtils.ts`, `dictionaryApiDev.ts`, `freeDictionaryApi.ts`, `myMemoryTranslate.ts`                                                                | Normalize free dictionary APIs + a Vietnamese translation API behind one adapter contract     |
+| `enrichment/` | `enrichmentService.ts`                                                                                                                                                           | Leased, fallback provider pipeline that fills entries and the admin batch/queue               |
+| `explore/`    | `exploreService.ts`                                                                                                                                                              | Frequency-ranked unclassified words via an in-DB anti-join                                    |
+| `recall/`     | `recallScheduler.ts`, `recallDueCursor.ts`, `recallTaskService.ts`, `recallTaskPayload.ts`, `recallTaskToken.ts`, `recallAnswerService.ts`                                       | Ladder re-export, keyset paging, signed task builder, client-readable payload, trusted answer |
+| `stats/`      | `vocabStatsFacets.ts`, `vocabStatsService.ts`, `vocabStats.ts`                                                                                                                   | Two `$facet` aggregations (production), legacy pure aggregator                                |
+| `services/`   | `vocabEntryService.ts`, `userVocabItemService.ts`, `vocabWordListService.ts`, `vocabDashboardService.ts`, `vocabularyRouteDecisions.ts`, `vocab*Records.ts`, `vocabApiErrors.ts` | Entry/item/word-list/dashboard logic, route decisions, record mappers, error mapping          |
 
 ### Core contracts (`types.ts`, `constants.ts`)
 
 `types.ts` (no runtime code) defines the status unions and API records: `VocabEntryType`
 (`word | phrase`), `VocabEntryEnrichmentStatus` (`seeded | pending | enriching | ready |
 failed | notFound`), `VocabUserItemStatus` (`learning | alreadyKnow | mastered | ignored`),
+`VocabLearningSource` (`search | explore | dictionary | manual | ielts`),
 `VocabWordListView`, `VocabRecallStage` (`1..7`), the five `VocabRecallTaskType`s,
 `VocabRecallAnswerAction` (`lookup | notSure | remember`), plus `VocabEntryApiRecord`,
 `UserVocabItemApiRecord`, `VocabOccurrenceApiRecord`, `VocabRecallTaskRecord`,
-`VocabStatsRecord`, and `VocabAdminQueueSummaryRecord`.
+`VocabRecallDuePageRecord { nextCursor, tasks }`, `VocabWordListRecord` (with
+`sourceVideo: VocabWordSourceVideoRecord | null`), `VocabWordListPageRecord
+{ page, perPage, total, words }`, `VocabularyDashboardInitialData { due, exploreEntries,
+stats }`, `VocabStatsRecord`, and `VocabAdminQueueSummaryRecord`.
 
-`constants.ts` holds limits and policy: `VOCAB_MAX_TERM_LENGTH = 80`,
-`VOCAB_LOOKUP_TIMEOUT_MS = 8000`, `VOCAB_ENRICHMENT_LEASE_MS = 60_000`, admin enrich
-default 5 / max 10, explore default 20 / max 50, recall default 20 / max 50, search
-default 12 / max 25, `VOCAB_STATS_TREND_DAYS = 14`, and `VOCAB_RECALL_TASK_TOKEN_TTL_MS`
-(30 minutes). `ENRICHABLE_ENTRY_STATUSES = seeded | pending | failed`. Provider names live
-in `VOCAB_PROVIDER_NAMES` (`dictionaryapi.dev`, `freedictionaryapi.com`, `datamuse`), but
-only `VOCAB_CORE_PROVIDER_NAMES` (the first two) are wired as live adapters; `datamuse` is
-reserved. `VOCAB_RECALL_STAGE_INTERVAL_DAYS = { 1:1, 2:1, 3:4, 4:7, 5:14, 6:17 }`.
-`VOCAB_API_PATHS` centralizes the endpoint strings.
+`constants.ts` holds limits and policy:
+
+| Constant                                               | Value                                | Note                                                             |
+| ------------------------------------------------------ | ------------------------------------ | ---------------------------------------------------------------- |
+| `VOCAB_MAX_TERM_LENGTH`                                | 80                                   |                                                                  |
+| `VOCAB_LOOKUP_TIMEOUT_MS`                              | 8000                                 | provider fetch timeout                                           |
+| `VOCAB_ENRICHMENT_LEASE_MS`                            | 60000                                |                                                                  |
+| `VOCAB_ADMIN_ENRICH_DEFAULT_LIMIT` / `_MAX_LIMIT`      | 5 / 10                               |                                                                  |
+| `VOCAB_EXPLORE_DEFAULT_LIMIT` / `_MAX_LIMIT`           | 20 / 50                              |                                                                  |
+| `VOCAB_EXPLORE_INITIAL_LIMIT`                          | 8                                    | cards rendered into landing HTML; rest fetched after hydration   |
+| `VOCAB_ITEM_STATUS_BATCH_MAX`                          | 100                                  | batch status endpoint                                            |
+| `VOCAB_RECALL_DEFAULT_LIMIT` / `_MAX_LIMIT`            | 20 / 50                              | due queue page size                                              |
+| `VOCAB_RECALL_PREFETCH_REMAINING`                      | 5                                    | client fetches the next page when 5 tasks remain                 |
+| `VOCAB_SEARCH_DEFAULT_LIMIT` / `_MAX_LIMIT`            | 12 / 25                              |                                                                  |
+| `VOCAB_STATS_TREND_DAYS`                               | 14                                   |                                                                  |
+| `VOCAB_WORD_LIST_DEFAULT_PAGE_SIZE` / `_MAX_PAGE_SIZE` | 50 / 200                             |                                                                  |
+| `VOCAB_RECALL_TASK_TOKEN_TTL_MS`                       | 30 minutes                           |                                                                  |
+| `VOCAB_RECALL_STAGE_INTERVAL_DAYS`                     | `{ 1:1, 2:1, 3:4, 4:7, 5:14, 6:17 }` | duplicate of the ladder table; scheduling uses `learning/recall` |
+
+`ENRICHABLE_ENTRY_STATUSES = seeded | pending | failed`. Provider names live in
+`VOCAB_PROVIDER_NAMES` (`dictionaryapi.dev`, `freedictionaryapi.com`, `datamuse`), but only
+`VOCAB_CORE_PROVIDER_NAMES` (the first two) are wired as live adapters; `datamuse` is
+reserved. `VOCAB_RECALL_LISTENING_TASK_TYPES` lists the two audio modes.
+`NGSL_SEED_SOURCE` and `VOCAB_FAMILY_SEED_SOURCES` describe seed lists (below).
+`VOCAB_API_PATHS` centralizes the endpoint strings (including `itemsBatch`).
 
 ### Deep dive: term normalization (`normalizeVocabTerm.ts`)
 
@@ -875,35 +1309,48 @@ reserved. `VOCAB_RECALL_STAGE_INTERVAL_DAYS = { 1:1, 2:1, 3:4, 4:7, 5:14, 6:17 }
 NFKC-normalizes, folds curly quotes and backticks to `'`, collapses whitespace, strips
 edge punctuation (`EDGE_PUNCTUATION_REGEX`), trims, and lowercases. It rejects anything
 empty, longer than 80 chars, or failing `SAFE_TERM_REGEX` (`^[\p{L}\p{M}' -]+$` -
-letters/marks/apostrophe/space/hyphen only, so digits and most symbols are rejected).
-`entryType` is `phrase` when the result contains a space, else `word`. This is the single
-key used for entry dedup (`{ language, normalizedTerm }`), search-prefix regexes, and seed
-upserts, so lookups collapse to one canonical shell.
+letters/marks/apostrophe/space/hyphen only). `entryType` is `phrase` when the result
+contains a space, else `word`. This is the single key used for entry dedup
+(`{ language, normalizedTerm }`), search-prefix regexes, and seed upserts.
+
+`isEnglishTermCandidate(input)` is a cheap, API-free gate
+(`^[a-z]+(?:['\- ][a-z]+)*$`, case-insensitive) used by the lookup route
+(`src/app/api/vocab/entries/lookup/route.ts`) to reject other scripts (Vietnamese, CJK,
+Cyrillic) before any dictionary call; Latin-but-not-English strings pass here and are
+caught by the dictionary result downstream.
 
 ### Deep dive: the Vietnamese-meaning gate (`vietnameseMeaning.ts`)
 
 A hard product rule: an entry is only usable once it carries a Vietnamese localized
 meaning. `VOCAB_REQUIRES_VI_MEANING_FILTER` is a Mongo `$elemMatch` requiring a
-non-empty `localizedMeanings` entry with `language === 'vi'`; `VOCAB_MISSING_VI_MEANING_FILTER`
-is its `$nor`. That filter is applied everywhere words reach a user - search
-(`searchVocabEntries`), Explore, recall due-lists and distractors, the word lists, and the
-"can this be learned" guard - so a word with dictionary data but no VI meaning stays
-invisible. `getVietnameseMeaning`/`hasVietnameseMeaning` read the `vi` meaning;
-`getRequiredVietnameseMeaning` falls back to the string `Needs Vietnamese meaning.`, and
-`getEnglishDefinition` returns the first definition or a generated placeholder.
+non-empty string `localizedMeanings.meaning` with `language === 'vi'`
+(`REQUIRED_VOCAB_MEANING_LANGUAGE`); `VOCAB_MISSING_VI_MEANING_FILTER` is its `$nor`. That
+filter is applied everywhere words reach a user - search (`searchVocabEntries`), Explore,
+recall due-lists and distractors, the word-list `$lookup`, and the "can this be learned"
+guard - so a word with dictionary data but no VI meaning stays invisible.
+`getVietnameseMeaning`/`hasVietnameseMeaning` read the `vi` meaning;
+`getRequiredVietnameseMeaning(entry, fallback)` returns it or the caller-supplied
+(translated) fallback; `getEnglishDefinition` returns the first definition or a generated
+placeholder.
 
-### seed/ - NGSL bootstrap (`seedVocabulary.ts`)
+### seed/ - NGSL-family bootstrap (`seedVocabulary.ts`)
 
-`seedVocabularyFromOfficialSource` downloads `NGSL_STATS_CSV_URL`
-(`https://www.newgeneralservicelist.com/s/NGSL_12_stats.csv`), and `parseNgslStatsCsv`
-parses ranked rows (a small quote-aware CSV splitter), skipping the header and any row that
-fails `normalizeVocabTerm` or lacks an integer rank, capped at `limit` (1000).
-`seedVocabularyEntries` then `bulkWrite`s unordered upserts keyed by `{ language,
-normalizedTerm }`: `$set` sets `frequencyRank`, `entryType`, license/attribution metadata,
-`difficultyLevel` (`core-1000` when rank <= 1000, else `core`), and `seedRank/seedSource`;
-`$setOnInsert` stamps `enrichmentStatus: 'seeded'` and `enrichmentAttempts: 0`. Idempotent
-(re-running only refreshes `$set`). Run via `scripts/seedVocabulary.ts` / `bun run
-vocab:seed`.
+- `seedVocabularyFromOfficialSource` downloads `NGSL_STATS_CSV_URL`, and
+  `parseNgslStatsCsv` parses ranked rows (a small quote-aware CSV splitter), skipping the
+  header and any row that fails `normalizeVocabTerm` or lacks an integer rank, capped at
+  `limit` (default 1000). `seedVocabularyEntries` then `bulkWrite`s unordered upserts keyed
+  by `{ language, normalizedTerm }`: `$set` refreshes `frequencyRank`, `entryType`,
+  license/attribution metadata, `difficultyLevel` (`core-1000` when rank <= 1000, else
+  `core`), and `seedRank/seedSource`; `$setOnInsert` stamps `enrichmentStatus: 'seeded'`
+  and `enrichmentAttempts: 0`. Run via `scripts/seedVocabulary.ts` / `bun run vocab:seed`.
+- `insertNewVocabularyEntries({ existingTerms, remaining, source, words })` is
+  insert-only (everything under `$setOnInsert`, so an existing entry's rank and
+  enrichment are never touched). It mutates the shared `existingTerms` set so several
+  sources dedupe in one pass, stops after `remaining` inserts, and ranks each word at
+  `source.rankOffset + rank`. `scripts/seedVocabularyFamily.ts` (`bun run
+vocab:seed-family`) walks `VOCAB_FAMILY_SEED_SOURCES` in order: NGSL (offset 0,
+  `core`), NAWL (10000, `academic`), TSL (20000, `toeic`), BSL (30000, `business`), all
+  CC BY-SA 4.0.
 
 ### providers/ - adapters and the fallback chain
 
@@ -927,6 +1374,8 @@ words (else `emptyUsefulData`).
 - `myMemoryTranslate.ts` (`mymemory.translated.net`): a separate translation call, not a
   dictionary adapter. `translateTextToVietnamese` requests `langpair=en|vi` (trimming the
   query to the provider's ~480-byte limit) and returns the translated string or `null`.
+  When `getMyMemoryEmail()` (`src/constants/environments.ts`) is set, it adds the `de`
+  param, which raises the provider's free daily quota for bulk enrichment.
 
 `providers/index.ts` `getDefaultVocabProviders()` returns the two dictionary adapters in
 priority order. The enrichment service tries them in order and stops at the first `ready`.
@@ -956,8 +1405,8 @@ flowchart TD
    `ready` but missing a VI meaning, or `failed` past its `nextRetryAt`, or `enriching`
    with an expired lease (crash recovery). `acquireEnrichmentLease` (one entry) and
    `acquireNextEnrichmentLease` (batch, sorted `frequencyRank: 1, updatedAt: 1`) atomically
-   `findOneAndUpdate` it to `enriching`, set a random `enrichmentLockId` and
-   `enrichmentLeaseExpiresAt` (+60s), and `$inc` `enrichmentAttempts`.
+   `findOneAndUpdate` it (`returnDocument: 'after'`) to `enriching`, set a random
+   `enrichmentLockId` and `enrichmentLeaseExpiresAt` (+60s), and `$inc` `enrichmentAttempts`.
 2. `runProviders` calls the adapters in order and returns the first `ready`.
 3. `persistReadyResult` merges the payload into the existing entry (dedup merges by key for
    definitions/examples/phonetics/related/attributions, set-union for synonyms/antonyms),
@@ -975,75 +1424,97 @@ limit })` is the admin batch: `requested = clamp(limit, 1..10)`, up to 2 concurr
 workers each claiming leases until `requested` is reached, returning an `AdminEnrichResult`
 with counts (`processed/ready/failed/notFound/rateLimited/skipped` and `errors`).
 `getVocabAdminQueueSummary` returns queue counts (`seeded`/enrichable, `ready`-with-VI,
-`failed`, `notFound`, `staleLease`) for the admin dashboard.
+`failed`, `notFound`, `staleLease`) for the admin dashboard. `scripts/enrichVocabularyBatch.ts`
+(`bun run vocab:enrich`) drives batches from the CLI.
 
 ### explore/ - unclassified words (`exploreService.ts`)
 
-`listExploreVocabEntriesForUser` runs one aggregation: `$match` on `enrichmentStatus:
-'ready'`, language, `frequencyRank != null`, and the VI-meaning filter; `$sort` by
-`frequencyRank` then term; a `$lookup` into `UserVocabItem` scoped to this user with a
-`$limit: 1`; then `$match { userItems: [] }` to drop words the user already classified; and
-a final `$limit`. The anti-join stays inside MongoDB rather than loading all words into app
-memory. Seed shells (not yet `ready` or missing a VI meaning) never appear here.
+`listExploreVocabEntriesForUser({ userId | null, limit, language })` clamps `limit` to
+`1..VOCAB_EXPLORE_MAX_LIMIT` and runs one aggregation: `$match` on `enrichmentStatus:
+'ready'`, language, the VI-meaning filter, and `frequencyRank != null`; `$sort` by
+`frequencyRank` then `normalizedTerm`; for a known user a `$lookup` into `UserVocabItem`
+scoped to that user with `$limit: 1`, then `$match { userItems: [] }` to drop words the
+user already classified; and a final `$limit` (with `allowDiskUse`). A null `userId`
+(first-time visitor) skips the anti-join. Every result has `userItem: null`.
 
-### services/ - entry, user item, and word-list logic
+### services/ - entry, user item, word-list, and dashboard logic
 
 - `vocabEntryService.ts` (`server-only`): `findOrCreateVocabEntryShell` normalizes then
   reads-or-creates a `pending` shell, catching duplicate-key (11000) races by re-reading.
   `getVocabEntryWithUserState` joins an entry with the caller's `UserVocabItem`.
   `searchVocabEntries` matches an anchored, metacharacter-escaped `normalizedTerm` prefix
   regex (VI-meaning gated, sorted by `frequencyRank`) and attaches per-entry user state.
-- `userVocabItemService.ts` (`server-only`): `setUserVocabItemStatus` upserts a
-  `shouldLearn` (-> `getInitialLearningState`) or `alreadyKnow` (-> `getAlreadyKnownState`)
-  item, but first asserts the entry has a VI meaning (else throws a 409
-  `MissingVietnameseMeaningError`); it preserves an already-`learning` item's stage when
-  the user re-picks `Should learn`. `recordVocabOccurrence` writes a `VocabOccurrence`.
-  `listDueVocabRecallCardsForUser` returns plain `{ entry, item }` cards for due items, and
-  `answerVocabRecallForUser({ isCorrect, itemId })` is a direct (non-token) scheduler apply.
-- `vocabWordListService.ts` (`server-only`): `parseVocabWordListView` coerces the
-  `/vocabulary/words` `view` param (defaulting to `learning`); `listVocabWordsForUser`
-  maps each view (`learning | dueToday | alreadyKnow | mastered | knownTotal`) to a status
-  filter and sort, then joins items to their VI-gated entries. `VOCAB_WORD_LIST_VIEW_LABELS`
-  supplies the display names.
+- `userVocabItemService.ts` (`server-only`):
+  - `setUserVocabItemStatus` upserts a `shouldLearn` (-> `getInitialLearningState`) or
+    `alreadyKnow` (-> `getAlreadyKnownState`) item, first asserting the entry has a VI
+    meaning (else throws a 409 `MissingVietnameseMeaningError`); re-picking `shouldLearn`
+    on an already-`learning` item returns it unchanged (keeps its stage).
+  - `setUserVocabItemStatusBatch({ updates })` applies many updates with one shared `now`;
+    each update is independent and a failure is reported per item (`{ vocabEntryId, item:
+null, error }`) so the client can roll back exactly those. Used by
+    `src/app/api/vocab/items/batch/route.ts`.
+  - `recordVocabOccurrence` writes a `VocabOccurrence`.
+  - `listDueVocabRecallCardsForUser` and `answerVocabRecallForUser` (a direct, non-token
+    scheduler apply) remain exported but have no caller in `src/`; the live recall path is
+    `recall/`.
+- `vocabWordListService.ts` (`server-only`):
+  - `parseVocabWordListView` coerces a `view` param (default `learning`);
+    `VOCAB_WORD_LIST_VIEW_LABELS` supplies display names. Full page query parsing
+    (`page`, `perPage`, `view`, never failing) is `parseVocabWordListQuery` in
+    `vocabularyRouteDecisions.ts`.
+  - `buildVocabWordListPipeline` (exported, pure) = `$match` (status filter per view) ->
+    `$sort` (per view, then `_id`) -> `$lookup` into `VocabEntry` with the VI-meaning
+    filter and a slim projection (first definition only) -> `$unwind` (drops items whose
+    entry is missing or meaning-less) -> `$facet { total, rows: skip/limit }`. Joining and
+    filtering BEFORE paging is the invariant: totals never count hidden words and pages
+    have no holes. `getVocabWordListSkip` computes `(max(page, 1) - 1) * perPage`.
+  - `listVocabWordsForUser({ userId, view, page, perPage })` runs it and resolves each
+    word's `sourceVideo` from the user's most recent `VocabOccurrence` with a `videoId`
+    (grouped in Mongo, then one `DictationVideo` read for `title`/`youtubeUrl`). Views:
+    `learning` and `dueToday` (sorted `dueAt`), `alreadyKnow` and `knownTotal` (sorted
+    `knownAt`), `mastered` (sorted `masteredAt`).
+- `vocabDashboardService.ts` (`server-only`): `getVocabularyDashboardData({ actorId | null })`
+  reads everything the landing page shows on first paint in one parallel round trip:
+  stats, the first due page (`VOCAB_RECALL_DEFAULT_LIMIT`), and the first
+  `VOCAB_EXPLORE_INITIAL_LIMIT` Explore cards. A null actor gets zeroed stats, an empty due
+  page, and the unfiltered Explore deck (no guest cookie is minted on a page GET).
 
-### recall/ - Deep dive: spaced repetition
-
-`recallScheduler.ts` (pure) is the seven-touch scheduler. `getInitialLearningState` starts a
-word at stage 1, due now, status `learning`. `applyRecallAnswer({ item, isCorrect, now })`
-returns the patch:
-
-| From stage | On correct | Next `dueAt` (days from answer)                         |
-| ---------- | ---------- | ------------------------------------------------------- |
-| 1          | stage 2    | +1                                                      |
-| 2          | stage 3    | +1                                                      |
-| 3          | stage 4    | +4                                                      |
-| 4          | stage 5    | +7                                                      |
-| 5          | stage 6    | +14                                                     |
-| 6          | stage 7    | +17                                                     |
-| 7          | `mastered` | none (`dueAt: null`, `masteredReason: 'recallMastery'`) |
-
-Any wrong answer, from any stage, resets to stage 1 due now and `$inc`s `wrongCount`. The
-correct-answer intervals sum to 44 days, so a perfectly-spaced word reaches `mastered`
-roughly six-and-a-half weeks after the first touch.
+### recall/ - Deep dive: paged, signed recall
 
 ```mermaid
-flowchart LR
-  L[Should learn<br/>stage 1, due now] --> S1[stage 1]
-  S1 -->|correct| S2[stage 2 +1d]
-  S2 -->|correct| S3[stage 3 +1d]
-  S3 -->|correct| S4[stage 4 +4d]
-  S4 -->|correct| S5[stage 5 +7d]
-  S5 -->|correct| S6[stage 6 +14d]
-  S6 -->|correct| S7[stage 7 +17d]
-  S7 -->|correct| M[mastered]
-  S1 -.any wrong answer.-> L
-  S7 -.any wrong answer.-> L
+sequenceDiagram
+  participant Page as Vocabulary page / client
+  participant Due as recallTaskService
+  participant Ans as recallAnswerService
+  participant DB as MongoDB
+  Page->>Due: listDueVocabRecallTasksForUser(cursor?)
+  Due->>DB: due items (keyset filter), entries, distractors
+  Due-->>Page: tasks with signed tokens + nextCursor
+  Note over Page: decodeVocabRecallTaskPayload + gradeVocabRecallAnswer<br/>grade instantly, apply ladder locally, queue answer
+  Page->>Ans: submit(token, idempotencyKey, selection)
+  Ans->>DB: replay lookup, verify token, re-grade, claim key, CAS update
+  Ans-->>Page: saved item or null (stale)
 ```
 
-`recallTaskService.ts` (`server-only`) builds the due session as signed tasks.
-`listDueVocabRecallTasksForUser` loads due `learning` items (sorted `dueAt: 1, updatedAt: 1`,
-limited), their VI-gated entries, and a pool of `ready` VI-gated distractor entries
-(top by `frequencyRank`). A shuffled task-type deck assigns each item one of five modes:
+**Scheduler** (`recallScheduler.ts`): a re-export of the shared ladder
+(`applyRecallAnswer`, `getAlreadyKnownState`, and `getInitialRecallState` as
+`getInitialLearningState`); see "learning/recall" above. `recallScheduler.test.ts`
+pins that vocabulary intervals are unchanged.
+
+**Keyset paging** (`recallDueCursor.ts`, pure): the due queue is sorted
+`(dueAt, updatedAt, _id)`. The cursor string is
+`v1.<dueBeforeMs>.<dueAtMs>.<updatedAtMs>.<itemId>` (`VOCAB_RECALL_DUE_CURSOR_PATTERN`).
+`buildVocabRecallDueFilter({ cursor, now })` returns `{ dueAt: { $lte: now } }` for the
+first page, else items strictly after the cursor that were already due at
+`min(dueBefore, now)`. So cards the client holds are never re-sent, a card answered wrong
+this session (reset to due now) waits for the next session, and a card answered right
+drops out. `getNextVocabRecallDueCursor` returns null when the scan came back short.
+
+**Task builder** (`recallTaskService.ts`, `server-only`): `listDueVocabRecallTasksForUser
+({ userId, limit, cursor, excludeListening, now })` loads one page of due `learning`
+items, their VI-gated entries, and a shared distractor pool of `ready` VI-gated entries
+(`min(max(24, limit * 8), 300)`, sorted by rank, `allowDiskUse`). A shuffled task-type
+deck assigns each item one of five modes:
 
 | Mode                     | Prompt -> answer             | Options              | Correct option           |
 | ------------------------ | ---------------------------- | -------------------- | ------------------------ |
@@ -1053,52 +1524,92 @@ limited), their VI-gated entries, and a pool of `ready` VI-gated distractor entr
 | `wordChooseDefinition`   | word -> pick the definition  | 4 definition options | `definition:<entryId>`   |
 | `exampleRemember`        | example-sentence self-check  | none                 | (self-report `remember`) |
 
-Options are deterministically ordered by a per-task `seed` (so a re-issued task is stable).
-When `excludeListening` is set (a short client-side "cannot listen now" window), the two
-listening modes are removed from the deck.
+Options are ordered by a SHA-1 of `seed:optionId` with
+`seed = itemId:reviewCount:type`, so a re-issued task is stable and the correct answer
+does not sit in a fixed slot. `excludeListening` removes the two listening modes. Tokens
+are minted per page, so a page is used well inside the 30-minute token lifetime. Returns
+`VocabRecallDuePageRecord { tasks, nextCursor }`.
 
-`recallTaskToken.ts` (`server-only`) signs each task so the answer route never trusts the
-client's verdict. `createVocabRecallTaskToken` builds `base64url(payload).HMAC-SHA256`,
-where the payload carries `itemId`, `entryId`, `recallStage`, `type`, `correctOptionId`,
-`correctAnswer`, `userId`, and `expiresAt` (+30 min); the secret is `AUTH_SECRET` /
-`NEXTAUTH_SECRET` with a dev fallback. `verifyVocabRecallTaskToken` uses `timingSafeEqual`
-and re-checks the `userId` and expiry.
+**Token** (`recallTaskPayload.ts` + `recallTaskToken.ts`): a token is
+`base64url(JSON payload).HMAC-SHA256`. The payload (`VocabRecallTaskTokenPayload`:
+`taskId`, `itemId`, `entryId`, `recallStage`, `type`, `correctOptionId`, `correctAnswer`,
+`expiresAt`) is readable by the browser and deliberately carries NO user id (it lands in
+SSR HTML and the localStorage outbox, and a guest id is a bearer credential). The owner is
+bound inside the signature instead: `signPayload` HMACs `${userId}.${encodedPayload}` with
+`AUTH_SECRET` / `NEXTAUTH_SECRET` (dev fallback). `verifyVocabRecallTaskToken` uses
+`timingSafeEqual` and checks expiry, so a token only verifies for its owner.
+`decodeVocabRecallTaskPayload` (isomorphic, unverified) and `gradeVocabRecallAnswer`
+(`selectedOptionId === correctOptionId`, or `action === 'remember'` when there is no
+correct option) let the client grade instantly with the exact function the server uses.
 
-`recallAnswerService.ts` (`server-only`) is the trusted `POST /api/vocab/recall/answer`
-path. `submitVocabRecallAnswerForUser` verifies the token, short-circuits on a prior
-attempt with the same `idempotencyKey`, then re-fetches the item guarded on `_id`,
-`vocabEntryId`, `recallStage`, `status: 'learning'`, `userId`, and `dueAt <= now`. It grades
-server-side (`selectedOptionId === correctOptionId`, or `action === 'remember'` for
-`exampleRemember`), applies the scheduler patch, and writes an idempotent `VocabRecallAttempt`
-(catching duplicate-key on `idempotencyKey`). The client-sent `correct` flag is never
-trusted.
+**Answer path** (`recallAnswerService.ts`, `server-only`):
+`submitVocabRecallAnswerForUser({ token, idempotencyKey, selectedOptionId, action, userId })`:
+
+1. Replay first: a prior attempt under this `{ userId, idempotencyKey }` is returned as
+   saved, even if its token has since expired (queued answers may be resent late).
+2. Verify the token (null = stale).
+3. Read the item with the due filter (`_id`, `vocabEntryId`, `recallStage`,
+   `status: 'learning'`, `userId`, `dueAt <= now`); a miss re-checks for a saved attempt
+   from a concurrent duplicate.
+4. Grade server-side with `gradeVocabRecallAnswer` and compute the ladder patch; the
+   client's verdict is never trusted.
+5. Claim the idempotency key by creating the `VocabRecallAttempt` first (the unique
+   `{userId, idempotencyKey}` index is the lock; E11000 -> return the winner's result).
+6. Compare-and-set the item on the due filter plus the exact `reviewCount` it was graded
+   from (0 also matches a missing counter). If another answer moved it first, delete this
+   attempt's claim and return null.
 
 ### stats/ - vocabulary analytics
 
-Both files produce a `VocabStatsRecord` (learning/alreadyKnow/mastered counts, due-today,
-overdue, learned-today, reviews-today, `accuracyPercent`, `activeStreakDays`,
-`totalKnownCount`, `totalStartedCount`, `hardestWords`, and a `dailyGrowth` series over
-`VOCAB_STATS_TREND_DAYS = 14` days keyed by UTC day, labeled `MM-DD`).
+`VocabStatsRecord` = learning/alreadyKnow/mastered counts, due-today, overdue,
+learned-today, reviews-today, `accuracyPercent`, `activeStreakDays`, `totalKnownCount`,
+`totalStartedCount`, `hardestWords`, and a `dailyGrowth` series over
+`VOCAB_STATS_TREND_DAYS = 14` UTC days labeled `MM-DD`.
 
-- `vocabStats.ts` is pure: `aggregateVocabStats({ items, now, trendDays })` computes
-  everything from an in-memory `UserVocabItem` array, and `buildDailyGrowth` buckets
-  `firstSeenAt` by UTC day. Its accuracy and streak derive from item counters, and
-  `hardestWords` uses `vocabEntryId` as the term placeholder (the caller resolves labels).
-- `vocabStatsService.ts` (`server-only`) is the production path: it fans out bounded Mongo
-  aggregations/counts over `UserVocabItem` and `VocabRecallAttempt` instead of loading all
-  rows. Accuracy, reviews-today, and the active streak are attempt-based (from
-  `VocabRecallAttempt.answeredAt`/`isCorrect`), and `hardestWords` resolves the real
-  `term` via a `VocabEntry` lookup. An empty `userId` returns a zeroed record.
+- `vocabStatsFacets.ts` (pure, no DB): `getVocabStatsWindow(now, trendDays)` (UTC today,
+  tomorrow, trend start, a 365-day streak start); `buildVocabItemFacetPipeline` (one
+  `$facet` over the user's `UserVocabItem`s: `statusCounts`, `dueToday`, `overdue`
+  (`dueAt < today`), `learnedToday` and `growth` by `firstSeenAt`, `hardest` = top 5 by
+  `wrongCount` with a `$lookup` for the term); `buildVocabAttemptFacetPipeline` (one
+  `$facet` over `VocabRecallAttempt`: `summary` accuracy, `reviewsToday`, distinct
+  `streakDays`); `toVocabStatsRecord` maps both; `buildEmptyVocabStats` /
+  `buildEmptyGrowth` give the zeroed shapes. The streak counts consecutive answered UTC
+  days ending TODAY (a day without answers today yields 0), unlike dictation's streak,
+  which ends on the latest practice day.
+- `vocabStatsService.ts` (`server-only`): `getVocabStatsForUser({ userId, now })` runs the
+  two aggregations in parallel (two round trips total, replacing ten queries); an empty
+  `userId` returns `buildEmptyVocabStats`.
+- `vocabStats.ts` (pure `aggregateVocabStats` / `buildDailyGrowth` over an in-memory item
+  array) is no longer called by production code; only its test imports it.
 
 ### Route decisions, record mappers, and errors
 
 `services/vocabularyRouteDecisions.ts` holds the Zod parse/validate helpers for the vocab
-endpoints (lookup, search, Explore, item status, recall due, recall answer, admin enrich),
-returning the same `{ ok, ... } | ApiErrorDecision` contract used across the app; these are
-documented in detail in `docs/04-api-reference.md`. `services/vocabApiErrors.ts`
-(`toVocabApiError`) maps thrown errors to responses: pass-through 401/403/409 (for example
-the `MissingVietnameseMeaningError`), `MissingEnvironmentError` -> 500 with a Mongo message,
-else a logged generic 500. `services/{vocabEntryRecords,userVocabItemRecords,vocabOccurrenceRecords}.ts`
-are the deterministic serialization seam (`toVocabEntryRecord`, `toUserVocabItemRecord`,
-`toVocabOccurrenceRecord`) that coerce Mongoose/aggregation rows to safe API records with
-string ids and defaulted optional fields.
+endpoints (lookup, search, Explore, item status, item status batch, recall due with
+cursor decoding, occurrence record, recall answer, admin enrich, word-list query),
+returning the `{ ok, ... } | VocabApiErrorDecision` contract; messages default to `en`
+and accept a `Messages` catalogue. These are documented in `docs/04-api-reference.md`.
+`services/vocabApiErrors.ts` (`toVocabApiError(error, t = en)`) maps thrown errors to
+responses: 401/403/409 pass through with localized text (`t.common.errors.*`, or
+`t.vocabulary.api.needsMeaning` for `MissingVietnameseMeaningError`),
+`MissingEnvironmentError` -> 500 with `t.vocabulary.api.missingMongo`, else a logged
+generic 500 (`t.vocabulary.api.failed`).
+`services/{vocabEntryRecords,userVocabItemRecords,vocabOccurrenceRecords}.ts` are the
+deterministic serialization seam (`toVocabEntryRecord`, `toUserVocabItemRecord`,
+`toVocabOccurrenceRecord`).
+
+---
+
+## Grammar and IELTS
+
+Grammar (`src/modules/grammar/**`) and IELTS (`src/modules/ielts/**`) domain logic are
+documented in their own files:
+
+- `docs/08-grammar.md` - lessons, grading (`normalizeGrammarAnswer`), sessions, and how
+  grammar lessons schedule on the shared recall ladder above.
+- `docs/09-ielts.md` - tests, attempts, drills, and IELTS guest-data merge.
+
+Cross-module touch points documented here: the shared ladder
+(`src/modules/learning/recall/recallLadder.ts`), `isDuplicateKeyError`
+(`src/modules/dictation/practice/duplicateKeyError.ts`, imported by several IELTS
+services), and the `ielts` value of `VocabLearningSource`.

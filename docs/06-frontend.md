@@ -1,582 +1,630 @@
 # 06 - Frontend
 
-"English For Only Me" is a private, single-user IELTS study app built on Next.js 16
-(App Router), React 19, and Tailwind CSS v4. Its frontend is organized around a
-distinctive "manga / comic page" visual theme: every screen is a bordered paper
-page with hard ink drop-shadows, halftone dot textures, and comic-style "page tag"
-labels. The theme has two moods - a day "light" mode and an evening "light-up"
-mode (manga paper under a reading lamp) toggled by a hanging pull-string bulb. This
-document maps the design system, the light/light-up theming engine, the shared UI
-primitive library, the full route tree, and the component trees for the home
-"Study Desk", the dictation feature (browse, practice, results, review, stats,
-admin), and the vocabulary feature (dashboard, word lists, recall, admin
-enrichment). All claims are grounded in the source files cited by their
-repo-relative paths. Two feature modules are shipped: Dictation and Vocabulary; the
-remaining modules (Writing, AI Coach, Reading, Speaking) exist only as launcher
-cards pointing at not-yet-built routes.
+"English For Only Me" is a private, single-user English and IELTS study app built
+on Next.js 16 (App Router), React 19, and Tailwind CSS v4. Its frontend is a "soft
+pastel dashboard": every route renders a white rounded board floating on a
+blush backdrop, with a dark icon rail on the left (a floating tab bar on phones),
+pastel module tints, pill buttons, hairline borders, and a pastel pink brand
+colour that matches the logo. A deliberate night theme remaps the same tokens.
+All UI text goes through a typed EN / VI message catalogue chosen by a cookie;
+Vietnamese lesson content stays data. This document maps the design system and
+theming, motion, i18n, the shared chrome and primitives, the full route tree, and
+the component trees for the home dashboard and the four shipped modules:
+Dictation, Vocabulary, Grammar and IELTS. Writing Notes, AI Coach, Reading and
+Speaking exist only as module records (`src/constants/modules.ts`); the IELTS
+module covers reading, listening and writing practice. All claims are grounded in
+the source files cited by their repo-relative paths.
 
 ---
 
 ## 1. Design system and visual theme
 
-### 1.1 The "manga page" aesthetic
+### 1.1 The soft pastel dashboard
 
-The look is defined by a small set of recurring primitives, all styled with thick
-black borders (`border-3 border-manga-black`), offset hard box-shadows (no blur),
-uppercase black-weight display type, and warm paper tones.
+The look is a white board on a soft backdrop: `PageShell` paints the board
+(`bg-board rounded-shell shadow-shell`), blocks inside use hairline `border-line`
+borders and at most the soft `shadow-card`, buttons and chips are pills
+(`rounded-full`), and each module wears one pastel tint. There are no hard offset
+shadows, no uppercase headings and no black-weight type. The rules for writing
+new UI live in `.agents/rules/frontend-ui.md` (palette, corner roles, motion,
+language).
 
-| Primitive        | File                                       | Role                                                                                                                                                                                                                                                                                    |
-| ---------------- | ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `MangaPageShell` | `src/components/common/MangaPageShell.tsx` | The outer "page". A centered, max-1460px bordered sheet with a halftone/ink gradient overlay (`::before`), a dashed inset frame (`::after`), and slots for `topbar`, `children` (main), and `footer`. Server component.                                                                 |
-| `MangaPanel`     | `src/components/common/MangaPanel.tsx`     | A bordered white "panel" card built on the `Card` primitive. Optional `eyebrow` (rendered as a `PageTag`), `title` (uppercase h2), and `action` slot. Server component.                                                                                                                 |
-| `MangaButton`    | `src/components/ui/MangaButton.tsx`        | The standard action button. Renders either a `Link` (when `href` is passed) or the base `Button`. Three tones: `primary` (paper-soft), `paper` (white), `ink` (black). Optional leading `icon` slot. Active state nudges the element down-right and drops its shadow. Server component. |
-| `PageHero`       | `src/components/common/PageHero.tsx`       | Wrapper for a route hero block (eyebrow/tag/h1/description) that sits on the shell paper rather than in a card. Adds the `.page-hero` class so light-up mode lifts it into a lit card (see 1.5). Server component.                                                                      |
-| `PageTag`        | `src/components/ui/PageTag.tsx`            | The small comic "page label" chip (e.g. "Home 00", "Page 01", "Listening"). Tone-driven background via `PAGE_TAG_TONES`. Server component.                                                                                                                                              |
-| `IconButton`     | `src/components/ui/IconButton.tsx`         | Square 11x11 icon-only button/link, same manga border + shadow + active-nudge treatment. Server component.                                                                                                                                                                              |
-| `ModuleCard`     | `src/components/ui/ModuleCard.tsx`         | Large module tile used by the home launcher: page tag, icon chip, title, description, skill label, CTA. Server component.                                                                                                                                                               |
-| `SketchChart`    | `src/components/common/SketchChart.tsx`    | Hand-drawn-style SVG line chart (red polyline over a dashed ink baseline). Server component.                                                                                                                                                                                            |
-| `MetricTile`     | `src/components/common/MetricTile.tsx`     | Bordered stat tile (label, big value, detail, optional red trend line, icon). Tones red/paper/ink. Server component.                                                                                                                                                                    |
-| `QueueRow`       | `src/components/common/QueueRow.tsx`       | A bordered list row (title + meta + status tag + action slot). Can be static, a link, or a clickable/keyboard-activatable button. Server component.                                                                                                                                     |
+| Primitive      | File                                     | Role                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| -------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PageShell`    | `src/components/common/PageShell.tsx`    | The board. A grid with the topbar spanning two columns, the rail (`AppSidebar`, md and up) beside `main`, an optional `footer` slot, then `AppCredits` and the phone `AppTabBar`. `fullHeight` locks it to one viewport for work screens (`true`) or from `lg` (`'lg'`); work screens get neither credits nor the tab bar. `main` carries `page-enter` (or `page-enter-quick` on work screens) so each navigation replays a short entrance. |
+| `PageHeader`   | `src/components/common/PageHeader.tsx`   | The shared head of every module page: optional pastel icon circle, h1, one-line subtitle, optional eyebrow (breadcrumb or tag), and an `actions` slot. Same size and rhythm on every route.                                                                                                                                                                                                                                                 |
+| `ContentPanel` | `src/components/common/ContentPanel.tsx` | Bordered white card on the `Card` primitive with optional `eyebrow` (`PageTag`), `title` and `action` slot.                                                                                                                                                                                                                                                                                                                                 |
+| `ActionButton` | `src/components/ui/ActionButton.tsx`     | The standard pill button / link. Tones: `primary` (soft brand pink), `paper` (outlined), `ink` (the one dark CTA, `bg-cta text-cta-fg`). Optional leading `icon`.                                                                                                                                                                                                                                                                           |
+| `IconButton`   | `src/components/ui/IconButton.tsx`       | Round icon-only button / link with a required accessible `label`.                                                                                                                                                                                                                                                                                                                                                                           |
+| `PageTag`      | `src/components/ui/PageTag.tsx`          | Small pill label; tone from `PAGE_TAG_TONES` in `src/constants/theme.ts` (default, red, ink, pale, plus achievement tones sky, yellow, copper, silver, gold, diamond used by completion medals).                                                                                                                                                                                                                                            |
+| `MetricTile`   | `src/components/common/MetricTile.tsx`   | Stat tile (label, big value, detail, optional trend and icon), tones `red` / `paper` / `ink`.                                                                                                                                                                                                                                                                                                                                               |
+| `QueueRow`     | `src/components/common/QueueRow.tsx`     | List row (title, meta, status tag, action slot); static, link or keyboard-activatable button.                                                                                                                                                                                                                                                                                                                                               |
+| `ProgressRing` | `src/components/common/ProgressRing.tsx` | Circular progress with centred content (grammar unit badges and index).                                                                                                                                                                                                                                                                                                                                                                     |
+| `Sparkline`    | `src/components/common/Sparkline.tsx`    | Tiny smoothed trend line in `currentColor`, drawn in with `motion-draw`; a faded placeholder wave when there are fewer than two values.                                                                                                                                                                                                                                                                                                     |
+| `SketchChart`  | `src/components/common/SketchChart.tsx`  | Simple SVG line chart used by the dictation stats.                                                                                                                                                                                                                                                                                                                                                                                          |
+| `ModuleCard`   | `src/components/ui/ModuleCard.tsx`       | Generic module launcher card (kept for reuse; the home page uses `HomeModuleTiles`).                                                                                                                                                                                                                                                                                                                                                        |
 
-The halftone/ink texture is applied globally in `src/app/globals.css`: `html` paints a
-radial dot grid plus a paper-to-white gradient; `body` layers diagonal ink/red
-streaks and corner radial glows. `MangaPageShell` repeats a similar streak/glow
-overlay inside the page frame via a `before:` pseudo-element and adds a dashed
-inset border via `after:`.
+### 1.2 Colour tokens
 
-### 1.2 Color tokens and CSS variables
+`src/app/globals.css` defines raw tokens on `:root` (also applied by the
+`.day-palette` class), maps them onto the shadcn semantic names, and re-exports
+everything as Tailwind colours inside `@theme inline` (Tailwind v4, no
+`tailwind.config`). `src/constants/theme.ts` mirrors the day palette in
+`THEME_COLORS` and holds `PAGE_TAG_TONES` and `MODULE_THEMES`.
 
-`src/app/globals.css` defines raw manga colors on `:root`, maps them onto the
-shadcn semantic tokens, then re-exports everything as Tailwind theme colors inside
-`@theme inline` (Tailwind v4 style, no `tailwind.config`).
+| Token                                          | Day value                                   | Used for                                                                                                                               |
+| ---------------------------------------------- | ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `--canvas`                                     | `#f3eaf2`                                   | Backdrop behind the board (`html` background plus a fixed `html::before` layer with soft gradients and curved lines from `--html-bg`). |
+| `--board` / `--surface`                        | `#ffffff`                                   | The board / cards.                                                                                                                     |
+| `--surface-muted`                              | `#faf6f9`                                   | Quiet controls (theme and language buttons, search).                                                                                   |
+| `--ink` / `--ink-soft`                         | `#25171f` / `#73636d`                       | Text / muted text.                                                                                                                     |
+| `--line` / `--line-strong`                     | `#f0e7ed` / `#e2d6df`                       | Hairline borders / inputs and dashed locks.                                                                                            |
+| `--brand` / `--brand-soft` / `--brand-ink`     | `#c93a74` / `#fde8f1` / `#a52c5e`           | Pastel pink brand: progress, current state, focus ring; soft fill; readable pink text.                                                 |
+| `--cta` / `--cta-fg`                           | `#25171f` / `#ffffff`                       | The dark primary action (also shadcn `--primary`).                                                                                     |
+| `--danger` / `--danger-soft`                   | `#c03810` / `#fdebe4`                       | Wrong answers, errors, delete only. Kept clearly apart from the pink brand.                                                            |
+| `--lesson-correct`                             | `#1b7c44`                                   | Right answers. Right and wrong always also carry an icon and a word.                                                                   |
+| `--tint` / `--tint-soft`                       | `#f8ebf2` / `#fcf6f9`                       | Selected / hovered and quiet grouping fills.                                                                                           |
+| `--pastel-*`                                   | peach, lilac, rose, sky, mint, lemon, cream | Module and highlight tints.                                                                                                            |
+| `--accent-*`                                   | blue, orange, purple, pink, green           | Text and icon colours that read on the pastels and on white.                                                                           |
+| `--rail-bg` / `--rail-fg`                      | `#25171f` / `#ffffff`                       | The icon rail and phone tab bar, dark in both themes.                                                                                  |
+| `--exam-surface`, `--exam-line`, `--exam-tint` | surface, line-strong, tint-soft             | IELTS exam panes (kept as their own names so the exam can diverge).                                                                    |
 
-Raw palette (`:root`), mirrored as TypeScript in `src/constants/theme.ts`
-(`THEME_COLORS`):
+`MODULE_THEMES` (`src/constants/theme.ts`) gives each module a `tint`, `accent`
+and `outline`: Dictation sky, Vocabulary mint, Grammar lilac, IELTS peach (Writing
+Notes cream, AI Coach and Speaking mint, Reading lemon). Pink is the brand, so no
+module wears it.
 
-| Variable             | Value              | Constant key  |
-| -------------------- | ------------------ | ------------- |
-| `--manga-white`      | `#ffffff`          | `white`       |
-| `--manga-black`      | `#050505`          | `black`       |
-| `--manga-logo-red`   | `#e03020`          | `logoRed`     |
-| `--manga-bright-red` | `#f03020`          | `brightRed`   |
-| `--manga-pale-red`   | `#fff0ef`          | `paleRed`     |
-| `--manga-paper`      | `#fff8f6`          | `paper`       |
-| `--manga-paper-soft` | `#ffe7e4`          | `paperSoft`   |
-| `--manga-ink-soft`   | `#343434`          | `inkSoft`     |
-| `--manga-shadow`     | `rgba(5,5,5,0.18)` | (shadow only) |
+Corner roles (`--corner-*`, mapped to `rounded-shell` / `rounded-panel` /
+`rounded-control` / `rounded-tag`): shell 36px (0 under 640px, where the board
+fills the screen), panel 24px (20px on phones), control 14px, tag 8px.
+`src/lib/utils.ts` extends tailwind-merge with these roles so `cn()` resolves
+conflicts between them. Shadows come from `@theme inline`: `shadow-card`,
+`shadow-float`, `shadow-shell`.
 
-Semantic mappings (`:root`): `--background` = paper, `--foreground`/`--secondary` =
-black, `--primary`/`--destructive` = logo red, `--muted` = pale red, `--accent` =
-paper-soft, `--ring`/`--dark-primary` = bright red, chart colors `--chart-1..5`
-draw from the same palette, and `--radius` is `0.5rem` (with sm/md/lg/xl
-derivations). `@theme inline` exposes these as utilities such as `bg-manga-white`,
-`text-manga-black`, `text-manga-ink-soft`, `bg-manga-paper-soft`, `text-manga-red`
-(mapped from logo red), plus font tokens and custom spacing (`--spacing-21` = 21px,
-used by the topbar min-height).
+### 1.3 Night theme
 
-`src/constants/theme.ts` also centralizes reusable class strings:
-`MANGA_BORDER` (`thin`/`thick`), `MANGA_SHADOW` (`sm`/`md`/`lg`), and
-`PAGE_TAG_TONES` (default, red, ink, pale, plus achievement tones sky, yellow,
-copper, silver, gold, diamond used by completion badges).
+The app has two themes: day `light` and night `lightup` (the stored value keeps
+its old name so saved preferences still work). Night is not an inverted palette:
+`:root[data-theme='lightup']` in `src/app/globals.css` remaps every token to a
+deliberate dark set (`--canvas: #0f0d12`, `--board: #141118`,
+`--surface: #1b171f`, `--ink: #f2ebf0`, `--brand: #ff8fbd`, softened pastels and
+brighter accents) and adds depth with `--card-highlight` (a faint inset top edge)
+and `--shell-ring`.
 
-### 1.3 Fonts
+| Piece            | File                                      | Role                                                                                                                                                                                                                                                                                                   |
+| ---------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Pure theme logic | `src/lib/theme/theme.ts`                  | `autoThemeForTime`, `nextThreshold`, `resolveTheme`, `manualState`, `parseStoredTheme`. Auto switches at 06:30 and 18:30; a manual choice wins until the next threshold. Stored under `efom-theme`.                                                                                                    |
+| `ThemeProvider`  | `src/components/common/ThemeProvider.tsx` | Client store over localStorage plus the wall clock (`useSyncExternalStore`), re-checked on a timer and on focus / visibility. Syncs `data-theme` on `<html>`. `toggleTheme` wraps the flip in `document.startViewTransition` when available, so the whole page cross-fades once. Exposes `useTheme()`. |
+| `ThemeToggle`    | `src/components/common/ThemeToggle.tsx`   | Round moon / sun button in the rail and, below md, in the topbar.                                                                                                                                                                                                                                      |
+| No-flash script  | `src/app/layout.tsx`                      | Inline `THEME_INIT_SCRIPT` stamps `data-theme` before first paint.                                                                                                                                                                                                                                     |
 
-Fonts are wired in `src/app/layout.tsx`. Rather than `next/font`, the root `<html>`
-sets CSS variables inline: `--font-montserrat` (Montserrat, the display/`font-sans`
-face used for uppercase black headings) and `--font-source-sans` (Source Sans 3,
-the body face). `globals.css` binds `--font-sans` to Montserrat and `--font-body`
-to Source Sans 3 inside `@theme inline`, and sets `body { font-family: var(--font-source-sans) }`.
-The document `<title>` template is `%s | English For Only Me`, theme color is the
-logo red `#e03020`, and favicons/manifest are declared in the same file.
+Two exceptions stay dark or light on purpose: the rail and tab bar use
+`--rail-bg`, and `.day-palette` pins the day tokens on a subtree that is designed
+as a dark block on the day palette. IELTS Task 1 charts (`TaskVisual`) always sit
+on white exam paper with their own ink and line values, because their strokes are
+hard black and grey.
 
-### 1.4 `cn()`, tailwind-merge, and class-variance-authority
+### 1.4 Fonts
 
-`src/lib/utils.ts` exports `cn(...inputs)` = `twMerge(clsx(inputs))`. Every manga
-component uses `cn()` to merge a base class string with a caller-supplied
-`className`, letting `tailwind-merge` resolve conflicting Tailwind utilities so
-overrides win. `class-variance-authority` (`cva`) is used inside the base shadcn
-primitives (`button.tsx` `buttonVariants`, `badge.tsx`, `tabs.tsx`) to define
-variant/size class maps; `MangaButton` and `IconButton` layer their manga styling
-on top of `buttonVariants({ variant, size })`.
+`src/app/layout.tsx` loads Be Vietnam Pro with `next/font/google` (subsets `latin`,
+`latin-ext`, `vietnamese`; weights 300 to 700) into `--font-app`, which
+`globals.css` binds to both `--font-sans` and `--font-body`. The Vietnamese subset
+matters: Vietnamese lesson data has stacked diacritics, and a font without it
+falls back glyph by glyph. Headings use `font-medium`, body text the normal
+weight.
 
-### 1.5 Light and light-up theming
+### 1.5 Motion
 
-The app has two themes, both manga - not a generic dark mode: a day `light`
-(ink-on-white-paper) and an evening `lightup` ("trang giay duoi den doc sach", the
-paper under a reading lamp). In light-up the shell/body paper goes dark (a warm
-room) while cards stay light (lamp-lit paper); ink and borders stay dark because
-they now sit on light cards. It auto-switches on the clock and can be toggled by
-hand.
+All motion lives in `src/app/globals.css` and respects
+`prefers-reduced-motion` (no movement, or opacity only).
 
-| Piece              | File                                         | Role                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| ------------------ | -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Pure theme logic   | `src/lib/theme/theme.ts`                     | Dependency-free helpers: `autoThemeForTime`, `nextThreshold`, `resolveTheme`, `manualState`, `parseStoredTheme`. Window boundaries `MORNING_THRESHOLD_MIN` (06:30) and `EVENING_THRESHOLD_MIN` (18:30); a manual override wins only until the next threshold, then auto resumes. State is persisted under `THEME_STORAGE_KEY` (`efom-theme`).                                                                                                                          |
-| `ThemeProvider`    | `src/components/common/ThemeProvider.tsx`    | Client. Reads the theme via `useSyncExternalStore` (external store over localStorage + wall clock; `getServerSnapshot` pins `light` to avoid hydration mismatch). Re-checks on a timer and on `visibilitychange`/`focus`, and syncs `data-theme` onto `<html>`. Exposes `useTheme()` -> `{ theme, toggle }`, with a safe default so it also works inside client `error.tsx` boundaries.                                                                                |
-| `PullStringToggle` | `src/components/common/PullStringToggle.tsx` | Client. A hanging pull-string bulb fixed to the top-right of the viewport (outside the page chrome). Yanks and swings on click, glows amber in light-up, dim in day; flips the theme via `useTheme().toggle`. Motion respects reduced-motion. Draggable along the x axis only (cord length fixed; Left/Right arrow keys too); a drag does not toggle. The offset is written to the DOM from a ref and saved as `{ right }` under `efom-lamp-position` in localStorage. |
-| No-FOUC script     | `src/app/layout.tsx`                         | An inline `<script>` (`THEME_INIT_SCRIPT`) that mirrors `theme.ts` and stamps `data-theme` on `<html>` before first paint. `<html suppressHydrationWarning>` covers the difference. The root layout wraps `children` in `ThemeProvider` and renders `PullStringToggle` once, globally.                                                                                                                                                                                 |
+| Utility                                           | Behaviour                                                                                                                            |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `page-enter` / `page-enter-quick`                 | Route entrance on `main` (`soft-rise` 320ms, or a 140ms fade on work screens).                                                       |
+| `motion-stagger`                                  | Children rise in one after another (cards, tiles, lists).                                                                            |
+| `motion-grow-x` / `motion-grow-y` / `motion-draw` | Progress bars, bar charts and sparklines ease in.                                                                                    |
+| `hover-lift`                                      | Clickable cards lift slightly on hover (hover-capable pointers only).                                                                |
+| `soft-press`                                      | Pressable controls squish slightly on press; unlayered so it beats `transition-all` from `buttonVariants`.                           |
+| View transitions                                  | `::view-transition-old/new(root)` cross-fade the theme switch in 320ms.                                                              |
+| `ring-owned-focus`                                | Opts a field out of the global focus outline when its rounded wrapper draws the ring with `focus-within` (the dictation answer box). |
+| `marker`                                          | Highlighter-pen background for an emphasised phrase ("made for you" on the home plan).                                               |
 
-`src/app/globals.css` drives the whole flip off the `[data-theme]` attribute (not
-`prefers-color-scheme`): `@custom-variant dark (&:where(.dark, .dark *))` rebinds
-Tailwind's `dark:` variant to an explicit `.dark` class the app never adds, so
-shadcn primitives' built-in `dark:` styles stop firing. The day defaults live on
-`:root` as swappable vars (`--html-bg`, `--body-bg`, `--selection-bg`,
-`--manga-offset` for shadow color, `--manga-line` for border ink), and
-`:root[data-theme='lightup']` remaps the base `--manga-*` tokens plus those vars;
-every `bg-manga-*` / `border-manga-*` / offset-shadow utility inherits the flip
-automatically. Two light-up safety nets: `.page-hero` becomes a lit bordered card
-(so dark hero text stays readable on the dark room), and scoped rules retint the
-common `shadow-[Npx_Npx_0_var(--manga-black)]` offsets to the warm `--manga-offset`
-ledge. The `.lamp-hang*` classes and `lamp-sway`/`lamp-yank`/`lamp-flash`
-keyframes style the pull-string bulb.
+Primitive dialogs, sheets, dropdowns, selects, tabs, collapsibles and the
+progress bar carry their own soft open / close transitions in
+`src/components/ui/*`.
+
+### 1.6 `cn()`, tailwind-merge, class-variance-authority
+
+`src/lib/utils.ts` exports `cn(...inputs)` = `twMerge(clsx(inputs))` with the
+corner roles registered. `class-variance-authority` defines the variant maps in
+the shadcn primitives (`button.tsx` `buttonVariants`, `badge.tsx`, `tabs.tsx`);
+`ActionButton` and `IconButton` layer their pill styling on `buttonVariants`.
 
 ---
 
-## 2. The `ui/` primitive library
+## 2. Internationalisation (EN / VI)
+
+Every user-visible UI string (labels, buttons, headings, hints, aria labels,
+titles, metadata, toasts, learner-facing API errors) comes from a typed message
+catalogue. English is the default and the source of truth for keys; a missing
+Vietnamese key is a type error. Lesson and test data (grammar course content,
+IELTS passages, transcripts, word meanings) is never translated.
+
+| Piece         | File                                                     | Role                                                                                                                                                                                                                                     |
+| ------------- | -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Config        | `src/i18n/config.ts`                                     | `LOCALES = ['en', 'vi']`, `DEFAULT_LOCALE`, cookie `efom-locale` (one year), `INTL_LOCALES` (`en-GB`, `vi-VN`), `resolveLocale`. Routes are the same in both languages.                                                                  |
+| Catalogues    | `src/i18n/messages/en/*.ts`, `src/i18n/messages/vi/*.ts` | One file per namespace: `common`, `home`, `dictation`, `vocabulary`, `grammar`, `ielts`, `ieltsEditor`, `admin`. `src/i18n/messages/index.ts` exports `MESSAGES` and the `Messages` type. `src/i18n/messages.test.ts` checks key parity. |
+| Server        | `src/i18n/server.ts`                                     | `getLocale()` (cookie, cached per request) and `getMessages()` for server components, `generateMetadata`, route handlers and server actions.                                                                                             |
+| Client        | `src/i18n/client.tsx`                                    | `I18nProvider` (mounted in `src/app/layout.tsx`; English is bundled, so only the Vietnamese catalogue is passed down), `useMessages()`, `useLocale()`.                                                                                   |
+| Switching     | `src/i18n/actions.ts`                                    | `setLocaleAction(locale)` server action: sets the cookie and calls `refresh()` so server text re-renders without a reload.                                                                                                               |
+| Formatting    | `src/i18n/format.ts`, `src/i18n/formatNodes.tsx`         | `format(template, values)` for `{name}` placeholders, `plural(forms, count)` for one / other, `formatNodes` for templates that embed React nodes.                                                                                        |
+| Outside React | `src/i18n/active.ts`                                     | `getActiveMessages()` for plain client modules (the sync outbox) that need a fallback message.                                                                                                                                           |
+| Toggle        | `src/components/common/LocaleToggle.tsx`                 | `variant="round"`: one round button in the rail showing the current language with the other below, a click flips it. `variant="segmented"` (default): EN / VI pill in the phone menu. Optimistic via `useOptimistic`.                    |
+
+Server components that render inside client trees receive their text as props
+(`labels={t.dictation.browse}` and similar) instead of calling the hook, so they
+stay server components. Navigation labels come from `navItemLabel(item, t)` in
+`src/constants/modules.ts`.
+
+---
+
+## 3. The `ui/` primitive library
 
 `components.json` declares a shadcn setup with `style: "base-nova"`, `rsc: true`,
-base color neutral, CSS variables, and the lucide icon library. The primitives are
-the shadcn "Base UI" variant: they wrap `@base-ui/react/*` components (not Radix).
-`src/components/ui/` holds both these generated base primitives and the app's own
-custom manga components.
+CSS variables and the lucide icon set. The primitives wrap `@base-ui/react/*`
+(not Radix). Popups (dialog, sheet, select, dropdown, tooltip) render at
+`z-[80]`, above the IELTS exam stage (`z-[70]`).
 
-| Component       | File                   | Kind           | `use client`? | Purpose                                                                                                          |
-| --------------- | ---------------------- | -------------- | ------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `button`        | `ui/button.tsx`        | shadcn/base-ui | server        | Base `Button` on `@base-ui/react/button` with `buttonVariants` (cva). Foundation for `MangaButton`/`IconButton`. |
-| `badge`         | `ui/badge.tsx`         | shadcn/base-ui | server        | Label badge (cva variants), uses `useRender`/`mergeProps`.                                                       |
-| `card`          | `ui/card.tsx`          | shadcn/base-ui | server        | `Card`/`CardHeader`/`CardContent`/`CardFooter`. Base for `MangaPanel`, `ModuleCard`.                             |
-| `input`         | `ui/input.tsx`         | shadcn/base-ui | server        | Text input on `@base-ui/react/input`.                                                                            |
-| `textarea`      | `ui/textarea.tsx`      | shadcn/base-ui | server        | Multiline input.                                                                                                 |
-| `label`         | `ui/label.tsx`         | shadcn/base-ui | client        | Form label.                                                                                                      |
-| `checkbox`      | `ui/checkbox.tsx`      | shadcn/base-ui | client        | Checkbox on `@base-ui/react/checkbox`.                                                                           |
-| `select`        | `ui/select.tsx`        | shadcn/base-ui | client        | Select menu family (`SelectTrigger`/`Content`/`Item`/`Value`).                                                   |
-| `switch`        | `ui/switch.tsx`        | shadcn/base-ui | client        | Toggle switch.                                                                                                   |
-| `slider`        | `ui/slider.tsx`        | shadcn/base-ui | server        | Range slider.                                                                                                    |
-| `progress`      | `ui/progress.tsx`      | shadcn/base-ui | client        | Progress bar.                                                                                                    |
-| `separator`     | `ui/separator.tsx`     | shadcn/base-ui | client        | Divider.                                                                                                         |
-| `tabs`          | `ui/tabs.tsx`          | shadcn/base-ui | client        | Tabs family (cva), drives scene tabs and the practice Listen/Transcript tabs.                                    |
-| `dialog`        | `ui/dialog.tsx`        | shadcn/base-ui | client        | Modal dialog family (on `@base-ui/react/dialog`).                                                                |
-| `sheet`         | `ui/sheet.tsx`         | shadcn/base-ui | client        | Slide-out panel (also on the dialog primitive).                                                                  |
-| `dropdown-menu` | `ui/dropdown-menu.tsx` | shadcn/base-ui | client        | Menu family (on `@base-ui/react/menu`), used by `UserMenu`.                                                      |
-| `tooltip`       | `ui/tooltip.tsx`       | shadcn/base-ui | client        | Tooltip.                                                                                                         |
-| `skeleton`      | `ui/skeleton.tsx`      | shadcn/base-ui | server        | Pulsing placeholder block, used in `loading.tsx`.                                                                |
-| `MangaButton`   | `ui/MangaButton.tsx`   | custom app     | server        | Manga action button/link (section 1.1).                                                                          |
-| `IconButton`    | `ui/IconButton.tsx`    | custom app     | server        | Manga icon-only button/link.                                                                                     |
-| `PageTag`       | `ui/PageTag.tsx`       | custom app     | server        | Comic page-label chip.                                                                                           |
-| `ModuleCard`    | `ui/ModuleCard.tsx`    | custom app     | server        | Home module launcher tile.                                                                                       |
+| Component                                             | File                                              | Client? | Purpose                                                                                  |
+| ----------------------------------------------------- | ------------------------------------------------- | ------- | ---------------------------------------------------------------------------------------- |
+| `button`                                              | `ui/button.tsx`                                   | server  | Base `Button` with `buttonVariants` (cva). Foundation for `ActionButton` / `IconButton`. |
+| `badge`                                               | `ui/badge.tsx`                                    | server  | Label badge (cva variants).                                                              |
+| `card`                                                | `ui/card.tsx`                                     | server  | `Card` / `CardHeader` / `CardContent` / `CardFooter`.                                    |
+| `input`, `textarea`, `label`                          | `ui/input.tsx`, `ui/textarea.tsx`, `ui/label.tsx` | mixed   | Form fields.                                                                             |
+| `checkbox`, `radio-group`, `switch`, `slider`         | `ui/*.tsx`                                        | client  | Choice controls.                                                                         |
+| `select`                                              | `ui/select.tsx`                                   | client  | Select family (`SelectTrigger` / `Content` / `Item` / `Value`).                          |
+| `tabs`                                                | `ui/tabs.tsx`                                     | client  | Tabs family (practice Listen and Type / Full Transcript).                                |
+| `dialog`, `sheet`                                     | `ui/dialog.tsx`, `ui/sheet.tsx`                   | client  | Modal and side panel on the base-ui dialog.                                              |
+| `dropdown-menu`, `tooltip`                            | `ui/dropdown-menu.tsx`, `ui/tooltip.tsx`          | client  | Menus (`UserMenu`) and tooltips.                                                         |
+| `collapsible`                                         | `ui/collapsible.tsx`                              | client  | Disclosure used by the grammar unit banners and dictation browse panels.                 |
+| `progress`, `separator`, `skeleton`                   | `ui/*.tsx`                                        | mixed   | Progress bar, divider, pulsing placeholder.                                              |
+| `ActionButton`, `IconButton`, `PageTag`, `ModuleCard` | `ui/*.tsx`                                        | server  | App components (section 1.1).                                                            |
 
 ---
 
-## 3. Route map
+## 4. Shared layout chrome
 
-All pages set `runtime = 'nodejs'`, and most set `dynamic = 'force-dynamic'` because
-data is per-user and read at request time. Nearly every page guards on
-`hasMongoDbUri()` (from `src/constants/environments.ts`) and renders a graceful
-"MongoDB is not configured" state when the database is absent, so the app renders
-without a backend. Auth uses `getOptionalUser()` /
-`getPracticeActorId()` from `src/modules/dictation/services/getCurrentUser`.
+Every route renders its own `PageShell` and passes an `AppTopbar` into the
+`topbar` slot (server pages inject `<AuthControl />` into its `authControl` slot).
+`src/app/(app)/layout.tsx` wraps all learner routes in `OutboxOwnerProvider`,
+which hands the client outbox a hashed owner key for the current user or guest
+(never the raw guest id) so queued writes are stored per learner.
 
-| URL                                      | Group   | File                                           | Type                   | Purpose                                                                                                                                                                                                        | Auth                                           |
-| ---------------------------------------- | ------- | ---------------------------------------------- | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
-| `/`                                      | (root)  | `src/app/page.tsx`                             | Server                 | Home "Study Desk". Loads per-user global dictation stats when signed in; renders `HomeStudyDesk`.                                                                                                              | Open (stats only when signed in)               |
-| `/sitemap.xml`                           | (root)  | `src/app/sitemap.ts`                           | Server                 | Dynamic sitemap: static entries plus one per topic slug.                                                                                                                                                       | n/a                                            |
-| `/dictation`                             | (app)   | `src/app/(app)/dictation/page.tsx`             | Server                 | Browse: topic grid + uncategorized bucket. Renders `TopicGrid`.                                                                                                                                                | Open                                           |
-| `/dictation/[topicSlug]`                 | (app)   | `src/app/(app)/dictation/[topicSlug]/page.tsx` | Server                 | Topic detail: sections accordion, or a flat filtered/paginated result set when a browse query is active. Has `generateMetadata` (canonical + OpenGraph). `notFound()` when topic missing.                      | Open (favorites need login)                    |
-| `/dictation/favorites`                   | (app)   | `src/app/(app)/dictation/favorites/page.tsx`   | Server                 | The signed-in user's favorited lessons.                                                                                                                                                                        | Redirect to sign-in if anonymous               |
-| `/dictation/no-topic`                    | (app)   | `src/app/(app)/dictation/no-topic/page.tsx`    | Server                 | Uncategorized lessons (no topic assigned).                                                                                                                                                                     | Open                                           |
-| `/dictation/videos/[videoId]/practice`   | (app)   | `.../videos/[videoId]/practice/page.tsx`       | Server                 | Loads video, transcript, segments, active session, translation tracks; renders `DictationPracticeShell`. Validates the 24-hex id, `notFound()` otherwise; shows setup states when transcript/segments missing. | Open (guest cookie or user via practice actor) |
-| `/dictation/videos/[videoId]/results`    | (app)   | `.../videos/[videoId]/results/page.tsx`        | Server                 | Per-video results: summary, stats panel, AI debrief, weak-segment review queue. Empty state until real practice exists.                                                                                        | Open (practice actor)                          |
-| `/dictation/review`                      | (app)   | `src/app/(app)/dictation/review/page.tsx`      | Server                 | Due weak-sentence review queue (limit 30). Renders `DictationReviewQueue`.                                                                                                                                     | Open (practice actor)                          |
-| `/dictation/stats`                       | (app)   | `src/app/(app)/dictation/stats/page.tsx`       | Server                 | Whole-module stats dashboard (`DictationGlobalStats`). Zeros out for visitors with no history.                                                                                                                 | Open                                           |
-| `/vocabulary`                            | (app)   | `src/app/(app)/vocabulary/page.tsx`            | Server + client island | Vocabulary dashboard: stats, growth, due flashcards, dictionary lookup, search results, and Explore.                                                                                                           | Open (practice actor)                          |
-| `/vocabulary/words`                      | (app)   | `src/app/(app)/vocabulary/words/page.tsx`      | Server                 | Filtered vocabulary word list for `learning`, `dueToday`, `alreadyKnow`, `mastered`, and `knownTotal` views.                                                                                                   | Open (practice actor)                          |
-| `/admin`                                 | (admin) | `src/app/admin/page.tsx`                       | Server                 | Admin dashboard: link cards + topic/uncategorized counts.                                                                                                                                                      | Admin only (via layout)                        |
-| `/admin/dictation`                       | (admin) | `src/app/admin/dictation/page.tsx`             | Server                 | Dictation admin. `?view=list` shows the bulk assign table, any other value the topic board (create form, unassigned pool, drag-reorderable topics). Both views: Import button, Deleted videos trash.           | Admin only                                     |
-| `/admin/dictation/videos/[videoId]/edit` | (admin) | `.../dictation/videos/[videoId]/edit/page.tsx` | Server                 | Attach transcript source to a saved video (`DictationImportForm` in edit mode). Own admin guard + id validation.                                                                                               | Admin only (own redirect guard)                |
-| `/admin/dictation/import`                | (admin) | `src/app/admin/dictation/import/page.tsx`      | Server                 | Import a new YouTube video and attach transcript. Own admin guard.                                                                                                                                             | Admin only (own redirect guard)                |
-| `/admin/vocab`                           | (admin) | `src/app/admin/vocab/page.tsx`                 | Server + client island | Vocabulary enrichment queue summary and Enrich N control.                                                                                                                                                      | Admin only                                     |
+| Component                        | File                                                  | Client? | Role                                                                                                                                                                                                                                                                                     |
+| -------------------------------- | ----------------------------------------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `AppTopbar`                      | `common/AppTopbar.tsx`                                | client  | Logo above the rail, a greeting-style title and subtitle (both default to the catalogue), the auth slot, and below md a `ThemeToggle` plus the `TopbarMenu` button. Takes the auth control as a slot so client error boundaries never import the auth chain.                             |
+| `AppSidebar`                     | `common/AppSidebar.tsx`                               | client  | The dark icon rail (md and up): one pill of module links from `PRIMARY_NAV_ITEMS` (disabled modules are skipped) with a pill highlight that slides to the active item, then `ThemeToggle` and `LocaleToggle variant="round"`. `isActiveHref` matches `/` exactly and modules by subtree. |
+| `AppTabBar`                      | `common/AppTabBar.tsx`                                | client  | Below md: the same links as a floating dark pill at the bottom of the screen with icon and label. Left out on full-height work screens.                                                                                                                                                  |
+| `TopbarMenu` / `TopbarMenuSheet` | `common/TopbarMenu.tsx`, `common/TopbarMenuSheet.tsx` | client  | Phone menu button; lazy-loads a right `Sheet` with the nav links (disabled ones tagged "Soon"), the segmented `LocaleToggle`, and the auth control.                                                                                                                                      |
+| `AuthControl`                    | `common/AuthControl.tsx`                              | server  | Nothing when Google auth is unconfigured, a "Sign in" `ActionButton` when signed out, `UserMenu` when signed in.                                                                                                                                                                         |
+| `UserMenu` / `UserMenuPopup`     | `common/UserMenu.tsx`, `common/UserMenuPopup.tsx`     | client  | Identity chip as a dropdown trigger: Favorites, Admin (admins only), and Sign out behind a confirm dialog. The sign-out action arrives as a prop.                                                                                                                                        |
+| `AppCredits`                     | `common/AppCredits.tsx`                               | client  | Last row of the board: "(c) 2026 English For Only Me. All rights reserved." and "Developed by Nguyen Anh Khoa" (links to `https://anhkhoa.info`). Hidden on work screens.                                                                                                                |
+| `ThemeProvider`, `I18nProvider`  | `common/ThemeProvider.tsx`, `src/i18n/client.tsx`     | client  | Mounted once in `src/app/layout.tsx`.                                                                                                                                                                                                                                                    |
 
-Route groups: `(app)` groups the learner-facing dictation routes; `(admin)` is not
-a Next route group folder but a real `/admin` path segment whose `layout.tsx`
-enforces the admin guard for all children. The old `/admin/topics`,
-`/admin/videos` (to `?view=list`), `/admin/videos/:videoId/edit` and
-`/admin/import` URLs redirect permanently via `next.config.ts`. There is no `(app)` layout file; the
-dictation routes each render their own `MangaPageShell` + `AppTopbar`.
-
-Segment-level UX files (under `src/app/(app)/dictation/`):
-
-- `loading.tsx` - Server. Suspense fallback for the dictation segment; renders a
-  `MangaPageShell` + `MangaPanel` with two `Skeleton` blocks.
-- `error.tsx` - Client (`'use client'`). Error boundary; logs the error and renders
-  a `MangaPanel` with a `MangaButton` calling `unstable_retry()`.
-
-The `/admin/layout.tsx` guard redirects anonymous users to
-`/api/auth/signin?callbackUrl=/admin` and non-admins to `/dictation`. The
-`/admin/dictation/import` and `/admin/dictation/videos/[videoId]/edit` pages repeat the same guard
-inline (defense in depth, plus id-format validation).
+Navigation source of truth: `APP_MODULES` and `PRIMARY_NAV_ITEMS` in
+`src/constants/modules.ts`. The nav shows Home plus every module except Writing
+Notes, Reading and Speaking (the IELTS module covers them); non-active modules
+(AI Coach) are `disabled`.
 
 ---
 
-## 4. The home "Study Desk"
+## 5. Route map
 
-`src/app/page.tsx` (server) reads optional per-user stats for both shipped
-modules in parallel - `getGlobalStatsForUser` (dictation) and
-`getVocabStatsForUser` (vocabulary) - and passes them to `HomeStudyDesk` (server,
-`src/components/home/HomeStudyDesk.tsx`) as `dictationStats` + `vocabStats`.
-Anonymous visitors (or a missing DB) render the desk with no personal stats. The
-desk is a two-column `MangaPageShell`:
+All pages set `runtime = 'nodejs'`; data pages set `dynamic = 'force-dynamic'`.
+Most guard on `hasMongoDbUri()` (`src/constants/environments.ts`) and render a
+"database not configured" state instead of crashing. Learner data is scoped by
+`getPracticeActorId()` (signed-in user, else a guest cookie); see
+`docs/07-auth-infra-testing.md`.
 
-- Left "page" (`<section>`): hero title, a hand-drawn `StudyDeskSketch` (inline
-  SVG of a desk), the `HomeTodayPanel`, and the `HomeModuleLauncher`.
-- Right "IELTS path" aside: `HomeIeltsSnapshot` (dictation stat tiles + focus
-  panel), `HomeVocabularySnapshot` (vocabulary stat cards - recall due, known
-  total, streak, accuracy), and `HomeFutureModuleMap`. `HomeVocabularySnapshot`
-  is an inline component inside `HomeStudyDesk.tsx`, not a separate file.
+| URL                                           | File                                                    | Purpose                                                                                                                                             | Auth  |
+| --------------------------------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ----- |
+| `/`                                           | `src/app/page.tsx`                                      | Home dashboard (`HomeStudyDesk`) with dictation, vocabulary and grammar stats for a signed-in user.                                                 | Open  |
+| `/dictation`                                  | `src/app/(app)/dictation/page.tsx`                      | Dictation landing: stats strip, in-progress shelf, topic grid.                                                                                      | Open  |
+| `/dictation/[topicSlug]`                      | `src/app/(app)/dictation/[topicSlug]/page.tsx`          | Topic sections (accordion) or filtered flat results.                                                                                                | Open  |
+| `/dictation/favorites`, `/dictation/no-topic` | `src/app/(app)/dictation/{favorites,no-topic}/page.tsx` | Favourites (sign-in required) and uncategorised lessons.                                                                                            | Mixed |
+| `/dictation/videos/[videoId]/practice`        | `.../practice/page.tsx`                                 | Practice (`DictationPracticeShell`, full height).                                                                                                   | Open  |
+| `/dictation/videos/[videoId]/results`         | `.../results/page.tsx`                                  | Per-video results, AI debrief, weak segments.                                                                                                       | Open  |
+| `/dictation/review`, `/dictation/stats`       | `src/app/(app)/dictation/{review,stats}/page.tsx`       | Due review queue; full stats dashboard.                                                                                                             | Open  |
+| `/vocabulary`, `/vocabulary/words`            | `src/app/(app)/vocabulary/**`                           | Vocabulary dashboard; filtered word list.                                                                                                           | Open  |
+| `/grammar` and children                       | `src/app/(app)/grammar/**`                              | Grammar path, lesson player, notes, review, weak-spot practice, unit checkpoint.                                                                    | Open  |
+| `/ielts` and children                         | `src/app/(app)/ielts/**`                                | IELTS catalogue, test page, runners (practice, mock, drill), attempt review.                                                                        | Open  |
+| `/admin/**`                                   | `src/app/admin/**`                                      | Admin: dictation content, IELTS editor, vocabulary enrichment. `src/app/admin/layout.tsx` redirects anonymous users to sign-in and non-admins away. | Admin |
+| `/zz-dev-ielts-editor`                        | `src/app/zz-dev-ielts-editor/page.tsx`                  | Development-only IELTS editor sandbox.                                                                                                              | Dev   |
 
-Sub-panels (all server components):
-
-| Panel                    | File                              | What it shows                                                                                                                                                                                   |
-| ------------------------ | --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `HomeTodayPanel`         | `home/HomeTodayPanel.tsx`         | "Today" tasks derived from stats: weekly practice minutes, weak-word count, due review count; plus an "Open Dictation Lab" `MangaButton` and a disabled "Add Module Later" button.              |
-| `HomeModuleLauncher`     | `home/HomeModuleLauncher.tsx`     | Grid of the first four `APP_MODULES` as `ModuleCard`s, each with a lucide icon (mapped by module key). Only `active` modules get a live `href` and "Open" CTA; others show "Planned".           |
-| `HomeIeltsSnapshot`      | `home/HomeIeltsSnapshot.tsx`      | Four `MetricTile`s (listening streak, videos completed, weak words, next review) from `dictationStats`, plus a "This week / Focus" `MangaPanel` whose copy switches on whether reviews are due. |
-| `HomeVocabularySnapshot` | `home/HomeStudyDesk.tsx` (inline) | Four vocabulary stat cards (recall due, known total, day streak, recall accuracy) from `vocabStats`. Defined inside `HomeStudyDesk`, rendered in the right aside.                               |
-| `HomeFutureModuleMap`    | `home/HomeFutureModuleMap.tsx`    | Four `QueueRow`s (Listening active, Reading/Writing/Speaking "Later") with icon action chips - a static roadmap, not stats-driven.                                                              |
-
-`APP_MODULES` (`src/constants/modules.ts`) is the single source of truth for the
-module system: each entry has `key`, `title`/`shortTitle`, `href`, `pageTag`,
-`skill`, `status` (`active` | `future` | `secondary`), and `description`. Only
-`dictation` and `vocabulary` are `active` (`href: /dictation` and
-`/vocabulary`). `PRIMARY_NAV_ITEMS` is derived from `APP_MODULES` (prepending a
-"Study Desk" -> `/` item) and is the default nav used by `AppTopbar`.
+Module sections below list each module's routes in detail.
 
 ---
 
-## 5. The dictation feature UI
+## 6. The home dashboard
 
-### 5.1 Entry point
+`src/app/page.tsx` (server) loads, for a signed-in user, dictation global stats,
+vocabulary stats and grammar progress (`buildGrammarPath` for the next lesson
+title and due count) and passes them with the user's name to `HomeStudyDesk`
+(`src/components/home/HomeStudyDesk.tsx`, server). Anonymous visitors, or a
+missing database, get the same layout with zeros.
 
-The dictation UI lives in the data-backed pages under
-`src/app/(app)/dictation/**` (browse, practice, results, review, stats), which
-render the components described below. The old static prototype scenes and their
-mock constants (`src/constants/dictation.ts`) were removed.
+```mermaid
+graph TD
+  Page["app/page.tsx (server)"] --> Desk["HomeStudyDesk"]
+  Desk --> Top["AppTopbar: Hello, first name<br/>date and reviews due today"]
+  Desk --> Head["Dashboard h1 + module chips"]
+  Desk --> Progress["Learning progress card<br/>Dictation and Vocabulary tiles + Sparkline"]
+  Desk --> Tiles["HomeModuleTiles<br/>four pastel module tiles"]
+  Desk --> Bottom["Weak words card + counters"]
+  Desk --> Plan["Study plan for today<br/>Listen / Read and write groups"]
+  Desk --> Schedule["Schedule rows<br/>dictation, vocabulary, grammar due"]
+  Desk --> Buddy["HomeBuddyCard<br/>mascot, next grammar lesson, streak"]
+```
 
-### 5.2 Browse flow
+| Component         | File                       | Role                                                                                                                                                                               |
+| ----------------- | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `HomeStudyDesk`   | `home/HomeStudyDesk.tsx`   | Bento layout: three columns on xl (progress, modules and counters / today's plan and schedule / buddy card), two on md, one on phones. Accepts `now` for a testable greeting date. |
+| `HomeModuleTiles` | `home/HomeModuleTiles.tsx` | The four active modules as pastel tiles with a lucide icon and one fact each; exports `MODULE_ICONS`.                                                                              |
+| `HomeBuddyCard`   | `home/HomeBuddyCard.tsx`   | Lemon highlight card: the logo mascot, the next grammar lesson, the streak, minutes this month and videos done.                                                                    |
 
-`/dictation` (server) -> `TopicGrid` (server, `browse/TopicGrid.tsx`): grid of topic
-cards (thumbnail via a safe-URL guard, level range, lesson count) plus a muted
-"Uncategorized" card when topic-less videos exist. Links to
-`/dictation/[topicSlug]` and `/dictation/no-topic`.
+---
 
-`/dictation/[topicSlug]` (server) decides between two views based on
-`isBrowseQueryActive`:
+## 7. The dictation feature UI
 
-- No active query -> `TopicAccordion` -> `SectionAccordion` (client,
-  `browse/SectionAccordion.tsx`): collapsible per-section panels (`useState` open
-  toggle) listing `VideoCard`s. Each card renders `DictationVideoThumbnail`,
-  `CompletionBadge`, and `FavoriteButton`, and links to the video's `practiceHref`.
-- Active query (search/level/sort) -> `FlatResults` -> `BrowseVideoList` (exported
-  from `SectionAccordion.tsx`) + `BrowsePagination`.
+### 7.1 Landing and browse
 
-Supporting browse components:
+`/dictation` (server) renders `PageHeader` (latest results and favourites
+actions), then `DictationStatsStrip`, `InProgressSection` and the `TopicGrid`
+under a "Topics" heading. The landing page keeps to one screen on a desktop: the
+full stats dashboard lives on `/dictation/stats`.
 
-| Component                 | File                                    | Client? | Role                                                                                                                                                                                     |
-| ------------------------- | --------------------------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `BrowseToolbar`           | `browse/BrowseToolbar.tsx`              | client  | Search input + level/sort `Select`s. Debounces search 300ms; writes query string via `useRouter().replace`, resetting `page`. Uses `next/navigation`, no `src/requests`.                 |
-| `BrowsePagination`        | `browse/BrowsePagination.tsx`           | server  | Link-based prev/next preserving query; hidden on a single page.                                                                                                                          |
-| `BrowseBreadcrumb`        | `browse/BrowseBreadcrumb.tsx`           | server  | "All topics / current" breadcrumb.                                                                                                                                                       |
-| `FavoriteButton`          | `browse/FavoriteButton.tsx`             | client  | Optimistic star toggle. Calls the `toggleFavoriteAction` server action (`modules/dictation/content/favoriteActions`), `useTransition` for pending, redirects anonymous users to sign-in. |
-| `DictationVideoThumbnail` | `dictation/DictationVideoThumbnail.tsx` | server  | Safe YouTube thumbnail (`next/image`, host allow-list) with a "No thumbnail" fallback.                                                                                                   |
-| `CompletionBadge`         | `dictation/CompletionBadge.tsx`         | server  | Tiered medal `PageTag` from completion count; renders nothing below the lowest tier.                                                                                                     |
+`/dictation/[topicSlug]` (server) renders `PageHeader` with `BrowseBreadcrumb`,
+`BrowseToolbar`, then either `TopicAccordion` / `SectionAccordion` (collapsible
+sections) or, when `isBrowseQueryActive` (search, level or sort), `FlatResults`
+with `BrowseVideoList` and `BrowsePagination`.
 
-`/dictation/favorites` and `/dictation/no-topic` reuse `BrowseVideoList` +
+| Component                                    | File                                                             | Client?         | Role                                                                                                                                                                                                                                                                                                                             |
+| -------------------------------------------- | ---------------------------------------------------------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DictationStatsStrip`                        | `browse/DictationStatsStrip.tsx`                                 | server          | Four headline numbers (completed videos, completed segments, this week, active streak) with pastel icons and a "Full stats" link; two columns on phones. Labels arrive as props.                                                                                                                                                 |
+| `InProgressSection`                          | `browse/InProgressSection.tsx`                                   | server          | Collapsible "In Progress" shelf of unfinished videos, rendered as `BrowseVideoList layout="rail"` (one horizontally scrolling row). Renders nothing when empty.                                                                                                                                                                  |
+| `TopicGrid`                                  | `browse/TopicGrid.tsx`                                           | server          | Compact topic cards (thumbnail tile, title, "Levels: X · N lessons"), up to four columns, plus a muted "Uncategorized" card when topic-less videos exist.                                                                                                                                                                        |
+| `BrowseVideoList` / `BrowseVideoListClient`  | `browse/BrowseVideoList.tsx`, `browse/BrowseVideoListClient.tsx` | server / client | Video cards: thumbnail with `FavoriteButton`, two-line title, level tag, `CompletionBadge`, and a status chip (Continue in pink, Practice again in green with a tick, Practice). The whole card links to practice. `layout="grid"` (2 to 5 columns) or `"rail"`. The client wrapper lets a closed section ship only its records. |
+| `SectionAccordion`                           | `browse/SectionAccordion.tsx`                                    | server          | Per-section `BrowseDisclosure`s whose bodies are `BrowseVideoListClient`, so a closed section ships only its video records.                                                                                                                                                                                                      |
+| `BrowseDisclosure`                           | `browse/BrowseDisclosure.tsx`                                    | client          | Shared disclosure shell (header + panel).                                                                                                                                                                                                                                                                                        |
+| `BrowseToolbar`                              | `browse/BrowseToolbar.tsx`                                       | client          | Debounced search (300ms) and level / sort `Select`s written to the query string.                                                                                                                                                                                                                                                 |
+| `BrowsePagination`, `BrowseBreadcrumb`       | `browse/*.tsx`                                                   | server          | Link pagination; "All topics / current" breadcrumb.                                                                                                                                                                                                                                                                              |
+| `FavoriteButton`                             | `browse/FavoriteButton.tsx`                                      | client          | Optimistic star toggle through `toggleFavoriteAction`; sends anonymous users to sign-in.                                                                                                                                                                                                                                         |
+| `DictationVideoThumbnail`, `CompletionBadge` | `dictation/*.tsx`                                                | server          | Safe YouTube thumbnail with fallback; tiered completion medal.                                                                                                                                                                                                                                                                   |
+
+`/dictation/favorites` and `/dictation/no-topic` reuse `BrowseVideoList` and
 `BrowseBreadcrumb`.
 
-### 5.3 Practice flow
+### 7.2 Practice
 
-The practice page loads segments/session/translation tracks server-side and hands
-them to `DictationPracticeShell` (client,
-`src/components/dictation/DictationPracticeShell.tsx`), the stateful orchestrator.
-It scores answers locally first (via `modules/dictation/correction` helpers) and
-serializes server persistence through a promise-queue ref. It calls two request
-helpers: `startOrResumeDictationSessionApi` + `updateDictationSessionApi`
-(`src/requests/dictationSessionsApi.ts`) and `submitDictationAttemptApi`
-(`src/requests/dictationAttemptsApi.ts`). It uses preference and shortcut hooks
-(Enter = check, Esc = reveal/skip, Ctrl+[/] = move segments, Alt/Cmd = replay) and
-persists answer drafts locally.
-
-The live tree is:
-
-```mermaid
-graph TD
-  Shell["DictationPracticeShell (client)<br/>session + attempt orchestrator"]
-  Shell --> Header["DictationPracticeHeader (client)"]
-  Header --> PT["PageTag (level)"]
-  Header --> CB["CompletionBadge"]
-  Header --> TBar["DictationTranslationBar (Select: language)"]
-  Shell --> Controls["DictationControls (client)<br/>replay / speed / nav / restart Dialog"]
-  Shell --> Player["DictationYoutubePlayer (client)<br/>YouTube IFrame API, controller ref"]
-  Shell --> Tabs["Tabs (ui)"]
-  Tabs --> TypeTab["TabsContent: Listen and Type"]
-  TypeTab --> Guided["GuidedAnswerInput (client)<br/>guided textarea + hints + char correction"]
-  TypeTab --> Actions["Check / Skip / Next / Retry (MangaButton)"]
-  TypeTab --> Switches["Switch: show answer / show full answer"]
-  TypeTab --> Trans["DictationTranslation (client)<br/>after-effort translation"]
-  Tabs --> TransTab["TabsContent: Full Transcript"]
-  TransTab --> Full["DictationFullTranscript (client)<br/>click-to-seek, repeat, auto-scroll"]
-```
-
-Practice component reference:
-
-| Component                      | File                               | Client? | Role / API                                                                                                                                                                                                                                                                                  |
-| ------------------------------ | ---------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `DictationPracticeShell`       | `DictationPracticeShell.tsx`       | client  | Orchestrator. Calls `dictationSessionsApi`, `dictationAttemptsApi`.                                                                                                                                                                                                                         |
-| `DictationPracticeHeader`      | `DictationPracticeHeader.tsx`      | client  | Eyebrow/title/level + `CompletionBadge` + `DictationTranslationBar`. Presentational.                                                                                                                                                                                                        |
-| `DictationYoutubePlayer`       | `DictationYoutubePlayer.tsx`       | client  | Segment-aware YouTube IFrame wrapper; exposes a controller (replay/seek/playSegment) upward; supports `mockPlayer` for tests. No `src/requests`.                                                                                                                                            |
-| `DictationControls`            | `DictationControls.tsx`            | client  | Playback/nav toolbar; speed and text-size presets; restart confirm `Dialog`.                                                                                                                                                                                                                |
-| `GuidedAnswerInput`            | `GuidedAnswerInput.tsx`            | client  | Guided textarea with hint chips (Tab fills next hint) and character-level correction overlay. Uses `correction` module helpers. Exposes a `renderCorrectionWord` slot; the shell passes `QuickVocabWordButton` so corrected words become click-to-look-up vocabulary chips (see section 6). |
-| `DictationTranslation`         | `DictationTranslation.tsx`         | client  | After-effort translation caption; returns null until unlocked.                                                                                                                                                                                                                              |
-| `DictationTranslationBar`      | `DictationTranslationBar.tsx`      | client  | Translation-language `Select` (or "None").                                                                                                                                                                                                                                                  |
-| `DictationFullTranscript`      | `DictationFullTranscript.tsx`      | client  | Interactive transcript tab: click-to-seek, repeat/auto-scroll toggles, per-segment status badges, auto-scroll to active.                                                                                                                                                                    |
-| `DictationTranscriptDrawer`    | `DictationTranscriptDrawer.tsx`    | client  | Alternate `Sheet`-based transcript view. Not used by the shell.                                                                                                                                                                                                                             |
-| `DictationCaptionManager`      | `DictationCaptionManager.tsx`      | client  | Authoring panel: upload/paste captions, set primary + translation tracks, build segments, delete. Calls `dictationTranscriptsApi` (attach/attach-track/delete) and `dictationSegmentsApi` (build).                                                                                          |
-| `DictationSegmentEditor`       | `DictationSegmentEditor.tsx`       | client  | Authoring: edit/split/merge segments in local state (segmenting module helpers); no network.                                                                                                                                                                                                |
-| `DictationBuildSegmentsButton` | `DictationBuildSegmentsButton.tsx` | client  | Triggers `buildDictationSegmentsApi` then `router.refresh()`. Used on practice setup states.                                                                                                                                                                                                |
-
-### 5.4 Results, review, and stats
-
-`/dictation/videos/[videoId]/results` (server) composes, in order:
-`DictationResultsSummary` (server) -> then, when non-empty, `DictationStatsPanel`
-(server), `DictationDebriefPanel` (client), and `DictationReviewQueue` (server)
-titled "Weak segments from this video". When empty it shows a "Practice first"
-`MangaPanel`.
-
-`/dictation/review` (server) renders an intro `MangaPanel` + `DictationReviewQueue`
-(server) fed by `listDueReviewItemsForUser`. `/dictation/stats` (server) renders
-`DictationGlobalStats` (server).
-
-| Component                 | File                          | Client? | Role / API                                                                                                                                                          |
-| ------------------------- | ----------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `DictationResultsSummary` | `DictationResultsSummary.tsx` | server  | Per-video results header (thumbnail, title, status, empty/non-empty framing).                                                                                       |
-| `DictationStatsPanel`     | `DictationStatsPanel.tsx`     | server  | Per-video stat tiles (`MetricTile` and friends).                                                                                                                    |
-| `DictationDebriefPanel`   | `DictationDebriefPanel.tsx`   | client  | AI debrief: shows the latest debrief and can generate a new one via `dictationDebriefsApi` (`createDictationDebriefApi`); `canGenerate` gated on a completed video. |
-| `DictationReviewQueue`    | `DictationReviewQueue.tsx`    | server  | Renders due weak-sentence review items (`QueueRow`-style rows) with an empty-state message.                                                                         |
-| `DictationGlobalStats`    | `DictationGlobalStats.tsx`    | server  | Whole-module dashboard (metric tiles + `SketchChart` progress).                                                                                                     |
-
-The results/stats server components take plain record props (stats objects, review
-items, debrief record) computed on the page; the only client component here,
-`DictationDebriefPanel`, is the one that calls a request helper directly (debrief
-generation is client-triggered so it can stream/poll a longer AI job).
-
-### 5.5 Admin
-
-Admin pages are server components that load content via the content repository and
-hand it to client components. All admin mutations go through server actions in
-`src/modules/dictation/content/adminActions` (not `src/requests/*`); the one
-exception is `DictationImportForm`, which calls the client request helper
-`importYouTubeVideoApi` (`src/requests/dictationImportsApi.ts`).
-
-| Component                   | File                                  | Client? | Role / actions                                                                                                                                                                                                                                  |
-| --------------------------- | ------------------------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `AdminTopicList`            | `admin/AdminTopicList.tsx`            | client  | Ordered topic list with drag-reorder (`reorderTopicsAction`), `router.refresh()`.                                                                                                                                                               |
-| `AdminTopicCard`            | `admin/AdminTopicCard.tsx`            | client  | Expandable topic editor: sections, ungrouped videos, moves, reorders. Many actions (create/delete/update section, move/remove/reorder video, update/delete topic). Renders `AdminVideoRow`, `AdminTopicThumbnailFields`, `ConfirmSubmitButton`. |
-| `AdminCreateTopicForm`      | `admin/AdminCreateTopicForm.tsx`      | client  | Create-topic form (`createTopicAction`, multipart).                                                                                                                                                                                             |
-| `AdminTopicThumbnailFields` | `admin/AdminTopicThumbnailFields.tsx` | client  | Thumbnail file upload (`uploadTopicThumbnailAction`) feeding a hidden field.                                                                                                                                                                    |
-| `AdminTrashPanel`           | `admin/AdminTrashPanel.tsx`           | server  | Collapsible "Deleted videos" list under both admin views. Each row's ⋯ menu (`AdminTrashVideoMenu`, client) has Restore (`restoreVideoAction`) and Delete permanently (`purgeVideoAction`, confirm first). Renders null when empty.             |
-| `AdminUnassignedPanel`      | `admin/AdminUnassignedPanel.tsx`      | client  | Collapsible pool of topic-less videos; both drag source and unassign drop target (`moveVideoAction`).                                                                                                                                           |
-| `AdminVideoRow`             | `admin/AdminVideoRow.tsx`             | client  | Shared draggable/selectable video row (grip, thumbnail, level `Select` via `updateVideoLevelAction`); its menu always has Edit and Delete (soft delete via `deleteVideoAction`).                                                                |
-| `VideoAssignTable`          | `admin/VideoAssignTable.tsx`          | client  | List view of `/admin/dictation`: filter/search, multi-select, bulk assign (`assignVideosAction`), reorder (`reorderVideosAction`).                                                                                                              |
-| `adminVideoDnd`             | `admin/adminVideoDnd.tsx`             | client  | Shared DnD primitives (`DropZone`, `ReorderHandle`), MIME constants, `reorderIds` re-export.                                                                                                                                                    |
-| `ConfirmSubmitButton`       | `admin/ConfirmSubmitButton.tsx`       | client  | Confirm-modal submit button that calls `form.requestSubmit()` on confirm.                                                                                                                                                                       |
-| `DictationImportForm`       | `dictation/DictationImportForm.tsx`   | client  | Import/edit form; saves a video via `importYouTubeVideoApi`, then reveals `DictationCaptionManager`. Modes `import` and `edit`.                                                                                                                 |
-
-Drag-and-drop is built entirely on the native HTML5 Drag and Drop API (no external
-library). `adminVideoDnd.tsx` centralizes `DropZone`/`ReorderHandle` and four
-MIME-typed payloads that keep interactions isolated: `MIME_TOPIC` (reorder topics),
-`MIME_SECTION` (reorder sections), `MIME_VIDEO` (move a video between
-topics/sections/unassigned), and `MIME_VIDEO_SECTION` (carry the source section for
-within-section reorder). Reorders apply optimistically, then persist via a server
-action + `router.refresh()`. `VideoAssignTable` uses its own private
-`VIDEO_ORDER_MIME` for row reordering.
-
----
-
-## 6. Vocabulary feature UI
-
-### 6.1 Vocabulary routes
-
-| URL                 | File                                      | Type                   | Purpose                                                                                          | Auth                    |
-| ------------------- | ----------------------------------------- | ---------------------- | ------------------------------------------------------------------------------------------------ | ----------------------- |
-| `/vocabulary`       | `src/app/(app)/vocabulary/page.tsx`       | Server + client island | Vocabulary dashboard: stats/growth, recall launcher + modal, dictionary lookup, search, Explore. | Open (practice actor)   |
-| `/vocabulary/words` | `src/app/(app)/vocabulary/words/page.tsx` | Server                 | Filtered word list for `learning`, `dueToday`, `alreadyKnow`, `mastered`, `knownTotal` views.    | Open (practice actor)   |
-| `/admin/vocab`      | `src/app/admin/vocab/page.tsx`            | Server + client island | Enrichment queue summary + `Enrich N` batch control.                                             | Admin only (via layout) |
-
-All three pages set `dynamic = 'force-dynamic'` and `runtime = 'nodejs'` and render
-the manga shell + `AppTopbar`. Server-only data on `/vocabulary` is loaded from the
-client through `src/requests/vocabularyApi.ts` (so the client island never imports
-server modules); `/vocabulary/words` and `/admin/vocab` fetch their initial data on
-the server. The `getPracticeActorId()` actor (user id, else guest cookie) scopes
-per-user data.
-
-### 6.2 `/vocabulary` dashboard tree
-
-`/vocabulary` (`src/app/(app)/vocabulary/page.tsx`) reads `auth()` only for the
-`isAdmin` flag and passes it plus `mongoConfigured` into the client island
-`VocabularyDashboard` (`src/components/vocabulary/VocabularyDashboard.tsx`). The
-dashboard owns all vocabulary state (stats, search results, selected entry, explore
-entries + optimistic decisions, recall tasks, modal open) and calls the request
-helpers in `vocabularyApi.ts`: `getVocabStatsApi`, `getExploreVocabApi`,
-`getDueVocabRecallApi`, `searchVocabApi`, `lookupVocabEntryApi`,
-`setVocabItemStatusApi`, `answerVocabRecallApi`. When `mongoConfigured` is false it
-renders a "Database needed" `MangaPanel`.
+The practice page loads segments, session and translation tracks on the server
+and hands them to `DictationPracticeShell` (client), inside a full-height
+`PageShell`. The shell scores answers locally first (`src/modules/dictation/correction`),
+so grading never waits on the network. It starts or resumes the session with
+`startOrResumeDictationSessionApi` (`src/requests/dictationSessionsApi.ts`) and
+queues every session update and attempt through the client outbox
+(`useClientOutbox`, paths from `getDictationSessionApiPath` and
+`getDictationAttemptsApiPath` in `src/requests/dictationAttemptsApi.ts`), which
+delivers them in the session's lane with retries. Shortcuts: Enter checks, Esc reveals or
+skips, Ctrl+[ / ] moves between segments, Alt or Cmd replays. Drafts persist
+locally.
 
 ```mermaid
 graph TD
-  Page["vocabulary/page.tsx (server)<br/>reads isAdmin, mongoConfigured"]
-  Page --> Dash["VocabularyDashboard (client)<br/>owns all state + vocabularyApi calls"]
-  Dash --> Hero["Hero: PageTag + h1 + streak badge<br/>+ Admin Enrich MangaButton (isAdmin only)"]
-  Dash --> Stats["VocabularyStatsOverview (client)"]
-  Stats --> Tiles["5 linked MetricTiles<br/>-> /vocabulary/words?view=..."]
-  Stats --> Growth["Growth MangaPanel: Progress + 14-day bars"]
-  Stats --> Hard["Hardest words MangaPanel<br/>(VocabTermHeader rows)"]
-  Dash --> Search["VocabularySearchPanel (client)<br/>Input + Lookup, definitions, synonyms"]
-  Search --> STerm["VocabTermHeader (speak)"]
-  Dash --> Launcher["VocabularyRecallLauncher (client)<br/>due count + Start Recall"]
-  Dash --> Explore["VocabularyExplorePanel (client)<br/>stacked carousel + minimap legend"]
-  Explore --> ETerm["VocabTermHeader per card"]
-  Dash --> Modal["VocabRecallModal (client, Dialog)<br/>listen / choose / example prompts"]
-  Modal --> MTerm["VocabTermHeader"]
+  Shell["DictationPracticeShell (client)"]
+  Shell --> Header["DictationPracticeHeader<br/>level, CompletionBadge, DictationTranslationBar"]
+  Shell --> Controls["DictationControls<br/>replay, speed, nav, restart dialog"]
+  Shell --> Player["DictationYoutubePlayer<br/>YouTube IFrame API"]
+  Shell --> Tabs["Tabs"]
+  Tabs --> Type["Listen and Type"]
+  Type --> Guided["GuidedAnswerInput<br/>rounded frame with focus-within ring"]
+  Type --> Trans["DictationTranslation"]
+  Tabs --> Full["Full Transcript<br/>DictationFullTranscript"]
 ```
 
-Area behavior:
+| Component                                                                                                | File                                                           | Client? | Role                                                                                                                                                                                                                                                                                                                                                                |
+| -------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DictationPracticeShell`                                                                                 | `DictationPracticeShell.tsx`                                   | client  | Orchestrator: session, attempts, preferences, shortcuts.                                                                                                                                                                                                                                                                                                            |
+| `DictationPracticeHeader`                                                                                | `DictationPracticeHeader.tsx`                                  | client  | Title, level, completion medal, translation language picker.                                                                                                                                                                                                                                                                                                        |
+| `DictationYoutubePlayer`                                                                                 | `DictationYoutubePlayer.tsx`                                   | client  | Segment-aware YouTube wrapper with a controller (replay, seek, play segment).                                                                                                                                                                                                                                                                                       |
+| `DictationControls`, `DictationSettingsMenu`                                                             | `DictationControls.tsx`, `DictationSettingsMenu.tsx`           | client  | Playback and navigation toolbar; speed and text-size settings.                                                                                                                                                                                                                                                                                                      |
+| `GuidedAnswerInput`                                                                                      | `GuidedAnswerInput.tsx`                                        | client  | Free typing over a transparent mirror with character-level correction (dotted orange for missing, solid red for wrong), hint chips (Tab fills), and a rounded frame whose `focus-within` ring replaces the square global outline (`ring-owned-focus`). Its `renderCorrectionWord` slot receives `QuickVocabWordButton` so corrected words open a vocabulary lookup. |
+| `DictationTranslation`, `DictationTranslationBar`                                                        | `DictationTranslation*.tsx`                                    | client  | After-effort translation caption; language picker.                                                                                                                                                                                                                                                                                                                  |
+| `DictationFullTranscript`, `DictationTranscriptDrawer`                                                   | `DictationFullTranscript.tsx`, `DictationTranscriptDrawer.tsx` | client  | Click-to-seek transcript with status badges; a sheet variant.                                                                                                                                                                                                                                                                                                       |
+| `DictationCaptionManager`, `DictationSegmentEditor`, `DictationHintEditor`, `DictationTranslationEditor` | `Dictation*.tsx`                                               | client  | Authoring panels: captions and tracks, segments, hints, translations.                                                                                                                                                                                                                                                                                               |
 
-- Stats and growth (`VocabularyStatsOverview`): five linked `MetricTile` counters
-  (Learning, Due Today, Already Know, Mastered, Known Total) navigating to
-  `/vocabulary/words?view=...`, a `Progress` bar plus a 14-day bar chart of daily
-  growth, and a "Hardest words" panel of `VocabTermHeader` rows.
-- Recall (`VocabularyRecallLauncher` + `VocabRecallModal`): the launcher is an
-  ink-toned `MangaPanel` showing the due count and up to four upcoming cards with a
-  "Start Recall" button; the modal is a full-screen `Dialog` that runs the flashcard
-  task types (`listenChooseWord`, `listenChooseDefinition`, `definitionChooseWord`,
-  `wordChooseDefinition`, `exampleRemember`) with speech synthesis, WebAudio
-  correct/wrong tones, a "Correct answer" reveal on a miss, and a "I cannot listen
-  now" skip for listening tasks. The dashboard auto-opens it once per day when cards
-  are due (localStorage-gated).
-- Dictionary/search (`VocabularySearchPanel`): an `Input` + `Lookup` calling
-  `lookupVocabEntryApi`, then `searchVocabApi` for related results; shows the
-  required Vietnamese meaning, English definitions/examples, synonyms, enrichment
-  status, and Should Learn / Already Know actions (disabled until a Vietnamese
-  meaning exists). Speech is browser `speechSynthesis`.
-- Explore (`VocabularyExplorePanel`): unclassified, already-enriched
-  frequency-ranked words as a stacked carousel with prev/next controls and no
-  horizontal scrollbar; neighbor cards are clickable layers that move into focus,
-  and the minimap below jumps to any card. The legend swatches are white
-  (unpicked), pink (`Should Learn`), green (`Already Know`), plus an outlined active
-  square. Should Learn / Already Know decisions are applied optimistically (see
-  `markEntry` with the `explore` source) and rolled back on error.
+The practice and results pages render `PracticeSetupState` / `ResultsSetupState`
+(defined in the page files) when a transcript or segments are missing.
 
-### 6.3 `/vocabulary/words` list
+### 7.3 Results, review and stats
 
-`/vocabulary/words` parses its `view` search param with
-`parseVocabWordListView` (`src/modules/vocabulary/services/vocabWordListService.ts`),
-reads the current practice actor via `getPracticeActorId()`, loads the words with
-`listVocabWordsForUser`, and renders the client `VocabularyWordList`
-(`src/components/vocabulary/VocabularyWordList.tsx`). The five view tabs are colored
-`Link`s (one per view) with `aria-current` on the active tab. Pagination is
-client-side over the server-fetched array, defaulting to 50 per page with presets
-5/10/20/30/50/100/200 (a `Select`) plus a custom numeric `Input`. Each word card
-(`VocabTermHeader`, status meta, frequency `PageTag`, Vietnamese + English preview)
-can call `setVocabItemStatusApi` to flip the word to `Should Learn` or
-`Already Know`, updating the client list immediately and dropping words that no
-longer match the active view. There is no dedicated API route for this
-server-rendered list.
+`/dictation/videos/[videoId]/results` composes `DictationResultsSummary`, then,
+once there is practice, `DictationStatsPanel`, `DictationDebriefPanel` (client,
+generates an AI debrief through `src/requests/dictationDebriefsApi.ts`) and a
+`DictationReviewQueue` of weak segments. `/dictation/review` renders the due
+`DictationReviewQueue`; `/dictation/stats` renders `DictationGlobalStats` (client:
+metric tiles, `SketchChart` first-try trend, repeated mistake types, weak words,
+next steps). `formatDuration` (`src/components/dictation/formatDuration.ts`) is
+shared by the stats dashboard and the landing strip.
 
-### 6.4 `/admin/vocab` enrichment
+### 7.4 Admin
 
-`/admin/vocab` (`src/app/admin/vocab/page.tsx`, guarded by the `/admin` layout)
-fetches the initial queue summary server-side (`getVocabAdminQueueSummary`) and
-renders the client `AdminVocabPanel` (`src/components/vocabulary/AdminVocabPanel.tsx`).
-It shows five `MetricTile` counters (Enrichable, Ready, Failed, Not Found, Stale
-Locks), a refresh icon button (`getVocabAdminQueueApi`), and an `Enrich N` control
-(`enrichVocabularyAdminApi`); the client caps the input at 10, and the server route
-enforces max 10 and `requireAdmin()`. The `/vocabulary` "Admin Enrich" shortcut is
-shown only when `isAdmin` is true.
+Admin pages (`src/app/admin/dictation/**`) are server components that load
+content and hand it to client components; mutations go through server actions in
+`src/modules/dictation/content/adminActions.ts`, except `DictationImportForm`, which
+calls `importYouTubeVideoApi` (`src/requests/dictationImportsApi.ts`).
 
-### 6.5 Vocabulary UI primitives and dictation integration
-
-Two vocabulary-only building blocks recur across the components:
-
-| Component                                   | File                              | Client? | Role                                                                                                                                                                                                                                                                                                                                     |
-| ------------------------------------------- | --------------------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `VocabTermHeader`                           | `vocabulary/VocabTermHeader.tsx`  | client  | Shared term header: big term + phonetic pronunciation + a speak `Button` (uses an injected `speakTerm` or a `speechSynthesis` fallback). Size presets `md`/`lg`/`xl`. Used by the stats, search, explore, recall, and word-list surfaces.                                                                                                |
-| `QuickVocabLookup` / `QuickVocabWordButton` | `vocabulary/QuickVocabLookup.tsx` | client  | `QuickVocabWordButton` wraps a single word as a click-to-look-up trigger that opens a `Dialog` with the entry (Vietnamese meaning, definition, Should Learn / Already Know). `QuickVocabLookup` tokenizes a whole sentence into per-word buttons. Both call `lookupVocabEntryApi` (with occurrence context) and `setVocabItemStatusApi`. |
-
-`QuickVocabWordButton` is wired into dictation: `DictationPracticeShell` passes it
-to `GuidedAnswerInput`'s `renderCorrectionWord` slot, so corrected words in the
-guided answer become click-to-look-up vocabulary chips carrying the current
-`attemptId`, `segmentId`, `videoId`, and context sentence.
-
-## 7. Shared layout chrome
-
-Every page wraps its content in `MangaPageShell` and passes an `AppTopbar` into the
-`topbar` slot (server pages also inject `<AuthControl />` into the topbar's
-`authControl` slot).
-
-- `AppTopbar` (`src/components/common/AppTopbar.tsx`, server): the page header -
-  logo + title + subtitle (links to `/`), a horizontal primary nav rendered from
-  `PRIMARY_NAV_ITEMS` (default) with `aria-current` on the active `activeHref`, and
-  an `authControl` slot. The inline nav shows from `xl` up; below `xl` it is
-  replaced by `TopbarMenu`, and below `sm` the auth control moves into that menu
-  too. It is intentionally client-safe: it takes the auth control as a
-  `ReactNode` slot rather than importing the NextAuth/Mongoose chain, so the
-  client `error.tsx` can render it without dragging server-only code into the
-  browser bundle.
-- `TopbarMenu` (`src/components/common/TopbarMenu.tsx`, client): the hamburger
-  `IconButton`. On first click it lazy-loads `TopbarMenuSheet` (next/dynamic,
-  prefetched on hover/focus, same pattern as `UserMenu`), a right-side `Sheet`
-  drawer listing the same nav items as large sticker links (disabled ones tagged
-  "Soon"), plus the auth control on phones. Tapping a link closes the drawer.
-- `AuthControl` (`src/components/common/AuthControl.tsx`, server async): reads the
-  session via `auth()`. Renders nothing if Google auth is unconfigured
-  (`hasGoogleAuth()`), a "Sign in" `MangaButton` (server-action `signIn('google')`)
-  when signed out, or `UserMenu` when signed in.
-- `UserMenu` (`src/components/common/UserMenu.tsx`, client): the identity chip
-  (avatar or initial) as a `DropdownMenu` trigger, with a Favorites link, an Admin
-  link (admins only), and a destructive "Sign out" that opens a confirm `Dialog`.
-  The `signOut` server action is injected as a prop so this client file never
-  imports the auth chain.
-- `ThemeProvider` + `PullStringToggle` are mounted once in `src/app/layout.tsx`
-  (not in the topbar): the provider wraps every page and the pull-string bulb is
-  fixed to the viewport corner across all routes (see section 1.5). The topbar
-  itself renders no theme control.
-
-Navigation source of truth: `PRIMARY_NAV_ITEMS` in `src/constants/modules.ts`
-("Study Desk" plus every `APP_MODULES` short title except Writing, Reading and
-Speaking, which the IELTS module covers). Non-active nav items (Coach) are
-rendered `disabled` and point at routes that are not yet implemented.
+| Component                                                                               | File                    | Role                                                                                                                  |
+| --------------------------------------------------------------------------------------- | ----------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `AdminTopicList`, `AdminTopicCard`, `AdminCreateTopicForm`, `AdminTopicThumbnailFields` | `dictation/admin/*.tsx` | Topic board: drag-reorder topics and sections, edit, create, thumbnail upload.                                        |
+| `AdminUnassignedPanel`, `AdminVideoRow`, `VideoAssignTable`, `VideoFilterBar`           | `dictation/admin/*.tsx` | Unassigned pool, shared video row (level select, edit, soft delete), list view with bulk assign and reorder, filters. |
+| `AdminTrashPanel`, `AdminTrashVideoMenu`                                                | `dictation/admin/*.tsx` | Deleted videos with restore and permanent delete.                                                                     |
+| `adminVideoDnd`, `ConfirmSubmitButton`                                                  | `dictation/admin/*.tsx` | Native HTML5 drag and drop primitives with MIME-typed payloads; confirm-then-submit button.                           |
+| `DictationImportForm`, `AdminVideoTranscriptPreview`                                    | `dictation/*.tsx`       | Import or edit a video, then the caption manager; transcript preview.                                                 |
 
 ---
 
-## 8. Loading and error states, skeletons
+## 8. Vocabulary feature UI
 
-- Route-level Suspense: `src/app/(app)/dictation/loading.tsx` (server) renders the
-  manga shell with a `MangaPanel` containing two `Skeleton` blocks (the only use of
-  the `Skeleton` primitive in app routes).
-- Route-level error boundary: `src/app/(app)/dictation/error.tsx` (client) logs the
-  error in a `useEffect` and offers a `MangaButton` -> `unstable_retry()`.
-- Config-absent states: nearly every server page renders a bordered "MongoDB is not
-  configured" panel (with `MangaButton` links back to the lab / import / add
-  transcript) instead of crashing when `hasMongoDbUri()` is false.
-- Practice/results setup states: the practice and results pages render dedicated
-  `PracticeSetupState` / `ResultsSetupState` panels for "transcript needed" and
-  "segments not ready", wiring in `DictationBuildSegmentsButton` and links to the
-  admin edit/import pages.
-- In-component feedback: `FavoriteButton`, `DictationBuildSegmentsButton`,
-  `DictationDebriefPanel`, admin forms, and the import form use `useTransition` /
-  local `isSubmitting`/`isBuilding` state and disabled buttons for pending UI, plus
-  inline error messages; `DictationPracticeShell` shows completed/not-started
-  states inside the practice tab.
+### 8.1 Routes
 
-Empty states are handled per component: `BrowseVideoList` (no lessons),
-`SectionAccordion` (no sections), `DictationReviewQueue` (no due items),
-`AdminUnassignedPanel` (renders null when empty), and the results "Practice first"
-panel.
+| URL                 | File                                      | Type                   | Purpose                                                                                                                                                                                                                                                                                                                 |
+| ------------------- | ----------------------------------------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/vocabulary`       | `src/app/(app)/vocabulary/page.tsx`       | Server + client island | Loads `getVocabularyDashboardData({ actorId })` (`src/modules/vocabulary/services/vocabDashboardService.ts`: stats, due recall tasks, Explore deck) when the database is configured, and renders `VocabularyDashboard initialData mongoConfigured`. A load failure is logged and the client then loads the data itself. |
+| `/vocabulary/words` | `src/app/(app)/vocabulary/words/page.tsx` | Server                 | `parseVocabWordListQuery(searchParams)` (views `learning`, `dueToday`, `alreadyKnow`, `mastered`, `knownTotal`; invalid values fall back to `learning`) then `listVocabWordsForUser`, rendered by `VocabularyWordList`.                                                                                                 |
+| `/admin/vocab`      | `src/app/admin/vocab/page.tsx`            | Server + client island | `getVocabAdminQueueSummary()` into `AdminVocabPanel`.                                                                                                                                                                                                                                                                   |
+
+Each route has a `loading.tsx` skeleton shaped like its page.
+
+### 8.2 `/vocabulary` dashboard tree
+
+Every component below is a client component.
+
+```mermaid
+graph TD
+  Dash["VocabularyDashboard<br/>state owner, request helpers, client outbox"]
+  Dash --> Head["PageHeader<br/>streak chip, words link"]
+  Dash --> Launcher["VocabularyRecallLauncher<br/>due count, next term, Start"]
+  Dash --> Stats["VocabularyStatsOverview<br/>5 view links, growth bars, hardest words"]
+  Dash --> Summary["VocabRecallSessionSummary"]
+  Dash --> Search["VocabularySearchPanel"]
+  Dash --> Explore["VocabularyExplorePanel<br/>card-stack deck"]
+  Dash --> Modal["VocabRecallModal<br/>next/dynamic, mounted on first open"]
+```
+
+- `VocabularyDashboard` (`src/components/vocabulary/VocabularyDashboard.tsx`)
+  reads through `src/requests/vocabularyApi.ts` (`getVocabStatsApi`,
+  `getDueVocabRecallApi`, `getExploreVocabApi`, `lookupVocabEntryApi`,
+  `searchVocabApi`) and writes through the client outbox: word marks via
+  `enqueueVocabItemStatus` (`vocabItemWrites.ts`, lane `vocab:items`, last press
+  per word wins, optimistic with rollback) and recall answers via
+  `enqueueVocabRecallAnswer` (`vocabRecallSession.ts`, lane `vocab:recall`,
+  idempotency key `vocab-recall:{taskId}`). Answers are graded in the browser
+  first and the server's verdict replaces the local one. It prefetches the next
+  due page while five cards remain, auto-opens recall once per day, and re-deals
+  without listening tasks for 15 minutes after "I cannot listen now".
+- `VocabularyStatsOverview`: five links to `/vocabulary/words?view=...`, daily
+  growth bars, known share, hardest words.
+- `VocabularyRecallLauncher`: due count, the next term and up to six upcoming
+  chips with their stage; a pastel lilac panel.
+- `VocabularySearchPanel`: lookup and search in parallel; Vietnamese meaning,
+  definitions, synonyms; Should Learn / Already Know disabled until a Vietnamese
+  meaning exists.
+- `VocabularyExplorePanel`: frequency-ranked words as a card-stack deck with
+  prev / next, a dot map and Left / Right keys. Also used by the IELTS test page
+  (`TestVocabPanel`).
+
+### 8.3 Recall popup
+
+`VocabRecallModal` (`src/components/vocabulary/VocabRecallModal.tsx`) is a light,
+token-based dialog: a pink progress bar with "Review n/total", a mint stage chip,
+the instruction, the prompt on a mint card (`VocabTermHeader` with a speak
+button), and numbered option cards. Task types: `listenChooseWord`,
+`listenChooseDefinition` (the term auto-plays after 250ms), `definitionChooseWord`,
+`wordChooseDefinition`, `exampleRemember` (Look Up / I Remember).
+
+Every answer, right or wrong, stops on the card: options turn green with a tick
+(the correct one) or red with a cross (a wrong pick), and a verdict panel shows
+"Correct!" or "Not quite", the correct answer when wrong, the **Vietnamese
+meaning** (`getVietnameseMeaning`, falling back to "needs a meaning"), the
+English definition (`getEnglishDefinition`) and the example sentence. Continue
+(or Enter) moves to the next card; closing the dialog during a verdict also
+advances. Keys 1 to 4 pick an option. WebAudio tones mark right and wrong. A
+"Not Sure" footer action submits `notSure`.
+
+### 8.4 Word list and admin
+
+- `VocabularyWordList` (`src/components/vocabulary/VocabularyWordList.tsx`): view
+  tabs (pastel per view), per-page select (5 to 200) plus a custom size, rows
+  with term, meaning, definition, source-video link and mark buttons. Marks are
+  optimistic through the outbox; a word that leaves the view triggers a refill
+  (`router.refresh()` after the outbox is idle).
+- `AdminVocabPanel` (`src/components/vocabulary/AdminVocabPanel.tsx`): five
+  `MetricTile`s (enrichable, ready, failed, not found, stale locks), refresh, and
+  `Enrich N` through `enrichVocabularyAdminApi` (server caps at 10).
+
+### 8.5 Shared vocabulary pieces
+
+| Component                                   | File                              | Role                                                                                                                                                                                                                                                  |
+| ------------------------------------------- | --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `VocabTermHeader`                           | `vocabulary/VocabTermHeader.tsx`  | Term, pronunciation and a speak button; sizes `md` / `lg` / `xl`.                                                                                                                                                                                     |
+| `QuickVocabLookup` / `QuickVocabWordButton` | `vocabulary/QuickVocabLookup.tsx` | Click-to-look-up word buttons and dialog (meaning, definition, marks). Used by `DictationPracticeShell` through `GuidedAnswerInput.renderCorrectionWord` and by the IELTS `TextHighlighter`. Results cached for five minutes (`vocabLookupCache.ts`). |
+
+---
+
+## 9. Grammar feature UI
+
+### 9.1 Routes
+
+All pages are server components backed by `loadGrammarPageData()`
+(`src/modules/grammar/services/grammarPageData.ts`: progress, the path from
+`buildGrammarPath`, and `canSave`). Only `/grammar` has a `loading.tsx`.
+
+| URL                                  | File                                      | Renders                                                                          | Guards                                                                                                          |
+| ------------------------------------ | ----------------------------------------- | -------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `/grammar`                           | `src/app/(app)/grammar/page.tsx`          | `PageShell` + `AppTopbar` + `GrammarPath`                                        | none                                                                                                            |
+| `/grammar/lessons/[lessonId]`        | `.../lessons/[lessonId]/page.tsx`         | `GrammarPlayerPage mode="lesson"`                                                | `notFound()` for unknown ids; canonical id redirect; `/grammar` when the lesson is locked (`isLessonUnlocked`). |
+| `/grammar/lessons/[lessonId]/notes`  | `.../notes/page.tsx`                      | `PageHeader` + the lesson's explain cards (`ExplainCardView` in `ContentPanel`s) | `/grammar` unless the lesson is passed.                                                                         |
+| `/grammar/lessons/[lessonId]/review` | `.../review/page.tsx`                     | `GrammarPlayerPage mode="review"` (`buildReviewSet`)                             | `/grammar` unless the lesson is due.                                                                            |
+| `/grammar/practice`                  | `src/app/(app)/grammar/practice/page.tsx` | `GrammarPlayerPage mode="weak"` (`buildWeakSet`)                                 | `/grammar` when there are no weak cards.                                                                        |
+| `/grammar/units/[unitId]/checkpoint` | `.../checkpoint/page.tsx`                 | `GrammarPlayerPage mode="checkpoint"`, checkpoint or test-out intro              | `/grammar` when the unit is complete.                                                                           |
+
+### 9.2 The path page
+
+`GrammarPath` (`src/components/grammar/path/GrammarPath.tsx`, client) is a
+Duolingo-style winding path that stays easy to navigate:
+
+```mermaid
+graph TD
+  Path["GrammarPath"] --> Header["PageHeader<br/>stars and lessons done"]
+  Path --> Continue["Continue card<br/>next step, unit progress, Start lesson"]
+  Continue --> Doors["Review due / Weak spots tiles"]
+  Path --> Index["UnitIndex<br/>sticky column on lg, chip strip on phones"]
+  Path --> Trail["UnitTrail per unit<br/>sticky banner that folds the unit"]
+  Trail --> Node["PathNode<br/>round 3D lesson node, zigzag offset"]
+  Trail --> Check["CheckpointNode<br/>trophy at the end of the unit"]
+  Path --> Dialog["Lesson dialog<br/>review, start / redo, notes"]
+  Path --> Jump["Back to my lesson<br/>floating button"]
+```
+
+- Nodes: round 3D buttons (`id="node-{lessonId}"`) offset along `ZIGZAG`; colour
+  and icon follow the state (open Play in brand pink with a bouncing "Start"
+  bubble and a pulsing ring, passed Check in the unit colour, mastered Crown,
+  due RotateCcw, locked Lock). Each unit cycles a tone from `UNIT_TONES`
+  (lilac, sky, mint, peach). Stars or "Tested out" sit under finished nodes.
+- Folding: `initialOpenUnitIds` (`src/modules/grammar/path/unitSummary.ts`) opens
+  only the current unit; a refresh that moves the learner on also opens the new
+  current unit and keeps what the learner opened. Banners stick to the top while
+  their lessons scroll. A locked unit shows a Test out button.
+- Navigation aids: the unit index unfolds and scrolls to a unit; the floating
+  "Back to my lesson" button appears while the next node is folded away or off
+  screen (measured on scroll, resize and fold changes) and scrolls it to the
+  centre. All scrolling respects reduced motion.
+- Sync: `useSyncExternalStore` watches the outbox for pending grammar sessions
+  (`hasPendingGrammarSessions` in `src/requests/grammarSessionsApi.ts`) and calls
+  `router.refresh()` when they land.
+
+### 9.3 The lesson player
+
+| Component           | File                           | Client? | Role                                                                                                                                                                                                                                                                                                                                                                                                |
+| ------------------- | ------------------------------ | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GrammarPlayerPage` | `player/GrammarPlayerPage.tsx` | server  | Shuffles the cards once per request (`preparePlayCards`) and renders a full-height `PageShell` with `LessonPlayer`.                                                                                                                                                                                                                                                                                 |
+| `LessonPlayer`      | `player/LessonPlayer.tsx`      | client  | `useReducer(createPlayerReducer)` (`playerReducer.ts`: first answer counts, a miss is requeued once, combo and best combo). Progress bar, combo badge and milestone flashes, sound toggle, leave dialog once anything is answered, `beforeunload` guard. Enter checks or continues; 1 to 4 pick a choice. A feedback panel shows the expected answer with `SpeakButton` and the card's explanation. |
+| `PlayerCard`        | `player/PlayerCard.tsx`        | client  | `ExplainCardView` (also used by notes) and `PracticeCardView` for `choice`, `fill` (tiles or input), `order` (tap or drag tiles via `useTileDrag.ts`, pointer events) and `fix` (tap the wrong word). Wrong states use `danger`, right states `lesson-correct`.                                                                                                                                     |
+| `PlayerResult`      | `player/PlayerResult.tsx`      | client  | Stars or pass / fail, accuracy, best streak, time, unlocked banner, misses recap. Saves once through the outbox (`buildGrammarSessionWrite`, lane `grammar`, POST `/api/grammar/sessions`) with states saving, queued, saved, retryable, rejected, offline.                                                                                                                                         |
+| `SpeakButton`       | `grammar/SpeakButton.tsx`      | client  | `speechSynthesis` (en-US, rate 0.92); renders nothing when unsupported.                                                                                                                                                                                                                                                                                                                             |
+
+The player sits on `.lesson-stage`, a soft brand and peach glow behind the card
+column.
+
+---
+
+## 10. IELTS feature UI
+
+### 10.1 Routes
+
+No learner IELTS route requires sign-in: `AttemptLoader` mints a guest identity
+when needed, and attempt pages only load attempts the current actor owns.
+
+| URL                                     | File                                             | Renders                                                           | Notes                                                         |
+| --------------------------------------- | ------------------------------------------------ | ----------------------------------------------------------------- | ------------------------------------------------------------- |
+| `/ielts`                                | `src/app/(app)/ielts/page.tsx`                   | `IeltsHome` (data from `loadIeltsHomeData()`)                     | Catalogue; admins get links to `/admin/ielts`.                |
+| `/ielts/[slug]`                         | `src/app/(app)/ielts/[slug]/page.tsx`            | `PageHeader`, one `SkillLauncher` per skill, `TestVocabPanel`     | Slug validated; mock blocked when listening audio is missing. |
+| `/ielts/[slug]/[skill]`                 | `.../[skill]/page.tsx`                           | `.ielts-exam` stage + `AttemptLoader mode="practice"`             | `?part=`; previous / next skill links.                        |
+| `/ielts/[slug]/[skill]/mock`            | `.../mock/page.tsx`                              | Stage + `AttemptLoader mode="mock"`                               | Never ships the listening transcript.                         |
+| `/ielts/drill/[attemptId]`              | `src/app/(app)/ielts/drill/[attemptId]/page.tsx` | Stage + `IeltsRunner`                                             | Redirects to the attempt once it is finished.                 |
+| `/ielts/attempts/[attemptId]`           | `.../attempts/[attemptId]/page.tsx`              | `ExamSheet` + `PageHeader` + `ObjectiveResult` or `WritingResult` | Redirects back to the runner while in progress.               |
+| `/admin/ielts`, `/admin/ielts/[testId]` | `src/app/admin/ielts/**`                         | `AdminTestCatalogue` + `CreateTestPanel`; `TestEditor`            | Admin guard (proxy and admin layout).                         |
+| `/zz-dev-ielts-editor`                  | `src/app/zz-dev-ielts-editor/page.tsx`           | `TestEditor` with a sample test                                   | Development only (`notFound()` otherwise).                    |
+
+`src/app/(app)/ielts/loading.tsx`, `[skill]/loading.tsx` (`RunnerSkeleton` in the
+stage), `attempts/[attemptId]/loading.tsx`, `error.tsx` (`RouteError`) and
+`not-found.tsx` cover the module.
+
+### 10.2 Catalogue and test page (`src/components/ielts/catalogue/`)
+
+`IeltsHome` (server) composes `OverviewPanel` (foldable band progress),
+`TestCards` (series "books" of test cards with `CatalogueToolbar` search, sort and
+filters, grouped by `catalogueGroups.ts`), `DrillButton` (starts a question-type
+drill through `startIeltsDrillApi`) and `AttemptHistory` (server, with
+`DeleteAttemptButton`). On the test page `SkillLauncher` offers Practice or Mock,
+a part or the full test, then Go (`launchHref`), and `TestVocabPanel` lists the
+test's words with outbox-backed marks.
+
+### 10.3 Runners (`src/components/ielts/runner/`)
+
+The runner pages wrap everything in `div.ielts-exam fixed inset-0 z-[70]`: a
+full-screen stage outside `PageShell` that paints its own surface
+(`.ielts-exam` in `globals.css`). Exam panes use the `--exam-*` tokens.
+
+| Component                                            | Role                                                                                                                                                                                                                                                                                                                                                      |
+| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `AttemptLoader`                                      | Starts or resumes the attempt (`startIeltsAttemptApi`, idempotency key in sessionStorage, one retry on 409); renders `WritingRunner` or `IeltsRunner`; exports `RunnerSkeleton`.                                                                                                                                                                          |
+| `IeltsRunner`                                        | Listening and Reading: `RunnerToolbar`, a resizable split (`useResizableSplit`, 30 to 75 percent, saved per runner) between the material (`PassagePane`, or `ListeningPlayer` + `ListeningMaterial`) and the questions (`GroupBlock`s + `CheckPartPanel`), then `TextHighlighter` and `QuestionNavigator`. Alt+Q swaps panes; below lg reading uses tabs. |
+| `WritingRunner`                                      | Task pane (`WritingPrompt`, `TaskVisual`, `SampleAnswerPanel`) beside the essay editor; `RunnerFooter` + `PartSwitcher`; practice "check task" via `checkIeltsTaskApi`.                                                                                                                                                                                   |
+| `PassagePane`, `ListeningPane`                       | Paper-style passage (evidence marks via `highlightText`); listening player, parts and material (mock: one start button, no seek, no transcript, audio events posted).                                                                                                                                                                                     |
+| `RunnerToolbar`, `RunnerFooter`, `QuestionNavigator` | Exit, title, mode, toggles, clock (announced at 10, 5 and 1 minutes), theme toggle, Submit; bottom bar with part switcher and skill links.                                                                                                                                                                                                                |
+| `TextHighlighter`                                    | Selection menu: highlight, clear, clear all, look up (`QuickVocabDialog`). Paints with the CSS Custom Highlight API (`::highlight(ielts-user)`) inside `data-highlight-scope` elements; highlights last for the visit.                                                                                                                                    |
+| `useAttemptAnswers`, `useMockDeadline`               | Answers in state with a localStorage snapshot and debounced outbox autosave; mock countdown with a five-minute warning.                                                                                                                                                                                                                                   |
+
+Practice adds Guided mode, evidence, check part / task, reset part, the
+transcript and skill links; mock adds the countdown, a leave warning and forces
+spell check off; drill has neither set of extras.
+
+### 10.4 Review, widgets, visuals and editor
+
+- Review (`review/`): `ObjectiveResult` (band row, next actions, filterable review
+  with `ReviewMark`, `LineDictation`, `SaveWordButton`, `DrillButton`) and
+  `WritingResult` (grading via `gradeIeltsWritingApi`, exports
+  `WritingFeedbackDetails`).
+- Widgets (`widgets/`): `GroupBlock` (one question group in the paper layout),
+  `IeltsMarkdown` (safe Markdown subset with answer slots), `SlotInput`,
+  `QuestionNumberBadge`, `EvidenceIconButton`, `ReviewMark` (colour always with an
+  icon and a word), `SampleAnswerPanel`, `WritingPrompt`, and the
+  `IeltsAnswerContext`.
+- `visual/TaskVisual.tsx`: Task 1 line, bar and pie charts as plain SVG, tables
+  and images, always on white exam paper (`EXAM_PAPER`) so they read in the night
+  theme.
+- `ui.tsx`: thin wrappers over the app primitives (`ExamButton`, `ExamIconButton`,
+  `ExamCard`, `StatTile`, `ExamBadge`, `ExamSheet`, `segmentClass`).
+- Editor (`editor/`, admin): `TestEditor` (Edit, Split and Preview views, Ctrl or
+  Cmd+S saves) with `EditorHeader`, `SectionPicker`, `SectionForm`,
+  `SectionPreview` (reuses the runner widgets), `ChecksPanel`, `GenerationLog`,
+  `AssistMenu`, `TestDetailsDialog`, `TestVocabDialog`; `AdminTestCatalogue`,
+  `AdminTestRow`, `CreateTestPanel` (manual or AI-generated).
+
+Request helpers: `src/requests/ieltsApi.ts` (attempts, drills, evidence, audio
+events, checks, grading, outbox writes) and `src/requests/ieltsAdminApi.ts`
+(editor). There are no IELTS server actions; pages read through
+`src/modules/ielts/services/*PageData.ts`.
+
+---
+
+## 11. Loading and error states
+
+- Route skeletons: `loading.tsx` files under `src/app/(app)/**` and `src/app/admin/**`
+  render `SkeletonPageShell` and friends from `src/components/common/PageSkeletons.tsx`
+  (`SkeletonHero`, `SkeletonPanel`, `SkeletonTileRow`, `SkeletonVideoGrid`,
+  `SkeletonRows`), shaped like the page they precede so content fades in without a
+  jump.
+- Error boundaries: `src/app/(app)/dictation/error.tsx` and
+  `src/app/(app)/ielts/error.tsx` (client) render `RouteError`
+  (`src/components/common/RouteError.tsx`): the mascot, what went wrong, and two
+  ways out (retry via `unstable_retry()`, or back to the module). It uses plain
+  elements and tokens so the error bundle stays small. `src/app/(app)/ielts/not-found.tsx`
+  handles unknown tests.
+- Configuration-absent states: data pages render a "database not configured"
+  panel when `hasMongoDbUri()` is false.
+- Pending UI: favourites, debrief generation, admin forms, grammar saves and
+  vocabulary decisions use `useTransition` or local state with disabled buttons and
+  inline errors; queued writes replay from the client outbox
+  (`OutboxOwnerProvider`) when the network returns.
