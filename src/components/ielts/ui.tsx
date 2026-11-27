@@ -91,7 +91,7 @@ export function segmentClass(active: boolean, className?: string) {
   return cn(
     'border-line rounded-control soft-press min-h-9 border px-3 font-sans text-sm font-semibold',
     active
-      ? 'bg-ink text-surface translate-x-[2px] translate-y-[2px]'
+      ? 'bg-cta text-cta-fg translate-x-[2px] translate-y-[2px]'
       : 'bg-surface text-ink hover:bg-tint-soft',
     className
   )

@@ -82,7 +82,7 @@ function FacetChip({
       className={cn(
         'border-line rounded-tag soft-press inline-flex min-h-8 items-center gap-1.5 border px-2.5 font-sans text-xs font-semibold',
         pressed
-          ? 'bg-ink text-surface translate-x-[2px] translate-y-[2px]'
+          ? 'bg-cta text-cta-fg translate-x-[2px] translate-y-[2px]'
           : 'bg-surface hover:bg-tint-soft',
         !pressed && count === 0 && 'opacity-45'
       )}
@@ -267,7 +267,7 @@ export function VideoFilterBar({
             }
             className={cn(
               'group/filters border-line rounded-control soft-press inline-flex min-h-10 items-center gap-1.5 border px-3 font-sans text-sm font-semibold max-sm:flex-1 max-sm:justify-center',
-              facetsActive ? 'bg-ink text-surface' : 'bg-surface hover:bg-tint'
+              facetsActive ? 'bg-cta text-cta-fg' : 'bg-surface hover:bg-tint'
             )}
           >
             <SlidersHorizontal

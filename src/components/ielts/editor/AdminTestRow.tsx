@@ -153,7 +153,7 @@ export function AdminTestRow({ row }: { row: AdminTestRowItem }) {
             className="border-line bg-tint rounded-tag h-1.5 overflow-hidden border"
           >
             <span
-              className={cn('block h-full', complete ? 'bg-ink' : 'bg-brand')}
+              className={cn('block h-full', complete ? 'bg-lesson-correct' : 'bg-brand')}
               style={{
                 width: `${row.total ? (row.ready / row.total) * 100 : 0}%`,
               }}

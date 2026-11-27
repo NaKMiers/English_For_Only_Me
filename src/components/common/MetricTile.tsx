@@ -17,7 +17,7 @@ interface Props {
 const toneClassName = {
   red: 'bg-tint',
   paper: 'bg-surface',
-  ink: 'bg-ink text-surface',
+  ink: 'bg-cta text-cta-fg',
 } as const
 
 export function MetricTile({

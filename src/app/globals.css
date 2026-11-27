@@ -21,41 +21,57 @@
    the same in the night theme. */
 :root,
 .day-palette {
-  --canvas: #e9e7f8;
+  --canvas: #f3eaf2;
+  /* The board (PageShell). Same as `surface` by day; at night it sits one
+     step darker so cards on it lift. */
+  --board: #ffffff;
   --surface: #ffffff;
-  --surface-muted: #f6f6fa;
-  --ink: #1d1b26;
-  --ink-soft: #6b6878;
-  --line: #ebeaf2;
-  --line-strong: #dcdae6;
-  --brand: #6457e8;
-  --brand-soft: #ecebfd;
-  --danger: #e5484d;
-  --danger-soft: #fdecec;
+  --surface-muted: #faf6f9;
+  --ink: #25171f;
+  --ink-soft: #73636d;
+  --line: #f0e7ed;
+  --line-strong: #e2d6df;
+  /* Brand pink, from the logo. `brand` is the accent text / fill,
+     `brand-soft` the pastel pink chip, `brand-ink` the text that sits on
+     `brand-soft`. */
+  --brand: #c93a74;
+  --brand-soft: #fde8f1;
+  --brand-ink: #a52c5e;
+  /* Tomato red, about 40deg of hue away from the brand pink, and always
+     paired with an icon (cross, alert, trash), so a wrong answer never
+     reads as "brand". */
+  --danger: #c03810;
+  --danger-soft: #fdebe4;
+  /* The one strong call to action: near-black by day, pink at night. */
+  --cta: #25171f;
+  --cta-fg: #ffffff;
   /* Secondary fills: `tint` for selected / hovered, `tint-soft` for quiet
      grouping. */
-  --tint: #efedfb;
-  --tint-soft: #f7f6fc;
+  --tint: #f8ebf2;
+  --tint-soft: #fcf6f9;
 
-  /* One pastel per module (Dictation sky, Vocabulary rose, Grammar lilac,
-     IELTS peach) plus mint / lemon / cream for stats and highlights. */
+  /* One pastel per module (Dictation sky, Vocabulary mint, Grammar lilac,
+     IELTS peach) plus rose / lemon / cream for stats and highlights. */
   --pastel-peach: #fdf0e3;
   --pastel-lilac: #f1e8fc;
   --pastel-rose: #fce8f0;
   --pastel-sky: #e7effc;
-  --pastel-mint: #e3f4ea;
+  --pastel-mint: #e1f5ea;
   --pastel-lemon: #f2f6d4;
   --pastel-cream: #fdf7e6;
-  /* Matching text / outline colours for chips on those pastels. */
-  --accent-blue: #4f6bd8;
-  --accent-orange: #e0822f;
-  --accent-purple: #8b5cf6;
-  --accent-pink: #d9548a;
-  --accent-green: #2f8f57;
+  /* Matching text / icon colours, each at least 4.5:1 on its pastel. */
+  --accent-blue: #3f5dcc;
+  --accent-orange: #a8540f;
+  --accent-purple: #7547d6;
+  --accent-pink: #b8396f;
+  --accent-green: #1b7a44;
 
-  --shadow-color: rgba(40, 32, 110, 0.12);
+  --shadow-color: rgba(120, 40, 85, 0.13);
+  /* Night adds an inner top highlight to cards; day has none. */
+  --card-highlight: 0 0 #0000;
+  --shell-ring: 0 0 #0000;
   /* The icon rail stays dark in both themes. */
-  --rail-bg: #1d1b26;
+  --rail-bg: #25171f;
   --rail-fg: #ffffff;
 
   --background: var(--canvas);
@@ -64,8 +80,8 @@
   --card-foreground: var(--ink);
   --popover: var(--surface);
   --popover-foreground: var(--ink);
-  --primary: var(--ink);
-  --primary-foreground: var(--surface);
+  --primary: var(--cta);
+  --primary-foreground: var(--cta-fg);
   --dark-primary: var(--brand);
   --secondary: var(--surface-muted);
   --secondary-foreground: var(--ink);
@@ -81,7 +97,7 @@
   --chart-1: var(--brand);
   --chart-2: var(--accent-orange);
   --chart-3: var(--accent-blue);
-  --chart-4: var(--accent-pink);
+  --chart-4: var(--accent-purple);
   --chart-5: var(--accent-green);
   --radius: 0.875rem;
   --light: var(--surface);
@@ -90,20 +106,20 @@
   --dark-gray: var(--ink-soft);
 
   --html-bg:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 900' preserveAspectRatio='none'%3E%3Cg fill='none' stroke='%239d92e6' stroke-opacity='.35' stroke-width='1.6'%3E%3Cpath d='M-40 260 C 260 120 420 40 640 -40'/%3E%3Cpath d='M120 940 C 300 700 420 420 760 -40'/%3E%3Cpath d='M1000 -40 C 1060 300 1240 520 1480 600'/%3E%3Cpath d='M1480 120 C 1300 160 1180 60 1120 -40'/%3E%3C/g%3E%3C/svg%3E"),
-    radial-gradient(ellipse 70% 60% at 85% 0%, #dcdaf8, transparent 70%),
-    radial-gradient(ellipse 60% 60% at 0% 100%, #e3dcf6, transparent 70%),
-    linear-gradient(160deg, #eeedf9, #e4e3f7 60%, #e6e0f5);
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 900' preserveAspectRatio='none'%3E%3Cg fill='none' stroke='%23e58fb6' stroke-opacity='.35' stroke-width='1.6'%3E%3Cpath d='M-40 260 C 260 120 420 40 640 -40'/%3E%3Cpath d='M120 940 C 300 700 420 420 760 -40'/%3E%3Cpath d='M1000 -40 C 1060 300 1240 520 1480 600'/%3E%3Cpath d='M1480 120 C 1300 160 1180 60 1120 -40'/%3E%3C/g%3E%3C/svg%3E"),
+    radial-gradient(ellipse 70% 60% at 85% 0%, #f9d9e8, transparent 70%),
+    radial-gradient(ellipse 60% 60% at 0% 100%, #e9ddf6, transparent 70%),
+    linear-gradient(160deg, #f8eff5, #f1e6f2 60%, #efe3f1);
   --html-bg-size: 100% 100%, auto, auto, auto;
-  --selection-bg: #d9d4ff;
+  --selection-bg: #f9cfe1;
   --selection-fg: var(--ink);
   --scrollbar-track: transparent;
-  --scrollbar-thumb: rgba(100, 87, 232, 0.25);
-  --scrollbar-thumb-hover: rgba(100, 87, 232, 0.45);
+  --scrollbar-thumb: rgba(201, 58, 116, 0.22);
+  --scrollbar-thumb-hover: rgba(201, 58, 116, 0.42);
 
   /* A right answer in a lesson player. Wrong answers use `danger`; both
      always carry an icon and a word as well (never colour alone). */
-  --lesson-correct: #1f8a4c;
+  --lesson-correct: #1b7c44;
 
   /* ----------------------------------------------------------
      CORNERS by role, so radius encodes nesting:
@@ -128,49 +144,59 @@
 
 /* ============================================================
    NIGHT ("lightup" in storage, kept for saved preferences)
-   Same layout, dark surfaces, softened pastels.
+   A plum-tinted dark palette built on its own, not the day tokens
+   inverted. Depth comes from lighter surfaces (backdrop < board < muted <
+   tint), hairline borders and an inner top highlight on cards, never from
+   drop shadows. Text is off-white, pastels become deep tinted fills with
+   their light tones for text, and the strong CTA turns pink.
    ============================================================ */
 :root[data-theme='lightup'] {
-  --canvas: #100f17;
-  --surface: #1b1a25;
-  --surface-muted: #23222f;
-  --ink: #f1f0f8;
-  --ink-soft: #a7a4b8;
-  --line: #2d2b3b;
-  --line-strong: #3a3849;
-  --brand: #9b91ff;
-  --brand-soft: #2c2850;
-  --danger: #ff6b6f;
-  --danger-soft: #3b1f24;
-  --tint: #2a2740;
-  --tint-soft: #22202f;
-  --pastel-peach: #352a22;
-  --pastel-lilac: #2c2540;
-  --pastel-rose: #372430;
-  --pastel-sky: #1f2b44;
-  --pastel-mint: #1d3329;
-  --pastel-lemon: #2e331d;
-  --pastel-cream: #342f22;
-  --accent-blue: #8fa6ff;
-  --accent-orange: #f4a55e;
-  --accent-purple: #b69bff;
-  --accent-pink: #f287b4;
-  --accent-green: #6bd194;
-  --shadow-color: rgba(0, 0, 0, 0.45);
-  --rail-bg: #0b0a11;
-  --rail-fg: #f1f0f8;
-  --destructive-foreground: #1b1a25;
+  --canvas: #0f0d12;
+  --board: #141118;
+  --surface: #1b171f;
+  --surface-muted: #221d27;
+  --ink: #f2ebf0;
+  --ink-soft: #aea2ad;
+  --line: #2a2430;
+  --line-strong: #3a3240;
+  --brand: #ff8fbd;
+  --brand-soft: #3a2030;
+  --brand-ink: #ffc0da;
+  --danger: #ff8a5c;
+  --danger-soft: #3a2119;
+  --cta: #ff8fbd;
+  --cta-fg: #2a0f1c;
+  --tint: #2c2432;
+  --tint-soft: #211b26;
+  --pastel-peach: #2e2119;
+  --pastel-lilac: #231d36;
+  --pastel-rose: #301a26;
+  --pastel-sky: #172334;
+  --pastel-mint: #16291f;
+  --pastel-lemon: #262a17;
+  --pastel-cream: #2b2519;
+  --accent-blue: #8ec5ff;
+  --accent-orange: #ffb98a;
+  --accent-purple: #c0a8ff;
+  --accent-pink: #ff9cc2;
+  --accent-green: #7fd8a4;
+  --shadow-color: rgba(0, 0, 0, 0.55);
+  --card-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.045);
+  --shell-ring: 0 0 0 1px rgba(255, 255, 255, 0.05);
+  --rail-bg: #0b090d;
+  --rail-fg: #f2ebf0;
+  --destructive-foreground: #2a0f0a;
 
   --html-bg:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 900' preserveAspectRatio='none'%3E%3Cg fill='none' stroke='%237a6ff0' stroke-opacity='.22' stroke-width='1.6'%3E%3Cpath d='M-40 260 C 260 120 420 40 640 -40'/%3E%3Cpath d='M120 940 C 300 700 420 420 760 -40'/%3E%3Cpath d='M1000 -40 C 1060 300 1240 520 1480 600'/%3E%3Cpath d='M1480 120 C 1300 160 1180 60 1120 -40'/%3E%3C/g%3E%3C/svg%3E"),
-    radial-gradient(ellipse 70% 60% at 85% 0%, #221d45, transparent 70%),
-    radial-gradient(ellipse 60% 60% at 0% 100%, #1d1733, transparent 70%),
-    linear-gradient(160deg, #121119, #0e0d14);
-  --selection-bg: #3d3680;
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 900' preserveAspectRatio='none'%3E%3Cg fill='none' stroke='%23ff8fbd' stroke-opacity='.12' stroke-width='1.6'%3E%3Cpath d='M-40 260 C 260 120 420 40 640 -40'/%3E%3Cpath d='M120 940 C 300 700 420 420 760 -40'/%3E%3Cpath d='M1000 -40 C 1060 300 1240 520 1480 600'/%3E%3Cpath d='M1480 120 C 1300 160 1180 60 1120 -40'/%3E%3C/g%3E%3C/svg%3E"),
+    radial-gradient(ellipse 65% 55% at 85% 0%, #2c1424, transparent 70%),
+    radial-gradient(ellipse 60% 60% at 0% 100%, #1c1530, transparent 70%),
+    linear-gradient(160deg, #131016, #0d0b10);
+  --selection-bg: #5a2a42;
   --selection-fg: var(--ink);
-  --scrollbar-thumb: rgba(155, 145, 255, 0.28);
-  --scrollbar-thumb-hover: rgba(155, 145, 255, 0.5);
-  --lesson-correct: #4cc27f;
+  --scrollbar-thumb: rgba(255, 143, 189, 0.22);
+  --scrollbar-thumb-hover: rgba(255, 143, 189, 0.42);
+  --lesson-correct: #5fd08f;
 }
 
 /* IELTS runner: a quiet exam sheet. Kept as its own names so the exam can
@@ -183,6 +209,7 @@
 
 @theme inline {
   --color-canvas: var(--canvas);
+  --color-board: var(--board);
   --color-surface: var(--surface);
   --color-surface-muted: var(--surface-muted);
   --color-ink: var(--ink);
@@ -191,6 +218,9 @@
   --color-line-strong: var(--line-strong);
   --color-brand: var(--brand);
   --color-brand-soft: var(--brand-soft);
+  --color-brand-ink: var(--brand-ink);
+  --color-cta: var(--cta);
+  --color-cta-fg: var(--cta-fg);
   --color-danger: var(--danger);
   --color-danger-soft: var(--danger-soft);
   --color-tint: var(--tint);
@@ -251,10 +281,13 @@
   --radius-control: var(--corner-control);
   --radius-tag: var(--corner-tag);
   --shadow-card:
-    0 1px 2px rgba(29, 27, 38, 0.03), 0 10px 30px -18px var(--shadow-color);
-  --shadow-float: 0 18px 40px -20px var(--shadow-color);
+    var(--card-highlight), 0 1px 2px rgba(37, 23, 31, 0.03),
+    0 10px 30px -18px var(--shadow-color);
+  --shadow-float:
+    var(--card-highlight), 0 18px 40px -20px var(--shadow-color);
   --shadow-shell:
-    0 50px 100px -40px var(--shadow-color), 0 2px 6px rgba(29, 27, 38, 0.03);
+    var(--shell-ring), 0 50px 100px -40px var(--shadow-color),
+    0 2px 6px rgba(37, 23, 31, 0.03);
   --font-sans: var(--font-app);
   --font-body: var(--font-app);
   --spacing-21: 21px;
@@ -599,7 +632,7 @@ textarea:focus-visible,
    CSS Custom Highlight API, so no <mark> is ever added to the text. */
 ::highlight(ielts-user) {
   background-color: #fde047;
-  color: #1d1b26;
+  color: #25171f;
 }
 
 /* IELTS runner stage: the full-screen layer that holds a test run. It sits

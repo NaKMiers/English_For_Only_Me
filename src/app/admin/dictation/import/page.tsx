@@ -35,7 +35,7 @@ export default async function DictationImportPage() {
         />
       }
       footer={
-        <div className="border-line bg-ink text-surface border-t px-5 py-4">
+        <div className="border-line bg-cta text-cta-fg border-t px-5 py-4">
           <div className="mx-auto flex max-w-[1400px] flex-wrap items-center justify-between gap-3">
             <strong className="font-sans text-base font-semibold tracking-normal">
               English For Only Me

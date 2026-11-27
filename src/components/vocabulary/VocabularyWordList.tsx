@@ -339,7 +339,7 @@ export function VocabularyWordList({
               'border-line text-ink! rounded-control soft-press relative px-3 py-2 text-sm font-semibold',
               VIEW_TAB_CLASS_NAMES[tab.view],
               tab.view === activeView &&
-                'after:bg-ink translate-x-[3px] translate-y-[3px] shadow-none after:absolute after:right-2 after:-bottom-2 after:left-2 after:h-1'
+                'after:bg-cta translate-x-[3px] translate-y-[3px] shadow-none after:absolute after:right-2 after:-bottom-2 after:left-2 after:h-1'
             )}
             href={tab.href}
             aria-current={tab.view === activeView ? 'page' : undefined}

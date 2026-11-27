@@ -141,7 +141,7 @@ export function TestCards({ bands, catalog }: Props) {
                       return (
                         <span
                           aria-label={`${IELTS_SKILL_LABELS[skill]}: best band ${band.toFixed(1)}`}
-                          className="bg-ink text-surface rounded-tag inline-flex items-center gap-1 px-1.5 py-0.5"
+                          className="bg-cta text-cta-fg rounded-tag inline-flex items-center gap-1 px-1.5 py-0.5"
                           key={skill}
                           title={`${IELTS_SKILL_LABELS[skill]}: best band ${band.toFixed(1)}`}
                         >

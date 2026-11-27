@@ -264,7 +264,7 @@ export function RowActions({
 /** Small inline status chip for row and section headers. */
 const CHIP_TONES = {
   default: 'bg-surface text-ink',
-  ink: 'bg-ink text-surface',
+  ink: 'bg-cta text-cta-fg',
   red: 'bg-brand text-surface',
   pale: 'bg-tint-soft text-ink',
   warn: 'bg-yellow-100 text-yellow-950',

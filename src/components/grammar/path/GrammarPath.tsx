@@ -136,7 +136,7 @@ function LessonNode({
           lesson.state === 'locked' &&
             'bg-surface text-ink-soft border-dashed shadow-none',
           lesson.state === 'passed' && 'bg-tint text-ink',
-          lesson.state === 'mastered' && 'bg-ink text-surface',
+          lesson.state === 'mastered' && 'bg-cta text-cta-fg',
           lesson.state === 'due' && 'bg-surface text-brand'
         )}
         onClick={onSelect}
@@ -220,7 +220,7 @@ function UnitSection({
         className={cn(
           'border-line rounded-panel grid gap-2 border p-4',
           unit.state === 'locked' ? 'bg-surface' : 'bg-tint',
-          unit.state === 'complete' && 'bg-ink text-surface'
+          unit.state === 'complete' && 'bg-cta text-cta-fg'
         )}
       >
         <div className="flex flex-wrap items-center justify-between gap-2">

@@ -132,7 +132,7 @@ export function SectionPicker({
                       className={cn(
                         'border-line rounded-tag soft-press relative grid size-9 place-items-center border font-sans text-sm font-semibold',
                         selected
-                          ? 'bg-ink text-surface translate-x-[2px] translate-y-[2px]'
+                          ? 'bg-cta text-cta-fg translate-x-[2px] translate-y-[2px]'
                           : 'bg-surface hover:bg-tint-soft',
                         !selected &&
                           isDone(item) &&

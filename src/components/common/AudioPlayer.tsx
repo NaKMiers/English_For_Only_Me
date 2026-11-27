@@ -50,7 +50,7 @@ const GHOST_BUTTON_CLASS =
 
 /** The big black play/pause key, shared with read-only players (mock tests). */
 export const AUDIO_PLAY_BUTTON_CLASS =
-  'border-line bg-ink text-surface hover:bg-brand rounded-control soft-press grid size-11 shrink-0 place-items-center border transition-colors disabled:opacity-50'
+  'border-line bg-cta text-cta-fg hover:bg-cta/85 rounded-control soft-press grid size-11 shrink-0 place-items-center border transition-colors disabled:opacity-50'
 
 const TRACK_CLASS =
   'border-line bg-surface relative h-2.5 w-full overflow-hidden rounded-full border'

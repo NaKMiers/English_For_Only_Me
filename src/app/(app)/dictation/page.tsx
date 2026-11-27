@@ -46,7 +46,7 @@ export const runtime = 'nodejs'
 
 function BrowseFooter() {
   return (
-    <div className="border-line bg-ink text-surface border-t px-5 py-4">
+    <div className="border-line bg-cta text-cta-fg border-t px-5 py-4">
       <strong className="font-sans text-base font-semibold tracking-normal">
         English For Only Me
       </strong>

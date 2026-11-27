@@ -2,26 +2,26 @@ import type { AppModuleKey } from './modules'
 
 /** Day palette, mirrored from the `:root` vars in `src/app/globals.css`. */
 export const THEME_COLORS = {
-  canvas: '#e9e7f8',
+  canvas: '#f3eaf2',
   surface: '#ffffff',
-  ink: '#1d1b26',
-  inkSoft: '#6b6878',
-  line: '#ebeaf2',
-  brand: '#6457e8',
-  danger: '#e5484d',
+  ink: '#25171f',
+  inkSoft: '#73636d',
+  line: '#f0e7ed',
+  brand: '#c93a74',
+  danger: '#c03810',
 } as const
 
 export const PAGE_TAG_TONES = {
   default: 'bg-surface-muted text-ink',
-  red: 'bg-brand-soft text-brand',
-  ink: 'bg-ink text-surface',
+  red: 'bg-brand-soft text-brand-ink',
+  ink: 'bg-cta text-cta-fg',
   pale: 'bg-tint text-ink',
-  sky: 'bg-sky-100 text-sky-900',
-  yellow: 'bg-yellow-100 text-yellow-900',
-  copper: 'bg-orange-100 text-orange-900',
-  silver: 'bg-slate-100 text-slate-800',
-  gold: 'bg-amber-200 text-amber-900',
-  diamond: 'bg-cyan-100 text-cyan-900',
+  sky: 'bg-pastel-sky text-accent-blue',
+  yellow: 'bg-pastel-lemon text-ink',
+  copper: 'bg-pastel-peach text-accent-orange',
+  silver: 'bg-surface-muted text-ink-soft',
+  gold: 'bg-pastel-cream text-accent-orange',
+  diamond: 'bg-pastel-mint text-accent-green',
 } as const
 
 export interface ModuleTheme {
@@ -33,7 +33,10 @@ export interface ModuleTheme {
   outline: string
 }
 
-/** One pastel per module, used by cards, chips and the sidebar. */
+/**
+ * One pastel per module, used by cards, chips and the sidebar. Pink is the
+ * brand, so no module wears it.
+ */
 export const MODULE_THEMES: Record<AppModuleKey, ModuleTheme> = {
   dictation: {
     tint: 'bg-pastel-sky',
@@ -41,9 +44,9 @@ export const MODULE_THEMES: Record<AppModuleKey, ModuleTheme> = {
     outline: 'border-accent-blue/50',
   },
   vocabulary: {
-    tint: 'bg-pastel-rose',
-    accent: 'text-accent-pink',
-    outline: 'border-accent-pink/50',
+    tint: 'bg-pastel-mint',
+    accent: 'text-accent-green',
+    outline: 'border-accent-green/50',
   },
   grammar: {
     tint: 'bg-pastel-lilac',

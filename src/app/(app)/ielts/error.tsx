@@ -32,7 +32,7 @@ export default function Error({ error, unstable_retry }: Props) {
           Your saved attempts are safe. Try reloading the page.
         </p>
         <button
-          className="bg-ink text-surface hover:bg-ink/85 soft-press inline-flex min-h-11 w-fit items-center justify-center rounded-full px-5 py-2 font-sans text-sm leading-tight font-medium"
+          className="bg-cta text-cta-fg hover:bg-cta/85 soft-press inline-flex min-h-11 w-fit items-center justify-center rounded-full px-5 py-2 font-sans text-sm leading-tight font-medium"
           onClick={() => unstable_retry()}
           type="button"
         >

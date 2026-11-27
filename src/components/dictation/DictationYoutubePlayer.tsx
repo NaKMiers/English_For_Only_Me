@@ -532,7 +532,7 @@ export function DictationYoutubePlayer({
                   className={cn(
                     SIZE_BUTTON_CLASS_NAME,
                     videoSize === size
-                      ? 'bg-ink text-surface'
+                      ? 'bg-cta text-cta-fg'
                       : 'bg-surface text-ink hover:bg-tint'
                   )}
                 >

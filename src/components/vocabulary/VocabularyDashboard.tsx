@@ -766,7 +766,7 @@ export function VocabularyDashboard({
               <h1 className="font-sans text-[clamp(1.9rem,5vw,3.8rem)] leading-none font-medium wrap-break-word">
                 Vocab Spine
               </h1>
-              <div className="border-line bg-ink text-surface rounded-control ml-auto flex items-center gap-2 border px-3 py-2">
+              <div className="border-line bg-cta text-cta-fg rounded-control ml-auto flex items-center gap-2 border px-3 py-2">
                 <Flame className="text-brand size-7 fill-current" />
                 <span className="text-xs font-semibold">Streak</span>
                 <strong className="font-sans text-2xl leading-none font-semibold">

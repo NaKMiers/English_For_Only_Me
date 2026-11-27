@@ -213,7 +213,7 @@ export function CreateTestPanel({ className }: { className?: string }) {
                       className="flex min-w-0 items-center gap-2 text-xs"
                       key={key}
                     >
-                      <span className="bg-ink text-surface rounded-tag w-24 shrink-0 px-1.5 py-0.5 font-sans font-semibold">
+                      <span className="bg-cta text-cta-fg rounded-tag w-24 shrink-0 px-1.5 py-0.5 font-sans font-semibold">
                         {IELTS_SKILL_LABELS[skill]} {part}
                       </span>
                       <span

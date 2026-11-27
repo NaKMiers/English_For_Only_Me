@@ -32,7 +32,7 @@ const SORT_OPTIONS: CatalogueSort[] = ['newest', 'oldest', 'updated', 'title']
  * turn an idle tab transparent and the active one grey.
  */
 const TAB_TRIGGER_CLASS =
-  'group/tab border-line! bg-surface! text-ink! hover:not-data-active:bg-tint-soft! data-active:bg-ink! data-active:text-surface! focus-visible:ring-brand/40 rounded-control soft-press !h-auto min-h-10 min-w-0 flex-1 gap-1.5 border px-2 font-sans text-xs font-semibold opacity-100! after:hidden data-active:shadow-none sm:flex-none sm:gap-2 sm:px-3 sm:text-sm'
+  'group/tab border-line! bg-surface! text-ink! hover:not-data-active:bg-tint-soft! data-active:bg-cta! data-active:text-cta-fg! focus-visible:ring-brand/40 rounded-control soft-press !h-auto min-h-10 min-w-0 flex-1 gap-1.5 border px-2 font-sans text-xs font-semibold opacity-100! after:hidden data-active:shadow-none sm:flex-none sm:gap-2 sm:px-3 sm:text-sm'
 
 const dateFormat = new Intl.DateTimeFormat('en-GB', {
   day: '2-digit',
@@ -104,7 +104,7 @@ export function AdminTestCatalogue({
               value={status}
             >
               {label}
-              <span className="rounded-tag bg-ink text-surface group-data-active/tab:bg-surface group-data-active/tab:text-ink min-w-6 px-1.5 py-0.5 text-center text-xs tabular-nums">
+              <span className="rounded-tag bg-cta text-cta-fg group-data-active/tab:bg-surface group-data-active/tab:text-ink min-w-6 px-1.5 py-0.5 text-center text-xs tabular-nums">
                 {groups[status].length}
               </span>
             </TabsTrigger>

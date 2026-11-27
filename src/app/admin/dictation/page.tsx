@@ -205,7 +205,7 @@ export default async function AdminDictationPage({ searchParams }: Props) {
                   aria-current={option === view ? 'page' : undefined}
                   className={cn(
                     'rounded-tag flex min-h-9 items-center gap-2 px-3 font-sans text-sm font-semibold transition-colors',
-                    option === view ? 'bg-ink text-surface' : 'hover:bg-tint'
+                    option === view ? 'bg-cta text-cta-fg' : 'hover:bg-tint'
                   )}
                 >
                   <Icon

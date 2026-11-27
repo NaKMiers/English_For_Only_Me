@@ -69,7 +69,7 @@ export function UserMenu({
       ) : (
         <span
           aria-hidden="true"
-          className="bg-ink text-surface grid size-7 shrink-0 place-items-center font-sans text-sm font-semibold"
+          className="bg-brand-soft text-brand-ink grid size-7 shrink-0 place-items-center font-sans text-sm font-semibold"
         >
           {initial}
         </span>

@@ -36,7 +36,7 @@ export function PageShell({
   return (
     <div
       className={cn(
-        'app-shell bg-surface text-ink rounded-shell shadow-shell relative mx-auto grid w-full grid-cols-1 grid-rows-[auto_minmax(0,1fr)_auto_auto] [--rail:72px] sm:my-5 sm:w-[min(1480px,calc(100%-40px))] md:grid-cols-[var(--rail)_minmax(0,1fr)] lg:my-8 lg:w-[min(1480px,calc(100%-64px))]',
+        'app-shell bg-board text-ink rounded-shell shadow-shell relative mx-auto grid w-full grid-cols-1 grid-rows-[auto_minmax(0,1fr)_auto_auto] [--rail:72px] sm:my-5 sm:w-[min(1480px,calc(100%-40px))] md:grid-cols-[var(--rail)_minmax(0,1fr)] lg:my-8 lg:w-[min(1480px,calc(100%-64px))]',
         fullHeight === true
           ? 'h-dvh sm:h-[calc(100dvh-40px)] lg:h-[calc(100dvh-64px)]'
           : 'min-h-dvh sm:min-h-[calc(100dvh-40px)] lg:min-h-[calc(100dvh-64px)]',

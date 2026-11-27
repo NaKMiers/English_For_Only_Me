@@ -31,9 +31,9 @@ type Props = LinkButtonProps | NativeButtonProps
 
 const toneClassName: Record<ButtonTone, string> = {
   primary:
-    'border-transparent bg-brand-soft text-brand hover:bg-brand hover:text-surface',
+    'border-transparent bg-brand-soft text-brand-ink hover:bg-brand hover:text-surface',
   paper: 'border-line bg-surface text-ink hover:bg-tint-soft',
-  ink: 'border-ink bg-ink text-surface hover:bg-ink/85',
+  ink: 'border-cta bg-cta text-cta-fg hover:bg-cta/85',
 }
 
 export function ActionButton(props: Props) {

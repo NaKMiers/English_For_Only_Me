@@ -96,7 +96,7 @@ export function SkillLauncher({
               className={cn(
                 'border-line h-8 border-l px-2.5 font-sans text-xs font-semibold transition-colors first:border-l-0',
                 mode === item.value
-                  ? 'bg-ink text-surface'
+                  ? 'bg-cta text-cta-fg'
                   : 'bg-surface hover:bg-tint'
               )}
               key={item.value}
@@ -142,11 +142,11 @@ export function SkillLauncher({
                 aria-hidden="true"
                 className={cn(
                   'border-line peer-focus-visible:ring-brand/40 grid size-4 shrink-0 place-items-center rounded-full border peer-focus-visible:ring-4',
-                  checked && !disabled && 'bg-ink'
+                  checked && !disabled && 'border-cta bg-cta'
                 )}
               >
                 {checked && !disabled ? (
-                  <span className="bg-surface size-1.5 rounded-full" />
+                  <span className="bg-cta-fg size-1.5 rounded-full" />
                 ) : null}
               </span>
               <span className="min-w-0 flex-1">{option.label}</span>

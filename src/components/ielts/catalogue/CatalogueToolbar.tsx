@@ -161,7 +161,7 @@ export function CatalogueToolbar({
             />
             <span className="hidden sm:inline">Filter</span>
             {activeFilters.length ? (
-              <span className="rounded-tag bg-ink text-surface min-w-5 px-1 text-center text-[0.65rem] tabular-nums">
+              <span className="rounded-tag bg-cta text-cta-fg min-w-5 px-1 text-center text-[0.65rem] tabular-nums">
                 {activeFilters.length}
               </span>
             ) : null}

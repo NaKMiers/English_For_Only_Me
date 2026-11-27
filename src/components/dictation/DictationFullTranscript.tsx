@@ -111,7 +111,7 @@ export function DictationFullTranscript<
             className={cn(
               'border-line rounded-control inline-flex min-h-8 items-center gap-1.5 border px-2 font-sans text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-50',
               isRepeating
-                ? 'bg-ink text-surface'
+                ? 'bg-cta text-cta-fg'
                 : 'bg-surface text-ink hover:bg-tint'
             )}
           >
@@ -128,7 +128,7 @@ export function DictationFullTranscript<
             className={cn(
               'border-line rounded-control inline-flex min-h-8 items-center gap-1.5 border px-2 font-sans text-xs font-semibold',
               autoScroll
-                ? 'bg-ink text-surface'
+                ? 'bg-cta text-cta-fg'
                 : 'bg-surface text-ink hover:bg-tint'
             )}
           >
