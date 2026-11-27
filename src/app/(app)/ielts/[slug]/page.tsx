@@ -1,10 +1,11 @@
 import type { Metadata } from 'next'
-import { PenLine } from 'lucide-react'
+import { ChevronLeft, GraduationCap, PenLine } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { AuthControl } from '@/components/common/AuthControl'
+import { PageHeader } from '@/components/common/PageHeader'
 import { PageShell } from '@/components/common/PageShell'
 import { hasGoogleAuth, hasMongoDbUri } from '@/constants/environments'
 import { format, plural } from '@/i18n/format'
@@ -28,12 +29,7 @@ import { readPublishedIeltsTest } from '@/modules/ielts/tests/testReaders'
 import { listIeltsTestVocabForLearner } from '@/modules/ielts/vocab/testVocabService'
 import { SkillLauncher } from '@/components/ielts/catalogue/SkillLauncher'
 import { TestVocabPanel } from '@/components/ielts/catalogue/TestVocabPanel'
-import {
-  ExamBadge,
-  ExamHero,
-  ExamIconButton,
-  ExamSheet,
-} from '@/components/ielts/ui'
+import { ExamBadge, ExamIconButton, ExamSheet } from '@/components/ielts/ui'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -123,45 +119,47 @@ export default async function IeltsTestPage({ params }: Props) {
       }
     >
       <ExamSheet>
-        {/* One line: breadcrumb, title, track and target, admin edit. */}
-        <ExamHero className="gap-1">
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-            <nav
-              aria-label={t.shell.breadcrumb}
-              className="text-muted-foreground text-sm font-semibold"
-            >
+        <PageHeader
+          actions={
+            <>
+              <ExamBadge tone="pale">{t.tracks[test.track]}</ExamBadge>
+              <ExamBadge>
+                {format(t.testPage.target, { band: test.targetBand })}
+              </ExamBadge>
+              {isAdmin ? (
+                <ExamIconButton
+                  className="size-9"
+                  href={`/admin/ielts/${test.id}`}
+                  label={t.testPage.editTest}
+                >
+                  <PenLine
+                    aria-hidden="true"
+                    className="size-4"
+                  />
+                </ExamIconButton>
+              ) : null}
+            </>
+          }
+          eyebrow={
+            <nav aria-label={t.shell.breadcrumb}>
               <Link
-                className="hover:text-brand underline"
+                className="hover:text-brand flex w-fit items-center gap-1"
                 href="/ielts"
               >
-                IELTS
-              </Link>{' '}
-              /
-            </nav>
-            <h1 className="font-sans text-2xl leading-tight font-semibold wrap-break-word">
-              {test.title}
-            </h1>
-            <ExamBadge tone="pale">{t.tracks[test.track]}</ExamBadge>
-            <ExamBadge>
-              {format(t.testPage.target, { band: test.targetBand })}
-            </ExamBadge>
-            {isAdmin ? (
-              <ExamIconButton
-                className="ml-auto size-9"
-                href={`/admin/ielts/${test.id}`}
-                label={t.testPage.editTest}
-              >
-                <PenLine
+                <ChevronLeft
                   aria-hidden="true"
                   className="size-4"
                 />
-              </ExamIconButton>
-            ) : null}
-          </div>
-          {test.description ? (
-            <p className="max-w-2xl text-sm">{test.description}</p>
-          ) : null}
-        </ExamHero>
+                IELTS
+              </Link>
+            </nav>
+          }
+          icon={<GraduationCap />}
+          iconClassName="bg-pastel-peach text-accent-orange"
+          subtitle={test.description || undefined}
+          title={test.title}
+          titleClassName="wrap-break-word"
+        />
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {IELTS_SKILLS.map(skill => {

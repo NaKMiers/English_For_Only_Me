@@ -1,6 +1,6 @@
 'use client'
 
-import { Play } from 'lucide-react'
+import { BookOpen, Headphones, PenLine, Play } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
 
@@ -28,6 +28,12 @@ interface Props {
 }
 
 const MODES: Mode[] = ['practice', 'mock']
+
+const SKILL_ICONS = {
+  listening: Headphones,
+  reading: BookOpen,
+  writing: PenLine,
+} as const
 
 export function launchHref(
   slug: string,
@@ -60,6 +66,7 @@ export function SkillLauncher({
   const t = useMessages().ielts
   const [mode, setMode] = useState<Mode>('practice')
   const [choice, setChoice] = useState<Choice>('full')
+  const SkillIcon = SKILL_ICONS[skill]
   const isMock = mode === 'mock'
   const blocked = isMock && mockBlockedReason !== null
   const selected: Choice = isMock ? 'full' : choice
@@ -75,29 +82,35 @@ export function SkillLauncher({
   return (
     <section
       aria-label={title}
-      className="border-line bg-surface rounded-panel keep-frame grid content-start overflow-hidden border"
+      className="border-line bg-surface rounded-panel keep-frame shadow-card grid content-start overflow-hidden border"
     >
-      <header className="border-line flex items-center justify-between gap-2 border-b px-4 py-2.5">
-        <div className="grid min-w-0">
-          <h2 className="font-sans text-lg leading-tight font-semibold">
-            {title}
-          </h2>
-          <span className="text-ink-soft text-xs font-normal">{partsNoun}</span>
+      <header className="bg-pastel-peach/70 flex items-center justify-between gap-2 px-4 py-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <span
+            aria-hidden="true"
+            className="bg-surface text-accent-orange grid size-10 shrink-0 place-items-center rounded-full"
+          >
+            <SkillIcon className="size-5" />
+          </span>
+          <div className="grid min-w-0">
+            <h2 className="font-sans text-lg leading-tight font-medium">
+              {title}
+            </h2>
+            <span className="text-ink-soft text-xs">{partsNoun}</span>
+          </div>
         </div>
         {/* Mode toggle (aria-pressed): documented raw-button exception. */}
         <div
           aria-label={format(t.launcher.modeGroup, { skill: title })}
-          className="border-line rounded-control flex shrink-0 overflow-hidden border"
+          className="bg-surface flex shrink-0 gap-0.5 rounded-full p-0.5"
           role="group"
         >
           {MODES.map(item => (
             <button
               aria-pressed={mode === item}
               className={cn(
-                'border-line h-8 border-l px-2.5 font-sans text-xs font-semibold transition-colors first:border-l-0',
-                mode === item
-                  ? 'bg-cta text-cta-fg'
-                  : 'bg-surface hover:bg-tint'
+                'h-8 rounded-full px-3 font-sans text-xs font-medium transition-colors',
+                mode === item ? 'bg-cta text-cta-fg' : 'hover:bg-tint'
               )}
               key={item}
               onClick={() => setMode(item)}
@@ -120,8 +133,8 @@ export function SkillLauncher({
           return (
             <label
               className={cn(
-                'flex min-h-10 items-center gap-3 px-4 text-sm font-semibold transition-colors',
-                option.value === 'full' && 'font-semibold',
+                'flex min-h-10 items-center gap-3 px-4 text-sm transition-colors',
+                option.value === 'full' && 'font-medium',
                 disabled
                   ? 'text-ink-soft cursor-not-allowed opacity-45'
                   : 'hover:bg-tint cursor-pointer',
@@ -150,7 +163,7 @@ export function SkillLauncher({
                 ) : null}
               </span>
               <span className="min-w-0 flex-1">{option.label}</span>
-              <span className="text-ink-soft text-xs font-normal">
+              <span className="text-ink-soft text-xs tabular-nums">
                 {option.meta}
               </span>
             </label>
@@ -158,10 +171,10 @@ export function SkillLauncher({
         })}
       </fieldset>
 
-      <div className="border-line/15 grid gap-2 border-t px-4 py-3">
+      <div className="border-line grid gap-2 border-t px-4 py-3">
         {latest ? (
           <Link
-            className="hover:text-brand flex items-center justify-between gap-3 text-sm font-semibold transition-colors"
+            className="hover:text-brand flex items-center justify-between gap-3 text-sm transition-colors"
             href={latest.href}
           >
             {t.launcher.latestResult}

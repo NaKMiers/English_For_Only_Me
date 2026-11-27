@@ -106,7 +106,7 @@ export function ExamSheet({
   className?: string
 }) {
   return (
-    <div className={cn('grid gap-6 p-3 sm:p-5 lg:p-6', className)}>
+    <div className={cn('grid gap-5 px-4 pb-6 md:pr-6 md:pl-0', className)}>
       {children}
     </div>
   )

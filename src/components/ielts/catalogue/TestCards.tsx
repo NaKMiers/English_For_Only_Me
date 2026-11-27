@@ -1,6 +1,12 @@
 'use client'
 
-import { BookOpen, ChevronRight, Headphones, PenLine } from 'lucide-react'
+import {
+  BookMarked,
+  BookOpen,
+  ChevronRight,
+  Headphones,
+  PenLine,
+} from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
 
@@ -86,7 +92,7 @@ export function TestCards({ bands, catalog }: Props) {
     })
 
   return (
-    <div className="grid gap-6">
+    <div className="grid gap-4">
       <CatalogueToolbar
         className="max-w-2xl"
         filters={filters}
@@ -98,78 +104,97 @@ export function TestCards({ bands, catalog }: Props) {
       />
 
       {visible.length === 0 ? (
-        <p className="text-ink-soft rounded-control bg-tint p-4 text-sm font-normal">
+        <p className="text-ink-soft rounded-control bg-tint-soft p-4 text-sm">
           {t.catalogue.noMatch}
         </p>
       ) : null}
 
-      {groupCatalogue(visible).map(group => (
-        <section
-          aria-label={group.heading}
-          className="grid gap-3"
-          key={group.heading}
-        >
-          {/* No colour class: it inherits the shell's ink (cream on the dark
-              light-up room). Red reads as an error here. */}
-          <h2 className="font-sans text-lg font-semibold">{group.heading}</h2>
-          <ul className="motion-stagger grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-            {group.tests.map(({ entry, label }) => (
-              <li key={entry.id}>
-                <Link
-                  className="border-line bg-surface hover:bg-tint-soft rounded-panel soft-press hover-lift grid gap-2 border px-4 py-3"
-                  href={`/ielts/${entry.slug}`}
-                  title={entry.title}
-                >
-                  <span className="flex items-center justify-between gap-2 font-sans text-base font-semibold">
-                    {label}
-                    <ChevronRight
-                      aria-hidden="true"
-                      className="size-4 shrink-0"
-                    />
-                  </span>
-                  <span className="text-ink-soft flex flex-wrap items-center gap-x-3 gap-y-1">
-                    {entry.skills.map(({ skill }) => {
-                      const Icon = SKILL_ICONS[skill]
-                      const band = bands[entry.id]?.[skill]
+      <div className="grid items-start gap-4 xl:grid-cols-2">
+        {groupCatalogue(visible).map(group => (
+          <section
+            aria-label={group.heading}
+            className="border-line bg-surface rounded-panel shadow-card grid gap-3 border p-3 sm:p-4"
+            key={group.heading}
+          >
+            {/* One card per book: its name, then its tests as tiles. */}
+            <header className="flex items-center gap-3">
+              <span
+                aria-hidden="true"
+                className="bg-pastel-peach text-accent-orange grid size-10 shrink-0 place-items-center rounded-full"
+              >
+                <BookMarked className="size-5" />
+              </span>
+              <h2 className="min-w-0 flex-1 truncate font-sans text-base font-medium">
+                {group.heading}
+              </h2>
+              <span className="text-ink-soft bg-surface-muted shrink-0 rounded-full px-2.5 py-0.5 text-xs tabular-nums">
+                {group.tests.length}
+              </span>
+            </header>
+            <ul className="motion-stagger grid grid-cols-2 gap-2 sm:grid-cols-4">
+              {group.tests.map(({ entry, label }) => (
+                <li key={entry.id}>
+                  <Link
+                    className="bg-surface-muted hover:bg-pastel-peach/60 rounded-control soft-press hover-lift grid h-full content-between gap-2.5 p-3"
+                    href={`/ielts/${entry.slug}`}
+                    title={entry.title}
+                  >
+                    <span className="flex items-center justify-between gap-2 font-sans text-sm font-medium">
+                      {label}
+                      <ChevronRight
+                        aria-hidden="true"
+                        className="size-4 shrink-0"
+                      />
+                    </span>
+                    <span className="text-ink-soft flex flex-wrap items-center gap-1.5">
+                      {entry.skills.map(({ skill }) => {
+                        const Icon = SKILL_ICONS[skill]
+                        const band = bands[entry.id]?.[skill]
 
-                      if (band === undefined)
+                        if (band === undefined)
+                          return (
+                            <span
+                              className="border-line grid size-7 place-items-center rounded-full border"
+                              key={skill}
+                              title={IELTS_SKILL_LABELS[skill]}
+                            >
+                              <Icon
+                                aria-label={IELTS_SKILL_LABELS[skill]}
+                                className="size-3.5"
+                              />
+                            </span>
+                          )
+
+                        const bestBand = format(t.catalogue.bestBand, {
+                          band: band.toFixed(1),
+                          skill: IELTS_SKILL_LABELS[skill],
+                        })
+
                         return (
-                          <Icon
-                            aria-label={IELTS_SKILL_LABELS[skill]}
-                            className="size-4"
+                          <span
+                            aria-label={bestBand}
+                            className="bg-pastel-peach text-accent-orange inline-flex h-7 items-center gap-1 rounded-full px-2"
                             key={skill}
-                          />
-                        )
-
-                      const bestBand = format(t.catalogue.bestBand, {
-                        band: band.toFixed(1),
-                        skill: IELTS_SKILL_LABELS[skill],
-                      })
-
-                      return (
-                        <span
-                          aria-label={bestBand}
-                          className="bg-cta text-cta-fg rounded-tag inline-flex items-center gap-1 px-1.5 py-0.5"
-                          key={skill}
-                          title={bestBand}
-                        >
-                          <Icon
-                            aria-hidden="true"
-                            className="size-3.5"
-                          />
-                          <span className="font-sans text-xs font-semibold tabular-nums">
-                            {band.toFixed(1)}
+                            title={bestBand}
+                          >
+                            <Icon
+                              aria-hidden="true"
+                              className="size-3.5"
+                            />
+                            <span className="font-sans text-xs font-medium tabular-nums">
+                              {band.toFixed(1)}
+                            </span>
                           </span>
-                        </span>
-                      )
-                    })}
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ))}
+                        )
+                      })}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
+      </div>
     </div>
   )
 }

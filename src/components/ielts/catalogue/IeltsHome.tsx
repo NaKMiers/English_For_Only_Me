@@ -1,4 +1,7 @@
-import { Settings } from 'lucide-react'
+import { GraduationCap, Settings } from 'lucide-react'
+
+import { PageHeader } from '@/components/common/PageHeader'
+import { ProgressRing } from '@/components/common/ProgressRing'
 
 import { Progress } from '@/components/ui/progress'
 import { format, plural } from '@/i18n/format'
@@ -11,12 +14,7 @@ import { AttemptHistory } from './AttemptHistory'
 import { DrillButton } from './DrillButton'
 import { OverviewPanel } from './OverviewPanel'
 import { TestCards } from './TestCards'
-import {
-  ExamButton,
-  ExamCard,
-  ExamSheet,
-  ExamHero,
-} from '@/components/ielts/ui'
+import { ExamButton, ExamCard, ExamSheet } from '@/components/ielts/ui'
 
 /** Most-missed question types; hidden until there is enough data to rank. */
 function WeaknessMap({
@@ -91,64 +89,67 @@ export async function IeltsHome({
 
   return (
     <ExamSheet>
-      {/* One panel: the header line, then weak spots and recent attempts,
-          which fold away under the header's chevron. */}
-      <ExamHero className="gap-0">
-        <OverviewPanel
-          actions={
-            <>
-              {overall ? (
-                <div
-                  className="border-line bg-tint rounded-control flex items-baseline gap-1.5 border px-2.5 py-1"
-                  title={plural(t.home.bandEstimate, overall.skills.length)}
+      <PageHeader
+        actions={
+          <>
+            {overall ? (
+              <div
+                className="border-line bg-surface flex items-center gap-2.5 rounded-full border py-1 pr-4 pl-1"
+                title={plural(t.home.bandEstimate, overall.skills.length)}
+              >
+                <ProgressRing
+                  percent={(overall.band / 9) * 100}
+                  ringClassName="text-accent-orange"
+                  size={40}
                 >
-                  <span className="font-sans text-[11px] font-semibold">
-                    {t.home.band}
-                  </span>
-                  <strong className="font-sans text-lg leading-none font-semibold tabular-nums">
-                    {overall.band.toFixed(1)}
-                  </strong>
-                </div>
-              ) : null}
-              {isAdmin ? (
-                <ExamButton
-                  className="min-h-9 px-3"
-                  href="/admin/ielts"
-                  icon={
-                    <Settings
-                      aria-hidden="true"
-                      className="size-4"
-                    />
-                  }
-                  tone="paper"
-                >
-                  {t.home.manage}
-                </ExamButton>
-              ) : null}
-            </>
-          }
-          heading={
-            <>
-              <h1 className="font-sans text-2xl leading-tight font-semibold">
-                {messages.common.modules.ielts.title}
-              </h1>
-              <p className="text-ink-soft hidden text-sm sm:block">
-                {t.home.intro}
-              </p>
-            </>
-          }
-        >
-          {hasProgress ? (
-            <div className="border-line/20 mt-3 grid gap-x-6 gap-y-4 border-t pt-3 xl:grid-cols-2">
+                  <span className="text-[11px]">{overall.band.toFixed(1)}</span>
+                </ProgressRing>
+                <span className="text-ink-soft text-sm">{t.home.band}</span>
+              </div>
+            ) : null}
+            {isAdmin ? (
+              <ExamButton
+                href="/admin/ielts"
+                icon={
+                  <Settings
+                    aria-hidden="true"
+                    className="size-4"
+                  />
+                }
+                tone="paper"
+              >
+                {t.home.manage}
+              </ExamButton>
+            ) : null}
+          </>
+        }
+        icon={<GraduationCap />}
+        iconClassName="bg-pastel-peach text-accent-orange"
+        subtitle={t.home.intro}
+        title={messages.common.modules.ielts.title}
+      />
+
+      {/* Weak spots and recent attempts fold away under one line. */}
+      {hasProgress ? (
+        <section className="bg-pastel-peach/60 rounded-panel p-3 sm:p-4">
+          <OverviewPanel
+            actions={null}
+            heading={
+              <h2 className="font-sans text-sm font-medium">
+                {t.home.overviewTitle}
+              </h2>
+            }
+          >
+            <div className="border-line/40 mt-3 grid gap-x-6 gap-y-4 border-t pt-3 xl:grid-cols-2">
               <WeaknessMap
                 t={t}
                 weakness={weakness}
               />
               <AttemptHistory attempts={attempts} />
             </div>
-          ) : null}
-        </OverviewPanel>
-      </ExamHero>
+          </OverviewPanel>
+        </section>
+      ) : null}
 
       {error ? (
         <ExamCard title={t.home.loadFailedTitle}>
@@ -179,7 +180,7 @@ export async function IeltsHome({
         </ExamCard>
       )}
 
-      <p className="text-muted-foreground text-xs">{t.home.disclaimer}</p>
+      <p className="text-ink-soft text-xs">{t.home.disclaimer}</p>
     </ExamSheet>
   )
 }

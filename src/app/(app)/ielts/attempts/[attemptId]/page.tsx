@@ -1,9 +1,11 @@
+import { ChevronRight, GraduationCap } from 'lucide-react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { AuthControl } from '@/components/common/AuthControl'
+import { PageHeader } from '@/components/common/PageHeader'
 import { PageShell } from '@/components/common/PageShell'
 import { ObjectiveResult } from '@/components/ielts/review/ObjectiveResult'
 import { WritingResult } from '@/components/ielts/review/WritingResult'
@@ -11,7 +13,7 @@ import { format } from '@/i18n/format'
 import { getMessages } from '@/i18n/server'
 import { IELTS_SKILL_LABELS } from '@/modules/ielts/constants'
 import { loadResultPageData } from '@/modules/ielts/services/resultPageData'
-import { ExamSheet, ExamHero } from '@/components/ielts/ui'
+import { ExamSheet } from '@/components/ielts/ui'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -73,35 +75,45 @@ export default async function IeltsResultPage({ params }: Props) {
       }
     >
       <ExamSheet>
-        <ExamHero>
-          <nav
-            aria-label={t.ielts.shell.breadcrumb}
-            className="text-muted-foreground text-sm font-semibold"
-          >
-            <Link
-              className="hover:text-brand underline"
-              href="/ielts"
+        <PageHeader
+          eyebrow={
+            <nav
+              aria-label={t.ielts.shell.breadcrumb}
+              className="flex flex-wrap items-center gap-x-1.5"
             >
-              IELTS
-            </Link>
-            {attempt.testSlug ? (
-              <>
-                {' / '}
-                <Link
-                  className="underline"
-                  href={`/ielts/${attempt.testSlug}`}
-                >
-                  {title}
-                </Link>
-              </>
-            ) : null}{' '}
-            / {skillLabel}
-          </nav>
-          <h1 className="font-sans text-3xl leading-tight font-medium wrap-break-word sm:text-4xl">
-            {format(t.ielts.result.heading, { skill: skillLabel })}
-          </h1>
-          <p>{summary}</p>
-        </ExamHero>
+              <Link
+                className="hover:text-brand"
+                href="/ielts"
+              >
+                IELTS
+              </Link>
+              {attempt.testSlug ? (
+                <>
+                  <ChevronRight
+                    aria-hidden="true"
+                    className="size-3.5"
+                  />
+                  <Link
+                    className="hover:text-brand"
+                    href={`/ielts/${attempt.testSlug}`}
+                  >
+                    {title}
+                  </Link>
+                </>
+              ) : null}
+              <ChevronRight
+                aria-hidden="true"
+                className="size-3.5"
+              />
+              <span>{skillLabel}</span>
+            </nav>
+          }
+          icon={<GraduationCap />}
+          iconClassName="bg-pastel-peach text-accent-orange"
+          subtitle={summary}
+          title={format(t.ielts.result.heading, { skill: skillLabel })}
+          titleClassName="wrap-break-word"
+        />
         {attempt.skill === 'writing' ? (
           <WritingResult
             attempt={attempt}
