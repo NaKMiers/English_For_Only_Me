@@ -4,7 +4,7 @@ import { Headphones, ScrollText } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import { MangaPanel } from '@/components/common/MangaPanel'
+import { ContentPanel } from '@/components/common/ContentPanel'
 import {
   useClientOutbox,
   useOutboxOwnerKey,
@@ -27,7 +27,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
-import { MangaButton } from '@/components/ui/MangaButton'
+import { ActionButton } from '@/components/ui/ActionButton'
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { QuickVocabWordButton } from '@/components/vocabulary/QuickVocabLookup'
@@ -212,7 +212,7 @@ const VIDEO_GRID_CLASS_NAME: Record<string, string> = {
 }
 
 const PRACTICE_TAB_TRIGGER_CLASS_NAME =
-  'border-manga-black text-manga-ink-soft bg-manga-white shadow-[2px_2px_0_var(--manga-black)] hover:bg-manga-paper-soft focus-visible:ring-manga-red/35 data-active:bg-manga-red! data-active:text-manga-white! data-active:shadow-[4px_4px_0_var(--manga-black)]! data-active:-translate-x-[2px] data-active:-translate-y-[2px] !h-auto min-h-8 flex-1 rounded-control border-2 px-2.5 py-1 font-sans text-xs font-black transition-all after:hidden sm:flex-none'
+  'border-line text-ink-soft bg-surface hover:bg-tint focus-visible:ring-brand/35 data-active:bg-brand! data-active:text-surface! !h-auto min-h-8 flex-1 rounded-control border px-2.5 py-1 font-sans text-xs font-normal transition-all after:hidden sm:flex-none'
 
 export function DictationPracticeShell({
   completions,
@@ -1506,15 +1506,15 @@ export function DictationPracticeShell({
 
   if (!currentSegment)
     return (
-      <MangaPanel
+      <ContentPanel
         eyebrow="Practice"
         title="No segments ready"
       >
-        <p className="text-manga-ink-soft text-base leading-7 font-semibold">
+        <p className="text-ink-soft text-base leading-7 font-normal">
           Build segments from the transcript before opening practice.
         </p>
-        <MangaButton href="/dictation">Back To Dictation Lab</MangaButton>
-      </MangaPanel>
+        <ActionButton href="/dictation">Back To Dictation Lab</ActionButton>
+      </ContentPanel>
     )
 
   // `max` stacks the video above the tabs, so the whole body scrolls as one
@@ -1530,26 +1530,26 @@ export function DictationPracticeShell({
           if (!open) setPendingLeaveHref(null)
         }}
       >
-        <DialogContent className="border-manga-black bg-manga-white rounded-panel border-3 shadow-[6px_6px_0_var(--manga-black)]">
+        <DialogContent className="border-line bg-surface rounded-panel border">
           <DialogHeader>
-            <DialogTitle className="font-sans text-xl leading-tight font-black tracking-normal uppercase">
+            <DialogTitle className="font-sans text-xl leading-tight font-semibold tracking-normal">
               Leave this practice?
             </DialogTitle>
-            <DialogDescription className="text-manga-ink-soft text-base leading-7 font-semibold">
+            <DialogDescription className="text-ink-soft text-base leading-7 font-normal">
               You have not finished this exercise yet. Your progress is saved,
               so you can pick up right where you left off.
             </DialogDescription>
           </DialogHeader>
 
-          <DialogFooter className="bg-manga-paper-soft border-manga-black border-t-3">
-            <MangaButton
+          <DialogFooter className="bg-tint border-line border-t">
+            <ActionButton
               type="button"
               tone="paper"
               onClick={() => setPendingLeaveHref(null)}
             >
               Keep practicing
-            </MangaButton>
-            <MangaButton
+            </ActionButton>
+            <ActionButton
               type="button"
               onClick={() => {
                 const destination = pendingLeaveHref
@@ -1560,7 +1560,7 @@ export function DictationPracticeShell({
               }}
             >
               Leave
-            </MangaButton>
+            </ActionButton>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1569,7 +1569,7 @@ export function DictationPracticeShell({
           phone they stacked four ink frames inside the page shell. The
           shadow-none needs `!` because the light-up shadow retints in
           globals.css are unlayered and would otherwise put the ledge back. */}
-      <section className="border-manga-black bg-manga-white rounded-panel flex h-full min-h-0 min-w-0 flex-col gap-2 border-3 p-2 shadow-[5px_5px_0_var(--manga-black)] max-sm:border-0 max-sm:bg-transparent max-sm:p-0 max-sm:shadow-none! sm:p-3">
+      <section className="border-line bg-surface rounded-panel flex h-full min-h-0 min-w-0 flex-col gap-2 border p-2 max-sm:border-0 max-sm:bg-transparent max-sm:p-0 max-sm:shadow-none! sm:p-3">
         {/* Header, toolbar, and footer are fixed chrome: they keep their
             natural height and the video/practice area absorbs the rest. */}
         <div className="shrink-0">
@@ -1704,12 +1704,12 @@ export function DictationPracticeShell({
                 )}
               >
                 {isCompleted ? (
-                  <MangaPanel
+                  <ContentPanel
                     eyebrow="Done"
                     title="You have completed this exercise, good job!"
                   >
                     <div className="flex flex-wrap gap-2">
-                      <MangaButton
+                      <ActionButton
                         href={resultsHref}
                         aria-busy={isSavingResults || undefined}
                         onClick={event => {
@@ -1729,56 +1729,58 @@ export function DictationPracticeShell({
                         }}
                       >
                         {isSavingResults ? 'Saving...' : 'View Results'}
-                      </MangaButton>
-                      <MangaButton
+                      </ActionButton>
+                      <ActionButton
                         href="/dictation"
                         tone="paper"
                         icon={undefined}
                       >
                         Next Exercise
-                      </MangaButton>
-                      <MangaButton
+                      </ActionButton>
+                      <ActionButton
                         type="button"
                         tone="paper"
                         onClick={restartProgress}
                       >
                         Repeat this exercise
-                      </MangaButton>
+                      </ActionButton>
                     </div>
-                    <MangaButton
+                    <ActionButton
                       href="/dictation"
                       tone="paper"
                     >
                       View all exercises
-                    </MangaButton>
-                  </MangaPanel>
+                    </ActionButton>
+                  </ContentPanel>
                 ) : !hasStarted ? (
-                  <MangaPanel
+                  <ContentPanel
                     eyebrow="Ready"
                     title={readyActionTitle}
-                    className={hasResumableProgress ? 'bg-cyan-50' : undefined}
+                    className={
+                      hasResumableProgress ? 'bg-pastel-sky' : undefined
+                    }
                   >
-                    <p className="text-manga-ink-soft text-base leading-7 font-semibold">
+                    <p className="text-ink-soft text-base leading-7 font-normal">
                       {hasResumableProgress
                         ? `Pick up from sentence ${(initialSession?.currentSegmentOrder ?? 0) + 1} of ${segments.length} and keep going.`
                         : 'Press start to play the first sentence and begin typing.'}
                     </p>
-                    <MangaButton
+                    <ActionButton
                       type="button"
                       onClick={() => setHasStarted(true)}
                     >
                       {readyActionLabel}
-                    </MangaButton>
+                    </ActionButton>
                     {hasResumableProgress ? (
-                      <MangaButton
+                      <ActionButton
                         type="button"
                         tone="paper"
                         onClick={restartProgress}
                       >
                         Restart from the beginning
-                      </MangaButton>
+                      </ActionButton>
                     ) : null}
-                  </MangaPanel>
+                  </ContentPanel>
                 ) : (
                   <>
                     <GuidedAnswerInput
@@ -1830,51 +1832,51 @@ export function DictationPracticeShell({
                             <>
                               {guidedStatus === 'correct' &&
                               !showAnswerWords ? (
-                                <MangaButton
+                                <ActionButton
                                   type="button"
                                   tone="paper"
                                   className="min-h-9 px-3 py-1 text-sm"
                                   onClick={() => setShowAnswerWords(true)}
                                 >
                                   Show answer words
-                                </MangaButton>
+                                </ActionButton>
                               ) : null}
-                              <MangaButton
+                              <ActionButton
                                 type="button"
                                 className="min-h-9 px-3 py-1 text-sm"
                                 onClick={advanceAfterAttempt}
                               >
                                 {canGoNext ? 'Next' : 'Finish'}
-                              </MangaButton>
+                              </ActionButton>
                             </>
                           ) : (
                             <>
-                              <MangaButton
+                              <ActionButton
                                 type="button"
                                 className="min-h-9 px-3 py-1 text-sm"
                                 onClick={checkDraft}
                               >
                                 Check
-                              </MangaButton>
-                              <MangaButton
+                              </ActionButton>
+                              <ActionButton
                                 type="button"
                                 tone="paper"
                                 className="min-h-9 px-3 py-1 text-sm"
                                 onClick={skipSegment}
                               >
                                 Skip
-                              </MangaButton>
+                              </ActionButton>
                             </>
                           )}
                           {hasCheckedCurrent ? (
-                            <MangaButton
+                            <ActionButton
                               type="button"
                               tone="paper"
                               className="min-h-9 px-3 py-1 text-sm"
                               onClick={retryCurrent}
                             >
                               Retry
-                            </MangaButton>
+                            </ActionButton>
                           ) : null}
                         </>
                       }
@@ -1884,7 +1886,7 @@ export function DictationPracticeShell({
                     {vocabLookupError ? (
                       <div
                         role="status"
-                        className="border-manga-black bg-manga-pale-red text-manga-red rounded-control border-2 p-3 text-sm font-black shadow-[2px_2px_0_var(--manga-black)]"
+                        className="border-line bg-tint-soft text-brand rounded-control border p-3 text-sm font-semibold"
                       >
                         {vocabLookupError}
                       </div>
@@ -1903,7 +1905,7 @@ export function DictationPracticeShell({
                     {/* Reveal preferences share one wrapping row - two stacked
                       full-width switches cost more height than they earn. */}
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
-                      <Label className="flex items-center gap-2 text-xs font-black">
+                      <Label className="flex items-center gap-2 text-xs font-semibold">
                         <Switch
                           size="default"
                           checked={preferences.showAnswerImmediately}
@@ -1916,7 +1918,7 @@ export function DictationPracticeShell({
                         />
                         Show answer immediately
                       </Label>
-                      <Label className="flex items-center gap-2 text-xs font-black">
+                      <Label className="flex items-center gap-2 text-xs font-semibold">
                         <Switch
                           size="default"
                           checked={preferences.showFullAnswer}
@@ -1974,7 +1976,7 @@ export function DictationPracticeShell({
         {draftNotice ? (
           <div
             role="status"
-            className="border-manga-black bg-manga-paper-soft rounded-control shrink-0 border-2 p-2 text-xs leading-5 font-black shadow-[3px_3px_0_var(--manga-black)]"
+            className="border-line bg-tint rounded-control shrink-0 border p-2 text-xs leading-5 font-semibold"
           >
             {draftNotice}
           </div>
@@ -1986,8 +1988,8 @@ export function DictationPracticeShell({
           <p
             role={sessionError ? 'alert' : undefined}
             className={cn(
-              'text-manga-ink-soft min-w-0 flex-1 text-xs leading-5 font-semibold',
-              sessionError && 'text-manga-red font-black'
+              'text-ink-soft min-w-0 flex-1 text-xs leading-5 font-normal',
+              sessionError && 'text-danger font-semibold'
             )}
           >
             {sessionError ??
@@ -2002,20 +2004,20 @@ export function DictationPracticeShell({
               <button
                 type="button"
                 onClick={retryFailedWrites}
-                className="text-manga-black decoration-manga-red ml-2 font-black underline underline-offset-2"
+                className="text-ink decoration-brand ml-2 font-semibold underline underline-offset-2"
               >
                 Retry saving
               </button>
             ) : null}
           </p>
           {preferences.showShortcuts ? (
-            <div className="text-manga-ink-soft hidden flex-wrap gap-x-3 gap-y-1 text-xs font-black md:flex">
+            <div className="text-ink-soft hidden flex-wrap gap-x-3 gap-y-1 text-xs font-normal md:flex">
               <span>Command / Alt · replay</span>
               <span>Enter · check</span>
               <span>Ctrl + [ ] · move</span>
             </div>
           ) : null}
-          <Label className="flex shrink-0 items-center gap-2 text-xs font-black">
+          <Label className="flex shrink-0 items-center gap-2 text-xs font-semibold">
             <Switch
               size="default"
               checked={preferences.showShortcuts}

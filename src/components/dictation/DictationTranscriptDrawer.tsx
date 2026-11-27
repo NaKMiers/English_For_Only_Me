@@ -3,7 +3,7 @@
 import { ScrollText } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
-import { MangaButton } from '@/components/ui/MangaButton'
+import { ActionButton } from '@/components/ui/ActionButton'
 import {
   Sheet,
   SheetContent,
@@ -43,15 +43,15 @@ function TranscriptSegmentList({
           key={segment.id}
           aria-current={segment.id === currentSegmentId ? 'step' : undefined}
           className={cn(
-            'border-manga-black bg-manga-white rounded-control grid snap-start gap-2 border-2 p-3 shadow-[3px_3px_0_var(--manga-black)]',
-            segment.id === currentSegmentId && 'bg-manga-paper-soft'
+            'border-line bg-surface rounded-control grid snap-start gap-2 border p-3',
+            segment.id === currentSegmentId && 'bg-tint'
           )}
         >
           <div className="flex flex-wrap items-center gap-2">
-            <Badge className="border-manga-black bg-manga-white text-manga-black rounded-tag border-2 font-black">
+            <Badge className="border-line bg-surface text-ink rounded-tag border font-semibold">
               #{segment.order + 1}
             </Badge>
-            <Badge className="border-manga-black bg-manga-pale-red text-manga-black rounded-tag border-2 font-black">
+            <Badge className="border-line bg-tint-soft text-ink rounded-tag border font-semibold">
               {formatTiming(segment)}
             </Badge>
           </div>
@@ -69,7 +69,7 @@ export function DictationTranscriptDrawer({
 }: Props) {
   if (defaultOpen)
     return (
-      <div className="border-manga-black bg-manga-paper rounded-panel overflow-hidden border-3">
+      <div className="border-line bg-surface rounded-panel overflow-hidden border">
         <TranscriptSegmentList
           currentSegmentId={currentSegmentId}
           segments={segments}
@@ -81,7 +81,7 @@ export function DictationTranscriptDrawer({
     <Sheet>
       <SheetTrigger
         render={
-          <MangaButton
+          <ActionButton
             type="button"
             tone="paper"
             icon={
@@ -92,15 +92,15 @@ export function DictationTranscriptDrawer({
             }
           >
             Full Transcript
-          </MangaButton>
+          </ActionButton>
         }
       />
-      <SheetContent className="border-manga-black bg-manga-paper w-[min(92vw,520px)] border-l-3">
-        <SheetHeader className="border-manga-black border-b-3">
-          <SheetTitle className="font-sans text-2xl font-black uppercase">
+      <SheetContent className="border-line bg-surface w-[min(92vw,520px)] border-l">
+        <SheetHeader className="border-line border-b">
+          <SheetTitle className="font-sans text-2xl font-semibold">
             Full transcript
           </SheetTitle>
-          <SheetDescription className="text-manga-ink-soft font-semibold">
+          <SheetDescription className="text-ink-soft font-normal">
             Current sentence stays marked while you move through practice.
           </SheetDescription>
         </SheetHeader>

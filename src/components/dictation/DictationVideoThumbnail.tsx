@@ -66,7 +66,7 @@ export function DictationVideoThumbnail({
   return (
     <div
       className={cn(
-        'border-manga-black bg-manga-paper-soft rounded-control relative aspect-video w-full overflow-hidden border-2 shadow-[3px_3px_0_var(--manga-black)]',
+        'border-line bg-tint rounded-control relative aspect-video w-full overflow-hidden border',
         className
       )}
     >
@@ -83,7 +83,7 @@ export function DictationVideoThumbnail({
         />
       ) : (
         <div className="grid h-full place-items-center p-4 text-center">
-          <span className="font-sans text-sm leading-5 font-black tracking-normal uppercase">
+          <span className="font-sans text-sm leading-5 font-semibold tracking-normal">
             No thumbnail
           </span>
         </div>

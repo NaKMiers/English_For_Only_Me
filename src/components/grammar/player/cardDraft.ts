@@ -3,7 +3,7 @@ import { fillSentence } from '@/modules/grammar/grading/gradeCard'
 import type { PlayCard } from '@/modules/grammar/session/preparePlayCards'
 
 /**
- * What the learner has picked so far on one practice card, before "Kiểm tra".
+ * What the learner has picked so far on one practice card, before "Check".
  * Tiles are tracked by their DISPLAY index so duplicate words stay distinct.
  */
 export type CardDraft =
@@ -87,7 +87,7 @@ export function describeAnswer(card: PracticeCard, answer: CardAnswer) {
       return answer.value.join(' ')
     case 'fix':
       return card.kind === 'fix'
-        ? `"${card.tokens[answer.value] ?? ''}" là từ sai`
+        ? `"${card.tokens[answer.value] ?? ''}" is the wrong word`
         : ''
   }
 }

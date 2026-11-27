@@ -24,7 +24,7 @@ function WeaknessMap({ weakness }: Pick<IeltsHomeData, 'weakness'>) {
 
   return (
     <section className="grid min-w-0 content-start gap-2">
-      <h2 className="font-sans text-sm font-black uppercase">
+      <h2 className="font-sans text-sm font-semibold">
         Most-missed question types
       </h2>
       {/* One line per type: name, accuracy bar, percent, drill. */}
@@ -38,7 +38,7 @@ function WeaknessMap({ weakness }: Pick<IeltsHomeData, 'weakness'>) {
               key={`${row.skill}-${row.type}`}
             >
               <span className="min-w-0 flex-1 basis-56">
-                <strong className="font-sans font-black">
+                <strong className="font-sans font-semibold">
                   {IELTS_QUESTION_TYPE_LABELS[row.type]}
                 </strong>{' '}
                 <span className="text-muted-foreground">
@@ -50,7 +50,7 @@ function WeaknessMap({ weakness }: Pick<IeltsHomeData, 'weakness'>) {
                 className="w-24"
                 value={percent}
               />
-              <span className="w-9 text-right font-sans font-black tabular-nums">
+              <span className="w-9 text-right font-sans font-semibold tabular-nums">
                 {percent}%
               </span>
               <DrillButton
@@ -94,13 +94,13 @@ export function IeltsHome({
             <>
               {overall ? (
                 <div
-                  className="border-manga-black bg-manga-paper-soft rounded-control flex items-baseline gap-1.5 border-2 px-2.5 py-1"
+                  className="border-line bg-tint rounded-control flex items-baseline gap-1.5 border px-2.5 py-1"
                   title={`Estimate from ${overall.skills.length} ${overall.skills.length === 1 ? 'skill' : 'skills'}`}
                 >
-                  <span className="font-sans text-[11px] font-black uppercase">
+                  <span className="font-sans text-[11px] font-semibold">
                     Band
                   </span>
-                  <strong className="font-sans text-lg leading-none font-black tabular-nums">
+                  <strong className="font-sans text-lg leading-none font-semibold tabular-nums">
                     {overall.band.toFixed(1)}
                   </strong>
                 </div>
@@ -124,17 +124,17 @@ export function IeltsHome({
           }
           heading={
             <>
-              <h1 className="font-sans text-2xl leading-tight font-black">
+              <h1 className="font-sans text-2xl leading-tight font-semibold">
                 IELTS Tests
               </h1>
-              <p className="text-manga-ink-soft hidden text-sm sm:block">
+              <p className="text-ink-soft hidden text-sm sm:block">
                 Pick a test, then choose a skill.
               </p>
             </>
           }
         >
           {hasProgress ? (
-            <div className="border-manga-black/20 mt-3 grid gap-x-6 gap-y-4 border-t pt-3 xl:grid-cols-2">
+            <div className="border-line/20 mt-3 grid gap-x-6 gap-y-4 border-t pt-3 xl:grid-cols-2">
               <WeaknessMap weakness={weakness} />
               <AttemptHistory attempts={attempts} />
             </div>

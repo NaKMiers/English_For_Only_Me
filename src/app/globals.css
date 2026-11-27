@@ -5,220 +5,210 @@
 /* Theming is driven entirely by [data-theme] (see :root[data-theme='lightup']),
    NOT by the OS color scheme. Bind Tailwind's `dark:` variant to an explicit
    `.dark` class (which this app never adds) so shadcn primitives' built-in
-   `dark:` styles (e.g. Input's dark:bg-input/30) stop firing under
-   prefers-color-scheme: dark and darkening form controls out from under our
-   own light/light-up themes. */
+   `dark:` styles stop firing under prefers-color-scheme: dark and darkening
+   form controls out from under our own day / night themes. */
 @custom-variant dark (&:where(.dark, .dark *));
 
-:root {
-  --manga-white: #ffffff;
-  --manga-black: #050505;
-  --manga-logo-red: #e03020;
-  --manga-bright-red: #f03020;
-  --manga-pale-red: #fff0ef;
-  --manga-paper: #fff8f6;
-  --manga-paper-soft: #ffe7e4;
-  --manga-ink-soft: #343434;
-  --manga-shadow: rgba(5, 5, 5, 0.18);
-  --background: var(--manga-paper);
-  --foreground: var(--manga-black);
-  --card: var(--manga-white);
-  --card-foreground: var(--manga-black);
-  --popover: var(--manga-white);
-  --popover-foreground: var(--manga-black);
-  --primary: var(--manga-logo-red);
-  --primary-foreground: var(--manga-white);
-  --dark-primary: var(--manga-bright-red);
-  --secondary: var(--manga-black);
-  --secondary-foreground: var(--manga-white);
-  --muted: var(--manga-pale-red);
-  --muted-foreground: #6a6462;
-  --accent: var(--manga-paper-soft);
-  --accent-foreground: var(--manga-black);
-  --destructive: var(--manga-logo-red);
-  --destructive-foreground: var(--manga-white);
-  --border: rgba(5, 5, 5, 0.9);
-  --input: rgba(5, 5, 5, 0.72);
-  --ring: var(--manga-bright-red);
-  --chart-1: var(--manga-logo-red);
-  --chart-2: var(--manga-black);
-  --chart-3: var(--manga-paper-soft);
-  --chart-4: var(--manga-bright-red);
-  --chart-5: var(--manga-ink-soft);
-  --radius: 0.5rem;
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --light: #ffffff;
-  --dark: #343434;
-  --light-gray: #fff0ef;
-  --dark-gray: #6a6462;
+/* ============================================================
+   SOFT PASTEL DASHBOARD
+   A floating white board on a lavender backdrop. Hairline borders, soft
+   shadows, big rounded corners, one pastel tint per module, near-black for
+   the primary action and the sidebar. Every utility reads these vars, so
+   the night theme below only has to remap them.
+   ============================================================ */
+/* `.day-palette` pins the day tokens on one subtree, for a panel designed
+   as a dark block on the day palette (the vocab recall modal) that must look
+   the same in the night theme. */
+:root,
+.day-palette {
+  --canvas: #e9e7f8;
+  --surface: #ffffff;
+  --surface-muted: #f6f6fa;
+  --ink: #1d1b26;
+  --ink-soft: #6b6878;
+  --line: #ebeaf2;
+  --line-strong: #dcdae6;
+  --brand: #6457e8;
+  --brand-soft: #ecebfd;
+  --danger: #e5484d;
+  --danger-soft: #fdecec;
+  /* Secondary fills: `tint` for selected / hovered, `tint-soft` for quiet
+     grouping. */
+  --tint: #efedfb;
+  --tint-soft: #f7f6fc;
 
-  /* Theme-swappable surfaces (light / day defaults). The light-up theme
-     overrides these under :root[data-theme='lightup'] below. Kept as vars so
-     the page background, selection, and focus ring flip with the theme instead
-     of being hardcoded literals. */
+  /* One pastel per module (Dictation sky, Vocabulary rose, Grammar lilac,
+     IELTS peach) plus mint / lemon / cream for stats and highlights. */
+  --pastel-peach: #fdf0e3;
+  --pastel-lilac: #f1e8fc;
+  --pastel-rose: #fce8f0;
+  --pastel-sky: #e7effc;
+  --pastel-mint: #e3f4ea;
+  --pastel-lemon: #f2f6d4;
+  --pastel-cream: #fdf7e6;
+  /* Matching text / outline colours for chips on those pastels. */
+  --accent-blue: #4f6bd8;
+  --accent-orange: #e0822f;
+  --accent-purple: #8b5cf6;
+  --accent-pink: #d9548a;
+  --accent-green: #2f8f57;
+
+  --shadow-color: rgba(40, 32, 110, 0.12);
+  /* The icon rail stays dark in both themes. */
+  --rail-bg: #1d1b26;
+  --rail-fg: #ffffff;
+
+  --background: var(--canvas);
+  --foreground: var(--ink);
+  --card: var(--surface);
+  --card-foreground: var(--ink);
+  --popover: var(--surface);
+  --popover-foreground: var(--ink);
+  --primary: var(--ink);
+  --primary-foreground: var(--surface);
+  --dark-primary: var(--brand);
+  --secondary: var(--surface-muted);
+  --secondary-foreground: var(--ink);
+  --muted: var(--tint-soft);
+  --muted-foreground: var(--ink-soft);
+  --accent: var(--tint);
+  --accent-foreground: var(--ink);
+  --destructive: var(--danger);
+  --destructive-foreground: #ffffff;
+  --border: var(--line);
+  --input: var(--line-strong);
+  --ring: var(--brand);
+  --chart-1: var(--brand);
+  --chart-2: var(--accent-orange);
+  --chart-3: var(--accent-blue);
+  --chart-4: var(--accent-pink);
+  --chart-5: var(--accent-green);
+  --radius: 0.875rem;
+  --light: var(--surface);
+  --dark: var(--ink);
+  --light-gray: var(--tint-soft);
+  --dark-gray: var(--ink-soft);
+
   --html-bg:
-    radial-gradient(
-      circle at 18px 18px,
-      rgba(5, 5, 5, 0.08) 1px,
-      transparent 1px
-    ),
-    linear-gradient(135deg, var(--manga-paper), #ffffff 52%, #fff0ef);
-  --html-bg-size: 26px 26px, auto;
-  --body-bg:
-    linear-gradient(
-      112deg,
-      transparent 0 20%,
-      rgba(5, 5, 5, 0.035) 20% 20.35%,
-      transparent 20.35% 55%,
-      rgba(224, 48, 32, 0.055) 55% 55.35%,
-      transparent 55.35%
-    ),
-    radial-gradient(
-      ellipse at 82% 12%,
-      rgba(224, 48, 32, 0.1),
-      transparent 30%
-    ),
-    radial-gradient(ellipse at 8% 88%, rgba(5, 5, 5, 0.06), transparent 32%);
-  --selection-bg: #35d1e6;
-  --selection-fg: var(--manga-black);
-  /* Color for manga offset shadows. Day shadows hardcode var(--manga-black);
-     light-up retints them to a warm ledge via this var (see overrides below). */
-  --manga-offset: var(--manga-black);
-  /* Border ink. Day = black; light-up = warm sepia so frames/footer/panel
-     outlines stay visible on the dark room (a dark border vanished into it). */
-  --manga-line: var(--manga-black);
-  --scrollbar-track: rgba(255, 255, 255, 0.64);
-  --scrollbar-thumb: rgba(224, 48, 32, 0.38);
-  --scrollbar-thumb-hover: rgba(224, 48, 32, 0.6);
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 900' preserveAspectRatio='none'%3E%3Cg fill='none' stroke='%239d92e6' stroke-opacity='.35' stroke-width='1.6'%3E%3Cpath d='M-40 260 C 260 120 420 40 640 -40'/%3E%3Cpath d='M120 940 C 300 700 420 420 760 -40'/%3E%3Cpath d='M1000 -40 C 1060 300 1240 520 1480 600'/%3E%3Cpath d='M1480 120 C 1300 160 1180 60 1120 -40'/%3E%3C/g%3E%3C/svg%3E"),
+    radial-gradient(ellipse 70% 60% at 85% 0%, #dcdaf8, transparent 70%),
+    radial-gradient(ellipse 60% 60% at 0% 100%, #e3dcf6, transparent 70%),
+    linear-gradient(160deg, #eeedf9, #e4e3f7 60%, #e6e0f5);
+  --html-bg-size: 100% 100%, auto, auto, auto;
+  --selection-bg: #d9d4ff;
+  --selection-fg: var(--ink);
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: rgba(100, 87, 232, 0.25);
+  --scrollbar-thumb-hover: rgba(100, 87, 232, 0.45);
 
-  /* The one colour outside ink, paper, and red: a right answer in a lesson
-     player. Wrong answers use red, so right must not be confusable with it,
-     and both always carry an icon and a word as well (never colour alone).
-     Dark enough to carry white text. */
-  --lesson-correct: #12703a;
+  /* A right answer in a lesson player. Wrong answers use `danger`; both
+     always carry an icon and a word as well (never colour alone). */
+  --lesson-correct: #1f8a4c;
 
   /* ----------------------------------------------------------
-     STICKER CORNERS - the one knob for how soft the app feels.
-     Every block is a die-cut sticker: same 3px ink, same hard
-     offset shadow, rounded by ROLE so radius encodes nesting
-     (shell > panel > control > tag). Mapped into `@theme inline`
-     below as `rounded-shell/panel/control/tag`; CSS rules read
-     the same vars. Set all four to 0 to get the square app back.
-     Theme-independent, so light-up inherits them untouched.
+     CORNERS by role, so radius encodes nesting:
+     shell > panel > control > tag. Mapped into `@theme inline` as
+     `rounded-shell/panel/control/tag`. Buttons and chips are pills
+     (`rounded-full`) on top of this.
      ---------------------------------------------------------- */
-  --sticker-shell: 20px;
-  --sticker-panel: 14px;
-  --sticker-control: 10px;
-  --sticker-tag: 6px;
-  /* Press = a small squish (overshoot); release = no overshoot, so the
-     1000th tap does not wobble. See `.sticker-press`. */
-  --sticker-ease: cubic-bezier(0.34, 1.56, 0.64, 1);
-  --sticker-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --corner-shell: 36px;
+  --corner-panel: 24px;
+  --corner-control: 14px;
+  --corner-tag: 8px;
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* On a phone the shell sits 12px from an already-curved screen edge, so its
-   corner drops to the panel size. Only the shell changes. */
+/* On a phone the board fills the screen, so its corner goes. */
 @media (max-width: 639px) {
   :root {
-    --sticker-shell: 14px;
+    --corner-shell: 0px;
+    --corner-panel: 20px;
   }
 }
 
 /* ============================================================
-   LIGHT-UP MODE ("trang giấy dưới đèn đọc sách")
-   Not a plain dark mode: the shell/body paper goes DARK (a warm
-   room) while cards (--manga-white) go LIGHT (lamp-lit paper).
-   Ink + borders stay dark (they now sit on light cards). We only
-   remap the base --manga-* tokens; every semantic alias and every
-   `bg-manga-*` / `border-manga-*` / shadow utility inherits the
-   flip automatically because they reference these vars.
+   NIGHT ("lightup" in storage, kept for saved preferences)
+   Same layout, dark surfaces, softened pastels.
    ============================================================ */
 :root[data-theme='lightup'] {
-  --manga-white: #f6e8c1; /* card / panel surface (lit paper) */
-  --manga-black: #1b1206; /* ink: text, borders, offset shadows */
-  --manga-logo-red: #b83115; /* AA on card (4.8:1) - fills + text */
-  --manga-bright-red: #d8432a; /* focus ring / hover pop */
-  --manga-pale-red: #ebd193;
-  --manga-paper: #211710; /* shell + body: the dark warm room */
-  --manga-paper-soft: #e9cd8b; /* secondary card fill */
-  --manga-ink-soft: #6d5730; /* muted text on card (5.6:1) */
-  --manga-shadow: rgba(0, 0, 0, 0.5);
+  --canvas: #100f17;
+  --surface: #1b1a25;
+  --surface-muted: #23222f;
+  --ink: #f1f0f8;
+  --ink-soft: #a7a4b8;
+  --line: #2d2b3b;
+  --line-strong: #3a3849;
+  --brand: #9b91ff;
+  --brand-soft: #2c2850;
+  --danger: #ff6b6f;
+  --danger-soft: #3b1f24;
+  --tint: #2a2740;
+  --tint-soft: #22202f;
+  --pastel-peach: #352a22;
+  --pastel-lilac: #2c2540;
+  --pastel-rose: #372430;
+  --pastel-sky: #1f2b44;
+  --pastel-mint: #1d3329;
+  --pastel-lemon: #2e331d;
+  --pastel-cream: #342f22;
+  --accent-blue: #8fa6ff;
+  --accent-orange: #f4a55e;
+  --accent-purple: #b69bff;
+  --accent-pink: #f287b4;
+  --accent-green: #6bd194;
+  --shadow-color: rgba(0, 0, 0, 0.45);
+  --rail-bg: #0b0a11;
+  --rail-fg: #f1f0f8;
+  --destructive-foreground: #1b1a25;
 
-  --dark-primary: #d8432a;
-  --muted-foreground: #6d5730;
-
-  /* dark warm room + soft overhead lamp pool; halftone dot goes warm */
   --html-bg:
-    radial-gradient(
-      circle at 18px 18px,
-      rgba(255, 200, 120, 0.05) 1px,
-      transparent 1px
-    ),
-    radial-gradient(
-      ellipse 85% 50% at 50% 4%,
-      rgba(255, 198, 120, 0.22),
-      transparent 60%
-    ),
-    radial-gradient(ellipse at 50% 130%, rgba(0, 0, 0, 0.4), transparent 55%),
-    linear-gradient(165deg, #241a10, #1a1209 100%);
-  --html-bg-size: 26px 26px, auto, auto, auto;
-  --body-bg: none;
-  --selection-bg: #ffbe5e;
-  --selection-fg: #1a1410;
-  /* warm amber ledge - visible on the dark room, keeps the hard manga offset */
-  --manga-offset: #7a5626;
-  /* warm sepia border ink - pops on the dark room and still outlines cards */
-  --manga-line: #8a6330;
-  --scrollbar-track: rgba(246, 232, 193, 0.42);
-  --scrollbar-thumb: rgba(92, 63, 28, 0.86);
-  --scrollbar-thumb-hover: rgba(184, 49, 21, 0.9);
-
-  /* Warmer and a shade lighter: the day green was mixed against white, and
-     against lit paper it goes muddy. */
-  --lesson-correct: #2c7333;
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 900' preserveAspectRatio='none'%3E%3Cg fill='none' stroke='%237a6ff0' stroke-opacity='.22' stroke-width='1.6'%3E%3Cpath d='M-40 260 C 260 120 420 40 640 -40'/%3E%3Cpath d='M120 940 C 300 700 420 420 760 -40'/%3E%3Cpath d='M1000 -40 C 1060 300 1240 520 1480 600'/%3E%3Cpath d='M1480 120 C 1300 160 1180 60 1120 -40'/%3E%3C/g%3E%3C/svg%3E"),
+    radial-gradient(ellipse 70% 60% at 85% 0%, #221d45, transparent 70%),
+    radial-gradient(ellipse 60% 60% at 0% 100%, #1d1733, transparent 70%),
+    linear-gradient(160deg, #121119, #0e0d14);
+  --selection-bg: #3d3680;
+  --selection-fg: var(--ink);
+  --scrollbar-thumb: rgba(155, 145, 255, 0.28);
+  --scrollbar-thumb-hover: rgba(155, 145, 255, 0.5);
+  --lesson-correct: #4cc27f;
 }
 
-/* IELTS runner (day mode): a quiet exam sheet. Panes stay white, the app's
-   pink tints (audio bar, chips, hovers, selected answers) turn neutral grey,
-   and frames, inputs and the pane divider draw in grey line instead of
-   black ink, so the passage, questions and answers carry the contrast.
-   Light-up keeps its own warm room. `--exam-surface` is the pane colour. */
+/* IELTS runner: a quiet exam sheet. Kept as its own names so the exam can
+   diverge from the dashboard later without touching every pane. */
 :root {
-  --exam-surface: var(--manga-white);
-  --exam-line: var(--manga-black);
-  /* Option boxes ("Opinion of ..." letter lists): pink outside the runner. */
-  --exam-tint: var(--manga-pale-red);
-}
-:root[data-theme='lightup'] {
-  --exam-line: var(--manga-line);
-}
-:root:not([data-theme='lightup']) .ielts-exam {
-  --exam-line: #d4d4d0;
-  --exam-tint: #fafaf9;
-  --manga-paper-soft: #e6e6e3;
-  --manga-pale-red: #ececea;
-}
-/* Unlayered, so it beats the utility; a focused input keeps its red ring
-   colour from `focus-visible:border-manga-red`. */
-:root:not([data-theme='lightup'])
-  .ielts-exam
-  .border-manga-black:not(:focus-visible) {
-  border-color: var(--exam-line);
+  --exam-surface: var(--surface);
+  --exam-line: var(--line-strong);
+  --exam-tint: var(--tint-soft);
 }
 
 @theme inline {
-  --color-manga-white: var(--manga-white);
-  --color-manga-black: var(--manga-black);
-  --color-manga-red: var(--manga-logo-red);
-  --color-manga-bright-red: var(--manga-bright-red);
-  --color-manga-pale-red: var(--manga-pale-red);
-  --color-manga-paper: var(--manga-paper);
-  --color-manga-paper-soft: var(--manga-paper-soft);
-  --color-manga-ink-soft: var(--manga-ink-soft);
-  --color-manga-shadow: var(--manga-shadow);
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-brand: var(--brand);
+  --color-brand-soft: var(--brand-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-tint: var(--tint);
+  --color-tint-soft: var(--tint-soft);
+  --color-pastel-peach: var(--pastel-peach);
+  --color-pastel-lilac: var(--pastel-lilac);
+  --color-pastel-rose: var(--pastel-rose);
+  --color-pastel-sky: var(--pastel-sky);
+  --color-pastel-mint: var(--pastel-mint);
+  --color-pastel-lemon: var(--pastel-lemon);
+  --color-pastel-cream: var(--pastel-cream);
+  --color-accent-blue: var(--accent-blue);
+  --color-accent-orange: var(--accent-orange);
+  --color-accent-purple: var(--accent-purple);
+  --color-accent-pink: var(--accent-pink);
+  --color-accent-green: var(--accent-green);
+  --color-rail: var(--rail-bg);
+  --color-rail-fg: var(--rail-fg);
   --color-lesson-correct: var(--lesson-correct);
   --color-exam-surface: var(--exam-surface);
   --color-exam-line: var(--exam-line);
@@ -252,16 +242,21 @@
   --color-dark: var(--dark);
   --color-light-gray: var(--light-gray);
   --color-dark-gray: var(--dark-gray);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 6px);
+  --radius-md: calc(var(--radius) - 3px);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --radius-shell: var(--sticker-shell);
-  --radius-panel: var(--sticker-panel);
-  --radius-control: var(--sticker-control);
-  --radius-tag: var(--sticker-tag);
-  --font-sans: var(--font-montserrat);
-  --font-body: var(--font-source-sans);
+  --radius-xl: calc(var(--radius) + 6px);
+  --radius-shell: var(--corner-shell);
+  --radius-panel: var(--corner-panel);
+  --radius-control: var(--corner-control);
+  --radius-tag: var(--corner-tag);
+  --shadow-card:
+    0 1px 2px rgba(29, 27, 38, 0.03), 0 10px 30px -18px var(--shadow-color);
+  --shadow-float: 0 18px 40px -20px var(--shadow-color);
+  --shadow-shell:
+    0 50px 100px -40px var(--shadow-color), 0 2px 6px rgba(29, 27, 38, 0.03);
+  --font-sans: var(--font-app);
+  --font-body: var(--font-app);
   --spacing-21: 21px;
   --spacing-21\/2: 10.5px;
 }
@@ -283,27 +278,25 @@
 
 *::-webkit-scrollbar-thumb {
   background: var(--scrollbar-thumb);
-  border: 3px solid var(--scrollbar-track);
+  border: 3px solid transparent;
+  background-clip: padding-box;
   border-radius: 999px;
 }
 
 *::-webkit-scrollbar-thumb:hover {
   background: var(--scrollbar-thumb-hover);
+  background-clip: padding-box;
 }
 
 *::-webkit-scrollbar-corner {
   background: transparent;
 }
 
-/* The page backdrop lives on a fixed layer instead of
-   `background-attachment: fixed`, which forces a full main-thread repaint on
-   every scroll frame. html keeps an opaque base colour so body's background
-   still paints on the body box (it would propagate to the canvas, above this
-   layer, if html had none). Negative z-index paints the layer between html's
-   own background and body's. */
+/* The backdrop lives on a fixed layer instead of `background-attachment:
+   fixed`, which forces a full repaint on every scroll frame. */
 html {
   min-height: 100%;
-  background-color: var(--manga-paper);
+  background-color: var(--canvas);
 }
 
 html::before {
@@ -319,15 +312,10 @@ html::before {
 body {
   min-height: 100%;
   overflow-x: hidden;
-  background: var(--body-bg);
   color: var(--foreground);
-  font-family: var(--font-source-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-app), system-ui, sans-serif;
 }
 
-/* Smooth the light <-> light-up flip on the page backdrop only. Scoped to
-   html/body so it never overrides the `transition` property on interactive
-   elements (buttons, cards) - doing that previously clobbered their
-   transition-transform and killed press/card animations. */
 @media (prefers-reduced-motion: no-preference) {
   html,
   body {
@@ -337,412 +325,71 @@ body {
   }
 }
 
-/* Readable text everywhere in light-up (safety net for any heading/label that
-   sits directly on the dark shell room rather than inside a card).
-   - The shell's default (inherited) text becomes warm cream so bare titles and
-     labels read on the dark room.
-   - Every light card surface resets inherited text back to dark ink so content
-     inside cards stays readable. Explicit text-manga-* on children still wins.
-   This makes text visible on the shell without per-page wrapping; PageHero and
-   cards still render their own dark ink on their light surfaces. */
-:root[data-theme='lightup'] .manga-shell {
-  color: #ecdcbc;
-}
-:root[data-theme='lightup']
-  .manga-shell
-  :is(
-    .bg-manga-white,
-    .bg-manga-white\/70,
-    .bg-manga-white\/88,
-    .bg-manga-white\/90,
-    .bg-manga-white\/92,
-    .bg-manga-paper-soft,
-    .bg-manga-pale-red,
-    .page-hero
-  ) {
-  color: var(--manga-black);
-}
-
-/* Page hero surface: bare on paper in day mode (unchanged), lifts into a
-   lit card in light-up so its dark ink text stays readable on the dark room.
-   Fixes the "dark text on now-dark shell paper" problem for the ~6 route
-   heros that render text directly on the shell (not inside a card). */
-:root[data-theme='lightup'] .page-hero {
-  background-color: var(--manga-white);
-  border: 3px solid var(--manga-black);
-  border-radius: var(--sticker-panel);
-  box-shadow: 4px 4px 0 var(--manga-black);
-  padding: 1rem 1.25rem;
-}
-
-/* Lesson player backdrop. A manga screentone (halftone dots) that is dense at
-   the frame's edges and fades out behind the card column, under a soft
-   spotlight: the focus-lines trick of a manga panel, kept quiet enough to
-   read on. Day mode is ink on paper with a faint red glow; light-up is warm
-   dust under the lamp's pool of light. Purely painted (no animation), on
-   pseudo-elements so the content never re-rasterises them. */
+/* Lesson player backdrop: a quiet lavender glow behind the card column. */
 .lesson-stage {
-  --lesson-dot: rgba(5, 5, 5, 0.11);
-  --lesson-glow: rgba(224, 48, 32, 0.07);
-  --lesson-glow-edge: rgba(5, 5, 5, 0.035);
   position: relative;
   isolation: isolate;
 }
-:root[data-theme='lightup'] .lesson-stage {
-  --lesson-dot: rgba(236, 196, 128, 0.13);
-  --lesson-glow: rgba(255, 196, 110, 0.11);
-  --lesson-glow-edge: rgba(0, 0, 0, 0.28);
-}
-.lesson-stage::before,
-.lesson-stage::after {
+.lesson-stage::before {
   content: '';
   position: absolute;
   inset: 0;
   z-index: -1;
   pointer-events: none;
-}
-.lesson-stage::before {
-  background-image: radial-gradient(
-    circle at center,
-    var(--lesson-dot) 1.3px,
-    transparent 1.8px
-  );
-  background-size: 13px 13px;
-  mask-image: radial-gradient(
-    ellipse 60% 70% at 50% 45%,
-    transparent 30%,
-    #000 100%
-  );
-  contain: strict;
-}
-.lesson-stage::after {
   background:
     radial-gradient(
-      ellipse 42% 55% at 50% 38%,
-      var(--lesson-glow),
+      ellipse 45% 55% at 50% 35%,
+      var(--brand-soft),
       transparent 75%
     ),
     radial-gradient(
-      ellipse 85% 90% at 50% 45%,
-      transparent 55%,
-      var(--lesson-glow-edge) 100%
+      ellipse 40% 40% at 85% 90%,
+      var(--pastel-peach),
+      transparent 70%
     );
+  opacity: 0.8;
   contain: strict;
 }
 
-/* Hanging pull-string bulb, fixed to the top-right corner. Dangles from the
-   top edge, sways on hover/focus, and swings when yanked. It hangs still at
-   rest: an always-running animation kept a compositor layer busy on every
-   page for a purely decorative wobble. Dragging slides it sideways by setting
-   an inline `right` (see PullStringToggle). */
-.lamp-hang {
-  position: fixed;
-  top: 0;
-  right: clamp(12px, 3vw, 40px);
-  /* Layers: lamp 60, the IELTS exam stage (.ielts-exam) 70, and every popup
-     (dialog, sheet, select, menu, tooltip in components/ui) 80, so a popup
-     opened inside an exam is never hidden behind it. */
-  z-index: 60;
-  pointer-events: none;
-}
-.lamp-hang__btn {
-  pointer-events: auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0;
-  background: none;
-  border: 0;
-  padding: 0 10px 6px;
-  cursor: pointer;
-  transform-origin: top center;
-  /* Pointer drags move the lamp instead of scrolling the page. */
-  touch-action: none;
-}
-.lamp-hang__cord {
-  width: 2px;
-  height: 34px;
-  background: var(--manga-line, var(--manga-black));
-  opacity: 0.75;
-}
-.lamp-hang__knob {
-  width: 8px;
-  height: 8px;
-  margin-top: -1px;
-  border-radius: 9999px;
-  background: var(--manga-line, var(--manga-black));
-}
-/* Bulb hangs upside-down (glass pointing down) like a pendant. rotate(180deg)
-   is the base transform; animation keyframes below keep it while bobbing. */
-.lamp-hang__bulb {
-  position: relative;
-  margin-top: 1px;
-  font-size: 30px;
-  line-height: 1;
-  transform: rotate(180deg);
+/* Press feedback: a small squish. Unlayered so it beats the `transition-all`
+   that buttons inherit from `buttonVariants`. */
+.soft-press {
   transition:
-    filter 0.5s ease,
-    transform 0.2s ease;
-}
-/* Warm amber halo: one static radial gradient behind the glass (the bulb's
-   transform makes it a stacking context, so z-index -1 stays inside it),
-   faded in and out instead of re-rasterising stacked drop-shadow filters. */
-.lamp-hang__bulb::before {
-  content: '';
-  position: absolute;
-  inset: -24px;
-  z-index: -1;
-  border-radius: 9999px;
-  background: radial-gradient(
-    circle,
-    rgba(255, 190, 94, 0.62) 0%,
-    rgba(255, 190, 94, 0.34) 30%,
-    rgba(255, 176, 92, 0.14) 52%,
-    transparent 70%
-  );
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.5s ease;
-}
-/* OFF: dim, desaturated. */
-.lamp-hang__bulb--off {
-  filter: grayscale(1) brightness(0.7);
-}
-/* ON: warm amber glow halo. */
-.lamp-hang__bulb--on::before {
-  opacity: 1;
-}
-.lamp-hang__btn:hover .lamp-hang__bulb {
-  transform: rotate(180deg) translateY(2px);
-}
-@media (prefers-reduced-motion: no-preference) {
-  /* Hover only where hover is real: on touch screens :hover sticks after a
-     tap and would leave the sway running for good. */
-  .lamp-hang__btn:focus-visible {
-    animation: lamp-sway 2.4s ease-in-out infinite;
-  }
-  @media (hover: hover) {
-    .lamp-hang__btn:hover {
-      animation: lamp-sway 2.4s ease-in-out infinite;
-    }
-  }
-  /* Yank: pull straight down, then swing out and settle (pendulum). Same
-     specificity as the hover sway and later, so a click while hovering
-     always plays the yank. */
-  .lamp-hang__btn.lamp-hang--pulling {
-    animation: lamp-yank 0.64s cubic-bezier(0.3, 0.7, 0.3, 1);
-  }
-  .lamp-hang--pulling .lamp-hang__bulb {
-    animation: lamp-flash 0.64s ease;
-  }
-}
-/* Hold still while dragged: no sway, no hover nudge. Higher specificity than
-   the hover and yank rules above. */
-.lamp-hang.lamp-hang--dragging .lamp-hang__btn {
-  cursor: grabbing;
-  animation: none;
-}
-.lamp-hang.lamp-hang--dragging .lamp-hang__bulb {
-  transform: rotate(180deg);
-}
-@keyframes lamp-sway {
-  0%,
-  100% {
-    transform: rotate(-1.6deg);
-  }
-  50% {
-    transform: rotate(1.6deg);
-  }
-}
-@keyframes lamp-yank {
-  0% {
-    transform: translateY(0) rotate(0deg);
-  }
-  22% {
-    transform: translateY(7px) rotate(0deg);
-  }
-  45% {
-    transform: translateY(0) rotate(7deg);
-  }
-  65% {
-    transform: translateY(0) rotate(-4.5deg);
-  }
-  82% {
-    transform: translateY(0) rotate(2.5deg);
-  }
-  100% {
-    transform: translateY(0) rotate(0deg);
-  }
-}
-@keyframes lamp-flash {
-  30% {
-    transform: rotate(180deg) translateY(4px) scale(1.08);
-  }
-  100% {
-    transform: rotate(180deg) translateY(0) scale(1);
-  }
-}
-
-/* Manga offset-shadow depth in light-up.
-   Day mode: hard offset shadows are `var(--manga-black)` (dark ink on light
-   paper) - the manga signature. In light-up the paper goes dark, so a dark
-   offset shadow vanishes into the room and cards look flat. Retint every manga
-   offset shadow to a warm amber ledge (visible on the dark room) so the 3D
-   block-shadow reads as a lamp-lit card. Text + borders stay dark ink. Rules
-   are unlayered so they beat the Tailwind utilities layer without !important. */
-:root[data-theme='lightup'] .shadow-\[2px_2px_0_var\(--manga-black\)\] {
-  box-shadow: 2px 2px 0 var(--manga-offset);
-}
-:root[data-theme='lightup'] .shadow-\[3px_3px_0_var\(--manga-black\)\] {
-  box-shadow: 3px 3px 0 var(--manga-offset);
-}
-:root[data-theme='lightup'] .shadow-\[4px_4px_0_var\(--manga-black\)\] {
-  box-shadow: 4px 4px 0 var(--manga-offset);
-}
-:root[data-theme='lightup'] .shadow-\[5px_5px_0_var\(--manga-black\)\] {
-  box-shadow: 5px 5px 0 var(--manga-offset);
-}
-:root[data-theme='lightup'] .shadow-\[6px_6px_0_var\(--manga-black\)\] {
-  box-shadow: 6px 6px 0 var(--manga-offset);
-}
-/* `\2c ` is a CSS escape whose TRAILING SPACE is part of the escape. Prettier
-   wraps these long selectors at exactly those spaces, and a newline there turns
-   each escape into a dangling descendant combinator - lightningcss then rejects
-   the whole stylesheet and every page in the app loses its styling. The build
-   still passes, so this only shows up when you load a page. Hence the ignores;
-   both selectors must stay on one line. */
-/* prettier-ignore */
-:root[data-theme='lightup'] .shadow-\[inset_0_0_0_9px_rgba\(255\2c 255\2c 255\2c 0\.38\)\2c 4px_4px_0_var\(--manga-black\)\] {
-  box-shadow:
-    inset 0 0 0 9px rgba(255, 210, 140, 0.1),
-    4px 4px 0 var(--manga-offset);
-}
-/* Same escape trap as above. */
-/* prettier-ignore */
-:root[data-theme='lightup'] .shadow-\[8px_8px_0_var\(--manga-black\)\2c 18px_18px_0_var\(--manga-shadow\)\] {
-  box-shadow:
-    8px 8px 0 var(--manga-offset),
-    18px 18px 0 rgba(0, 0, 0, 0.35);
-}
-
-/* The sticker press. Unlayered on purpose: it has to beat the `transition-all`
-   that MangaButton/IconButton inherit from `buttonVariants`, which tailwind-merge
-   cannot strip because it does not know this class is a transition.
-   - `translate` is listed explicitly: Tailwind v4 `translate-*` utilities set
-     the standalone `translate` property, not `transform`, so a transition on
-     `transform` alone lets the press snap.
-   - The transition on the state being ENTERED is the one that runs, so
-     `:active` carries the squish (press) and the base carries the plain
-     ease-out (release). */
-.sticker-press {
-  transition:
-    translate 180ms var(--sticker-ease-out),
-    transform 180ms var(--sticker-ease-out),
-    box-shadow 180ms var(--sticker-ease-out),
+    transform 160ms var(--ease-out-soft),
     background-color 150ms linear,
-    color 150ms linear;
+    border-color 150ms linear,
+    color 150ms linear,
+    box-shadow 160ms var(--ease-out-soft);
 }
-.sticker-press:active {
-  transition:
-    translate 180ms var(--sticker-ease),
-    transform 180ms var(--sticker-ease),
-    box-shadow 180ms var(--sticker-ease),
-    background-color 150ms linear,
-    color 150ms linear;
+.soft-press:active:not(:disabled) {
+  transform: scale(0.97);
 }
 @media (prefers-reduced-motion: reduce) {
-  .sticker-press,
-  .sticker-press:active {
+  .soft-press,
+  .soft-press:active:not(:disabled) {
+    transform: none;
     transition:
       background-color 150ms linear,
       color 150ms linear;
   }
 }
 
-/* The retints above are unlayered, so they also beat the layered
-   `active:shadow-none`: in light-up a pressed button slid with its ledge and
-   never flattened. `:active` puts this one point above the retints (0,4,0 vs
-   0,3,0); keep it after them anyway so a later edit to either never has to
-   reason about the tie. */
-:root[data-theme='lightup'] .sticker-press:active {
-  box-shadow: none;
-}
-
-/* Warm sepia borders in light-up: the black ink border vanished against the
-   dark room (page frame, footer divider, panel edges all blended). Retint
-   `border-manga-black` to the warm line ink so frames and outlines pop on the
-   dark room while still outlining the lit cards. Day mode untouched. */
-:root[data-theme='lightup'] .border-manga-black {
-  border-color: var(--manga-line);
-}
-
-/* Opacify translucent card surfaces in light-up so the dark room paper does
-   not bleed through and muddy them. Day mode keeps its opacity untouched. */
-:root[data-theme='lightup'] .bg-manga-white\/70,
-:root[data-theme='lightup'] .bg-manga-white\/88,
-:root[data-theme='lightup'] .bg-manga-white\/90,
-:root[data-theme='lightup'] .bg-manga-white\/92 {
-  background-color: var(--manga-white);
-}
-
-/* ============================================================
-   ONE FRAME ON A PHONE
-   Under 640px nested ink outlines pile up (shell > panel > box > input) and
-   the screen reads as a stack of lines. So on a phone:
-   - The shell stops being a framed sheet and becomes the page itself
-     (edge-attached, so square): MangaPageShell and the error boundaries
-     that copy its frame.
-   - A plain ink-bordered box INSIDE a panel or dialog drops its border and
-     ledge; a white one becomes a tint so the grouping stays visible. Only
-     containers (never buttons, links, labels, inputs: those stay pressable
-     stickers), only fully bordered ones (a dashed underline or divider is
-     content, not a frame), and only `border-manga-black` boxes, so coloured
-     state boxes (right / wrong) keep their outlines. Add `keep-frame` to opt
-     one out (e.g. a typing field built from a div around an overlay input).
-   Unlayered and placed after the light-up retints above, with enough
-   specificity to beat them, so this holds in both themes.
-   ============================================================ */
+/* Inside a panel on a phone, a bordered box drops its outline and becomes a
+   quiet tint, so the screen does not read as a stack of lines. Add
+   `keep-frame` to opt one out (e.g. a typing field). */
 @media (max-width: 639px) {
-  :root .rounded-shell.border-3 {
-    width: 100%;
-    min-height: 100dvh;
-    margin-block: 0;
-    border-width: 0;
-    border-radius: 0;
-    box-shadow: none;
-  }
-  :root .manga-shell::after {
-    display: none;
-  }
-
   :root
     .rounded-panel
     :is(div, li, section, article, fieldset, aside, figure, form, details):is(
       .rounded-panel,
       .rounded-control
-    ).border-manga-black:is(.border-2, .border-3):not(.keep-frame) {
-    border-width: 0;
-    box-shadow: none;
-  }
-  :root
-    .rounded-panel
-    :is(div, li, section, article, fieldset, aside, figure, form, details):is(
-      .rounded-panel,
-      .rounded-control
-    ).border-manga-black.bg-manga-white:is(.border-2, .border-3):not(
-      .keep-frame
-    ) {
-    background-color: color-mix(
-      in srgb,
-      var(--manga-pale-red) 60%,
-      var(--manga-white)
-    );
+    ).border-line.border:not(.keep-frame) {
+    border-color: transparent;
   }
 }
 
-/* Keep this in @layer base so Tailwind text utilities (text-3xl, font-semibold,
-   leading-*) applied directly to a button/input/textarea still win. Unlayered,
-   `font: inherit` beats every @layer utility and silently kills those classes. */
+/* Keep this in @layer base so Tailwind text utilities applied directly to a
+   button/input/textarea still win. */
 @layer base {
   button,
   input,
@@ -759,14 +406,7 @@ button:disabled {
   cursor: not-allowed;
 }
 
-/* In @layer base, NOT unlayered.
-   Unlayered CSS beats every @layer utility, so an unlayered `color: inherit`
-   here silently defeated `text-manga-black` on any link: a MangaButton with a
-   light tone sitting inside a dark-text panel rendered white text on a white
-   button - a completely invisible control, with the correct class present in
-   the markup. Inside the base layer the utility wins, which is what the rule
-   was always for: stop the browser's default link blue, not override
-   deliberate colour. */
+/* In @layer base so a `text-*` utility on a link still wins. */
 @layer base {
   a {
     color: inherit;
@@ -779,7 +419,7 @@ a:focus-visible,
 input:focus-visible,
 textarea:focus-visible,
 [tabindex]:focus-visible {
-  outline: 3px solid var(--manga-bright-red);
+  outline: 2px solid var(--brand);
   outline-offset: 3px;
 }
 
@@ -792,13 +432,25 @@ textarea:focus-visible,
    CSS Custom Highlight API, so no <mark> is ever added to the text. */
 ::highlight(ielts-user) {
   background-color: #fde047;
-  color: #050505;
+  color: #1d1b26;
 }
 
 /* IELTS runner stage: the full-screen layer that holds a test run. It sits
-   outside MangaPageShell, so it paints the lit card surface itself (paper by
-   day, lamp-lit paper in light-up) and every pane keeps dark ink on it. */
+   outside PageShell, so it paints its own surface. */
 .ielts-exam {
-  background: var(--manga-white);
-  color: var(--manga-black);
+  background: var(--surface);
+  color: var(--ink);
+}
+
+/* The "Created by AI" style marker highlight. */
+.marker {
+  background: linear-gradient(
+    transparent 8%,
+    color-mix(in srgb, var(--brand) 22%, transparent) 8% 92%,
+    transparent 92%
+  );
+  border-radius: 6px;
+  padding-inline: 0.2em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
 }

@@ -85,10 +85,10 @@ function action(name: RegExp) {
 }
 
 function answerAndFinish() {
-  fireEvent.click(action(/tiếp tục/i))
+  fireEvent.click(action(/^continue$/i))
   fireEvent.click(screen.getByRole('button', { name: /am/ }))
-  fireEvent.click(action(/kiểm tra/i))
-  fireEvent.click(action(/tiếp tục/i))
+  fireEvent.click(action(/^check$/i))
+  fireEvent.click(action(/^continue$/i))
 }
 
 function jsonResponse(status: number, body: unknown) {
@@ -132,25 +132,27 @@ afterEach(() => {
 describe('LessonPlayer leave guard', () => {
   it('exits straight away before anything is answered', () => {
     renderPlayer()
-    fireEvent.click(action(/thoát bài/i))
+    fireEvent.click(action(/leave lesson/i))
 
     expect(push).toHaveBeenCalledWith('/grammar')
-    expect(screen.queryByText('Bỏ bài?')).toBeNull()
+    expect(screen.queryByText('Leave this lesson?')).toBeNull()
   })
 
   it('asks before throwing away an answered lesson', async () => {
     renderPlayer()
-    fireEvent.click(action(/tiếp tục/i))
+    fireEvent.click(action(/^continue$/i))
     fireEvent.click(screen.getByRole('button', { name: /am/ }))
-    fireEvent.click(action(/kiểm tra/i))
-    fireEvent.click(action(/thoát bài/i))
+    fireEvent.click(action(/^check$/i))
+    fireEvent.click(action(/leave lesson/i))
 
     expect(push).not.toHaveBeenCalled()
-    expect(await screen.findByText('Bỏ bài?')).toBeInTheDocument()
+    expect(await screen.findByText('Leave this lesson?')).toBeInTheDocument()
 
-    fireEvent.click(action(/học tiếp/i))
+    fireEvent.click(action(/keep going/i))
 
-    await waitFor(() => expect(screen.queryByText('Bỏ bài?')).toBeNull())
+    await waitFor(() =>
+      expect(screen.queryByText('Leave this lesson?')).toBeNull()
+    )
   })
 })
 
@@ -162,7 +164,7 @@ describe('LessonPlayer saving', () => {
     renderPlayer()
     answerAndFinish()
 
-    expect(await screen.findByText(/Mở khóa: Bài hai/)).toBeInTheDocument()
+    expect(await screen.findByText(/Unlocked: Bài hai/)).toBeInTheDocument()
 
     const calls = sessionCalls(fetchMock)
 
@@ -196,7 +198,7 @@ describe('LessonPlayer saving', () => {
     answerAndFinish()
 
     expect(
-      await screen.findByText(/Mở khóa: Bài hai/, undefined, { timeout: 8000 })
+      await screen.findByText(/Unlocked: Bài hai/, undefined, { timeout: 8000 })
     ).toBeInTheDocument()
 
     const keys = sessionCalls(fetchMock).map(
@@ -229,7 +231,7 @@ describe('LessonPlayer saving', () => {
     renderPlayer(false)
     answerAndFinish()
 
-    expect(await screen.findByText(/không được lưu/)).toBeInTheDocument()
+    expect(await screen.findByText(/was not saved/)).toBeInTheDocument()
     expect(fetchMock).not.toHaveBeenCalled()
   })
 })

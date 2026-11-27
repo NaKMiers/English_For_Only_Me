@@ -42,12 +42,14 @@ function MarkedEssay({
     parts.push(essay.slice(cursor, mark.start))
     parts.push(
       <mark
-        className="bg-manga-pale-red text-manga-black decoration-manga-red rounded-tag px-0.5 underline decoration-wavy decoration-2"
+        className="bg-tint-soft text-ink decoration-danger rounded-tag px-0.5 underline decoration-wavy decoration-2"
         key={mark.index}
         title={`${mark.item.suggestion}: ${mark.item.reason}`}
       >
         {mark.item.quote}
-        <sup className="font-sans text-[10px] font-black">{mark.index + 1}</sup>
+        <sup className="font-sans text-[10px] font-semibold">
+          {mark.index + 1}
+        </sup>
       </mark>
     )
     cursor = mark.start + mark.item.quote.length
@@ -56,7 +58,7 @@ function MarkedEssay({
   parts.push(essay.slice(cursor))
 
   return (
-    <div className="font-body border-manga-black rounded-control bg-manga-white border-2 p-4 text-[17px] leading-[1.8] whitespace-pre-wrap">
+    <div className="font-body border-line rounded-control bg-surface border p-4 text-[17px] leading-[1.8] whitespace-pre-wrap">
       {parts}
     </div>
   )
@@ -109,14 +111,14 @@ export function WritingFeedbackDetails({
         <ol className="grid gap-3">
           {feedback.corrections.map((item, index) => (
             <li
-              className="border-manga-black/20 grid gap-1 border-b pb-2"
+              className="border-line/20 grid gap-1 border-b pb-2"
               key={index}
             >
               <p>
-                <span className="font-sans text-xs font-black">
+                <span className="font-sans text-xs font-semibold">
                   {index + 1}.
                 </span>{' '}
-                <s className="text-manga-red">{item.quote}</s>{' '}
+                <s className="text-danger">{item.quote}</s>{' '}
                 <span aria-hidden="true">→</span>{' '}
                 <strong className="text-lesson-correct">
                   {item.suggestion}
@@ -125,7 +127,7 @@ export function WritingFeedbackDetails({
               <p className="text-sm">{item.reason}</p>
               {item.grammarLessonId ? (
                 <Link
-                  className="w-fit font-sans text-sm font-black underline"
+                  className="w-fit font-sans text-sm font-semibold underline"
                   href={`/grammar/lessons/${item.grammarLessonId}`}
                 >
                   Study: {item.grammarLessonTitle}
@@ -137,10 +139,10 @@ export function WritingFeedbackDetails({
       ) : null}
       {feedback.improved ? (
         <div className="grid gap-1">
-          <p className="font-sans text-sm font-black">
+          <p className="font-sans text-sm font-semibold">
             Rewritten paragraph (about 1 band higher)
           </p>
-          <p className="font-body border-manga-black rounded-control bg-manga-white border-2 p-3 leading-[1.7]">
+          <p className="font-body border-line rounded-control bg-surface border p-3 leading-[1.7]">
             {feedback.improved}
           </p>
         </div>
@@ -170,14 +172,14 @@ function TaskFeedback({
       title={`Task ${task.task}${feedback?.band != null ? ` · Band ${feedback.band.toFixed(1)}` : ''}`}
     >
       <details>
-        <summary className="cursor-pointer font-sans text-sm font-black">
+        <summary className="cursor-pointer font-sans text-sm font-semibold">
           Prompt
         </summary>
         <div className="mt-2 grid gap-3">
           <WritingPrompt text={task.prompt} />
           {task.visual ? (
             <TaskVisual
-              className="border-manga-black rounded-control max-w-2xl border-2"
+              className="border-line rounded-control max-w-2xl border"
               visual={task.visual}
             />
           ) : null}
@@ -199,7 +201,7 @@ function TaskFeedback({
                 ? `Grading failed: ${feedback?.error || 'unknown reason'}`
                 : 'Not graded yet.'}
           </p>
-          <div className="font-body border-manga-black rounded-control bg-manga-white border-2 p-4 text-[17px] leading-[1.8] whitespace-pre-wrap">
+          <div className="font-body border-line rounded-control bg-surface border p-4 text-[17px] leading-[1.8] whitespace-pre-wrap">
             {task.essay || '(Blank)'}
           </div>
         </>
@@ -229,7 +231,7 @@ function TaskFeedback({
         </ExamButton>
       </div>
       {showSample && task.sampleAnswer ? (
-        <div className="font-body border-manga-black rounded-control bg-manga-white grid gap-3 border-2 p-4 text-[17px] leading-[1.8]">
+        <div className="font-body border-line rounded-control bg-surface grid gap-3 border p-4 text-[17px] leading-[1.8]">
           <SampleAnswerBody text={task.sampleAnswer} />
         </div>
       ) : null}
@@ -291,7 +293,7 @@ export function WritingResult({ attempt: initial, tasks }: Props) {
       </section>
       {error ? (
         <p
-          className="border-manga-black bg-manga-pale-red rounded-control border-2 px-3 py-2"
+          className="border-line bg-tint-soft rounded-control border px-3 py-2"
           role="alert"
         >
           {error}

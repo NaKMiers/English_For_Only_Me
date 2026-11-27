@@ -16,7 +16,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 
 import { useClientOutbox } from '@/components/common/OutboxOwnerProvider'
-import { MangaButton } from '@/components/ui/MangaButton'
+import { ActionButton } from '@/components/ui/ActionButton'
 import { PageTag } from '@/components/ui/PageTag'
 import {
   Dialog,
@@ -59,22 +59,22 @@ function nextHref(next: PathNext) {
 function nextLabel(next: PathNext) {
   switch (next.kind) {
     case 'lesson':
-      return `Tiếp tục: ${next.title}`
+      return `Continue: ${next.title}`
     case 'checkpoint':
       return `Checkpoint: ${next.title}`
     case 'review':
-      return `Ôn lại: ${next.title}`
+      return `Review: ${next.title}`
     case 'weak':
-      return `Luyện ${next.count} câu yếu`
+      return `Practise ${next.count} weak ${next.count === 1 ? 'question' : 'questions'}`
     case 'done':
-      return 'Bạn đã đi hết lộ trình'
+      return 'You finished the whole path'
   }
 }
 
 function StarsInline({ stars }: { stars: number }) {
   return (
     <span
-      aria-label={`${stars} sao`}
+      aria-label={`${stars} of 3 stars`}
       className="flex gap-0.5"
       role="img"
     >
@@ -84,8 +84,8 @@ function StarsInline({ stars }: { stars: number }) {
           className={cn(
             'size-3.5 stroke-[2.5]',
             index <= stars
-              ? 'fill-manga-red text-manga-black'
-              : 'text-manga-ink-soft fill-transparent'
+              ? 'fill-brand text-ink'
+              : 'text-ink-soft fill-transparent'
           )}
           key={index}
         />
@@ -95,11 +95,11 @@ function StarsInline({ stars }: { stars: number }) {
 }
 
 const NODE_STATE_LABEL: Record<PathLesson['state'], string> = {
-  due: 'đến hạn ôn',
-  locked: 'chưa mở',
-  mastered: 'đã thuộc',
-  open: 'đang mở',
-  passed: 'đã học',
+  due: 'due for review',
+  locked: 'locked',
+  mastered: 'mastered',
+  open: 'open',
+  passed: 'done',
 }
 
 function LessonNode({
@@ -117,34 +117,34 @@ function LessonNode({
     <div
       className={cn(
         'relative flex flex-col items-center gap-1',
-        // Room for the "Bắt đầu" bubble so it never sits on the label above.
+        // Room for the "Start" bubble so it never sits on the label above.
         isOpen && 'mt-8'
       )}
       style={{ transform: `translateX(${offset}px)` }}
     >
       {isOpen ? (
-        <span className="border-manga-black bg-manga-white rounded-tag absolute -top-9 border-2 px-2 py-0.5 text-xs font-black whitespace-nowrap shadow-[2px_2px_0_var(--manga-black)] motion-safe:animate-bounce">
-          Bắt đầu
+        <span className="border-line bg-surface rounded-tag absolute -top-9 border px-2 py-0.5 text-xs font-semibold whitespace-nowrap motion-safe:animate-bounce">
+          Start
         </span>
       ) : null}
       {/* Raw button: a circular path node, not a labelled action button. */}
       <button
         aria-label={`${lesson.title}, ${NODE_STATE_LABEL[lesson.state]}`}
         className={cn(
-          'border-manga-black sticker-press grid place-items-center rounded-full border-3 shadow-[4px_4px_0_var(--manga-black)] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none',
-          isOpen ? 'bg-manga-red text-manga-white size-20' : 'size-16',
+          'border-line soft-press grid place-items-center rounded-full border',
+          isOpen ? 'bg-brand text-surface size-20' : 'size-16',
           lesson.state === 'locked' &&
-            'bg-manga-white text-manga-ink-soft border-dashed shadow-none',
-          lesson.state === 'passed' && 'bg-manga-paper-soft text-manga-black',
-          lesson.state === 'mastered' && 'bg-manga-black text-manga-white',
-          lesson.state === 'due' && 'bg-manga-white text-manga-red'
+            'bg-surface text-ink-soft border-dashed shadow-none',
+          lesson.state === 'passed' && 'bg-tint text-ink',
+          lesson.state === 'mastered' && 'bg-ink text-surface',
+          lesson.state === 'due' && 'bg-surface text-brand'
         )}
         onClick={onSelect}
         style={
           lesson.state === 'due'
             ? {
                 backgroundImage:
-                  'repeating-linear-gradient(45deg, var(--manga-paper-soft) 0 5px, transparent 5px 10px)',
+                  'repeating-linear-gradient(45deg, var(--tint) 0 5px, transparent 5px 10px)',
               }
             : undefined
         }
@@ -185,8 +185,8 @@ function LessonNode({
       lesson.state === 'due' ||
       lesson.state === 'mastered' ? (
         lesson.passedByTest ? (
-          <span className="text-manga-ink-soft text-[11px] font-black uppercase">
-            Đã vượt
+          <span className="text-ink-soft text-[11px] font-normal">
+            Tested out
           </span>
         ) : (
           <StarsInline stars={lesson.stars} />
@@ -218,23 +218,23 @@ function UnitSection({
     >
       <header
         className={cn(
-          'border-manga-black rounded-panel grid gap-2 border-3 p-4 shadow-[4px_4px_0_var(--manga-black)]',
-          unit.state === 'locked' ? 'bg-manga-white' : 'bg-manga-paper-soft',
-          unit.state === 'complete' && 'bg-manga-black text-manga-white'
+          'border-line rounded-panel grid gap-2 border p-4',
+          unit.state === 'locked' ? 'bg-surface' : 'bg-tint',
+          unit.state === 'complete' && 'bg-ink text-surface'
         )}
       >
         <div className="flex flex-wrap items-center justify-between gap-2">
           <PageTag tone="pale">
             Unit {unit.order} · {unit.level}
           </PageTag>
-          <span className="text-xs font-black uppercase">
+          <span className="text-xs font-semibold">
             {unit.state === 'complete'
-              ? 'Hoàn thành'
-              : `${passedCount}/${unit.lessons.length} bài`}
+              ? 'Completed'
+              : `${passedCount}/${unit.lessons.length} lessons`}
           </span>
         </div>
         <h2
-          className="font-sans text-xl leading-tight font-black sm:text-2xl"
+          className="font-sans text-xl leading-tight font-semibold sm:text-2xl"
           id={`unit-${unit.id}-title`}
         >
           {unit.title}
@@ -242,22 +242,20 @@ function UnitSection({
         <p
           className={cn(
             'text-sm',
-            unit.state === 'complete'
-              ? 'text-manga-white/80'
-              : 'text-manga-ink-soft'
+            unit.state === 'complete' ? 'text-surface/80' : 'text-ink-soft'
           )}
         >
           {unit.summary}
         </p>
         {unit.state === 'locked' ? (
-          <MangaButton
+          <ActionButton
             className="mt-1 w-fit"
             href={`/grammar/units/${unit.id}/checkpoint`}
             icon={<Trophy aria-hidden />}
             tone="paper"
           >
-            Test vượt cấp
-          </MangaButton>
+            Test out
+          </ActionButton>
         ) : null}
       </header>
 
@@ -270,7 +268,7 @@ function UnitSection({
             onSelect={() => onSelectLesson(lesson, unit)}
           />
         ))}
-        <MangaButton
+        <ActionButton
           aria-disabled={unit.checkpoint === 'locked'}
           className={cn(
             'min-w-48',
@@ -288,8 +286,8 @@ function UnitSection({
           tabIndex={unit.checkpoint === 'locked' ? -1 : undefined}
           tone={unit.checkpoint === 'open' ? 'ink' : 'paper'}
         >
-          {unit.checkpoint === 'passed' ? 'Checkpoint đã qua' : 'Checkpoint'}
-        </MangaButton>
+          {unit.checkpoint === 'passed' ? 'Checkpoint passed' : 'Checkpoint'}
+        </ActionButton>
       </div>
     </section>
   )
@@ -340,44 +338,44 @@ export function GrammarPath({ path }: Props) {
     <div className="grid gap-6 p-4 sm:p-6 lg:p-8">
       <section className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-end">
         <div className="page-hero grid gap-2">
-          <PageTag tone="pale">Ngữ pháp</PageTag>
-          <h1 className="font-sans text-4xl leading-none font-black uppercase sm:text-5xl">
-            Lộ trình ngữ pháp
+          <PageTag tone="pale">Grammar</PageTag>
+          <h1 className="font-sans text-4xl leading-none font-medium sm:text-5xl">
+            Grammar path
           </h1>
-          <p className="text-manga-ink-soft max-w-xl text-sm sm:text-base">
-            {path.totals.totalLessons} bài ngắn từ A1 đến C1, mỗi bài khoảng 5
-            phút. Học để mở bài tiếp theo, bài đã học sẽ phai màu khi đến lúc
-            ôn.
+          <p className="text-ink-soft max-w-xl text-sm sm:text-base">
+            {path.totals.totalLessons} short lessons from A1 to C1, about 5
+            minutes each. Finish one to unlock the next; finished lessons fade
+            when they are due for review.
           </p>
         </div>
         <dl className="grid grid-cols-3 gap-2 sm:gap-3">
           {[
             {
-              label: 'Sao',
+              label: 'Stars',
               value: `${path.totals.stars}/${path.totals.maxStars}`,
             },
             {
-              label: 'Bài đã qua',
+              label: 'Lessons done',
               value: `${path.totals.passedLessons}/${path.totals.totalLessons}`,
             },
-            { label: 'Cần ôn', value: String(path.totals.dueCount) },
+            { label: 'Due', value: String(path.totals.dueCount) },
           ].map(item => (
             <div
-              className="border-manga-black bg-manga-white rounded-control grid min-w-24 gap-0.5 border-3 px-3 py-2 shadow-[3px_3px_0_var(--manga-black)]"
+              className="border-line bg-surface rounded-control grid min-w-24 gap-0.5 border px-3 py-2"
               key={item.label}
             >
-              <dt className="text-manga-ink-soft text-[11px] font-black uppercase">
+              <dt className="text-ink-soft text-[11px] font-normal">
                 {item.label}
               </dt>
-              <dd className="font-sans text-xl font-black">{item.value}</dd>
+              <dd className="font-sans text-xl font-semibold">{item.value}</dd>
             </div>
           ))}
         </dl>
       </section>
 
-      <div className="border-manga-black bg-manga-white rounded-panel sticky top-2 z-10 grid gap-3 border-3 p-3 shadow-[4px_4px_0_var(--manga-black)] sm:flex sm:flex-wrap sm:items-center">
+      <div className="border-line bg-surface rounded-panel sticky top-2 z-10 grid gap-3 border p-3 sm:flex sm:flex-wrap sm:items-center">
         {href ? (
-          <MangaButton
+          <ActionButton
             className="w-full sm:w-auto"
             href={href}
             icon={
@@ -389,29 +387,29 @@ export function GrammarPath({ path }: Props) {
             tone="ink"
           >
             {nextLabel(path.next)}
-          </MangaButton>
+          </ActionButton>
         ) : (
-          <p className="font-sans font-black">{nextLabel(path.next)}</p>
+          <p className="font-sans font-semibold">{nextLabel(path.next)}</p>
         )}
         {path.totals.weakCount > 0 && path.next.kind !== 'weak' ? (
-          <MangaButton
+          <ActionButton
             href="/grammar/practice"
             icon={<Dumbbell aria-hidden />}
             tone="paper"
           >
-            Luyện điểm yếu ({path.totals.weakCount})
-          </MangaButton>
+            Weak spots ({path.totals.weakCount})
+          </ActionButton>
         ) : null}
         {syncing ? (
           <p
             aria-live="polite"
-            className="text-manga-ink-soft flex items-center gap-2 text-sm font-bold"
+            className="text-ink-soft flex items-center gap-2 text-sm font-bold"
           >
             <Loader2
               aria-hidden
               className="size-4 motion-safe:animate-spin"
             />
-            Đang lưu kết quả bài trước...
+            Saving your last lesson...
           </p>
         ) : null}
       </div>
@@ -434,7 +432,7 @@ export function GrammarPath({ path }: Props) {
         }}
         open={selected !== null}
       >
-        <DialogContent className="border-manga-black bg-manga-white border-3 shadow-[6px_6px_0_var(--manga-black)]">
+        <DialogContent className="border-line bg-surface border">
           {lesson && selected ? (
             <>
               <DialogHeader>
@@ -444,16 +442,16 @@ export function GrammarPath({ path }: Props) {
                 >
                   Unit {selected.unit.order} · {NODE_STATE_LABEL[lesson.state]}
                 </PageTag>
-                <DialogTitle className="font-sans text-xl font-black">
+                <DialogTitle className="font-sans text-xl font-semibold">
                   {lesson.title}
                 </DialogTitle>
                 <DialogDescription>{lesson.summary}</DialogDescription>
               </DialogHeader>
               {lesson.state === 'locked' ? (
-                <p className="text-manga-ink-soft text-sm font-bold">
-                  Hoàn thành bài trước để mở bài này
+                <p className="text-ink-soft text-sm font-bold">
+                  Finish the previous lesson to unlock this one
                   {selected.unit.state === 'locked'
-                    ? ', hoặc làm Test vượt cấp của unit.'
+                    ? ', or take the unit test-out.'
                     : '.'}
                 </p>
               ) : (
@@ -462,15 +460,15 @@ export function GrammarPath({ path }: Props) {
                     <StarsInline stars={lesson.stars} />
                   ) : null}
                   {lesson.state === 'due' ? (
-                    <MangaButton
+                    <ActionButton
                       href={`/grammar/lessons/${lesson.id}/review`}
                       icon={<RotateCcw aria-hidden />}
                       tone="ink"
                     >
-                      Ôn lại (khoảng 2 phút)
-                    </MangaButton>
+                      Review (about 2 minutes)
+                    </ActionButton>
                   ) : null}
-                  <MangaButton
+                  <ActionButton
                     href={`/grammar/lessons/${lesson.id}`}
                     icon={
                       <Play
@@ -481,19 +479,19 @@ export function GrammarPath({ path }: Props) {
                     tone={lesson.state === 'open' ? 'ink' : 'paper'}
                   >
                     {lesson.state === 'open'
-                      ? 'Bắt đầu học'
+                      ? 'Start lesson'
                       : lesson.stars < 3
-                        ? 'Học lại để lấy 3 sao'
-                        : 'Học lại'}
-                  </MangaButton>
+                        ? 'Redo for 3 stars'
+                        : 'Redo lesson'}
+                  </ActionButton>
                   {lesson.state !== 'open' ? (
-                    <MangaButton
+                    <ActionButton
                       href={`/grammar/lessons/${lesson.id}/notes`}
                       icon={<BookOpen aria-hidden />}
                       tone="paper"
                     >
-                      Xem ghi chú
-                    </MangaButton>
+                      Open notes
+                    </ActionButton>
                   ) : null}
                 </div>
               )}

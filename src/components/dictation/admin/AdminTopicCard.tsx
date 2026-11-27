@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { MangaButton } from '@/components/ui/MangaButton'
+import { ActionButton } from '@/components/ui/ActionButton'
 import { PageTag } from '@/components/ui/PageTag'
 import { cn } from '@/lib/utils'
 import {
@@ -65,10 +65,10 @@ export interface AdminTopicData {
 }
 
 const input =
-  'border-manga-black min-h-11 rounded-control border-3 bg-manga-white px-3 py-2 font-sans text-base font-black'
+  'border-line min-h-11 rounded-control border bg-surface px-3 py-2 font-sans text-base font-semibold'
 const menuButton =
-  'flex min-h-11 w-full items-center gap-2 rounded-tag px-3 font-sans text-sm font-black whitespace-nowrap transition-colors'
-const menuDangerButton = `${menuButton} text-manga-red hover:bg-manga-red hover:text-manga-white focus:bg-manga-red focus:text-manga-white`
+  'flex min-h-11 w-full items-center gap-2 rounded-tag px-3 font-sans text-sm font-semibold whitespace-nowrap transition-colors'
+const menuDangerButton = `${menuButton} text-danger hover:bg-danger hover:text-surface focus:bg-danger focus:text-surface`
 
 function AdminCardActionsMenu({
   label,
@@ -82,7 +82,7 @@ function AdminCardActionsMenu({
       <DropdownMenuTrigger
         aria-label={label}
         title="Actions"
-        className="border-manga-black bg-manga-white hover:bg-manga-paper-soft rounded-control grid size-9 shrink-0 place-items-center border-2 shadow-[2px_2px_0_var(--manga-black)] transition-colors"
+        className="border-line bg-surface hover:bg-tint rounded-control grid size-9 shrink-0 place-items-center border transition-colors"
       >
         <EllipsisVertical
           aria-hidden="true"
@@ -184,7 +184,7 @@ function SectionBlock({
         accept={MIME_VIDEO}
         onDrop={videoId => onDropVideo(videoId, section.id)}
         onEnter={() => setOpen(true)}
-        className="border-manga-black bg-manga-paper-soft rounded-control min-w-0 border-2"
+        className="border-line bg-tint rounded-control min-w-0 border"
       >
         <div className="flex items-center justify-between gap-2 px-3 py-2">
           <div className="flex min-w-0 flex-1 items-center gap-2">
@@ -215,21 +215,21 @@ function SectionBlock({
                   autoFocus
                   className={`${input} min-h-9 flex-1 py-1 text-sm`}
                 />
-                <MangaButton
+                <ActionButton
                   type="submit"
                   tone="primary"
-                  className="min-h-9 border-2 px-3 text-xs uppercase shadow-none"
+                  className="min-h-9 border px-3 text-xs shadow-none"
                 >
                   Save
-                </MangaButton>
-                <MangaButton
+                </ActionButton>
+                <ActionButton
                   type="button"
                   tone="paper"
                   onClick={() => setEditingTitle(false)}
-                  className="min-h-9 border-2 px-3 text-xs uppercase shadow-none"
+                  className="min-h-9 border px-3 text-xs shadow-none"
                 >
                   Cancel
-                </MangaButton>
+                </ActionButton>
               </form>
             ) : (
               <button
@@ -245,7 +245,7 @@ function SectionBlock({
                     open && 'rotate-180'
                   )}
                 />
-                <span className="truncate font-sans text-sm font-black">
+                <span className="truncate font-sans text-sm font-semibold">
                   {section.title}
                 </span>
                 <PageTag tone="pale">{section.videos.length}</PageTag>
@@ -310,10 +310,10 @@ function SectionBlock({
               event.preventDefault()
               event.stopPropagation()
             }}
-            className="border-manga-black grid gap-2 border-t-2 p-2"
+            className="border-line grid gap-2 border-t p-2"
           >
             {section.videos.length === 0 ? (
-              <li className="text-manga-ink-soft p-2 text-sm">
+              <li className="text-ink-soft p-2 text-sm">
                 No videos yet - drag one here.
               </li>
             ) : (
@@ -469,7 +469,7 @@ export function AdminTopicCard({ topic }: { topic: AdminTopicData }) {
         if (!expanded && event.dataTransfer.types.includes(MIME_VIDEO))
           setExpanded(true)
       }}
-      className="border-manga-black bg-manga-white rounded-panel grid min-w-0 gap-3 border-3 p-4 shadow-[4px_4px_0_var(--manga-black)]"
+      className="border-line bg-surface rounded-panel grid min-w-0 gap-3 border p-4"
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
@@ -485,7 +485,7 @@ export function AdminTopicCard({ topic }: { topic: AdminTopicData }) {
             onClick={() => setExpanded(v => !v)}
             className="flex min-w-0 flex-1 flex-wrap items-center gap-2 self-stretch text-left"
           >
-            <span className="border-manga-black bg-manga-white rounded-tag grid size-8 shrink-0 place-items-center border-2">
+            <span className="border-line bg-surface rounded-tag grid size-8 shrink-0 place-items-center border">
               <ChevronDown
                 aria-hidden="true"
                 className={cn(
@@ -494,12 +494,12 @@ export function AdminTopicCard({ topic }: { topic: AdminTopicData }) {
                 )}
               />
             </span>
-            <span className="text-manga-red font-sans text-lg font-black">
+            <span className="text-brand font-sans text-lg font-semibold">
               {topic.title}
             </span>
             {topic.hasVideoMedia && <PageTag tone="yellow">Video</PageTag>}
             <PageTag tone="pale">{topic.videoCount} videos</PageTag>
-            <span className="text-manga-ink-soft text-xs">/{topic.slug}</span>
+            <span className="text-ink-soft text-xs">/{topic.slug}</span>
           </button>
         </div>
         <AdminCardActionsMenu label={`Actions for ${topic.title}`}>
@@ -541,7 +541,7 @@ export function AdminTopicCard({ topic }: { topic: AdminTopicData }) {
             setEditing(false)
           }}
           encType="multipart/form-data"
-          className="border-manga-black bg-manga-paper-soft rounded-control grid gap-3 border-2 p-3"
+          className="border-line bg-tint rounded-control grid gap-3 border p-3"
         >
           <input
             type="hidden"
@@ -554,7 +554,7 @@ export function AdminTopicCard({ topic }: { topic: AdminTopicData }) {
               title={topic.title}
             />
             <div className="grid gap-3">
-              <Label className="grid gap-1 font-sans text-sm font-black">
+              <Label className="grid gap-1 font-sans text-sm font-semibold">
                 Title
                 <Input
                   name="title"
@@ -563,7 +563,7 @@ export function AdminTopicCard({ topic }: { topic: AdminTopicData }) {
                   className={input}
                 />
               </Label>
-              <Label className="grid gap-1 font-sans text-sm font-black">
+              <Label className="grid gap-1 font-sans text-sm font-semibold">
                 Description
                 <Input
                   name="description"
@@ -573,11 +573,11 @@ export function AdminTopicCard({ topic }: { topic: AdminTopicData }) {
               </Label>
             </div>
           </div>
-          <p className="text-manga-ink-soft text-xs">
+          <p className="text-ink-soft text-xs">
             Renaming updates the topic&apos;s URL (/dictation/{topic.slug}).
           </p>
           <div className="flex flex-wrap items-center gap-4">
-            <Label className="font-sans text-sm font-black">
+            <Label className="font-sans text-sm font-semibold">
               <Checkbox
                 name="hasVideoMedia"
                 value="on"
@@ -585,19 +585,19 @@ export function AdminTopicCard({ topic }: { topic: AdminTopicData }) {
               />
               Video badge
             </Label>
-            <MangaButton
+            <ActionButton
               type="submit"
               tone="primary"
             >
               Save changes
-            </MangaButton>
+            </ActionButton>
           </div>
         </form>
       )}
 
       {expanded && (
         <>
-          <p className="text-manga-ink-soft text-xs">
+          <p className="text-ink-soft text-xs">
             Drag the ⠿ handles to reorder sections; drag a video into a section
             or another topic to move it.
           </p>
@@ -618,9 +618,9 @@ export function AdminTopicCard({ topic }: { topic: AdminTopicData }) {
               <DropZone
                 accept={MIME_VIDEO}
                 onDrop={videoId => moveVideo(videoId, null)}
-                className="border-manga-black bg-manga-paper-soft rounded-control border-2 p-2"
+                className="border-line bg-tint rounded-control border p-2"
               >
-                <p className="mb-2 font-sans text-sm font-black">
+                <p className="mb-2 font-sans text-sm font-semibold">
                   Ungrouped in this topic ({topic.ungrouped.length})
                 </p>
                 <ul className="grid gap-2">
@@ -654,12 +654,12 @@ export function AdminTopicCard({ topic }: { topic: AdminTopicData }) {
                 required
                 className={`${input} flex-1`}
               />
-              <MangaButton
+              <ActionButton
                 type="submit"
                 tone="primary"
               >
                 Add section
-              </MangaButton>
+              </ActionButton>
             </form>
           </div>
         </>

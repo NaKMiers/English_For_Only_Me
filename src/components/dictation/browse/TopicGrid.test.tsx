@@ -14,9 +14,9 @@ describe('TopicGrid', () => {
 
     expect(html).toContain('Uncategorized')
     expect(html).toContain('href="/dictation/no-topic"')
-    expect(html).toContain('bg-manga-white')
-    expect(html).toContain('bg-manga-pale-red')
-    expect(html).not.toContain('bg-manga-paper ')
+    expect(html).toContain('bg-surface')
+    expect(html).toContain('bg-tint-soft')
+    expect(html).not.toContain('bg-canvas ')
   })
 
   test('renders topic tiles as lazy images at the stored upload URL', () => {

@@ -58,7 +58,7 @@ function WordLine({ entry }: { entry: VocabEntryApiRecord }) {
 
   return (
     <div className="grid min-w-0 flex-1 gap-0.5">
-      <p className="truncate font-sans text-sm font-black">
+      <p className="truncate font-sans text-sm font-semibold">
         {entry.term}
         {entry.partOfSpeech ? (
           <span className="text-muted-foreground ml-1 text-xs font-semibold">
@@ -303,7 +303,7 @@ export function TestVocabDialog({ onOpenChange, open, testId }: Props) {
           </div>
 
           <div className="grid gap-2">
-            <p className="font-sans text-xs font-black uppercase">
+            <p className="font-sans text-xs font-semibold">
               In this test ({countLabel(words.length, 'word')})
             </p>
             {loading ? (
@@ -320,7 +320,7 @@ export function TestVocabDialog({ onOpenChange, open, testId }: Props) {
                     )}
                     key={entry.id}
                   >
-                    <span className="text-muted-foreground w-7 shrink-0 text-right font-sans text-xs font-black tabular-nums">
+                    <span className="text-muted-foreground w-7 shrink-0 text-right font-sans text-xs font-semibold tabular-nums">
                       {index + 1}
                     </span>
                     <WordLine entry={entry} />
@@ -366,7 +366,7 @@ export function TestVocabDialog({ onOpenChange, open, testId }: Props) {
 
           {error ? (
             <p
-              className="text-manga-red text-sm font-semibold"
+              className="text-brand text-sm font-semibold"
               role="alert"
             >
               {error}

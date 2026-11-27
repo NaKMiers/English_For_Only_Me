@@ -60,9 +60,8 @@ interface Props {
   value: IeltsSectionInput
 }
 
-/** Compact sticker buttons for the audio row, a size down from MangaButton. */
-const AUDIO_BUTTON_CLASS =
-  'min-h-9 border-2 px-3 shadow-[2px_2px_0_var(--manga-black)]'
+/** Compact sticker buttons for the audio row, a size down from ActionButton. */
+const AUDIO_BUTTON_CLASS = 'min-h-9 border px-3'
 
 /** Script lines shown per page; a full part runs to 40-60 lines. */
 const LINE_PAGE_SIZE = 8
@@ -185,7 +184,7 @@ function ListeningForm({
               lines={material.lines}
             />
           ) : (
-            <p className="border-manga-black/40 text-manga-ink-soft rounded-tag flex min-h-10 items-center gap-2 border-2 border-dashed px-3 text-sm font-semibold">
+            <p className="border-line/40 text-ink-soft rounded-tag flex min-h-10 items-center gap-2 border border-dashed px-3 text-sm font-normal">
               <AudioLines
                 aria-hidden="true"
                 className="size-4 shrink-0"
@@ -264,7 +263,7 @@ function ListeningForm({
             </ExamButton>
             {material.audio ? (
               <ExamIconButton
-                className="hover:bg-manga-red hover:text-manga-white text-manga-red ml-auto size-9 border-2 shadow-[2px_2px_0_var(--manga-black)]"
+                className="hover:bg-brand hover:text-surface text-brand ml-auto size-9 border"
                 label="Remove audio"
                 onClick={() => onChange({ ...material, audio: null })}
                 type="button"
@@ -278,7 +277,7 @@ function ListeningForm({
           </div>
           {error ? (
             <p
-              className="text-manga-red text-xs font-semibold"
+              className="text-brand text-xs font-semibold"
               role="alert"
             >
               {error}
@@ -319,7 +318,7 @@ function ListeningForm({
                       value={line.speaker}
                     />
                     <div className="grid gap-1">
-                      <span className="font-sans text-xs font-black">
+                      <span className="font-sans text-xs font-semibold">
                         Voice
                       </span>
                       <Select
@@ -553,7 +552,7 @@ function VisualForm({
       variant="block"
     >
       <div className="grid gap-1">
-        <span className="font-sans text-xs font-black">Task 1 visual</span>
+        <span className="font-sans text-xs font-semibold">Task 1 visual</span>
         <Select
           onValueChange={value => {
             const next = String(value ?? 'none')

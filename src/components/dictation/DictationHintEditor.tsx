@@ -10,10 +10,10 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 
-import { MangaPanel } from '@/components/common/MangaPanel'
+import { ContentPanel } from '@/components/common/ContentPanel'
 import { IconButton } from '@/components/ui/IconButton'
 import { Input } from '@/components/ui/input'
-import { MangaButton } from '@/components/ui/MangaButton'
+import { ActionButton } from '@/components/ui/ActionButton'
 import { computeHints } from '@/modules/dictation/correction'
 import {
   filterHintsToSentence,
@@ -150,7 +150,7 @@ export function DictationHintEditor({ onSegmentChange, segments }: Props) {
   const pager =
     pageCount > 1 ? (
       <div className="flex items-center justify-between gap-2">
-        <MangaButton
+        <ActionButton
           type="button"
           tone="paper"
           disabled={safePage === 0}
@@ -163,12 +163,12 @@ export function DictationHintEditor({ onSegmentChange, segments }: Props) {
           }
         >
           Prev
-        </MangaButton>
-        <span className="text-manga-ink-soft text-center text-xs font-black">
+        </ActionButton>
+        <span className="text-ink-soft text-center text-xs font-normal">
           Sentences {pageStart + 1}-{pageStart + visibleSegments.length} of{' '}
           {segments.length}
         </span>
-        <MangaButton
+        <ActionButton
           type="button"
           tone="paper"
           disabled={safePage >= pageCount - 1}
@@ -183,22 +183,22 @@ export function DictationHintEditor({ onSegmentChange, segments }: Props) {
           }
         >
           Next
-        </MangaButton>
+        </ActionButton>
       </div>
     ) : null
 
   return (
-    <MangaPanel
+    <ContentPanel
       eyebrow="Hints"
       title="Practice hints"
     >
-      <p className="text-manga-ink-soft text-sm leading-6 font-semibold">
+      <p className="text-ink-soft text-sm leading-6 font-normal">
         Each sentence starts with the automatically detected hints. Add or
         remove words to override a sentence, or reset it back to automatic.
       </p>
 
       {segments.length === 0 ? (
-        <p className="text-manga-ink-soft text-sm font-semibold">
+        <p className="text-ink-soft text-sm font-normal">
           Add a transcript first - hints are edited per sentence.
         </p>
       ) : (
@@ -213,25 +213,25 @@ export function DictationHintEditor({ onSegmentChange, segments }: Props) {
               return (
                 <li
                   key={segment.id}
-                  className="border-manga-black bg-manga-white rounded-control grid gap-2 border-2 p-3 shadow-[3px_3px_0_var(--manga-black)]"
+                  className="border-line bg-surface rounded-control grid gap-2 border p-3"
                 >
                   <div className="flex items-baseline justify-between gap-2">
                     <div className="flex min-w-0 items-baseline gap-2">
-                      <span className="text-manga-ink-soft font-sans text-xs font-black tabular-nums">
+                      <span className="text-ink-soft font-sans text-xs font-normal tabular-nums">
                         {segment.order + 1}
                       </span>
                       <p className="min-w-0 text-sm leading-6 font-semibold break-words">
                         {segment.text}
                       </p>
                     </div>
-                    <span className="text-manga-ink-soft shrink-0 font-sans text-xs font-black uppercase">
+                    <span className="text-ink-soft shrink-0 font-sans text-xs font-normal">
                       {segment.hintsOverridden ? 'Custom' : 'Auto'}
                     </span>
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2">
                     {hints.length === 0 ? (
-                      <span className="text-manga-ink-soft text-xs font-semibold">
+                      <span className="text-ink-soft text-xs font-normal">
                         No hints
                       </span>
                     ) : (
@@ -252,11 +252,11 @@ export function DictationHintEditor({ onSegmentChange, segments }: Props) {
                             setDrag(null)
                           }}
                           onDragEnd={() => setDrag(null)}
-                          className="border-manga-black bg-manga-paper-soft rounded-tag inline-flex cursor-move items-center gap-1 border-2 px-2 py-1 text-xs font-black shadow-[2px_2px_0_var(--manga-black)]"
+                          className="border-line bg-tint rounded-tag inline-flex cursor-move items-center gap-1 border px-2 py-1 text-xs font-semibold"
                         >
                           <GripVertical
                             aria-hidden="true"
-                            className="text-manga-ink-soft size-3"
+                            className="text-ink-soft size-3"
                           />
                           {hint}
                           <IconButton
@@ -264,7 +264,7 @@ export function DictationHintEditor({ onSegmentChange, segments }: Props) {
                             disabled={isSaving}
                             draggable={false}
                             onClick={() => handleRemoveHint(segment, hint)}
-                            className="rounded-tag size-5 border-2 shadow-none"
+                            className="rounded-tag size-5 border shadow-none"
                           >
                             <X
                               aria-hidden="true"
@@ -294,9 +294,9 @@ export function DictationHintEditor({ onSegmentChange, segments }: Props) {
                         }
                       }}
                       placeholder="Add a word from this sentence"
-                      className="border-manga-black bg-manga-white rounded-control h-10 max-w-xs border-2 font-semibold shadow-[2px_2px_0_var(--manga-black)]"
+                      className="border-line bg-surface rounded-control h-10 max-w-xs border font-semibold"
                     />
-                    <MangaButton
+                    <ActionButton
                       type="button"
                       tone="paper"
                       disabled={isSaving}
@@ -309,9 +309,9 @@ export function DictationHintEditor({ onSegmentChange, segments }: Props) {
                       }
                     >
                       Add
-                    </MangaButton>
+                    </ActionButton>
                     {segment.hintsOverridden ? (
-                      <MangaButton
+                      <ActionButton
                         type="button"
                         tone="paper"
                         disabled={isSaving}
@@ -324,14 +324,14 @@ export function DictationHintEditor({ onSegmentChange, segments }: Props) {
                         }
                       >
                         Reset to auto
-                      </MangaButton>
+                      </ActionButton>
                     ) : null}
                   </div>
 
                   {error ? (
                     <p
                       role="status"
-                      className="text-manga-red text-xs font-black"
+                      className="text-brand text-xs font-semibold"
                     >
                       {error}
                     </p>
@@ -343,6 +343,6 @@ export function DictationHintEditor({ onSegmentChange, segments }: Props) {
           {pager}
         </>
       )}
-    </MangaPanel>
+    </ContentPanel>
   )
 }

@@ -3,12 +3,12 @@
 import { Check, Merge, Scissors, TimerReset } from 'lucide-react'
 import { useMemo, useState } from 'react'
 
-import { MangaPanel } from '@/components/common/MangaPanel'
+import { ContentPanel } from '@/components/common/ContentPanel'
 import { Badge } from '@/components/ui/badge'
 import { IconButton } from '@/components/ui/IconButton'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { MangaButton } from '@/components/ui/MangaButton'
+import { ActionButton } from '@/components/ui/ActionButton'
 import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
 import {
@@ -101,7 +101,7 @@ export function DictationSegmentEditor({ className, initialSegments }: Props) {
   }
 
   return (
-    <MangaPanel
+    <ContentPanel
       eyebrow="Segment editor"
       title="Sentence source cleanup"
       className={className}
@@ -110,21 +110,21 @@ export function DictationSegmentEditor({ className, initialSegments }: Props) {
         {orderedSegments.map((segment, index) => (
           <article
             key={segment.id}
-            className="border-manga-black bg-manga-paper-soft rounded-control grid min-w-0 gap-3 border-2 p-3 shadow-[3px_3px_0_var(--manga-black)]"
+            className="border-line bg-tint rounded-control grid min-w-0 gap-3 border p-3"
           >
             <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
               <div className="flex min-w-0 flex-wrap items-center gap-2">
-                <Badge className="border-manga-black bg-manga-white text-manga-black rounded-tag border-2 font-black">
+                <Badge className="border-line bg-surface text-ink rounded-tag border font-semibold">
                   #{index + 1}
                 </Badge>
                 {segment.qualityFlags.map(flag => (
                   <Badge
                     key={flag}
                     className={cn(
-                      'border-manga-black rounded-tag border-2 font-black',
+                      'border-line rounded-tag border font-semibold',
                       segment.warningAccepted
-                        ? 'bg-manga-white text-manga-black'
-                        : 'bg-manga-red text-manga-white'
+                        ? 'bg-surface text-ink'
+                        : 'bg-brand text-surface'
                     )}
                   >
                     {flag}
@@ -173,7 +173,7 @@ export function DictationSegmentEditor({ className, initialSegments }: Props) {
             <div className="grid gap-2">
               <Label
                 htmlFor={`segment-text-${segment.id}`}
-                className="font-sans text-xs font-black tracking-normal uppercase"
+                className="font-sans text-xs font-semibold tracking-normal"
               >
                 Segment text
               </Label>
@@ -181,13 +181,13 @@ export function DictationSegmentEditor({ className, initialSegments }: Props) {
                 id={`segment-text-${segment.id}`}
                 value={segment.text}
                 onChange={event => updateText(segment, event.target.value)}
-                className="border-manga-black bg-manga-white rounded-control min-h-24 border-3 text-base leading-7 font-semibold shadow-[3px_3px_0_var(--manga-black)]"
+                className="border-line bg-surface rounded-control min-h-24 border text-base leading-7 font-semibold"
               />
             </div>
 
             <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
               <Label className="grid gap-2">
-                <span className="font-sans text-xs font-black tracking-normal uppercase">
+                <span className="font-sans text-xs font-semibold tracking-normal">
                   Start ms
                 </span>
                 <Input
@@ -197,11 +197,11 @@ export function DictationSegmentEditor({ className, initialSegments }: Props) {
                   onChange={event =>
                     updateTime(segment, 'startMs', event.target.value)
                   }
-                  className="border-manga-black bg-manga-white rounded-control min-h-11 min-w-0 border-3 px-3 py-2 font-semibold shadow-[3px_3px_0_var(--manga-black)]"
+                  className="border-line bg-surface rounded-control min-h-11 min-w-0 border px-3 py-2 font-semibold"
                 />
               </Label>
               <Label className="grid gap-2">
-                <span className="font-sans text-xs font-black tracking-normal uppercase">
+                <span className="font-sans text-xs font-semibold tracking-normal">
                   End ms
                 </span>
                 <Input
@@ -211,10 +211,10 @@ export function DictationSegmentEditor({ className, initialSegments }: Props) {
                   onChange={event =>
                     updateTime(segment, 'endMs', event.target.value)
                   }
-                  className="border-manga-black bg-manga-white rounded-control min-h-11 min-w-0 border-3 px-3 py-2 font-semibold shadow-[3px_3px_0_var(--manga-black)]"
+                  className="border-line bg-surface rounded-control min-h-11 min-w-0 border px-3 py-2 font-semibold"
                 />
               </Label>
-              <MangaButton
+              <ActionButton
                 tone={segment.warningAccepted ? 'paper' : 'primary'}
                 className="self-end"
                 icon={
@@ -237,11 +237,11 @@ export function DictationSegmentEditor({ className, initialSegments }: Props) {
                 {segment.warningAccepted
                   ? 'Warning Accepted'
                   : 'Accept Warning'}
-              </MangaButton>
+              </ActionButton>
             </div>
           </article>
         ))}
       </div>
-    </MangaPanel>
+    </ContentPanel>
   )
 }

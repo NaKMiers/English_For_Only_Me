@@ -38,20 +38,20 @@ const STATUS_META: Record<
   { className: string; label: string } | null
 > = {
   attemptedIncorrect: {
-    className: 'border-amber-700 bg-amber-50 text-amber-900',
+    className: 'border-accent-orange bg-pastel-peach text-accent-orange',
     label: 'Retry',
   },
   correct: {
-    className: 'border-emerald-700 bg-emerald-50 text-emerald-800',
+    className: 'border-lesson-correct bg-lesson-correct/10 text-lesson-correct',
     label: 'Correct',
   },
   notStarted: null,
   revealed: {
-    className: 'border-sky-700 bg-sky-50 text-sky-900',
+    className: 'border-accent-blue bg-pastel-sky text-accent-blue',
     label: 'Revealed',
   },
   skipped: {
-    className: 'border-manga-red bg-manga-pale-red text-manga-red',
+    className: 'border-danger bg-danger-soft text-danger',
     label: 'Skipped',
   },
 }
@@ -96,10 +96,10 @@ export function DictationFullTranscript<
   return (
     <section
       aria-label="Full transcript"
-      className="border-manga-black bg-manga-white rounded-panel grid min-h-0 min-w-0 grid-rows-[auto_minmax(0,1fr)] gap-2 border-2 p-2 shadow-[3px_3px_0_var(--manga-black)]"
+      className="border-line bg-surface rounded-panel grid min-h-0 min-w-0 grid-rows-[auto_minmax(0,1fr)] gap-2 border p-2"
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="font-sans text-sm leading-tight font-black tracking-normal uppercase">
+        <h2 className="font-sans text-sm leading-tight font-semibold tracking-normal">
           Full transcript
         </h2>
         <div className="flex flex-wrap items-center gap-2">
@@ -109,10 +109,10 @@ export function DictationFullTranscript<
             disabled={!canRepeat}
             onClick={onToggleRepeat}
             className={cn(
-              'border-manga-black rounded-control inline-flex min-h-8 items-center gap-1.5 border-2 px-2 font-sans text-xs font-black shadow-[2px_2px_0_var(--manga-black)] disabled:cursor-not-allowed disabled:opacity-50',
+              'border-line rounded-control inline-flex min-h-8 items-center gap-1.5 border px-2 font-sans text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-50',
               isRepeating
-                ? 'bg-manga-black text-manga-white'
-                : 'bg-manga-white text-manga-black hover:bg-manga-paper-soft'
+                ? 'bg-ink text-surface'
+                : 'bg-surface text-ink hover:bg-tint'
             )}
           >
             <Repeat
@@ -126,10 +126,10 @@ export function DictationFullTranscript<
             aria-pressed={autoScroll}
             onClick={onToggleAutoScroll}
             className={cn(
-              'border-manga-black rounded-control inline-flex min-h-8 items-center gap-1.5 border-2 px-2 font-sans text-xs font-black shadow-[2px_2px_0_var(--manga-black)]',
+              'border-line rounded-control inline-flex min-h-8 items-center gap-1.5 border px-2 font-sans text-xs font-semibold',
               autoScroll
-                ? 'bg-manga-black text-manga-white'
-                : 'bg-manga-white text-manga-black hover:bg-manga-paper-soft'
+                ? 'bg-ink text-surface'
+                : 'bg-surface text-ink hover:bg-tint'
             )}
           >
             <MoveVertical
@@ -138,7 +138,7 @@ export function DictationFullTranscript<
             />
             Auto scroll
           </button>
-          <span className="text-manga-ink-soft text-xs font-black uppercase">
+          <span className="text-ink-soft text-xs font-normal">
             {segments.length} sentences
           </span>
         </div>
@@ -169,17 +169,15 @@ export function DictationFullTranscript<
                 onClick={() => onSelectSegment(segment)}
                 aria-current={isHighlighted ? 'true' : undefined}
                 className={cn(
-                  'border-manga-black rounded-control grid w-full min-w-0 grid-cols-[auto_minmax(0,1fr)] items-start gap-2 border-2 p-1.5 text-left shadow-[2px_2px_0_var(--manga-black)] transition-colors',
-                  isHighlighted
-                    ? 'bg-manga-pale-red'
-                    : 'bg-manga-white hover:bg-manga-paper-soft'
+                  'border-line rounded-control grid w-full min-w-0 grid-cols-[auto_minmax(0,1fr)] items-start gap-2 border p-1.5 text-left transition-colors',
+                  isHighlighted ? 'bg-tint-soft' : 'bg-surface hover:bg-tint'
                 )}
               >
-                <span className="border-manga-black bg-manga-white text-manga-black rounded-tag mt-0.5 grid size-6 place-items-center border-2 text-xs font-black">
+                <span className="border-line bg-surface text-ink rounded-tag mt-0.5 grid size-6 place-items-center border text-xs font-semibold">
                   {isHighlighted ? (
                     <Play
                       aria-hidden="true"
-                      className="text-manga-red size-3"
+                      className="text-brand size-3"
                     />
                   ) : (
                     index + 1
@@ -189,16 +187,16 @@ export function DictationFullTranscript<
                     owning a meta line above it: at 56 captions that line was
                     costing a third of the list's height for two short chips. */}
                 <span className="grid min-w-0 gap-0.5">
-                  <span className="text-manga-black min-w-0 text-base leading-6 font-semibold wrap-break-word">
+                  <span className="text-ink min-w-0 text-base leading-6 font-semibold wrap-break-word">
                     {timestamp ? (
-                      <span className="text-manga-ink-soft mr-1.5 text-[0.65rem] font-black tabular-nums">
+                      <span className="text-ink-soft mr-1.5 text-[0.65rem] font-normal tabular-nums">
                         {timestamp}
                       </span>
                     ) : null}
                     {statusMeta ? (
                       <span
                         className={cn(
-                          'rounded-tag mr-1.5 inline-block border px-1 text-[0.6rem] leading-4 font-black uppercase',
+                          'rounded-tag mr-1.5 inline-block border px-1 text-[0.6rem] leading-4 font-semibold',
                           statusMeta.className
                         )}
                       >
@@ -208,7 +206,7 @@ export function DictationFullTranscript<
                     {segment.text}
                   </span>
                   {translation ? (
-                    <span className="text-manga-red border-manga-black/30 min-w-0 border-l-2 pl-1.5 text-sm leading-5 font-semibold wrap-break-word italic">
+                    <span className="text-brand border-line/30 min-w-0 border-l pl-1.5 text-sm leading-5 font-semibold wrap-break-word italic">
                       {translation}
                     </span>
                   ) : null}

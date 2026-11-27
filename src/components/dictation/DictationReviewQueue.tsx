@@ -1,8 +1,8 @@
 import { ArrowRight, CheckCircle2 } from 'lucide-react'
 
-import { MangaPanel } from '@/components/common/MangaPanel'
+import { ContentPanel } from '@/components/common/ContentPanel'
 import { QueueRow } from '@/components/common/QueueRow'
-import { MangaButton } from '@/components/ui/MangaButton'
+import { ActionButton } from '@/components/ui/ActionButton'
 import type { DictationReviewItemApiRecord } from '@/modules/dictation/types'
 
 interface Props {
@@ -25,11 +25,11 @@ export function DictationReviewQueue({
   title = 'Review queue',
 }: Props) {
   return (
-    <MangaPanel
+    <ContentPanel
       eyebrow="Review"
       title={title}
       action={
-        <MangaButton
+        <ActionButton
           href="/dictation/review"
           tone="paper"
           icon={
@@ -40,7 +40,7 @@ export function DictationReviewQueue({
           }
         >
           Open Queue
-        </MangaButton>
+        </ActionButton>
       }
     >
       {reviewItems.length > 0 ? (
@@ -56,7 +56,7 @@ export function DictationReviewQueue({
                 item.status === 'completed' ? (
                   <CheckCircle2
                     aria-hidden="true"
-                    className="size-5 text-emerald-700"
+                    className="text-lesson-correct size-5"
                   />
                 ) : null
               }
@@ -64,10 +64,10 @@ export function DictationReviewQueue({
           ))}
         </div>
       ) : (
-        <p className="text-manga-ink-soft text-base leading-7 font-semibold">
+        <p className="text-ink-soft text-base leading-7 font-normal">
           {emptyMessage}
         </p>
       )}
-    </MangaPanel>
+    </ContentPanel>
   )
 }

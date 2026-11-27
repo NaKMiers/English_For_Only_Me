@@ -35,7 +35,7 @@ export function ShowAnswersSwitch({
 
   return (
     <Label
-      className="flex items-center gap-2 font-sans text-xs font-black"
+      className="flex items-center gap-2 font-sans text-xs font-semibold"
       htmlFor={switchId}
     >
       <Switch
@@ -121,7 +121,7 @@ export function SectionPreview({
       ) : null}
       {writing ? (
         <div className="font-body grid w-full gap-4 text-[17px] leading-[1.7]">
-          <h2 className="text-muted-foreground font-sans text-lg leading-none font-black tracking-wide uppercase">
+          <h2 className="text-muted-foreground font-sans text-lg leading-none font-semibold tracking-wide">
             Task {writing.task}
           </h2>
           <WritingPrompt text={writing.prompt} />
@@ -138,7 +138,7 @@ export function SectionPreview({
       ) : null}
       {publicSection.groups.length ? (
         <IeltsAnswerContext.Provider value={context}>
-          <div className="text-manga-black border-exam-line grid w-full gap-7 border-t pt-5 text-[16px] leading-[1.6]">
+          <div className="text-ink border-exam-line grid w-full gap-7 border-t pt-5 text-[16px] leading-[1.6]">
             {publicSection.groups.map((group, index) => (
               <GroupBlock
                 group={group}

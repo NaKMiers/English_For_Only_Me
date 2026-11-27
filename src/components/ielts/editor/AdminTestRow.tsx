@@ -136,13 +136,13 @@ export function AdminTestRow({ row }: { row: AdminTestRowItem }) {
 
   return (
     <li className="grid min-w-0 gap-1">
-      <div className="border-manga-black rounded-control bg-manga-white flex min-w-0 items-start gap-1 border-2 p-1">
+      <div className="border-line rounded-control bg-surface flex min-w-0 items-start gap-1 border p-1">
         <Link
-          className="hover:bg-manga-pale-red rounded-tag grid min-w-0 flex-1 gap-1.5 px-2 py-1.5"
+          className="hover:bg-tint-soft rounded-tag grid min-w-0 flex-1 gap-1.5 px-2 py-1.5"
           href={editHref}
           title={`${row.title} · ${row.detail}`}
         >
-          <strong className="font-sans text-sm leading-tight font-black wrap-break-word">
+          <strong className="font-sans text-sm leading-tight font-semibold wrap-break-word">
             {row.label}
             {row.label === row.title ? null : (
               <span className="sr-only"> ({row.title})</span>
@@ -150,13 +150,10 @@ export function AdminTestRow({ row }: { row: AdminTestRowItem }) {
           </strong>
           <span
             aria-hidden="true"
-            className="border-manga-black bg-manga-paper-soft rounded-tag h-1.5 overflow-hidden border"
+            className="border-line bg-tint rounded-tag h-1.5 overflow-hidden border"
           >
             <span
-              className={cn(
-                'block h-full',
-                complete ? 'bg-manga-black' : 'bg-manga-red'
-              )}
+              className={cn('block h-full', complete ? 'bg-ink' : 'bg-brand')}
               style={{
                 width: `${row.total ? (row.ready / row.total) * 100 : 0}%`,
               }}
@@ -172,7 +169,7 @@ export function AdminTestRow({ row }: { row: AdminTestRowItem }) {
         <DropdownMenu>
           <DropdownMenuTrigger
             aria-label={`Actions for ${row.title}`}
-            className="border-manga-black bg-manga-white hover:bg-manga-paper-soft rounded-control grid size-8 shrink-0 place-items-center border-2 shadow-[2px_2px_0_var(--manga-black)] transition-colors disabled:opacity-50"
+            className="border-line bg-surface hover:bg-tint rounded-control grid size-8 shrink-0 place-items-center border transition-colors disabled:opacity-50"
             disabled={busy}
             title="Actions"
           >
@@ -233,7 +230,7 @@ export function AdminTestRow({ row }: { row: AdminTestRowItem }) {
       </div>
       {error ? (
         <p
-          className="text-manga-red px-1 text-xs font-semibold"
+          className="text-brand px-1 text-xs font-semibold"
           role="alert"
         >
           {error}

@@ -31,9 +31,9 @@ export function InProgressSection({
         <>
           <PlayCircle
             aria-hidden="true"
-            className="text-manga-red size-5 shrink-0"
+            className="text-brand size-5 shrink-0"
           />
-          <span className="font-sans text-base font-black">In Progress</span>
+          <span className="font-sans text-base font-semibold">In Progress</span>
           <PageTag tone="red">{videos.length}</PageTag>
         </>
       }
@@ -42,7 +42,7 @@ export function InProgressSection({
         id={panelId}
         videos={videos}
         canFavorite={canFavorite}
-        className="border-manga-black border-t-3 p-3"
+        className="border-line border-t p-3"
       />
     </BrowseDisclosure>
   )

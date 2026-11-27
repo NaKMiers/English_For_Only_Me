@@ -83,9 +83,7 @@ function Transcript({
               {index}
             </span>
           ) : null}
-          <strong className="font-sans font-black uppercase">
-            {line.speaker}:
-          </strong>{' '}
+          <strong className="font-sans font-semibold">{line.speaker}:</strong>{' '}
           <span>
             {evidence?.blockIndex === index
               ? highlightText(line.text, evidence.quote)
@@ -272,7 +270,7 @@ function MockAudio({
         preload="auto"
         ref={audioRef}
       />
-      <div className="border-manga-black bg-manga-paper-soft rounded-control grid gap-3 border-2 p-3">
+      <div className="border-line bg-tint rounded-control grid gap-3 border p-3">
         <div className="flex items-center gap-3">
           {canStart ? (
             // Same key as the practice player; raw because it starts a timed part.
@@ -291,13 +289,10 @@ function MockAudio({
           ) : (
             <span
               aria-hidden="true"
-              className="border-manga-black bg-manga-white rounded-control grid size-11 shrink-0 place-items-center border-2"
+              className="border-line bg-surface rounded-control grid size-11 shrink-0 place-items-center border"
             >
               <StatusIcon
-                className={cn(
-                  'size-5',
-                  playing && 'text-manga-red animate-pulse'
-                )}
+                className={cn('size-5', playing && 'text-brand animate-pulse')}
               />
             </span>
           )}
@@ -305,7 +300,7 @@ function MockAudio({
             <div className="flex items-baseline justify-between gap-2">
               <p
                 aria-live="polite"
-                className="min-w-0 truncate font-sans text-sm font-black"
+                className="min-w-0 truncate font-sans text-sm font-semibold"
               >
                 {status}
               </p>
@@ -322,13 +317,13 @@ function MockAudio({
           </div>
         </div>
         {interruptions ? (
-          <p className="text-manga-ink-soft text-xs font-semibold">
+          <p className="text-ink-soft text-xs font-normal">
             Interruptions {interruptions}/{IELTS_MAX_AUDIO_INTERRUPTIONS}
           </p>
         ) : null}
         {stalled ? (
           <div
-            className="bg-manga-pale-red rounded-tag grid gap-2 p-2 text-sm font-semibold"
+            className="bg-tint-soft rounded-tag grid gap-2 p-2 text-sm font-semibold"
             role="alert"
           >
             The audio was interrupted.
@@ -390,7 +385,7 @@ export function ListeningPlayer(props: Props) {
       src={audio.url}
     />
   ) : (
-    <p className="border-manga-black bg-manga-pale-red rounded-control border-2 p-2 text-sm font-semibold">
+    <p className="border-line bg-tint-soft rounded-control border p-2 text-sm font-semibold">
       This part has no audio yet. Read the transcript to practise.
     </p>
   )
@@ -421,7 +416,7 @@ export function ListeningPart({
   const contextInScript = contextReadAloud(section.listening)
 
   const title = (
-    <h3 className="text-center font-sans text-xl leading-tight font-black">
+    <h3 className="text-center font-sans text-xl leading-tight font-semibold">
       {section.title}
     </h3>
   )
@@ -436,7 +431,7 @@ export function ListeningPart({
   return (
     <div className="grid w-full gap-3">
       <header className="grid gap-2">
-        <h2 className="text-muted-foreground font-sans text-lg leading-none font-black tracking-wide uppercase">
+        <h2 className="text-muted-foreground font-sans text-lg leading-none font-semibold tracking-wide">
           Part {section.order}
         </h2>
         {/* With an audioscript the title heads the script, as on Jumpinto. */}
@@ -456,7 +451,7 @@ export function ListeningPart({
           onOpenChange={onShowTranscriptChange}
           open={showTranscript}
         >
-          <CollapsibleTrigger className="group/transcript flex min-h-11 w-full items-center justify-between gap-2 font-sans text-sm font-black focus-visible:underline focus-visible:ring-0">
+          <CollapsibleTrigger className="group/transcript flex min-h-11 w-full items-center justify-between gap-2 font-sans text-sm font-semibold focus-visible:underline focus-visible:ring-0">
             Audioscript
             <ChevronDown
               aria-hidden="true"

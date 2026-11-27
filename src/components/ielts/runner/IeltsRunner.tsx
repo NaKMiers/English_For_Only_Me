@@ -474,7 +474,7 @@ export function IeltsRunner({
   const currentCheck = section ? (partChecks[section.order] ?? null) : null
   const groupHeaders = sharedGroupHeaders(section?.groups ?? [])
   const questions = (
-    <div className="text-manga-black grid w-full gap-7 text-[16px] leading-[1.6]">
+    <div className="text-ink grid w-full gap-7 text-[16px] leading-[1.6]">
       {section?.groups.map((group, index) => (
         <GroupBlock
           group={group}
@@ -497,7 +497,7 @@ export function IeltsRunner({
     </div>
   )
   const questionsPaneClass =
-    'border-manga-black bg-exam-surface in-data-[theme=lightup]:bg-manga-pale-red/60 px-3 py-4 outline-none sm:px-3 lg:min-h-0 lg:overflow-y-auto'
+    'border-line bg-exam-surface in-data-[theme=lightup]:bg-tint-soft/60 px-3 py-4 outline-none sm:px-3 lg:min-h-0 lg:overflow-y-auto'
 
   const toggles = isPractice ? (
     <div className="flex items-center gap-2">
@@ -524,7 +524,7 @@ export function IeltsRunner({
   const panes = (
     <div
       aria-label="Choose panel"
-      className="border-manga-black bg-manga-paper-soft rounded-control flex h-9 border-2 p-0.5"
+      className="border-line bg-tint rounded-control flex h-9 border p-0.5"
       role="group"
     >
       {(
@@ -540,10 +540,8 @@ export function IeltsRunner({
             aria-keyshortcuts="Alt+Q"
             aria-pressed={active}
             className={cn(
-              'rounded-tag flex min-w-0 flex-auto items-center justify-center gap-1.5 px-2 font-sans text-[13px] font-black transition-colors',
-              active
-                ? 'bg-manga-black text-manga-white'
-                : 'text-manga-black hover:bg-manga-white'
+              'rounded-tag flex min-w-0 flex-auto items-center justify-center gap-1.5 px-2 font-sans text-[13px] font-semibold transition-colors',
+              active ? 'bg-ink text-surface' : 'text-ink hover:bg-surface'
             )}
             key={value}
             onClick={() => setMobileTab(value)}
@@ -559,7 +557,7 @@ export function IeltsRunner({
               <span
                 className={cn(
                   'rounded-tag shrink-0 px-1 text-[11px] leading-4 tabular-nums',
-                  active ? 'bg-manga-white/20' : 'bg-manga-black/10'
+                  active ? 'bg-surface/20' : 'bg-ink/10'
                 )}
               >
                 {answeredCount}/{total}
@@ -590,12 +588,12 @@ export function IeltsRunner({
 
         {notice ? (
           <p
-            className="border-manga-black text-manga-black flex shrink-0 items-center justify-between gap-3 border-b-2 bg-yellow-100 px-4 py-2 text-sm"
+            className="border-line text-ink flex shrink-0 items-center justify-between gap-3 border-b bg-yellow-100 px-4 py-2 text-sm"
             role="status"
           >
             {notice}
             <button
-              className="text-manga-red text-xs font-semibold underline"
+              className="text-brand text-xs font-semibold underline"
               onClick={() => setNotice('')}
               type="button"
             >
@@ -617,7 +615,7 @@ export function IeltsRunner({
             ref={stageRef}
             style={split.style}
           >
-            <div className="border-manga-black bg-manga-paper-soft border-b-2 px-3 py-1.5 sm:px-3 lg:col-start-1 lg:row-start-1">
+            <div className="border-line bg-tint border-b px-3 py-1.5 sm:px-3 lg:col-start-1 lg:row-start-1">
               <div className="w-full">
                 <ListeningPlayer {...listeningProps} />
               </div>
@@ -643,7 +641,7 @@ export function IeltsRunner({
                 className={cn(
                   questionsPaneClass,
                   'lg:col-start-3 lg:row-span-2 lg:row-start-1',
-                  material && 'max-lg:border-t-2'
+                  material && 'max-lg:border-t'
                 )}
                 ref={questionsRef}
                 tabIndex={-1}

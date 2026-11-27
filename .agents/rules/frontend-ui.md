@@ -3,6 +3,13 @@
 Preserve a polished, practical product feel: calm layout, strong hierarchy,
 clear actions, responsive by default, and reusable component primitives.
 
+## Language
+
+All web UI text is English: labels, buttons, headings, hints, aria labels,
+titles, metadata, toasts and API error messages a learner can see.
+Vietnamese appears only as data (lesson content, translations, meanings) when
+the content needs it.
+
 ## Simple And Minimal (always)
 
 Always show things in the simplest, most minimal way that still reads clearly.
@@ -20,8 +27,11 @@ Always show things in the simplest, most minimal way that still reads clearly.
 ## Visual Foundation
 
 - Use Tailwind/CSS tokens before one-off colors.
-- Default typography follows the newer projects: Montserrat for display/sans
-  and Source Sans for body when the product design does not specify otherwise.
+- Typography is Be Vietnam Pro (loaded with `next/font` in
+  `src/app/layout.tsx`, with the `vietnamese` subset) for headings and body.
+  Headings use `font-medium`, body text the normal weight. Any replacement
+  font must ship a `vietnamese` subset, or lesson data renders with mixed
+  fallback glyphs.
 - Prefer a small semantic palette: `background`, `primary`, `dark-primary`,
   `secondary`, `light`, `dark`, `light-gray`, and `dark-gray`, then add domain
   colors intentionally.
@@ -29,32 +39,40 @@ Always show things in the simplest, most minimal way that still reads clearly.
   improves rhythm.
 - Avoid broad redesigns while fixing behavior.
 
-## Sticker Corners (manga blocks)
+## Soft Pastel Dashboard (the app's look)
 
-Every ink-bordered block is a rounded "sticker": same 3px ink border, same hard
-offset shadow, corner by ROLE. Never hand-type a radius.
+The app is a white rounded board (`PageShell`) floating on a lavender
+backdrop, with a dark icon rail (`AppSidebar`) on the left and the topbar
+(`AppTopbar`) above. Blocks are calm: hairline `border-line` borders, soft
+`shadow-card` at most, no hard offset shadows, no uppercase, no black weight.
 
-| Role    | Utility           | Size                    | Use for                                                 |
-| ------- | ----------------- | ----------------------- | ------------------------------------------------------- |
-| shell   | `rounded-shell`   | 20px (14px under 640px) | `MangaPageShell` only                                   |
-| panel   | `rounded-panel`   | 14px                    | cards, panels, dialogs, popups, comic panels, big tiles |
-| control | `rounded-control` | 10px                    | buttons, inputs, tabs, rows, a card inside a card       |
-| tag     | `rounded-tag`     | 6px                     | tags, badges, chips, checkboxes, tooltips, menu items   |
+- Colours are tokens from `src/app/globals.css`: `ink` / `ink-soft` text,
+  `surface` cards, `canvas` backdrop, `line` borders, `brand` (violet) for
+  accents, `danger` (red) only for wrong answers, errors and delete,
+  `lesson-correct` for right answers, `tint` / `tint-soft` for selected and
+  quiet fills, and one pastel per module from `MODULE_THEMES`
+  (`src/constants/theme.ts`): Dictation sky, Vocabulary rose, Grammar lilac,
+  IELTS peach.
+- Buttons and chips are pills (`rounded-full`): `ActionButton` tones are
+  `primary` (soft violet), `paper` (outlined) and `ink` (the one dark CTA).
+- Corners by role, never a hand-typed radius on a bordered block:
 
-- Never use `rounded-none` (`src/lib/styleGuards.test.ts` fails on it). A
-  borderless override gets the role by size, not a bare deletion.
-- A child's radius is never larger than its parent's. A flush child (touching
-  the parent's border) gets no radius and is clipped by the parent's
-  `overflow-hidden`.
-- Edge-attached sheets stay square; `rounded-full` circles and speech bubbles
-  keep their shapes.
-- Pressable controls use `sticker-press` for their transition (never
-  `transition-all` / `duration-*` for the press), and their
-  `active:translate-*` must equal their shadow offset. On anything built from
-  `buttonVariants`, also add `active:not-aria-[haspopup]:translate-y-[Npx]`, or
-  the base 1px nudge wins.
-- Tune softness with the `--sticker-*` knobs in `src/app/globals.css`. Adding a
-  role means adding it there AND to `extendTailwindMerge` in `src/lib/utils.ts`.
+| Role    | Utility           | Size                    | Use for                                        |
+| ------- | ----------------- | ----------------------- | ---------------------------------------------- |
+| shell   | `rounded-shell`   | 36px (0 under 640px)    | `PageShell` only                               |
+| panel   | `rounded-panel`   | 24px (20px under 640px) | cards, panels, dialogs, popups, big tiles      |
+| control | `rounded-control` | 14px                    | inputs, tabs, rows, a card inside a card       |
+| tag     | `rounded-tag`     | 8px                     | checkboxes, tooltips, menu items, small badges |
+
+- Never use `rounded-none` (`src/lib/styleGuards.test.ts` fails on it).
+- A child's radius is never larger than its parent's.
+- Pressable things use `soft-press` (a small scale on press) instead of
+  `transition-all`.
+- Night mode remaps the same tokens under `:root[data-theme='lightup']`; the
+  rail keeps its own `rail` / `rail-fg` colours so it stays dark. Check both
+  themes after a visual change.
+- Adding a corner role means adding it in `globals.css` AND to
+  `extendTailwindMerge` in `src/lib/utils.ts`.
 
 ## Components
 

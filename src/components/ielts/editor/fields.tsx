@@ -28,10 +28,9 @@ import { ExamButton, ExamIconButton } from '@/components/ielts/ui'
  * globals.css).
  */
 export const INNER_BOX_CLASS =
-  'border-manga-black bg-manga-white rounded-control border-2 p-3'
+  'border-line bg-surface rounded-control border p-3'
 
-const INPUT_CLASS =
-  'border-manga-black bg-manga-white h-10 border-2 text-sm md:text-sm'
+const INPUT_CLASS = 'border-line bg-surface h-10 border text-sm md:text-sm'
 
 export function TextField({
   className,
@@ -55,7 +54,7 @@ export function TextField({
   return (
     <div className={cn('grid gap-1', className)}>
       <Label
-        className="font-sans text-xs font-black"
+        className="font-sans text-xs font-semibold"
         htmlFor={id}
       >
         {label}
@@ -104,7 +103,7 @@ export function NumberField({
   return (
     <div className={cn('grid gap-1', className)}>
       <Label
-        className="font-sans text-xs font-black"
+        className="font-sans text-xs font-semibold"
         htmlFor={id}
       >
         {label}
@@ -140,7 +139,7 @@ export function BandField({
   return (
     <div className={cn('grid gap-1', className)}>
       <Label
-        className="font-sans text-xs font-black"
+        className="font-sans text-xs font-semibold"
         htmlFor={id}
       >
         {label}
@@ -190,13 +189,13 @@ export function AreaField({
   return (
     <div className={cn('grid gap-1', className)}>
       <Label
-        className="font-sans text-xs font-black"
+        className="font-sans text-xs font-semibold"
         htmlFor={id}
       >
         {label}
       </Label>
       <Textarea
-        className="border-manga-black font-body bg-manga-white border-2 text-sm leading-[1.6] md:text-sm"
+        className="border-line font-body bg-surface border text-sm leading-[1.6] md:text-sm"
         id={id}
         onChange={event => onChange(event.target.value)}
         rows={rows}
@@ -264,10 +263,10 @@ export function RowActions({
 
 /** Small inline status chip for row and section headers. */
 const CHIP_TONES = {
-  default: 'bg-manga-white text-manga-black',
-  ink: 'bg-manga-black text-manga-white',
-  red: 'bg-manga-red text-manga-white',
-  pale: 'bg-manga-pale-red text-manga-black',
+  default: 'bg-surface text-ink',
+  ink: 'bg-ink text-surface',
+  red: 'bg-brand text-surface',
+  pale: 'bg-tint-soft text-ink',
   warn: 'bg-yellow-100 text-yellow-950',
   ok: 'bg-sky-100 text-sky-950',
 } as const
@@ -284,7 +283,7 @@ export function MetaChip({
   return (
     <span
       className={cn(
-        'border-manga-black rounded-tag inline-flex h-6 shrink-0 items-center gap-1 border-2 px-1.5 font-sans text-[11px] leading-none font-black whitespace-nowrap uppercase [&_svg]:size-3',
+        'border-line rounded-tag inline-flex h-6 shrink-0 items-center gap-1 border px-1.5 font-sans text-[11px] leading-none font-semibold whitespace-nowrap [&_svg]:size-3',
         CHIP_TONES[tone],
         className
       )}
@@ -297,11 +296,11 @@ export function MetaChip({
 const DISCLOSURE_CLASS = {
   /** A top-level block of the section form, split by a dashed rule. */
   block:
-    'border-manga-black/40 border-t-2 border-dashed pt-2 first:border-t-0 first:pt-0',
+    'border-line/40 border-t border-dashed pt-2 first:border-t-0 first:pt-0',
   /** A row of a repeating list (paragraph, group): a small card. */
   box: cn(INNER_BOX_CLASS, 'p-0'),
   /** A row inside a row (question): an ink rail instead of another frame. */
-  rail: 'border-manga-black border-l-4 pl-2',
+  rail: 'border-line border-l-4 pl-2',
 } as const
 
 /**
@@ -351,8 +350,8 @@ export function Disclosure({
           />
           <span
             className={cn(
-              'shrink-0 font-sans font-black',
-              variant === 'block' ? 'text-sm uppercase' : 'text-sm'
+              'shrink-0 font-sans font-semibold',
+              variant === 'block' ? 'text-sm' : 'text-sm'
             )}
           >
             {title}
@@ -370,7 +369,7 @@ export function Disclosure({
       <CollapsiblePanel
         className={cn(
           'grid gap-3',
-          variant === 'box' && 'border-manga-black border-t-2 p-3',
+          variant === 'box' && 'border-line border-t p-3',
           variant === 'block' && 'pt-2 pb-1',
           variant === 'rail' && 'pt-1 pb-2'
         )}
@@ -486,7 +485,7 @@ export function PageControls({
       aria-label={`${label} pages`}
       className="flex items-center justify-end gap-2"
     >
-      <span className="text-muted-foreground font-sans text-xs font-black tabular-nums">
+      <span className="text-muted-foreground font-sans text-xs font-semibold tabular-nums">
         {page * pageSize + 1}-{Math.min(total, (page + 1) * pageSize)} of{' '}
         {total}
       </span>

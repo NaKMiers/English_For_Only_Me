@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { AuthControl } from '@/components/common/AuthControl'
-import { MangaPageShell } from '@/components/common/MangaPageShell'
+import { PageShell } from '@/components/common/PageShell'
 import { AdminVocabPanel } from '@/components/vocabulary/AdminVocabPanel'
 import { hasMongoDbUri } from '@/constants/environments'
 import { connectDatabase } from '@/lib/db/connectDatabase'
@@ -22,7 +22,7 @@ export default async function AdminVocabularyPage() {
   }
 
   return (
-    <MangaPageShell
+    <PageShell
       topbar={
         <AppTopbar
           activeHref="/admin/vocab"
@@ -37,6 +37,6 @@ export default async function AdminVocabularyPage() {
           mongoConfigured={hasMongoDbUri()}
         />
       </section>
-    </MangaPageShell>
+    </PageShell>
   )
 }

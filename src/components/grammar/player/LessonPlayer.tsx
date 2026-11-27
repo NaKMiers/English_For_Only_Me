@@ -11,7 +11,7 @@ import {
   useState,
 } from 'react'
 
-import { MangaButton } from '@/components/ui/MangaButton'
+import { ActionButton } from '@/components/ui/ActionButton'
 import { IconButton } from '@/components/ui/IconButton'
 import {
   Dialog,
@@ -46,7 +46,7 @@ interface Props {
   targetId: string
   title: string
   plays: PlayCard[]
-  /** Where X and "Về lộ trình" go. */
+  /** Where X and "Back to path" go. */
   exitHref: string
   canSave: boolean
   /** The learner this tab belongs to; stored with any unsaved result. */
@@ -231,39 +231,37 @@ export function LessonPlayer({
 
   return (
     // Header and action bar stay put; only the card scrolls, so a long
-    // explanation never pushes "Kiểm tra" below the fold.
+    // explanation never pushes "Check" below the fold.
     <div className="lesson-stage grid h-full grid-rows-[auto_minmax(0,1fr)_auto]">
-      <header className="border-manga-black flex items-center gap-3 border-b-3 p-3 sm:p-4">
+      <header className="border-line flex items-center gap-3 border-b p-3 sm:p-4">
         <IconButton
-          label="Thoát bài"
+          label="Leave lesson"
           onClick={requestExit}
         >
           <X aria-hidden />
         </IconButton>
         <div
-          aria-label={`Tiến độ: ${Math.round(progress * 100)}%`}
+          aria-label={`Progress: ${Math.round(progress * 100)}%`}
           aria-valuemax={100}
           aria-valuemin={0}
           aria-valuenow={Math.round(progress * 100)}
-          className="border-manga-black bg-manga-white rounded-tag h-4 min-w-0 flex-1 overflow-hidden border-3"
+          className="border-line bg-surface rounded-tag h-4 min-w-0 flex-1 overflow-hidden border"
           role="progressbar"
         >
           <div
-            className="bg-manga-red h-full transition-[width] duration-300 ease-out motion-reduce:transition-none"
+            className="bg-brand h-full transition-[width] duration-300 ease-out motion-reduce:transition-none"
             style={{ width: `${progress * 100}%` }}
           />
         </div>
         <span
           aria-live="polite"
           className={cn(
-            'border-manga-black rounded-tag inline-flex min-w-14 items-center justify-center gap-1 border-2 px-2 py-1 text-sm font-black',
-            state.combo >= 3
-              ? 'bg-manga-red text-manga-white'
-              : 'bg-manga-white',
+            'border-line rounded-tag inline-flex min-w-14 items-center justify-center gap-1 border px-2 py-1 text-sm font-semibold',
+            state.combo >= 3 ? 'bg-brand text-surface' : 'bg-surface',
             comboFlash !== null &&
               'motion-safe:animate-in motion-safe:zoom-in-150'
           )}
-          title="Chuỗi trả lời đúng"
+          title="Correct answer streak"
         >
           <Flame
             aria-hidden
@@ -272,7 +270,7 @@ export function LessonPlayer({
           {state.combo}
         </span>
         <IconButton
-          label={soundOn ? 'Tắt âm thanh' : 'Bật âm thanh'}
+          label={soundOn ? 'Mute sound' : 'Turn sound on'}
           onClick={toggleSound}
         >
           {soundOn ? <Volume2 aria-hidden /> : <VolumeX aria-hidden />}
@@ -289,13 +287,13 @@ export function LessonPlayer({
           data-slot="player-stage"
         >
           {intro && state.position === 0 ? (
-            <p className="border-manga-black bg-manga-paper-soft rounded-control border-2 px-3 py-2 text-sm font-bold">
+            <p className="border-line bg-tint rounded-control border px-3 py-2 text-sm font-bold">
               {intro}
             </p>
           ) : null}
           {comboFlash !== null ? (
-            <p className="text-manga-red motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-2 text-center font-sans text-lg font-black">
-              Chuỗi {comboFlash} câu đúng!
+            <p className="text-brand motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-2 text-center font-sans text-lg font-semibold">
+              {comboFlash} in a row!
             </p>
           ) : null}
           {card?.kind === 'explain' ? <ExplainCardView card={card} /> : null}
@@ -314,18 +312,18 @@ export function LessonPlayer({
             {state.grade && card && isPracticeCard(card) ? (
               <div
                 className={cn(
-                  'bg-manga-white rounded-control grid scroll-mb-4 gap-1.5 border-3 border-l-[10px] p-3 shadow-[3px_3px_0_var(--manga-black)] sm:p-4',
+                  'bg-surface rounded-control grid scroll-mb-4 gap-1.5 border border-l-[10px] p-3 sm:p-4',
                   'motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-2',
                   state.grade.correct
                     ? 'border-lesson-correct'
-                    : 'border-manga-red'
+                    : 'border-danger'
                 )}
                 ref={feedbackRef}
               >
                 {state.grade.correct ? null : (
                   <p className="flex items-start gap-1 font-bold">
                     <span className="min-w-0">
-                      <span className="text-manga-red">Đáp án: </span>
+                      <span className="text-danger">Answer: </span>
                       {state.grade.expected}
                     </span>
                     {card.kind !== 'choice' ||
@@ -342,7 +340,7 @@ export function LessonPlayer({
       </div>
 
       <footer
-        className="border-manga-black bg-manga-paper border-t-3 px-3 py-2.5 sm:px-4"
+        className="border-line bg-surface/90 border-t px-3 py-2.5 backdrop-blur sm:px-4"
         data-slot="player-actions"
       >
         <div className="mx-auto flex w-full max-w-2xl items-center gap-3">
@@ -350,9 +348,9 @@ export function LessonPlayer({
             {state.grade ? (
               <p
                 className={cn(
-                  'border-manga-black text-manga-white rounded-tag inline-flex items-center gap-1.5 border-2 px-2.5 py-1 font-sans text-sm font-black shadow-[2px_2px_0_var(--manga-black)] sm:text-base',
+                  'border-line text-surface rounded-tag inline-flex items-center gap-1.5 border px-2.5 py-1 font-sans text-sm font-semibold sm:text-base',
                   'motion-safe:animate-in motion-safe:zoom-in-90',
-                  state.grade.correct ? 'bg-lesson-correct' : 'bg-manga-red'
+                  state.grade.correct ? 'bg-lesson-correct' : 'bg-danger'
                 )}
               >
                 {state.grade.correct ? (
@@ -366,26 +364,26 @@ export function LessonPlayer({
                     className="size-4 stroke-3"
                   />
                 )}
-                {state.grade.correct ? 'Đúng rồi!' : 'Chưa đúng'}
+                {state.grade.correct ? 'Correct!' : 'Not quite'}
               </p>
             ) : (
               <p className="hidden text-sm opacity-70 sm:block">
-                Nhấn{' '}
-                <kbd className="border-manga-black rounded-tag border-2 px-1.5 font-sans text-xs font-black">
+                Press{' '}
+                <kbd className="border-line rounded-tag border px-1.5 font-sans text-xs font-semibold">
                   Enter
                 </kbd>{' '}
-                {isPractice ? 'để kiểm tra' : 'để tiếp tục'}
+                {isPractice ? 'to check' : 'to continue'}
               </p>
             )}
           </div>
-          <MangaButton
+          <ActionButton
             className="min-w-32 shrink-0 sm:min-w-40"
             disabled={isPractice && !state.grade && !ready}
             onClick={advance}
             tone={state.grade || !isPractice ? 'ink' : 'primary'}
           >
-            {isPractice && !state.grade ? 'Kiểm tra' : 'Tiếp tục'}
-          </MangaButton>
+            {isPractice && !state.grade ? 'Check' : 'Continue'}
+          </ActionButton>
         </div>
       </footer>
 
@@ -393,28 +391,29 @@ export function LessonPlayer({
         onOpenChange={setConfirmLeave}
         open={confirmLeave}
       >
-        <DialogContent className="border-manga-black bg-manga-white border-3 shadow-[6px_6px_0_var(--manga-black)]">
+        <DialogContent className="border-line bg-surface border">
           <DialogHeader>
-            <DialogTitle className="font-sans text-lg font-black">
-              Bỏ bài?
+            <DialogTitle className="font-sans text-lg font-semibold">
+              Leave this lesson?
             </DialogTitle>
             <DialogDescription>
-              Tiến độ của bài này sẽ mất. Bạn có thể học lại bất cứ lúc nào.
+              Your progress in this lesson will be lost. You can start it again
+              any time.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="bg-manga-white border-manga-black border-t-2">
-            <MangaButton
+          <DialogFooter className="bg-surface border-line border-t">
+            <ActionButton
               onClick={() => setConfirmLeave(false)}
               tone="paper"
             >
-              Học tiếp
-            </MangaButton>
-            <MangaButton
+              Keep going
+            </ActionButton>
+            <ActionButton
               href={exitHref}
               tone="ink"
             >
-              Bỏ bài
-            </MangaButton>
+              Leave
+            </ActionButton>
           </DialogFooter>
         </DialogContent>
       </Dialog>

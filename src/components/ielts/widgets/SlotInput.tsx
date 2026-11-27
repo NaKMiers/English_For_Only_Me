@@ -49,7 +49,7 @@ export const SlotInput = memo(function SlotInput({
   const mark = review?.[number]
   const markClass = cn(
     mark?.outcome === 'correct' && 'border-lesson-correct bg-lesson-correct/10',
-    mark && mark.outcome !== 'correct' && 'border-manga-red bg-manga-pale-red'
+    mark && mark.outcome !== 'correct' && 'border-danger bg-danger-soft'
   )
 
   const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
@@ -77,7 +77,7 @@ export const SlotInput = memo(function SlotInput({
             aria-describedby={describedBy}
             aria-label={`Question ${number}`}
             className={cn(
-              'border-manga-black rounded-tag bg-manga-white min-w-20 border font-semibold data-[size=sm]:min-h-7 data-[size=sm]:py-0',
+              'border-line rounded-tag bg-surface min-w-20 border font-semibold data-[size=sm]:min-h-7 data-[size=sm]:py-0',
               markClass
             )}
             id={questionControlId(number)}
@@ -105,7 +105,7 @@ export const SlotInput = memo(function SlotInput({
           autoComplete="off"
           autoCorrect="off"
           className={cn(
-            'border-manga-black text-manga-black focus-visible:border-manga-black rounded-tag bg-manga-white h-7 border px-2 text-[16px] font-medium shadow-none focus-visible:ring-0 md:text-[16px] pointer-coarse:h-11',
+            'border-line text-ink focus-visible:border-line rounded-tag bg-surface h-7 border px-2 text-[16px] font-medium shadow-none focus-visible:ring-0 md:text-[16px] pointer-coarse:h-11',
             markClass
           )}
           id={questionControlId(number)}

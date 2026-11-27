@@ -23,19 +23,19 @@ export function AdminTrashPanel({ videos }: { videos: AdminTrashVideo[] }) {
   if (videos.length === 0) return null
 
   return (
-    <details className="group border-manga-black bg-manga-white rounded-panel border-3 p-4 shadow-[4px_4px_0_var(--manga-black)]">
+    <details className="group border-line bg-surface rounded-panel border p-4">
       <summary className="flex cursor-pointer list-none items-center gap-2 [&::-webkit-details-marker]:hidden">
         <ChevronDown
           aria-hidden="true"
           className="size-5 transition-transform group-open:rotate-180"
         />
-        <span className="font-sans text-base font-black uppercase">
+        <span className="font-sans text-base font-semibold">
           Deleted videos
         </span>
         <PageTag tone="pale">{videos.length}</PageTag>
       </summary>
 
-      <p className="text-manga-ink-soft mt-3 text-xs">
+      <p className="text-ink-soft mt-3 text-xs">
         Use a video&apos;s ⋯ menu to restore it where it was, or to delete it
         permanently with its transcripts and practice history.
       </p>
@@ -44,7 +44,7 @@ export function AdminTrashPanel({ videos }: { videos: AdminTrashVideo[] }) {
         {videos.map(video => (
           <li
             key={video.id}
-            className="border-manga-black bg-manga-paper-soft rounded-control flex min-w-0 items-center gap-3 border-2 p-2"
+            className="border-line bg-tint rounded-control flex min-w-0 items-center gap-3 border p-2"
           >
             <DictationVideoThumbnail
               title={video.title}
@@ -54,10 +54,10 @@ export function AdminTrashPanel({ videos }: { videos: AdminTrashVideo[] }) {
               className="rounded-tag w-20 shrink-0 opacity-70 grayscale sm:w-24"
             />
             <span className="grid min-w-0 flex-1 gap-0.5">
-              <span className="truncate font-sans text-sm font-black">
+              <span className="truncate font-sans text-sm font-semibold">
                 {video.title}
               </span>
-              <span className="text-manga-ink-soft truncate text-xs font-semibold">
+              <span className="text-ink-soft truncate text-xs font-normal">
                 {video.placement ?? 'No topic'}
               </span>
             </span>

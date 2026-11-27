@@ -33,7 +33,7 @@ export function AdminUnassignedPanel({
   }
 
   return (
-    <div className="border-manga-black bg-manga-white rounded-panel grid gap-3 border-3 p-4 shadow-[4px_4px_0_var(--manga-black)]">
+    <div className="border-line bg-surface rounded-panel grid gap-3 border p-4">
       <button
         type="button"
         aria-expanded={open}
@@ -44,7 +44,7 @@ export function AdminUnassignedPanel({
           aria-hidden="true"
           className={cn('size-5 transition-transform', open && 'rotate-180')}
         />
-        <span className="font-sans text-base font-black uppercase">
+        <span className="font-sans text-base font-semibold">
           Unassigned videos
         </span>
         <PageTag tone="pale">{videos.length}</PageTag>
@@ -57,7 +57,7 @@ export function AdminUnassignedPanel({
           onEnter={() => setOpen(true)}
           className="grid gap-2"
         >
-          <p className="text-manga-ink-soft text-xs">
+          <p className="text-ink-soft text-xs">
             Drag a video into a topic&apos;s section below to organize it. Drop
             a video here to unassign it.
           </p>

@@ -42,13 +42,13 @@ interface Props {
 }
 
 const TRIGGER_CLASS_NAME =
-  'border-manga-black bg-manga-white text-manga-black hover:bg-manga-paper-soft rounded-control inline-flex h-9 shrink-0 items-center gap-1.5 border-2 px-2.5 font-sans text-xs font-black shadow-[2px_2px_0_var(--manga-black)] transition-colors'
+  'border-line bg-surface text-ink hover:bg-tint rounded-control inline-flex h-9 shrink-0 items-center gap-1.5 border px-2.5 font-sans text-xs font-semibold transition-colors'
 
 const GROUP_LABEL_CLASS_NAME =
-  'text-manga-ink-soft px-3 pt-1 font-sans text-[0.65rem] font-black uppercase'
+  'text-ink-soft px-3 pt-1 font-sans text-[0.65rem] font-normal'
 
 const RADIO_ITEM_CLASS_NAME =
-  'focus:bg-manga-paper-soft data-checked:bg-manga-paper-soft min-h-9 rounded-tag py-1 pr-8 pl-3 font-sans text-xs font-black'
+  'focus:bg-tint data-checked:bg-tint min-h-9 rounded-tag py-1 pr-8 pl-3 font-sans text-xs font-semibold'
 
 /**
  * Search, sort and filter on one 36px row: the search box takes the spare
@@ -73,11 +73,11 @@ export function CatalogueToolbar({
       <div className="relative min-w-0 flex-1">
         <Search
           aria-hidden="true"
-          className="text-manga-ink-soft pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2"
+          className="text-ink-soft pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2"
         />
         <Input
           aria-label="Search tests"
-          className="border-manga-black bg-manga-white h-9 border-2 pr-8 pl-8 font-semibold [&::-webkit-search-cancel-button]:appearance-none"
+          className="border-line bg-surface h-9 border pr-8 pl-8 font-semibold [&::-webkit-search-cancel-button]:appearance-none"
           onChange={event => onQueryChange(event.target.value)}
           onKeyDown={event => {
             if (event.key === 'Escape') onQueryChange('')
@@ -91,7 +91,7 @@ export function CatalogueToolbar({
         {query ? (
           <button
             aria-label="Clear search"
-            className="hover:bg-manga-paper-soft rounded-tag absolute top-1/2 right-1 grid size-7 -translate-y-1/2 place-items-center"
+            className="hover:bg-tint rounded-tag absolute top-1/2 right-1 grid size-7 -translate-y-1/2 place-items-center"
             onClick={() => onQueryChange('')}
             type="button"
           >
@@ -151,7 +151,7 @@ export function CatalogueToolbar({
             }
             className={cn(
               TRIGGER_CLASS_NAME,
-              activeFilters.length && 'bg-manga-pale-red'
+              activeFilters.length && 'bg-tint-soft'
             )}
             title="Filters"
           >
@@ -161,7 +161,7 @@ export function CatalogueToolbar({
             />
             <span className="hidden sm:inline">Filter</span>
             {activeFilters.length ? (
-              <span className="rounded-tag bg-manga-black text-manga-white min-w-5 px-1 text-center text-[0.65rem] tabular-nums">
+              <span className="rounded-tag bg-ink text-surface min-w-5 px-1 text-center text-[0.65rem] tabular-nums">
                 {activeFilters.length}
               </span>
             ) : null}
@@ -198,7 +198,7 @@ export function CatalogueToolbar({
               <>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
-                  className="text-manga-red min-h-9 px-3 font-sans text-xs font-black"
+                  className="text-brand min-h-9 px-3 font-sans text-xs font-semibold"
                   onClick={() =>
                     activeFilters.forEach(filter =>
                       filter.onChange(filter.options[0].value)

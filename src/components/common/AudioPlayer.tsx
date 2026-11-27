@@ -46,14 +46,14 @@ const SKIP_SEC = 5
 
 /** Skip and speed keys: flat icons, so the one-line player stays light. */
 const GHOST_BUTTON_CLASS =
-  'text-manga-black hover:bg-manga-white focus-visible:ring-manga-red rounded-tag grid h-7 shrink-0 place-items-center outline-none focus-visible:ring-2 disabled:opacity-50'
+  'text-ink hover:bg-surface focus-visible:ring-brand rounded-tag grid h-7 shrink-0 place-items-center outline-none focus-visible:ring-2 disabled:opacity-50'
 
 /** The big black play/pause key, shared with read-only players (mock tests). */
 export const AUDIO_PLAY_BUTTON_CLASS =
-  'border-manga-black bg-manga-black text-manga-white hover:bg-manga-red rounded-control sticker-press grid size-11 shrink-0 place-items-center border-2 shadow-[3px_3px_0_var(--manga-red)] transition-colors active:translate-x-[3px] active:translate-y-[3px] active:shadow-none disabled:opacity-50'
+  'border-line bg-ink text-surface hover:bg-brand rounded-control soft-press grid size-11 shrink-0 place-items-center border transition-colors disabled:opacity-50'
 
 const TRACK_CLASS =
-  'border-manga-black bg-manga-white relative h-2.5 w-full overflow-hidden rounded-full border-2'
+  'border-line bg-surface relative h-2.5 w-full overflow-hidden rounded-full border'
 
 /** "1:23 / 6:53", current time bold and total muted. */
 export function AudioClock({
@@ -64,9 +64,9 @@ export function AudioClock({
   time: number
 }) {
   return (
-    <span className="font-sans text-xs font-black whitespace-nowrap tabular-nums">
+    <span className="font-sans text-xs font-semibold whitespace-nowrap tabular-nums">
       {formatClock(time)}
-      <span className="text-manga-ink-soft"> / {formatClock(duration)}</span>
+      <span className="text-ink-soft"> / {formatClock(duration)}</span>
     </span>
   )
 }
@@ -94,7 +94,7 @@ export function AudioMeter({
       role="progressbar"
     >
       <div
-        className="bg-manga-red h-full transition-[width] duration-300"
+        className="bg-brand h-full transition-[width] duration-300"
         style={{ width: `${percent}%` }}
       />
     </div>
@@ -102,10 +102,7 @@ export function AudioMeter({
 }
 
 /** The play key shrunk to fit the one-line player. */
-const COMPACT_PLAY_BUTTON_CLASS = cn(
-  AUDIO_PLAY_BUTTON_CLASS,
-  'size-8 shadow-[2px_2px_0_var(--manga-red)] active:translate-x-[2px] active:translate-y-[2px]'
-)
+const COMPACT_PLAY_BUTTON_CLASS = cn(AUDIO_PLAY_BUTTON_CLASS, 'size-8')
 
 /**
  * The app's audio player, in the manga sticker style, on one line:
@@ -208,7 +205,7 @@ export function AudioPlayer({
   return (
     <div
       className={cn(
-        'border-manga-black bg-manga-paper-soft rounded-control grid gap-1.5 border-2 p-1.5',
+        'border-line bg-tint rounded-control grid gap-1.5 border p-1.5',
         className
       )}
     >
@@ -286,18 +283,18 @@ export function AudioPlayer({
         >
           <Slider.Control className="relative flex h-5 w-full cursor-pointer touch-none items-center select-none">
             <Slider.Track className={TRACK_CLASS}>
-              <Slider.Indicator className="bg-manga-red h-full" />
+              <Slider.Indicator className="bg-brand h-full" />
               {markers.slice(1).map(marker => (
                 <span
                   aria-hidden="true"
-                  className="bg-manga-black/35 absolute inset-y-0 w-px"
+                  className="bg-ink/35 absolute inset-y-0 w-px"
                   key={marker}
                   style={{ left: `${(marker / total) * 100}%` }}
                 />
               ))}
             </Slider.Track>
             <Slider.Thumb
-              className="border-manga-black bg-manga-white has-focus-visible:ring-manga-red/40 size-4 rounded-full border-2 shadow-[1px_1px_0_var(--manga-black)] has-focus-visible:ring-4"
+              className="border-line bg-surface has-focus-visible:ring-brand/40 size-4 rounded-full border has-focus-visible:ring-4"
               getAriaLabel={() => 'Seek'}
               getAriaValueText={(_formatted, value) =>
                 `${formatClock(value)} of ${formatClock(total)}`
@@ -312,7 +309,10 @@ export function AudioPlayer({
         />
         <button
           aria-label={`Playback speed ${rate}x`}
-          className={cn(GHOST_BUTTON_CLASS, 'w-9 font-sans text-xs font-black')}
+          className={cn(
+            GHOST_BUTTON_CLASS,
+            'w-9 font-sans text-xs font-semibold'
+          )}
           onClick={cycleRate}
           title="Change speed"
           type="button"

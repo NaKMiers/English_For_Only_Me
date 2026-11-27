@@ -69,7 +69,7 @@ export function AdminTopicThumbnailFields({ defaultUrl = null, title }: Props) {
         aria-label={`Upload thumbnail for ${title}`}
         onClick={() => inputRef.current?.click()}
         className={cn(
-          'border-manga-black bg-manga-white group focus-visible:outline-manga-red rounded-control relative grid size-28 shrink-0 place-items-center overflow-hidden border-3 shadow-[4px_4px_0_var(--manga-black)] transition-transform hover:-translate-y-0.5 focus-visible:outline-3 focus-visible:outline-offset-2',
+          'border-line bg-surface group focus-visible:outline-brand rounded-control relative grid size-28 shrink-0 place-items-center overflow-hidden border transition-transform hover:-translate-y-0.5 focus-visible:outline-3 focus-visible:outline-offset-2',
           isPending && 'pointer-events-none opacity-70'
         )}
       >
@@ -88,7 +88,7 @@ export function AdminTopicThumbnailFields({ defaultUrl = null, title }: Props) {
           </span>
         )}
         {isPending && (
-          <span className="bg-manga-black/80 text-manga-white absolute inset-x-0 bottom-0 px-1 py-1 text-center font-sans text-[10px] font-black uppercase">
+          <span className="bg-ink/80 text-surface absolute inset-x-0 bottom-0 px-1 py-1 text-center font-sans text-[10px] font-semibold">
             Uploading
           </span>
         )}
@@ -101,7 +101,7 @@ export function AdminTopicThumbnailFields({ defaultUrl = null, title }: Props) {
         className="sr-only"
       />
       {error && (
-        <p className="text-manga-red max-w-28 text-xs font-black">{error}</p>
+        <p className="text-danger max-w-28 text-xs font-semibold">{error}</p>
       )}
     </div>
   )

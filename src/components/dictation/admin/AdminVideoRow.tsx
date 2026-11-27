@@ -68,10 +68,10 @@ function AdminVideoLevelBadge({
           size="sm"
           onKeyDown={event => event.stopPropagation()}
           className={cn(
-            'rounded-tag min-h-6 gap-1 border-2 px-2 py-0 text-xs font-black shadow-none',
+            'rounded-tag min-h-6 gap-1 border px-2 py-0 text-xs font-semibold shadow-none',
             level
-              ? 'bg-sky-100 text-sky-950'
-              : 'bg-manga-white text-manga-ink-soft'
+              ? 'bg-pastel-sky text-accent-blue'
+              : 'bg-surface text-ink-soft'
           )}
         >
           <SelectValue placeholder="No level" />
@@ -115,7 +115,7 @@ function AdminVideoActionsMenu({
         title="Actions"
         onClick={event => event.stopPropagation()}
         onKeyDown={event => event.stopPropagation()}
-        className="border-manga-black bg-manga-white hover:bg-manga-paper-soft rounded-control grid size-9 shrink-0 place-items-center border-2 shadow-[2px_2px_0_var(--manga-black)] transition-colors"
+        className="border-line bg-surface hover:bg-tint rounded-control grid size-9 shrink-0 place-items-center border transition-colors"
       >
         <EllipsisVertical
           aria-hidden="true"
@@ -151,7 +151,7 @@ function AdminVideoActionsMenu({
             confirmTitle="Delete video?"
             confirmMessage={`Move "${video.title}" to the trash? It disappears from admin and app lists until you restore it.`}
             confirmLabel="Move to trash"
-            className="focus:bg-manga-red focus:text-manga-white text-manga-red hover:bg-manga-red hover:text-manga-white rounded-tag flex min-h-11 w-full items-center gap-2 px-3 font-sans text-sm font-black whitespace-nowrap transition-colors"
+            className="focus:bg-brand focus:text-surface text-brand hover:bg-brand hover:text-surface rounded-tag flex min-h-11 w-full items-center gap-2 px-3 font-sans text-sm font-semibold whitespace-nowrap transition-colors"
           >
             <Trash2
               aria-hidden="true"
@@ -250,8 +250,8 @@ export function AdminVideoRow({
         // min-w-0: this row is a grid item; without it the truncated (nowrap)
         // title forces the row's min-content to the full title width, overflowing
         // the viewport on narrow screens instead of truncating.
-        'border-manga-black bg-manga-white rounded-control flex min-w-0 cursor-grab flex-wrap items-center gap-2 border-2 p-2 active:cursor-grabbing',
-        selectable && 'hover:bg-manga-paper-soft'
+        'border-line bg-surface rounded-control flex min-w-0 cursor-grab flex-wrap items-center gap-2 border p-2 active:cursor-grabbing',
+        selectable && 'hover:bg-tint'
       )}
     >
       <button
@@ -261,19 +261,19 @@ export function AdminVideoRow({
         onClick={event => event.stopPropagation()}
         onKeyDown={event => event.stopPropagation()}
         onDragStart={startDrag}
-        className="border-manga-black bg-manga-white rounded-tag grid size-8 shrink-0 cursor-grab place-items-center border-2 active:cursor-grabbing"
+        className="border-line bg-surface rounded-tag grid size-8 shrink-0 cursor-grab place-items-center border active:cursor-grabbing"
       >
         <GripVertical
           aria-hidden="true"
-          className="text-manga-ink-soft size-4"
+          className="text-ink-soft size-4"
         />
       </button>
       {selectable && (
         <span
           aria-hidden="true"
-          className="border-manga-black bg-manga-white rounded-tag grid size-5 shrink-0 place-items-center border-2"
+          className="border-line bg-surface rounded-tag grid size-5 shrink-0 place-items-center border"
         >
-          {selected && <span className="bg-manga-red size-2.5" />}
+          {selected && <span className="bg-brand size-2.5" />}
         </span>
       )}
       <DictationVideoThumbnail
@@ -283,7 +283,7 @@ export function AdminVideoRow({
         sizes="96px"
         className="rounded-tag w-20 shrink-0 sm:w-24"
       />
-      <span className="min-w-0 flex-1 truncate font-sans text-sm font-black">
+      <span className="min-w-0 flex-1 truncate font-sans text-sm font-semibold">
         {video.title}
       </span>
       <AdminVideoLevelBadge

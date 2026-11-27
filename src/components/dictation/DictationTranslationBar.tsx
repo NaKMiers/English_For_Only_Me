@@ -38,19 +38,17 @@ export function DictationTranslationBar({
   return (
     <div
       className={cn(
-        'border-manga-black bg-manga-white rounded-control flex flex-wrap items-center gap-2 border-2 text-sm font-black shadow-[2px_2px_0_var(--manga-black)]',
+        'border-line bg-surface rounded-control flex flex-wrap items-center gap-2 border text-sm font-semibold',
         compact ? 'gap-1 px-1.5 py-1' : 'px-3 py-2',
         className
       )}
     >
       <Languages
         aria-hidden="true"
-        className="text-manga-red size-4 shrink-0"
+        className="text-brand size-4 shrink-0"
       />
       {compact ? null : (
-        <span className="font-sans text-xs tracking-normal uppercase">
-          Translation
-        </span>
+        <span className="font-sans text-xs tracking-normal">Translation</span>
       )}
       <Select
         value={value}

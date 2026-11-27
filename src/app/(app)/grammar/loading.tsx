@@ -1,12 +1,12 @@
-import { MangaPageShell } from '@/components/common/MangaPageShell'
+import { PageShell } from '@/components/common/PageShell'
 import { Skeleton } from '@/components/ui/skeleton'
 
 export default function GrammarLoading() {
   return (
-    <MangaPageShell>
+    <PageShell>
       <div
         aria-busy
-        aria-label="Đang tải lộ trình"
+        aria-label="Loading the grammar path"
         className="grid gap-6 p-4 sm:p-6 lg:p-8"
       >
         <Skeleton className="rounded-control h-10 w-64" />
@@ -22,6 +22,6 @@ export default function GrammarLoading() {
           ))}
         </div>
       </div>
-    </MangaPageShell>
+    </PageShell>
   )
 }

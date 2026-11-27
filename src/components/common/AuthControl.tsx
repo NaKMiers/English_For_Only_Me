@@ -1,7 +1,7 @@
 import { LogIn } from 'lucide-react'
 
 import { UserMenu } from '@/components/common/UserMenu'
-import { MangaButton } from '@/components/ui/MangaButton'
+import { ActionButton } from '@/components/ui/ActionButton'
 import { hasGoogleAuth } from '@/constants/environments'
 import { auth, signIn, signOut } from '@/lib/auth/auth'
 
@@ -25,7 +25,7 @@ export async function AuthControl() {
           await signIn('google')
         }}
       >
-        <MangaButton
+        <ActionButton
           type="submit"
           tone="paper"
           icon={
@@ -36,7 +36,7 @@ export async function AuthControl() {
           }
         >
           Sign in
-        </MangaButton>
+        </ActionButton>
       </form>
     )
 

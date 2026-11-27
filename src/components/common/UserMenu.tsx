@@ -14,7 +14,7 @@ interface Props {
 }
 
 const TRIGGER_CLASS_NAME =
-  'border-manga-black bg-manga-white hover:bg-manga-paper-soft rounded-control flex min-h-11 min-w-0 items-center gap-2 border-3 px-2 shadow-[3px_3px_0_var(--manga-black)] transition-colors'
+  'border-line bg-surface hover:bg-tint rounded-control flex min-h-11 min-w-0 items-center gap-2 border px-2 transition-colors'
 
 const loadUserMenuPopup = () => import('./UserMenuPopup')
 
@@ -64,22 +64,22 @@ export function UserMenu({
           height={28}
           unoptimized
           referrerPolicy="no-referrer"
-          className="border-manga-black bg-manga-white rounded-tag size-7 shrink-0 border-2 object-cover"
+          className="border-line bg-surface rounded-tag size-7 shrink-0 border object-cover"
         />
       ) : (
         <span
           aria-hidden="true"
-          className="bg-manga-black text-manga-white grid size-7 shrink-0 place-items-center font-sans text-sm font-black"
+          className="bg-ink text-surface grid size-7 shrink-0 place-items-center font-sans text-sm font-semibold"
         >
           {initial}
         </span>
       )}
       <span className="grid min-w-0 leading-tight">
-        <span className="truncate font-sans text-sm font-black">{label}</span>
+        <span className="truncate font-sans text-sm font-semibold">
+          {label}
+        </span>
         {isAdmin && (
-          <span className="text-manga-ink-soft text-xs font-black uppercase">
-            Admin
-          </span>
+          <span className="text-ink-soft text-xs font-normal">Admin</span>
         )}
       </span>
     </>

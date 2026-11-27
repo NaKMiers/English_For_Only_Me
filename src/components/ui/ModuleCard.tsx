@@ -45,34 +45,31 @@ export function ModuleCard({
           ) : null}
         </div>
         {icon ? (
-          <span className="border-manga-black bg-manga-pale-red grid size-11 shrink-0 place-items-center border-2 shadow-[3px_3px_0_var(--manga-black)]">
+          <span className="border-line bg-tint-soft grid size-11 shrink-0 place-items-center border">
             {icon}
           </span>
         ) : null}
-        <h3 className="col-span-2 font-sans text-xl leading-none font-black tracking-normal wrap-break-word uppercase">
+        <h3 className="col-span-2 font-sans text-xl leading-none font-semibold tracking-normal wrap-break-word">
           {title}
         </h3>
       </CardHeader>
       <CardContent className="p-0">
-        <p className="text-manga-ink-soft text-sm leading-6 font-semibold wrap-break-word">
+        <p className="text-ink-soft text-sm leading-6 font-normal wrap-break-word">
           {description}
         </p>
       </CardContent>
-      <CardFooter className="border-manga-black/45 mt-auto flex min-w-0 flex-wrap items-center justify-between gap-3 border-t-2 border-dashed bg-transparent p-0 pt-3">
+      <CardFooter className="border-line/45 mt-auto flex min-w-0 flex-wrap items-center justify-between gap-3 border-t border-dashed bg-transparent p-0 pt-3">
         {skill ? (
-          <span className="text-xs font-black tracking-normal uppercase">
-            {skill}
-          </span>
+          <span className="text-xs font-semibold tracking-normal">{skill}</span>
         ) : null}
-        <span className="text-manga-red text-sm font-black">{cta}</span>
+        <span className="text-brand text-sm font-semibold">{cta}</span>
       </CardFooter>
     </>
   )
 
   const cardClassName = cn(
-    'grid min-h-56 gap-4 rounded-panel border-3 border-manga-black bg-manga-white p-4 py-4 text-manga-black shadow-[4px_4px_0_var(--manga-black)] ring-0 sticker-press',
-    href &&
-      'hover:bg-manga-paper-soft active:translate-x-1 active:translate-y-1 active:shadow-none',
+    'grid min-h-56 gap-4 rounded-panel border border-line bg-surface p-4 py-4 text-ink ring-0 soft-press',
+    href && 'hover:bg-tint',
     className
   )
 

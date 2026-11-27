@@ -24,7 +24,7 @@ export function AdminAudioPlayer({ audio, lines }: Props) {
       renderCaption={lineIndex => {
         if (!offsets.length)
           return (
-            <p className="text-manga-ink-soft px-1 text-xs font-semibold">
+            <p className="text-ink-soft px-1 text-xs font-normal">
               Uploaded mp3: no per-line timings, so skips jump 5 s.
             </p>
           )
@@ -34,22 +34,20 @@ export function AdminAudioPlayer({ audio, lines }: Props) {
         return (
           <p
             aria-live="polite"
-            className="bg-manga-white rounded-tag flex min-h-8 min-w-0 items-center gap-2 px-2 text-xs"
+            className="bg-surface rounded-tag flex min-h-8 min-w-0 items-center gap-2 px-2 text-xs"
           >
             {line ? (
               <>
-                <span className="border-manga-black rounded-tag shrink-0 border-2 px-1.5 font-sans font-black tabular-nums">
+                <span className="border-line rounded-tag shrink-0 border px-1.5 font-sans font-semibold tabular-nums">
                   {lineIndex + 1}/{offsets.length}
                 </span>
-                <span className="shrink-0 font-black uppercase">
-                  {line.speaker}
-                </span>
-                <span className="text-manga-ink-soft truncate font-semibold">
+                <span className="shrink-0 font-semibold">{line.speaker}</span>
+                <span className="text-ink-soft truncate font-normal">
                   {line.text}
                 </span>
               </>
             ) : (
-              <span className="text-manga-ink-soft font-semibold">
+              <span className="text-ink-soft font-normal">
                 {offsets.length} timed lines. Press play or step to a line.
               </span>
             )}

@@ -76,7 +76,7 @@ export function ImageUploadField({
       </div>
       {error ? (
         <p
-          className="text-manga-red text-xs font-semibold"
+          className="text-brand text-xs font-semibold"
           role="alert"
         >
           {error}

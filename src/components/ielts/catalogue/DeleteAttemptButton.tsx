@@ -54,7 +54,7 @@ export function DeleteAttemptButton({
       {/* Row action opening a confirm: a plain icon button by design. */}
       <button
         aria-label={`Delete attempt: ${label}`}
-        className="text-manga-ink-soft hover:text-manga-red hover:bg-manga-pale-red rounded-tag grid size-8 place-items-center transition-colors"
+        className="text-ink-soft hover:text-danger hover:bg-danger-soft rounded-tag grid size-8 place-items-center transition-colors"
         onClick={() => setOpen(true)}
         title="Delete attempt"
         type="button"
@@ -79,7 +79,7 @@ export function DeleteAttemptButton({
           </DialogHeader>
           {error ? (
             <p
-              className="text-manga-red text-sm font-semibold"
+              className="text-danger text-sm font-semibold"
               role="alert"
             >
               {error}

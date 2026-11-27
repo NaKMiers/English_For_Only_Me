@@ -1,10 +1,10 @@
 import { CalendarClock, Flame, ListChecks, Video } from 'lucide-react'
 
-import { MangaPanel } from '@/components/common/MangaPanel'
+import { ContentPanel } from '@/components/common/ContentPanel'
 import { MetricTile } from '@/components/common/MetricTile'
 import { QueueRow } from '@/components/common/QueueRow'
 import { SketchChart } from '@/components/common/SketchChart'
-import { MangaButton } from '@/components/ui/MangaButton'
+import { ActionButton } from '@/components/ui/ActionButton'
 import type { DictationGlobalStatsRecord } from '@/modules/dictation/types'
 
 interface Props {
@@ -83,29 +83,29 @@ export function DictationGlobalStats({ stats }: Props) {
       </div>
 
       {isEmpty ? (
-        <MangaPanel
+        <ContentPanel
           eyebrow="Empty"
           title="No saved practice yet"
         >
-          <p className="text-manga-ink-soft text-base leading-7 font-semibold">
+          <p className="text-ink-soft text-base leading-7 font-normal">
             Import a video, build segments, and finish a practice session. This
             page will then show where Dictation Lab should push you next.
           </p>
           <div className="flex flex-wrap gap-3">
-            <MangaButton href="/admin/dictation/import">
+            <ActionButton href="/admin/dictation/import">
               Import Video
-            </MangaButton>
-            <MangaButton
+            </ActionButton>
+            <ActionButton
               href="/dictation"
               tone="paper"
             >
               Back To Lab
-            </MangaButton>
+            </ActionButton>
           </div>
-        </MangaPanel>
+        </ContentPanel>
       ) : (
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(320px,0.8fr)]">
-          <MangaPanel
+          <ContentPanel
             eyebrow="Trend"
             title="First-try accuracy"
           >
@@ -122,9 +122,9 @@ export function DictationGlobalStats({ stats }: Props) {
                 />
               ))}
             </div>
-          </MangaPanel>
+          </ContentPanel>
 
-          <MangaPanel
+          <ContentPanel
             eyebrow="Taxonomy"
             title="Repeated mistake types"
           >
@@ -138,12 +138,12 @@ export function DictationGlobalStats({ stats }: Props) {
                 />
               ))}
             </div>
-          </MangaPanel>
+          </ContentPanel>
         </div>
       )}
 
       <div className="grid items-start gap-5 lg:grid-cols-2">
-        <MangaPanel
+        <ContentPanel
           eyebrow="Words"
           title="Weak words"
         >
@@ -158,13 +158,13 @@ export function DictationGlobalStats({ stats }: Props) {
               ))}
             </div>
           ) : (
-            <p className="text-manga-ink-soft text-base leading-7 font-semibold">
+            <p className="text-ink-soft text-base leading-7 font-normal">
               No weak words yet. The list starts after real attempts.
             </p>
           )}
-        </MangaPanel>
+        </ContentPanel>
 
-        <MangaPanel
+        <ContentPanel
           eyebrow="Next"
           title="Where to practice"
         >
@@ -180,7 +180,7 @@ export function DictationGlobalStats({ stats }: Props) {
               href="/dictation"
             />
           </div>
-        </MangaPanel>
+        </ContentPanel>
       </div>
     </div>
   )

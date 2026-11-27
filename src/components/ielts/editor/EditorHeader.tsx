@@ -86,22 +86,22 @@ export function EditorHeader({
   const generating = Boolean(busy?.startsWith('gen:'))
 
   return (
-    <header className="border-manga-black bg-manga-white rounded-panel flex min-w-0 shrink-0 flex-wrap items-center gap-x-4 gap-y-2 border-3 px-3 py-2 shadow-[4px_4px_0_var(--manga-black)]">
+    <header className="border-line bg-surface rounded-panel flex min-w-0 shrink-0 flex-wrap items-center gap-x-4 gap-y-2 border px-3 py-2">
       <div className="grid min-w-0 gap-1">
         <div className="flex min-w-0 items-baseline gap-1">
           <nav
             aria-label="Breadcrumb"
-            className="text-muted-foreground flex shrink-0 items-center gap-1 font-sans text-xs font-black"
+            className="text-muted-foreground flex shrink-0 items-center gap-1 font-sans text-xs font-semibold"
           >
             <Link
-              className="hover:text-manga-black underline-offset-2 hover:underline"
+              className="hover:text-ink underline-offset-2 hover:underline"
               href="/admin"
             >
               Admin
             </Link>
             <span aria-hidden="true">/</span>
             <Link
-              className="hover:text-manga-black underline-offset-2 hover:underline"
+              className="hover:text-ink underline-offset-2 hover:underline"
               href="/admin/ielts"
             >
               IELTS
@@ -109,7 +109,7 @@ export function EditorHeader({
             <span aria-hidden="true">/</span>
           </nav>
           <h1
-            className="min-w-0 truncate font-sans text-lg leading-tight font-black"
+            className="min-w-0 truncate font-sans text-lg leading-tight font-semibold"
             title={test.slug}
           >
             {test.title || 'Untitled test'}
@@ -179,9 +179,9 @@ export function EditorHeader({
         <button
           aria-label={`${countLabel(errors, 'error')}, ${countLabel(warnings, 'warning')}`}
           className={cn(
-            'border-manga-black rounded-control sticker-press inline-flex min-h-9 items-center gap-2 border-2 px-2.5 font-sans text-xs font-black tabular-nums shadow-[2px_2px_0_var(--manga-black)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none',
+            'border-line rounded-control soft-press inline-flex min-h-9 items-center gap-2 border px-2.5 font-sans text-xs font-semibold tabular-nums',
             errors
-              ? 'bg-manga-red text-manga-white'
+              ? 'bg-brand text-surface'
               : warnings
                 ? 'bg-yellow-100 text-yellow-950'
                 : 'bg-sky-100 text-sky-950'
@@ -254,7 +254,7 @@ export function EditorHeader({
         <DropdownMenu>
           <DropdownMenuTrigger
             aria-label="More test actions"
-            className="border-manga-black bg-manga-white hover:bg-manga-paper-soft rounded-control sticker-press grid size-9 shrink-0 place-items-center border-2 shadow-[2px_2px_0_var(--manga-black)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:opacity-50"
+            className="border-line bg-surface hover:bg-tint rounded-control soft-press grid size-9 shrink-0 place-items-center border disabled:opacity-50"
             disabled={busy !== null && !generating}
             title="More"
           >

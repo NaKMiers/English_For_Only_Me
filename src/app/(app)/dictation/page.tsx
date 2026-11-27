@@ -4,12 +4,12 @@ import Link from 'next/link'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { AuthControl } from '@/components/common/AuthControl'
-import { MangaPageShell } from '@/components/common/MangaPageShell'
+import { PageShell } from '@/components/common/PageShell'
 import { PageHero } from '@/components/common/PageHero'
 import { DictationGlobalStats } from '@/components/dictation/DictationGlobalStats'
 import { InProgressSection } from '@/components/dictation/browse/InProgressSection'
 import { TopicGrid } from '@/components/dictation/browse/TopicGrid'
-import { MangaButton } from '@/components/ui/MangaButton'
+import { ActionButton } from '@/components/ui/ActionButton'
 import { PageTag } from '@/components/ui/PageTag'
 import { hasMongoDbUri } from '@/constants/environments'
 import { connectDatabaseWhen } from '@/lib/db/connectDatabase'
@@ -46,8 +46,8 @@ export const runtime = 'nodejs'
 
 function BrowseFooter() {
   return (
-    <div className="border-manga-black bg-manga-black text-manga-white border-t-3 px-5 py-4">
-      <strong className="font-sans text-base font-black tracking-normal uppercase">
+    <div className="border-line bg-ink text-surface border-t px-5 py-4">
+      <strong className="font-sans text-base font-semibold tracking-normal">
         English For Only Me
       </strong>
     </div>
@@ -115,7 +115,7 @@ export default async function DictationPage() {
   }
 
   return (
-    <MangaPageShell
+    <PageShell
       topbar={
         <AppTopbar
           activeHref="/dictation"
@@ -131,10 +131,10 @@ export default async function DictationPage() {
             <PageTag tone="red">Listening</PageTag>
             <div className="flex flex-wrap items-center justify-end gap-2">
               {latestCompletedVideo ? (
-                <MangaButton
+                <ActionButton
                   href={`/dictation/videos/${latestCompletedVideo.id}/results`}
                   tone="primary"
-                  className="bg-manga-paper-soft hover:bg-manga-pale-red min-h-10 px-3 py-1 text-xs"
+                  className="bg-tint hover:bg-tint-soft min-h-10 px-3 py-1 text-xs"
                   icon={
                     <Trophy
                       aria-hidden="true"
@@ -143,20 +143,20 @@ export default async function DictationPage() {
                   }
                 >
                   View Latest Results
-                </MangaButton>
+                </ActionButton>
               ) : null}
               <Link
                 href="/dictation/favorites"
-                className="text-manga-red text-sm font-black hover:underline"
+                className="text-brand text-sm font-semibold hover:underline"
               >
                 ★ Favorites
               </Link>
             </div>
           </div>
-          <h1 className="font-sans text-[clamp(1.8rem,4vw,2.6rem)] leading-none font-black uppercase">
+          <h1 className="font-sans text-[clamp(1.8rem,4vw,2.6rem)] leading-none font-medium">
             All topics
           </h1>
-          <p className="text-manga-ink-soft max-w-2xl text-sm leading-6">
+          <p className="text-ink-soft max-w-2xl text-sm leading-6">
             {hasPracticeActor
               ? 'Pick a topic, then a section, then continue building your listening history.'
               : 'Pick a topic, then a section, then practice a lesson. Sign in to save your progress and favorites.'}
@@ -171,11 +171,11 @@ export default async function DictationPage() {
           noTopicCount={noTopicCount}
         />
         {globalStats ? (
-          <div className="border-manga-black/20 mt-4 border-t-2 pt-8">
+          <div className="border-line/20 mt-4 border-t pt-8">
             <DictationGlobalStats stats={globalStats} />
           </div>
         ) : null}
       </section>
-    </MangaPageShell>
+    </PageShell>
   )
 }

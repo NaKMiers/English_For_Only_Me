@@ -28,11 +28,11 @@ export function SketchChart({ className, label, points = [] }: Props) {
   return (
     <figure
       className={cn(
-        'border-manga-black bg-manga-white rounded-panel grid min-h-44 min-w-0 gap-3 border-3 p-4 shadow-[4px_4px_0_var(--manga-black)]',
+        'border-line bg-surface rounded-panel grid min-h-44 min-w-0 gap-3 border p-4',
         className
       )}
     >
-      <figcaption className="text-xs leading-tight font-black tracking-normal uppercase">
+      <figcaption className="text-xs leading-tight font-semibold tracking-normal">
         {label}
       </figcaption>
       <svg
@@ -43,7 +43,7 @@ export function SketchChart({ className, label, points = [] }: Props) {
       >
         <path
           d="M0 104 H240"
-          stroke="var(--manga-black)"
+          stroke="var(--ink)"
           strokeWidth="3"
           strokeLinecap="round"
         />
@@ -57,7 +57,7 @@ export function SketchChart({ className, label, points = [] }: Props) {
         <polyline
           points={polyline}
           fill="none"
-          stroke="var(--manga-logo-red)"
+          stroke="var(--brand)"
           strokeWidth="5"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -71,8 +71,8 @@ export function SketchChart({ className, label, points = [] }: Props) {
               cx={x}
               cy={y}
               r="4"
-              fill="var(--manga-white)"
-              stroke="var(--manga-black)"
+              fill="var(--surface)"
+              stroke="var(--ink)"
               strokeWidth="3"
             />
           )

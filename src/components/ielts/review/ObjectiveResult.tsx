@@ -56,10 +56,8 @@ function EvidenceContext({
   if (!text) return null
 
   return (
-    <blockquote className="border-manga-black font-body rounded-control bg-manga-white border-l-4 px-3 py-2 text-[16px] leading-[1.7]">
-      {speaker ? (
-        <strong className="font-sans uppercase">{speaker}: </strong>
-      ) : null}
+    <blockquote className="border-line font-body rounded-control bg-surface border-l-4 px-3 py-2 text-[16px] leading-[1.7]">
+      {speaker ? <strong className="font-sans">{speaker}: </strong> : null}
       {label ? <strong className="font-sans">{label} </strong> : null}
       {highlightText(text, row.evidence.quote)}
     </blockquote>
@@ -117,7 +115,7 @@ export function ObjectiveResult({ attempt, rows, sections }: Props) {
       attempt.deadlineAt &&
       new Date(attempt.submittedAt) > new Date(attempt.deadlineAt) ? (
         <p
-          className="border-manga-black bg-manga-pale-red rounded-control border-2 px-3 py-2"
+          className="border-line bg-tint-soft rounded-control border px-3 py-2"
           role="status"
         >
           Time ran out. Saved answers were graded.
@@ -199,10 +197,10 @@ export function ObjectiveResult({ attempt, rows, sections }: Props) {
             <button
               aria-pressed={filter === value}
               className={cn(
-                'border-manga-black rounded-control min-h-9 border-2 px-3 font-sans text-sm font-black',
+                'border-line rounded-control min-h-9 border px-3 font-sans text-sm font-semibold',
                 filter === value
-                  ? 'bg-manga-red text-manga-white'
-                  : 'hover:bg-manga-pale-red bg-manga-white'
+                  ? 'bg-brand text-surface'
+                  : 'hover:bg-tint-soft bg-surface'
               )}
               key={value}
               onClick={() => setFilter(value)}
@@ -215,7 +213,7 @@ export function ObjectiveResult({ attempt, rows, sections }: Props) {
         <div className="overflow-x-auto">
           <table className="w-full min-w-[560px] border-collapse text-left">
             <thead>
-              <tr className="border-manga-black border-b-2 font-sans text-xs uppercase">
+              <tr className="border-line border-b font-sans text-xs">
                 <th
                   className="py-2 pr-2"
                   scope="col"
@@ -254,13 +252,13 @@ export function ObjectiveResult({ attempt, rows, sections }: Props) {
 
                 return (
                   <Fragment key={row.number}>
-                    <tr className="border-manga-black/20 border-b align-top">
+                    <tr className="border-line/20 border-b align-top">
                       <td className="py-2 pr-2">
                         {/* Disclosure trigger (aria-expanded): documented raw-button exception. */}
                         <button
                           aria-controls={`ielts-row-${row.number}`}
                           aria-expanded={expanded}
-                          className="inline-flex min-h-8 items-center gap-1 font-sans font-black"
+                          className="inline-flex min-h-8 items-center gap-1 font-sans font-semibold"
                           onClick={() =>
                             setOpenRow(expanded ? null : row.number)
                           }
@@ -282,7 +280,7 @@ export function ObjectiveResult({ attempt, rows, sections }: Props) {
                       <td className="py-2 pr-2 font-semibold">
                         {row.given || '-'}
                         {row.overLimit ? (
-                          <span className="text-manga-red block text-xs">
+                          <span className="text-danger block text-xs">
                             Over the word limit
                           </span>
                         ) : null}

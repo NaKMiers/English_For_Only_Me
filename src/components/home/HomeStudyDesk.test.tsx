@@ -11,7 +11,7 @@ describe('HomeStudyDesk', () => {
 
     expect(html).toContain('English For Only Me')
     expect(html).toContain('English For Only Me logo')
-    expect(html).toContain('Your English training desk.')
+    expect(html).toContain('Dashboard')
     // Every active module is guaranteed a launcher slot; placeholders fill the
     // rest. Grammar became active, so it displaced AI Coach (a planned module
     // with no route) rather than being left off the desk; IELTS Tests, the
@@ -60,7 +60,20 @@ describe('HomeStudyDesk', () => {
     expect(html).toContain('5')
     expect(html).toContain('3')
     expect(html).toContain('4 saved videos')
+    expect(html).toContain('available')
     expect(html).toContain('7')
     expect(html).toContain('1')
+  })
+
+  test('greets the signed-in learner by first name', () => {
+    const html = renderToStaticMarkup(
+      <HomeStudyDesk
+        userName="Khoa Nguyen"
+        now={new Date('2026-11-27T09:00:00')}
+      />
+    )
+
+    expect(html).toContain('Hello, Khoa')
+    expect(html).toContain('27 November')
   })
 })

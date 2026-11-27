@@ -1,7 +1,7 @@
 import { ArrowRight } from 'lucide-react'
 
-import { MangaPanel } from '@/components/common/MangaPanel'
-import { MangaButton } from '@/components/ui/MangaButton'
+import { ContentPanel } from '@/components/common/ContentPanel'
+import { ActionButton } from '@/components/ui/ActionButton'
 import type {
   DictationGlobalStatsRecord,
   DictationReviewItemApiRecord,
@@ -22,27 +22,27 @@ export function DictationStatsScene({
   return (
     <div className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1.18fr)_minmax(320px,0.82fr)]">
       <section className="grid min-w-0 content-start gap-5">
-        <MangaPanel
+        <ContentPanel
           eyebrow="Page 03"
           title="Make the weak spots loud."
         >
-          <p className="text-manga-ink-soft text-base leading-7 font-semibold">
+          <p className="text-ink-soft text-base leading-7 font-normal">
             The dashboard is for one person: show what to practice next, not
             vanity numbers.
           </p>
-        </MangaPanel>
+        </ContentPanel>
         {globalStats ? (
           <DictationGlobalStats stats={globalStats} />
         ) : (
-          <MangaPanel
+          <ContentPanel
             eyebrow="Stats"
             title="Waiting for saved data"
           >
-            <p className="text-manga-ink-soft text-base leading-7 font-semibold">
+            <p className="text-ink-soft text-base leading-7 font-normal">
               Set MONGODB_URI and finish practice to unlock real Dictation Lab
               stats.
             </p>
-          </MangaPanel>
+          </ContentPanel>
         )}
       </section>
 
@@ -52,15 +52,15 @@ export function DictationStatsScene({
           title="Review stack"
         />
 
-        <MangaPanel
+        <ContentPanel
           eyebrow="Rule"
           title="Practice first"
         >
-          <p className="text-manga-ink-soft text-base leading-7 font-semibold">
+          <p className="text-ink-soft text-base leading-7 font-normal">
             AI appears after work is complete. The practice loop stays honest:
             listen first, then get help.
           </p>
-          <MangaButton
+          <ActionButton
             icon={
               <ArrowRight
                 aria-hidden="true"
@@ -69,8 +69,8 @@ export function DictationStatsScene({
             }
           >
             Start Review
-          </MangaButton>
-        </MangaPanel>
+          </ActionButton>
+        </ContentPanel>
       </aside>
     </div>
   )

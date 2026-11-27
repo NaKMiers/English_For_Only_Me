@@ -28,8 +28,7 @@ interface Props {
   videoId: string
 }
 
-const CHIP_CLASS_NAME =
-  'min-h-7 shrink-0 px-2 py-0.5 shadow-[2px_2px_0_var(--manga-black)]'
+const CHIP_CLASS_NAME = 'min-h-7 shrink-0 px-2 py-0.5'
 
 /**
  * The practice screen's only header: exercise title on the left, its metadata
@@ -74,12 +73,12 @@ export function DictationPracticeHeader({
                 width={58}
                 height={58}
                 priority
-                className="border-manga-black bg-manga-white rounded-control size-9 border-2 object-contain shadow-[2px_2px_0_var(--manga-black)]"
+                className="border-line bg-surface rounded-control size-9 border object-contain"
               />
             </TooltipTrigger>
             <TooltipContent
               side="bottom"
-              className="rounded-tag font-sans font-black uppercase"
+              className="rounded-tag font-sans font-semibold"
             >
               English For Only Me
             </TooltipContent>
@@ -100,7 +99,7 @@ export function DictationPracticeHeader({
             to spare for it, but the screen still needs its one h1. */}
         <h1
           title={title}
-          className="min-w-0 flex-1 truncate font-sans text-base leading-tight font-black tracking-normal max-sm:sr-only sm:text-lg"
+          className="min-w-0 flex-1 truncate font-sans text-base leading-tight font-semibold tracking-normal max-sm:sr-only sm:text-lg"
         >
           {title}
         </h1>
@@ -123,7 +122,7 @@ export function DictationPracticeHeader({
           <IconButton
             href={`/dictation/videos/${videoId}/results`}
             label="View results"
-            className="size-9 border-2 shadow-[2px_2px_0_var(--manga-black)]"
+            className="size-9 border"
           >
             <Trophy
               aria-hidden="true"

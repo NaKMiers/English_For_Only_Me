@@ -75,31 +75,29 @@ export function SkillLauncher({
   return (
     <section
       aria-label={title}
-      className="border-manga-black bg-manga-white rounded-panel keep-frame grid content-start overflow-hidden border-2 shadow-[3px_3px_0_var(--manga-black)]"
+      className="border-line bg-surface rounded-panel keep-frame grid content-start overflow-hidden border"
     >
-      <header className="border-manga-black flex items-center justify-between gap-2 border-b-2 px-4 py-2.5">
+      <header className="border-line flex items-center justify-between gap-2 border-b px-4 py-2.5">
         <div className="grid min-w-0">
-          <h2 className="font-sans text-lg leading-tight font-black">
+          <h2 className="font-sans text-lg leading-tight font-semibold">
             {title}
           </h2>
-          <span className="text-manga-ink-soft text-xs font-semibold">
-            {partsNoun}
-          </span>
+          <span className="text-ink-soft text-xs font-normal">{partsNoun}</span>
         </div>
         {/* Mode toggle (aria-pressed): documented raw-button exception. */}
         <div
           aria-label={`${title} mode`}
-          className="border-manga-black rounded-control flex shrink-0 overflow-hidden border-2"
+          className="border-line rounded-control flex shrink-0 overflow-hidden border"
           role="group"
         >
           {MODES.map(item => (
             <button
               aria-pressed={mode === item.value}
               className={cn(
-                'border-manga-black h-8 border-l-2 px-2.5 font-sans text-xs font-black transition-colors first:border-l-0',
+                'border-line h-8 border-l px-2.5 font-sans text-xs font-semibold transition-colors first:border-l-0',
                 mode === item.value
-                  ? 'bg-manga-black text-manga-white'
-                  : 'bg-manga-white hover:bg-manga-paper-soft'
+                  ? 'bg-ink text-surface'
+                  : 'bg-surface hover:bg-tint'
               )}
               key={item.value}
               onClick={() => setMode(item.value)}
@@ -123,11 +121,11 @@ export function SkillLauncher({
             <label
               className={cn(
                 'flex min-h-10 items-center gap-3 px-4 text-sm font-semibold transition-colors',
-                option.value === 'full' && 'font-black',
+                option.value === 'full' && 'font-semibold',
                 disabled
-                  ? 'text-manga-ink-soft cursor-not-allowed opacity-45'
-                  : 'hover:bg-manga-paper-soft cursor-pointer',
-                checked && !disabled && 'bg-manga-paper-soft'
+                  ? 'text-ink-soft cursor-not-allowed opacity-45'
+                  : 'hover:bg-tint cursor-pointer',
+                checked && !disabled && 'bg-tint'
               )}
               key={option.value}
             >
@@ -143,16 +141,16 @@ export function SkillLauncher({
               <span
                 aria-hidden="true"
                 className={cn(
-                  'border-manga-black peer-focus-visible:ring-manga-red/40 grid size-4 shrink-0 place-items-center rounded-full border-2 peer-focus-visible:ring-4',
-                  checked && !disabled && 'bg-manga-black'
+                  'border-line peer-focus-visible:ring-brand/40 grid size-4 shrink-0 place-items-center rounded-full border peer-focus-visible:ring-4',
+                  checked && !disabled && 'bg-ink'
                 )}
               >
                 {checked && !disabled ? (
-                  <span className="bg-manga-white size-1.5 rounded-full" />
+                  <span className="bg-surface size-1.5 rounded-full" />
                 ) : null}
               </span>
               <span className="min-w-0 flex-1">{option.label}</span>
-              <span className="text-manga-ink-soft text-xs font-semibold">
+              <span className="text-ink-soft text-xs font-normal">
                 {option.meta}
               </span>
             </label>
@@ -160,20 +158,20 @@ export function SkillLauncher({
         })}
       </fieldset>
 
-      <div className="border-manga-black/15 grid gap-2 border-t-2 px-4 py-3">
+      <div className="border-line/15 grid gap-2 border-t px-4 py-3">
         {latest ? (
           <Link
-            className="hover:text-manga-red flex items-center justify-between gap-3 text-sm font-semibold transition-colors"
+            className="hover:text-brand flex items-center justify-between gap-3 text-sm font-semibold transition-colors"
             href={latest.href}
           >
             Latest result
-            <span className="font-sans text-xs font-black tabular-nums">
+            <span className="font-sans text-xs font-semibold tabular-nums">
               {latest.label}
             </span>
           </Link>
         ) : null}
         {blocked ? (
-          <p className="text-manga-ink-soft text-xs font-semibold">
+          <p className="text-ink-soft text-xs font-normal">
             {mockBlockedReason}
           </p>
         ) : null}

@@ -148,7 +148,7 @@ const STALE_CLAIM_MS = 60_000
 /**
  * Apply one finished session for an actor, at most once per idempotency key.
  *
- *   claim key (insert, response: null) ──dup──▶ finished? replay : 503 "đang lưu"
+ *   claim key (insert, response: null) ──dup──▶ finished? replay : 503 "saving"
  *        │
  *        ▼
  *   read rows ─▶ plan ─▶ write rows ─▶ store response on the claim
@@ -197,7 +197,11 @@ export async function recordGrammarSession({
     const claimedAt = prior?.claimedAt?.getTime() ?? now.getTime()
 
     if (now.getTime() - claimedAt < STALE_CLAIM_MS)
-      return { message: 'Bài làm đang được lưu.', ok: false, status: 503 }
+      return {
+        message: 'This result is still being saved.',
+        ok: false,
+        status: 503,
+      }
 
     // An abandoned claim: take it over and plan again.
     await GrammarSessionModel.updateOne(key, { $set: { claimedAt: now } })

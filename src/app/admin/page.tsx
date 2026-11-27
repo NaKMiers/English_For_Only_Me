@@ -3,7 +3,7 @@ import Link from 'next/link'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { AuthControl } from '@/components/common/AuthControl'
-import { MangaPageShell } from '@/components/common/MangaPageShell'
+import { PageShell } from '@/components/common/PageShell'
 import { PageHero } from '@/components/common/PageHero'
 import { PageTag } from '@/components/ui/PageTag'
 import { hasMongoDbUri } from '@/constants/environments'
@@ -50,7 +50,7 @@ export default async function AdminDashboard() {
   }
 
   return (
-    <MangaPageShell
+    <PageShell
       topbar={
         <AppTopbar
           subtitle="Admin"
@@ -61,10 +61,10 @@ export default async function AdminDashboard() {
       <section className="grid gap-5 p-4 sm:p-6 lg:p-8">
         <PageHero>
           <PageTag tone="ink">Admin</PageTag>
-          <h1 className="font-sans text-[clamp(1.8rem,4vw,2.6rem)] leading-none font-black uppercase">
+          <h1 className="font-sans text-[clamp(1.8rem,4vw,2.6rem)] leading-none font-medium">
             Manage Content
           </h1>
-          <p className="text-manga-ink-soft text-sm">
+          <p className="text-ink-soft text-sm">
             {topicCount} topics · {uncategorized} uncategorized videos
           </p>
         </PageHero>
@@ -73,14 +73,16 @@ export default async function AdminDashboard() {
             <Link
               key={link.href}
               href={link.href}
-              className="border-manga-black bg-manga-white hover:bg-manga-paper-soft rounded-panel grid gap-1 border-3 p-4 shadow-[4px_4px_0_var(--manga-black)]"
+              className="border-line bg-surface hover:bg-tint rounded-panel grid gap-1 border p-4"
             >
-              <span className="font-sans text-lg font-black">{link.title}</span>
-              <span className="text-manga-ink-soft text-sm">{link.desc}</span>
+              <span className="font-sans text-lg font-semibold">
+                {link.title}
+              </span>
+              <span className="text-ink-soft text-sm">{link.desc}</span>
             </Link>
           ))}
         </div>
       </section>
-    </MangaPageShell>
+    </PageShell>
   )
 }

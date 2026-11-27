@@ -160,9 +160,9 @@ export function useResizableSplit({
       <span
         aria-hidden="true"
         className={cn(
-          'border-manga-black bg-manga-white rounded-tag pointer-events-none absolute top-1/2 left-1/2 z-10 grid h-10 w-2.5 -translate-x-1/2 -translate-y-1/2 place-items-center border-2 opacity-0 transition-[opacity,background-color]',
-          'group-hover:bg-manga-pale-red group-focus-visible:bg-manga-pale-red group-hover:opacity-100 group-focus-visible:opacity-100',
-          draft !== null && 'bg-manga-red opacity-100'
+          'border-line bg-surface rounded-tag pointer-events-none absolute top-1/2 left-1/2 z-10 grid h-10 w-2.5 -translate-x-1/2 -translate-y-1/2 place-items-center border opacity-0 transition-[opacity,background-color]',
+          'group-hover:bg-tint-soft group-focus-visible:bg-tint-soft group-hover:opacity-100 group-focus-visible:opacity-100',
+          draft !== null && 'bg-brand opacity-100'
         )}
       />
     </div>

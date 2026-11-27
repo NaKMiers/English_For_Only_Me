@@ -127,10 +127,10 @@ export function CreateTestPanel({ className }: { className?: string }) {
               >
                 <span
                   className={cn(
-                    'rounded-tag grid size-9 shrink-0 place-items-center border-2',
+                    'rounded-tag grid size-9 shrink-0 place-items-center border',
                     active
-                      ? 'border-manga-white bg-manga-red text-manga-white'
-                      : 'border-manga-black bg-manga-paper-soft'
+                      ? 'border-surface bg-brand text-surface'
+                      : 'border-line bg-tint'
                   )}
                 >
                   <Icon
@@ -143,7 +143,7 @@ export function CreateTestPanel({ className }: { className?: string }) {
                   <span
                     className={cn(
                       'font-body text-xs font-semibold',
-                      active ? 'text-manga-white/75' : 'text-muted-foreground'
+                      active ? 'text-surface/75' : 'text-muted-foreground'
                     )}
                   >
                     {hint}
@@ -165,7 +165,7 @@ export function CreateTestPanel({ className }: { className?: string }) {
 
         <div className="grid grid-cols-2 gap-3">
           <div className="grid gap-1">
-            <span className="font-sans text-xs font-black">Track</span>
+            <span className="font-sans text-xs font-semibold">Track</span>
             <div className="flex gap-1.5">
               {IELTS_TRACKS.map(value => (
                 // Segmented toggle (aria-pressed): documented raw exception.
@@ -200,8 +200,10 @@ export function CreateTestPanel({ className }: { className?: string }) {
               value={topics}
             />
             <div className="grid gap-1.5">
-              <span className="font-sans text-xs font-black">Section plan</span>
-              <ol className="border-manga-black/25 rounded-control grid gap-1 border-2 border-dashed p-2">
+              <span className="font-sans text-xs font-semibold">
+                Section plan
+              </span>
+              <ol className="border-line/25 rounded-control grid gap-1 border border-dashed p-2">
                 {IELTS_SECTION_KEYS.map((key, index) => {
                   const { part, skill } = splitKey(key)
                   const topic = topicList[index]
@@ -211,7 +213,7 @@ export function CreateTestPanel({ className }: { className?: string }) {
                       className="flex min-w-0 items-center gap-2 text-xs"
                       key={key}
                     >
-                      <span className="bg-manga-black text-manga-white rounded-tag w-24 shrink-0 px-1.5 py-0.5 font-sans font-black">
+                      <span className="bg-ink text-surface rounded-tag w-24 shrink-0 px-1.5 py-0.5 font-sans font-semibold">
                         {IELTS_SKILL_LABELS[skill]} {part}
                       </span>
                       <span
@@ -230,7 +232,7 @@ export function CreateTestPanel({ className }: { className?: string }) {
             </div>
           </>
         ) : (
-          <p className="bg-manga-paper-soft rounded-control text-muted-foreground p-3 text-xs font-semibold">
+          <p className="bg-tint rounded-control text-muted-foreground p-3 text-xs font-semibold">
             Starts with {SECTION_COUNT} empty sections (4 Listening, 3 Reading,
             2 Writing). Open the editor to write or generate each one.
           </p>
@@ -238,7 +240,7 @@ export function CreateTestPanel({ className }: { className?: string }) {
 
         {error ? (
           <p
-            className="text-manga-red text-sm font-semibold"
+            className="text-brand text-sm font-semibold"
             role="alert"
           >
             {error}
@@ -247,7 +249,7 @@ export function CreateTestPanel({ className }: { className?: string }) {
 
         {/* When the panel scrolls inside a one-screen page, the button stays
             pinned to its bottom edge. */}
-        <div className="border-manga-black/25 bg-manga-white sticky -bottom-4 -mb-4 grid gap-2 border-t-2 border-dashed pt-4 pb-4">
+        <div className="border-line/25 bg-surface sticky -bottom-4 -mb-4 grid gap-2 border-t border-dashed pt-4 pb-4">
           <p className="text-muted-foreground text-xs font-semibold">
             {SECTION_COUNT} sections ·{' '}
             {track === 'academic' ? 'Academic' : 'General'} · Band{' '}

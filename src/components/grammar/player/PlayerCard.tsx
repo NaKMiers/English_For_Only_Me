@@ -31,21 +31,20 @@ interface TileProps {
 }
 
 const tileToneClassName: Record<TileTone, string> = {
-  idle: 'bg-manga-white text-manga-black',
-  picked:
-    'bg-manga-paper-soft text-manga-black translate-x-[2px] translate-y-[2px] shadow-none',
-  right: 'bg-lesson-correct text-manga-white',
-  wrong: 'bg-manga-red text-manga-white',
-  used: 'bg-manga-white text-transparent shadow-none border-dashed',
+  idle: 'bg-surface text-ink',
+  picked: 'bg-tint text-ink translate-x-[2px] translate-y-[2px] shadow-none',
+  right: 'bg-lesson-correct text-surface',
+  wrong: 'bg-danger text-surface',
+  used: 'bg-surface text-transparent shadow-none border-dashed',
 }
 
 const tileClassName =
-  'border-manga-black rounded-control sticker-press min-h-11 border-3 px-3 py-2 text-left font-sans text-base leading-snug font-bold shadow-[3px_3px_0_var(--manga-black)] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none disabled:cursor-default'
+  'border-line rounded-control soft-press min-h-11 border px-3 py-2 text-left font-sans text-base leading-snug font-bold disabled:cursor-default'
 
 /**
  * A word tile or answer option. Raw button on purpose: it is a segmented
  * toggle whose state lives in `aria-pressed`, the documented exception in
- * frontend-ui.md, and it needs a smaller footprint than MangaButton.
+ * frontend-ui.md, and it needs a smaller footprint than ActionButton.
  */
 function Tile({
   children,
@@ -90,19 +89,19 @@ function SentenceWithBlank({
   const [before, after] = sentence.split('___')
 
   return (
-    <p className="font-sans text-xl leading-relaxed font-black sm:text-2xl">
+    <p className="font-sans text-xl leading-relaxed font-semibold sm:text-2xl">
       {before}
       <span
         className={cn(
-          'border-manga-black mx-1 inline-block min-w-20 border-b-4 px-1 text-center',
+          'border-line mx-1 inline-block min-w-20 border-b-4 px-1 text-center',
           !filled && 'text-transparent',
-          filled && checked === null && 'text-manga-red',
+          filled && checked === null && 'text-brand',
           // Once checked, the word itself carries the verdict, as a filled
           // chip that reads on both the paper and the lamp-lit room.
           checked !== null &&
-            'rounded-t-tag text-manga-white motion-safe:animate-in motion-safe:zoom-in-95',
+            'rounded-t-tag text-surface motion-safe:animate-in motion-safe:zoom-in-95',
           checked === true && 'bg-lesson-correct',
-          checked === false && 'bg-manga-red line-through decoration-2'
+          checked === false && 'bg-danger line-through decoration-2'
         )}
       >
         {filled || '...'}
@@ -121,13 +120,13 @@ interface ExplainProps {
 export function ExplainCardView({ card }: ExplainProps) {
   return (
     <div className="grid gap-4">
-      <Prompt>Ghi nhớ</Prompt>
-      <h2 className="font-sans text-2xl leading-tight font-black sm:text-3xl">
+      <Prompt>Remember</Prompt>
+      <h2 className="font-sans text-2xl leading-tight font-semibold sm:text-3xl">
         {card.title}
       </h2>
       <p className="text-base leading-relaxed sm:text-lg">{card.body}</p>
       {card.formula ? (
-        <p className="border-manga-black bg-manga-paper-soft rounded-control w-fit max-w-full border-2 px-3 py-2 font-mono text-sm font-bold sm:text-base">
+        <p className="border-line bg-tint rounded-control w-fit max-w-full border px-3 py-2 font-mono text-sm font-bold sm:text-base">
           {card.formula}
         </p>
       ) : null}
@@ -135,27 +134,27 @@ export function ExplainCardView({ card }: ExplainProps) {
         <ul className="grid gap-2">
           {card.examples.map(example => (
             <li
-              className="border-manga-black rounded-control bg-manga-white grid gap-0.5 border-2 px-3 py-2"
+              className="border-line rounded-control bg-surface grid gap-0.5 border px-3 py-2"
               key={example.en}
             >
               <span className="flex items-start gap-1 font-bold">
                 <span className="min-w-0 flex-1">{example.en}</span>
                 <SpeakButton text={example.en} />
               </span>
-              <span className="text-manga-ink-soft text-sm">{example.vi}</span>
+              <span className="text-ink-soft text-sm">{example.vi}</span>
             </li>
           ))}
         </ul>
       ) : null}
       {card.pitfall ? (
-        <div className="border-manga-red rounded-control grid gap-1.5 border-2 border-dashed px-3 py-2">
-          <span className="text-manga-red text-xs font-black uppercase">
-            Lỗi hay gặp
+        <div className="border-danger rounded-control grid gap-1.5 border border-dashed px-3 py-2">
+          <span className="text-danger text-xs font-semibold">
+            Common mistake
           </span>
           <span className="flex items-center gap-2">
             <X
               aria-hidden
-              className="text-manga-red size-4 shrink-0"
+              className="text-danger size-4 shrink-0"
             />
             <span className="sr-only">Sai:</span>
             <span className="line-through decoration-2">
@@ -167,13 +166,11 @@ export function ExplainCardView({ card }: ExplainProps) {
               aria-hidden
               className="text-lesson-correct size-4 shrink-0"
             />
-            <span className="sr-only">Đúng:</span>
+            <span className="sr-only">Correct:</span>
             {card.pitfall.right}
             <SpeakButton text={card.pitfall.right} />
           </span>
-          <span className="text-manga-ink-soft text-sm">
-            {card.pitfall.note}
-          </span>
+          <span className="text-ink-soft text-sm">{card.pitfall.note}</span>
         </div>
       ) : null}
     </div>
@@ -223,12 +220,12 @@ function ChoiceView({ card, checked, draft, onDraft, play }: PracticeProps) {
         />
       ) : null}
       {card.sentence && !card.sentence.includes('___') ? (
-        <p className="font-sans text-xl leading-relaxed font-black sm:text-2xl">
+        <p className="font-sans text-xl leading-relaxed font-semibold sm:text-2xl">
           {card.sentence}
         </p>
       ) : null}
       <div
-        aria-label="Các lựa chọn"
+        aria-label="Choices"
         className="grid gap-3"
         role="group"
       >
@@ -247,7 +244,7 @@ function ChoiceView({ card, checked, draft, onDraft, play }: PracticeProps) {
               pressed={picked}
               tone={tone}
             >
-              <span className="text-manga-ink-soft mr-2 hidden font-mono text-xs sm:inline">
+              <span className="text-ink-soft mr-2 hidden font-mono text-xs sm:inline">
                 {position + 1}
               </span>
               {card.options[optionIndex]}
@@ -278,7 +275,7 @@ function FillView({
       />
       {play.tiles ? (
         <div
-          aria-label="Các từ để chọn"
+          aria-label="Words to pick"
           className="flex flex-wrap gap-3"
           role="group"
         >
@@ -306,12 +303,12 @@ function FillView({
         </div>
       ) : (
         <Input
-          aria-label="Câu trả lời"
+          aria-label="Answer"
           autoCapitalize="off"
           autoComplete="off"
           autoCorrect="off"
           autoFocus
-          className="border-manga-black bg-manga-white rounded-control h-12 border-3 px-3 text-lg font-bold shadow-[3px_3px_0_var(--manga-black)]"
+          className="border-line bg-surface rounded-control h-12 border px-3 text-lg font-bold"
           disabled={checked !== null}
           enterKeyHint="done"
           maxLength={120}
@@ -324,7 +321,7 @@ function FillView({
               onSubmit()
             }
           }}
-          placeholder="Gõ câu trả lời"
+          placeholder="Type your answer"
           spellCheck={false}
           value={draft.text}
         />
@@ -389,17 +386,17 @@ function OrderBoard({
   return (
     <>
       <div
-        aria-label="Câu của bạn"
+        aria-label="Your sentence"
         aria-live="polite"
         className={cn(
-          'border-manga-black rounded-control flex min-h-16 flex-wrap content-start gap-2 border-b-3 border-dashed pb-3 transition-colors',
-          lineTarget && 'border-manga-red bg-manga-paper-soft'
+          'border-line rounded-control flex min-h-16 flex-wrap content-start gap-2 border-b border-dashed pb-3 transition-colors',
+          lineTarget && 'border-brand bg-tint'
         )}
         ref={lineRef}
       >
         {picked.length === 0 ? (
-          <span className="text-manga-ink-soft self-center text-sm">
-            Chạm hoặc kéo các từ vào đây theo đúng thứ tự.
+          <span className="text-ink-soft self-center text-sm">
+            Tap or drag the words here in the right order.
           </span>
         ) : null}
         {picked.map((tileIndex, position) => (
@@ -421,7 +418,7 @@ function OrderBoard({
                 drag?.tileIndex === tileIndex && 'opacity-40'
               )}
               disabled={!answering}
-              label={`Bỏ "${tiles[tileIndex]}"`}
+              label={`Remove "${tiles[tileIndex]}"`}
               onClick={() => {
                 if (wasDragged()) return
                 onPick(picked.filter((_, index) => index !== position))
@@ -437,19 +434,19 @@ function OrderBoard({
         ))}
         {endMark ? (
           <span
-            aria-label={endMark === '?' ? 'Câu hỏi' : 'Câu kể'}
-            className="self-end font-sans text-2xl leading-none font-black"
+            aria-label={endMark === '?' ? 'Question' : 'Statement'}
+            className="self-end font-sans text-2xl leading-none font-semibold"
           >
             {endMark}
           </span>
         ) : null}
       </div>
       <div
-        aria-label="Các từ để xếp"
+        aria-label="Words to arrange"
         className={cn(
           'rounded-control flex flex-wrap gap-2 transition-colors',
           overBank &&
-            'bg-manga-paper-soft outline-manga-red outline-2 outline-offset-4 outline-dashed'
+            'bg-tint outline-brand outline-2 outline-offset-4 outline-dashed'
         )}
         ref={bankRef}
         role="group"
@@ -462,7 +459,7 @@ function OrderBoard({
             )}
             disabled={!answering || used.has(tileIndex)}
             key={`${tile}-${tileIndex}`}
-            label={used.has(tileIndex) ? `${tile} (đã dùng)` : tile}
+            label={used.has(tileIndex) ? `${tile} (used)` : tile}
             onClick={() => {
               if (wasDragged()) return
               onPick([...picked, tileIndex])
@@ -484,7 +481,7 @@ function OrderBoard({
               className={cn(
                 tileClassName,
                 tileToneClassName.idle,
-                'pointer-events-none fixed z-50 -rotate-3 shadow-[5px_5px_0_var(--manga-black)]'
+                'pointer-events-none fixed z-50 -rotate-3'
               )}
               style={{
                 left: drag.x - drag.offsetX,
@@ -506,7 +503,7 @@ function DropMarker({ side }: { side: 'left' | 'right' }) {
     <span
       aria-hidden
       className={cn(
-        'bg-manga-red pointer-events-none absolute inset-y-0 w-1 rounded-full',
+        'bg-brand pointer-events-none absolute inset-y-0 w-1 rounded-full',
         side === 'left' ? '-left-1.5' : '-right-1.5'
       )}
     />
@@ -518,7 +515,7 @@ function FixView({ card, checked, draft, onDraft }: PracticeProps) {
 
   return (
     <div
-      aria-label="Các từ trong câu"
+      aria-label="Words in the sentence"
       className="flex flex-wrap gap-2"
       role="group"
     >

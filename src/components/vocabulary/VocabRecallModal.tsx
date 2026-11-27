@@ -10,7 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { MangaButton } from '@/components/ui/MangaButton'
+import { ActionButton } from '@/components/ui/ActionButton'
 import { PageTag } from '@/components/ui/PageTag'
 import { cn } from '@/lib/utils'
 import type {
@@ -166,7 +166,7 @@ function formatExample(task: VocabRecallTaskRecord) {
     part.toLowerCase() === task.entry.term.toLowerCase() ? (
       <strong
         key={`${part}-${index}`}
-        className="text-manga-red"
+        className="text-brand"
       >
         {part}
       </strong>
@@ -271,10 +271,10 @@ export function VocabRecallModal({
       open={open}
       onOpenChange={handleOpenChange}
     >
-      <DialogContent className="border-manga-black bg-manga-black text-manga-white h-auto max-h-[88vh] w-[min(1080px,92vw)] max-w-none overflow-y-auto border-3 p-0 shadow-[6px_6px_0_var(--manga-red)] sm:max-w-none">
+      <DialogContent className="day-palette border-line bg-ink text-surface h-auto max-h-[88vh] w-[min(1080px,92vw)] max-w-none overflow-y-auto border p-0 sm:max-w-none">
         {task ? (
           <div className="grid min-h-full grid-rows-[auto_1fr_auto]">
-            <DialogHeader className="border-manga-white/20 border-b-2 p-3 sm:p-4">
+            <DialogHeader className="border-surface/20 border-b p-3 sm:p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <PageTag tone="red">
                   Review {taskNumber}/{taskTotal}
@@ -284,7 +284,7 @@ export function VocabRecallModal({
               <DialogTitle className="sr-only">
                 Vocabulary flashcard review
               </DialogTitle>
-              <DialogDescription className="text-manga-paper-soft text-base leading-6 font-semibold">
+              <DialogDescription className="text-tint text-base leading-6 font-semibold">
                 {wrongFeedback
                   ? 'Not quite. Check the correct answer, then continue.'
                   : cardFeedback
@@ -298,7 +298,7 @@ export function VocabRecallModal({
                 <div className="grid place-items-center gap-4 py-5">
                   <button
                     aria-label={`Play ${task.entry.term}`}
-                    className="text-manga-black border-manga-black sticker-press grid size-24 place-items-center rounded-full border-3 bg-cyan-300 shadow-[4px_4px_0_var(--manga-white)] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none sm:size-32"
+                    className="text-ink border-line soft-press grid size-24 place-items-center rounded-full border bg-cyan-300 sm:size-32"
                     onClick={() => speakTerm(task.entry.term)}
                     type="button"
                   >
@@ -306,32 +306,32 @@ export function VocabRecallModal({
                   </button>
                 </div>
               ) : (
-                <div className="border-manga-white/20 bg-manga-white/10 rounded-control border-2 p-4 text-center shadow-[4px_4px_0_rgba(255,255,255,0.22)] sm:p-5">
+                <div className="border-surface/20 bg-surface/10 rounded-control border p-4 text-center sm:p-5">
                   {task.type === 'wordChooseDefinition' ? (
                     <VocabTermHeader
-                      buttonClassName="border-manga-white bg-cyan-300 text-manga-black hover:bg-cyan-200 shadow-[3px_3px_0_var(--manga-white)]"
+                      buttonClassName="border-surface bg-cyan-300 text-ink hover:bg-cyan-200"
                       className="mx-auto max-w-3xl text-left"
                       entry={task.entry}
-                      headingClassName="text-manga-white text-[clamp(2rem,5vw,4rem)]"
-                      iconClassName="text-manga-black"
-                      pronunciationClassName="text-manga-paper-soft"
+                      headingClassName="text-surface text-[clamp(2rem,5vw,4rem)]"
+                      iconClassName="text-ink"
+                      pronunciationClassName="text-tint"
                       size="xl"
                     />
                   ) : (
                     <div className="grid gap-4">
-                      <p className="font-sans text-[clamp(1.45rem,3.4vw,3.25rem)] leading-snug font-black wrap-break-word">
+                      <p className="font-sans text-[clamp(1.45rem,3.4vw,3.25rem)] leading-snug font-medium wrap-break-word">
                         {task.type === 'exampleRemember'
                           ? formatExample(task)
                           : getQuestionText(task)}
                       </p>
                       {task.type === 'exampleRemember' ? (
                         <VocabTermHeader
-                          buttonClassName="border-manga-white bg-cyan-300 text-manga-black hover:bg-cyan-200 shadow-[3px_3px_0_var(--manga-white)]"
+                          buttonClassName="border-surface bg-cyan-300 text-ink hover:bg-cyan-200"
                           className="mx-auto max-w-xl text-left"
                           entry={task.entry}
-                          headingClassName="text-manga-white text-2xl sm:text-3xl"
-                          iconClassName="text-manga-black"
-                          pronunciationClassName="text-manga-paper-soft"
+                          headingClassName="text-surface text-2xl sm:text-3xl"
+                          iconClassName="text-ink"
+                          pronunciationClassName="text-tint"
                         />
                       ) : null}
                     </div>
@@ -341,23 +341,23 @@ export function VocabRecallModal({
 
               {!cardFeedback && task.type === 'exampleRemember' ? (
                 <div className="grid grid-cols-2 gap-3">
-                  <MangaButton
-                    className="border-manga-white bg-manga-white text-manga-black"
+                  <ActionButton
+                    className="border-surface bg-surface text-ink"
                     disabled={isLoading || answered}
                     icon={<Search className="size-4" />}
                     onClick={() => submitAnswer('lookup')}
                     tone="paper"
                   >
                     Look Up
-                  </MangaButton>
-                  <MangaButton
-                    className="border-manga-white bg-manga-paper-soft text-manga-black"
+                  </ActionButton>
+                  <ActionButton
+                    className="border-surface bg-tint text-ink"
                     disabled={isLoading || answered}
                     icon={<Check className="size-4" />}
                     onClick={() => submitAnswer('remember')}
                   >
                     I Remember
-                  </MangaButton>
+                  </ActionButton>
                 </div>
               ) : task.type !== 'exampleRemember' ? (
                 <div className="grid gap-3 sm:grid-cols-2">
@@ -365,16 +365,16 @@ export function VocabRecallModal({
                     <button
                       key={option.id}
                       className={cn(
-                        'border-manga-white bg-manga-white/15 text-manga-white rounded-control grid min-h-20 grid-cols-[auto_1fr] items-center gap-3 border-2 p-4 text-left font-sans text-base leading-6 font-black shadow-[3px_3px_0_rgba(255,255,255,0.22)] transition-[background,transform,box-shadow] sm:min-h-24 sm:text-lg lg:min-h-28',
+                        'border-surface bg-surface/15 text-surface rounded-control grid min-h-20 grid-cols-[auto_1fr] items-center gap-3 border p-4 text-left font-sans text-base leading-6 font-semibold transition-[background,transform,box-shadow] sm:min-h-24 sm:text-lg lg:min-h-28',
                         wrongFeedback &&
                           option.id === wrongFeedback.selectedOptionId &&
-                          'border-manga-red bg-manga-pale-red text-manga-red',
+                          'border-danger bg-danger-soft text-danger',
                         wrongFeedback &&
                           option.id === getCorrectOptionId(task) &&
-                          'text-manga-black border-emerald-300 bg-emerald-300',
+                          'text-ink border-emerald-300 bg-emerald-300',
                         selectedOptionId === option.id &&
                           !wrongFeedback &&
-                          'text-manga-black bg-cyan-300'
+                          'text-ink bg-cyan-300'
                       )}
                       disabled={answered}
                       onClick={() => {
@@ -397,85 +397,85 @@ export function VocabRecallModal({
                 </div>
               ) : null}
               {wrongFeedback ? (
-                <div className="border-manga-red bg-manga-pale-red text-manga-black rounded-control grid gap-3 border-3 p-4 shadow-[4px_4px_0_var(--manga-red)]">
-                  <p className="text-manga-red text-sm font-black uppercase">
+                <div className="border-danger bg-danger-soft text-ink rounded-control grid gap-3 border p-4">
+                  <p className="text-danger text-sm font-semibold">
                     Correct answer: {getCorrectAnswerText(task)}
                   </p>
                   <VocabTermHeader
                     entry={task.entry}
                     size="lg"
                   />
-                  <div className="border-manga-black bg-manga-paper-soft rounded-tag border-2 p-3 text-right text-sm leading-6 font-black sm:text-base">
+                  <div className="border-line bg-tint rounded-tag border p-3 text-right text-sm leading-6 font-semibold sm:text-base">
                     {getRequiredVietnameseMeaning(task.entry)}
                   </div>
-                  <div className="border-manga-black bg-manga-white rounded-tag border-2 p-3 text-sm leading-6 font-semibold sm:text-base">
+                  <div className="border-line bg-surface rounded-tag border p-3 text-sm leading-6 font-semibold sm:text-base">
                     {getDefinition(task)}
                   </div>
-                  <p className="text-manga-ink-soft text-sm leading-6 font-semibold">
+                  <p className="text-ink-soft text-sm leading-6 font-normal">
                     {task.exampleSentence ??
                       `I noticed the word ${task.entry.term} while studying English.`}
                   </p>
                 </div>
               ) : null}
               {isListeningTask && !cardFeedback ? (
-                <MangaButton
-                  className="border-manga-white bg-manga-black text-manga-white hover:bg-manga-black"
+                <ActionButton
+                  className="border-surface bg-ink text-surface hover:bg-ink"
                   icon={<Headphones className="size-4" />}
                   onClick={onListeningSkip}
                   tone="ink"
                 >
                   I cannot listen now
-                </MangaButton>
+                </ActionButton>
               ) : null}
             </div>
 
-            <div className="border-manga-white/20 grid gap-3 border-t-2 p-3 sm:p-4">
+            <div className="border-surface/20 grid gap-3 border-t p-3 sm:p-4">
               {cardFeedback ? (
-                <MangaButton
-                  className="border-manga-white w-full"
+                <ActionButton
+                  className="border-surface w-full"
                   icon={<Check className="size-4" />}
                   onClick={continueAfterFeedback}
                 >
                   Continue
-                </MangaButton>
+                </ActionButton>
               ) : (
-                <MangaButton
-                  className="border-manga-white bg-manga-black text-manga-white hover:bg-manga-black w-full"
+                <ActionButton
+                  className="border-surface bg-ink text-surface hover:bg-ink w-full"
                   disabled={isLoading || answered}
                   icon={<X className="size-4" />}
                   onClick={() => submitAnswer('notSure')}
                   tone="ink"
                 >
                   Not Sure
-                </MangaButton>
+                </ActionButton>
               )}
             </div>
           </div>
         ) : loadError ? (
           <div className="grid place-items-center gap-3 p-8 text-center">
-            <DialogTitle className="font-sans text-xl font-black uppercase">
+            <DialogTitle className="font-sans text-xl font-semibold">
               Could not load more cards
             </DialogTitle>
-            <DialogDescription className="text-manga-paper-soft text-sm font-semibold">
+            <DialogDescription className="text-tint text-sm font-semibold">
               {loadError}
             </DialogDescription>
             {onRetryLoad ? (
-              <MangaButton
-                className="border-manga-white"
+              <ActionButton
+                className="border-surface"
                 icon={<RotateCcw className="size-4" />}
                 onClick={onRetryLoad}
               >
                 Try again
-              </MangaButton>
+              </ActionButton>
             ) : null}
           </div>
         ) : (
           // Between pages of the due queue: the next cards are on their way.
           <div className="grid place-items-center gap-2 p-8 text-center">
-            <DialogTitle className="font-sans text-xl font-black uppercase">
+            <DialogTitle className="font-sans text-xl font-semibold">
               Loading more cards
             </DialogTitle>
-            <DialogDescription className="text-manga-paper-soft text-sm font-semibold">
+            <DialogDescription className="text-tint text-sm font-semibold">
               One moment.
             </DialogDescription>
           </div>

@@ -108,10 +108,10 @@ function OptionRow({
   return (
     <div
       className={cn(
-        'rounded-control flex items-start gap-3 border-2 px-2 py-0',
+        'rounded-control flex items-start gap-3 border px-2 py-0',
         // TRUE / FALSE / NOT GIVEN chips: one compact row.
         nowrap && 'items-center gap-2 px-1.5 text-sm whitespace-nowrap',
-        selected ? 'border-exam-line bg-manga-paper-soft' : 'border-transparent'
+        selected ? 'border-exam-line bg-tint' : 'border-transparent'
       )}
       data-option
     >
@@ -127,7 +127,7 @@ function OptionRow({
 }
 
 // Rows now touch: the control's padded hit area stays inside its own row.
-const OPTION_CONTROL_CLASS = 'hover:bg-manga-pale-red mt-[3px] after:-inset-y-1'
+const OPTION_CONTROL_CLASS = 'hover:bg-tint-soft mt-[3px] after:-inset-y-1'
 
 /** One question, one letter: MC with a single answer, TFNG, YNNG. */
 function RadioQuestions({ group }: Props) {
@@ -191,7 +191,7 @@ function RadioQuestions({ group }: Props) {
                     selected={value === option.key}
                     textId={`${id}-text`}
                   >
-                    <strong className="font-sans font-black">
+                    <strong className="font-sans font-semibold">
                       {option.key}
                     </strong>
                     {option.text ? ` ${option.text}` : ''}
@@ -236,7 +236,7 @@ function CheckboxQuestions({ group }: Props) {
       id={questionBlockId(first)}
     >
       <div className="flex items-start gap-3">
-        <span className="bg-manga-pale-red rounded-tag inline-grid h-7 shrink-0 place-items-center px-1.5 text-sm font-bold tabular-nums">
+        <span className="bg-tint-soft rounded-tag inline-grid h-7 shrink-0 place-items-center px-1.5 text-sm font-bold tabular-nums">
           {group.from}-{group.to}
         </span>
         <p className="pt-0.5 font-medium">
@@ -270,7 +270,7 @@ function CheckboxQuestions({ group }: Props) {
               selected={checked}
               textId={`${id}-text`}
             >
-              <strong className="font-sans font-black">{option.key}</strong>{' '}
+              <strong className="font-sans font-semibold">{option.key}</strong>{' '}
               {option.text}
             </OptionRow>
           )
@@ -313,12 +313,12 @@ function OptionsBox({
   return (
     <div
       className={cn(
-        'border-manga-black bg-exam-tint rounded-control mx-auto grid w-fit max-w-full min-w-40 gap-1 border-2 px-3 py-1.5',
+        'border-line bg-exam-tint rounded-control mx-auto grid w-fit max-w-full min-w-40 gap-1 border px-3 py-1.5',
         className
       )}
     >
       {title ? (
-        <p className="mb-1 text-center font-sans text-lg leading-tight font-black">
+        <p className="mb-1 text-center font-sans text-lg leading-tight font-semibold">
           {title}
         </p>
       ) : null}
@@ -328,7 +328,7 @@ function OptionsBox({
             className="flex gap-2 leading-[1.5]"
             key={option.key}
           >
-            <strong className="min-w-5 font-sans font-black">
+            <strong className="min-w-5 font-sans font-semibold">
               {option.key}
             </strong>
             <span>{option.text}</span>
@@ -355,7 +355,7 @@ function DropdownQuestions({ group }: Props) {
   return (
     <div className="grid gap-3">
       {hideOptions && group.title ? (
-        <p className="mb-2 text-center font-sans text-xl leading-tight font-black">
+        <p className="mb-2 text-center font-sans text-xl leading-tight font-semibold">
           {group.title}
         </p>
       ) : null}
@@ -363,7 +363,7 @@ function DropdownQuestions({ group }: Props) {
         // eslint-disable-next-line @next/next/no-img-element -- admin-uploaded Cloudinary image of any size
         <img
           alt={group.title || (isPicture ? 'Pictures A to D' : 'Plan')}
-          className="border-manga-black rounded-control bg-manga-white max-h-[420px] w-full border-2 object-contain"
+          className="border-line rounded-control bg-surface max-h-[420px] w-full border object-contain"
           src={group.imageUrl}
         />
       ) : null}
@@ -402,7 +402,7 @@ function DropdownQuestions({ group }: Props) {
                 >
                   <SelectTrigger
                     aria-labelledby={promptId}
-                    className="border-manga-black rounded-tag bg-manga-white min-w-24 border font-semibold"
+                    className="border-line rounded-tag bg-surface min-w-24 border font-semibold"
                     id={questionControlId(question.number)}
                     onFocus={() => onFocusQuestion(question.number)}
                     size="sm"
@@ -469,18 +469,18 @@ function SlotQuestions({ group }: Props) {
         // eslint-disable-next-line @next/next/no-img-element -- admin-uploaded Cloudinary image of any size
         <img
           alt={group.title || 'Diagram'}
-          className="border-manga-black rounded-control bg-manga-white max-h-[560px] w-full border object-contain"
+          className="border-line rounded-control bg-surface max-h-[560px] w-full border object-contain"
           src={group.imageUrl}
         />
       ) : null}
       {letters ? <OptionsBox options={letters} /> : null}
       {body ? (
         <div
-          className="border-manga-black rounded-control bg-manga-white border-2 px-2.5 py-5"
+          className="border-line rounded-control bg-surface border px-2.5 py-5"
           id={bodyId}
         >
           {group.title ? (
-            <p className="mb-2 text-center font-sans text-xl leading-tight font-black">
+            <p className="mb-2 text-center font-sans text-xl leading-tight font-semibold">
               {group.title}
             </p>
           ) : null}
@@ -496,7 +496,7 @@ function SlotQuestions({ group }: Props) {
                     />
                   ) : null}
                   <IeltsMarkdown
-                    className="border-manga-black rounded-control gap-1 border px-3 py-2"
+                    className="border-line rounded-control gap-1 border px-3 py-2"
                     renderSlot={renderSlot}
                     source={step}
                   />
@@ -541,13 +541,13 @@ function GroupInstruction({ group }: Props) {
 
   if (!judgement)
     return (
-      <div className="text-manga-black grid gap-1 leading-[1.6]">
+      <div className="text-ink grid gap-1 leading-[1.6]">
         {formatInstruction(group.instruction).map((line, index) => (
           <p key={index}>
             {line.map((part, partIndex) =>
               part.bold ? (
                 <strong
-                  className="font-black"
+                  className="font-semibold"
                   key={partIndex}
                 >
                   {part.text}
@@ -562,7 +562,7 @@ function GroupInstruction({ group }: Props) {
     )
 
   return (
-    <div className="text-manga-black grid gap-2 leading-[1.6]">
+    <div className="text-ink grid gap-2 leading-[1.6]">
       <p>{judgement.lead}</p>
       <p>
         In boxes {group.from}
@@ -572,7 +572,7 @@ function GroupInstruction({ group }: Props) {
       <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-1 pl-3">
         {judgement.legend.map(row => (
           <Fragment key={row.key}>
-            <dt className="font-sans font-black whitespace-nowrap">
+            <dt className="font-sans font-semibold whitespace-nowrap">
               {row.key}
             </dt>
             <dd className="italic">{row.meaning}</dd>
@@ -637,7 +637,7 @@ export const GroupBlock = memo(function GroupBlock({
       {header ? (
         <header className="grid gap-0.5">
           <h3
-            className="font-sans text-base font-black"
+            className="font-sans text-base font-semibold"
             id={`ielts-group-${group.id}-title`}
           >
             {questionsLabel(header)}
@@ -659,7 +659,7 @@ export const GroupBlock = memo(function GroupBlock({
       group.title &&
       flatTitle(group.title) !== flatTitle(sectionTitle) &&
       !titleRepeatsPrompt(group) ? (
-        <p className="mb-2 text-center font-sans text-xl leading-tight font-black">
+        <p className="mb-2 text-center font-sans text-xl leading-tight font-semibold">
           {group.title}
         </p>
       ) : null}

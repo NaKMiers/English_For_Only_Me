@@ -62,7 +62,7 @@ export function DropZone({
         const id = event.dataTransfer.getData(accept)
         if (id) onDrop(id)
       }}
-      className={cn(className, over && 'ring-manga-red ring-3')}
+      className={cn(className, over && 'ring-brand ring-3')}
     >
       {children}
     </div>
@@ -88,11 +88,11 @@ export function ReorderHandle({
         event.dataTransfer.setData(mime, id)
         event.dataTransfer.effectAllowed = 'move'
       }}
-      className="border-manga-black bg-manga-white rounded-tag grid size-8 shrink-0 cursor-grab place-items-center border-2 active:cursor-grabbing"
+      className="border-line bg-surface rounded-tag grid size-8 shrink-0 cursor-grab place-items-center border active:cursor-grabbing"
     >
       <GripVertical
         aria-hidden="true"
-        className="text-manga-ink-soft size-4"
+        className="text-ink-soft size-4"
       />
     </button>
   )

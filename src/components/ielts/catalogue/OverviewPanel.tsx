@@ -55,7 +55,7 @@ export function OverviewPanel({
           {foldable ? (
             <CollapsibleTrigger
               aria-label="Show or hide weak spots and recent attempts"
-              className="group/progress border-manga-black bg-manga-white hover:bg-manga-paper-soft rounded-control grid size-9 place-items-center border-2"
+              className="group/progress border-line bg-surface hover:bg-tint rounded-control grid size-9 place-items-center border"
               title="Weak spots and recent attempts"
             >
               <ChevronDown

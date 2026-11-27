@@ -1,6 +1,6 @@
-import { MangaPanel } from '@/components/common/MangaPanel'
+import { ContentPanel } from '@/components/common/ContentPanel'
 import { MetricTile } from '@/components/common/MetricTile'
-import { MangaButton } from '@/components/ui/MangaButton'
+import { ActionButton } from '@/components/ui/ActionButton'
 import type {
   DictationVideoProgress,
   DictationVideoStatsRecord,
@@ -37,21 +37,21 @@ export function DictationResultsSummary({
   const action = getDictationResultsAction({ isEmpty, progress, videoId })
 
   return (
-    <MangaPanel
+    <ContentPanel
       eyebrow={EYEBROW[progress]}
       title={title}
       action={
-        <MangaButton
+        <ActionButton
           href={action.href}
           tone="paper"
         >
           {action.label}
-        </MangaButton>
+        </ActionButton>
       }
     >
       {isEmpty ? (
         <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
-          <p className="text-manga-ink-soft text-base leading-7 font-semibold">
+          <p className="text-ink-soft text-base leading-7 font-normal">
             {progress === 'inProgress'
               ? 'Practice in progress. Resolve a few sentences and your stats will build here.'
               : 'No completed dictation attempts yet. Practice the video first, then come back for useful stats.'}
@@ -87,13 +87,13 @@ export function DictationResultsSummary({
               sizes="160px"
               className="w-40 shrink-0"
             />
-            <p className="text-manga-ink-soft min-w-0 flex-1 text-sm leading-6 font-semibold">
+            <p className="text-ink-soft min-w-0 flex-1 text-sm leading-6 font-normal">
               Built from saved attempts only: mistakes, reveals, skips, retries,
               replay deltas, and time spent.
             </p>
           </div>
         </div>
       )}
-    </MangaPanel>
+    </ContentPanel>
   )
 }

@@ -1,9 +1,9 @@
-import { MangaPageShell } from '@/components/common/MangaPageShell'
+import { PageShell } from '@/components/common/PageShell'
 import { ExamButton, ExamCard } from '@/components/ielts/ui'
 
 export default function IeltsNotFound() {
   return (
-    <MangaPageShell>
+    <PageShell>
       <div className="grid place-items-center p-6">
         <ExamCard title="Not found">
           <p>
@@ -18,6 +18,6 @@ export default function IeltsNotFound() {
           </ExamButton>
         </ExamCard>
       </div>
-    </MangaPageShell>
+    </PageShell>
   )
 }

@@ -25,7 +25,7 @@ interface Props {
 }
 
 const SKILL_LINK_CLASS =
-  'border-manga-black bg-manga-white hover:bg-manga-paper-soft rounded-control inline-flex h-9 shrink-0 items-center gap-1 border-2 px-2.5 font-sans text-sm font-black transition-colors sm:gap-1.5 sm:px-3'
+  'border-line bg-surface hover:bg-tint rounded-control inline-flex h-9 shrink-0 items-center gap-1 border px-2.5 font-sans text-sm font-semibold transition-colors sm:gap-1.5 sm:px-3'
 
 /** Previous / next skill link. `compact` hides the label on phones. */
 function SkillLink({
@@ -77,7 +77,7 @@ export function RunnerFooter({
   return (
     <nav
       aria-label="Test navigation"
-      className="border-manga-black bg-exam-surface shrink-0 border-t-3 px-3 py-2"
+      className="border-line bg-exam-surface shrink-0 border-t px-3 py-2"
     >
       {top}
       <div
@@ -139,7 +139,7 @@ export function PartSwitcher({
     // Segmented part switcher (aria-pressed): documented raw exception.
     <div
       aria-label="Choose part"
-      className="border-manga-black rounded-control flex overflow-hidden border-2"
+      className="border-line rounded-control flex overflow-hidden border"
       role="group"
     >
       {items.map(item => {
@@ -150,11 +150,9 @@ export function PartSwitcher({
             aria-label={item.label}
             aria-pressed={active}
             className={cn(
-              'border-manga-black relative grid h-8 min-w-8 place-items-center border-l-2 px-1.5 font-sans text-sm font-black tabular-nums transition-colors first:border-l-0',
+              'border-line relative grid h-8 min-w-8 place-items-center border-l px-1.5 font-sans text-sm font-semibold tabular-nums transition-colors first:border-l-0',
               item.text && 'px-3',
-              active
-                ? 'bg-manga-black text-manga-white'
-                : 'bg-manga-white hover:bg-manga-paper-soft'
+              active ? 'bg-ink text-surface' : 'bg-surface hover:bg-tint'
             )}
             key={item.part}
             onClick={() => onChange(item.part)}
@@ -167,7 +165,7 @@ export function PartSwitcher({
                 aria-hidden="true"
                 className={cn(
                   'absolute top-1 right-1 size-1.5 rounded-full',
-                  active ? 'bg-manga-white' : 'bg-manga-red'
+                  active ? 'bg-surface' : 'bg-brand'
                 )}
               />
             ) : null}

@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { AuthControl } from '@/components/common/AuthControl'
-import { MangaPageShell } from '@/components/common/MangaPageShell'
+import { PageShell } from '@/components/common/PageShell'
 import { PageHero } from '@/components/common/PageHero'
 import { BrowseBreadcrumb } from '@/components/dictation/browse/BrowseBreadcrumb'
 import { BrowsePagination } from '@/components/dictation/browse/BrowsePagination'
@@ -112,7 +112,7 @@ export default async function TopicPage({ params, searchParams }: PageProps) {
   const favoritedSet = new Set(favoritedIds)
 
   return (
-    <MangaPageShell
+    <PageShell
       topbar={
         <AppTopbar
           activeHref="/dictation"
@@ -127,16 +127,16 @@ export default async function TopicPage({ params, searchParams }: PageProps) {
             <BrowseBreadcrumb current={topic.title} />
             <Link
               href="/dictation/favorites"
-              className="text-manga-red text-sm font-black hover:underline"
+              className="text-brand text-sm font-semibold hover:underline"
             >
               ★ Favorites
             </Link>
           </div>
-          <h1 className="font-sans text-[clamp(1.8rem,4vw,2.6rem)] leading-none font-black uppercase">
+          <h1 className="font-sans text-[clamp(1.8rem,4vw,2.6rem)] leading-none font-medium">
             {topic.title}
           </h1>
           {topic.description && (
-            <p className="text-manga-ink-soft max-w-2xl text-sm leading-6">
+            <p className="text-ink-soft max-w-2xl text-sm leading-6">
               {topic.description}
             </p>
           )}
@@ -168,7 +168,7 @@ export default async function TopicPage({ params, searchParams }: PageProps) {
           />
         )}
       </section>
-    </MangaPageShell>
+    </PageShell>
   )
 }
 
@@ -228,7 +228,7 @@ function FlatResults({
 
   return (
     <div className="grid gap-4">
-      <p className="text-sm font-black opacity-80">
+      <p className="text-sm font-semibold opacity-80">
         {pagination.total} {pagination.total === 1 ? 'lesson' : 'lessons'}
       </p>
       <BrowseVideoList

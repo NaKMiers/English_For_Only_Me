@@ -102,7 +102,7 @@ export type PlanSessionOutcome =
   | { ok: false; status: 400 | 409; message: string }
 
 const STALE_CONTENT_MESSAGE =
-  'Bài vừa được cập nhật. Quay lại lộ trình và làm lại nhé.'
+  'This lesson was just updated. Go back to the path and try it again.'
 
 function reject(status: 400 | 409, message: string): PlanSessionOutcome {
   return { message, ok: false, status }
@@ -281,7 +281,7 @@ export function planGrammarSessionWrite({
       if (!sameCardSet(graded, course.practiceCards(target.lesson)))
         return reject(400, STALE_CONTENT_MESSAGE)
       if (!isLessonUnlocked({ ...progress, course }, target.lesson.id))
-        return reject(409, 'Bài này chưa mở.')
+        return reject(409, 'This lesson is still locked.')
 
       const before =
         lessonRows.get(target.lesson.id) ??
@@ -338,7 +338,7 @@ export function planGrammarSessionWrite({
         !before.dueAt ||
         before.dueAt.getTime() > now.getTime()
       )
-        return reject(409, 'Bài này chưa đến hạn ôn.')
+        return reject(409, 'This lesson is not due for review yet.')
 
       const passed = accuracy >= PASS_ACCURACY
 
@@ -367,7 +367,8 @@ export function planGrammarSessionWrite({
 
       const completed = new Set(progress.unitProgress.map(row => row.unitId))
 
-      if (completed.has(unit.id)) return reject(409, 'Unit này đã hoàn thành.')
+      if (completed.has(unit.id))
+        return reject(409, 'This unit is already completed.')
 
       const unitIndex = course.units.findIndex(item => item.id === unit.id)
       const regular =

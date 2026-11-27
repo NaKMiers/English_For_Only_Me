@@ -43,7 +43,7 @@ export function DictationTranslation({
     <div
       role="status"
       className={cn(
-        'border-manga-black bg-manga-paper-soft rounded-control flex min-w-0 items-start gap-2 border-2 p-2 shadow-[3px_3px_0_var(--manga-black)]',
+        'border-line bg-tint rounded-control flex min-w-0 items-start gap-2 border p-2',
         hasText && 'bg-white',
         className
       )}
@@ -52,7 +52,7 @@ export function DictationTranslation({
           since the glyph alone does not say WHICH language this is. */}
       <Languages
         aria-hidden="true"
-        className="text-manga-red mt-1 size-5 shrink-0"
+        className="text-brand mt-1 size-5 shrink-0"
       />
       <span className="sr-only">{getLanguageLabel(language)}</span>
       <span

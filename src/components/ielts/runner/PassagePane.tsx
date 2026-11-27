@@ -97,13 +97,13 @@ export const PassagePane = memo(function PassagePane({
       aria-label="Reading passage"
       data-highlight-scope={`passage:${partLabel}`}
       className={cn(
-        'text-manga-black grid w-full gap-2.5 text-[17px] leading-[1.7]',
+        'text-ink grid w-full gap-2.5 text-[17px] leading-[1.7]',
         className
       )}
       ref={rootRef}
     >
       <header className="grid gap-1">
-        <h2 className="text-muted-foreground font-sans text-lg leading-none font-black tracking-wide uppercase">
+        <h2 className="text-muted-foreground font-sans text-lg leading-none font-semibold tracking-wide">
           {heading ?? partLabel}
         </h2>
         {intro ? (
@@ -113,7 +113,7 @@ export const PassagePane = memo(function PassagePane({
         ) : null}
       </header>
       <div className="grid gap-2 pt-3 text-center">
-        <h3 className="font-sans text-[24px] leading-tight font-black">
+        <h3 className="font-sans text-[24px] leading-tight font-semibold">
           {material.title}
         </h3>
         {standfirst ? (
@@ -138,7 +138,7 @@ export const PassagePane = memo(function PassagePane({
             key={index}
           >
             {paragraph.label ? (
-              <h4 className="pb-1 font-sans text-base leading-none font-black">
+              <h4 className="pb-1 font-sans text-base leading-none font-semibold">
                 {paragraph.label}
               </h4>
             ) : null}

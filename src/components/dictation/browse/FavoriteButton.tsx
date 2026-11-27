@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils'
 import { setFavoriteAction } from '@/modules/dictation/content/favoriteActions'
 
 const base =
-  'grid size-9 shrink-0 place-items-center rounded-control border-2 border-manga-black bg-manga-white shadow-[2px_2px_0_var(--manga-black)]'
+  'grid size-9 shrink-0 place-items-center rounded-control border border-line bg-surface'
 
 const SIGN_IN_HREF = '/api/auth/signin?callbackUrl=/dictation'
 
@@ -37,11 +37,11 @@ export function FavoriteButton({
       <Link
         href={SIGN_IN_HREF}
         aria-label="Sign in to save favorites"
-        className={cn(base, 'hover:bg-manga-pale-red')}
+        className={cn(base, 'hover:bg-tint-soft')}
       >
         <Star
           aria-hidden="true"
-          className="text-manga-ink-soft size-4"
+          className="text-ink-soft size-4"
         />
       </Link>
     )
@@ -81,13 +81,13 @@ export function FavoriteButton({
       onClick={onClick}
       aria-pressed={favorited}
       aria-label={favorited ? 'Remove favorite' : 'Add favorite'}
-      className={cn(base, 'hover:bg-manga-pale-red')}
+      className={cn(base, 'hover:bg-tint-soft')}
     >
       <Star
         aria-hidden="true"
         className={cn(
           'size-4',
-          favorited ? 'fill-manga-red text-manga-red' : 'text-manga-ink-soft'
+          favorited ? 'fill-brand text-brand' : 'text-ink-soft'
         )}
       />
     </button>

@@ -24,13 +24,13 @@ describe('WritingPrompt', () => {
     const box = statement.parentElement!
 
     expect(question.parentElement).toBe(box)
-    expect(box.className).toContain('border-2')
+    expect(box.className).toContain('border')
     expect(box.className).toContain('italic')
     expect(statement.textContent).not.toContain('>')
 
     for (const plain of [/40 minutes/, /at least 250 words/])
       expect(screen.getByText(plain).parentElement!.className).not.toContain(
-        'border-2'
+        'border'
       )
   })
 })

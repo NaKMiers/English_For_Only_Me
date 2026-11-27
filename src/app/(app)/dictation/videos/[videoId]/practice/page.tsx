@@ -2,10 +2,10 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
-import { MangaPageShell } from '@/components/common/MangaPageShell'
-import { MangaPanel } from '@/components/common/MangaPanel'
+import { PageShell } from '@/components/common/PageShell'
+import { ContentPanel } from '@/components/common/ContentPanel'
 import { DictationPracticeShell } from '@/components/dictation/DictationPracticeShell'
-import { MangaButton } from '@/components/ui/MangaButton'
+import { ActionButton } from '@/components/ui/ActionButton'
 import { hasMongoDbUri } from '@/constants/environments'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { DictationSegmentModel } from '@/models/dictation/DictationSegmentModel'
@@ -47,7 +47,7 @@ function PracticeSetupState({
   videoId?: string | null
 }) {
   return (
-    <MangaPageShell
+    <PageShell
       topbar={
         <AppTopbar
           activeHref="/dictation"
@@ -56,30 +56,30 @@ function PracticeSetupState({
       }
     >
       <section className="p-4 sm:p-6 lg:p-8">
-        <MangaPanel
+        <ContentPanel
           eyebrow="Practice"
           title={title}
         >
-          <p className="text-manga-ink-soft text-base leading-7 font-semibold">
+          <p className="text-ink-soft text-base leading-7 font-normal">
             {message}
           </p>
           <div className="flex flex-wrap gap-3">
-            <MangaButton href="/dictation">Back To Dictation Lab</MangaButton>
+            <ActionButton href="/dictation">Back To Dictation Lab</ActionButton>
             {videoId ? (
-              <MangaButton href={`/admin/dictation/videos/${videoId}/edit`}>
+              <ActionButton href={`/admin/dictation/videos/${videoId}/edit`}>
                 Add Transcript
-              </MangaButton>
+              </ActionButton>
             ) : null}
-            <MangaButton
+            <ActionButton
               href="/admin/dictation/import"
               tone="paper"
             >
               Import Video
-            </MangaButton>
+            </ActionButton>
           </div>
-        </MangaPanel>
+        </ContentPanel>
       </section>
-    </MangaPageShell>
+    </PageShell>
   )
 }
 
@@ -164,7 +164,7 @@ export default async function Page({ params }: Props) {
   return (
     // No topbar: practice is a focus screen, and the exercise header carries
     // the logo home link in place of the app nav.
-    <MangaPageShell
+    <PageShell
       fullHeight
       // The dashed inner frame would run under the flattened practice layout.
       className="max-sm:after:hidden"
@@ -187,6 +187,6 @@ export default async function Page({ params }: Props) {
           }}
         />
       </section>
-    </MangaPageShell>
+    </PageShell>
   )
 }

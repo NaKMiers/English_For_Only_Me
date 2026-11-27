@@ -34,7 +34,7 @@ export function ReviewMark({
         mark.outcome === 'correct'
           ? 'bg-lesson-correct/10 text-lesson-correct'
           : // A blank costs the point like a wrong answer: same red.
-            'bg-manga-pale-red text-manga-red',
+            'bg-danger-soft text-danger',
         className
       )}
       title={mark.outcome === 'blank' ? LABELS.blank : undefined}
@@ -52,7 +52,7 @@ export function ReviewMark({
         <>
           <ArrowRight
             aria-hidden="true"
-            className="text-manga-black size-3.5"
+            className="text-ink size-3.5"
           />
           <span className="text-lesson-correct font-bold">
             <span className="sr-only">Answer: </span>

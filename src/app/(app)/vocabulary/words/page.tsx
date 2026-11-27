@@ -2,9 +2,9 @@ import type { Metadata } from 'next'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { AuthControl } from '@/components/common/AuthControl'
-import { MangaPageShell } from '@/components/common/MangaPageShell'
-import { MangaPanel } from '@/components/common/MangaPanel'
-import { MangaButton } from '@/components/ui/MangaButton'
+import { PageShell } from '@/components/common/PageShell'
+import { ContentPanel } from '@/components/common/ContentPanel'
+import { ActionButton } from '@/components/ui/ActionButton'
 import { VocabularyWordList } from '@/components/vocabulary/VocabularyWordList'
 import { hasMongoDbUri } from '@/constants/environments'
 import { connectDatabase } from '@/lib/db/connectDatabase'
@@ -33,7 +33,7 @@ export default async function VocabularyWordsPage({
 
   if (!hasMongoDbUri())
     return (
-      <MangaPageShell
+      <PageShell
         topbar={
           <AppTopbar
             activeHref="/vocabulary"
@@ -43,17 +43,17 @@ export default async function VocabularyWordsPage({
         }
       >
         <section className="p-4 sm:p-6 lg:p-8">
-          <MangaPanel
+          <ContentPanel
             eyebrow="Vocabulary"
             title="Database needed"
           >
-            <p className="text-manga-ink-soft text-base leading-7 font-semibold">
+            <p className="text-ink-soft text-base leading-7 font-normal">
               Set MONGODB_URI on the server before opening vocabulary lists.
             </p>
-            <MangaButton href="/vocabulary">Back To Vocab</MangaButton>
-          </MangaPanel>
+            <ActionButton href="/vocabulary">Back To Vocab</ActionButton>
+          </ContentPanel>
         </section>
-      </MangaPageShell>
+      </PageShell>
     )
 
   const [actorId] = await Promise.all([getPracticeActorId(), connectDatabase()])
@@ -65,7 +65,7 @@ export default async function VocabularyWordsPage({
   })
 
   return (
-    <MangaPageShell
+    <PageShell
       topbar={
         <AppTopbar
           activeHref="/vocabulary"
@@ -84,6 +84,6 @@ export default async function VocabularyWordsPage({
           words={wordPage.words}
         />
       </section>
-    </MangaPageShell>
+    </PageShell>
   )
 }

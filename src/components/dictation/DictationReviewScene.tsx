@@ -1,39 +1,38 @@
 import { ArrowLeft, Check } from 'lucide-react'
 
-import { MangaPanel } from '@/components/common/MangaPanel'
+import { ContentPanel } from '@/components/common/ContentPanel'
 import { QueueRow } from '@/components/common/QueueRow'
-import { MangaButton } from '@/components/ui/MangaButton'
+import { ActionButton } from '@/components/ui/ActionButton'
 import { Textarea } from '@/components/ui/textarea'
 import { DICTATION_REVIEW, DICTATION_REVIEW_RULES } from '@/constants/dictation'
 
 export function DictationReviewScene() {
   return (
     <div className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1.18fr)_minmax(320px,0.82fr)]">
-      <MangaPanel
+      <ContentPanel
         eyebrow="Page 04"
         title="One mistake becomes the next drill."
       >
-        <p className="text-manga-ink-soft text-base leading-7 font-semibold">
+        <p className="text-ink-soft text-base leading-7 font-normal">
           The review page keeps IELTS practice narrow: repeat weak sentences,
           then return to a real video.
         </p>
 
         <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]">
-          <MangaPanel
+          <ContentPanel
             eyebrow="Weak sentence"
             title="Drill"
-            className="shadow-[3px_3px_0_var(--manga-black)]"
           >
-            <div className="border-manga-black bg-manga-pale-red rounded-control border-2 p-3 text-base leading-7 font-black">
+            <div className="border-line bg-tint-soft rounded-control border p-3 text-base leading-7 font-semibold">
               {DICTATION_REVIEW.sentence}
             </div>
             <Textarea
               aria-label="Weak sentence answer"
               defaultValue={DICTATION_REVIEW.answer}
-              className="border-manga-black bg-manga-white rounded-control min-h-28 border-3 text-base leading-7 font-semibold shadow-[3px_3px_0_var(--manga-black)]"
+              className="border-line bg-surface rounded-control min-h-28 border text-base leading-7 font-semibold"
             />
             <div className="flex flex-wrap gap-3">
-              <MangaButton
+              <ActionButton
                 icon={
                   <Check
                     aria-hidden="true"
@@ -42,8 +41,8 @@ export function DictationReviewScene() {
                 }
               >
                 Check
-              </MangaButton>
-              <MangaButton
+              </ActionButton>
+              <ActionButton
                 tone="paper"
                 href="/dictation"
                 icon={
@@ -54,14 +53,13 @@ export function DictationReviewScene() {
                 }
               >
                 Back to Video
-              </MangaButton>
+              </ActionButton>
             </div>
-          </MangaPanel>
+          </ContentPanel>
 
-          <MangaPanel
+          <ContentPanel
             eyebrow="Why"
             title="Returned"
-            className="shadow-[3px_3px_0_var(--manga-black)]"
           >
             <div className="grid gap-3">
               {DICTATION_REVIEW.weakReason.map(item => (
@@ -72,16 +70,16 @@ export function DictationReviewScene() {
                 />
               ))}
             </div>
-          </MangaPanel>
+          </ContentPanel>
         </div>
-      </MangaPanel>
+      </ContentPanel>
 
       <aside className="grid content-start gap-5">
-        <MangaPanel
+        <ContentPanel
           eyebrow="Focus"
           title="Small loop"
         >
-          <p className="text-manga-ink-soft text-base leading-7 font-semibold">
+          <p className="text-ink-soft text-base leading-7 font-normal">
             Fast, private, measurable. No public points. No community noise.
             Just the next useful repetition.
           </p>
@@ -95,7 +93,7 @@ export function DictationReviewScene() {
               />
             ))}
           </div>
-        </MangaPanel>
+        </ContentPanel>
       </aside>
     </div>
   )

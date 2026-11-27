@@ -2,13 +2,13 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
-import { MangaPageShell } from '@/components/common/MangaPageShell'
-import { MangaPanel } from '@/components/common/MangaPanel'
+import { PageShell } from '@/components/common/PageShell'
+import { ContentPanel } from '@/components/common/ContentPanel'
 import { DictationDebriefPanel } from '@/components/dictation/DictationDebriefPanel'
 import { DictationResultsSummary } from '@/components/dictation/DictationResultsSummary'
 import { DictationReviewQueue } from '@/components/dictation/DictationReviewQueue'
 import { DictationStatsPanel } from '@/components/dictation/DictationStatsPanel'
-import { MangaButton } from '@/components/ui/MangaButton'
+import { ActionButton } from '@/components/ui/ActionButton'
 import { hasMongoDbUri } from '@/constants/environments'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { DictationDebriefModel } from '@/models/dictation/DictationDebriefModel'
@@ -45,7 +45,7 @@ function ResultsSetupState({
   videoId?: string | null
 }) {
   return (
-    <MangaPageShell
+    <PageShell
       topbar={
         <AppTopbar
           activeHref="/dictation"
@@ -54,30 +54,30 @@ function ResultsSetupState({
       }
     >
       <section className="p-4 sm:p-6 lg:p-8">
-        <MangaPanel
+        <ContentPanel
           eyebrow="Results"
           title={title}
         >
-          <p className="text-manga-ink-soft text-base leading-7 font-semibold">
+          <p className="text-ink-soft text-base leading-7 font-normal">
             {message}
           </p>
           <div className="flex flex-wrap gap-3">
-            <MangaButton href="/dictation">Back To Dictation Lab</MangaButton>
+            <ActionButton href="/dictation">Back To Dictation Lab</ActionButton>
             {videoId ? (
-              <MangaButton href={`/admin/dictation/videos/${videoId}/edit`}>
+              <ActionButton href={`/admin/dictation/videos/${videoId}/edit`}>
                 Add Transcript
-              </MangaButton>
+              </ActionButton>
             ) : null}
-            <MangaButton
+            <ActionButton
               href="/admin/dictation/import"
               tone="paper"
             >
               Import Video
-            </MangaButton>
+            </ActionButton>
           </div>
-        </MangaPanel>
+        </ContentPanel>
       </section>
-    </MangaPageShell>
+    </PageShell>
   )
 }
 
@@ -147,7 +147,7 @@ export default async function Page({ params }: Props) {
   const isEmpty = stats.segmentCount === 0 || stats.completedSegmentCount === 0
 
   return (
-    <MangaPageShell
+    <PageShell
       topbar={
         <AppTopbar
           activeHref="/dictation"
@@ -168,28 +168,28 @@ export default async function Page({ params }: Props) {
 
         {isEmpty ? (
           stats.segmentCount === 0 ? (
-            <MangaPanel
+            <ContentPanel
               eyebrow="Not ready"
               title="No practice segments yet"
             >
-              <p className="text-manga-ink-soft text-base leading-7 font-semibold">
+              <p className="text-ink-soft text-base leading-7 font-normal">
                 This video has no practice segments built from its transcript
                 yet. Segments are created automatically when the transcript is
                 saved.
               </p>
-            </MangaPanel>
+            </ContentPanel>
           ) : progress === 'completed' ? (
-            <MangaPanel
+            <ContentPanel
               eyebrow="Saving"
               title="Finishing up"
             >
-              <p className="text-manga-ink-soft text-base leading-7 font-semibold">
+              <p className="text-ink-soft text-base leading-7 font-normal">
                 Your final attempts are still saving. Give it a moment, then
                 refresh to see your full results.
               </p>
-            </MangaPanel>
+            </ContentPanel>
           ) : (
-            <MangaPanel
+            <ContentPanel
               eyebrow={progress === 'inProgress' ? 'Keep going' : 'Empty'}
               title={
                 progress === 'inProgress'
@@ -197,12 +197,12 @@ export default async function Page({ params }: Props) {
                   : 'Practice first'
               }
             >
-              <p className="text-manga-ink-soft text-base leading-7 font-semibold">
+              <p className="text-ink-soft text-base leading-7 font-normal">
                 {progress === 'inProgress'
                   ? 'Resolve a few sentences, then your stats and weak-segment queue appear here.'
                   : 'The review queue stays quiet until there is a real weak sentence to drill.'}
               </p>
-            </MangaPanel>
+            </ContentPanel>
           )
         ) : (
           <>
@@ -221,6 +221,6 @@ export default async function Page({ params }: Props) {
           </>
         )}
       </section>
-    </MangaPageShell>
+    </PageShell>
   )
 }

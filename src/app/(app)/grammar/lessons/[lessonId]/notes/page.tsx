@@ -4,10 +4,10 @@ import { notFound, redirect } from 'next/navigation'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { AuthControl } from '@/components/common/AuthControl'
-import { MangaPageShell } from '@/components/common/MangaPageShell'
-import { MangaPanel } from '@/components/common/MangaPanel'
+import { PageShell } from '@/components/common/PageShell'
+import { ContentPanel } from '@/components/common/ContentPanel'
 import { ExplainCardView } from '@/components/grammar/player/PlayerCard'
-import { MangaButton } from '@/components/ui/MangaButton'
+import { ActionButton } from '@/components/ui/ActionButton'
 import { grammarCourse } from '@/modules/grammar/course'
 import { loadGrammarPageData } from '@/modules/grammar/services/grammarPageData'
 
@@ -21,7 +21,7 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const found = grammarCourse.getLesson((await params).lessonId)
 
-  return { title: found ? `Ghi chú: ${found.lesson.title}` : 'Grammar' }
+  return { title: found ? `Notes: ${found.lesson.title}` : 'Grammar' }
 }
 
 /**
@@ -45,25 +45,25 @@ export default async function GrammarNotesPage({ params }: Props) {
   const explains = found.lesson.cards.filter(card => card.kind === 'explain')
 
   return (
-    <MangaPageShell
+    <PageShell
       topbar={
         <AppTopbar
           activeHref="/grammar"
           authControl={<AuthControl />}
-          subtitle="Lộ trình ngữ pháp A1 - C1"
+          subtitle="Grammar path, A1 to C1"
         />
       }
     >
       <div className="mx-auto grid w-full max-w-2xl gap-5 p-4 sm:p-6 lg:p-8">
         <div className="flex flex-wrap gap-3">
-          <MangaButton
+          <ActionButton
             href="/grammar"
             icon={<ArrowLeft aria-hidden />}
             tone="paper"
           >
-            Lộ trình
-          </MangaButton>
-          <MangaButton
+            Path
+          </ActionButton>
+          <ActionButton
             href={`/grammar/lessons/${found.lesson.id}`}
             icon={
               <Play
@@ -73,24 +73,24 @@ export default async function GrammarNotesPage({ params }: Props) {
             }
             tone="ink"
           >
-            Học lại bài này
-          </MangaButton>
+            Redo this lesson
+          </ActionButton>
         </div>
         <header className="grid gap-1">
-          <p className="text-manga-ink-soft text-xs font-black uppercase">
-            Unit {found.unit.order} · {found.unit.level} · Ghi chú
+          <p className="text-ink-soft text-xs font-normal">
+            Unit {found.unit.order} · {found.unit.level} · Notes
           </p>
-          <h1 className="font-sans text-3xl leading-tight font-black sm:text-4xl">
+          <h1 className="font-sans text-3xl leading-tight font-medium sm:text-4xl">
             {found.lesson.title}
           </h1>
-          <p className="text-manga-ink-soft">{found.lesson.summary}</p>
+          <p className="text-ink-soft">{found.lesson.summary}</p>
         </header>
         {explains.map(card => (
-          <MangaPanel key={card.id}>
+          <ContentPanel key={card.id}>
             <ExplainCardView card={card} />
-          </MangaPanel>
+          </ContentPanel>
         ))}
       </div>
-    </MangaPageShell>
+    </PageShell>
   )
 }

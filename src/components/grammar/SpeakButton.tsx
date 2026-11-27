@@ -42,11 +42,11 @@ export function SpeakButton({ className, text }: Props) {
     <button
       aria-label={`Nghe: ${text}`}
       className={cn(
-        'text-manga-ink-soft hover:text-manga-red focus-visible:outline-manga-black rounded-tag inline-grid size-7 shrink-0 place-items-center align-middle focus-visible:outline-2',
+        'text-ink-soft hover:text-brand focus-visible:outline-line rounded-tag inline-grid size-7 shrink-0 place-items-center align-middle focus-visible:outline-2',
         className
       )}
       onClick={speak}
-      title="Nghe phát âm"
+      title="Listen"
       type="button"
     >
       <Volume2

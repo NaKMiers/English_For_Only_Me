@@ -33,10 +33,8 @@ function ThumbTile({
     <div
       aria-hidden="true"
       className={cn(
-        'border-manga-black rounded-control grid size-16 shrink-0 place-items-center overflow-hidden border-3 font-sans text-2xl font-black shadow-[3px_3px_0_var(--manga-black)] sm:size-20',
-        muted
-          ? 'bg-manga-paper-soft text-manga-ink-soft'
-          : 'bg-manga-pale-red text-manga-black'
+        'border-line rounded-control grid size-16 shrink-0 place-items-center overflow-hidden border font-sans text-2xl font-semibold sm:size-20',
+        muted ? 'bg-tint text-ink-soft' : 'bg-tint-soft text-ink'
       )}
     >
       {tileImageUrl ? (
@@ -76,8 +74,8 @@ function TopicCard({
     <Link
       href={href}
       className={cn(
-        'border-manga-black hover:bg-manga-pale-red rounded-panel grid grid-cols-[auto_1fr] items-center gap-3 border-3 p-3 shadow-[4px_4px_0_var(--manga-black)] transition-colors',
-        muted ? 'bg-manga-paper-soft' : 'bg-manga-white'
+        'border-line hover:bg-tint-soft rounded-panel grid grid-cols-[auto_1fr] items-center gap-3 border p-3 transition-colors',
+        muted ? 'bg-tint' : 'bg-surface'
       )}
     >
       <ThumbTile
@@ -87,15 +85,15 @@ function TopicCard({
       />
       <div className="grid min-w-0 gap-1">
         <div className="flex min-w-0 flex-wrap items-center gap-2">
-          <span className="text-manga-red truncate font-sans text-lg font-black">
+          <span className="text-brand truncate font-sans text-lg font-semibold">
             {title}
           </span>
           {hasVideoMedia && <PageTag tone="yellow">Video</PageTag>}
         </div>
-        <p className="text-manga-ink-soft font-sans text-sm font-black">
+        <p className="text-ink-soft font-sans text-sm font-normal">
           Levels: {levelRange ?? '-'}
         </p>
-        <p className="text-manga-ink-soft text-sm">{lessonLabel}</p>
+        <p className="text-ink-soft text-sm">{lessonLabel}</p>
       </div>
     </Link>
   )
@@ -113,9 +111,9 @@ interface Props {
 export function TopicGrid({ topics, noTopicCount }: Props) {
   if (topics.length === 0 && noTopicCount === 0)
     return (
-      <div className="border-manga-black bg-manga-white rounded-panel border-3 p-6 text-center shadow-[4px_4px_0_var(--manga-black)]">
-        <p className="font-sans text-lg font-black">No lessons yet</p>
-        <p className="text-manga-ink-soft mt-1 text-sm">
+      <div className="border-line bg-surface rounded-panel border p-6 text-center">
+        <p className="font-sans text-lg font-semibold">No lessons yet</p>
+        <p className="text-ink-soft mt-1 text-sm">
           Once an admin adds topics and videos, they show up here to browse and
           practice.
         </p>

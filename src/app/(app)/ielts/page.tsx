@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { AuthControl } from '@/components/common/AuthControl'
-import { MangaPageShell } from '@/components/common/MangaPageShell'
+import { PageShell } from '@/components/common/PageShell'
 import { IeltsHome } from '@/components/ielts/catalogue/IeltsHome'
 import { loadIeltsHomeData } from '@/modules/ielts/services/ieltsPageData'
 
@@ -19,7 +19,7 @@ export default async function IeltsPage() {
   const data = await loadIeltsHomeData()
 
   return (
-    <MangaPageShell
+    <PageShell
       topbar={
         <AppTopbar
           activeHref="/ielts"
@@ -29,6 +29,6 @@ export default async function IeltsPage() {
       }
     >
       <IeltsHome {...data} />
-    </MangaPageShell>
+    </PageShell>
   )
 }

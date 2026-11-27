@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { AuthControl } from '@/components/common/AuthControl'
-import { MangaPageShell } from '@/components/common/MangaPageShell'
+import { PageShell } from '@/components/common/PageShell'
 import { hasGoogleAuth, hasMongoDbUri } from '@/constants/environments'
 import { auth } from '@/lib/auth/auth'
 import { connectDatabase, connectDatabaseWhen } from '@/lib/db/connectDatabase'
@@ -105,7 +105,7 @@ export default async function IeltsTestPage({ params }: Props) {
   const isAdmin = session?.user?.role === 'admin'
 
   return (
-    <MangaPageShell
+    <PageShell
       topbar={
         <AppTopbar
           activeHref="/ielts"
@@ -123,14 +123,14 @@ export default async function IeltsTestPage({ params }: Props) {
               className="text-muted-foreground text-sm font-semibold"
             >
               <Link
-                className="hover:text-manga-red underline"
+                className="hover:text-brand underline"
                 href="/ielts"
               >
                 IELTS
               </Link>{' '}
               /
             </nav>
-            <h1 className="font-sans text-2xl leading-tight font-black wrap-break-word">
+            <h1 className="font-sans text-2xl leading-tight font-semibold wrap-break-word">
               {test.title}
             </h1>
             <ExamBadge tone="pale">
@@ -211,6 +211,6 @@ export default async function IeltsTestPage({ params }: Props) {
 
         <TestVocabPanel entries={vocab} />
       </ExamSheet>
-    </MangaPageShell>
+    </PageShell>
   )
 }

@@ -145,7 +145,9 @@ export function AttemptLoader({
         className="grid h-full place-content-center gap-4 p-6 text-center"
         role="alert"
       >
-        <p className="font-sans text-lg font-black">Could not open the test</p>
+        <p className="font-sans text-lg font-semibold">
+          Could not open the test
+        </p>
         <p className="font-semibold">{error}</p>
         <div className="flex flex-wrap justify-center gap-3">
           <ExamButton

@@ -1,10 +1,10 @@
 import type { Metadata } from 'next'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
-import { MangaPageShell } from '@/components/common/MangaPageShell'
-import { MangaPanel } from '@/components/common/MangaPanel'
+import { PageShell } from '@/components/common/PageShell'
+import { ContentPanel } from '@/components/common/ContentPanel'
 import { DictationReviewQueue } from '@/components/dictation/DictationReviewQueue'
-import { MangaButton } from '@/components/ui/MangaButton'
+import { ActionButton } from '@/components/ui/ActionButton'
 import { hasMongoDbUri } from '@/constants/environments'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { listDueReviewItemsForUser } from '@/modules/dictation/review/reviewItemService'
@@ -37,7 +37,7 @@ export default async function Page() {
   }
 
   return (
-    <MangaPageShell
+    <PageShell
       topbar={
         <AppTopbar
           activeHref="/dictation"
@@ -46,23 +46,23 @@ export default async function Page() {
       }
     >
       <section className="grid gap-5 p-4 sm:p-6 lg:p-8">
-        <MangaPanel
+        <ContentPanel
           eyebrow="Review"
           title="Weak sentence queue"
           action={
-            <MangaButton
+            <ActionButton
               href="/dictation"
               tone="paper"
             >
               Back To Lab
-            </MangaButton>
+            </ActionButton>
           }
         >
-          <p className="text-manga-ink-soft text-base leading-7 font-semibold">
+          <p className="text-ink-soft text-base leading-7 font-normal">
             This page is for returning to weak dictation segments: skipped,
             revealed, high-retry, repeated-mistake, and low-accuracy sentences.
           </p>
-        </MangaPanel>
+        </ContentPanel>
 
         <DictationReviewQueue
           emptyMessage={
@@ -73,6 +73,6 @@ export default async function Page() {
           reviewItems={reviewItems}
         />
       </section>
-    </MangaPageShell>
+    </PageShell>
   )
 }

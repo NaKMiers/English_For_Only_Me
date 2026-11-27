@@ -7,7 +7,7 @@ export function SampleAnswerBody({ text }: { text: string }) {
   return (
     <>
       {title ? (
-        <h3 className="text-center font-sans text-xl leading-tight font-black">
+        <h3 className="text-center font-sans text-xl leading-tight font-semibold">
           {title}
         </h3>
       ) : null}

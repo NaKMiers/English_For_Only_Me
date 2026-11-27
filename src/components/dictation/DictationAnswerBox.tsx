@@ -2,7 +2,7 @@
 
 import { Check, Eye, SkipForward } from 'lucide-react'
 
-import { MangaButton } from '@/components/ui/MangaButton'
+import { ActionButton } from '@/components/ui/ActionButton'
 import { Textarea } from '@/components/ui/textarea'
 
 interface Props {
@@ -29,15 +29,13 @@ export function DictationAnswerBox({
   return (
     <section
       aria-label="Dictation answer"
-      className="border-manga-black bg-manga-white rounded-panel grid min-w-0 gap-3 border-2 p-3 shadow-[3px_3px_0_var(--manga-black)]"
+      className="border-line bg-surface rounded-panel grid min-w-0 gap-3 border p-3"
     >
       <div className="flex items-center justify-between gap-3">
-        <h2 className="font-sans text-lg leading-tight font-black tracking-normal">
+        <h2 className="font-sans text-lg leading-tight font-semibold tracking-normal">
           Type what you hear
         </h2>
-        <span className="text-manga-ink-soft text-xs font-black uppercase">
-          no transcript
-        </span>
+        <span className="text-ink-soft text-xs font-normal">no transcript</span>
       </div>
       <Textarea
         aria-label="Dictation answer"
@@ -48,10 +46,10 @@ export function DictationAnswerBox({
         value={answer}
         onChange={event => onAnswerChange(event.target.value)}
         placeholder="Type what you hear..."
-        className="border-manga-black bg-manga-white rounded-control min-h-36 border-2 text-xl leading-8 font-semibold shadow-[2px_2px_0_var(--manga-black)]"
+        className="border-line bg-surface rounded-control min-h-36 border text-xl leading-8 font-semibold"
       />
       <div className="flex flex-wrap gap-2">
-        <MangaButton
+        <ActionButton
           type="button"
           onClick={onCheck}
           disabled={isSubmitting}
@@ -63,8 +61,8 @@ export function DictationAnswerBox({
           }
         >
           {isSubmitting ? 'Checking' : 'Check'}
-        </MangaButton>
-        <MangaButton
+        </ActionButton>
+        <ActionButton
           type="button"
           tone="paper"
           onClick={onReveal}
@@ -77,8 +75,8 @@ export function DictationAnswerBox({
           }
         >
           Reveal
-        </MangaButton>
-        <MangaButton
+        </ActionButton>
+        <ActionButton
           type="button"
           tone="paper"
           onClick={onSkip}
@@ -91,10 +89,10 @@ export function DictationAnswerBox({
           }
         >
           Skip
-        </MangaButton>
+        </ActionButton>
       </div>
       {revealed ? (
-        <div className="border-manga-black bg-manga-paper-soft rounded-control border-2 p-3 text-base leading-7 font-semibold shadow-[2px_2px_0_var(--manga-black)]">
+        <div className="border-line bg-tint rounded-control border p-3 text-base leading-7 font-semibold">
           {segmentText}
         </div>
       ) : null}

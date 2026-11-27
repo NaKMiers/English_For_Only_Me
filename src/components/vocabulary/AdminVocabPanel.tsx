@@ -3,10 +3,10 @@
 import { DatabaseZap, RefreshCcw } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 
-import { MangaPanel } from '@/components/common/MangaPanel'
+import { ContentPanel } from '@/components/common/ContentPanel'
 import { MetricTile } from '@/components/common/MetricTile'
 import { Input } from '@/components/ui/input'
-import { MangaButton } from '@/components/ui/MangaButton'
+import { ActionButton } from '@/components/ui/ActionButton'
 import { PageTag } from '@/components/ui/PageTag'
 import {
   enrichVocabularyAdminApi,
@@ -80,14 +80,14 @@ export function AdminVocabPanel({ initialQueue, mongoConfigured }: Props) {
 
   if (!mongoConfigured)
     return (
-      <MangaPanel
+      <ContentPanel
         eyebrow="Admin"
         title="Database needed"
       >
-        <p className="text-manga-ink-soft text-sm leading-6 font-semibold">
+        <p className="text-ink-soft text-sm leading-6 font-normal">
           Set MONGODB_URI before seeding or enriching vocabulary entries.
         </p>
-      </MangaPanel>
+      </ContentPanel>
     )
 
   return (
@@ -95,17 +95,17 @@ export function AdminVocabPanel({ initialQueue, mongoConfigured }: Props) {
       <header className="page-hero flex flex-wrap items-start justify-between gap-3">
         <div className="grid min-w-0 gap-2">
           <PageTag tone="ink">Admin</PageTag>
-          <h1 className="font-sans text-[clamp(1.8rem,4vw,2.6rem)] leading-none font-black wrap-break-word uppercase">
+          <h1 className="font-sans text-[clamp(1.8rem,4vw,2.6rem)] leading-none font-medium wrap-break-word">
             Vocabulary queue
           </h1>
-          <p className="text-manga-ink-soft max-w-2xl text-sm leading-6 font-semibold">
+          <p className="text-ink-soft max-w-2xl text-sm leading-6 font-normal">
             Seed the top words, then enrich small batches through the free
             dictionary providers.
           </p>
         </div>
         <button
           aria-label="Refresh vocabulary queue"
-          className="border-manga-black bg-manga-white hover:bg-manga-paper-soft rounded-control sticker-press inline-grid size-11 shrink-0 place-items-center border-3 shadow-[3px_3px_0_var(--manga-black)] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none disabled:opacity-55"
+          className="border-line bg-surface hover:bg-tint rounded-control soft-press inline-grid size-11 shrink-0 place-items-center border disabled:opacity-55"
           disabled={isLoading}
           onClick={() => refreshQueue()}
           title="Refresh vocabulary queue"
@@ -141,46 +141,46 @@ export function AdminVocabPanel({ initialQueue, mongoConfigured }: Props) {
         />
       </div>
 
-      <MangaPanel
+      <ContentPanel
         eyebrow="Vocabulary"
         title="Enrich queue"
       >
         <div className="grid gap-3 sm:grid-cols-[180px_minmax(0,1fr)]">
           <Input
             aria-label="Vocabulary enrich limit"
-            className="border-manga-black bg-manga-white rounded-control h-12 border-3 px-3 font-sans font-black shadow-[3px_3px_0_var(--manga-black)]"
+            className="border-line bg-surface rounded-control h-12 border px-3 font-sans font-semibold"
             max={10}
             min={1}
             onChange={event => setLimit(Number(event.target.value))}
             type="number"
             value={limit}
           />
-          <MangaButton
+          <ActionButton
             disabled={isLoading}
             icon={<DatabaseZap className="size-4" />}
             onClick={enrich}
           >
             Enrich N
-          </MangaButton>
+          </ActionButton>
         </div>
 
-        <p className="text-manga-ink-soft text-sm leading-6 font-semibold">
+        <p className="text-ink-soft text-sm leading-6 font-normal">
           This action claims up to 10 eligible words with short leases, then
           calls the free dictionary providers. Run the seed first with `bun run
           vocab:seed` so this queue has the NGSL top 1000 shells.
         </p>
 
         {message ? (
-          <div className="border-manga-black bg-manga-paper-soft rounded-control border-3 p-3 text-sm font-black">
+          <div className="border-line bg-tint rounded-control border p-3 text-sm font-semibold">
             {message}
           </div>
         ) : null}
         {error ? (
-          <div className="border-manga-black bg-manga-pale-red rounded-control border-3 p-3 text-sm font-black">
+          <div className="border-line bg-tint-soft rounded-control border p-3 text-sm font-semibold">
             {error}
           </div>
         ) : null}
-      </MangaPanel>
+      </ContentPanel>
     </div>
   )
 }

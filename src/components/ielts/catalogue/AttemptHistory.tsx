@@ -32,7 +32,7 @@ export function AttemptHistory({
 
   return (
     <section className="grid min-w-0 content-start gap-2">
-      <h2 className="font-sans text-sm font-black uppercase">
+      <h2 className="font-sans text-sm font-semibold">
         Recent attempts{' '}
         <span className="text-muted-foreground tabular-nums">
           ({finished.length})
@@ -42,8 +42,8 @@ export function AttemptHistory({
       <div>
         <div className="max-h-64 overflow-auto overscroll-contain">
           <table className="w-full min-w-[480px] border-collapse text-left text-sm">
-            <thead className="bg-manga-white sticky top-0 z-10">
-              <tr className="border-manga-black border-b-2 font-sans text-xs uppercase">
+            <thead className="bg-surface sticky top-0 z-10">
+              <tr className="border-line border-b font-sans text-xs">
                 <th
                   className="py-1 pr-2"
                   scope="col"
@@ -76,7 +76,7 @@ export function AttemptHistory({
                 </th>
                 <th
                   // Pinned right: the table scrolls sideways on phones.
-                  className="bg-manga-white sticky right-0 w-8 py-1"
+                  className="bg-surface sticky right-0 w-8 py-1"
                   scope="col"
                 >
                   <span className="sr-only">Delete</span>
@@ -86,7 +86,7 @@ export function AttemptHistory({
             <tbody>
               {finished.map(attempt => (
                 <tr
-                  className="border-manga-black/20 border-b"
+                  className="border-line/20 border-b"
                   key={attempt.id}
                 >
                   <td className="py-1 pr-2 tabular-nums">
@@ -110,10 +110,10 @@ export function AttemptHistory({
                       ? `${attempt.raw}/${attempt.total}`
                       : STATUS_LABELS[attempt.status]}
                   </td>
-                  <td className="py-1 pr-2 font-sans font-black tabular-nums">
+                  <td className="py-1 pr-2 font-sans font-semibold tabular-nums">
                     {attempt.band === null ? '-' : attempt.band.toFixed(1)}
                   </td>
-                  <td className="bg-manga-white sticky right-0 py-0.5">
+                  <td className="bg-surface sticky right-0 py-0.5">
                     <DeleteAttemptButton
                       attemptId={attempt.id}
                       label={`${attempt.testTitle || attempt.testSlug || 'Drill'} · ${IELTS_SKILL_LABELS[attempt.skill]}`}

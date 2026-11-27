@@ -41,6 +41,7 @@ export default async function Home() {
         dueCount: grammarPath.totals.dueCount,
         nextTitle: 'title' in next ? next.title : null,
       }}
+      userName={user.name}
       vocabStats={vocabStats}
     />
   )

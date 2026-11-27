@@ -14,7 +14,7 @@ import {
 import { DICTATION_LEVELS } from '@/modules/dictation/levels'
 
 const controlClass =
-  'border-manga-black min-h-11 rounded-control border-2 bg-manga-white px-3 py-2 font-sans text-sm font-black'
+  'border-line min-h-11 rounded-control border bg-surface px-3 py-2 font-sans text-sm font-semibold'
 
 /**
  * URL-driven browse toolbar: debounced live search (no OK button, per design

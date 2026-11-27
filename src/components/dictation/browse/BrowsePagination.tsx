@@ -7,7 +7,7 @@ import type {
 } from '@/modules/dictation/content/browseQuery'
 
 const linkClass =
-  'border-manga-black bg-manga-white inline-flex min-h-9 items-center rounded-control border-2 px-3 font-sans text-sm font-black shadow-[2px_2px_0_var(--manga-black)]'
+  'border-line bg-surface inline-flex min-h-9 items-center rounded-control border px-3 font-sans text-sm font-semibold'
 
 /** Prev/next pager (Link-based, URL-driven) preserving the active query. */
 export function BrowsePagination({
@@ -51,7 +51,7 @@ export function BrowsePagination({
           ← Prev
         </span>
       )}
-      <span className="text-manga-ink-soft font-sans text-sm font-black">
+      <span className="text-ink-soft font-sans text-sm font-normal">
         Page {pagination.page} of {pagination.totalPages}
       </span>
       {pagination.hasNext ? (

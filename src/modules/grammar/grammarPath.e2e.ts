@@ -24,7 +24,7 @@ async function answerCurrentCard(page: Page) {
   const label = await pool.getAttribute('aria-label')
   const tiles = pool.locator('button:not([disabled])')
 
-  if (label === 'Các từ để xếp') {
+  if (label === 'Words to arrange') {
     while (await tiles.count()) await tiles.first().click()
 
     return
@@ -39,7 +39,7 @@ async function playThrough(page: Page) {
   for (let step = 0; step < 60; step += 1) {
     if (await page.getByRole('heading', { level: 1 }).count()) return
 
-    if ((await action.textContent())?.includes('Kiểm tra'))
+    if ((await action.textContent())?.includes('Check'))
       await answerCurrentCard(page)
 
     await action.click()
@@ -54,28 +54,30 @@ test('a first-time guest finishes lesson 1 and unlocks lesson 2', async ({
 }) => {
   await page.goto('/grammar')
   await expect(
-    page.getByRole('heading', { name: 'Lộ trình ngữ pháp' })
+    page.getByRole('heading', { name: 'Grammar path' })
   ).toBeVisible()
 
-  await page.getByRole('link', { name: /Tiếp tục: am, is, are/ }).click()
+  await page.getByRole('link', { name: /Continue: am, is, are/ }).click()
   await expect(page).toHaveURL(/\/grammar\/lessons\/u01-l01$/)
 
   await playThrough(page)
 
-  await expect(page.getByRole('heading', { name: 'Xong bài!' })).toBeVisible()
-  await expect(page.getByRole('img', { name: /trên 3 sao/ })).toBeVisible()
   await expect(
-    page.getByText('Mở khóa: Phủ định và câu hỏi với be')
+    page.getByRole('heading', { name: 'Lesson done!' })
+  ).toBeVisible()
+  await expect(page.getByRole('img', { name: /of 3 stars/ })).toBeVisible()
+  await expect(
+    page.getByText('Unlocked: Phủ định và câu hỏi với be')
   ).toBeVisible({ timeout: 15_000 })
 
-  await page.getByRole('link', { name: 'Bài tiếp theo' }).click()
+  await page.getByRole('link', { name: 'Next lesson' }).click()
   await expect(page).toHaveURL(/\/grammar\/lessons\/u01-l02$/)
 
   await page.goto('/grammar')
   await expect(
-    page.getByRole('button', { name: /Phủ định và câu hỏi với be, đang mở/ })
+    page.getByRole('button', { name: /Phủ định và câu hỏi với be, open/ })
   ).toBeVisible()
   await expect(
-    page.getByRole('button', { name: /am, is, are, đã học/ })
+    page.getByRole('button', { name: /am, is, are, done/ })
   ).toBeVisible()
 })

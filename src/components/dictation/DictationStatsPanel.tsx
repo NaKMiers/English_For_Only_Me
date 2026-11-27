@@ -5,7 +5,7 @@ import {
   RotateCcw,
 } from 'lucide-react'
 
-import { MangaPanel } from '@/components/common/MangaPanel'
+import { ContentPanel } from '@/components/common/ContentPanel'
 import { MetricTile } from '@/components/common/MetricTile'
 import { QueueRow } from '@/components/common/QueueRow'
 import type { DictationVideoStatsRecord } from '@/modules/dictation/types'
@@ -68,7 +68,7 @@ export function DictationStatsPanel({ stats }: Props) {
       </div>
 
       <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(320px,0.8fr)]">
-        <MangaPanel
+        <ContentPanel
           eyebrow="Weakest"
           title="Hardest segments"
         >
@@ -84,14 +84,14 @@ export function DictationStatsPanel({ stats }: Props) {
               ))}
             </div>
           ) : (
-            <p className="text-manga-ink-soft text-base leading-7 font-semibold">
+            <p className="text-ink-soft text-base leading-7 font-normal">
               No attempts yet. Finish a few sentences and this panel will show
               what to review.
             </p>
           )}
-        </MangaPanel>
+        </ContentPanel>
 
-        <MangaPanel
+        <ContentPanel
           eyebrow="Taxonomy"
           title="Mistake map"
         >
@@ -117,11 +117,11 @@ export function DictationStatsPanel({ stats }: Props) {
               status="spell"
             />
           </div>
-        </MangaPanel>
+        </ContentPanel>
       </div>
 
       <div className="grid items-start gap-5 lg:grid-cols-2">
-        <MangaPanel
+        <ContentPanel
           eyebrow="Words"
           title="Common missed words"
         >
@@ -136,13 +136,13 @@ export function DictationStatsPanel({ stats }: Props) {
               ))}
             </div>
           ) : (
-            <p className="text-manga-ink-soft text-base leading-7 font-semibold">
+            <p className="text-ink-soft text-base leading-7 font-normal">
               No missed words have been recorded yet.
             </p>
           )}
-        </MangaPanel>
+        </ContentPanel>
 
-        <MangaPanel
+        <ContentPanel
           eyebrow="Behavior"
           title="Recovery signals"
         >
@@ -172,7 +172,7 @@ export function DictationStatsPanel({ stats }: Props) {
               meta={`${stats.skipCount} sentences skipped`}
             />
           </div>
-        </MangaPanel>
+        </ContentPanel>
       </div>
     </div>
   )

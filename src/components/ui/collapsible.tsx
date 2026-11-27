@@ -22,7 +22,7 @@ function CollapsibleTrigger({
     <CollapsiblePrimitive.Trigger
       data-slot="collapsible-trigger"
       className={cn(
-        'focus-visible:ring-manga-red rounded-tag cursor-pointer outline-none focus-visible:ring-2 disabled:cursor-default',
+        'focus-visible:ring-brand rounded-tag cursor-pointer outline-none focus-visible:ring-2 disabled:cursor-default',
         className
       )}
       {...props}

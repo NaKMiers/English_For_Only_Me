@@ -37,10 +37,7 @@ export function CheckButton({
 }) {
   return (
     <ExamButton
-      className={cn(
-        'h-9 min-h-9 border-2 px-3 shadow-[2px_2px_0_var(--manga-black)] active:translate-x-[2px] active:translate-y-[2px] active:not-aria-[haspopup]:translate-y-[2px]',
-        className
-      )}
+      className={cn('h-9 min-h-9 border px-3', className)}
       disabled={busy}
       icon={
         busy ? (
@@ -61,7 +58,7 @@ export function CheckButton({
     >
       {busy ? 'Checking...' : label}
       {score && !busy ? (
-        <span className="rounded-tag bg-manga-white/20 ml-2 px-1.5 text-xs tabular-nums">
+        <span className="rounded-tag bg-surface/20 ml-2 px-1.5 text-xs tabular-nums">
           {score}
         </span>
       ) : null}
@@ -88,7 +85,7 @@ export function ResetPartButton({
   return (
     <>
       <IconButton
-        className="rounded-tag size-9 border-2 shadow-[2px_2px_0_var(--manga-black)] active:translate-x-[2px] active:translate-y-[2px] active:not-aria-[haspopup]:translate-y-[2px]"
+        className="rounded-tag size-9 border"
         disabled={disabled}
         label={`Reset ${name}`}
         onClick={() => setOpen(true)}

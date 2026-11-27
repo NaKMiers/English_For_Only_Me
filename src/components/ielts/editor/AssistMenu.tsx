@@ -136,7 +136,7 @@ export function AssistMenu({
     <>
       <DropdownMenu>
         <DropdownMenuTrigger
-          className="border-manga-black bg-manga-white hover:bg-manga-pale-red rounded-control sticker-press inline-flex min-h-10 items-center gap-1.5 border-2 px-3 font-sans text-sm font-black shadow-[2px_2px_0_var(--manga-black)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:opacity-55"
+          className="border-line bg-surface hover:bg-tint-soft rounded-control soft-press inline-flex min-h-10 items-center gap-1.5 border px-3 font-sans text-sm font-semibold disabled:opacity-55"
           disabled={disabled}
         >
           <Sparkles
@@ -196,14 +196,14 @@ export function AssistMenu({
                 aria-pressed={action === item.action}
                 className={
                   action === item.action
-                    ? 'border-manga-black bg-manga-red rounded-control text-manga-white border-2 p-2 text-left'
-                    : 'border-manga-black hover:bg-manga-pale-red rounded-control bg-manga-white border-2 p-2 text-left'
+                    ? 'border-line bg-brand rounded-control text-surface border p-2 text-left'
+                    : 'border-line hover:bg-tint-soft rounded-control bg-surface border p-2 text-left'
                 }
                 key={item.action}
                 onClick={() => setAction(item.action)}
                 type="button"
               >
-                <span className="block font-sans text-sm font-black">
+                <span className="block font-sans text-sm font-semibold">
                   {item.label}
                 </span>
                 <span className="block text-xs">{item.help}</span>
@@ -218,14 +218,14 @@ export function AssistMenu({
           />
           {error ? (
             <p
-              className="text-manga-red text-sm font-semibold"
+              className="text-brand text-sm font-semibold"
               role="alert"
             >
               {error}
             </p>
           ) : null}
           {proposal ? (
-            <div className="border-manga-black rounded-control bg-manga-white grid gap-2 border-2 p-3 text-sm">
+            <div className="border-line rounded-control bg-surface grid gap-2 border p-3 text-sm">
               <p className="font-semibold">{proposal.summary}</p>
               {proposal.notes.length ? (
                 <ul className="list-disc pl-5">

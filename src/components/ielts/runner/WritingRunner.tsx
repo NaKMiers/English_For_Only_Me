@@ -240,7 +240,7 @@ export function WritingRunner({
                 name={`Task ${writing.task}`}
                 onReset={resetTask}
               />
-              <Label className="text-manga-black flex items-center gap-2 text-xs font-semibold">
+              <Label className="text-ink flex items-center gap-2 text-xs font-semibold">
                 <Switch
                   checked={spellCheck}
                   onCheckedChange={setSpellCheck}
@@ -254,12 +254,12 @@ export function WritingRunner({
 
       {notice ? (
         <p
-          className="border-manga-black text-manga-black flex shrink-0 items-center justify-between gap-3 border-b-2 bg-yellow-100 px-4 py-2 text-sm"
+          className="border-line text-ink flex shrink-0 items-center justify-between gap-3 border-b bg-yellow-100 px-4 py-2 text-sm"
           role="status"
         >
           {notice}
           <button
-            className="text-manga-red text-xs font-semibold underline"
+            className="text-brand text-xs font-semibold underline"
             onClick={() => setNotice('')}
             type="button"
           >
@@ -269,7 +269,7 @@ export function WritingRunner({
       ) : null}
 
       {/* Segmented toggles (aria-pressed): the documented raw-button exception. */}
-      <div className="border-manga-black bg-exam-surface flex shrink-0 justify-end gap-2 border-b-2 px-3 py-2 lg:hidden">
+      <div className="border-line bg-exam-surface flex shrink-0 justify-end gap-2 border-b px-3 py-2 lg:hidden">
         {(
           [
             ['task', 'Prompt'],
@@ -304,7 +304,7 @@ export function WritingRunner({
           )}
         >
           <div className="font-body grid w-full gap-4 text-[17px] leading-[1.7]">
-            <h2 className="text-muted-foreground font-sans text-lg leading-none font-black tracking-wide uppercase">
+            <h2 className="text-muted-foreground font-sans text-lg leading-none font-semibold tracking-wide">
               Task {writing.task}
             </h2>
             <WritingPrompt text={writing.prompt} />
@@ -326,13 +326,13 @@ export function WritingRunner({
         <section
           aria-label="Essay"
           className={cn(
-            'bg-exam-surface in-data-[theme=lightup]:bg-manga-pale-red/60 min-h-0 overflow-y-auto px-3 py-4 sm:px-3 lg:flex',
+            'bg-exam-surface in-data-[theme=lightup]:bg-tint-soft/60 min-h-0 overflow-y-auto px-3 py-4 sm:px-3 lg:flex',
             mobileTab === 'essay' ? 'flex' : 'hidden',
             'flex-col gap-2'
           )}
         >
           <Label
-            className="text-manga-black text-sm font-semibold"
+            className="text-ink text-sm font-semibold"
             htmlFor={`ielts-essay-${taskKey}`}
           >
             Task {writing.task} essay
@@ -340,7 +340,7 @@ export function WritingRunner({
           <Textarea
             autoCapitalize="off"
             autoCorrect="off"
-            className="font-body border-manga-black text-manga-black focus-visible:border-manga-red rounded-control bg-manga-white h-[min(60vh,520px)] min-h-60 shrink-0 resize-y border p-4 text-[17px] leading-[1.75] shadow-none focus-visible:ring-0"
+            className="font-body border-line text-ink focus-visible:border-brand rounded-control bg-surface h-[min(60vh,520px)] min-h-60 shrink-0 resize-y border p-4 text-[17px] leading-[1.75] shadow-none focus-visible:ring-0"
             id={`ielts-essay-${taskKey}`}
             maxLength={IELTS_ESSAY_MAX_LENGTH}
             onChange={event => setAnswer(Number(taskKey), event.target.value)}
@@ -369,8 +369,8 @@ export function WritingRunner({
             />
           ) : null}
           {check ? (
-            <div className="border-manga-black rounded-control bg-manga-paper-soft mt-2 grid gap-3 border-2 p-3">
-              <p className="font-sans text-base font-black">
+            <div className="border-line rounded-control bg-tint mt-2 grid gap-3 border p-3">
+              <p className="font-sans text-base font-semibold">
                 AI check, Task {writing.task}
                 {check.feedback.band != null
                   ? ` · Band ${check.feedback.band.toFixed(1)}`

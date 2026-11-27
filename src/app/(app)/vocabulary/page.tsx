@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { AuthControl } from '@/components/common/AuthControl'
-import { MangaPageShell } from '@/components/common/MangaPageShell'
+import { PageShell } from '@/components/common/PageShell'
 import { VocabularyDashboard } from '@/components/vocabulary/VocabularyDashboard'
 import { hasMongoDbUri } from '@/constants/environments'
 import { connectDatabase } from '@/lib/db/connectDatabase'
@@ -41,7 +41,7 @@ export default async function VocabularyPage() {
   const initialData = mongoConfigured ? await loadInitialData() : null
 
   return (
-    <MangaPageShell
+    <PageShell
       topbar={
         <AppTopbar
           activeHref="/vocabulary"
@@ -54,6 +54,6 @@ export default async function VocabularyPage() {
         initialData={initialData}
         mongoConfigured={mongoConfigured}
       />
-    </MangaPageShell>
+    </PageShell>
   )
 }

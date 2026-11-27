@@ -17,22 +17,22 @@ export default function Error({ error, unstable_retry }: Props) {
   }, [error])
 
   return (
-    <div className="border-manga-black bg-manga-paper text-manga-black rounded-shell mx-auto my-3 w-[min(1460px,calc(100%-24px))] border-3 p-3 shadow-[8px_8px_0_var(--manga-black)] sm:my-4 sm:w-[min(1460px,calc(100%-32px))] sm:p-5">
+    <div className="bg-surface text-ink rounded-shell shadow-shell mx-auto min-h-dvh w-full p-4 sm:my-5 sm:min-h-[calc(100dvh-40px)] sm:w-[min(1480px,calc(100%-40px))] sm:p-8 lg:my-8 lg:min-h-[calc(100dvh-64px)] lg:w-[min(1480px,calc(100%-64px))]">
       <section
-        className="border-manga-black bg-manga-white rounded-panel grid gap-4 border-3 p-5 shadow-[4px_4px_0_var(--manga-black)]"
+        className="border-line bg-surface rounded-panel shadow-card mx-auto grid max-w-2xl gap-4 border p-6"
         role="alert"
       >
-        <span className="border-manga-black bg-manga-pale-red text-manga-black rounded-tag inline-flex min-h-8 w-fit items-center border-2 px-3 py-1 font-sans text-xs leading-tight font-black tracking-normal uppercase shadow-[3px_3px_0_var(--manga-black)]">
+        <span className="bg-danger-soft text-danger inline-flex min-h-7 w-fit items-center rounded-full px-3 py-1 font-sans text-xs leading-tight font-medium">
           IELTS
         </span>
-        <h1 className="font-sans text-2xl leading-none font-black tracking-normal uppercase">
+        <h1 className="font-sans text-2xl leading-tight font-medium tracking-tight">
           IELTS page error
         </h1>
-        <p className="text-manga-ink-soft max-w-2xl text-base leading-7 font-semibold">
+        <p className="text-ink-soft max-w-2xl text-base leading-7 font-normal">
           Your saved attempts are safe. Try reloading the page.
         </p>
         <button
-          className="border-manga-black bg-manga-paper-soft text-manga-black hover:bg-manga-pale-red rounded-control sticker-press inline-flex min-h-11 w-fit items-center justify-center border-3 px-4 py-2 font-sans text-sm leading-tight font-black tracking-normal shadow-[3px_3px_0_var(--manga-black)] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none"
+          className="bg-ink text-surface hover:bg-ink/85 soft-press inline-flex min-h-11 w-fit items-center justify-center rounded-full px-5 py-2 font-sans text-sm leading-tight font-medium"
           onClick={() => unstable_retry()}
           type="button"
         >

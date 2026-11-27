@@ -17,14 +17,13 @@ describe('IconButton', () => {
     expect(html).toContain('title="Search study desk"')
   })
 
-  test('presses the full 3px down onto its shadow, not the base 1px nudge', () => {
+  test('is a round pill button', () => {
     const html = renderToStaticMarkup(
       <IconButton label="Search study desk">
         <Search aria-hidden="true" />
       </IconButton>
     )
 
-    expect(html).toContain('active:not-aria-[haspopup]:translate-y-[3px]')
-    expect(html).not.toContain('active:not-aria-[haspopup]:translate-y-px')
+    expect(html).toContain('rounded-full')
   })
 })

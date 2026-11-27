@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { AuthControl } from '@/components/common/AuthControl'
-import { MangaPageShell } from '@/components/common/MangaPageShell'
+import { PageShell } from '@/components/common/PageShell'
 import { PageHero } from '@/components/common/PageHero'
 import { BrowseBreadcrumb } from '@/components/dictation/browse/BrowseBreadcrumb'
 import {
@@ -63,7 +63,7 @@ export default async function NoTopicPage() {
   }
 
   return (
-    <MangaPageShell
+    <PageShell
       topbar={
         <AppTopbar
           activeHref="/dictation"
@@ -75,10 +75,10 @@ export default async function NoTopicPage() {
       <section className="grid gap-5 p-4 sm:p-6 lg:p-8">
         <PageHero>
           <BrowseBreadcrumb current="Uncategorized" />
-          <h1 className="font-sans text-[clamp(1.8rem,4vw,2.6rem)] leading-none font-black uppercase">
+          <h1 className="font-sans text-[clamp(1.8rem,4vw,2.6rem)] leading-none font-medium">
             Uncategorized
           </h1>
-          <p className="text-manga-ink-soft max-w-2xl text-sm leading-6">
+          <p className="text-ink-soft max-w-2xl text-sm leading-6">
             Lessons not yet filed under a topic.
           </p>
         </PageHero>
@@ -88,6 +88,6 @@ export default async function NoTopicPage() {
           emptyLabel="No uncategorized lessons."
         />
       </section>
-    </MangaPageShell>
+    </PageShell>
   )
 }

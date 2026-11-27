@@ -4,7 +4,7 @@ import { notFound, redirect } from 'next/navigation'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { AuthControl } from '@/components/common/AuthControl'
-import { MangaPageShell } from '@/components/common/MangaPageShell'
+import { PageShell } from '@/components/common/PageShell'
 import { ObjectiveResult } from '@/components/ielts/review/ObjectiveResult'
 import { WritingResult } from '@/components/ielts/review/WritingResult'
 import { IELTS_SKILL_LABELS } from '@/modules/ielts/constants'
@@ -46,7 +46,7 @@ export default async function IeltsResultPage({ params }: Props) {
   const title = attempt.testTitle || 'Drill'
 
   return (
-    <MangaPageShell
+    <PageShell
       topbar={
         <AppTopbar
           activeHref="/ielts"
@@ -62,7 +62,7 @@ export default async function IeltsResultPage({ params }: Props) {
             className="text-muted-foreground text-sm font-semibold"
           >
             <Link
-              className="hover:text-manga-red underline"
+              className="hover:text-brand underline"
               href="/ielts"
             >
               IELTS
@@ -80,7 +80,7 @@ export default async function IeltsResultPage({ params }: Props) {
             ) : null}{' '}
             / {IELTS_SKILL_LABELS[attempt.skill]}
           </nav>
-          <h1 className="font-sans text-3xl leading-tight font-black wrap-break-word sm:text-4xl">
+          <h1 className="font-sans text-3xl leading-tight font-medium wrap-break-word sm:text-4xl">
             {IELTS_SKILL_LABELS[attempt.skill]} result
           </h1>
           <p>
@@ -104,6 +104,6 @@ export default async function IeltsResultPage({ params }: Props) {
           />
         )}
       </ExamSheet>
-    </MangaPageShell>
+    </PageShell>
   )
 }

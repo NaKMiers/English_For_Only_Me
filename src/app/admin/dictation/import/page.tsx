@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
-import { MangaPageShell } from '@/components/common/MangaPageShell'
+import { PageShell } from '@/components/common/PageShell'
 import { AuthControl } from '@/components/common/AuthControl'
 import { DictationImportForm } from '@/components/dictation/DictationImportForm'
 import { PageTag } from '@/components/ui/PageTag'
@@ -26,7 +26,7 @@ export default async function DictationImportPage() {
   if (user.role !== 'admin') redirect('/dictation')
 
   return (
-    <MangaPageShell
+    <PageShell
       topbar={
         <AppTopbar
           activeHref="/dictation"
@@ -35,12 +35,12 @@ export default async function DictationImportPage() {
         />
       }
       footer={
-        <div className="border-manga-black bg-manga-black text-manga-white border-t-3 px-5 py-4">
+        <div className="border-line bg-ink text-surface border-t px-5 py-4">
           <div className="mx-auto flex max-w-[1400px] flex-wrap items-center justify-between gap-3">
-            <strong className="font-sans text-base font-black tracking-normal uppercase">
+            <strong className="font-sans text-base font-semibold tracking-normal">
               English For Only Me
             </strong>
-            <span className="text-manga-pale-red text-sm font-semibold">
+            <span className="text-tint-soft text-sm font-semibold">
               Official metadata. User-provided transcript. No hidden scraping.
             </span>
           </div>
@@ -50,26 +50,26 @@ export default async function DictationImportPage() {
       <div className="grid gap-5 p-3 sm:p-5">
         <Link
           href="/admin/dictation"
-          className="text-manga-red justify-self-start text-sm font-black hover:underline"
+          className="text-brand justify-self-start text-sm font-semibold hover:underline"
         >
           ← Dictation
         </Link>
         <section
           aria-labelledby="dictation-import-title"
-          className="border-manga-black bg-manga-white/92 rounded-panel grid min-w-0 overflow-hidden border-3 shadow-[6px_6px_0_var(--manga-black)]"
+          className="border-line bg-surface/92 rounded-panel grid min-w-0 overflow-hidden border"
         >
-          <div className="border-manga-black bg-manga-white/90 flex min-w-0 flex-wrap items-start justify-between gap-4 border-b-3 p-4 sm:p-5">
+          <div className="border-line bg-surface/90 flex min-w-0 flex-wrap items-start justify-between gap-4 border-b p-4 sm:p-5">
             <div className="grid min-w-0 gap-3">
-              <p className="text-manga-red text-xs leading-tight font-black tracking-normal uppercase">
+              <p className="text-brand text-xs leading-tight font-semibold tracking-normal">
                 Listening module import page
               </p>
               <h1
                 id="dictation-import-title"
-                className="font-sans text-[clamp(2rem,7vw,4.75rem)] leading-none font-black tracking-normal wrap-break-word uppercase"
+                className="font-sans text-[clamp(2rem,7vw,4.75rem)] leading-none font-medium tracking-normal wrap-break-word"
               >
                 Add Dictation Source
               </h1>
-              <p className="text-manga-ink-soft max-w-3xl text-base leading-7 font-semibold">
+              <p className="text-ink-soft max-w-3xl text-base leading-7 font-normal">
                 Save a YouTube video, then attach the English transcript source
                 that future segmenting and practice will trust.
               </p>
@@ -82,6 +82,6 @@ export default async function DictationImportPage() {
           </div>
         </section>
       </div>
-    </MangaPageShell>
+    </PageShell>
   )
 }

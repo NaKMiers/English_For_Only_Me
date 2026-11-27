@@ -23,7 +23,7 @@ export const WritingPrompt = memo(function WritingPrompt({
           className={cn(
             'grid gap-3',
             block.boxed &&
-              'border-manga-black rounded-control border-2 px-4 py-3 font-bold italic'
+              'border-line rounded-control border px-4 py-3 font-bold italic'
           )}
           key={blockIndex}
         >

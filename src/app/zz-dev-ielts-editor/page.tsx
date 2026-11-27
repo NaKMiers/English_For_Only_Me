@@ -2,7 +2,7 @@
 import { notFound } from 'next/navigation'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
-import { MangaPageShell } from '@/components/common/MangaPageShell'
+import { PageShell } from '@/components/common/PageShell'
 import { TestEditor } from '@/components/ielts/editor/TestEditor'
 import { IELTS_SAMPLE_TEST } from '@/modules/ielts/fixtures/sampleTest'
 import type { IeltsAdminTest } from '@/modules/ielts/tests/testService'
@@ -43,7 +43,7 @@ export default async function Page({
   } as unknown as IeltsAdminTest
 
   return (
-    <MangaPageShell
+    <PageShell
       className="overflow-clip"
       topbar={
         <AppTopbar
@@ -56,6 +56,6 @@ export default async function Page({
         initial={test}
         seriesOptions={['Cambridge 19', 'IELTS 21']}
       />
-    </MangaPageShell>
+    </PageShell>
   )
 }

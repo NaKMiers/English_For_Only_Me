@@ -37,7 +37,7 @@ export function CheckPartPanel({
       >
         {check ? (
           <>
-            <strong className="font-sans font-black tabular-nums">
+            <strong className="font-sans font-semibold tabular-nums">
               {check.raw}/{check.total}
             </strong>{' '}
             correct

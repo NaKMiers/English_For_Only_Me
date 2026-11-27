@@ -111,7 +111,7 @@ function QuestionEditor({
                 No answer
               </MetaChip>
             ) : isMulti ? null : (
-              <span className="text-manga-black truncate font-bold">
+              <span className="text-ink truncate font-bold">
                 {question.answers.join(' | ')}
               </span>
             )}
@@ -236,7 +236,7 @@ export function GroupEditor({ group, index, onChange, onRemove }: Props) {
       defaultOpen={isNew}
       meta={
         <>
-          <span className="text-manga-black truncate font-bold">
+          <span className="text-ink truncate font-bold">
             {IELTS_QUESTION_TYPE_LABELS[group.type]}
           </span>
           {missing ? (
@@ -279,7 +279,9 @@ export function GroupEditor({ group, index, onChange, onRemove }: Props) {
       {activeTab === 'setup' ? (
         <div className="grid gap-3">
           <div className="grid gap-1">
-            <span className="font-sans text-xs font-black">Question type</span>
+            <span className="font-sans text-xs font-semibold">
+              Question type
+            </span>
             <Select
               onValueChange={value =>
                 update({ type: (value ?? group.type) as IeltsQuestionType })

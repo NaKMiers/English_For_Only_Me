@@ -11,7 +11,7 @@ export function PageTag({ children, className, tone = 'default' }: Props) {
   return (
     <span
       className={cn(
-        'border-manga-black rounded-tag inline-flex min-h-8 max-w-full items-center border-2 px-3 py-1 font-sans text-xs leading-tight font-black tracking-normal uppercase shadow-[3px_3px_0_var(--manga-black)]',
+        'inline-flex min-h-7 w-fit max-w-full items-center justify-self-start rounded-full px-3 py-1 font-sans text-xs leading-tight font-medium tracking-normal',
         PAGE_TAG_TONES[tone],
         className
       )}

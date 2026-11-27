@@ -532,7 +532,7 @@ export function TestEditor({
       ref={rootRef}
     >
       <div
-        className="bg-manga-paper grid gap-2 xl:sticky xl:top-0 xl:z-30 xl:-mx-4 xl:px-4 xl:pt-3 xl:pb-1"
+        className="bg-surface grid gap-2 xl:sticky xl:top-0 xl:z-30 xl:-mx-4 xl:px-4 xl:pt-3 xl:pb-1"
         ref={barRef}
       >
         <EditorHeader
@@ -569,12 +569,12 @@ export function TestEditor({
 
         {message ? (
           <div
-            className="border-manga-black bg-manga-pale-red rounded-control flex shrink-0 items-center gap-2 border-2 py-1 pr-1 pl-3"
+            className="border-line bg-tint-soft rounded-control flex shrink-0 items-center gap-2 border py-1 pr-1 pl-3"
             role="status"
           >
             <p className="min-w-0 flex-1 text-sm font-semibold">{message}</p>
             <ExamIconButton
-              className="size-8 border-2 shadow-none"
+              className="size-8 border shadow-none"
               label="Dismiss"
               onClick={() => setMessage('')}
               type="button"
@@ -598,10 +598,10 @@ export function TestEditor({
           {showEditor ? (
             <section
               aria-label="Edit section"
-              className="border-manga-black bg-manga-white rounded-panel grid min-w-0 content-start border-3 shadow-[4px_4px_0_var(--manga-black)]"
+              className="border-line bg-surface rounded-panel grid min-w-0 content-start border"
             >
               {/* Sticks under the header bar while the page scrolls. */}
-              <div className="border-manga-black bg-manga-white rounded-t-panel sticky top-0 z-20 flex min-w-0 flex-wrap items-center gap-2 border-b-2 px-2 py-1.5 sm:px-3 xl:top-(--editor-bar)">
+              <div className="border-line bg-surface rounded-t-panel sticky top-0 z-20 flex min-w-0 flex-wrap items-center gap-2 border-b px-2 py-1.5 sm:px-3 xl:top-(--editor-bar)">
                 <ExamIconButton
                   className="size-9"
                   disabled={!prevSection}
@@ -627,7 +627,7 @@ export function TestEditor({
                   />
                 </ExamIconButton>
                 <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2 gap-y-1 pl-1">
-                  <h2 className="font-sans text-base leading-none font-black whitespace-nowrap uppercase">
+                  <h2 className="font-sans text-base leading-none font-semibold whitespace-nowrap">
                     {IELTS_SKILL_LABELS[section.skill]} {section.order}
                   </h2>
                   <div className="flex flex-wrap items-center gap-1">
@@ -702,7 +702,7 @@ export function TestEditor({
               <div className="grid min-w-0 content-start gap-3 p-3 sm:p-4">
                 {section.genError ? (
                   <p
-                    className="border-manga-red text-manga-red rounded-control border-2 px-3 py-2 text-sm font-semibold"
+                    className="border-brand text-brand rounded-control border px-3 py-2 text-sm font-semibold"
                     role="alert"
                   >
                     {section.genError}
@@ -710,7 +710,7 @@ export function TestEditor({
                 ) : null}
                 {test.status === 'published' ? (
                   <p
-                    className="border-manga-black rounded-control border-2 bg-yellow-100 px-3 py-2 text-sm font-semibold"
+                    className="border-line rounded-control border bg-yellow-100 px-3 py-2 text-sm font-semibold"
                     role="note"
                   >
                     This test is live: learners see each saved change right
@@ -769,15 +769,15 @@ export function TestEditor({
             <section
               aria-label="Preview"
               className={cn(
-                'border-manga-black bg-manga-white rounded-panel grid min-w-0 content-start border-3 shadow-[4px_4px_0_var(--manga-black)]',
+                'border-line bg-surface rounded-panel grid min-w-0 content-start border',
                 // Beside the editor it stays in view and scrolls on its own.
                 split &&
                   'xl:sticky xl:top-(--editor-bar) xl:max-h-[calc(100dvh-var(--editor-bar)-16px)] xl:grid-rows-[auto_minmax(0,1fr)] xl:overflow-hidden'
               )}
             >
-              <div className="border-manga-black flex min-w-0 flex-wrap items-center justify-between gap-2 border-b-2 px-3 py-2">
+              <div className="border-line flex min-w-0 flex-wrap items-center justify-between gap-2 border-b px-3 py-2">
                 <div className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2">
-                  <h2 className="flex items-center gap-2 font-sans text-sm font-black uppercase">
+                  <h2 className="flex items-center gap-2 font-sans text-sm font-semibold">
                     <Eye
                       aria-hidden="true"
                       className="size-4"

@@ -9,8 +9,8 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 
-import { MangaPanel } from '@/components/common/MangaPanel'
-import { MangaButton } from '@/components/ui/MangaButton'
+import { ContentPanel } from '@/components/common/ContentPanel'
+import { ActionButton } from '@/components/ui/ActionButton'
 import { Textarea } from '@/components/ui/textarea'
 import type { CaptionCue } from '@/modules/dictation/translations/captionOverlap'
 import { getLanguageLabel } from '@/modules/dictation/translations/languages'
@@ -139,7 +139,7 @@ export function DictationTranslationEditor({
   const pager =
     pageCount > 1 ? (
       <div className="flex items-center justify-between gap-2">
-        <MangaButton
+        <ActionButton
           type="button"
           tone="paper"
           disabled={safePage === 0}
@@ -152,12 +152,12 @@ export function DictationTranslationEditor({
           }
         >
           Prev
-        </MangaButton>
-        <span className="text-manga-ink-soft text-center text-xs font-black">
+        </ActionButton>
+        <span className="text-ink-soft text-center text-xs font-normal">
           Sentences {pageStart + 1}-{pageStart + visibleSegments.length} of{' '}
           {segments.length}
         </span>
-        <MangaButton
+        <ActionButton
           type="button"
           tone="paper"
           disabled={safePage >= pageCount - 1}
@@ -172,23 +172,23 @@ export function DictationTranslationEditor({
           }
         >
           Next
-        </MangaButton>
+        </ActionButton>
       </div>
     ) : null
 
   return (
-    <MangaPanel
+    <ContentPanel
       eyebrow="Translations"
       title="Edit translations"
     >
       {languages.length === 0 ? (
-        <p className="text-manga-ink-soft text-sm font-semibold">
+        <p className="text-ink-soft text-sm font-normal">
           Add a non-primary caption track first, then edit its translation per
           sentence here.
         </p>
       ) : (
         <>
-          <p className="text-manga-ink-soft text-sm leading-6 font-semibold">
+          <p className="text-ink-soft text-sm leading-6 font-normal">
             Each sentence loads its translation from the uploaded captions. Edit
             it by hand, or use AI to translate, then save. Changes show in
             practice.
@@ -197,7 +197,7 @@ export function DictationTranslationEditor({
           {languages.length > 1 ? (
             <div className="flex flex-wrap items-center gap-2">
               {languages.map(code => (
-                <MangaButton
+                <ActionButton
                   key={code}
                   type="button"
                   tone={code === language ? 'primary' : 'paper'}
@@ -207,11 +207,11 @@ export function DictationTranslationEditor({
                   }}
                 >
                   {getLanguageLabel(code)}
-                </MangaButton>
+                </ActionButton>
               ))}
             </div>
           ) : (
-            <p className="font-sans text-xs font-black tracking-normal uppercase">
+            <p className="font-sans text-xs font-semibold tracking-normal">
               {getLanguageLabel(language)}
             </p>
           )}
@@ -231,18 +231,18 @@ export function DictationTranslationEditor({
               return (
                 <li
                   key={segment.id}
-                  className="border-manga-black bg-manga-white rounded-control grid gap-2 border-2 p-3 shadow-[3px_3px_0_var(--manga-black)]"
+                  className="border-line bg-surface rounded-control grid gap-2 border p-3"
                 >
                   <div className="flex items-baseline justify-between gap-2">
                     <div className="flex min-w-0 items-baseline gap-2">
-                      <span className="text-manga-ink-soft font-sans text-xs font-black tabular-nums">
+                      <span className="text-ink-soft font-sans text-xs font-normal tabular-nums">
                         {segment.order + 1}
                       </span>
                       <p className="min-w-0 text-sm leading-6 font-semibold break-words">
                         {segment.text}
                       </p>
                     </div>
-                    <span className="text-manga-ink-soft shrink-0 font-sans text-xs font-black uppercase">
+                    <span className="text-ink-soft shrink-0 font-sans text-xs font-normal">
                       {isOverridden ? 'Custom' : 'From captions'}
                     </span>
                   </div>
@@ -253,11 +253,11 @@ export function DictationTranslationEditor({
                     disabled={isBusy}
                     onChange={event => setDraft(segment.id, event.target.value)}
                     rows={2}
-                    className="border-manga-black bg-manga-white rounded-control border-2 font-semibold shadow-[2px_2px_0_var(--manga-black)]"
+                    className="border-line bg-surface rounded-control border font-semibold"
                   />
 
                   <div className="flex flex-wrap items-center gap-2">
-                    <MangaButton
+                    <ActionButton
                       type="button"
                       disabled={isBusy || !isDirty}
                       onClick={() => saveTranslation(segment, value)}
@@ -269,8 +269,8 @@ export function DictationTranslationEditor({
                       }
                     >
                       Save
-                    </MangaButton>
-                    <MangaButton
+                    </ActionButton>
+                    <ActionButton
                       type="button"
                       tone="paper"
                       disabled={isBusy}
@@ -283,9 +283,9 @@ export function DictationTranslationEditor({
                       }
                     >
                       {isBusy ? 'Working' : 'AI translate'}
-                    </MangaButton>
+                    </ActionButton>
                     {isOverridden ? (
-                      <MangaButton
+                      <ActionButton
                         type="button"
                         tone="paper"
                         disabled={isBusy}
@@ -298,14 +298,14 @@ export function DictationTranslationEditor({
                         }
                       >
                         Reset to captions
-                      </MangaButton>
+                      </ActionButton>
                     ) : null}
                   </div>
 
                   {error ? (
                     <p
                       role="status"
-                      className="text-manga-red text-xs font-black"
+                      className="text-brand text-xs font-semibold"
                     >
                       {error}
                     </p>
@@ -318,6 +318,6 @@ export function DictationTranslationEditor({
           {pager}
         </>
       )}
-    </MangaPanel>
+    </ContentPanel>
   )
 }

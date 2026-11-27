@@ -81,7 +81,7 @@ describe('answerLineCells - dual-channel colour + underline', () => {
     // "particlar" vs "particular": the 'u' slot holds the learner's wrong 'l',
     // shown as the expected 'u' with a solid red underline.
     expect(wrong?.className).toContain('decoration-solid')
-    expect(wrong?.className).toContain('red')
+    expect(wrong?.className).toContain('danger')
   })
 
   test('missing tail chars are dotted amber (order -> ordered)', () => {
@@ -94,7 +94,7 @@ describe('answerLineCells - dual-channel colour + underline', () => {
     )
 
     expect(dotted.length).toBeGreaterThan(0)
-    expect(dotted[0].className).toContain('amber')
+    expect(dotted[0].className).toContain('accent-orange')
   })
 
   test('masks remaining words with * when showFullAnswer is off', () => {
@@ -141,12 +141,12 @@ describe('GuidedAnswerInput - display gating', () => {
     })
     const textarea = view.getByLabelText('Type what you hear')
 
-    expect(textarea.className).toContain('text-emerald-700')
+    expect(textarea.className).toContain('text-lesson-correct')
 
     rerender({ status: 'idle', value: `${WALL} edited` })
 
-    expect(textarea.className).toContain('text-manga-black')
-    expect(textarea.className).not.toContain('text-emerald-700')
+    expect(textarea.className).toContain('text-ink')
+    expect(textarea.className).not.toContain('text-lesson-correct')
   })
 })
 
@@ -169,7 +169,7 @@ describe('GuidedAnswerInput - boundary underline', () => {
     // The wrong 'x' is drawn in its own red-underlined span in the mirror.
     const redChar = view
       .getAllByText('x')
-      .find(node => node.className.includes('decoration-red-700'))
+      .find(node => node.className.includes('decoration-danger'))
 
     expect(redChar).toBeDefined()
   })
@@ -220,7 +220,7 @@ describe('GuidedAnswerInput - boundary underline', () => {
 
     const redChar = view
       .queryAllByText('x')
-      .find(node => node.className.includes('decoration-red-700'))
+      .find(node => node.className.includes('decoration-danger'))
 
     expect(redChar).toBeUndefined()
   })

@@ -1,6 +1,6 @@
 'use client'
 
-import { MangaPanel } from '@/components/common/MangaPanel'
+import { ContentPanel } from '@/components/common/ContentPanel'
 import { PageTag } from '@/components/ui/PageTag'
 
 import type { VocabRecallCardResult } from './vocabRecallSession'
@@ -24,7 +24,7 @@ export function VocabRecallSessionSummary({ results }: Props) {
   const notSaved = results.filter(result => result.saveState === 'notSaved')
 
   return (
-    <MangaPanel
+    <ContentPanel
       eyebrow="Recall"
       title="Session summary"
     >
@@ -44,16 +44,16 @@ export function VocabRecallSessionSummary({ results }: Props) {
             {notSaved.map(result => (
               <li
                 key={result.taskId}
-                className="border-manga-black bg-manga-pale-red rounded-control border-3 p-3 text-sm font-black"
+                className="border-line bg-tint-soft rounded-control border p-3 text-sm font-semibold"
               >
-                <span className="uppercase">{result.term}</span>
-                <span className="text-manga-ink-soft"> - not saved. </span>
+                <span>{result.term}</span>
+                <span className="text-ink-soft"> - not saved. </span>
                 <span className="font-semibold">{result.error}</span>
               </li>
             ))}
           </ul>
         ) : null}
       </div>
-    </MangaPanel>
+    </ContentPanel>
   )
 }

@@ -1,4 +1,4 @@
-import { MangaPageShell } from '@/components/common/MangaPageShell'
+import { PageShell } from '@/components/common/PageShell'
 import type { GrammarSessionMode } from '@/modules/grammar/constants'
 import type { GrammarCard } from '@/modules/grammar/course/types'
 import { createRng, randomSeed } from '@/modules/grammar/rng'
@@ -33,7 +33,7 @@ export function GrammarPlayerPage({
   return (
     // Exactly one viewport tall, so the action bar is always on screen; below
     // 32rem (a phone on its side) it stops shrinking and the page scrolls.
-    <MangaPageShell
+    <PageShell
       className="min-h-[32rem]"
       fullHeight
     >
@@ -46,6 +46,6 @@ export function GrammarPlayerPage({
         targetId={targetId}
         title={title}
       />
-    </MangaPageShell>
+    </PageShell>
   )
 }

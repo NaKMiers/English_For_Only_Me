@@ -30,10 +30,10 @@ export function QuestionNumberBadge({
     'rounded-tag inline-flex shrink-0 items-center justify-center font-bold tabular-nums',
     SIZE_CLASS[size],
     isFlagged
-      ? 'bg-amber-300 text-manga-black'
+      ? 'bg-amber-300 text-ink'
       : currentNumber === number
-        ? 'bg-manga-black text-manga-white'
-        : 'bg-manga-pale-red text-manga-black'
+        ? 'bg-ink text-surface'
+        : 'bg-tint-soft text-ink'
   )
   const icon = isFlagged ? (
     <Flag
@@ -60,7 +60,7 @@ export function QuestionNumberBadge({
       aria-pressed={isFlagged}
       className={cn(
         className,
-        'focus-visible:ring-manga-black cursor-pointer outline-none hover:brightness-95 focus-visible:ring-2'
+        'focus-visible:ring-line cursor-pointer outline-none hover:brightness-95 focus-visible:ring-2'
       )}
       onClick={() => onToggleFlag(number)}
       title={

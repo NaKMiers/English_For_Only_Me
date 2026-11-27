@@ -5,21 +5,21 @@ export function BrowseBreadcrumb({ current }: { current: string }) {
   return (
     <nav
       aria-label="Breadcrumb"
-      className="flex items-center gap-2 font-sans text-sm font-black"
+      className="flex items-center gap-2 font-sans text-sm font-semibold"
     >
       <Link
         href="/dictation"
-        className="text-manga-red hover:underline"
+        className="text-brand hover:underline"
       >
         All topics
       </Link>
       <span
         aria-hidden="true"
-        className="text-manga-ink-soft"
+        className="text-ink-soft"
       >
         /
       </span>
-      <span className="text-manga-ink-soft truncate">{current}</span>
+      <span className="text-ink-soft truncate">{current}</span>
     </nav>
   )
 }

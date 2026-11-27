@@ -32,7 +32,7 @@ const SORT_OPTIONS: CatalogueSort[] = ['newest', 'oldest', 'updated', 'title']
  * turn an idle tab transparent and the active one grey.
  */
 const TAB_TRIGGER_CLASS =
-  'group/tab border-manga-black! bg-manga-white! text-manga-black! hover:not-data-active:bg-manga-pale-red! data-active:bg-manga-black! data-active:text-manga-white! focus-visible:ring-manga-red/40 rounded-control sticker-press !h-auto min-h-10 min-w-0 flex-1 gap-1.5 border-2 px-2 font-sans text-xs font-black opacity-100! shadow-[2px_2px_0_var(--manga-black)] after:hidden data-active:translate-x-[2px] data-active:translate-y-[2px] data-active:shadow-none sm:flex-none sm:gap-2 sm:px-3 sm:text-sm'
+  'group/tab border-line! bg-surface! text-ink! hover:not-data-active:bg-tint-soft! data-active:bg-ink! data-active:text-surface! focus-visible:ring-brand/40 rounded-control soft-press !h-auto min-h-10 min-w-0 flex-1 gap-1.5 border px-2 font-sans text-xs font-semibold opacity-100! after:hidden data-active:shadow-none sm:flex-none sm:gap-2 sm:px-3 sm:text-sm'
 
 const dateFormat = new Intl.DateTimeFormat('en-GB', {
   day: '2-digit',
@@ -104,7 +104,7 @@ export function AdminTestCatalogue({
               value={status}
             >
               {label}
-              <span className="rounded-tag bg-manga-black text-manga-white group-data-active/tab:bg-manga-white group-data-active/tab:text-manga-black min-w-6 px-1.5 py-0.5 text-center text-xs tabular-nums">
+              <span className="rounded-tag bg-ink text-surface group-data-active/tab:bg-surface group-data-active/tab:text-ink min-w-6 px-1.5 py-0.5 text-center text-xs tabular-nums">
                 {groups[status].length}
               </span>
             </TabsTrigger>
@@ -158,7 +158,7 @@ export function AdminTestCatalogue({
                   className="grid snap-start gap-2"
                   key={series.heading}
                 >
-                  <h2 className="flex items-baseline gap-2 font-sans text-sm font-black uppercase">
+                  <h2 className="flex items-baseline gap-2 font-sans text-sm font-semibold">
                     {series.heading}
                     <span className="text-muted-foreground text-xs normal-case">
                       {series.tests.length}{' '}
@@ -189,7 +189,7 @@ export function AdminTestCatalogue({
               ))}
             </div>
           ) : (
-            <p className="text-muted-foreground rounded-control bg-manga-paper-soft p-4 text-sm font-semibold">
+            <p className="text-muted-foreground rounded-control bg-tint p-4 text-sm font-semibold">
               {narrowed
                 ? `No ${label.toLowerCase()} tests match the search or filters.`
                 : `No ${label.toLowerCase()} tests.`}

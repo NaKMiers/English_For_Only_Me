@@ -10,7 +10,7 @@ import {
 
 /**
  * A practice card the learner got wrong on the first try. Open while
- * `clearedAt` is null; "Luyện điểm yếu" serves open rows and clears them.
+ * `clearedAt` is null; "Weak spots" serves open rows and clears them.
  */
 const GrammarCardMissSchema = new Schema(
   {

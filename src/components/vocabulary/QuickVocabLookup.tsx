@@ -15,7 +15,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { MangaButton } from '@/components/ui/MangaButton'
+import { ActionButton } from '@/components/ui/ActionButton'
 import type {
   UserVocabItemApiRecord,
   VocabEntryWithUserStateRecord,
@@ -179,33 +179,33 @@ export function QuickVocabDialog({
       open={open}
       onOpenChange={onOpenChange}
     >
-      <DialogContent className="border-manga-black bg-manga-white border-3 shadow-[6px_6px_0_var(--manga-black)]">
+      <DialogContent className="border-line bg-surface border">
         {entry ? (
           <>
             <DialogHeader>
               <DialogTitle className="sr-only">{entry.entry.term}</DialogTitle>
-              <DialogDescription className="text-manga-ink-soft text-sm font-semibold">
+              <DialogDescription className="text-ink-soft text-sm font-normal">
                 {entry.entry.enrichmentStatus}
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-3">
               <VocabTermHeader entry={entry.entry} />
-              <div className="border-manga-black bg-manga-paper-soft rounded-control border-2 p-3 text-right text-base leading-7 font-black">
+              <div className="border-line bg-tint rounded-control border p-3 text-right text-base leading-7 font-semibold">
                 {getVietnamese(entry)}
               </div>
-              <div className="border-manga-black bg-manga-white rounded-control border-2 p-3 text-base leading-7 font-semibold">
+              <div className="border-line bg-surface rounded-control border p-3 text-base leading-7 font-semibold">
                 {getDefinition(entry)}
               </div>
               <div className="grid grid-cols-2 gap-2">
-                <MangaButton
+                <ActionButton
                   className="[&>span:last-child]:whitespace-nowrap"
                   disabled={!hasVietnameseMeaning(entry.entry)}
                   icon={<BookOpen className="size-4" />}
                   onClick={() => onMark('shouldLearn')}
                 >
                   Should Learn
-                </MangaButton>
-                <MangaButton
+                </ActionButton>
+                <ActionButton
                   className="[&>span:last-child]:whitespace-nowrap"
                   disabled={!hasVietnameseMeaning(entry.entry)}
                   icon={<Check className="size-4" />}
@@ -213,17 +213,17 @@ export function QuickVocabDialog({
                   tone="paper"
                 >
                   Already Know
-                </MangaButton>
+                </ActionButton>
               </div>
-              <p className="text-manga-ink-soft flex items-center gap-2 text-xs font-black uppercase">
+              <p className="text-ink-soft flex items-center gap-2 text-xs font-normal">
                 <Search className="size-4" />
                 {entry.userItem?.status ?? 'Not picked yet'}
               </p>
               {error ? (
-                <p className="text-manga-red text-sm font-black">{error}</p>
+                <p className="text-danger text-sm font-semibold">{error}</p>
               ) : null}
               {!hasVietnameseMeaning(entry.entry) ? (
-                <p className="text-manga-red text-sm font-black">
+                <p className="text-brand text-sm font-semibold">
                   Vietnamese meaning is required before this word can be
                   learned.
                 </p>
@@ -377,7 +377,7 @@ export function QuickVocabLookup({
         {tokens.map(token => (
           <Button
             key={`${token.term}-${token.index}`}
-            className="border-manga-black bg-manga-white hover:bg-manga-paper-soft rounded-control h-auto border-2 px-2 py-1 text-sm font-black shadow-[2px_2px_0_var(--manga-black)]"
+            className="border-line bg-surface hover:bg-tint rounded-control h-auto border px-2 py-1 text-sm font-semibold"
             disabled={busyTerm === token.term}
             onClick={() => lookupWord(token.term)}
             type="button"
@@ -388,7 +388,7 @@ export function QuickVocabLookup({
         ))}
       </div>
       {error ? (
-        <p className="text-manga-red mt-2 text-sm font-black">{error}</p>
+        <p className="text-danger mt-2 text-sm font-semibold">{error}</p>
       ) : null}
 
       <QuickVocabDialog

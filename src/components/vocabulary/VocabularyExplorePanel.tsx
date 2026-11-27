@@ -3,9 +3,9 @@
 import { BookOpen, ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { useEffect, useEffectEvent, useRef } from 'react'
 
-import { MangaPanel } from '@/components/common/MangaPanel'
+import { ContentPanel } from '@/components/common/ContentPanel'
 import { Button } from '@/components/ui/button'
-import { MangaButton } from '@/components/ui/MangaButton'
+import { ActionButton } from '@/components/ui/ActionButton'
 import { PageTag } from '@/components/ui/PageTag'
 import { cn } from '@/lib/utils'
 import type {
@@ -69,11 +69,12 @@ function getExploreMapClassName({
   decision: ExploreDecision | undefined
 }) {
   return cn(
-    'size-5 rounded-tag border-2 border-manga-black shadow-[2px_2px_0_var(--manga-black)] transition-transform hover:-translate-y-0.5',
-    decision === 'shouldLearn' && 'bg-manga-paper-soft hover:bg-manga-pale-red',
-    decision === 'alreadyKnow' && 'bg-emerald-300 hover:bg-emerald-200',
-    !decision && 'bg-manga-white hover:bg-cyan-100',
-    active && 'outline-manga-bright-red scale-110 outline-3 outline-offset-2'
+    'size-5 rounded-tag border border-line transition-transform hover:-translate-y-0.5',
+    decision === 'shouldLearn' && 'bg-tint hover:bg-tint-soft',
+    decision === 'alreadyKnow' &&
+      'bg-lesson-correct/35 hover:bg-lesson-correct/25',
+    !decision && 'bg-surface hover:bg-pastel-sky',
+    active && 'outline-brand scale-110 outline-3 outline-offset-2'
   )
 }
 
@@ -87,10 +88,10 @@ function getExploreStackCardClassName({
   visible: boolean
 }) {
   return cn(
-    'border-manga-black absolute top-0 left-1/2 flex h-full min-h-96 w-[min(74vw,760px)] flex-col gap-4 rounded-control border-3 p-4 shadow-[5px_5px_0_var(--manga-black)] transition-[opacity,transform] duration-300 ease-out sm:w-[min(78vw,760px)]',
-    decision === 'shouldLearn' && 'bg-manga-paper-soft',
-    decision === 'alreadyKnow' && 'bg-emerald-50',
-    !decision && 'bg-manga-white',
+    'border-line absolute top-0 left-1/2 flex h-full min-h-96 w-[min(74vw,760px)] flex-col gap-4 rounded-control border p-4 transition-[opacity,transform] duration-300 ease-out sm:w-[min(78vw,760px)]',
+    decision === 'shouldLearn' && 'bg-tint',
+    decision === 'alreadyKnow' && 'bg-lesson-correct/10',
+    !decision && 'bg-surface',
     !active && 'cursor-pointer hover:opacity-80',
     !visible && 'pointer-events-none opacity-0'
   )
@@ -186,7 +187,7 @@ export function VocabularyExplorePanel({
   })
 
   return (
-    <MangaPanel
+    <ContentPanel
       eyebrow={eyebrow}
       title={title}
     >
@@ -198,7 +199,7 @@ export function VocabularyExplorePanel({
           <div className="flex items-center justify-between gap-3">
             <Button
               aria-label="Previous explore word"
-              className="border-manga-black bg-manga-white hover:bg-manga-paper-soft rounded-control sticker-press size-11 border-3 shadow-[3px_3px_0_var(--manga-black)] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none active:not-aria-[haspopup]:translate-y-[3px] disabled:opacity-35"
+              className="border-line bg-surface hover:bg-tint rounded-control soft-press size-11 border disabled:opacity-35"
               disabled={activeIndex === 0}
               onClick={() => moveExplore(-1)}
               size="icon"
@@ -211,14 +212,14 @@ export function VocabularyExplorePanel({
               />
             </Button>
             <span
-              className="text-manga-ink-soft text-xs font-black uppercase"
+              className="text-ink-soft text-xs font-normal"
               title="Use the Left and Right arrow keys to move"
             >
               {activeIndex + 1}/{entries.length}
             </span>
             <Button
               aria-label="Next explore word"
-              className="border-manga-black bg-manga-white hover:bg-manga-paper-soft rounded-control sticker-press size-11 border-3 shadow-[3px_3px_0_var(--manga-black)] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none active:not-aria-[haspopup]:translate-y-[3px] disabled:opacity-35"
+              className="border-line bg-surface hover:bg-tint rounded-control soft-press size-11 border disabled:opacity-35"
               disabled={activeIndex >= entries.length - 1}
               onClick={() => moveExplore(1)}
               size="icon"
@@ -278,7 +279,7 @@ export function VocabularyExplorePanel({
                           entry={entry.entry}
                           size="lg"
                         />
-                        <p className="text-manga-ink-soft text-xs font-black uppercase">
+                        <p className="text-ink-soft text-xs font-normal">
                           {getExploreDecisionLabel(decision)}
                         </p>
                       </div>
@@ -289,16 +290,16 @@ export function VocabularyExplorePanel({
                           : (entry.entry.frequencyRank ?? index + 1)}
                       </PageTag>
                     </div>
-                    <p className="text-manga-ink-soft ml-auto max-w-2xl text-right text-base leading-7 font-semibold">
+                    <p className="text-ink-soft ml-auto max-w-2xl text-right text-base leading-7 font-normal">
                       {getVietnamesePreview(entry.entry)}
                     </p>
-                    <p className="text-manga-ink-soft max-w-2xl text-sm leading-6 font-semibold">
+                    <p className="text-ink-soft max-w-2xl text-sm leading-6 font-normal">
                       {getDefinitionPreview(entry.entry)}
                     </p>
                   </div>
                   {distance === 0 ? (
                     <div className="grid shrink-0 grid-cols-2 gap-2">
-                      <MangaButton
+                      <ActionButton
                         className="min-w-0 px-2 text-xs sm:px-4 sm:text-sm [&>span:last-child]:whitespace-nowrap"
                         disabled={decision === 'shouldLearn'}
                         icon={<BookOpen className="size-4" />}
@@ -311,8 +312,8 @@ export function VocabularyExplorePanel({
                         }
                       >
                         Should Learn
-                      </MangaButton>
-                      <MangaButton
+                      </ActionButton>
+                      <ActionButton
                         className="min-w-0 px-2 text-xs sm:px-4 sm:text-sm [&>span:last-child]:whitespace-nowrap"
                         disabled={decision === 'alreadyKnow'}
                         icon={<X className="size-4" />}
@@ -326,7 +327,7 @@ export function VocabularyExplorePanel({
                         tone="paper"
                       >
                         Already Know
-                      </MangaButton>
+                      </ActionButton>
                     </div>
                   ) : null}
                 </article>
@@ -334,9 +335,9 @@ export function VocabularyExplorePanel({
             })}
           </div>
 
-          <div className="border-manga-black bg-manga-paper-soft rounded-control grid gap-3 border-3 p-3">
+          <div className="border-line bg-tint rounded-control grid gap-3 border p-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="text-manga-ink-soft text-xs font-black uppercase">
+              <span className="text-ink-soft text-xs font-normal">
                 Explore map
               </span>
               <div
@@ -345,19 +346,19 @@ export function VocabularyExplorePanel({
               >
                 <span
                   aria-label="White means unpicked"
-                  className="border-manga-black bg-manga-white rounded-tag size-5 border-2 shadow-[2px_2px_0_var(--manga-black)]"
+                  className="border-line bg-surface rounded-tag size-5 border"
                   role="img"
                   title="Unpicked"
                 />
                 <span
                   aria-label="Pink means should learn"
-                  className="border-manga-black bg-manga-paper-soft rounded-tag size-5 border-2 shadow-[2px_2px_0_var(--manga-black)]"
+                  className="border-line bg-tint rounded-tag size-5 border"
                   role="img"
                   title="Should learn"
                 />
                 <span
                   aria-label="Green means already know"
-                  className="border-manga-black rounded-tag size-5 border-2 bg-emerald-300 shadow-[2px_2px_0_var(--manga-black)]"
+                  className="border-line rounded-tag bg-lesson-correct/35 size-5 border"
                   role="img"
                   title="Already know"
                 />
@@ -387,10 +388,10 @@ export function VocabularyExplorePanel({
           </div>
         </div>
       ) : (
-        <p className="text-manga-ink-soft text-sm leading-6 font-semibold">
+        <p className="text-ink-soft text-sm leading-6 font-normal">
           {emptyMessage}
         </p>
       )}
-    </MangaPanel>
+    </ContentPanel>
   )
 }

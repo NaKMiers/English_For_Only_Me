@@ -15,9 +15,9 @@ interface Props {
 }
 
 const toneClassName = {
-  red: 'bg-manga-paper-soft',
-  paper: 'bg-manga-white',
-  ink: 'bg-manga-black text-manga-white',
+  red: 'bg-tint',
+  paper: 'bg-surface',
+  ink: 'bg-ink text-surface',
 } as const
 
 export function MetricTile({
@@ -31,9 +31,8 @@ export function MetricTile({
   value,
 }: Props) {
   const classNames = cn(
-    'border-manga-black grid min-h-36 min-w-0 gap-3 rounded-panel border-3 p-4 shadow-[4px_4px_0_var(--manga-black)]',
-    href &&
-      'sticker-press hover:bg-manga-pale-red active:translate-x-1 active:translate-y-1 active:shadow-none',
+    'border-line grid min-h-36 min-w-0 gap-3 rounded-panel border p-4',
+    href && 'soft-press hover:bg-tint-soft',
     toneClassName[tone],
     className
   )
@@ -41,7 +40,7 @@ export function MetricTile({
   const content = (
     <>
       <div className="flex min-w-0 items-center justify-between gap-3">
-        <span className="text-xs leading-tight font-black tracking-normal uppercase">
+        <span className="text-xs leading-tight font-semibold tracking-normal">
           {label}
         </span>
         {icon ? (
@@ -50,12 +49,12 @@ export function MetricTile({
           </span>
         ) : null}
       </div>
-      <strong className="font-sans text-3xl leading-none font-black tracking-normal wrap-break-word">
+      <strong className="font-sans text-3xl leading-none font-medium tracking-normal wrap-break-word">
         {value}
       </strong>
       <div className="text-sm leading-5 font-semibold wrap-break-word">
         {detail ? <p>{detail}</p> : null}
-        {trend ? <p className="text-manga-red font-black">{trend}</p> : null}
+        {trend ? <p className="text-brand font-semibold">{trend}</p> : null}
       </div>
     </>
   )

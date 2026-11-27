@@ -14,7 +14,7 @@ interface Props {
   title?: string
 }
 
-export function MangaPanel({
+export function ContentPanel({
   action,
   children,
   className,
@@ -25,7 +25,7 @@ export function MangaPanel({
   return (
     <Card
       className={cn(
-        'border-manga-black bg-manga-white text-manga-black rounded-panel relative grid min-w-0 gap-4 border-3 p-4 py-4 shadow-[4px_4px_0_var(--manga-black)] ring-0',
+        'border-line bg-surface text-ink rounded-panel shadow-card relative grid min-w-0 gap-4 border p-5 py-5 ring-0',
         className
       )}
     >
@@ -34,7 +34,7 @@ export function MangaPanel({
           <div className="grid min-w-0 gap-2">
             {eyebrow ? <PageTag tone="pale">{eyebrow}</PageTag> : null}
             {title ? (
-              <h2 className="font-sans text-2xl leading-none font-black tracking-normal wrap-break-word uppercase">
+              <h2 className="font-sans text-xl leading-tight font-medium tracking-tight wrap-break-word">
                 {title}
               </h2>
             ) : null}

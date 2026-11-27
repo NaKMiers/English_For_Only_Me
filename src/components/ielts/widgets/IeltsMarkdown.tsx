@@ -101,7 +101,7 @@ function Block({
     return (
       <Tag
         className={cn(
-          'font-sans font-black',
+          'font-sans font-semibold',
           block.level === 1 ? 'text-lg' : 'text-base'
         )}
       >
@@ -134,13 +134,13 @@ function Block({
 
   return (
     <div className="overflow-x-auto">
-      <table className="border-manga-black w-full border-collapse border-2 text-left">
+      <table className="border-line w-full border-collapse border text-left">
         <thead>
           <tr>
             {block.header.map((cell, index) => (
               <th
                 className={cn(
-                  'border-manga-black bg-manga-pale-red border-2 px-3 py-2 align-top font-sans text-sm font-black',
+                  'border-line bg-tint-soft border px-3 py-2 align-top font-sans text-sm font-semibold',
                   ALIGN_CLASS[block.align[index] ?? 'left']
                 )}
                 key={index}
@@ -160,7 +160,7 @@ function Block({
               {row.map((cell, index) => (
                 <td
                   className={cn(
-                    'border-manga-black border-2 px-3 py-1.5 align-top leading-[1.65]',
+                    'border-line border px-3 py-1.5 align-top leading-[1.65]',
                     ALIGN_CLASS[block.align[index] ?? 'left']
                   )}
                   key={index}

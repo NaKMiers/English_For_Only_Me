@@ -76,7 +76,7 @@ export function TestDetailsDialog({
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div className="grid gap-1">
-              <span className="font-sans text-xs font-black">Track</span>
+              <span className="font-sans text-xs font-semibold">Track</span>
               <div className="flex gap-1.5">
                 {IELTS_TRACKS.map(track => (
                   // Segmented toggle (aria-pressed): documented raw exception.

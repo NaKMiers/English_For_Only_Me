@@ -33,7 +33,7 @@ export function BrowseDisclosure({
   const [open, setOpen] = useState(defaultOpen)
 
   return (
-    <div className="border-manga-black bg-manga-white rounded-panel border-3 shadow-[4px_4px_0_var(--manga-black)]">
+    <div className="border-line bg-surface rounded-panel border">
       <button
         type="button"
         aria-expanded={open}

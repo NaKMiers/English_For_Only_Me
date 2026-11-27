@@ -1,258 +1,530 @@
+import {
+  ArrowRight,
+  BookA,
+  Clock3,
+  Headphones,
+  PenLine,
+  Plus,
+  RotateCcw,
+  Sparkles,
+  type LucideIcon,
+} from 'lucide-react'
+import Link from 'next/link'
+import type { ReactNode } from 'react'
+
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { AuthControl } from '@/components/common/AuthControl'
-import { MangaPageShell } from '@/components/common/MangaPageShell'
-import { PageTag } from '@/components/ui/PageTag'
+import { PageShell } from '@/components/common/PageShell'
+import { Sparkline } from '@/components/common/Sparkline'
+import { APP_MODULES } from '@/constants/modules'
+import { MODULE_THEMES } from '@/constants/theme'
+import { cn } from '@/lib/utils'
 import type { DictationGlobalStatsRecord } from '@/modules/dictation/types'
 import type { VocabStatsRecord } from '@/modules/vocabulary/types'
 
-import { HomeFutureModuleMap } from './HomeFutureModuleMap'
-import { HomeIeltsSnapshot } from './HomeIeltsSnapshot'
-import { HomeModuleLauncher } from './HomeModuleLauncher'
-import { HomeTodayPanel, type GrammarTodayRecord } from './HomeTodayPanel'
+import { HomeBuddyCard } from './HomeBuddyCard'
+import { HomeModuleTiles, MODULE_ICONS } from './HomeModuleTiles'
 
-function StudyDeskSketch() {
-  return (
-    <div
-      aria-label="Pencil sketch of the English For Only Me study desk"
-      className="border-manga-black bg-manga-pale-red rounded-panel relative min-h-[270px] overflow-hidden border-3 shadow-[inset_0_0_0_9px_rgba(255,255,255,0.38),4px_4px_0_var(--manga-black)] sm:min-h-[390px]"
-    >
-      <svg
-        role="img"
-        aria-label="Hand drawn study desk with app modules"
-        viewBox="0 0 820 460"
-        className="text-manga-black min-h-[270px] w-full sm:min-h-[390px]"
-      >
-        <rect
-          x="54"
-          y="40"
-          width="708"
-          height="344"
-          rx="2"
-          fill="#ffffff"
-          stroke="currentColor"
-          strokeWidth="8"
-        />
-        <path
-          d="M92 318 C188 190 252 248 340 150 C442 34 556 168 706 86"
-          stroke="currentColor"
-          strokeWidth="6"
-          fill="none"
-        />
-        <rect
-          x="112"
-          y="88"
-          width="172"
-          height="102"
-          fill="#fff0ef"
-          stroke="currentColor"
-          strokeWidth="6"
-          transform="rotate(-2 198 139)"
-        />
-        <rect
-          x="326"
-          y="78"
-          width="176"
-          height="114"
-          fill="#f6f6f6"
-          stroke="currentColor"
-          strokeWidth="6"
-          transform="rotate(1.4 414 135)"
-        />
-        <rect
-          x="548"
-          y="98"
-          width="132"
-          height="92"
-          fill="#ffe0dc"
-          stroke="currentColor"
-          strokeWidth="6"
-          transform="rotate(-1.2 614 144)"
-        />
-        <path
-          d="M164 137h68M164 158h92M374 126h84M374 150h62M585 137h54M585 158h40"
-          stroke="currentColor"
-          strokeWidth="5"
-        />
-        <path
-          d="M196 239 l64 0 l-32 56Z"
-          fill="#e03020"
-          stroke="currentColor"
-          strokeWidth="7"
-        />
-        <path
-          d="M386 234 h140M386 260 h190M386 286 h124"
-          stroke="currentColor"
-          strokeWidth="6"
-        />
-        <rect
-          x="86"
-          y="408"
-          width="660"
-          height="20"
-          fill="#ffffff"
-          stroke="currentColor"
-          strokeWidth="5"
-        />
-        <rect
-          x="86"
-          y="408"
-          width="392"
-          height="20"
-          fill="#e03020"
-          stroke="currentColor"
-          strokeWidth="5"
-        />
-      </svg>
-    </div>
-  )
+/** What the grammar path wants next, for the plan. */
+export interface GrammarTodayRecord {
+  nextTitle: string | null
+  dueCount: number
 }
 
 interface Props {
   dictationStats?: DictationGlobalStatsRecord | null
   grammarToday?: GrammarTodayRecord | null
+  /** Clock for the greeting date; injectable for tests. */
+  now?: Date
+  userName?: string | null
   vocabStats?: VocabStatsRecord | null
 }
 
-function HomeVocabularySnapshot({
-  vocabStats = null,
+function minutes(durationMs: number) {
+  return Math.max(0, Math.round(durationMs / 60000))
+}
+
+function Card({
+  children,
+  className,
 }: {
-  vocabStats?: VocabStatsRecord | null
+  children: ReactNode
+  className?: string
 }) {
-  const cards = [
-    {
-      detail: 'due today',
-      label: 'Recall',
-      value: vocabStats?.dueTodayCount ?? 0,
-    },
-    {
-      detail: 'known total',
-      label: 'Known',
-      value: vocabStats?.totalKnownCount ?? 0,
-    },
-    {
-      detail: 'day streak',
-      label: 'Streak',
-      value: vocabStats?.activeStreakDays ?? 0,
-    },
-    {
-      detail: 'accuracy',
-      label: 'Recall',
-      value: `${vocabStats?.accuracyPercent ?? 0}%`,
-    },
-  ]
+  return (
+    <div
+      className={cn(
+        'border-line bg-surface min-w-0 rounded-[26px] border p-3',
+        className
+      )}
+    >
+      {children}
+    </div>
+  )
+}
+
+interface ProgressStat {
+  detail: string
+  href: string
+  icon: LucideIcon
+  label: string
+  meta: string
+  tint: string
+  accent: string
+  trend: number[]
+  value: string
+}
+
+function ProgressTile({ stat }: { stat: ProgressStat }) {
+  const Icon = stat.icon
 
   return (
-    <section className="grid gap-3">
-      <div className="flex items-center justify-between gap-3">
-        <h3 className="font-sans text-xl leading-none font-black uppercase">
-          Vocabulary spine
-        </h3>
-        <PageTag tone="pale">Vocab</PageTag>
+    <Link
+      href={stat.href}
+      className={cn(
+        'soft-press grid min-w-0 gap-3 rounded-[20px] p-4 hover:brightness-[0.98]',
+        stat.tint
+      )}
+    >
+      <span className="flex items-center justify-between gap-2 text-sm">
+        <span className="flex min-w-0 items-center gap-2 font-medium">
+          <Icon
+            aria-hidden="true"
+            className="size-4 shrink-0"
+          />
+          <span className="truncate">{stat.label}</span>
+        </span>
+        <span className="bg-surface/70 text-ink-soft rounded-full px-2 py-0.5 text-xs">
+          {stat.meta}
+        </span>
+      </span>
+      <span className="flex items-end justify-between gap-2">
+        <strong
+          className={cn(
+            'font-sans text-3xl leading-none font-light',
+            stat.accent
+          )}
+        >
+          {stat.value}
+        </strong>
+        <Sparkline
+          values={stat.trend}
+          className={stat.accent}
+        />
+      </span>
+      <span className="text-ink-soft text-xs leading-5">{stat.detail}</span>
+    </Link>
+  )
+}
+
+interface PlanItem {
+  hint: string
+  href: string
+  icon: LucideIcon
+  label: string
+  tone: string
+}
+
+function PlanGroup({
+  count,
+  items,
+  tint,
+  title,
+}: {
+  count: string
+  items: PlanItem[]
+  tint: string
+  title: string
+}) {
+  return (
+    <div className={cn('grid gap-3 rounded-[22px] p-3', tint)}>
+      <div className="flex items-center justify-between gap-2 text-xs">
+        <span className="bg-surface/80 rounded-full px-3 py-1 font-medium">
+          {title}
+        </span>
+        <span className="text-ink-soft">{count}</span>
       </div>
-      <div className="grid grid-cols-2 gap-2">
-        {cards.map(card => (
-          <div
-            key={`${card.label}-${card.detail}`}
-            className="border-manga-black bg-manga-paper-soft rounded-control grid gap-1 border-2 p-3 shadow-[3px_3px_0_var(--manga-black)]"
-          >
-            <span className="text-xs font-black uppercase">{card.label}</span>
-            <strong className="font-sans text-2xl leading-none font-black">
-              {card.value}
-            </strong>
-            <span className="text-manga-ink-soft text-xs font-semibold">
-              {card.detail}
-            </span>
-          </div>
-        ))}
-      </div>
-    </section>
+      <ul className="grid grid-cols-3 gap-2">
+        {items.map(item => {
+          const Icon = item.icon
+
+          return (
+            <li key={item.label}>
+              <Link
+                href={item.href}
+                className="soft-press hover:bg-surface/60 grid justify-items-center gap-1.5 rounded-2xl px-1 py-2 text-center"
+              >
+                <span
+                  className={cn(
+                    'bg-surface/80 grid size-12 place-items-center rounded-full',
+                    item.tone
+                  )}
+                >
+                  <Icon
+                    aria-hidden="true"
+                    className="size-6"
+                    strokeWidth={1.6}
+                  />
+                </span>
+                <span className="text-sm leading-tight font-medium">
+                  {item.label}
+                </span>
+                <span className="text-ink-soft text-[11px] leading-tight">
+                  {item.hint}
+                </span>
+              </Link>
+            </li>
+          )
+        })}
+      </ul>
+    </div>
+  )
+}
+
+function ScheduleRow({
+  href,
+  icon: Icon,
+  label,
+  value,
+}: {
+  href: string
+  icon: LucideIcon
+  label: string
+  value: string
+}) {
+  return (
+    <li>
+      <Link
+        href={href}
+        className="hover:bg-tint-soft flex min-h-12 items-center gap-3 rounded-2xl px-3 transition-colors"
+      >
+        <Icon
+          aria-hidden="true"
+          className="text-brand size-4 shrink-0"
+        />
+        <span className="min-w-0 flex-1 truncate text-sm font-medium">
+          {label}
+        </span>
+        <span className="text-ink-soft flex shrink-0 items-center gap-1.5 text-xs">
+          <Clock3
+            aria-hidden="true"
+            className="size-3.5"
+          />
+          {value}
+        </span>
+      </Link>
+    </li>
   )
 }
 
 export function HomeStudyDesk({
   dictationStats = null,
   grammarToday = null,
+  now = new Date(),
+  userName = null,
   vocabStats = null,
 }: Props) {
+  const firstName = userName?.trim().split(/\s+/)[0]
+  const dueToday =
+    (dictationStats?.dueReviewItemCount ?? 0) +
+    (vocabStats?.dueTodayCount ?? 0) +
+    (grammarToday?.dueCount ?? 0)
+  const dateLabel = now.toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'long',
+    weekday: 'long',
+  })
+  const weeklyMinutes = minutes(dictationStats?.weeklyPracticeTimeMs ?? 0)
+  const accuracyTrend =
+    dictationStats?.firstTryAccuracyTrend.map(point => point.accuracy) ?? []
+  const latestAccuracy = accuracyTrend.at(-1)
+
+  const progress: ProgressStat[] = [
+    {
+      accent: 'text-accent-orange',
+      detail: `${weeklyMinutes} min of listening this week, ${dictationStats?.completedVideoCount ?? 0} of ${dictationStats?.totalVideoCount ?? 0} saved videos done.`,
+      href: '/dictation/stats',
+      icon: Headphones,
+      label: 'Dictation',
+      meta: `${dictationStats?.activeStreakDays ?? 0} day streak`,
+      tint: 'bg-pastel-peach',
+      trend: accuracyTrend,
+      value: latestAccuracy === undefined ? '0%' : `${latestAccuracy}%`,
+    },
+    {
+      accent: 'text-accent-purple',
+      detail: `${vocabStats?.totalKnownCount ?? 0} words known, ${vocabStats?.learnedTodayCount ?? 0} learned today.`,
+      href: '/vocabulary',
+      icon: BookA,
+      label: 'Vocabulary',
+      meta: `${vocabStats?.dueTodayCount ?? 0} due`,
+      tint: 'bg-pastel-lilac',
+      trend: vocabStats?.dailyGrowth.map(day => day.count) ?? [],
+      value: `${vocabStats?.accuracyPercent ?? 0}%`,
+    },
+  ]
+
+  const facts = {
+    dictation: `${dictationStats?.totalVideoCount ?? 0} saved videos`,
+    grammar: grammarToday?.nextTitle ?? 'A1 to C1 path',
+    ielts: 'Listening, Reading, Writing',
+    vocabulary: `${vocabStats?.totalKnownCount ?? 0} words known`,
+  }
+
   return (
-    <MangaPageShell
+    <PageShell
       topbar={
         <AppTopbar
           activeHref="/"
-          subtitle="Private IELTS training drawn like a study manga"
+          title={firstName ? `Hello, ${firstName}` : 'English For Only Me'}
+          subtitle={`${dateLabel} · ${dueToday} ${dueToday === 1 ? 'review' : 'reviews'} due today`}
           authControl={<AuthControl />}
         />
       }
-      footer={
-        <div className="border-manga-black bg-manga-black text-manga-white border-t-3 px-5 py-4">
-          <div className="mx-auto flex max-w-[1400px] flex-wrap items-center justify-between gap-3">
-            <strong className="font-sans text-base font-black tracking-normal uppercase">
-              English For Only Me
-            </strong>
-            <span className="text-manga-pale-red text-sm font-semibold">
-              A private English learning OS first, one useful module at a time.
-            </span>
-          </div>
-        </div>
-      }
     >
-      <div className="grid gap-5 p-3 sm:p-5 xl:grid-cols-[minmax(0,1.12fr)_minmax(360px,0.88fr)]">
-        <section
-          aria-labelledby="home-title"
-          className="border-manga-black bg-manga-white/90 rounded-panel grid min-w-0 overflow-hidden border-3 shadow-[6px_6px_0_var(--manga-black)]"
-        >
-          <div className="border-manga-black bg-manga-white/90 flex min-w-0 flex-wrap items-start justify-between gap-4 border-b-3 p-4 sm:p-5">
-            <div className="grid min-w-0 gap-3">
-              <h1
-                id="home-title"
-                className="font-sans text-[clamp(2.125rem,7vw,5.125rem)] leading-none font-black tracking-normal wrap-break-word uppercase"
+      <div className="grid gap-6 px-4 pb-6 md:pr-6 md:pl-0">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <h1
+            id="home-title"
+            className="font-sans text-4xl font-medium tracking-tight sm:text-5xl"
+          >
+            Dashboard
+          </h1>
+          <nav
+            aria-label="Modules"
+            className="flex flex-wrap gap-2"
+          >
+            {APP_MODULES.filter(module => module.status === 'active').map(
+              module => {
+                const Icon = MODULE_ICONS[module.key] ?? Sparkles
+                const theme = MODULE_THEMES[module.key]
+
+                return (
+                  <Link
+                    key={module.key}
+                    href={module.href}
+                    className={cn(
+                      'soft-press bg-surface hover:bg-tint-soft inline-flex min-h-11 items-center gap-2 rounded-full border-[1.5px] px-4 text-sm font-medium',
+                      theme.outline,
+                      theme.accent
+                    )}
+                  >
+                    <Icon
+                      aria-hidden="true"
+                      className="size-4"
+                    />
+                    {module.shortTitle}
+                  </Link>
+                )
+              }
+            )}
+          </nav>
+        </div>
+
+        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_minmax(0,0.95fr)]">
+          {/* Column 1: progress, modules, counters */}
+          <div className="grid min-w-0 content-start gap-5 md:col-span-2 xl:col-span-1">
+            <Card className="grid gap-3">
+              <Link
+                href="/dictation/stats"
+                className="hover:bg-tint-soft flex items-center justify-between gap-3 rounded-2xl px-2 py-1.5 transition-colors"
               >
-                Your English training desk.
-              </h1>
-              <p className="text-manga-ink-soft max-w-3xl text-base leading-7 font-semibold">
-                One private place for IELTS listening, vocabulary, review,
-                writing notes, and the modules I add later.
-              </p>
+                <span className="flex items-center gap-3 text-sm font-medium">
+                  <span className="bg-pastel-sky text-accent-blue grid size-9 place-items-center rounded-full">
+                    <Sparkles
+                      aria-hidden="true"
+                      className="size-4"
+                    />
+                  </span>
+                  Learning progress
+                </span>
+                <span className="border-line grid size-9 place-items-center rounded-full border">
+                  <ArrowRight
+                    aria-hidden="true"
+                    className="size-4"
+                  />
+                </span>
+              </Link>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {progress.map(stat => (
+                  <ProgressTile
+                    key={stat.label}
+                    stat={stat}
+                  />
+                ))}
+              </div>
+            </Card>
+
+            <HomeModuleTiles facts={facts} />
+
+            <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
+              <Card className="bg-pastel-sky/60 grid content-start gap-3 p-4">
+                <span className="text-sm font-medium">Weak words</span>
+                {dictationStats?.weakWords.length ? (
+                  <ul className="flex flex-wrap gap-1.5">
+                    {dictationStats.weakWords.slice(0, 6).map(word => (
+                      <li
+                        key={word.word}
+                        className="bg-surface rounded-full px-2.5 py-1 text-xs font-medium"
+                      >
+                        {word.word}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-ink-soft text-xs leading-5">
+                    Words you miss in dictation collect here.
+                  </p>
+                )}
+              </Card>
+              <Card className="grid grid-cols-3 items-center p-4 text-center">
+                {[
+                  {
+                    label: 'Videos',
+                    value: dictationStats?.completedVideoCount ?? 0,
+                  },
+                  {
+                    label: 'Streak',
+                    value: Math.max(
+                      dictationStats?.activeStreakDays ?? 0,
+                      vocabStats?.activeStreakDays ?? 0
+                    ),
+                  },
+                  {
+                    label: 'Words',
+                    value: vocabStats?.totalKnownCount ?? 0,
+                  },
+                ].map((item, index) => (
+                  <div
+                    key={item.label}
+                    className={cn(
+                      'grid gap-1',
+                      index > 0 && 'border-line border-l'
+                    )}
+                  >
+                    <span className="text-ink-soft text-xs">{item.label}</span>
+                    <strong className="font-sans text-2xl font-medium">
+                      {item.value}
+                    </strong>
+                  </div>
+                ))}
+              </Card>
             </div>
-            <PageTag tone="ink">Home 00</PageTag>
           </div>
 
-          <div className="grid gap-5 p-4 lg:grid-cols-[minmax(0,1fr)_minmax(260px,340px)]">
-            <StudyDeskSketch />
-            <HomeTodayPanel
-              dictationStats={dictationStats}
-              grammarToday={grammarToday}
+          {/* Column 2: today's plan and schedule */}
+          <div className="grid min-w-0 content-start gap-4">
+            <h2 className="font-sans text-xl leading-snug font-medium tracking-tight">
+              Your study plan for today{' '}
+              <span className="marker text-brand">made for you</span>
+            </h2>
+            <PlanGroup
+              title="Listen"
+              count={`${weeklyMinutes} min this week`}
+              tint="bg-pastel-sky/70"
+              items={[
+                {
+                  hint: `${dictationStats?.totalVideoCount ?? 0} videos`,
+                  href: '/dictation',
+                  icon: Headphones,
+                  label: 'Dictation',
+                  tone: 'text-accent-blue',
+                },
+                {
+                  hint: `${dictationStats?.weakWords.length ?? 0} words`,
+                  href: '/dictation/review',
+                  icon: RotateCcw,
+                  label: 'Weak words',
+                  tone: 'text-accent-orange',
+                },
+                {
+                  hint: 'Add one',
+                  href: '/dictation',
+                  icon: Plus,
+                  label: 'New clip',
+                  tone: 'text-ink-soft',
+                },
+              ]}
             />
-          </div>
-
-          <HomeModuleLauncher />
-        </section>
-
-        <aside
-          aria-labelledby="side-title"
-          className="border-manga-black bg-manga-white/90 rounded-panel grid min-w-0 content-start gap-4 overflow-hidden border-3 p-4 shadow-[6px_6px_0_var(--manga-black)] sm:p-5"
-        >
-          <div className="border-manga-black bg-manga-white/90 -mx-4 -mt-4 flex min-w-0 flex-wrap items-start justify-between gap-4 border-b-3 p-4 sm:-mx-5 sm:-mt-5 sm:p-5">
-            <div className="grid min-w-0 gap-2">
-              <h2
-                id="side-title"
-                className="font-sans text-[clamp(1.75rem,4vw,2.75rem)] leading-none font-black tracking-normal wrap-break-word uppercase"
-              >
-                IELTS path
-              </h2>
-              <p className="text-manga-ink-soft text-base leading-7 font-semibold">
-                The homepage shows the whole personal system. Dictation is
-                important, but it is only one training panel.
-              </p>
+            <PlanGroup
+              title="Read and write"
+              count={`${grammarToday?.dueCount ?? 0} to review`}
+              tint="bg-pastel-rose/70"
+              items={[
+                {
+                  hint: `${vocabStats?.dueTodayCount ?? 0} due`,
+                  href: '/vocabulary',
+                  icon: BookA,
+                  label: 'Words',
+                  tone: 'text-accent-pink',
+                },
+                {
+                  hint: grammarToday?.nextTitle ? 'Next lesson' : 'Start',
+                  href: '/grammar',
+                  icon: PenLine,
+                  label: 'Grammar',
+                  tone: 'text-accent-purple',
+                },
+                {
+                  hint: 'Full tests',
+                  href: '/ielts',
+                  icon: MODULE_ICONS.ielts ?? Sparkles,
+                  label: 'IELTS',
+                  tone: 'text-accent-orange',
+                },
+              ]}
+            />
+            <div className="grid gap-2">
+              <div className="flex items-center justify-between">
+                <h2 className="font-sans text-lg font-medium">Schedule</h2>
+                <Link
+                  href="/dictation/review"
+                  aria-label="Open the review queue"
+                  className="soft-press bg-pastel-lemon grid size-10 place-items-center rounded-full"
+                >
+                  <Plus
+                    aria-hidden="true"
+                    className="size-4"
+                  />
+                </Link>
+              </div>
+              <Card className="p-1.5">
+                <ul className="grid">
+                  <ScheduleRow
+                    href="/dictation/review"
+                    icon={RotateCcw}
+                    label="Dictation review"
+                    value={`${dictationStats?.dueReviewItemCount ?? 0} due`}
+                  />
+                  <ScheduleRow
+                    href="/vocabulary"
+                    icon={BookA}
+                    label="Vocabulary recall"
+                    value={`${vocabStats?.dueTodayCount ?? 0} due`}
+                  />
+                  <ScheduleRow
+                    href="/grammar"
+                    icon={PenLine}
+                    label="Grammar review"
+                    value={`${grammarToday?.dueCount ?? 0} due`}
+                  />
+                </ul>
+              </Card>
             </div>
-            <PageTag tone="red">Map</PageTag>
           </div>
 
-          <HomeIeltsSnapshot dictationStats={dictationStats} />
-          <HomeVocabularySnapshot vocabStats={vocabStats} />
-          <HomeFutureModuleMap />
-        </aside>
+          {/* Column 3: the highlight card */}
+          <HomeBuddyCard
+            completedVideoCount={dictationStats?.completedVideoCount ?? 0}
+            monthlyMinutes={minutes(dictationStats?.monthlyPracticeTimeMs ?? 0)}
+            nextGrammarTitle={grammarToday?.nextTitle ?? null}
+            streakDays={Math.max(
+              dictationStats?.activeStreakDays ?? 0,
+              vocabStats?.activeStreakDays ?? 0
+            )}
+          />
+        </div>
       </div>
-    </MangaPageShell>
+    </PageShell>
   )
 }

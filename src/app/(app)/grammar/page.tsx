@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { AuthControl } from '@/components/common/AuthControl'
-import { MangaPageShell } from '@/components/common/MangaPageShell'
+import { PageShell } from '@/components/common/PageShell'
 import { GrammarPath } from '@/components/grammar/path/GrammarPath'
 import { loadGrammarPageData } from '@/modules/grammar/services/grammarPageData'
 
@@ -19,16 +19,16 @@ export default async function GrammarPage() {
   const { path } = await loadGrammarPageData()
 
   return (
-    <MangaPageShell
+    <PageShell
       topbar={
         <AppTopbar
           activeHref="/grammar"
           authControl={<AuthControl />}
-          subtitle="Lộ trình ngữ pháp A1 - C1"
+          subtitle="Grammar path, A1 to C1"
         />
       }
     >
       <GrammarPath path={path} />
-    </MangaPageShell>
+    </PageShell>
   )
 }

@@ -119,12 +119,12 @@ interface DisplayCell {
 const CELL_CLASS: Record<CharCell['status'], string> = {
   // solid red = a character the learner typed in the wrong slot
   wrong:
-    'text-red-700 underline decoration-solid decoration-2 decoration-red-700',
+    'text-danger underline decoration-solid decoration-2 decoration-danger',
   // dotted amber = an expected character not yet typed
   missing:
-    'text-amber-600 underline decoration-dotted decoration-2 decoration-amber-600',
-  correct: 'text-emerald-700',
-  extra: 'text-red-700 line-through',
+    'text-accent-orange underline decoration-dotted decoration-2 decoration-accent-orange',
+  correct: 'text-lesson-correct',
+  extra: 'text-danger line-through',
 }
 
 function segmentCells(
@@ -135,7 +135,7 @@ function segmentCells(
   if (segment.kind === 'matched')
     return [...segment.expected].map((char, index) => ({
       char,
-      className: 'text-emerald-700',
+      className: 'text-lesson-correct',
       key: `${segmentIndex}-${index}`,
     }))
 
@@ -143,13 +143,13 @@ function segmentCells(
     if (showFullAnswer)
       return [...segment.expected].map((char, index) => ({
         char,
-        className: 'text-manga-ink-soft',
+        className: 'text-ink-soft',
         key: `${segmentIndex}-${index}`,
       }))
 
     return [...segment.expected].map((char, index) => ({
       char: /\s/.test(char) ? char : '*',
-      className: 'text-manga-ink-soft',
+      className: 'text-ink-soft',
       key: `${segmentIndex}-${index}`,
     }))
   }
@@ -215,14 +215,14 @@ function renderBoundaryMirror(
   return (
     <>
       {value.slice(0, boundary.start)}
-      <span className="underline decoration-amber-600 decoration-solid decoration-[3px] underline-offset-2">
+      <span className="decoration-accent-orange underline decoration-solid decoration-[3px] underline-offset-2">
         {[...value.slice(boundary.start, boundary.end)].map((char, index) => {
           const offset = boundary.start + index
 
           return boundary.wrongOffsets.includes(offset) ? (
             <span
               key={offset}
-              className="underline decoration-red-700 decoration-solid decoration-[3px] underline-offset-2"
+              className="decoration-danger underline decoration-solid decoration-[3px] underline-offset-2"
             >
               {char}
             </span>
@@ -398,7 +398,7 @@ export function GuidedAnswerInput({
       </span>
     ))
     const className =
-      'inline bg-transparent p-0 text-left align-baseline font-inherit text-inherit underline-offset-4 hover:bg-manga-white hover:outline-2 hover:outline-manga-black disabled:opacity-60'
+      'inline bg-transparent p-0 text-left align-baseline font-inherit text-inherit underline-offset-4 hover:bg-surface hover:outline-2 hover:outline-line disabled:opacity-60'
     const isMaskedWord = segment.kind === 'remaining' && !showFullAnswer
 
     if (renderCorrectionWord && !isMaskedWord)
@@ -414,32 +414,32 @@ export function GuidedAnswerInput({
   return (
     <section
       aria-label="Dictation answer"
-      className="border-manga-black bg-manga-white rounded-panel grid min-w-0 gap-2 border-2 p-2 shadow-[3px_3px_0_var(--manga-black)]"
+      className="border-line bg-surface rounded-panel grid min-w-0 gap-2 border p-2"
     >
       {visibleHints.length > 0 && status !== 'correct' ? (
-        <p className="flex flex-wrap items-center gap-1.5 text-sm font-black">
+        <p className="flex flex-wrap items-center gap-1.5 text-sm font-semibold">
           <Lightbulb
             aria-hidden="true"
-            className="size-5 shrink-0 text-amber-600"
+            className="text-accent-orange size-5 shrink-0"
           />
-          <span className="text-manga-ink-soft uppercase">Hint</span>
+          <span className="text-ink-soft">Hint</span>
           {visibleHints.map(hint => (
             <button
               key={hint}
               type="button"
               onClick={() => fillHint(hint)}
-              className="rounded-tag border border-amber-600 bg-amber-100 px-2 py-0.5 text-amber-900 hover:bg-amber-200"
+              className="rounded-tag border-accent-orange bg-pastel-peach text-accent-orange hover:bg-pastel-peach border px-2 py-0.5"
             >
               {hint}
             </button>
           ))}
-          <span className="text-manga-ink-soft text-xs">(Tab to fill)</span>
+          <span className="text-ink-soft text-xs">(Tab to fill)</span>
         </p>
       ) : null}
 
       {/* The visible typing field around the transparent overlay input:
           `keep-frame` keeps its border when nested boxes flatten on a phone. */}
-      <div className="keep-frame border-manga-black bg-manga-white rounded-control relative border-2 shadow-[2px_2px_0_var(--manga-black)]">
+      <div className="keep-frame border-line bg-surface rounded-control relative border">
         <div
           aria-hidden="true"
           style={inputTextStyle}
@@ -463,8 +463,8 @@ export function GuidedAnswerInput({
           className={cn(
             // field-sizing-content grows the box with the answer, so the floor
             // only has to fit a short sentence - not reserve six empty lines.
-            'placeholder:text-manga-ink-soft relative z-10 block field-sizing-content min-h-20 w-full resize-y overflow-hidden border-0 bg-transparent px-2.5 py-2 font-semibold wrap-break-word whitespace-pre-wrap outline-none',
-            status === 'correct' ? 'text-emerald-700' : 'text-manga-black'
+            'placeholder:text-ink-soft relative z-10 block field-sizing-content min-h-20 w-full resize-y overflow-hidden border-0 bg-transparent px-2.5 py-2 font-semibold wrap-break-word whitespace-pre-wrap outline-none',
+            status === 'correct' ? 'text-lesson-correct' : 'text-ink'
           )}
         />
       </div>
@@ -473,9 +473,9 @@ export function GuidedAnswerInput({
         <p
           aria-live="polite"
           className={cn(
-            'flex items-center gap-1.5 text-sm font-black',
-            status === 'correct' && 'text-emerald-700',
-            status === 'incorrect' && 'text-amber-600'
+            'flex items-center gap-1.5 text-sm font-semibold',
+            status === 'correct' && 'text-lesson-correct',
+            status === 'incorrect' && 'text-accent-orange'
           )}
           role="status"
         >
@@ -507,7 +507,7 @@ export function GuidedAnswerInput({
       {showCorrection ? (
         <p
           style={inputTextStyle}
-          className="border-manga-black bg-manga-paper-soft rounded-control border-2 p-2 font-semibold wrap-break-word shadow-[2px_2px_0_var(--manga-black)]"
+          className="border-line bg-tint rounded-control border p-2 font-semibold wrap-break-word"
           data-testid="answer-line"
         >
           {displayCorrection.segments.map((segment, index) => (

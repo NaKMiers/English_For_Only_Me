@@ -1,9 +1,9 @@
-import { MangaPageShell } from '@/components/common/MangaPageShell'
+import { PageShell } from '@/components/common/PageShell'
 import { Skeleton } from '@/components/ui/skeleton'
 
 export default function IeltsLoading() {
   return (
-    <MangaPageShell>
+    <PageShell>
       <div
         aria-busy
         aria-label="Loading tests"
@@ -24,6 +24,6 @@ export default function IeltsLoading() {
           <Skeleton className="rounded-panel h-48 w-full" />
         </div>
       </div>
-    </MangaPageShell>
+    </PageShell>
   )
 }

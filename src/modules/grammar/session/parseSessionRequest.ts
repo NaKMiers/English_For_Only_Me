@@ -36,7 +36,7 @@ export function parseSessionRequest(body: unknown): ParsedSessionRequest {
   const parsed = sessionRequestSchema.safeParse(body)
 
   if (!parsed.success)
-    return { message: 'Dữ liệu bài làm không hợp lệ.', ok: false }
+    return { message: 'The lesson result is not valid.', ok: false }
 
   const { answers, idempotencyKey, mode, targetId } = parsed.data
 

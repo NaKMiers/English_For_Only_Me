@@ -26,7 +26,7 @@ import {
 } from '@/modules/dictation/preferences/dictationPreferences'
 
 const SIZE_BUTTON_CLASS_NAME =
-  'border-manga-black inline-flex min-h-7 items-center rounded-control border-2 px-1.5 font-sans text-[0.7rem] font-black shadow-[2px_2px_0_var(--manga-black)]'
+  'border-line inline-flex min-h-7 items-center rounded-control border px-1.5 font-sans text-[0.7rem] font-semibold'
 
 const VIDEO_SIZE_LABEL: Record<VideoSize, string> = {
   small: 'Small',
@@ -448,13 +448,13 @@ export function DictationYoutubePlayer({
     <section
       aria-label="Segment video player"
       className={cn(
-        'border-manga-black bg-manga-white rounded-panel grid min-w-0 gap-2 border-2 p-2 shadow-[3px_3px_0_var(--manga-black)]',
+        'border-line bg-surface rounded-panel grid min-w-0 gap-2 border p-2',
         className
       )}
     >
       {/* The player element stays mounted while hidden so replay keeps working;
           a same-size placeholder covers it instead of collapsing the layout. */}
-      <div className="border-manga-black bg-manga-white rounded-control relative grid aspect-video overflow-hidden border-2">
+      <div className="border-line bg-surface rounded-control relative grid aspect-video overflow-hidden border">
         {youtubeVideoId ? (
           <div
             id={playerElementId}
@@ -462,7 +462,7 @@ export function DictationYoutubePlayer({
             className="h-full w-full"
           />
         ) : (
-          <div className="grid min-h-40 place-items-center p-4 text-center text-sm font-black">
+          <div className="grid min-h-40 place-items-center p-4 text-center text-sm font-semibold">
             YouTube metadata is missing for this video.
           </div>
         )}
@@ -484,7 +484,7 @@ export function DictationYoutubePlayer({
         {hidden ? (
           <div
             aria-hidden="true"
-            className="bg-manga-paper-soft text-manga-ink-soft absolute inset-0 grid place-items-center p-4 text-center text-sm leading-6 font-black"
+            className="bg-tint text-ink-soft absolute inset-0 grid place-items-center p-4 text-center text-sm leading-6 font-normal"
           >
             Video hidden - listen and type. Replay still works for timed
             segments.
@@ -503,7 +503,7 @@ export function DictationYoutubePlayer({
             onClick={() => setIsSizeMenuOpen(open => !open)}
             className={cn(
               SIZE_BUTTON_CLASS_NAME,
-              'bg-manga-white text-manga-black hover:bg-manga-paper-soft gap-1'
+              'bg-surface text-ink hover:bg-tint gap-1'
             )}
           >
             <Ratio
@@ -532,8 +532,8 @@ export function DictationYoutubePlayer({
                   className={cn(
                     SIZE_BUTTON_CLASS_NAME,
                     videoSize === size
-                      ? 'bg-manga-black text-manga-white'
-                      : 'bg-manga-white text-manga-black hover:bg-manga-paper-soft'
+                      ? 'bg-ink text-surface'
+                      : 'bg-surface text-ink hover:bg-tint'
                   )}
                 >
                   {VIDEO_SIZE_LABEL[size]}
@@ -543,7 +543,7 @@ export function DictationYoutubePlayer({
           <button
             type="button"
             onClick={toggleHidden}
-            className="text-manga-ink-soft ml-auto text-xs font-black underline underline-offset-4"
+            className="text-ink-soft ml-auto text-xs font-normal underline underline-offset-4"
           >
             {hidden ? 'Show video' : 'Hide video'}
           </button>

@@ -4,7 +4,7 @@ import { Check, CloudOff, Loader2, Lock, Star, Unlock, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 
 import { useClientOutbox } from '@/components/common/OutboxOwnerProvider'
-import { MangaButton } from '@/components/ui/MangaButton'
+import { ActionButton } from '@/components/ui/ActionButton'
 import { cn } from '@/lib/utils'
 import type { GrammarSessionMode } from '@/modules/grammar/constants'
 import {
@@ -69,7 +69,7 @@ function formatDuration(ms: number) {
 function StarRow({ stars }: { stars: number }) {
   return (
     <div
-      aria-label={`${stars} trên 3 sao`}
+      aria-label={`${stars} of 3 stars`}
       className="flex justify-center gap-2"
       role="img"
     >
@@ -79,8 +79,8 @@ function StarRow({ stars }: { stars: number }) {
           className={cn(
             'size-12 stroke-[2.5] sm:size-14',
             index <= stars
-              ? 'fill-manga-red text-manga-black motion-safe:animate-in motion-safe:zoom-in-50 motion-safe:fill-mode-both'
-              : 'text-manga-ink-soft fill-transparent'
+              ? 'fill-brand text-ink motion-safe:animate-in motion-safe:zoom-in-50 motion-safe:fill-mode-both'
+              : 'text-ink-soft fill-transparent'
           )}
           key={index}
           style={{ animationDelay: `${index * 160}ms` }}
@@ -93,16 +93,15 @@ function StarRow({ stars }: { stars: number }) {
 function headline(mode: GrammarSessionMode, passed: boolean, testOut: boolean) {
   switch (mode) {
     case 'lesson':
-      return 'Xong bài!'
+      return 'Lesson done!'
     case 'review':
-      return passed ? 'Ôn xong, vẫn nhớ tốt!' : 'Cần ôn thêm một chút'
+      return passed ? 'Review done, still sharp!' : 'Needs a little more review'
     case 'checkpoint':
-      if (testOut)
-        return passed ? 'Vượt cấp thành công!' : 'Chưa vượt được lần này'
+      if (testOut) return passed ? 'Tested out!' : 'Not this time'
 
-      return passed ? 'Qua checkpoint!' : 'Chưa qua checkpoint'
+      return passed ? 'Checkpoint passed!' : 'Checkpoint not passed yet'
     case 'weak':
-      return 'Luyện xong!'
+      return 'Practice done!'
   }
 }
 
@@ -210,14 +209,14 @@ export function PlayerResult({
 
   const unlocked = result?.unlocked ?? null
   let nextHref = exitHref
-  let nextLabel = 'Về lộ trình'
+  let nextLabel = 'Back to path'
 
   if (unlocked?.kind === 'lesson') {
     nextHref = `/grammar/lessons/${unlocked.lessonId}`
-    nextLabel = 'Bài tiếp theo'
+    nextLabel = 'Next lesson'
   } else if (unlocked?.kind === 'checkpoint') {
     nextHref = `/grammar/units/${unlocked.unitId}/checkpoint`
-    nextLabel = 'Làm checkpoint'
+    nextLabel = 'Take the checkpoint'
   }
 
   return (
@@ -229,10 +228,10 @@ export function PlayerResult({
           {stars === null ? (
             <div
               className={cn(
-                'border-manga-black mx-auto grid size-16 place-items-center rounded-full border-3',
+                'border-line mx-auto grid size-16 place-items-center rounded-full border',
                 passed
-                  ? 'bg-lesson-correct text-manga-white'
-                  : 'bg-manga-red text-manga-white'
+                  ? 'bg-lesson-correct text-surface'
+                  : 'bg-danger text-surface'
               )}
             >
               {passed ? (
@@ -248,88 +247,88 @@ export function PlayerResult({
               )}
             </div>
           ) : null}
-          <h1 className="font-sans text-3xl leading-tight font-black">
+          <h1 className="font-sans text-3xl leading-tight font-medium">
             {headline(mode, passed, testOut)}
           </h1>
-          <p className="text-manga-ink-soft font-bold">{title}</p>
+          <p className="text-ink-soft font-bold">{title}</p>
         </div>
 
         <dl className="grid grid-cols-3 gap-3">
           {[
             {
-              label: 'Chính xác',
+              label: 'Accuracy',
               value: `${Math.round(summary.accuracy * 100)}%`,
             },
-            { label: 'Chuỗi dài nhất', value: `x${state.bestCombo}` },
-            { label: 'Thời gian', value: formatDuration(durationMs) },
+            { label: 'Best streak', value: `x${state.bestCombo}` },
+            { label: 'Time', value: formatDuration(durationMs) },
           ].map(item => (
             <div
-              className="border-manga-black bg-manga-white rounded-control grid gap-1 border-3 p-3 text-center shadow-[3px_3px_0_var(--manga-black)]"
+              className="border-line bg-surface rounded-control grid gap-1 border p-3 text-center"
               key={item.label}
             >
-              <dt className="text-manga-ink-soft text-xs font-black uppercase">
+              <dt className="text-ink-soft text-xs font-normal">
                 {item.label}
               </dt>
-              <dd className="font-sans text-2xl font-black">{item.value}</dd>
+              <dd className="font-sans text-2xl font-semibold">{item.value}</dd>
             </div>
           ))}
         </dl>
 
         <div aria-live="polite">
           {save.kind === 'saving' ? (
-            <p className="text-manga-ink-soft flex items-center justify-center gap-2 text-sm font-bold">
+            <p className="text-ink-soft flex items-center justify-center gap-2 text-sm font-bold">
               <Loader2
                 aria-hidden
                 className="size-4 motion-safe:animate-spin"
               />
-              Đang lưu...
+              Saving...
             </p>
           ) : null}
           {save.kind === 'queued' ? (
-            <p className="text-manga-ink-soft flex items-center justify-center gap-2 text-center text-sm font-bold">
+            <p className="text-ink-soft flex items-center justify-center gap-2 text-center text-sm font-bold">
               <CloudOff
                 aria-hidden
                 className="size-4 shrink-0"
               />
-              Đang chờ mạng. Kết quả đã được giữ trên máy này và sẽ tự gửi khi
-              có kết nối.
+              Waiting for the network. Your result is kept on this device and
+              will send itself once you are back online.
             </p>
           ) : null}
           {save.kind === 'retryable' ? (
-            <div className="border-manga-red rounded-control grid gap-2 border-2 border-dashed p-3 text-sm">
+            <div className="border-danger rounded-control grid gap-2 border border-dashed p-3 text-sm">
               <p className="flex items-center gap-2 font-bold">
                 <CloudOff
                   aria-hidden
                   className="size-4"
                 />
-                Chưa lưu được ({save.message}).
+                Not saved yet ({save.message}).
               </p>
-              <MangaButton
+              <ActionButton
                 className="w-fit"
                 onClick={send}
                 tone="paper"
               >
-                Thử lại
-              </MangaButton>
+                Try again
+              </ActionButton>
             </div>
           ) : null}
           {save.kind === 'rejected' ? (
-            <p className="border-manga-red rounded-control border-2 border-dashed p-3 text-sm font-bold">
+            <p className="border-danger rounded-control border border-dashed p-3 text-sm font-bold">
               {save.message}
             </p>
           ) : null}
           {save.kind === 'offline' ? (
-            <p className="text-manga-ink-soft text-center text-sm">
-              Chưa có cơ sở dữ liệu nên kết quả không được lưu.
+            <p className="text-ink-soft text-center text-sm">
+              No database is set up, so this result was not saved.
             </p>
           ) : null}
           {unlocked ? (
-            <p className="border-manga-black bg-manga-paper-soft rounded-control motion-safe:animate-in motion-safe:slide-in-from-bottom-2 flex items-center gap-2 border-3 p-3 font-bold shadow-[3px_3px_0_var(--manga-black)]">
+            <p className="border-line bg-tint rounded-control motion-safe:animate-in motion-safe:slide-in-from-bottom-2 flex items-center gap-2 border p-3 font-bold">
               <Unlock
                 aria-hidden
                 className="size-5 shrink-0"
               />
-              Mở khóa: {unlocked.title}
+              Unlocked: {unlocked.title}
             </p>
           ) : null}
           {mode === 'checkpoint' && !passed ? (
@@ -338,20 +337,21 @@ export function PlayerResult({
                 aria-hidden
                 className="size-4"
               />
-              Cần đúng ít nhất {Math.round(PASS_ACCURACY * 100)}% để qua.
+              You need at least {Math.round(PASS_ACCURACY * 100)}% to pass.
             </p>
           ) : null}
         </div>
 
         {misses.length > 0 ? (
           <section className="grid gap-3">
-            <h2 className="font-sans text-lg font-black">
-              Xem lại {misses.length} câu sai
+            <h2 className="font-sans text-lg font-semibold">
+              Review {misses.length} wrong{' '}
+              {misses.length === 1 ? 'answer' : 'answers'}
               {/* Only once the server confirmed the save; a test-out never
                   records misses. */}
               {result && !result.testOut ? (
-                <span className="text-manga-ink-soft block text-sm font-bold">
-                  Đã thêm vào Luyện điểm yếu.
+                <span className="text-ink-soft block text-sm font-bold">
+                  Added to Weak spots.
                 </span>
               ) : null}
             </h2>
@@ -365,16 +365,16 @@ export function PlayerResult({
 
                 return (
                   <li
-                    className="border-manga-black bg-manga-white rounded-control grid gap-1.5 border-3 p-3"
+                    className="border-line bg-surface rounded-control grid gap-1.5 border p-3"
                     key={card.id}
                   >
                     {answer ? (
-                      <p className="text-manga-red flex items-start gap-2 text-sm font-bold">
+                      <p className="text-danger flex items-start gap-2 text-sm font-bold">
                         <X
                           aria-hidden
                           className="mt-0.5 size-4 shrink-0"
                         />
-                        <span className="sr-only">Bạn trả lời:</span>
+                        <span className="sr-only">Your answer:</span>
                         {describeAnswer(card, answer)}
                       </p>
                     ) : null}
@@ -383,13 +383,11 @@ export function PlayerResult({
                         aria-hidden
                         className="text-lesson-correct mt-1 size-4 shrink-0"
                       />
-                      <span className="sr-only">Đáp án:</span>
+                      <span className="sr-only">Correct answer:</span>
                       <span className="min-w-0 flex-1">{expected}</span>
                       <SpeakButton text={expected} />
                     </p>
-                    <p className="text-manga-ink-soft text-sm">
-                      {card.explain}
-                    </p>
+                    <p className="text-ink-soft text-sm">{card.explain}</p>
                   </li>
                 )
               })}
@@ -398,35 +396,35 @@ export function PlayerResult({
         ) : null}
 
         <div className="grid gap-3 sm:grid-cols-2">
-          <MangaButton
+          <ActionButton
             href={nextHref}
             tone="ink"
           >
             {nextLabel}
-          </MangaButton>
+          </ActionButton>
           {mode === 'lesson' && stars !== null && stars < 3 ? (
-            <MangaButton
+            <ActionButton
               onClick={() => window.location.reload()}
               tone="paper"
             >
-              Làm lại để lấy 3 sao
-            </MangaButton>
+              Redo for 3 stars
+            </ActionButton>
           ) : null}
           {mode !== 'lesson' && !passed ? (
-            <MangaButton
+            <ActionButton
               onClick={() => window.location.reload()}
               tone="paper"
             >
-              Thử lại
-            </MangaButton>
+              Try again
+            </ActionButton>
           ) : null}
           {nextHref !== exitHref ? (
-            <MangaButton
+            <ActionButton
               href={exitHref}
               tone="paper"
             >
-              Về lộ trình
-            </MangaButton>
+              Back to path
+            </ActionButton>
           ) : null}
         </div>
       </div>

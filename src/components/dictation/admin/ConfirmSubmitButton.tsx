@@ -54,20 +54,16 @@ export function ConfirmSubmitButton({
           onClick={() => setOpen(false)}
         >
           <div
-            className="border-manga-black bg-manga-white rounded-panel grid w-full max-w-md gap-4 border-3 p-5 shadow-[6px_6px_0_var(--manga-black)]"
+            className="border-line bg-surface rounded-panel grid w-full max-w-md gap-4 border p-5"
             onClick={event => event.stopPropagation()}
           >
-            <h2 className="font-sans text-lg font-black uppercase">
-              {confirmTitle}
-            </h2>
-            <p className="text-manga-ink-soft text-sm leading-6">
-              {confirmMessage}
-            </p>
+            <h2 className="font-sans text-lg font-semibold">{confirmTitle}</h2>
+            <p className="text-ink-soft text-sm leading-6">{confirmMessage}</p>
             <div className="flex justify-end gap-2">
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="border-manga-black bg-manga-white hover:bg-manga-paper-soft rounded-control inline-flex min-h-11 items-center border-3 px-4 font-sans text-sm font-black shadow-[3px_3px_0_var(--manga-black)]"
+                className="border-line bg-surface hover:bg-tint rounded-control inline-flex min-h-11 items-center border px-4 font-sans text-sm font-semibold"
               >
                 Cancel
               </button>
@@ -78,7 +74,7 @@ export function ConfirmSubmitButton({
                   ref.current?.form?.requestSubmit()
                 }}
                 className={cn(
-                  'border-manga-black bg-manga-red text-manga-white hover:bg-manga-pale-red hover:text-manga-black rounded-control inline-flex min-h-11 items-center border-3 px-4 font-sans text-sm font-black shadow-[3px_3px_0_var(--manga-black)]'
+                  'border-line bg-brand text-surface hover:bg-tint-soft hover:text-ink rounded-control inline-flex min-h-11 items-center border px-4 font-sans text-sm font-semibold'
                 )}
               >
                 {confirmLabel}

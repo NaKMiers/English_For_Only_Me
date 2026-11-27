@@ -2,8 +2,8 @@
 
 import { BookOpen } from 'lucide-react'
 
-import { MangaPanel } from '@/components/common/MangaPanel'
-import { MangaButton } from '@/components/ui/MangaButton'
+import { ContentPanel } from '@/components/common/ContentPanel'
+import { ActionButton } from '@/components/ui/ActionButton'
 import { PageTag } from '@/components/ui/PageTag'
 import type { VocabRecallTaskRecord } from '@/modules/vocabulary/types'
 
@@ -24,18 +24,18 @@ export function VocabularyRecallLauncher({
   const activeRecall = tasks[0] ?? null
 
   return (
-    <MangaPanel
+    <ContentPanel
       eyebrow="Recall"
       title="Flashcard review"
-      className="bg-manga-black text-manga-white shadow-[6px_6px_0_var(--manga-red)]"
+      className="bg-pastel-lilac"
       action={
-        <MangaButton
+        <ActionButton
           disabled={!activeRecall}
           icon={<BookOpen className="size-4" />}
           onClick={onOpenRecall}
         >
           Start Recall
-        </MangaButton>
+        </ActionButton>
       }
     >
       {activeRecall ? (
@@ -47,7 +47,7 @@ export function VocabularyRecallLauncher({
               </PageTag>
               <PageTag tone="ink">Next: {activeRecall.entry.term}</PageTag>
             </div>
-            <p className="text-manga-paper-soft max-w-3xl text-base leading-7 font-semibold">
+            <p className="text-ink-soft max-w-3xl text-base leading-7">
               Review opens as a focused modal with listening, definition,
               word-choice, and example-memory prompts. It will auto-open once
               per day when cards are due.
@@ -57,14 +57,14 @@ export function VocabularyRecallLauncher({
             {tasks.slice(0, 4).map(task => (
               <div
                 key={task.taskId}
-                className="border-manga-white/25 bg-manga-white/10 rounded-control border-2 p-3"
+                className="border-line bg-surface/80 rounded-control border p-3"
               >
                 <VocabTermHeader
                   entry={task.entry}
                   pronunciationClassName="sr-only"
-                  headingClassName="text-xl text-manga-white"
+                  headingClassName="text-xl"
                 />
-                <p className="text-manga-paper-soft mt-2 text-xs font-black uppercase">
+                <p className="text-ink-soft mt-2 text-xs">
                   Stage {task.item.recallStage}/7
                 </p>
               </div>
@@ -72,11 +72,11 @@ export function VocabularyRecallLauncher({
           </div>
         </div>
       ) : (
-        <p className="text-manga-paper-soft text-sm leading-6 font-semibold">
+        <p className="text-ink-soft text-sm leading-6">
           No flashcards are due. Add words from Search or Explore and they will
           appear here immediately.
         </p>
       )}
-    </MangaPanel>
+    </ContentPanel>
   )
 }

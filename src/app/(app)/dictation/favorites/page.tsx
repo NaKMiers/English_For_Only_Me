@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { AuthControl } from '@/components/common/AuthControl'
-import { MangaPageShell } from '@/components/common/MangaPageShell'
+import { PageShell } from '@/components/common/PageShell'
 import { PageHero } from '@/components/common/PageHero'
 import { BrowseBreadcrumb } from '@/components/dictation/browse/BrowseBreadcrumb'
 import {
@@ -49,7 +49,7 @@ export default async function FavoritesPage() {
   }
 
   return (
-    <MangaPageShell
+    <PageShell
       topbar={
         <AppTopbar
           activeHref="/dictation"
@@ -61,7 +61,7 @@ export default async function FavoritesPage() {
       <section className="grid gap-5 p-4 sm:p-6 lg:p-8">
         <PageHero>
           <BrowseBreadcrumb current="Favorites" />
-          <h1 className="font-sans text-[clamp(1.8rem,4vw,2.6rem)] leading-none font-black uppercase">
+          <h1 className="font-sans text-[clamp(1.8rem,4vw,2.6rem)] leading-none font-medium">
             Favorites
           </h1>
         </PageHero>
@@ -71,6 +71,6 @@ export default async function FavoritesPage() {
           emptyLabel="No favorites yet - tap the star on any lesson."
         />
       </section>
-    </MangaPageShell>
+    </PageShell>
   )
 }

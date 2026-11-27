@@ -13,7 +13,7 @@ import { useState } from 'react'
 
 import { DictationSettingsMenu } from '@/components/dictation/DictationSettingsMenu'
 import { IconButton } from '@/components/ui/IconButton'
-import { MangaButton } from '@/components/ui/MangaButton'
+import { ActionButton } from '@/components/ui/ActionButton'
 import {
   Dialog,
   DialogContent,
@@ -48,8 +48,7 @@ interface Props {
   videoSize: VideoSize
 }
 
-const ICON_BUTTON_CLASS_NAME =
-  'size-9 border-2 shadow-[2px_2px_0_var(--manga-black)]'
+const ICON_BUTTON_CLASS_NAME = 'size-9 border'
 
 export function DictationControls({
   answerTextSize,
@@ -78,7 +77,7 @@ export function DictationControls({
     // actions. It shares its row with the view tabs (pushed right by the
     // caller), and speed / answer text / video size live behind the settings
     // menu so the strip never wraps to a second line.
-    <div className="border-manga-black bg-manga-white rounded-control flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1.5 border-2 px-2 py-1.5 shadow-[3px_3px_0_var(--manga-black)] max-sm:border-0 max-sm:bg-transparent max-sm:p-0 max-sm:shadow-none!">
+    <div className="border-line bg-surface rounded-control flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1.5 border px-2 py-1.5 max-sm:border-0 max-sm:bg-transparent max-sm:p-0 max-sm:shadow-none!">
       <div className="flex min-w-0 items-center gap-1">
         <IconButton
           label="Replay current sentence"
@@ -114,7 +113,7 @@ export function DictationControls({
         </IconButton>
         <span
           aria-label="Current segment"
-          className="border-manga-black bg-manga-paper-soft rounded-control inline-flex min-h-8 items-center border-2 px-2 font-sans text-xs font-black tabular-nums shadow-[2px_2px_0_var(--manga-black)]"
+          className="border-line bg-tint rounded-control inline-flex min-h-8 items-center border px-2 font-sans text-xs font-semibold tabular-nums"
         >
           {currentIndex + 1} / {totalSegments}
         </span>
@@ -173,26 +172,26 @@ export function DictationControls({
         open={isRestartConfirmOpen}
         onOpenChange={setIsRestartConfirmOpen}
       >
-        <DialogContent className="border-manga-black bg-manga-white rounded-panel border-3 shadow-[6px_6px_0_var(--manga-black)]">
+        <DialogContent className="border-line bg-surface rounded-panel border">
           <DialogHeader>
-            <DialogTitle className="font-sans text-xl leading-tight font-black tracking-normal uppercase">
+            <DialogTitle className="font-sans text-xl leading-tight font-semibold tracking-normal">
               Restart this exercise?
             </DialogTitle>
-            <DialogDescription className="text-manga-ink-soft text-base leading-7 font-semibold">
+            <DialogDescription className="text-ink-soft text-base leading-7 font-normal">
               This clears your typed answers and takes you back to the first
               segment. Your saved accuracy stats stay untouched.
             </DialogDescription>
           </DialogHeader>
 
-          <DialogFooter className="bg-manga-paper-soft border-manga-black border-t-3">
-            <MangaButton
+          <DialogFooter className="bg-tint border-line border-t">
+            <ActionButton
               type="button"
               tone="paper"
               onClick={() => setIsRestartConfirmOpen(false)}
             >
               Cancel
-            </MangaButton>
-            <MangaButton
+            </ActionButton>
+            <ActionButton
               type="button"
               onClick={() => {
                 setIsRestartConfirmOpen(false)
@@ -200,7 +199,7 @@ export function DictationControls({
               }}
             >
               Restart
-            </MangaButton>
+            </ActionButton>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -8,12 +8,17 @@ import { AppTopbar } from './AppTopbar'
 vi.mock('./AuthControl', () => ({ AuthControl: () => null }))
 
 describe('AppTopbar', () => {
-  test('renders the brand logo and primary navigation', () => {
-    const html = renderToStaticMarkup(<AppTopbar activeHref="/dictation" />)
+  test('renders the brand logo, title and the phone menu button', () => {
+    const html = renderToStaticMarkup(
+      <AppTopbar
+        activeHref="/dictation"
+        subtitle="Listening practice"
+      />
+    )
 
     expect(html).toContain('English For Only Me logo')
-    expect(html).toContain('aria-label="Primary"')
-    expect(html).toContain('href="/dictation"')
-    expect(html).toContain('aria-current="page"')
+    expect(html).toContain('English For Only Me')
+    expect(html).toContain('Listening practice')
+    expect(html).toContain('aria-label="Open menu"')
   })
 })

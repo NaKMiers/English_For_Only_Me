@@ -78,10 +78,10 @@ export function RunnerToolbar({
       <div
         aria-label="Time remaining"
         className={cn(
-          'border-manga-black rounded-control inline-flex h-9 shrink-0 items-center gap-1.5 border-2 px-2.5 font-sans text-base font-black tabular-nums sm:text-lg',
+          'border-line rounded-control inline-flex h-9 shrink-0 items-center gap-1.5 border px-2.5 font-sans text-base font-semibold tabular-nums sm:text-lg',
           urgent
-            ? 'bg-manga-pale-red text-manga-red animate-pulse'
-            : 'bg-manga-white text-manga-black'
+            ? 'bg-tint-soft text-brand animate-pulse'
+            : 'bg-surface text-ink'
         )}
         role="timer"
       >
@@ -100,7 +100,7 @@ export function RunnerToolbar({
     ) : null
 
   return (
-    <header className="border-manga-black bg-exam-surface flex shrink-0 flex-wrap items-center gap-x-3 gap-y-2 border-b-3 px-3 py-2 sm:px-4">
+    <header className="border-line bg-exam-surface flex shrink-0 flex-wrap items-center gap-x-3 gap-y-2 border-b px-3 py-2 sm:px-4">
       {onBack ? (
         <ExamIconButton
           className="size-10"
@@ -120,22 +120,22 @@ export function RunnerToolbar({
         </ExamIconButton>
       )}
       <div className="grid min-w-0 flex-1 gap-0.5">
-        <p className="text-manga-black truncate font-sans text-[15px] leading-tight font-black">
+        <p className="text-ink truncate font-sans text-[15px] leading-tight font-semibold">
           {title}
         </p>
         <p className="flex min-w-0 items-center gap-1.5 text-xs">
-          <span className="text-manga-red shrink-0 font-sans text-[11px] leading-none font-black tracking-wide uppercase">
+          <span className="text-brand shrink-0 font-sans text-[11px] leading-none font-semibold tracking-wide">
             {modeLabel}
           </span>
           <span
             aria-hidden="true"
-            className="text-manga-ink-soft/60"
+            className="text-ink-soft/60"
           >
             ·
           </span>
           <span
             aria-live="polite"
-            className="text-manga-ink-soft inline-flex min-w-0 items-center gap-1 font-semibold"
+            className="text-ink-soft inline-flex min-w-0 items-center gap-1 font-normal"
           >
             <span
               aria-hidden="true"
@@ -144,8 +144,8 @@ export function RunnerToolbar({
                 saveState === 'saved'
                   ? 'bg-lesson-correct'
                   : saveState === 'offline' || saveState === 'timeup'
-                    ? 'bg-manga-red'
-                    : 'bg-manga-ink-soft/50'
+                    ? 'bg-brand'
+                    : 'bg-ink-soft/50'
               )}
             />
             <span className="truncate">{SAVE_LABELS[saveState]}</span>
@@ -178,7 +178,7 @@ export function RunnerToolbar({
       <button
         aria-label={lightUp ? 'Turn off dark mode' : 'Turn on dark mode'}
         aria-pressed={lightUp}
-        className="text-manga-ink-soft hover:bg-manga-paper-soft hover:text-manga-black rounded-tag -mx-1.5 inline-grid size-9 shrink-0 place-items-center transition-colors"
+        className="text-ink-soft hover:bg-tint hover:text-ink rounded-tag -mx-1.5 inline-grid size-9 shrink-0 place-items-center transition-colors"
         onClick={toggle}
         title={lightUp ? 'Dark mode on' : 'Dark mode'}
         type="button"
@@ -198,7 +198,7 @@ export function RunnerToolbar({
 
       <ExamButton
         // Red, not ink: a black face melts into its own black shadow.
-        className="bg-manga-red text-manga-white min-h-10 px-3 sm:px-4"
+        className="bg-brand text-surface min-h-10 px-3 sm:px-4"
         disabled={submitDisabled || submitting}
         icon={
           <Send
@@ -237,10 +237,8 @@ export function ToolbarToggle({
     <button
       aria-pressed={checked}
       className={cn(
-        'border-manga-black rounded-tag sticker-press inline-flex h-9 items-center justify-center gap-1.5 border-2 px-2.5 font-sans text-xs font-black transition-colors max-sm:w-9 max-sm:px-0 [&_svg]:size-4',
-        checked
-          ? 'bg-manga-black text-manga-white'
-          : 'bg-manga-white text-manga-black hover:bg-manga-paper-soft shadow-[2px_2px_0_var(--manga-black)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none'
+        'border-line rounded-tag soft-press inline-flex h-9 items-center justify-center gap-1.5 border px-2.5 font-sans text-xs font-semibold transition-colors max-sm:w-9 max-sm:px-0 [&_svg]:size-4',
+        checked ? 'bg-ink text-surface' : 'bg-surface text-ink hover:bg-tint'
       )}
       onClick={() => onCheckedChange(!checked)}
       title={label}

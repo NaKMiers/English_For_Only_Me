@@ -42,7 +42,7 @@ export function LineDictation({ line }: { line: string }) {
     )
 
   return (
-    <div className="border-manga-black rounded-control bg-manga-white grid gap-2 border-2 p-3">
+    <div className="border-line rounded-control bg-surface grid gap-2 border p-3">
       <p className="text-sm">
         Recall the line from the audio and type it without looking at the
         transcript.
@@ -51,7 +51,7 @@ export function LineDictation({ line }: { line: string }) {
         <Input
           aria-label="The line you heard"
           autoComplete="off"
-          className="border-manga-black bg-manga-white h-11 min-w-0 flex-1 border-2 text-base"
+          className="border-line bg-surface h-11 min-w-0 flex-1 border text-base"
           onChange={event => setTyped(event.target.value)}
           onKeyDown={event => {
             if (event.key === 'Enter') check()
@@ -78,7 +78,7 @@ export function LineDictation({ line }: { line: string }) {
                 'rounded-tag mr-1 px-0.5',
                 token.status === 'correct' || token.status === 'spellingVariant'
                   ? 'text-lesson-correct'
-                  : 'bg-manga-pale-red text-manga-red font-bold',
+                  : 'bg-tint-soft text-brand font-bold',
                 token.status === 'extra' && 'line-through'
               )}
               key={index}

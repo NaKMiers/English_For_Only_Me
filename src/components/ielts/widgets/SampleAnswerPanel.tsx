@@ -26,7 +26,7 @@ export function SampleAnswerPanel({
       className="border-exam-line border-t"
       defaultOpen={defaultOpen}
     >
-      <CollapsibleTrigger className="group/sample flex min-h-11 w-full items-center justify-between gap-2 font-sans text-sm font-black focus-visible:underline focus-visible:ring-0">
+      <CollapsibleTrigger className="group/sample flex min-h-11 w-full items-center justify-between gap-2 font-sans text-sm font-semibold focus-visible:underline focus-visible:ring-0">
         Sample Writing Answer
         <ChevronDown
           aria-hidden="true"

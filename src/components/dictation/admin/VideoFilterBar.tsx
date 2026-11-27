@@ -80,10 +80,10 @@ function FacetChip({
       aria-label={count === undefined ? undefined : `${label} (${count})`}
       aria-pressed={pressed}
       className={cn(
-        'border-manga-black rounded-tag sticker-press inline-flex min-h-8 items-center gap-1.5 border-2 px-2.5 font-sans text-xs font-black',
+        'border-line rounded-tag soft-press inline-flex min-h-8 items-center gap-1.5 border px-2.5 font-sans text-xs font-semibold',
         pressed
-          ? 'bg-manga-black text-manga-white translate-x-[2px] translate-y-[2px]'
-          : 'bg-manga-white hover:bg-manga-pale-red shadow-[2px_2px_0_var(--manga-black)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none',
+          ? 'bg-ink text-surface translate-x-[2px] translate-y-[2px]'
+          : 'bg-surface hover:bg-tint-soft',
         !pressed && count === 0 && 'opacity-45'
       )}
       onClick={onClick}
@@ -94,7 +94,7 @@ function FacetChip({
         <span
           className={cn(
             'tabular-nums',
-            pressed ? 'text-manga-white/70' : 'text-manga-ink-soft'
+            pressed ? 'text-surface/70' : 'text-ink-soft'
           )}
         >
           {count}
@@ -117,7 +117,7 @@ function FacetGroup({
       className="grid gap-1.5"
       role="group"
     >
-      <span className="text-manga-ink-soft font-sans text-xs font-black uppercase">
+      <span className="text-ink-soft font-sans text-xs font-normal">
         {label}
       </span>
       <div className="flex flex-wrap gap-1.5">{children}</div>
@@ -237,11 +237,11 @@ export function VideoFilterBar({
         <div className="relative min-w-48 flex-1">
           <Search
             aria-hidden="true"
-            className="text-manga-ink-soft pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2"
+            className="text-ink-soft pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2"
           />
           <Input
             aria-label="Search videos"
-            className="border-manga-black bg-manga-white min-h-10 border-2 pr-9 pl-8 font-sans text-sm font-black [&::-webkit-search-cancel-button]:appearance-none"
+            className="border-line bg-surface min-h-10 border pr-9 pl-8 font-sans text-sm font-semibold [&::-webkit-search-cancel-button]:appearance-none"
             onChange={event => patch({ search: event.target.value })}
             placeholder="Search title, channel, topic…"
             type="search"
@@ -266,10 +266,8 @@ export function VideoFilterBar({
               facetsActive ? `Filters, ${facetsActive} active` : 'Filters'
             }
             className={cn(
-              'group/filters border-manga-black rounded-control sticker-press inline-flex min-h-10 items-center gap-1.5 border-2 px-3 font-sans text-sm font-black shadow-[2px_2px_0_var(--manga-black)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none max-sm:flex-1 max-sm:justify-center',
-              facetsActive
-                ? 'bg-manga-black text-manga-white'
-                : 'bg-manga-white hover:bg-manga-paper-soft'
+              'group/filters border-line rounded-control soft-press inline-flex min-h-10 items-center gap-1.5 border px-3 font-sans text-sm font-semibold max-sm:flex-1 max-sm:justify-center',
+              facetsActive ? 'bg-ink text-surface' : 'bg-surface hover:bg-tint'
             )}
           >
             <SlidersHorizontal
@@ -278,7 +276,7 @@ export function VideoFilterBar({
             />
             Filters
             {facetsActive ? (
-              <span className="bg-manga-red text-manga-white rounded-tag grid min-w-5 place-items-center px-1 text-xs tabular-nums">
+              <span className="bg-brand text-surface rounded-tag grid min-w-5 place-items-center px-1 text-xs tabular-nums">
                 {facetsActive}
               </span>
             ) : null}
@@ -319,7 +317,7 @@ export function VideoFilterBar({
       </div>
 
       <CollapsiblePanel>
-        <div className="border-manga-black bg-manga-paper-soft rounded-panel grid gap-3 border-2 p-3">
+        <div className="border-line bg-tint rounded-panel grid gap-3 border p-3">
           <FacetGroup label="Quick views">
             {ADMIN_QUICK_VIEWS.map(view => {
               const on =
@@ -437,7 +435,7 @@ export function VideoFilterBar({
         {chips.map(chip => (
           <Button
             aria-label={`Remove filter ${chip.label}`}
-            className="border-manga-black bg-manga-white hover:bg-manga-pale-red rounded-tag h-7 max-w-full gap-1 border-2 px-2 font-sans text-xs font-black"
+            className="border-line bg-surface hover:bg-tint-soft rounded-tag h-7 max-w-full gap-1 border px-2 font-sans text-xs font-semibold"
             key={chip.key}
             onClick={chip.remove}
             type="button"
@@ -449,7 +447,7 @@ export function VideoFilterBar({
         ))}
         {chips.length > 1 ? (
           <Button
-            className="text-manga-red h-7 px-1.5 font-sans text-xs font-black underline-offset-2 hover:underline"
+            className="text-brand h-7 px-1.5 font-sans text-xs font-semibold underline-offset-2 hover:underline"
             onClick={() =>
               onChange({ ...EMPTY_ADMIN_VIDEO_FILTER, sort: filter.sort })
             }
@@ -461,7 +459,7 @@ export function VideoFilterBar({
         ) : null}
         <span
           aria-live="polite"
-          className="text-manga-ink-soft ml-auto text-xs font-black tabular-nums"
+          className="text-ink-soft ml-auto text-xs font-normal tabular-nums"
         >
           {shown === total ? `${total} videos` : `${shown} of ${total} videos`}
         </span>

@@ -30,11 +30,11 @@ export function QueueRow({
   const content = (
     <>
       <div className="grid min-w-0 gap-1">
-        <strong className="font-sans text-base leading-tight font-black wrap-break-word">
+        <strong className="font-sans text-base leading-tight font-semibold wrap-break-word">
           {title}
         </strong>
         {meta ? (
-          <span className="text-manga-ink-soft text-sm leading-5 font-semibold wrap-break-word">
+          <span className="text-ink-soft text-sm leading-5 font-normal wrap-break-word">
             {meta}
           </span>
         ) : null}
@@ -47,8 +47,8 @@ export function QueueRow({
   )
 
   const rowClassName = cn(
-    'flex min-w-0 items-center justify-between gap-3 rounded-control border-2 border-manga-black bg-manga-white p-3 shadow-[3px_3px_0_var(--manga-black)]',
-    (href || onClick) && 'transition-colors hover:bg-manga-paper-soft',
+    'flex min-w-0 items-center justify-between gap-3 rounded-control border border-line bg-surface p-3',
+    (href || onClick) && 'transition-colors hover:bg-tint',
     className
   )
 

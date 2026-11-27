@@ -32,8 +32,8 @@ export default async function GrammarCheckpointPage({ params }: Props) {
   // passing it skips this unit and every earlier one.
   const intro =
     node.checkpoint === 'open'
-      ? `Checkpoint Unit ${unit.order}: ${CHECKPOINT_SIZE} câu từ cả 5 bài. Đúng ${passMark} câu trở lên để mở unit tiếp theo.`
-      : `Test vượt cấp: ${CHECKPOINT_SIZE} câu của Unit ${unit.order}. Đúng ${passMark} câu trở lên để bỏ qua unit này và các unit trước.`
+      ? `Unit ${unit.order} checkpoint: ${CHECKPOINT_SIZE} questions from all 5 lessons. Get ${passMark} or more right to unlock the next unit.`
+      : `Test-out: ${CHECKPOINT_SIZE} questions from Unit ${unit.order}. Get ${passMark} or more right to skip this unit and every unit before it.`
 
   return (
     <GrammarPlayerPage

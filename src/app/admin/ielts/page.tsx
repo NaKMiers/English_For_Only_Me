@@ -3,7 +3,7 @@ import Link from 'next/link'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { AuthControl } from '@/components/common/AuthControl'
-import { MangaPageShell } from '@/components/common/MangaPageShell'
+import { PageShell } from '@/components/common/PageShell'
 import { AdminTestCatalogue } from '@/components/ielts/editor/AdminTestCatalogue'
 import { CreateTestPanel } from '@/components/ielts/editor/CreateTestPanel'
 import { hasMongoDbUri } from '@/constants/environments'
@@ -39,21 +39,21 @@ export default async function AdminIeltsPage() {
         className="text-muted-foreground text-xs font-semibold"
       >
         <Link
-          className="hover:text-manga-red underline"
+          className="hover:text-brand underline"
           href="/admin"
         >
           Admin
         </Link>{' '}
         / IELTS
       </nav>
-      <h1 className="font-sans text-2xl leading-none font-black wrap-break-word">
+      <h1 className="font-sans text-2xl leading-none font-semibold wrap-break-word">
         IELTS Tests
       </h1>
     </div>
   )
 
   return (
-    <MangaPageShell
+    <PageShell
       fullHeight="lg"
       topbar={
         <AppTopbar
@@ -88,6 +88,6 @@ export default async function AdminIeltsPage() {
           <CreateTestPanel className="lg:max-h-full lg:overflow-y-auto" />
         </div>
       </ExamSheet>
-    </MangaPageShell>
+    </PageShell>
   )
 }

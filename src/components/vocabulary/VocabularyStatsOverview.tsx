@@ -1,6 +1,6 @@
 'use client'
 
-import { MangaPanel } from '@/components/common/MangaPanel'
+import { ContentPanel } from '@/components/common/ContentPanel'
 import { MetricTile } from '@/components/common/MetricTile'
 import { Progress } from '@/components/ui/progress'
 import type { VocabStatsRecord } from '@/modules/vocabulary/types'
@@ -49,13 +49,13 @@ export function VocabularyStatsOverview({ stats }: Props) {
       </div>
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]">
-        <MangaPanel
+        <ContentPanel
           eyebrow="Growth"
           title="Daily word growth"
         >
           <Progress
             value={progress}
-            className="border-manga-black bg-manga-paper-soft rounded-tag h-4 border-2"
+            className="border-line bg-tint rounded-tag h-4 border"
           />
           <div className="grid min-h-32 grid-cols-7 items-end gap-2 sm:grid-cols-14">
             {stats.dailyGrowth.map(point => (
@@ -64,21 +64,21 @@ export function VocabularyStatsOverview({ stats }: Props) {
                 className="grid min-w-0 gap-1"
               >
                 <div
-                  className="border-manga-black bg-manga-red rounded-tag min-h-2 border-2"
+                  className="border-line bg-brand rounded-tag min-h-2 border"
                   style={{
                     height: `${Math.max(8, (point.count / maxGrowth) * 96)}px`,
                   }}
                   title={`${point.label}: ${point.count}`}
                 />
-                <span className="text-manga-ink-soft truncate text-center text-[10px] font-black">
+                <span className="text-ink-soft truncate text-center text-[10px] font-normal">
                   {point.label}
                 </span>
               </div>
             ))}
           </div>
-        </MangaPanel>
+        </ContentPanel>
 
-        <MangaPanel
+        <ContentPanel
           eyebrow="Focus"
           title="Hardest words"
         >
@@ -87,24 +87,24 @@ export function VocabularyStatsOverview({ stats }: Props) {
               {stats.hardestWords.map(word => (
                 <div
                   key={word.vocabEntryId}
-                  className="border-manga-black bg-manga-paper-soft rounded-control grid gap-2 border-2 p-3"
+                  className="border-line bg-tint rounded-control grid gap-2 border p-3"
                 >
                   <VocabTermHeader
                     headingClassName="text-xl"
                     term={word.term}
                   />
-                  <p className="text-manga-ink-soft text-xs font-black uppercase">
+                  <p className="text-ink-soft text-xs font-normal">
                     {word.wrongCount} misses - {word.accuracyPercent}%
                   </p>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-manga-ink-soft text-sm leading-6 font-semibold">
+            <p className="text-ink-soft text-sm leading-6 font-normal">
               No hard words yet. Missed recall answers will appear here.
             </p>
           )}
-        </MangaPanel>
+        </ContentPanel>
       </div>
     </>
   )

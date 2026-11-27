@@ -3,13 +3,13 @@
 import { Captions, CheckCircle2, Plus, Trash2, Upload } from 'lucide-react'
 import { useCallback, useMemo, useRef, useState, type ChangeEvent } from 'react'
 
-import { MangaPanel } from '@/components/common/MangaPanel'
+import { ContentPanel } from '@/components/common/ContentPanel'
 import { QueueRow } from '@/components/common/QueueRow'
 import { Badge } from '@/components/ui/badge'
 import { IconButton } from '@/components/ui/IconButton'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { MangaButton } from '@/components/ui/MangaButton'
+import { ActionButton } from '@/components/ui/ActionButton'
 import {
   Select,
   SelectContent,
@@ -292,7 +292,7 @@ export function DictationCaptionManager({
   }
 
   return (
-    <MangaPanel
+    <ContentPanel
       eyebrow="Captions"
       title="Language captions"
       className={className}
@@ -300,8 +300,8 @@ export function DictationCaptionManager({
         <Badge
           className={
             isReady
-              ? 'border-manga-black bg-manga-white text-manga-black rounded-tag border-2 font-black'
-              : 'border-manga-black bg-manga-pale-red text-manga-black rounded-tag border-2 font-black'
+              ? 'border-line bg-surface text-ink rounded-tag border font-semibold'
+              : 'border-line bg-tint-soft text-ink rounded-tag border font-semibold'
           }
         >
           {isReady ? (
@@ -319,7 +319,7 @@ export function DictationCaptionManager({
         </Badge>
       }
     >
-      <p className="text-manga-ink-soft text-base leading-7 font-semibold">
+      <p className="text-ink-soft text-base leading-7 font-normal">
         Select a language and upload its subtitle file (SRT/VTT). Start with{' '}
         {getLanguageLabel(primaryLanguage)} - that becomes the dictation source
         and makes the video ready. Add more languages and their captions show as
@@ -341,7 +341,7 @@ export function DictationCaptionManager({
               action={
                 <CheckCircle2
                   aria-hidden="true"
-                  className="text-manga-red size-5"
+                  className="text-brand size-5"
                 />
               }
             />
@@ -376,10 +376,10 @@ export function DictationCaptionManager({
         </div>
       ) : null}
 
-      <div className="border-manga-black bg-manga-paper-soft rounded-control grid gap-3 border-2 p-3 shadow-[3px_3px_0_var(--manga-black)]">
+      <div className="border-line bg-tint rounded-control grid gap-3 border p-3">
         <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
           <div className="grid gap-2">
-            <span className="font-sans text-xs font-black tracking-normal uppercase">
+            <span className="font-sans text-xs font-semibold tracking-normal">
               Language
             </span>
             <Select
@@ -392,7 +392,7 @@ export function DictationCaptionManager({
             >
               <SelectTrigger
                 aria-label="Language"
-                className="w-full border-3 shadow-[3px_3px_0_var(--manga-black)]"
+                className="w-full border"
               >
                 <SelectValue />
               </SelectTrigger>
@@ -416,7 +416,7 @@ export function DictationCaptionManager({
           <div className="grid gap-2">
             <Label
               htmlFor="caption-language-code"
-              className="font-sans text-xs font-black tracking-normal uppercase"
+              className="font-sans text-xs font-semibold tracking-normal"
             >
               Or language code
             </Label>
@@ -429,13 +429,13 @@ export function DictationCaptionManager({
                 if (isValidTranslationLanguage(event.target.value))
                   selectLanguage(event.target.value)
               }}
-              className="border-manga-black bg-manga-white rounded-control min-h-11 border-3 font-semibold shadow-[3px_3px_0_var(--manga-black)]"
+              className="border-line bg-surface rounded-control min-h-11 border font-semibold"
             />
           </div>
         </div>
 
         {languageCode.trim() ? (
-          <Badge className="border-manga-black bg-manga-white text-manga-black rounded-tag w-fit border-2 font-black">
+          <Badge className="border-line bg-surface text-ink rounded-tag w-fit border font-semibold">
             {getLanguageLabel(languageCode)}
             {normalizeTranslationLanguage(languageCode) === primaryLanguage
               ? ' - dictation source'
@@ -452,7 +452,7 @@ export function DictationCaptionManager({
             className="sr-only"
             onChange={handleFileChange}
           />
-          <MangaButton
+          <ActionButton
             type="button"
             icon={
               <Upload
@@ -463,8 +463,8 @@ export function DictationCaptionManager({
             onClick={() => fileInputRef.current?.click()}
           >
             Choose File
-          </MangaButton>
-          <div className="border-manga-black bg-manga-white rounded-control min-w-0 border-2 px-3 py-2 text-sm leading-6 font-black shadow-[2px_2px_0_var(--manga-black)]">
+          </ActionButton>
+          <div className="border-line bg-surface rounded-control min-w-0 border px-3 py-2 text-sm leading-6 font-semibold">
             {fileName ?? 'No caption file selected'}
           </div>
         </div>
@@ -472,7 +472,7 @@ export function DictationCaptionManager({
         <div className="grid gap-2">
           <Label
             htmlFor="caption-text"
-            className="font-sans text-xs font-black tracking-normal uppercase"
+            className="font-sans text-xs font-semibold tracking-normal"
           >
             Or paste / type captions
           </Label>
@@ -487,16 +487,16 @@ export function DictationCaptionManager({
               setFileName(null)
               if (fileInputRef.current) fileInputRef.current.value = ''
             }}
-            className="border-manga-black bg-manga-white rounded-control max-h-96 min-h-40 overflow-y-auto border-3 text-base leading-6 font-semibold shadow-[3px_3px_0_var(--manga-black)]"
+            className="border-line bg-surface rounded-control max-h-96 min-h-40 overflow-y-auto border text-base leading-6 font-semibold"
           />
-          <p className="text-manga-ink-soft text-xs leading-5 font-semibold">
+          <p className="text-ink-soft text-xs leading-5 font-normal">
             Timed (SRT/VTT) captions align to sentences during practice. Plain
             text works as a dictation source but a translation needs timings to
             line up.
           </p>
         </div>
 
-        <MangaButton
+        <ActionButton
           type="button"
           disabled={isSaving}
           onClick={handleAttach}
@@ -512,13 +512,13 @@ export function DictationCaptionManager({
             : existingTrackForLanguage
               ? 'Save Captions'
               : 'Add Captions'}
-        </MangaButton>
+        </ActionButton>
       </div>
 
       {errorMessage ? (
         <div
           role="status"
-          className="border-manga-black bg-manga-pale-red rounded-control border-2 p-3 text-sm leading-6 font-black shadow-[3px_3px_0_var(--manga-black)]"
+          className="border-line bg-tint-soft rounded-control border p-3 text-sm leading-6 font-semibold"
         >
           {errorMessage}
         </div>
@@ -526,20 +526,20 @@ export function DictationCaptionManager({
       {message ? (
         <div
           role="status"
-          className="border-manga-black bg-manga-white rounded-control border-2 p-3 text-sm leading-6 font-black shadow-[3px_3px_0_var(--manga-black)]"
+          className="border-line bg-surface rounded-control border p-3 text-sm leading-6 font-semibold"
         >
           {message}
         </div>
       ) : null}
 
       {isReady ? (
-        <MangaButton
+        <ActionButton
           href={`/dictation/videos/${videoId}/practice`}
           tone="paper"
         >
           Open Practice
-        </MangaButton>
+        </ActionButton>
       ) : null}
-    </MangaPanel>
+    </ContentPanel>
   )
 }

@@ -79,7 +79,7 @@ export function VocabTermHeader({
       <div className="grid min-w-0 gap-1">
         <h3
           className={cn(
-            'font-sans leading-none font-black wrap-break-word',
+            'font-sans leading-none font-semibold wrap-break-word',
             headingClassNames[size],
             headingClassName
           )}
@@ -88,7 +88,7 @@ export function VocabTermHeader({
         </h3>
         <p
           className={cn(
-            'text-manga-ink-soft font-sans text-sm leading-tight font-black',
+            'text-ink-soft font-sans text-sm leading-tight font-normal',
             pronunciationClassName
           )}
         >
@@ -98,7 +98,7 @@ export function VocabTermHeader({
       <Button
         aria-label={`Speak ${displayTerm}`}
         className={cn(
-          'border-manga-black bg-manga-white text-manga-black hover:bg-manga-paper-soft rounded-control sticker-press size-10 shrink-0 border-2 shadow-[2px_2px_0_var(--manga-black)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none active:not-aria-[haspopup]:translate-y-[2px]',
+          'border-line bg-surface text-ink hover:bg-tint rounded-control soft-press size-10 shrink-0 border',
           buttonClassName
         )}
         onClick={() =>

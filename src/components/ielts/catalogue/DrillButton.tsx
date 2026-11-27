@@ -56,7 +56,7 @@ export function DrillButton({
       </ExamButton>
       {error ? (
         <span
-          className="text-manga-red text-xs font-semibold"
+          className="text-brand text-xs font-semibold"
           role="alert"
         >
           {error}

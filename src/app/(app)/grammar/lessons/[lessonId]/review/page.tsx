@@ -10,7 +10,7 @@ import { buildReviewSet } from '@/modules/grammar/session/buildPracticeSet'
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
-export const metadata: Metadata = { title: 'Grammar: ôn tập' }
+export const metadata: Metadata = { title: 'Grammar: review' }
 
 interface Props {
   params: Promise<{ lessonId: string }>
@@ -41,10 +41,10 @@ export default async function GrammarReviewPage({ params }: Props) {
     <GrammarPlayerPage
       canSave={canSave}
       cards={cards}
-      intro="Ôn nhanh: trả lời đúng từ 80% trở lên để bài này giữ được lâu hơn."
+      intro="Quick review: get 80% or more right to keep this lesson fresh for longer."
       mode="review"
       targetId={found.lesson.id}
-      title={`Ôn: ${found.lesson.title}`}
+      title={`Review: ${found.lesson.title}`}
     />
   )
 }

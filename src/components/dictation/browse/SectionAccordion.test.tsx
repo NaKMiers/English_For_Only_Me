@@ -150,7 +150,9 @@ describe('SectionAccordion payload', () => {
     expect(containsElement(list.props)).toBe(false)
     // No server-rendered card (or its favorite star) rides along.
     expect(findElements(tree, FavoriteButton)).toHaveLength(0)
-    expect(JSON.stringify(list.props)).not.toContain('className":"border-2')
+    expect(JSON.stringify(list.props)).not.toContain(
+      'rounded-panel relative grid'
+    )
   })
 })
 

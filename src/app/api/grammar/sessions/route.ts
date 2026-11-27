@@ -20,7 +20,7 @@ function jsonError(status: number, message: string) {
  * with the same idempotency key.
  */
 export async function POST(request: Request) {
-  if (!hasMongoDbUri()) return jsonError(503, 'Chưa cấu hình cơ sở dữ liệu.')
+  if (!hasMongoDbUri()) return jsonError(503, 'The database is not configured.')
 
   let body: unknown
 
@@ -71,6 +71,6 @@ export async function POST(request: Request) {
       targetId: parsed.submission.targetId,
     })
 
-    return jsonError(500, 'Không lưu được bài làm. Thử lại sau nhé.')
+    return jsonError(500, 'Could not save this result. Please try again later.')
   }
 }

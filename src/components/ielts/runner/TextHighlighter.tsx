@@ -339,7 +339,7 @@ export function TextHighlighter({
       >
         <div
           aria-label="Highlight"
-          className="border-manga-black bg-manga-white rounded-control flex overflow-hidden border-2 shadow-[3px_3px_0_var(--manga-black)]"
+          className="border-line bg-surface rounded-control flex overflow-hidden border"
           // Keep the text selected while a menu button is pressed.
           onPointerDown={event => event.preventDefault()}
           role="toolbar"
@@ -347,10 +347,10 @@ export function TextHighlighter({
           {actions.map(({ Icon, disabled, label, run }) => (
             <button
               className={cn(
-                'border-manga-black flex h-9 items-center gap-1.5 border-l-2 px-2.5 font-sans text-xs font-black whitespace-nowrap transition-colors first:border-l-0',
+                'border-line flex h-9 items-center gap-1.5 border-l px-2.5 font-sans text-xs font-semibold whitespace-nowrap transition-colors first:border-l-0',
                 disabled
-                  ? 'text-manga-ink-soft cursor-not-allowed opacity-50'
-                  : 'hover:bg-manga-paper-soft'
+                  ? 'text-ink-soft cursor-not-allowed opacity-50'
+                  : 'hover:bg-tint'
               )}
               aria-label={
                 label === 'Look up' && word
@@ -376,7 +376,7 @@ export function TextHighlighter({
         </div>
         {lookupError ? (
           <p
-            className="border-manga-black bg-manga-white text-manga-red rounded-tag border-2 px-2 py-1 font-sans text-xs font-black"
+            className="border-line bg-surface text-brand rounded-tag border px-2 py-1 font-sans text-xs font-semibold"
             role="alert"
           >
             {lookupError}

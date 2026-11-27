@@ -103,13 +103,13 @@ export function SectionPicker({
             key={skill}
           >
             <h3 className="grid shrink-0 font-sans leading-none max-sm:w-20">
-              <span className="text-xs font-black uppercase">
+              <span className="text-xs font-semibold">
                 {IELTS_SKILL_LABELS[skill]}
               </span>
               <span
                 className={cn(
-                  'text-[11px] font-black tabular-nums',
-                  done === parts.length ? 'text-sky-800' : 'text-manga-ink-soft'
+                  'text-[11px] font-semibold tabular-nums',
+                  done === parts.length ? 'text-sky-800' : 'text-ink-soft'
                 )}
               >
                 {done}/{parts.length}
@@ -130,17 +130,17 @@ export function SectionPicker({
                       aria-label={name}
                       aria-pressed={selected}
                       className={cn(
-                        'border-manga-black rounded-tag sticker-press relative grid size-9 place-items-center border-2 font-sans text-sm font-black',
+                        'border-line rounded-tag soft-press relative grid size-9 place-items-center border font-sans text-sm font-semibold',
                         selected
-                          ? 'bg-manga-black text-manga-white translate-x-[2px] translate-y-[2px]'
-                          : 'bg-manga-white hover:bg-manga-pale-red shadow-[2px_2px_0_var(--manga-black)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none',
+                          ? 'bg-ink text-surface translate-x-[2px] translate-y-[2px]'
+                          : 'bg-surface hover:bg-tint-soft',
                         !selected &&
                           isDone(item) &&
                           'bg-sky-50 hover:bg-sky-100',
                         !selected &&
                           (item.genStatus === 'failed' ||
                             item.genStatus === 'needsRepair') &&
-                          'text-manga-red'
+                          'text-brand'
                       )}
                       onClick={() => onSelect(item.key)}
                       title={name}
@@ -159,7 +159,7 @@ export function SectionPicker({
                           aria-hidden="true"
                           className={cn(
                             'absolute bottom-0.5 left-0.5 size-1.5 rounded-full',
-                            selected ? 'bg-manga-white' : 'bg-manga-red'
+                            selected ? 'bg-surface' : 'bg-brand'
                           )}
                         />
                       ) : null}

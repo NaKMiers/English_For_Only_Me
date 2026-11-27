@@ -10,6 +10,11 @@ import type { IeltsChartVisual, IeltsVisual } from '@/modules/ielts/schema'
  * app red, no chart library.
  */
 
+// The strokes and labels are hard black and grey, so the visual always sits on
+// white exam paper with its own ink and line colours, in the night theme too.
+const EXAM_PAPER =
+  'rounded-control bg-white text-[#1d1b26] [--line:#dcdae6] [--line-strong:#c9c6d6]'
+
 const STROKES = [
   '#050505',
   '#555555',
@@ -442,19 +447,21 @@ function PieCharts({ chart }: { chart: IeltsChartVisual }) {
 function DataTable({ chart }: { chart: IeltsChartVisual }) {
   return (
     <div className="overflow-x-auto">
-      <table className="border-manga-black w-full border-collapse border-2 text-sm">
-        <caption className="pb-2 font-sans font-black">{chart.title}</caption>
+      <table className="border-line w-full border-collapse border text-sm">
+        <caption className="pb-2 font-sans font-semibold">
+          {chart.title}
+        </caption>
         <thead>
           <tr>
             <th
-              className="border-manga-black border-2 px-2 py-1 text-left"
+              className="border-line border px-2 py-1 text-left"
               scope="col"
             >
               {chart.xLabel}
             </th>
             {chart.series.map(series => (
               <th
-                className="border-manga-black border-2 px-2 py-1 text-right"
+                className="border-line border px-2 py-1 text-right"
                 key={series.name}
                 scope="col"
               >
@@ -467,14 +474,14 @@ function DataTable({ chart }: { chart: IeltsChartVisual }) {
           {chart.categories.map((category, index) => (
             <tr key={category}>
               <th
-                className="border-manga-black border-2 px-2 py-1 text-left"
+                className="border-line border px-2 py-1 text-left"
                 scope="row"
               >
                 {category}
               </th>
               {chart.series.map(series => (
                 <td
-                  className="border-manga-black border-2 px-2 py-1 text-right tabular-nums"
+                  className="border-line border px-2 py-1 text-right tabular-nums"
                   key={series.name}
                 >
                   {series.values[index] ?? ''}
@@ -509,14 +516,14 @@ export const TaskVisual = memo(function TaskVisual({
       // eslint-disable-next-line @next/next/no-img-element -- admin-uploaded Cloudinary image of any size
       <img
         alt={visual.alt}
-        className={cn('bg-manga-white w-full object-contain', className)}
+        className={cn('w-full bg-white object-contain', className)}
         src={visual.imageUrl}
       />
     )
 
   if (visual.kind === 'table')
     return (
-      <div className={cn('bg-manga-white p-3', className)}>
+      <div className={cn(EXAM_PAPER, 'p-3', className)}>
         <DataTable chart={visual} />
       </div>
     )
@@ -524,7 +531,7 @@ export const TaskVisual = memo(function TaskVisual({
   const legendY = HEIGHT - 14
 
   return (
-    <figure className={cn('bg-manga-white p-2', className)}>
+    <figure className={cn(EXAM_PAPER, 'p-2', className)}>
       <svg
         aria-label={describe(visual)}
         className="h-auto w-full font-sans"

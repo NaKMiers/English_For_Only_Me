@@ -17,7 +17,7 @@ export function EvidenceIconButton({ number }: { number: number }) {
   return (
     <button
       aria-label={`Show evidence for question ${number}`}
-      className="text-manga-ink-soft/60 hover:text-manga-red hover:bg-manga-pale-red rounded-tag relative -my-1 inline-grid size-6 shrink-0 place-items-center align-middle transition-colors after:absolute after:-inset-2 after:content-['']"
+      className="text-ink-soft/60 hover:text-brand hover:bg-tint-soft rounded-tag relative -my-1 inline-grid size-6 shrink-0 place-items-center align-middle transition-colors after:absolute after:-inset-2 after:content-['']"
       onClick={() => onShowEvidence(number)}
       title="Show in text"
       type="button"

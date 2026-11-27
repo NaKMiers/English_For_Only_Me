@@ -27,7 +27,7 @@ function IssueRow({
   const body = (
     <>
       <span className="flex min-w-0 flex-wrap items-baseline gap-x-2">
-        <code className="font-sans text-xs font-black">{issue.rule}</code>
+        <code className="font-sans text-xs font-semibold">{issue.rule}</code>
         <span className="text-muted-foreground text-xs">{issue.path}</span>
       </span>
       <span className="text-sm">{issue.message}</span>
@@ -41,7 +41,7 @@ function IssueRow({
     <li>
       {/* Row link to a section in this client view: plain button row. */}
       <button
-        className="hover:bg-manga-pale-red rounded-tag group grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-2 py-1.5 text-left"
+        className="hover:bg-tint-soft rounded-tag group grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-2 py-1.5 text-left"
         onClick={() => onJump(issue.sectionKey)}
         type="button"
       >
@@ -72,7 +72,7 @@ export function IssueList({
 
   return (
     <div className="grid gap-2">
-      <ul className="divide-manga-black/15 grid divide-y">
+      <ul className="divide-line/15 grid divide-y">
         {issues
           .slice(safePage * PAGE_SIZE, (safePage + 1) * PAGE_SIZE)
           .map((issue, index) => (

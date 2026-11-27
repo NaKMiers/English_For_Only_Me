@@ -95,7 +95,7 @@ export function TestCards({ bands, catalog }: Props) {
       />
 
       {visible.length === 0 ? (
-        <p className="text-manga-ink-soft rounded-control bg-manga-paper-soft p-4 text-sm font-semibold">
+        <p className="text-ink-soft rounded-control bg-tint p-4 text-sm font-normal">
           No tests match the search or filters.
         </p>
       ) : null}
@@ -108,23 +108,23 @@ export function TestCards({ bands, catalog }: Props) {
         >
           {/* No colour class: it inherits the shell's ink (cream on the dark
               light-up room). Red reads as an error here. */}
-          <h2 className="font-sans text-lg font-black">{group.heading}</h2>
+          <h2 className="font-sans text-lg font-semibold">{group.heading}</h2>
           <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
             {group.tests.map(({ entry, label }) => (
               <li key={entry.id}>
                 <Link
-                  className="border-manga-black bg-manga-white hover:bg-manga-pale-red rounded-panel sticker-press grid gap-2 border-2 px-4 py-3 shadow-[3px_3px_0_var(--manga-black)] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none"
+                  className="border-line bg-surface hover:bg-tint-soft rounded-panel soft-press grid gap-2 border px-4 py-3"
                   href={`/ielts/${entry.slug}`}
                   title={entry.title}
                 >
-                  <span className="flex items-center justify-between gap-2 font-sans text-base font-black">
+                  <span className="flex items-center justify-between gap-2 font-sans text-base font-semibold">
                     {label}
                     <ChevronRight
                       aria-hidden="true"
                       className="size-4 shrink-0"
                     />
                   </span>
-                  <span className="text-manga-ink-soft flex flex-wrap items-center gap-x-3 gap-y-1">
+                  <span className="text-ink-soft flex flex-wrap items-center gap-x-3 gap-y-1">
                     {entry.skills.map(({ skill }) => {
                       const Icon = SKILL_ICONS[skill]
                       const band = bands[entry.id]?.[skill]
@@ -141,7 +141,7 @@ export function TestCards({ bands, catalog }: Props) {
                       return (
                         <span
                           aria-label={`${IELTS_SKILL_LABELS[skill]}: best band ${band.toFixed(1)}`}
-                          className="bg-manga-black text-manga-white rounded-tag inline-flex items-center gap-1 px-1.5 py-0.5"
+                          className="bg-ink text-surface rounded-tag inline-flex items-center gap-1 px-1.5 py-0.5"
                           key={skill}
                           title={`${IELTS_SKILL_LABELS[skill]}: best band ${band.toFixed(1)}`}
                         >
@@ -149,7 +149,7 @@ export function TestCards({ bands, catalog }: Props) {
                             aria-hidden="true"
                             className="size-3.5"
                           />
-                          <span className="font-sans text-xs font-black tabular-nums">
+                          <span className="font-sans text-xs font-semibold tabular-nums">
                             {band.toFixed(1)}
                           </span>
                         </span>

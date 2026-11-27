@@ -43,14 +43,14 @@ export function TopbarMenuSheet({
       <SheetContent
         side="right"
         showCloseButton={false}
-        className="border-manga-black bg-manga-paper text-manga-black snap-y snap-proximity gap-0 overflow-y-auto border-l-3 shadow-[-6px_0_0_var(--manga-black)] data-[side=right]:w-[min(88vw,380px)] data-[side=right]:sm:max-w-none"
+        className="border-line bg-surface text-ink snap-y snap-proximity gap-0 overflow-y-auto border-l data-[side=right]:w-[min(88vw,380px)] data-[side=right]:sm:max-w-none"
       >
-        <SheetHeader className="border-manga-black flex-row items-center justify-between gap-3 border-b-3">
+        <SheetHeader className="border-line flex-row items-center justify-between gap-3 border-b">
           <div className="grid min-w-0 gap-0.5">
-            <SheetTitle className="font-sans text-2xl leading-tight font-black uppercase">
+            <SheetTitle className="font-sans text-2xl leading-tight font-semibold">
               Menu
             </SheetTitle>
-            <SheetDescription className="text-manga-ink-soft font-semibold">
+            <SheetDescription className="text-ink-soft font-normal">
               Jump to a study module.
             </SheetDescription>
           </div>
@@ -74,10 +74,10 @@ export function TopbarMenuSheet({
               <span
                 key={item.href}
                 aria-disabled="true"
-                className="border-manga-black bg-manga-white text-manga-ink-soft rounded-control flex min-h-14 cursor-not-allowed snap-start items-center justify-between gap-3 border-3 px-4 font-sans text-lg font-black opacity-60 shadow-[4px_4px_0_var(--manga-black)]"
+                className="border-line bg-surface text-ink-soft rounded-control flex min-h-14 cursor-not-allowed snap-start items-center justify-between gap-3 border px-4 font-sans text-lg font-normal opacity-60"
               >
                 {item.label}
-                <span className="border-manga-black rounded-tag border-2 px-2 py-0.5 text-xs uppercase">
+                <span className="border-line rounded-tag border px-2 py-0.5 text-xs">
                   Soon
                 </span>
               </span>
@@ -87,7 +87,7 @@ export function TopbarMenuSheet({
                 href={item.href}
                 aria-current={item.href === activeHref ? 'page' : undefined}
                 onClick={() => onOpenChange(false)}
-                className="border-manga-black bg-manga-white hover:bg-manga-paper-soft aria-[current=page]:bg-manga-paper-soft rounded-control flex min-h-14 snap-start items-center justify-between gap-3 border-3 px-4 font-sans text-lg font-black shadow-[4px_4px_0_var(--manga-black)] transition-colors"
+                className="border-line bg-surface hover:bg-tint aria-[current=page]:bg-tint rounded-control flex min-h-14 snap-start items-center justify-between gap-3 border px-4 font-sans text-lg font-semibold transition-colors"
               >
                 {item.label}
                 <ArrowRight

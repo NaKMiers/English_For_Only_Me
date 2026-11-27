@@ -29,7 +29,7 @@ export function AdminTrashVideoMenu({
       <DropdownMenuTrigger
         aria-label={`Actions for ${title}`}
         title="Actions"
-        className="border-manga-black bg-manga-white hover:bg-manga-paper-soft rounded-control grid size-9 shrink-0 place-items-center border-2 shadow-[2px_2px_0_var(--manga-black)] transition-colors"
+        className="border-line bg-surface hover:bg-tint rounded-control grid size-9 shrink-0 place-items-center border transition-colors"
       >
         <EllipsisVertical
           aria-hidden="true"
@@ -66,7 +66,7 @@ export function AdminTrashVideoMenu({
             confirmTitle="Delete permanently?"
             confirmMessage={`Delete "${title}" for good? Its transcripts, segments and every learner's practice history for it are removed too. This cannot be undone.`}
             confirmLabel="Delete permanently"
-            className="focus:bg-manga-red focus:text-manga-white text-manga-red hover:bg-manga-red hover:text-manga-white rounded-tag flex min-h-11 w-full items-center gap-2 px-3 font-sans text-sm font-black whitespace-nowrap transition-colors"
+            className="focus:bg-brand focus:text-surface text-brand hover:bg-brand hover:text-surface rounded-tag flex min-h-11 w-full items-center gap-2 px-3 font-sans text-sm font-semibold whitespace-nowrap transition-colors"
           >
             <Trash2
               aria-hidden="true"

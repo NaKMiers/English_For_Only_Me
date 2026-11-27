@@ -5,7 +5,7 @@ import { useMemo, useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
-import { MangaButton } from '@/components/ui/MangaButton'
+import { ActionButton } from '@/components/ui/ActionButton'
 import {
   Select,
   SelectContent,
@@ -217,12 +217,12 @@ export function VideoAssignTable({
 
       <div
         className={cn(
-          'border-manga-black rounded-panel grid gap-2 border-2 px-3 py-2',
-          selected.size ? 'bg-manga-pale-red' : 'bg-manga-paper-soft'
+          'border-line rounded-panel grid gap-2 border px-3 py-2',
+          selected.size ? 'bg-tint-soft' : 'bg-tint'
         )}
       >
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-          <Label className="flex min-h-9 cursor-pointer items-center gap-2 font-sans text-sm font-black">
+          <Label className="flex min-h-9 cursor-pointer items-center gap-2 font-sans text-sm font-semibold">
             <Checkbox
               checked={selectedShown > 0 && selectedShown === visibleIds.length}
               disabled={visibleIds.length === 0}
@@ -236,13 +236,13 @@ export function VideoAssignTable({
               : `Select all ${visibleIds.length} shown`}
           </Label>
           {selectedHidden ? (
-            <span className="text-manga-ink-soft text-xs font-black">
+            <span className="text-ink-soft text-xs font-normal">
               ({selectedHidden} hidden by filters)
             </span>
           ) : null}
           {selected.size ? (
             <Button
-              className="text-manga-red ml-auto h-7 px-1 font-sans text-xs font-black"
+              className="text-brand ml-auto h-7 px-1 font-sans text-xs font-semibold"
               onClick={() => setSelected(new Set())}
               type="button"
               variant="link"
@@ -250,7 +250,7 @@ export function VideoAssignTable({
               Clear selection
             </Button>
           ) : (
-            <span className="text-manga-ink-soft text-xs font-semibold">
+            <span className="text-ink-soft text-xs font-normal">
               Then set topic, section and level together.
             </span>
           )}
@@ -328,29 +328,29 @@ export function VideoAssignTable({
                 ))}
               </SelectContent>
             </Select>
-            <MangaButton
+            <ActionButton
               type="button"
               tone="ink"
               onClick={apply}
               disabled={pending}
-              className="min-h-9 border-2 shadow-[2px_2px_0_var(--manga-black)] max-sm:flex-1"
+              className="min-h-9 border max-sm:flex-1"
             >
               {pending ? 'Applying…' : `Apply to ${selected.size}`}
-            </MangaButton>
+            </ActionButton>
           </div>
         ) : null}
       </div>
 
       {canReorder ? null : (
-        <p className="text-manga-ink-soft text-xs font-semibold">
+        <p className="text-ink-soft text-xs font-normal">
           Drag to reorder works in Custom order.
         </p>
       )}
 
       <ul className="grid gap-1">
         {visibleVideos.length === 0 ? (
-          <li className="border-manga-black/40 rounded-control grid justify-items-center gap-2 border-2 border-dashed p-6 text-center">
-            <span className="text-manga-ink-soft text-sm font-semibold">
+          <li className="border-line/40 rounded-control grid justify-items-center gap-2 border border-dashed p-6 text-center">
+            <span className="text-ink-soft text-sm font-normal">
               No videos match these filters.
             </span>
           </li>
@@ -373,7 +373,7 @@ export function VideoAssignTable({
               selected={selected.has(video.id)}
               onToggleSelect={() => toggle(video.id)}
               meta={
-                <span className="text-manga-ink-soft hidden shrink-0 text-xs font-black sm:block">
+                <span className="text-ink-soft hidden shrink-0 text-xs font-normal sm:block">
                   {video.topicTitle ?? 'No topic'}
                   {video.sectionTitle ? ` · ${video.sectionTitle}` : ''}
                 </span>

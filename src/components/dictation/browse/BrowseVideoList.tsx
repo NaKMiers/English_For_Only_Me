@@ -38,9 +38,9 @@ function VideoCard({
   return (
     <li
       className={cn(
-        'border-manga-black bg-manga-white rounded-panel relative grid min-w-0 gap-2 border-2 p-2',
+        'border-line bg-surface rounded-panel relative grid min-w-0 gap-2 border p-2',
         video.practiceHref &&
-          'hover:bg-manga-paper-soft focus-within:bg-manga-paper-soft cursor-pointer'
+          'hover:bg-tint focus-within:bg-tint cursor-pointer'
       )}
     >
       {video.practiceHref && (
@@ -71,13 +71,13 @@ function VideoCard({
         {video.completions > 0 && (
           <Check
             aria-label="Completed"
-            className="text-manga-red size-4 shrink-0"
+            className="text-brand size-4 shrink-0"
           />
         )}
         {video.level && <PageTag tone="sky">{video.level}</PageTag>}
         <CompletionBadge completions={video.completions} />
       </div>
-      <span className="pointer-events-none line-clamp-2 min-w-0 font-sans text-base leading-tight font-black">
+      <span className="pointer-events-none line-clamp-2 min-w-0 font-sans text-base leading-tight font-semibold">
         {video.title}
       </span>
       <div className="pointer-events-none relative z-10">
@@ -85,12 +85,12 @@ function VideoCard({
           <span
             aria-hidden="true"
             className={cn(
-              'border-manga-black hover:bg-manga-pale-red rounded-control inline-flex min-h-9 w-full items-center justify-center border-2 px-3 font-sans text-sm font-black shadow-[2px_2px_0_var(--manga-black)]',
+              'border-line hover:bg-tint-soft rounded-control inline-flex min-h-9 w-full items-center justify-center border px-3 font-sans text-sm font-semibold',
               video.inProgress
-                ? 'bg-cyan-200'
+                ? 'bg-pastel-sky'
                 : video.completions > 0
-                  ? 'bg-manga-yellow'
-                  : 'bg-manga-paper-soft'
+                  ? 'bg-pastel-lemon'
+                  : 'bg-tint'
             )}
           >
             {video.inProgress
@@ -100,7 +100,7 @@ function VideoCard({
                 : 'Practice'}
           </span>
         ) : (
-          <span className="text-manga-ink-soft text-xs font-black uppercase">
+          <span className="text-ink-soft text-xs font-normal">
             No transcript
           </span>
         )}
@@ -129,7 +129,7 @@ export function BrowseVideoList({
     return (
       <p
         id={id}
-        className={cn('text-manga-ink-soft p-2 text-sm', className)}
+        className={cn('text-ink-soft p-2 text-sm', className)}
       >
         {emptyLabel}
       </p>

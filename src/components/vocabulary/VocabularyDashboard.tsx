@@ -4,7 +4,7 @@ import { Flame } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import { MangaPanel } from '@/components/common/MangaPanel'
+import { ContentPanel } from '@/components/common/ContentPanel'
 import { useClientOutbox } from '@/components/common/OutboxOwnerProvider'
 import {
   SkeletonHero,
@@ -728,15 +728,15 @@ export function VocabularyDashboard({
 
   if (!mongoConfigured)
     return (
-      <MangaPanel
+      <ContentPanel
         eyebrow="Vocabulary"
         title="Database needed"
       >
-        <p className="text-manga-ink-soft text-sm leading-6 font-semibold">
+        <p className="text-ink-soft text-sm leading-6 font-normal">
           Set MONGODB_URI on the server, then run the vocabulary seed script to
           start with the NGSL top 1000 word shells.
         </p>
-      </MangaPanel>
+      </ContentPanel>
     )
 
   if (isInitialLoad)
@@ -763,18 +763,18 @@ export function VocabularyDashboard({
           <div className="grid min-w-0 flex-1 gap-2">
             <PageTag tone="red">Vocabulary</PageTag>
             <div className="flex min-w-0 flex-wrap items-center gap-3">
-              <h1 className="font-sans text-[clamp(1.9rem,5vw,3.8rem)] leading-none font-black wrap-break-word uppercase">
+              <h1 className="font-sans text-[clamp(1.9rem,5vw,3.8rem)] leading-none font-medium wrap-break-word">
                 Vocab Spine
               </h1>
-              <div className="border-manga-black bg-manga-black text-manga-white rounded-control ml-auto flex items-center gap-2 border-3 px-3 py-2 shadow-[4px_4px_0_var(--manga-red)]">
-                <Flame className="text-manga-red size-7 fill-current" />
-                <span className="text-xs font-black uppercase">Streak</span>
-                <strong className="font-sans text-2xl leading-none font-black">
+              <div className="border-line bg-ink text-surface rounded-control ml-auto flex items-center gap-2 border px-3 py-2">
+                <Flame className="text-brand size-7 fill-current" />
+                <span className="text-xs font-semibold">Streak</span>
+                <strong className="font-sans text-2xl leading-none font-semibold">
                   {stats.activeStreakDays}
                 </strong>
               </div>
             </div>
-            <p className="text-manga-ink-soft max-w-3xl text-sm leading-6 font-semibold">
+            <p className="text-ink-soft max-w-3xl text-sm leading-6 font-normal">
               Track known words, pull in free dictionary data, and review the
               words you chose to learn on a seven-touch schedule.
             </p>
@@ -796,12 +796,12 @@ export function VocabularyDashboard({
       </section>
 
       {errorMessage ? (
-        <div className="border-manga-black bg-manga-pale-red rounded-control border-3 p-3 text-sm font-black">
+        <div className="border-line bg-tint-soft rounded-control border p-3 text-sm font-semibold">
           {errorMessage}
         </div>
       ) : null}
       {statusMessage ? (
-        <div className="border-manga-black bg-manga-white rounded-control border-3 p-3 text-sm font-black shadow-[3px_3px_0_var(--manga-black)]">
+        <div className="border-line bg-surface rounded-control border p-3 text-sm font-semibold">
           {statusMessage}
         </div>
       ) : null}

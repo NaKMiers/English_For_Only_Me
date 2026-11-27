@@ -13,9 +13,9 @@ import { useRef, useState } from 'react'
 
 import { useClientOutbox } from '@/components/common/OutboxOwnerProvider'
 
-import { MangaPanel } from '@/components/common/MangaPanel'
+import { ContentPanel } from '@/components/common/ContentPanel'
 import { Input } from '@/components/ui/input'
-import { MangaButton } from '@/components/ui/MangaButton'
+import { ActionButton } from '@/components/ui/ActionButton'
 import { PageTag } from '@/components/ui/PageTag'
 import {
   Select,
@@ -89,11 +89,11 @@ const VIEW_TABS: Array<{
 ]
 
 const VIEW_TAB_CLASS_NAMES: Record<VocabWordListView, string> = {
-  alreadyKnow: 'bg-emerald-100 hover:bg-emerald-200',
-  dueToday: 'bg-cyan-100 hover:bg-cyan-200',
-  knownTotal: 'bg-yellow-100 hover:bg-yellow-200',
-  learning: 'bg-manga-paper-soft hover:bg-manga-pale-red',
-  mastered: 'bg-violet-100 hover:bg-violet-200',
+  alreadyKnow: 'bg-lesson-correct/15 hover:bg-lesson-correct/25',
+  dueToday: 'bg-pastel-sky hover:brightness-95',
+  knownTotal: 'bg-pastel-lemon hover:brightness-95',
+  learning: 'bg-tint hover:bg-tint-soft',
+  mastered: 'bg-pastel-lilac hover:brightness-95',
 }
 
 const VIEW_LABELS: Record<VocabWordListView, string> = {
@@ -311,22 +311,22 @@ export function VocabularyWordList({
 
   return (
     <div className="grid gap-5">
-      <MangaPanel
+      <ContentPanel
         eyebrow="Vocabulary"
         title={VIEW_LABELS[activeView]}
         action={
-          <MangaButton
+          <ActionButton
             href="/vocabulary"
             tone="paper"
           >
             Back To Vocab
-          </MangaButton>
+          </ActionButton>
         }
       >
-        <p className="text-manga-ink-soft text-sm leading-6 font-semibold">
+        <p className="text-ink-soft text-sm leading-6 font-normal">
           {visibleTotal} words in this view.
         </p>
-      </MangaPanel>
+      </ContentPanel>
 
       <nav
         aria-label="Vocabulary word views"
@@ -336,10 +336,10 @@ export function VocabularyWordList({
           <Link
             key={tab.view}
             className={cn(
-              'border-manga-black text-manga-black! rounded-control sticker-press relative px-3 py-2 text-sm font-black shadow-[3px_3px_0_var(--manga-black)] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none',
+              'border-line text-ink! rounded-control soft-press relative px-3 py-2 text-sm font-semibold',
               VIEW_TAB_CLASS_NAMES[tab.view],
               tab.view === activeView &&
-                'after:bg-manga-black translate-x-[3px] translate-y-[3px] shadow-none after:absolute after:right-2 after:-bottom-2 after:left-2 after:h-1'
+                'after:bg-ink translate-x-[3px] translate-y-[3px] shadow-none after:absolute after:right-2 after:-bottom-2 after:left-2 after:h-1'
             )}
             href={tab.href}
             aria-current={tab.view === activeView ? 'page' : undefined}
@@ -349,10 +349,10 @@ export function VocabularyWordList({
         ))}
       </nav>
 
-      <div className="border-manga-black bg-manga-white rounded-panel grid gap-3 border-3 p-3 shadow-[3px_3px_0_var(--manga-black)] md:grid-cols-[1fr_auto] md:items-end">
+      <div className="border-line bg-surface rounded-panel grid gap-3 border p-3 md:grid-cols-[1fr_auto] md:items-end">
         <div className="grid gap-2 sm:grid-cols-[minmax(160px,220px)_minmax(120px,160px)]">
           <div className="grid gap-1">
-            <span className="text-xs font-black uppercase">Per page</span>
+            <span className="text-xs font-semibold">Per page</span>
             <Select
               value={String(perPage)}
               onValueChange={value => {
@@ -382,10 +382,10 @@ export function VocabularyWordList({
             </Select>
           </div>
           <div className="grid gap-1">
-            <span className="text-xs font-black uppercase">Custom</span>
+            <span className="text-xs font-semibold">Custom</span>
             <Input
               aria-label="Custom words per page"
-              className="border-manga-black bg-manga-white rounded-control h-11 border-3 px-3 font-sans font-black shadow-[3px_3px_0_var(--manga-black)]"
+              className="border-line bg-surface rounded-control h-11 border px-3 font-sans font-semibold"
               min={1}
               onBlur={() => updatePageSize(Number(customPageSize) || 1)}
               onChange={event => setCustomPageSize(event.target.value)}
@@ -400,33 +400,33 @@ export function VocabularyWordList({
         </div>
 
         <div className="flex flex-wrap items-center gap-2 md:justify-end">
-          <MangaButton
+          <ActionButton
             disabled={page <= 1}
             onClick={() => goTo(page - 1)}
             tone="paper"
           >
             Prev
-          </MangaButton>
-          <span className="text-sm font-black uppercase">
+          </ActionButton>
+          <span className="text-sm font-semibold">
             {firstItem}-{lastItem} / {visibleTotal}
           </span>
-          <MangaButton
+          <ActionButton
             disabled={page >= pageCount}
             onClick={() => goTo(page + 1)}
             tone="paper"
           >
             Next
-          </MangaButton>
+          </ActionButton>
         </div>
       </div>
 
       {message ? (
-        <div className="border-manga-black bg-manga-white rounded-control border-3 p-3 text-sm font-black shadow-[3px_3px_0_var(--manga-black)]">
+        <div className="border-line bg-surface rounded-control border p-3 text-sm font-semibold">
           {message}
         </div>
       ) : null}
       {error ? (
-        <div className="border-manga-black bg-manga-pale-red rounded-control border-3 p-3 text-sm font-black">
+        <div className="border-line bg-tint-soft rounded-control border p-3 text-sm font-semibold">
           {error}
         </div>
       ) : null}
@@ -436,12 +436,12 @@ export function VocabularyWordList({
           {wordItems.map(word => (
             <article
               key={word.item.id}
-              className="border-manga-black bg-manga-white rounded-panel grid min-w-0 gap-3 border-3 p-4 shadow-[4px_4px_0_var(--manga-black)]"
+              className="border-line bg-surface rounded-panel grid min-w-0 gap-3 border p-4"
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="grid min-w-0 flex-1 gap-1">
                   <VocabTermHeader entry={word.entry} />
-                  <p className="text-manga-ink-soft text-xs font-black uppercase">
+                  <p className="text-ink-soft text-xs font-normal">
                     {getStatusMeta(word)}
                   </p>
                 </div>
@@ -453,16 +453,16 @@ export function VocabularyWordList({
               </div>
 
               <div className="grid gap-1">
-                <p className="line-clamp-2 text-right text-sm leading-6 font-black">
+                <p className="line-clamp-2 text-right text-sm leading-6 font-semibold">
                   {getVietnamesePreview(word)}
                 </p>
-                <p className="text-manga-ink-soft line-clamp-3 text-sm leading-6 font-semibold">
+                <p className="text-ink-soft line-clamp-3 text-sm leading-6 font-normal">
                   {getDefinitionPreview(word)}
                 </p>
               </div>
 
-              <div className="flex flex-wrap items-center gap-2 text-xs font-black uppercase">
-                <span className="border-manga-black bg-manga-paper-soft rounded-tag grid size-8 place-items-center border-2">
+              <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
+                <span className="border-line bg-tint rounded-tag grid size-8 place-items-center border">
                   {getStatusIcon(word)}
                 </span>
                 <span>{word.item.source}</span>
@@ -471,7 +471,7 @@ export function VocabularyWordList({
 
               {word.sourceVideo ? (
                 <a
-                  className="border-manga-black bg-manga-paper-soft hover:bg-manga-pale-red text-manga-black rounded-control sticker-press flex min-w-0 items-center gap-2 border-2 px-3 py-2 text-xs font-black uppercase shadow-[3px_3px_0_var(--manga-black)] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none"
+                  className="border-line bg-tint hover:bg-tint-soft text-ink rounded-control soft-press flex min-w-0 items-center gap-2 border px-3 py-2 text-xs font-semibold"
                   href={`/dictation/videos/${word.sourceVideo.id}/practice`}
                   rel="noopener noreferrer"
                   target="_blank"
@@ -485,15 +485,15 @@ export function VocabularyWordList({
               ) : null}
 
               <div className="grid grid-cols-2 gap-2">
-                <MangaButton
+                <ActionButton
                   className="min-w-0 px-2 text-xs sm:px-4 sm:text-sm [&>span:last-child]:whitespace-nowrap"
                   disabled={word.item.status === 'learning'}
                   icon={<BookOpen className="size-4" />}
                   onClick={() => updateWordStatus(word, 'shouldLearn')}
                 >
                   Should Learn
-                </MangaButton>
-                <MangaButton
+                </ActionButton>
+                <ActionButton
                   className="min-w-0 px-2 text-xs sm:px-4 sm:text-sm [&>span:last-child]:whitespace-nowrap"
                   disabled={word.item.status === 'alreadyKnow'}
                   icon={<Check className="size-4" />}
@@ -501,20 +501,20 @@ export function VocabularyWordList({
                   tone="paper"
                 >
                   Already Know
-                </MangaButton>
+                </ActionButton>
               </div>
             </article>
           ))}
         </div>
       ) : (
-        <MangaPanel
+        <ContentPanel
           eyebrow="Empty"
           title="No words here yet"
         >
-          <p className="text-manga-ink-soft text-sm leading-6 font-semibold">
+          <p className="text-ink-soft text-sm leading-6 font-normal">
             Pick words from Explore or Dictionary and they will appear here.
           </p>
-        </MangaPanel>
+        </ContentPanel>
       )}
     </div>
   )

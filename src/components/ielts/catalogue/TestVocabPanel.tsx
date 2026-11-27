@@ -141,7 +141,7 @@ export function TestVocabPanel({ entries: initialEntries }: Props) {
       />
       {error ? (
         <p
-          className="text-manga-red text-sm font-semibold"
+          className="text-brand text-sm font-semibold"
           role="alert"
         >
           {error}

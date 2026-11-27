@@ -10,11 +10,11 @@ import {
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
-import { MangaPanel } from '@/components/common/MangaPanel'
+import { ContentPanel } from '@/components/common/ContentPanel'
 import { MetricTile } from '@/components/common/MetricTile'
 import { QueueRow } from '@/components/common/QueueRow'
 import { IconButton } from '@/components/ui/IconButton'
-import { MangaButton } from '@/components/ui/MangaButton'
+import { ActionButton } from '@/components/ui/ActionButton'
 import { Progress } from '@/components/ui/progress'
 import { Textarea } from '@/components/ui/textarea'
 import {
@@ -52,23 +52,23 @@ function writeStaticPracticeDraft(answer: string) {
 }
 
 const tokenClassName = {
-  correct: 'bg-manga-white',
-  missing: 'bg-manga-paper-soft text-manga-red',
-  extra: 'bg-manga-black text-manga-white line-through',
+  correct: 'bg-surface',
+  missing: 'bg-danger-soft text-danger',
+  extra: 'bg-ink text-surface line-through',
 } as const
 
 function PracticePlayerSketch() {
   return (
-    <div className="border-manga-black bg-manga-pale-red rounded-panel grid min-w-0 gap-3 border-3 p-3 shadow-[4px_4px_0_var(--manga-black)]">
+    <div className="border-line bg-tint-soft rounded-panel grid min-w-0 gap-3 border p-3">
       <div
         aria-label="Video practice player"
-        className="border-manga-black bg-manga-white rounded-control min-h-56 overflow-hidden border-3"
+        className="border-line bg-surface rounded-control min-h-56 overflow-hidden border"
       >
         <svg
           role="img"
           aria-label="Hand drawn video frame"
           viewBox="0 0 760 430"
-          className="text-manga-black h-full min-h-56 w-full"
+          className="text-ink h-full min-h-56 w-full"
         >
           <rect
             x="35"
@@ -137,7 +137,7 @@ function PracticePlayerSketch() {
           aria-label="Sentence playback progress"
           className="min-w-32 flex-1"
         />
-        <span className="border-manga-black bg-manga-white rounded-control min-h-10 border-2 px-3 py-2 text-sm font-black shadow-[2px_2px_0_var(--manga-black)]">
+        <span className="border-line bg-surface rounded-control min-h-10 border px-3 py-2 text-sm font-semibold">
           07 / 18
         </span>
       </div>
@@ -154,11 +154,11 @@ export function DictationPracticeScene() {
 
   return (
     <div className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1.18fr)_minmax(320px,0.82fr)]">
-      <MangaPanel
+      <ContentPanel
         eyebrow="Page 02"
         title="Listen. Type. Check. Retry."
       >
-        <p className="text-manga-ink-soft text-base leading-7 font-semibold">
+        <p className="text-ink-soft text-base leading-7 font-normal">
           DailyDictation-style speed, with IELTS stats saved behind every
           sentence.
         </p>
@@ -166,10 +166,7 @@ export function DictationPracticeScene() {
         <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(280px,0.9fr)]">
           <PracticePlayerSketch />
 
-          <MangaPanel
-            eyebrow="Correction"
-            className="shadow-[3px_3px_0_var(--manga-black)]"
-          >
+          <ContentPanel eyebrow="Correction">
             <div
               aria-label="Token correction example"
               className="flex flex-wrap gap-2"
@@ -178,7 +175,7 @@ export function DictationPracticeScene() {
                 <span
                   key={token.id}
                   className={cn(
-                    'border-manga-black rounded-tag inline-flex min-h-9 items-center border-2 px-3 py-1 text-base font-black shadow-[2px_2px_0_var(--manga-black)]',
+                    'border-line rounded-tag inline-flex min-h-9 items-center border px-3 py-1 text-base font-semibold',
                     tokenClassName[token.state]
                   )}
                 >
@@ -186,23 +183,22 @@ export function DictationPracticeScene() {
                 </span>
               ))}
             </div>
-            <div className="border-manga-black bg-manga-pale-red rounded-control grid gap-2 border-2 p-3">
-              <strong className="font-sans text-sm font-black uppercase">
+            <div className="border-line bg-tint-soft rounded-control grid gap-2 border p-3">
+              <strong className="font-sans text-sm font-semibold">
                 Translation after effort
               </strong>
-              <p className="text-manga-ink-soft text-sm leading-6 font-semibold">
+              <p className="text-ink-soft text-sm leading-6 font-normal">
                 {DICTATION_PRACTICE.translation}
               </p>
             </div>
-          </MangaPanel>
+          </ContentPanel>
         </div>
 
-        <MangaPanel
+        <ContentPanel
           eyebrow="Answer"
           title="Sentence typing"
-          className="shadow-[3px_3px_0_var(--manga-black)]"
         >
-          <div className="border-manga-black bg-manga-pale-red rounded-control border-2 p-3 text-base leading-7 font-black">
+          <div className="border-line bg-tint-soft rounded-control border p-3 text-base leading-7 font-semibold">
             {DICTATION_PRACTICE.currentSentence}
           </div>
           <Textarea
@@ -212,10 +208,10 @@ export function DictationPracticeScene() {
             autoCapitalize="off"
             value={answer}
             onChange={event => setAnswer(event.target.value)}
-            className="border-manga-black bg-manga-white rounded-control min-h-28 border-3 text-base leading-7 font-semibold shadow-[3px_3px_0_var(--manga-black)]"
+            className="border-line bg-surface rounded-control min-h-28 border text-base leading-7 font-semibold"
           />
           <div className="flex flex-wrap gap-3">
-            <MangaButton
+            <ActionButton
               icon={
                 <Check
                   aria-hidden="true"
@@ -224,8 +220,8 @@ export function DictationPracticeScene() {
               }
             >
               Check
-            </MangaButton>
-            <MangaButton
+            </ActionButton>
+            <ActionButton
               tone="paper"
               icon={
                 <RotateCcw
@@ -235,8 +231,8 @@ export function DictationPracticeScene() {
               }
             >
               Retry
-            </MangaButton>
-            <MangaButton
+            </ActionButton>
+            <ActionButton
               tone="paper"
               icon={
                 <Eye
@@ -246,8 +242,8 @@ export function DictationPracticeScene() {
               }
             >
               Reveal
-            </MangaButton>
-            <MangaButton
+            </ActionButton>
+            <ActionButton
               tone="paper"
               icon={
                 <SkipForward
@@ -257,17 +253,17 @@ export function DictationPracticeScene() {
               }
             >
               Skip
-            </MangaButton>
+            </ActionButton>
           </div>
-        </MangaPanel>
-      </MangaPanel>
+        </ContentPanel>
+      </ContentPanel>
 
       <aside className="grid content-start gap-5">
-        <MangaPanel
+        <ContentPanel
           eyebrow="Now"
           title="Session queue"
         >
-          <p className="text-manga-ink-soft text-base leading-7 font-semibold">
+          <p className="text-ink-soft text-base leading-7 font-normal">
             Each sentence is a panel. Progress is visible without turning
             practice into a spreadsheet.
           </p>
@@ -281,7 +277,7 @@ export function DictationPracticeScene() {
               />
             ))}
           </div>
-        </MangaPanel>
+        </ContentPanel>
 
         <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
           {DICTATION_LIVE_STATS.map((item, index) => (

@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { AuthControl } from '@/components/common/AuthControl'
-import { MangaPageShell } from '@/components/common/MangaPageShell'
+import { PageShell } from '@/components/common/PageShell'
 import { TestEditor } from '@/components/ielts/editor/TestEditor'
 import { hasMongoDbUri } from '@/constants/environments'
 import { connectDatabase } from '@/lib/db/connectDatabase'
@@ -38,7 +38,7 @@ export default async function AdminIeltsEditorPage({ params }: Props) {
   // The shell grows with the editor and the page scrolls; `overflow-clip`
   // (not hidden) keeps the editor's sticky header bar working.
   return (
-    <MangaPageShell
+    <PageShell
       className="overflow-clip"
       topbar={
         <AppTopbar
@@ -53,6 +53,6 @@ export default async function AdminIeltsEditorPage({ params }: Props) {
         key={test.id}
         seriesOptions={seriesOptions}
       />
-    </MangaPageShell>
+    </PageShell>
   )
 }

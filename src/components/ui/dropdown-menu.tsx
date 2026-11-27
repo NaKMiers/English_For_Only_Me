@@ -57,7 +57,7 @@ function DropdownMenuContent({
         <MenuPrimitive.Popup
           data-slot="dropdown-menu-content"
           className={cn(
-            'border-manga-black bg-manga-white text-manga-black data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-left-2 data-[side=inline-start]:slide-in-from-right-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0 rounded-panel z-50 max-h-(--available-height) min-w-44 origin-(--transform-origin) overflow-x-hidden overflow-y-auto border-3 py-1 shadow-[6px_6px_0_var(--manga-black)] duration-100 outline-none data-closed:overflow-hidden',
+            'border-line bg-surface text-ink data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-left-2 data-[side=inline-start]:slide-in-from-right-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0 rounded-panel z-50 max-h-(--available-height) min-w-44 origin-(--transform-origin) overflow-x-hidden overflow-y-auto border py-1 duration-100 outline-none data-closed:overflow-hidden',
             className
           )}
           {...props}
@@ -111,7 +111,7 @@ function DropdownMenuItem({
       data-inset={inset}
       data-variant={variant}
       className={cn(
-        "group/dropdown-menu-item focus:bg-manga-paper-soft data-[variant=destructive]:text-manga-red data-[variant=destructive]:focus:bg-manga-red data-[variant=destructive]:focus:text-manga-white relative flex min-h-11 cursor-pointer items-center gap-2 px-3 font-sans text-sm font-black whitespace-nowrap outline-hidden transition-colors select-none data-disabled:pointer-events-none data-disabled:opacity-50 data-inset:pl-7 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "group/dropdown-menu-item focus:bg-tint data-[variant=destructive]:text-danger data-[variant=destructive]:focus:bg-danger data-[variant=destructive]:focus:text-surface relative flex min-h-11 cursor-pointer items-center gap-2 px-3 font-sans text-sm font-semibold whitespace-nowrap outline-hidden transition-colors select-none data-disabled:pointer-events-none data-disabled:opacity-50 data-inset:pl-7 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         className
       )}
       {...props}
@@ -256,7 +256,7 @@ function DropdownMenuSeparator({
   return (
     <MenuPrimitive.Separator
       data-slot="dropdown-menu-separator"
-      className={cn('bg-manga-black my-1 h-[3px]', className)}
+      className={cn('bg-ink my-1 h-[3px]', className)}
       {...props}
     />
   )

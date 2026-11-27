@@ -41,7 +41,7 @@ export function GenerationLog({
       <div className="overflow-x-auto">
         <table className="w-full min-w-[560px] border-collapse text-left text-xs">
           <thead>
-            <tr className="border-manga-black border-b-2 font-sans uppercase">
+            <tr className="border-line border-b font-sans">
               {['When', 'Section', 'Kind', 'Result', 'Tokens', 'Time'].map(
                 label => (
                   <th
@@ -63,7 +63,7 @@ export function GenerationLog({
 
               return (
                 <tr
-                  className="border-manga-black/20 border-b align-top"
+                  className="border-line/20 border-b align-top"
                   key={page * PAGE_SIZE + index}
                 >
                   <td className="py-1.5 pr-2 tabular-nums">

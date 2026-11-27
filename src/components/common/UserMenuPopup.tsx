@@ -20,7 +20,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { MangaButton } from '@/components/ui/MangaButton'
+import { ActionButton } from '@/components/ui/ActionButton'
 
 interface Props {
   /** The identity chip contents, shared with the static placeholder button. */
@@ -94,28 +94,28 @@ export function UserMenuPopup({
         open={confirmOpen}
         onOpenChange={setConfirmOpen}
       >
-        <DialogContent className="border-manga-black bg-manga-white border-3 shadow-[6px_6px_0_var(--manga-black)]">
+        <DialogContent className="border-line bg-surface border">
           <DialogHeader>
-            <DialogTitle className="font-sans text-xl leading-tight font-black tracking-normal uppercase">
+            <DialogTitle className="font-sans text-xl leading-tight font-semibold tracking-normal">
               Sign out?
             </DialogTitle>
-            <DialogDescription className="text-manga-ink-soft text-base leading-7 font-semibold">
+            <DialogDescription className="text-ink-soft text-base leading-7 font-normal">
               You will be signed out of English For Only Me.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="bg-manga-paper-soft border-manga-black border-t-3">
+          <DialogFooter className="bg-tint border-line border-t">
             <DialogClose
               render={
-                <MangaButton
+                <ActionButton
                   type="button"
                   tone="paper"
                 >
                   Cancel
-                </MangaButton>
+                </ActionButton>
               }
             />
             <form action={signOutAction}>
-              <MangaButton
+              <ActionButton
                 type="submit"
                 icon={
                   <LogOut
@@ -125,7 +125,7 @@ export function UserMenuPopup({
                 }
               >
                 Sign out
-              </MangaButton>
+              </ActionButton>
             </form>
           </DialogFooter>
         </DialogContent>

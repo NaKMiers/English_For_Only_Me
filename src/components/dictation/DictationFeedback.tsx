@@ -2,7 +2,7 @@
 
 import { BadgeCheck, CircleAlert } from 'lucide-react'
 
-import { MangaPanel } from '@/components/common/MangaPanel'
+import { ContentPanel } from '@/components/common/ContentPanel'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import type { DictationAttemptApiRecord } from '@/modules/dictation/types'
@@ -16,11 +16,11 @@ const statusClassNames: Record<
   DictationAttemptApiRecord['feedbackTokens'][number]['status'],
   string
 > = {
-  correct: 'bg-emerald-50 text-emerald-800 border-emerald-700',
-  extra: 'bg-amber-50 text-amber-900 border-amber-700',
-  missing: 'bg-manga-pale-red text-manga-red border-manga-red',
-  spellingVariant: 'bg-sky-50 text-sky-900 border-sky-700',
-  wrong: 'bg-red-50 text-red-900 border-red-800',
+  correct: 'bg-lesson-correct/10 text-lesson-correct border-lesson-correct',
+  extra: 'bg-pastel-peach text-accent-orange border-accent-orange',
+  missing: 'bg-danger-soft text-danger border-danger',
+  spellingVariant: 'bg-pastel-sky text-accent-blue border-accent-blue',
+  wrong: 'bg-danger-soft text-danger border-danger',
 }
 
 function getTokenLabel(
@@ -42,13 +42,13 @@ export function DictationFeedback({ attempt, className }: Props) {
   if (!attempt) return null
 
   return (
-    <MangaPanel
+    <ContentPanel
       eyebrow="Correction"
       title={attempt.isPassed ? 'Accepted' : 'Keep Listening'}
       className={className}
       action={
         <Badge
-          className="border-manga-black bg-manga-white text-manga-black rounded-tag border-2 font-black"
+          className="border-line bg-surface text-ink rounded-tag border font-semibold"
           variant="outline"
         >
           {attempt.stats.accuracy}%
@@ -58,19 +58,19 @@ export function DictationFeedback({ attempt, className }: Props) {
       <div
         role="status"
         className={cn(
-          'border-manga-black rounded-control flex items-start gap-3 border-2 p-3 text-sm leading-6 font-black shadow-[3px_3px_0_var(--manga-black)]',
-          attempt.isPassed ? 'bg-emerald-50' : 'bg-manga-paper-soft'
+          'border-line rounded-control flex items-start gap-3 border p-3 text-sm leading-6 font-semibold',
+          attempt.isPassed ? 'bg-lesson-correct/10' : 'bg-tint'
         )}
       >
         {attempt.isPassed ? (
           <BadgeCheck
             aria-hidden="true"
-            className="mt-0.5 size-5 shrink-0 text-emerald-700"
+            className="text-lesson-correct mt-0.5 size-5 shrink-0"
           />
         ) : (
           <CircleAlert
             aria-hidden="true"
-            className="text-manga-red mt-0.5 size-5 shrink-0"
+            className="text-danger mt-0.5 size-5 shrink-0"
           />
         )}
         <span>
@@ -89,7 +89,7 @@ export function DictationFeedback({ attempt, className }: Props) {
           <span
             key={`${token.status}-${index}-${token.expected}-${token.actual}`}
             className={cn(
-              'rounded-tag border-2 px-2 py-1 text-sm font-black wrap-break-word',
+              'rounded-tag border px-2 py-1 text-sm font-semibold wrap-break-word',
               statusClassNames[token.status]
             )}
             title={token.status}
@@ -98,6 +98,6 @@ export function DictationFeedback({ attempt, className }: Props) {
           </span>
         ))}
       </div>
-    </MangaPanel>
+    </ContentPanel>
   )
 }

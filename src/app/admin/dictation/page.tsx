@@ -4,7 +4,7 @@ import Link from 'next/link'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { AuthControl } from '@/components/common/AuthControl'
-import { MangaPageShell } from '@/components/common/MangaPageShell'
+import { PageShell } from '@/components/common/PageShell'
 import { AdminCreateTopicForm } from '@/components/dictation/admin/AdminCreateTopicForm'
 import {
   type AdminSectionVideo,
@@ -20,7 +20,7 @@ import {
   VideoAssignTable,
   type AdminVideoRow,
 } from '@/components/dictation/admin/VideoAssignTable'
-import { MangaButton } from '@/components/ui/MangaButton'
+import { ActionButton } from '@/components/ui/ActionButton'
 import { hasMongoDbUri } from '@/constants/environments'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { cn } from '@/lib/utils'
@@ -168,7 +168,7 @@ export default async function AdminDictationPage({ searchParams }: Props) {
   }
 
   return (
-    <MangaPageShell
+    <PageShell
       topbar={
         <AppTopbar
           subtitle="Admin · Dictation"
@@ -179,12 +179,12 @@ export default async function AdminDictationPage({ searchParams }: Props) {
       <section className="grid gap-5 p-4 sm:p-6 lg:p-8">
         <header className="page-hero grid gap-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h1 className="font-sans text-[clamp(1.6rem,4vw,2.4rem)] leading-none font-black uppercase">
+            <h1 className="font-sans text-[clamp(1.6rem,4vw,2.4rem)] leading-none font-medium">
               Dictation
             </h1>
             <Link
               href="/admin"
-              className="text-manga-red text-sm font-black hover:underline"
+              className="text-brand text-sm font-semibold hover:underline"
             >
               ← Admin
             </Link>
@@ -192,7 +192,7 @@ export default async function AdminDictationPage({ searchParams }: Props) {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <nav
               aria-label="View"
-              className="border-manga-black bg-manga-white rounded-control flex border-2 p-1"
+              className="border-line bg-surface rounded-control flex border p-1"
             >
               {VIEWS.map(({ Icon, label, view: option }) => (
                 <Link
@@ -204,10 +204,8 @@ export default async function AdminDictationPage({ searchParams }: Props) {
                   }
                   aria-current={option === view ? 'page' : undefined}
                   className={cn(
-                    'rounded-tag flex min-h-9 items-center gap-2 px-3 font-sans text-sm font-black transition-colors',
-                    option === view
-                      ? 'bg-manga-black text-manga-white'
-                      : 'hover:bg-manga-paper-soft'
+                    'rounded-tag flex min-h-9 items-center gap-2 px-3 font-sans text-sm font-semibold transition-colors',
+                    option === view ? 'bg-ink text-surface' : 'hover:bg-tint'
                   )}
                 >
                   <Icon
@@ -218,13 +216,13 @@ export default async function AdminDictationPage({ searchParams }: Props) {
                 </Link>
               ))}
             </nav>
-            <MangaButton
+            <ActionButton
               href="/admin/dictation/import"
               tone="ink"
               icon={<Upload aria-hidden="true" />}
             >
               Import video
-            </MangaButton>
+            </ActionButton>
           </div>
         </header>
 
@@ -235,7 +233,7 @@ export default async function AdminDictationPage({ searchParams }: Props) {
             <AdminUnassignedPanel videos={unassigned} />
 
             {topics.length === 0 ? (
-              <p className="text-manga-ink-soft text-sm">
+              <p className="text-ink-soft text-sm">
                 No topics yet. Create one above.
               </p>
             ) : (
@@ -255,6 +253,6 @@ export default async function AdminDictationPage({ searchParams }: Props) {
 
         <AdminTrashPanel videos={trash} />
       </section>
-    </MangaPageShell>
+    </PageShell>
   )
 }
