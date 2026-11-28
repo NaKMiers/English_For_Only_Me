@@ -3,7 +3,7 @@ import { describe, expect, test } from 'vitest'
 import {
   groupProgress,
   journeyTotals,
-  nextMilestone,
+  journeySegments,
   nextSkillOf,
   pickNextTest,
   stepsThisWeek,
@@ -97,15 +97,28 @@ describe('journeyTotals', () => {
   })
 })
 
-describe('nextMilestone', () => {
-  test('points at the first milestone still ahead', () => {
-    expect(nextMilestone(0, 100)).toEqual({ key: 'camp', left: 10, target: 10 })
-    expect(nextMilestone(10, 100)).toEqual({
-      key: 'ridge',
-      left: 20,
-      target: 30,
-    })
-    expect(nextMilestone(100, 100)).toBeNull()
+describe('journeySegments', () => {
+  test('cuts the trail into stages with the steps left in each', () => {
+    expect(journeySegments(5, 100)).toEqual([
+      { from: 0, key: 'camp', left: 5, state: 'current', to: 0.1 },
+      { from: 0.1, key: 'ridge', left: 20, state: 'ahead', to: 0.3 },
+      { from: 0.3, key: 'peak', left: 30, state: 'ahead', to: 0.6 },
+      { from: 0.6, key: 'summit', left: 40, state: 'ahead', to: 1 },
+    ])
+  })
+
+  test('a reached milestone closes its stage', () => {
+    expect(
+      journeySegments(10, 100).map(segment => [segment.state, segment.left])
+    ).toEqual([
+      ['done', 0],
+      ['current', 20],
+      ['ahead', 30],
+      ['ahead', 40],
+    ])
+    expect(
+      journeySegments(100, 100).every(segment => segment.state === 'done')
+    ).toBe(true)
   })
 })
 

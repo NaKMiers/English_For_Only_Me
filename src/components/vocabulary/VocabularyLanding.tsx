@@ -1,12 +1,11 @@
 'use client'
 
-import { BookA, List } from 'lucide-react'
+import { BookA } from 'lucide-react'
 import type { ReactNode } from 'react'
 
 import { InlineNotice } from '@/components/common/InlineNotice'
 import { PageHeader } from '@/components/common/PageHeader'
 import { DrawerRow } from '@/components/journey/SideDrawer'
-import { ActionButton } from '@/components/ui/ActionButton'
 import { useMessages } from '@/i18n/client'
 import { pickNextStop } from '@/lib/journey/nextStop'
 import type { VocabStatsRecord } from '@/modules/vocabulary/types'
@@ -32,7 +31,8 @@ interface Props {
 /**
  * The vocabulary landing on the shared skeleton: the garden journey card
  * (its next stop is the recall session, or planting new words when nothing
- * is due), the "How a word grows" drawer, then the browse area.
+ * is due), the "How a word grows" drawer, then the browse area (the link to
+ * every saved word sits in its search card's header).
  */
 export function VocabularyLanding({
   children,
@@ -99,21 +99,7 @@ export function VocabularyLanding({
         />
       </DrawerRow>
 
-      <section
-        aria-label={vocab.dashboard.wordsLink}
-        className="grid gap-5"
-      >
-        <div className="flex justify-end">
-          <ActionButton
-            href="/vocabulary/words"
-            icon={<List aria-hidden="true" />}
-            tone="paper"
-          >
-            {vocab.dashboard.wordsLink}
-          </ActionButton>
-        </div>
-        {children}
-      </section>
+      {children}
     </div>
   )
 }

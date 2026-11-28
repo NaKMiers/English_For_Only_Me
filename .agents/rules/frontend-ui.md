@@ -170,6 +170,39 @@ subtitle?, breadcrumb? }}` (a module key, never an icon component),
    scroll back to "you are here"; it hides while the next stop is on
    screen.
 
+**IELTS and Grammar keep the card short:** no `NextStopCard` and no
+`MilestoneNote`. The steps left sit on the metaphor itself as plain text
+with no lines that compete with it (IELTS: a number above each stage of
+the trail; Grammar: a flag on top of each step, a tick when done, the pink
+pin with "N to go" on the step being climbed, a quiet "N to go" ahead).
+The chips sit in the card's top right (`statsPlacement="top"`), and a
+`persistent` `ContinueFloat` is the way on. Their landing tests call
+`expectLandingBudget(container, { ctas: 0, nextStops: 0 })`.
+
+**A dictation topic page has no next stop row either:** the next video's
+card wears a pink ring and an always-on `TopicContinueFloat` opens its
+section, scrolls to the card, focuses it and gives it a small bounce
+(`nudge`; the learner sees where it sits before playing it).
+
+**Vocabulary and Dictation keep a small next stop** (it goes somewhere
+real: the recall session, a video to resume): same short card (vocabulary:
+words to go above each stage of the vine still ahead and no stage badge;
+dictation: "N to go" beside the playhead and the next track at the end of
+the waveform, no inner panel; chips top right, no `MilestoneNote`), with
+the next stop as a `NextStopCard size="sm"` in a narrow right column
+(`layout="aside"`, `nextStopHidesWithDrawer`). A stop with a picture (the
+dictation video's thumbnail) passes it as `media` and takes
+`asideWidth="lg"`.
+
+**An open side drawer makes the card compact on wide screens:** `DrawerRow`
+sets `data-drawer-open` on its `group/drawer`, every `StatChip` label goes
+`sr-only` (icon and number only, the chip's `title` names it; the same
+happens whenever the card's left column, `@container/journey`, is under
+56rem), and a card
+with `nextStopHidesWithDrawer` (vocabulary) hides its next stop so nothing
+wraps. Style this with `group-data-[drawer-open]/drawer:`, never with a hook,
+so server cards (IELTS) get it too.
+
 **Budget above the fold:** 1 `cta` (the next stop), at most 4 stat chips,
 1 drawer handle, 0 header action buttons. `expectLandingBudget` in
 `src/test/landingBudget.ts` checks it in tests: use it for every new

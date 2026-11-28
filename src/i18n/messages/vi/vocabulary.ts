@@ -60,6 +60,11 @@ export const vocabulary: Messages['vocabulary'] = {
       other: 'Còn {count} từ tới {stage}',
     },
     forest: 'Đã thành rừng. Ôn đều để lá luôn xanh.',
+    wordsToGo: {
+      one: 'còn {count}',
+      other: 'còn {count}',
+    },
+    stagesLabel: 'Số từ còn lại ở mỗi chặng',
     guide: 'Mức CEFR chỉ là ước lượng theo số từ vựng thường gặp.',
     stageState: {
       reached: '{stage}: đã đạt',

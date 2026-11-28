@@ -70,7 +70,6 @@ export const grammar = {
     current: 'Current',
     dueCount: '{count} due',
     continue: 'Continue',
-    unitProgress: '{done} of {total} lessons in this unit',
     go: 'Go',
     reviewDue: 'Review due',
     weakSpotsLabel: 'Weak spots',
@@ -89,7 +88,10 @@ export const grammar = {
       one: '{count} lesson to finish {level}',
       other: '{count} lessons to finish {level}',
     },
-    allClimbed: 'Every level climbed. Keep the stars bright with reviews.',
+    lessonsToGo: {
+      one: '{count} to go',
+      other: '{count} to go',
+    },
   },
   notes: {
     redo: 'Redo this lesson',

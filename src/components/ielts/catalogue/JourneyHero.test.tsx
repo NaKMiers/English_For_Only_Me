@@ -28,7 +28,7 @@ const entry = (id: string, number: number): IeltsCatalogEntry => ({
 })
 
 describe('JourneyHero', () => {
-  test('counts steps and links the next stop straight into its skill', () => {
+  test('counts steps and marks the steps left in every stage', () => {
     const html = renderToStaticMarkup(
       <JourneyHero
         attempts={[]}
@@ -41,14 +41,15 @@ describe('JourneyHero', () => {
     )
 
     expect(html).toContain('aria-label="1 of 4 steps')
-    expect(html).toContain('href="/ielts/t3/reading"')
-    expect(html).toContain('Base camp')
+    expect(html).toContain('Base camp reached')
+    expect(html).toContain('1 step left to Ridge')
+    expect(html).toContain('1 step left to Summit')
     // One step reads in the singular.
     expect(html).toContain('>step taken<')
     expect(html).not.toContain('>steps taken<')
   })
 
-  test('meets the landing budget: one next stop, one cta, 4 chips', () => {
+  test('lifts the chips to the top and leaves out the next stop', () => {
     const { container } = render(
       <JourneyHero
         attempts={[]}
@@ -59,11 +60,17 @@ describe('JourneyHero', () => {
         overall={null}
       />
     )
+    const header = container.querySelector('[data-journey-slot="headline"]')
+      ?.parentElement?.parentElement
 
-    expectLandingBudget(container)
+    expect(
+      header?.querySelector('[data-journey-slot="stats"] [data-stat-strip]')
+    ).not.toBeNull()
+    expect(container.querySelector('[data-journey-slot="next"]')).toBeNull()
+    expectLandingBudget(container, { ctas: 0, nextStops: 0 })
   })
 
-  test('everything banded shows the all-clear instead of a button', () => {
+  test('everything banded closes every stage', () => {
     const html = renderToStaticMarkup(
       <JourneyHero
         attempts={[]}
@@ -75,7 +82,8 @@ describe('JourneyHero', () => {
       />
     )
 
-    expect(html).toContain(en.ielts.journey.allDone)
+    expect(html.match(/data-journey-stage="done"/g)).toHaveLength(4)
+    expect(html).not.toContain('step left')
     expect(html).not.toContain('href="/ielts/t1/')
   })
 })

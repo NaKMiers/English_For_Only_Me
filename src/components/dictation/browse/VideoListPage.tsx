@@ -70,6 +70,7 @@ export function VideoListPage({
         ) : (
           <>
             <TopicJourney
+              folded={false}
               groups={groups}
               journey={t.common.journey}
               labels={t.dictation.topicJourney}
@@ -81,6 +82,7 @@ export function VideoListPage({
               videos={items}
               canFavorite={canFavorite}
               labels={labels.card}
+              nextId={pickTopicNextVideo(groups)?.video.id ?? null}
             />
           </>
         )}

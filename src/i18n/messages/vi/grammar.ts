@@ -72,7 +72,6 @@ export const grammar: Messages['grammar'] = {
     current: 'Đang học',
     dueCount: '{count} cần ôn',
     continue: 'Học tiếp',
-    unitProgress: 'Đã học {done}/{total} bài trong unit này',
     go: 'Bắt đầu',
     reviewDue: 'Cần ôn tập',
     weakSpotsLabel: 'Điểm yếu',
@@ -91,7 +90,10 @@ export const grammar: Messages['grammar'] = {
       one: 'Còn {count} bài để xong {level}',
       other: 'Còn {count} bài để xong {level}',
     },
-    allClimbed: 'Đã leo hết các bậc. Ôn đều để sao luôn sáng.',
+    lessonsToGo: {
+      one: 'còn {count}',
+      other: 'còn {count}',
+    },
   },
   notes: {
     redo: 'Học lại bài này',

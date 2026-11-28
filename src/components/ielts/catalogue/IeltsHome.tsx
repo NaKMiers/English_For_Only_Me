@@ -15,9 +15,11 @@ import { ExamButton, ExamCard, ExamSheet } from '@/components/ielts/ui'
 
 /**
  * The IELTS landing page as a journey, kept minimal: the journey card (the
- * trail of milestones and the next stop), with the recent attempts and weak
+ * trail of milestones, the steps left in each stage and the numbers), with the recent attempts and weak
  * spots card folded away until its toggle slides it out beside the journey,
  * then every book as a metro line of test stations.
+ * The floating Continue button is always on screen and scrolls to the next
+ * test station; there is no next stop card.
  * Admins reach the editor from the account menu. Unfinished attempts are not
  * surfaced here.
  */
@@ -102,6 +104,8 @@ export async function IeltsHome({
       {next ? (
         <ContinueFloat
           label={messages.common.journey.continue}
+          nextStopId={null}
+          persistent
           targetId={HERE_STATION_ID}
         />
       ) : null}

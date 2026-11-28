@@ -9,11 +9,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 
-import {
-  JourneyCard,
-  JourneyHeadline,
-  MilestoneNote,
-} from '@/components/journey/JourneyCard'
+import { JourneyCard, JourneyHeadline } from '@/components/journey/JourneyCard'
 import { NextStopCard } from '@/components/journey/NextStopCard'
 import { DrawerHandle } from '@/components/journey/SideDrawer'
 import { StatChip, StatStrip } from '@/components/journey/StatChip'
@@ -22,6 +18,7 @@ import type { Messages } from '@/i18n/messages'
 import { cn } from '@/lib/utils'
 import type { DictationGlobalStatsRecord } from '@/modules/dictation/types'
 
+import { DictationVideoThumbnail } from '../DictationVideoThumbnail'
 import { formatDuration } from '../formatDuration'
 import { listeningTrack } from './listeningJourney'
 
@@ -29,7 +26,11 @@ import { listeningTrack } from './listeningJourney'
 export interface ListeningNextStop {
   detail: string
   href: string
+  /** The topic's tile image (https only), for `topic`. */
+  image?: string | null
   kind: 'video' | 'review' | 'topic'
+  /** The video's thumbnail fields, for `video`. */
+  thumbnail?: { thumbnailUrl: string | null; youtubeVideoId: string | null }
   title: string
 }
 
@@ -53,11 +54,13 @@ const BAR_HEIGHTS = Array.from({ length: BAR_COUNT }, (_, index) => {
 })
 
 /**
- * The top of the dictation page on the shared `JourneyCard`: the listening
- * journey as a track playing. Every sentence written by ear is one step;
- * the waveform scrubber plays from the last track reached toward the next
- * one, so the next goal is always in sight. Four small numbers and the one
- * next stop sit beside it.
+ * The top of the dictation page on the shared `JourneyCard`, kept short: the
+ * listening journey as a track playing. Every sentence written by ear is one
+ * step; the waveform scrubber plays from the last track reached toward the
+ * next one. Above it, plain text with no panel: the sentences to go beside
+ * the playhead and the next track at the end. Four chips sit top right; the
+ * next stop is a small card in a narrow column that hides while the side
+ * drawer is open.
  */
 export function ListeningJourneyHero({
   journey,
@@ -98,6 +101,30 @@ export function ListeningJourneyHero({
       value: String(stats.dueReviewItemCount),
     },
   ]
+  // The stop's picture: the video's thumbnail, or the topic's tile image.
+  const media =
+    next?.kind === 'video' &&
+    (next.thumbnail?.thumbnailUrl || next.thumbnail?.youtubeVideoId) ? (
+      <DictationVideoThumbnail
+        priority
+        sizes="160px"
+        thumbnailUrl={next.thumbnail.thumbnailUrl}
+        title={next.title}
+        youtubeVideoId={next.thumbnail.youtubeVideoId}
+      />
+    ) : next?.kind === 'topic' && next.image ? (
+      <span className="border-line bg-tint rounded-control block aspect-video overflow-hidden border">
+        {/* A plain img like the topic records: res.cloudinary.com is not in
+            images.remotePatterns. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          alt=""
+          className="size-full object-cover"
+          decoding="async"
+          src={next.image}
+        />
+      </span>
+    ) : undefined
   const actionLabel =
     next?.kind === 'video'
       ? t.continueVideo
@@ -123,14 +150,45 @@ export function ListeningJourneyHero({
         />
       }
       metaphor={
-        // The scrubber: a waveform played up to where the learner is.
-        <div className="bg-surface/80 rounded-control grid gap-2 p-3 sm:p-4">
-          <div className="flex items-center justify-between gap-3 text-xs">
-            <span className="font-medium">
-              {format(t.nowPlaying, { number: track.number })}
+        // The scrubber: a waveform played up to where the learner is, with
+        // the sentences to go at the playhead and the next track at the end.
+        <div className="grid gap-1.5">
+          <div className="relative h-4 text-xs whitespace-nowrap">
+            <span
+              className={cn(
+                'text-accent-blue absolute top-0 font-medium tabular-nums',
+                // Past the middle the label sits left of the playhead, so it
+                // never runs into the track name at the end.
+                track.progress > 0.55
+                  ? '-translate-x-[calc(100%+8px)]'
+                  : 'translate-x-2'
+              )}
+              data-listening-left=""
+              style={{ left: `${track.progress * 100}%` }}
+            >
+              <span className="sr-only">
+                {plural(t.toNext, track.left, {
+                  count: track.left.toLocaleString(),
+                  number: track.number,
+                })}
+              </span>
+              <span aria-hidden="true">
+                {plural(t.sentencesToGo, track.left, {
+                  count: track.left.toLocaleString(),
+                })}
+              </span>
             </span>
-            <span className="text-ink-soft tabular-nums">
-              {track.from.toLocaleString()} → {track.to.toLocaleString()}
+            <span
+              aria-hidden="true"
+              className="text-ink-soft absolute top-0 right-0 tabular-nums"
+            >
+              <span className="text-ink font-medium">
+                {format(t.track, { number: track.number })}
+              </span>
+              <span className="max-sm:hidden">
+                {' '}
+                · {track.to.toLocaleString()}
+              </span>
             </span>
           </div>
           <div
@@ -142,7 +200,7 @@ export function ListeningJourneyHero({
             aria-valuemax={track.to}
             aria-valuemin={track.from}
             aria-valuenow={sentences}
-            className="relative flex h-16 items-end gap-[3px]"
+            className="relative flex h-12 items-end gap-[3px]"
             role="progressbar"
           >
             {BAR_HEIGHTS.map((height, index) => {
@@ -177,12 +235,10 @@ export function ListeningJourneyHero({
           </div>
         </div>
       }
-      milestone={
-        <MilestoneNote>
-          {plural(t.toNext, track.left, { number: track.number })}
-        </MilestoneNote>
-      }
+      asideWidth={media ? 'lg' : 'sm'}
+      layout="aside"
       module="dictation"
+      nextStopHidesWithDrawer
       nextStop={
         <NextStopCard
           actionIcon={
@@ -203,12 +259,14 @@ export function ListeningJourneyHero({
               : { icon: <Headphones aria-hidden="true" />, text: t.pickTopic }
           }
           href={next?.href ?? null}
+          media={media}
           pinLabel={journey.nextStop}
+          size="sm"
           title={next?.title ?? ''}
         />
       }
       stats={
-        <StatStrip>
+        <StatStrip className="sm:justify-end">
           {numbers.map(item => (
             <StatChip
               href={item.href}
@@ -221,6 +279,7 @@ export function ListeningJourneyHero({
           ))}
         </StatStrip>
       }
+      statsPlacement="top"
       title={t.title}
       titleId="listening-journey-title"
     />

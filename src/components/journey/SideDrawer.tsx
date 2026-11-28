@@ -18,7 +18,10 @@ const RowContext = createContext<{
  * weak spots, favorites). The `DrawerHandle` inside the journey card slides
  * the side card out: on wide screens its column grows from nothing beside the
  * journey, on phones its row grows below it. The grid tracks animate, so the
- * journey card eases narrower instead of jumping.
+ * journey card eases narrower instead of jumping. While open the row carries
+ * `data-drawer-open` on a `group/drawer`, so the card can go compact on wide
+ * screens with CSS alone (`group-data-[drawer-open]/drawer:`): stat chips
+ * drop their labels, and a card that opts in hides its next stop.
  */
 export function DrawerRow({
   children,
@@ -39,11 +42,12 @@ export function DrawerRow({
     >
       <div
         className={cn(
-          'grid transition-[grid-template-columns,grid-template-rows,column-gap,row-gap] duration-500 ease-(--ease-out-soft) motion-reduce:transition-none',
+          'group/drawer grid transition-[grid-template-columns,grid-template-rows,column-gap,row-gap] duration-500 ease-(--ease-out-soft) motion-reduce:transition-none',
           open
             ? 'grid-rows-[auto_1fr] gap-4 lg:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)] lg:grid-rows-1'
             : 'grid-rows-[auto_0fr] gap-0 lg:grid-cols-[minmax(0,1.65fr)_minmax(0,0fr)] lg:grid-rows-1'
         )}
+        data-drawer-open={open ? '' : undefined}
       >
         {children}
         {/* Sized by the journey card on wide screens: its list scrolls. */}

@@ -64,4 +64,25 @@ describe('NextStopCard', () => {
     expect(screen.queryByRole('link')).toBeNull()
     expect(ctaCount(container)).toBe(0)
   })
+
+  test('media sits left of the title with the pin on its corner', () => {
+    const { container } = render(
+      <NextStopCard
+        actionLabel="Continue"
+        detail="Pick up where you left off"
+        href="/dictation/videos/v1/practice"
+        media={<span data-testid="thumb" />}
+        pinLabel="Next stop"
+        size="sm"
+        title="A day in London"
+      />
+    )
+    const thumb = screen.getByTestId('thumb')
+
+    expect(thumb.parentElement?.textContent).toContain('Next stop')
+    expect(
+      screen.getByRole('heading', { name: 'A day in London' })
+    ).toBeInTheDocument()
+    expect(ctaCount(container)).toBe(1)
+  })
 })

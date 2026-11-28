@@ -101,7 +101,6 @@ export const common: Messages['common'] = {
     signOutDescription: 'Bạn sẽ đăng xuất khỏi English For Only Me.',
     account: 'Tài khoản',
     admin: 'Quản trị',
-    favorites: 'Yêu thích',
   },
   actions: {
     cancel: 'Hủy',
@@ -149,10 +148,6 @@ export const common: Messages['common'] = {
     stepOf: '{done} / {total}',
     stepOfLabel: 'Bước {done} trên {total}',
     stepTaken: '+1 bước',
-    toMilestone: {
-      one: 'Còn {count} bước tới {milestone}',
-      other: 'Còn {count} bước tới {milestone}',
-    },
     details: 'Chi tiết',
     moreItems: {
       one: 'Thêm {count} mục',

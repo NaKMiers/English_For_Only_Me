@@ -60,46 +60,79 @@ export function SkeletonJourney({
   chips = 4,
   layout = 'split',
   metaphorClassName = 'h-40',
+  nextStop = true,
+  statsPlacement = 'below',
 }: {
   chips?: number
-  layout?: 'split' | 'stacked'
+  layout?: 'aside' | 'split' | 'stacked'
   /** Height of the module's picture, e.g. the staircase or the trail. */
   metaphorClassName?: string
+  /** False on IELTS, whose journey card has no next stop. */
+  nextStop?: boolean
+  /** Mirrors `JourneyCard`'s `statsPlacement`. */
+  statsPlacement?: 'below' | 'top'
 }) {
+  const chipRow = (
+    <div
+      className={cn(
+        'flex flex-wrap gap-1.5',
+        statsPlacement === 'top' && 'sm:justify-end'
+      )}
+    >
+      {Array.from({ length: chips }).map((_, index) => (
+        <Skeleton
+          className="h-9 w-24 rounded-full"
+          key={index}
+        />
+      ))}
+    </div>
+  )
+
   return (
     <div
       aria-hidden="true"
       className={cn(
         'border-line bg-surface-muted rounded-panel grid gap-5 border p-4 sm:p-6',
-        layout === 'split' && 'lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]'
+        layout === 'split' &&
+          nextStop &&
+          'lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]',
+        layout === 'aside' &&
+          nextStop &&
+          'lg:grid-cols-[minmax(0,1fr)_minmax(0,17rem)]'
       )}
     >
       <div className="grid content-between gap-5">
-        <div className="grid gap-2">
-          <SkeletonLine className="h-4 w-32" />
-          <SkeletonLine className="h-12 w-48" />
+        <div
+          className={cn(
+            statsPlacement === 'top'
+              ? 'flex flex-wrap items-start justify-between gap-x-6 gap-y-3'
+              : 'grid'
+          )}
+        >
+          <div className="grid gap-2">
+            <SkeletonLine className="h-4 w-32" />
+            <SkeletonLine className="h-12 w-48" />
+          </div>
+          {statsPlacement === 'top' ? chipRow : null}
         </div>
         <Skeleton className={cn('rounded-control w-full', metaphorClassName)} />
-        <div className="grid gap-3">
-          <SkeletonLine className="w-56" />
-          <div className="flex flex-wrap gap-1.5">
-            {Array.from({ length: chips }).map((_, index) => (
-              <Skeleton
-                className="h-9 w-24 rounded-full"
-                key={index}
-              />
-            ))}
+        {statsPlacement === 'below' ? (
+          <div className="grid gap-3">
+            <SkeletonLine className="w-56" />
+            {chipRow}
           </div>
-        </div>
+        ) : null}
       </div>
-      <div className="bg-surface rounded-panel grid content-between gap-5 p-5">
-        <Skeleton className="h-6 w-28 rounded-full" />
-        <div className="grid gap-2">
-          <SkeletonLine className="w-2/3" />
-          <SkeletonLine className="h-7 w-full" />
+      {nextStop ? (
+        <div className="bg-surface rounded-panel grid content-between gap-5 p-5">
+          <Skeleton className="h-6 w-28 rounded-full" />
+          <div className="grid gap-2">
+            <SkeletonLine className="w-2/3" />
+            <SkeletonLine className="h-7 w-full" />
+          </div>
+          <Skeleton className="h-11 w-40 rounded-full" />
         </div>
-        <Skeleton className="h-11 w-40 rounded-full" />
-      </div>
+      ) : null}
     </div>
   )
 }

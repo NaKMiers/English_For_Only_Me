@@ -34,4 +34,21 @@ describe('DrawerRow', () => {
     expect(open.className).not.toContain('bg-ink')
     expect(side).not.toHaveAttribute('inert')
   })
+
+  test('marks the row open so the journey card can go compact', () => {
+    const { container } = render(
+      <DrawerRow side={<p>Recent attempts</p>}>
+        <DrawerHandle
+          hideLabel="Hide recent"
+          showLabel="Show recent"
+        />
+      </DrawerRow>
+    )
+    const row = container.firstElementChild
+
+    expect(row?.className).toContain('group/drawer')
+    expect(row).not.toHaveAttribute('data-drawer-open')
+    fireEvent.click(screen.getByRole('button', { name: 'Show recent' }))
+    expect(row).toHaveAttribute('data-drawer-open')
+  })
 })

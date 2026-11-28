@@ -57,8 +57,6 @@ import {
 } from '@/modules/grammar/path/unitSummary'
 import { hasPendingGrammarSessions } from '@/requests/grammarSessionsApi'
 
-import { nextHref, nextLabel } from './pathNext'
-
 import { GrammarJourneyHero } from './GrammarJourneyHero'
 
 interface Props {
@@ -458,9 +456,7 @@ export function GrammarPath({ path }: Props) {
     setOpenedFor(path.currentUnitId)
     setOpenIds(current => new Set([...current, ...initialOpenUnitIds(path)]))
   }
-  const href = nextHref(path.next)
   const nextUnit = unitOfNext(path)
-  const nextSummary = nextUnit ? summarizeUnit(nextUnit) : null
   const dueLesson = firstDueLesson(path.units)
   const targetNodeId = nextNodeId(path.next)
 
@@ -509,10 +505,6 @@ export function GrammarPath({ path }: Props) {
 
       <GrammarJourneyHero
         dueHref={dueLesson ? `/grammar/lessons/${dueLesson.id}/review` : null}
-        nextHref={href}
-        nextLabel={nextLabel(t.next, path.next)}
-        nextSummary={nextSummary}
-        nextUnit={nextUnit}
         path={path}
         syncing={syncing}
       />
@@ -545,9 +537,11 @@ export function GrammarPath({ path }: Props) {
           fallbackId={nextUnitId ? `unit-${nextUnitId}` : undefined}
           label={messages.common.journey.continue}
           measureKey={targetUnitOpen}
+          nextStopId={null}
           onBeforeJump={() => {
             if (nextUnitId) setUnitOpen(nextUnitId, true)
           }}
+          persistent
           targetId={targetNodeId}
         />
       ) : null}

@@ -6,63 +6,39 @@ import {
   Dumbbell,
   Loader2,
   MapPin,
-  Play,
   RotateCcw,
   Star,
-  Trophy,
   type LucideIcon,
 } from 'lucide-react'
 
-import {
-  JourneyCard,
-  JourneyHeadline,
-  MilestoneNote,
-} from '@/components/journey/JourneyCard'
-import { NextStopCard } from '@/components/journey/NextStopCard'
+import { JourneyCard, JourneyHeadline } from '@/components/journey/JourneyCard'
 import { StatChip, StatStrip } from '@/components/journey/StatChip'
-import { Progress } from '@/components/ui/progress'
 import { useMessages } from '@/i18n/client'
 import { format, plural } from '@/i18n/format'
 import { cn } from '@/lib/utils'
-import type {
-  GrammarPathView,
-  PathUnit,
-} from '@/modules/grammar/path/buildGrammarPath'
-import {
-  currentLevel,
-  levelProgress,
-  type UnitSummary,
-} from '@/modules/grammar/path/unitSummary'
+import type { GrammarPathView } from '@/modules/grammar/path/buildGrammarPath'
+import { currentLevel, levelProgress } from '@/modules/grammar/path/unitSummary'
 
 interface Props {
   /** Review link for the first due lesson, or null with nothing due. */
   dueHref: string | null
-  /** Where the next stop goes, or null once everything is done. */
-  nextHref: string | null
-  nextLabel: string
-  nextSummary: UnitSummary | null
-  nextUnit: PathUnit | null
   path: GrammarPathView
   syncing: boolean
 }
 
+type LevelState = 'ahead' | 'current' | 'done'
+
 /**
- * The top of the grammar page on the shared `JourneyCard`: the course as a
- * staircase of CEFR levels. Each step is a level, taller as it gets harder,
- * and fills from the bottom as its lessons are passed; the step being
- * climbed wears the pin and the lessons left to finish it are counted down.
- * Beside it, the one next stop. The winding path below shows the same
- * journey lesson by lesson.
+ * The top of the grammar page on the shared `JourneyCard`, kept short: the
+ * course as a staircase of CEFR levels. Each step is a level, taller as it
+ * gets harder, and fills from the bottom as its lessons are passed. A flag
+ * rides on top of every step, climbing with the stairs: a tick once the
+ * level is done, the pink "you are here" pin with the lessons still to go on
+ * the step being climbed, and the lessons to go on the steps ahead. The
+ * chips sit top right; no next stop card, the page's floating Continue
+ * button scrolls to the next lesson on the winding path below.
  */
-export function GrammarJourneyHero({
-  dueHref,
-  nextHref,
-  nextLabel,
-  nextSummary,
-  nextUnit,
-  path,
-  syncing,
-}: Props) {
+export function GrammarJourneyHero({ dueHref, path, syncing }: Props) {
   const messages = useMessages()
   const t = messages.grammar.path
   const levels = levelProgress(path.units)
@@ -102,25 +78,44 @@ export function GrammarJourneyHero({
   return (
     <JourneyCard
       headline={
-        <JourneyHeadline
-          total={format(t.ofTotal, { total: path.totals.totalLessons })}
-          unit={plural(t.lessonsPassed, path.totals.passedLessons)}
-          value={path.totals.passedLessons}
-        />
+        <div className="grid gap-1">
+          <JourneyHeadline
+            total={format(t.ofTotal, { total: path.totals.totalLessons })}
+            unit={plural(t.lessonsPassed, path.totals.passedLessons)}
+            value={path.totals.passedLessons}
+          />
+          {syncing ? (
+            <p
+              aria-live="polite"
+              className="text-ink-soft flex items-center gap-2 text-sm"
+            >
+              <Loader2
+                aria-hidden
+                className="size-4 motion-safe:animate-spin"
+              />
+              {t.syncing}
+            </p>
+          ) : null}
+        </div>
       }
       metaphor={
-        // The staircase: one step per level, each taller than the last.
-        <ol className="flex h-44 items-end gap-1.5 pt-7 sm:gap-2.5">
+        // The staircase: one step per level, each taller than the last, with
+        // its flag on top.
+        <ol className="flex h-36 items-end gap-1.5 pt-7 sm:h-28 sm:gap-2.5">
           {levels.map((row, index) => {
-            const state =
+            const state: LevelState =
               row.done >= row.total
                 ? 'done'
                 : row.level === climbing?.level
                   ? 'current'
                   : 'ahead'
+            const left = row.total - row.done
             const percent =
               row.total > 0 ? Math.round((row.done / row.total) * 100) : 0
-            const height = 34 + (66 * index) / Math.max(1, levels.length - 1)
+            // The lowest step stays tall enough for the level and count to
+            // wrap onto two lines on a phone's narrow columns.
+            const height = 44 + (56 * index) / Math.max(1, levels.length - 1)
+            const toGo = plural(t.toFinishLevel, left, { level: row.level })
 
             return (
               <li
@@ -130,24 +125,20 @@ export function GrammarJourneyHero({
                   total: row.total,
                 })}
                 className="relative flex min-w-0 flex-1 flex-col justify-end"
+                data-level-state={state}
                 key={row.level}
                 style={{ height: `${height}%` }}
+                title={state === 'done' ? undefined : toGo}
               >
-                {state === 'current' ? (
-                  <span
-                    aria-hidden
-                    className="bg-brand text-surface absolute -top-7 left-1/2 inline-flex -translate-x-1/2 items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap shadow-sm motion-safe:animate-bounce"
-                  >
-                    <MapPin className="size-3" />
-                    <span className="hidden sm:inline">
-                      {messages.common.journey.youAreHere}
-                    </span>
-                  </span>
-                ) : null}
+                <LevelFlag
+                  label={plural(t.lessonsToGo, left)}
+                  state={state}
+                  youAreHere={messages.common.journey.youAreHere}
+                />
                 <span
                   aria-hidden
                   className={cn(
-                    'rounded-t-control rounded-b-tag relative flex h-full flex-col justify-between overflow-hidden border-2 p-1.5 sm:p-2',
+                    'rounded-t-control rounded-b-tag relative h-full overflow-hidden border-2 p-1.5 sm:px-2',
                     state === 'ahead'
                       ? 'bg-surface/60 border-line-strong border-dashed'
                       : 'bg-surface/85 border-accent-purple/40',
@@ -159,24 +150,25 @@ export function GrammarJourneyHero({
                     className="bg-accent-purple/85 motion-grow-y absolute inset-x-0 bottom-0 origin-bottom"
                     style={{ height: `${percent}%` }}
                   />
+                  {/* Level and count share the top row, so a short step
+                      never hides one under the other. */}
                   <span
                     className={cn(
-                      'relative flex items-center justify-between gap-1 font-sans text-sm font-medium',
+                      'relative flex flex-wrap items-baseline justify-between gap-x-1',
                       percent >= 85 ? 'text-surface' : 'text-ink'
                     )}
                   >
-                    {row.level}
-                    {state === 'done' ? (
-                      <Check className="size-3.5 stroke-3" />
-                    ) : null}
-                  </span>
-                  <span
-                    className={cn(
-                      'relative text-xs tabular-nums',
-                      percent >= 15 ? 'text-surface' : 'text-ink-soft'
-                    )}
-                  >
-                    {row.done}/{row.total}
+                    <span className="font-sans text-sm font-medium">
+                      {row.level}
+                    </span>
+                    <span
+                      className={cn(
+                        'text-xs tabular-nums',
+                        percent < 85 && 'text-ink-soft'
+                      )}
+                    >
+                      {row.done}/{row.total}
+                    </span>
                   </span>
                 </span>
               </li>
@@ -184,85 +176,9 @@ export function GrammarJourneyHero({
           })}
         </ol>
       }
-      milestone={
-        <MilestoneNote>
-          {climbing
-            ? plural(t.toFinishLevel, climbing.total - climbing.done, {
-                level: climbing.level,
-              })
-            : t.allClimbed}
-        </MilestoneNote>
-      }
       module="grammar"
-      nextStop={
-        <NextStopCard
-          actionIcon={
-            <Play
-              aria-hidden
-              className="fill-current"
-            />
-          }
-          actionLabel={path.next.kind === 'lesson' ? t.startLesson : t.go}
-          detail={
-            nextUnit
-              ? `${format(messages.grammar.unitLevel, {
-                  level: nextUnit.level,
-                  order: nextUnit.order,
-                })} · ${nextUnit.title}`
-              : undefined
-          }
-          done={
-            nextHref
-              ? undefined
-              : {
-                  icon: (
-                    <Trophy
-                      aria-hidden
-                      className="text-accent-purple"
-                    />
-                  ),
-                  text: nextLabel,
-                }
-          }
-          footer={
-            syncing ? (
-              <p
-                aria-live="polite"
-                className="text-ink-soft flex items-center gap-2 text-sm"
-              >
-                <Loader2
-                  aria-hidden
-                  className="size-4 motion-safe:animate-spin"
-                />
-                {t.syncing}
-              </p>
-            ) : null
-          }
-          href={nextHref}
-          pinLabel={messages.common.journey.nextStop}
-          title={nextLabel}
-        >
-          {nextSummary ? (
-            <div className="flex items-center gap-3">
-              <Progress
-                aria-label={format(t.unitProgress, {
-                  done: nextSummary.done,
-                  total: nextSummary.total,
-                })}
-                className="flex-1"
-                tone="grammar"
-                trackClassName="h-2"
-                value={nextSummary.percent}
-              />
-              <span className="text-ink-soft text-xs tabular-nums">
-                {nextSummary.done}/{nextSummary.total}
-              </span>
-            </div>
-          ) : null}
-        </NextStopCard>
-      }
       stats={
-        <StatStrip>
+        <StatStrip className="sm:justify-end">
           {stats.map(item => (
             <StatChip
               href={item.href}
@@ -276,8 +192,56 @@ export function GrammarJourneyHero({
           ))}
         </StatStrip>
       }
+      statsPlacement="top"
       title={t.journeyTitle}
       titleId="grammar-journey-title"
     />
+  )
+}
+
+/**
+ * The flag on top of one step: a tick when the level is done, the bouncing
+ * pink pin with the lessons to go on the step being climbed, a quiet "N to
+ * go" on the steps ahead. Plain text and pills, no lines, so the steps keep
+ * the eye.
+ */
+function LevelFlag({
+  label,
+  state,
+  youAreHere,
+}: {
+  label: string
+  state: LevelState
+  youAreHere: string
+}) {
+  if (state === 'done')
+    return (
+      <span
+        aria-hidden
+        className="bg-accent-purple text-surface absolute -top-6 left-1/2 grid size-5 -translate-x-1/2 place-items-center rounded-full shadow-sm"
+      >
+        <Check className="size-3 stroke-3" />
+      </span>
+    )
+
+  if (state === 'current')
+    return (
+      <span
+        aria-hidden
+        className="bg-brand text-surface absolute -top-7 left-1/2 inline-flex -translate-x-1/2 items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap shadow-sm motion-safe:animate-bounce"
+        title={youAreHere}
+      >
+        <MapPin className="size-3 shrink-0" />
+        <span className="tabular-nums">{label}</span>
+      </span>
+    )
+
+  return (
+    <span
+      aria-hidden
+      className="text-ink-soft absolute -top-6 left-1/2 -translate-x-1/2 text-xs whitespace-nowrap tabular-nums"
+    >
+      {label}
+    </span>
   )
 }

@@ -21,7 +21,9 @@ export default async function Loading() {
       {/* Same order as VocabularyLanding: garden card, then browse area. */}
       <SkeletonJourney
         chips={3}
+        layout="aside"
         metaphorClassName="h-24"
+        statsPlacement="top"
       />
       <div className="grid items-start gap-5 xl:grid-cols-2">
         <SkeletonPanel lines={1} />

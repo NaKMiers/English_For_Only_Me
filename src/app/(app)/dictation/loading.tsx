@@ -19,7 +19,11 @@ export default async function Loading() {
       }}
       subtitle={t.dictation.meta.browseSubtitle}
     >
-      <SkeletonJourney metaphorClassName="h-28" />
+      <SkeletonJourney
+        layout="aside"
+        metaphorClassName="h-[70px]"
+        statsPlacement="top"
+      />
       {/* The record shelves: a heading and a row of discs. */}
       <div className="grid gap-3">
         <Skeleton className="rounded-tag h-6 w-28" />

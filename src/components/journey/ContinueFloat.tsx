@@ -19,13 +19,53 @@ interface Props {
   measureKey?: unknown
   /** The page's next stop card: the float hides while it is in view (P4). */
   nextStopId?: string | null
+  /**
+   * Once the scroll settles, give the spot a small double bounce so the eye
+   * lands on it: a CSS selector for the target's ancestor to bounce (e.g.
+   * `li`, the whole video card), or `true` for the target itself. Skipped
+   * under reduced motion. Animates `transform`, so it never fights
+   * `hover-pop`'s `translate`.
+   */
+  nudge?: boolean | string
   /** Runs before scrolling, e.g. unfold the unit that holds the target. */
   onBeforeJump?: () => void
+  /**
+   * Stay on screen even while the target is in view (IELTS, where the
+   * float is the only way on): the arrow then points at the target's side
+   * of the screen's middle.
+   */
+  persistent?: boolean
   /** Id of the "You are here" spot to scroll to. */
   targetId: string
 }
 
 type Direction = 'up' | 'down'
+
+const NUDGE_KEYFRAMES: Keyframe[] = [
+  { transform: 'translateY(0)' },
+  { transform: 'translateY(-8px)' },
+  { transform: 'translateY(0)' },
+  { transform: 'translateY(-4px)' },
+  { transform: 'translateY(0)' },
+]
+
+/** A small double bounce once the smooth scroll has settled. */
+function nudgeAfterScroll(target: HTMLElement, nudge: true | string) {
+  const element =
+    nudge === true ? target : (target.closest<HTMLElement>(nudge) ?? target)
+  let done = false
+
+  function bounce() {
+    if (done) return
+    done = true
+    window.removeEventListener('scrollend', bounce)
+    element.animate?.(NUDGE_KEYFRAMES, { duration: 700, easing: 'ease-out' })
+  }
+
+  window.addEventListener('scrollend', bounce, { once: true })
+  // Already in place (no scroll) or no scrollend support: bounce anyway.
+  window.setTimeout(bounce, 650)
+}
 
 function inView(rect: DOMRect): boolean {
   return rect.height > 0 && rect.bottom > 0 && rect.top < window.innerHeight
@@ -33,8 +73,9 @@ function inView(rect: DOMRect): boolean {
 
 /**
  * The small floating Continue button: shown while the learner's spot is out
- * of view (and the next stop card is not on screen), it scrolls the page to
- * that spot. The arrow points the way. Measured on scroll, resize and a
+ * of view (and the next stop card is not on screen), or always when
+ * `persistent`, it scrolls the page to that spot. The arrow points the way.
+ * Measured on scroll, resize, page height changes (a ResizeObserver) and a
  * settle timeout, since an IntersectionObserver misreads a target inside a
  * fold that is still animating open.
  */
@@ -43,7 +84,9 @@ export function ContinueFloat({
   label,
   measureKey,
   nextStopId = NEXT_STOP_ID,
+  nudge = false,
   onBeforeJump,
+  persistent = false,
   targetId,
 }: Props) {
   const [direction, setDirection] = useState<Direction | null>(null)
@@ -64,6 +107,13 @@ export function ContinueFloat({
 
       if (!anchorRect) {
         setDirection(null)
+        return
+      }
+
+      if (persistent) {
+        const middle = (anchorRect.top + anchorRect.bottom) / 2
+
+        setDirection(middle < window.innerHeight / 2 ? 'up' : 'down')
         return
       }
 
@@ -91,14 +141,22 @@ export function ContinueFloat({
 
     window.addEventListener('scroll', schedule, { passive: true })
     window.addEventListener('resize', schedule)
+    // Again whenever the page's height changes: a list that mounts after
+    // hydration (a section opening) moves the target without any scroll.
+    const observer =
+      typeof ResizeObserver === 'undefined'
+        ? null
+        : new ResizeObserver(schedule)
+    observer?.observe(document.body)
 
     return () => {
+      observer?.disconnect()
       window.clearTimeout(settle)
       window.removeEventListener('scroll', schedule)
       window.removeEventListener('resize', schedule)
       if (frame !== null) cancelAnimationFrame(frame)
     }
-  }, [fallbackId, measureKey, nextStopId, targetId])
+  }, [fallbackId, measureKey, nextStopId, persistent, targetId])
 
   useEffect(
     () => () => {
@@ -127,6 +185,7 @@ export function ContinueFloat({
         inline: 'center',
       })
       target?.focus({ preventScroll: true })
+      if (target && nudge && !reduce) nudgeAfterScroll(target, nudge)
     })
   }
 

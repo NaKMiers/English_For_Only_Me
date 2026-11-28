@@ -1,9 +1,25 @@
 'use client'
 
 import { ChevronDown } from 'lucide-react'
-import { useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 
 import { cn } from '@/lib/utils'
+
+const OPEN_EVENT = 'browse-disclosure:open'
+
+/**
+ * Opens the disclosure whose panel is `panelId`, wherever it sits on the
+ * page (the topic page's floating Continue opens the section holding the
+ * next video before it scrolls there).
+ */
+export function openBrowseDisclosure(panelId: string) {
+  window.dispatchEvent(new CustomEvent(OPEN_EVENT, { detail: panelId }))
+}
+
+/** DOM id of a disclosure's outer box, e.g. for `ContinueFloat`'s fallback. */
+export function browseDisclosureId(panelId: string) {
+  return `${panelId}-disclosure`
+}
 
 interface Props {
   /**
@@ -32,8 +48,20 @@ export function BrowseDisclosure({
 }: Props) {
   const [open, setOpen] = useState(defaultOpen)
 
+  useEffect(() => {
+    function onOpen(event: Event) {
+      if ((event as CustomEvent<string>).detail === panelId) setOpen(true)
+    }
+
+    window.addEventListener(OPEN_EVENT, onOpen)
+    return () => window.removeEventListener(OPEN_EVENT, onOpen)
+  }, [panelId])
+
   return (
-    <div className="border-line bg-surface rounded-panel border">
+    <div
+      className="border-line bg-surface rounded-panel border"
+      id={browseDisclosureId(panelId)}
+    >
       {/* Raw button: a disclosure trigger relying on aria-expanded. */}
       <button
         type="button"

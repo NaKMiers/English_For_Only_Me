@@ -24,8 +24,10 @@ describe('UserMenuPopup', () => {
     const { onMounted } = renderPopup()
 
     expect(
-      await screen.findByRole('menuitem', { name: 'Favorites' })
+      await screen.findByRole('menuitem', { name: 'Sign out' })
     ).toBeInTheDocument()
+    // Favorites live on the dictation page now, not in the account menu.
+    expect(screen.queryByRole('menuitem', { name: 'Favorites' })).toBeNull()
     expect(screen.queryByRole('menuitem', { name: 'Admin' })).toBeNull()
     expect(onMounted).toHaveBeenCalledTimes(1)
     expect(screen.getByRole('button', { name: 'Alan' })).toHaveClass('chip')

@@ -105,12 +105,20 @@ export const ielts = {
       peak: 'Peak',
       summit: 'Summit',
     },
-    summit: 'Summit reached: every skill has a band.',
+    segmentLeft: {
+      one: '{count} step left to {milestone}',
+      other: '{count} steps left to {milestone}',
+    },
+    segmentUnit: {
+      one: 'step left',
+      other: 'steps left',
+    },
+    stages: 'Stages of the trail',
+    segmentDone: '{milestone} reached',
     band: 'Band estimate',
     testsCleared: 'Tests cleared',
     booksCleared: 'Books cleared',
     thisWeek: 'This week',
-    allDone: 'Every test is cleared. Retake one to beat your best band.',
     station: {
       new: '{test}: not started',
       partial: '{test}: {done} of {total} skills',

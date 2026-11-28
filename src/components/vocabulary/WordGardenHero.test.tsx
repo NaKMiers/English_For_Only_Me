@@ -39,6 +39,47 @@ describe('WordGardenHero', () => {
     expect(html).toContain('aria-label="Young tree (about B1): you are here"')
     expect(html).toContain('54 words to Tree (about B2)')
     expect(html).toContain('aria-label="Forest (about C2): 1804 words away"')
+    // The young tree's stage badge is gone: the vine names the stage.
+    expect(html).not.toContain('about B1</span>')
+  })
+
+  test('writes the words to go above every stage still ahead', () => {
+    const { container } = render(
+      <WordGardenHero
+        next={plant}
+        stats={stats}
+      />
+    )
+    const segments = [
+      ...container.querySelectorAll('[data-garden-segment]'),
+    ].map(item => [
+      item.getAttribute('data-garden-segment'),
+      item.querySelector('.max-sm\\:hidden')?.textContent,
+    ])
+
+    expect(segments).toEqual([
+      ['current', '54 to go'],
+      ['ahead', '750 to go'],
+      ['ahead', '1,000 to go'],
+    ])
+  })
+
+  test('lifts the chips beside the headline', () => {
+    const { container } = render(
+      <WordGardenHero
+        next={plant}
+        stats={stats}
+      />
+    )
+    const header = container.querySelector('[data-journey-slot="headline"]')
+      ?.parentElement?.parentElement
+
+    expect(
+      header?.querySelector('[data-journey-slot="stats"] [data-stat-strip]')
+    ).not.toBeNull()
+    expect(
+      container.querySelector('[data-journey-slot="milestone"]')
+    ).toBeNull()
   })
 
   test('the next stop starts recall when words are due', () => {

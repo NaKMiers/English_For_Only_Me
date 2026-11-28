@@ -58,6 +58,11 @@ export const vocabulary = {
       other: '{count} words to {stage}',
     },
     forest: 'A full forest. Keep the leaves green with reviews.',
+    wordsToGo: {
+      one: '{count} to go',
+      other: '{count} to go',
+    },
+    stagesLabel: 'Words to go in each stage',
     guide: 'Levels are a rough guide from common vocabulary-size estimates.',
     stageState: {
       reached: '{stage}: reached',

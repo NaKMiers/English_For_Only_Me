@@ -62,7 +62,7 @@ describe('pickTopicNextVideo', () => {
 })
 
 describe('TopicJourney', () => {
-  test('counts done videos, names the gold gap and links the next video', () => {
+  test('counts done videos and names the gold gap, with no next stop row', () => {
     const topic = groups([
       [video('a', { completions: 1 }), video('b'), video('c')],
     ])
@@ -77,11 +77,9 @@ describe('TopicJourney', () => {
       />
     )
 
-    expectLandingBudget(container)
+    // The floating Continue (outside the strip) is the way on.
+    expectLandingBudget(container, { ctas: 0, nextStops: 0 })
     expect(screen.getByText('2 videos to gold')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Start' })).toHaveAttribute(
-      'href',
-      '/dictation/videos/b/practice'
-    )
+    expect(screen.queryByRole('link')).toBeNull()
   })
 })

@@ -25,18 +25,25 @@ export interface BrowseSectionGroup {
  */
 type BrowseLabels = Messages['dictation']['browse']
 
+/** The panel id of a section, opened by the topic page's Continue. */
+export function sectionPanelId(groupKey: string) {
+  return `section-${groupKey}`
+}
+
 function SectionPanel({
   group,
   canFavorite,
   defaultOpen,
   labels,
+  nextId,
 }: {
   group: BrowseSectionGroup
   canFavorite: boolean
   defaultOpen: boolean
   labels: BrowseLabels
+  nextId: string | null
 }) {
-  const panelId = `section-${group.key}`
+  const panelId = sectionPanelId(group.key)
   const doneCount = group.videos.filter(video => video.completions > 0).length
   const finished = group.videos.length > 0 && doneCount >= group.videos.length
 
@@ -63,6 +70,7 @@ function SectionPanel({
         emptyLabel={labels.emptySection}
         labels={labels.card}
         className="border-line border-t p-3"
+        nextId={nextId}
         priorityCount={0}
       />
     </BrowseDisclosure>
@@ -73,10 +81,13 @@ export function SectionAccordion({
   groups,
   canFavorite,
   labels = en.dictation.browse,
+  nextId = null,
   openKey = null,
 }: {
   groups: BrowseSectionGroup[]
   canFavorite: boolean
+  /** The topic's next video, ringed in pink in its section. */
+  nextId?: string | null
   /** The section holding the next video starts open; the rest fold. */
   openKey?: string | null
   /** From the page's `getMessages()`: this stays a server component. */
@@ -101,6 +112,7 @@ export function SectionAccordion({
           canFavorite={canFavorite}
           defaultOpen={group.key === openKey}
           labels={labels}
+          nextId={nextId}
         />
       ))}
     </div>

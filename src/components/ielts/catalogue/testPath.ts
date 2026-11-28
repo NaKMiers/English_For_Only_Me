@@ -114,19 +114,41 @@ export function journeyTotals<T extends PathEntry>(
   return totals
 }
 
+export type JourneySegmentState = 'ahead' | 'current' | 'done'
+
+export interface JourneySegment {
+  /** Where the stage starts and ends on the trail, 0 to 1. */
+  from: number
+  key: JourneyMilestoneKey
+  /** Steps still to take in this stage (its full size when ahead). */
+  left: number
+  state: JourneySegmentState
+  to: number
+}
+
 /**
- * The next milestone still ahead and the steps left to it, or null once the
- * summit is reached.
+ * The trail cut into its stages, one per milestone: start to Base camp,
+ * Base camp to Ridge and so on, each with the steps still left in it.
  */
-export function nextMilestone(steps: number, totalSteps: number) {
-  for (const milestone of JOURNEY_MILESTONES) {
+export function journeySegments(
+  steps: number,
+  totalSteps: number
+): JourneySegment[] {
+  let from = 0
+  let start = 0
+
+  return JOURNEY_MILESTONES.map(milestone => {
     const target = Math.ceil(milestone.at * totalSteps)
+    const left = Math.max(0, target - Math.max(steps, start))
+    const state: JourneySegmentState =
+      steps >= target ? 'done' : steps >= start ? 'current' : 'ahead'
+    const segment = { from, key: milestone.key, left, state, to: milestone.at }
 
-    if (steps < target)
-      return { key: milestone.key, left: target - steps, target }
-  }
+    from = milestone.at
+    start = target
 
-  return null
+    return segment
+  })
 }
 
 /** Finished attempts started within the last seven days. */

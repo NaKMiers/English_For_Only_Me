@@ -34,7 +34,7 @@ describe('VideoListPage', () => {
     )
   })
 
-  test('a list shows the record card with the next unplayed video', () => {
+  test('a list shows the record card and rings the next unplayed video', () => {
     render(
       <VideoListPage
         canFavorite={false}
@@ -58,10 +58,12 @@ describe('VideoListPage', () => {
       />
     )
 
-    expect(document.querySelectorAll('[data-next-stop]')).toHaveLength(1)
-    expect(screen.getByRole('link', { name: 'Start' })).toHaveAttribute(
-      'href',
-      '/dictation/videos/v1/practice'
-    )
+    // No next stop row: the next video's card is ringed and has the id the
+    // floating Continue scrolls to.
+    expect(document.querySelectorAll('[data-next-stop]')).toHaveLength(0)
+    const card = document.getElementById('video-card-v1')
+
+    expect(card).toHaveAttribute('href', '/dictation/videos/v1/practice')
+    expect(card?.closest('li')?.className).toContain('ring-brand/40')
   })
 })

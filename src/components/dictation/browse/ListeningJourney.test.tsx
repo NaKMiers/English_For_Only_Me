@@ -29,6 +29,7 @@ describe('ListeningJourneyHero', () => {
           detail: 'Pick up where you left off',
           href: '/dictation/videos/v1/practice',
           kind: 'video',
+          thumbnail: { thumbnailUrl: null, youtubeVideoId: 'abcdefghijk' },
           title: 'A day in London',
         }}
         stats={{
@@ -46,11 +47,17 @@ describe('ListeningJourneyHero', () => {
       />
     )
 
-    expect(html).toContain('Now playing: Track 3')
+    expect(html).toContain('>Track 3<')
     expect(html).toContain('120 sentences to Track 3')
+    expect(html).toContain('120 to go')
+    // No milestone line under the scrubber: the count sits on it.
+    expect(html).not.toContain('data-journey-slot="milestone"')
     expect(html).toContain('3/20')
     expect(html).toContain('href="/dictation/videos/v1/practice"')
     expect(html).toContain('href="/dictation/review"')
+    // The video's thumbnail sits in the next stop, in a wider column.
+    expect(html).toContain('i.ytimg.com/vi/abcdefghijk/mqdefault.jpg')
+    expect(html).toContain('minmax(0,26rem)')
   })
 })
 

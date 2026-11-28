@@ -41,7 +41,11 @@ export const dictation: Messages['dictation'] = {
       one: 'câu',
       other: 'câu',
     },
-    nowPlaying: 'Đang phát: Track {number}',
+    track: 'Track {number}',
+    sentencesToGo: {
+      one: 'còn {count}',
+      other: 'còn {count}',
+    },
     toNext: {
       one: 'Còn {count} câu tới Track {number}',
       other: 'Còn {count} câu tới Track {number}',
@@ -96,11 +100,6 @@ export const dictation: Messages['dictation'] = {
       other: 'Còn {count} video tới đĩa vàng',
     },
     gold: 'Đĩa vàng: đã xong mọi video.',
-    resume: 'Học tiếp chỗ đang dở',
-    nextVideo: 'Video tiếp theo',
-    start: 'Bắt đầu',
-    continue: 'Học tiếp',
-    allDone: 'Đã xong mọi video ở đây. Nghe lại một video, hoặc chọn đĩa khác.',
   },
   topic: {
     notFound: 'Không tìm thấy chủ đề',

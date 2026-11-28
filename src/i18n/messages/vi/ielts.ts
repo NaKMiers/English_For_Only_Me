@@ -107,12 +107,20 @@ export const ielts: Messages['ielts'] = {
       peak: 'Gần đỉnh',
       summit: 'Đỉnh núi',
     },
-    summit: 'Đã lên đỉnh: kỹ năng nào cũng có band.',
+    segmentLeft: {
+      one: 'Còn {count} bước tới {milestone}',
+      other: 'Còn {count} bước tới {milestone}',
+    },
+    segmentUnit: {
+      one: 'bước nữa',
+      other: 'bước nữa',
+    },
+    stages: 'Các chặng của hành trình',
+    segmentDone: 'Đã tới {milestone}',
     band: 'Band ước tính',
     testsCleared: 'Đề đã xong',
     booksCleared: 'Bộ sách đã xong',
     thisWeek: 'Tuần này',
-    allDone: 'Đã xong mọi đề. Làm lại một đề để vượt band cao nhất.',
     station: {
       new: '{test}: chưa làm',
       partial: '{test}: xong {done}/{total} kỹ năng',

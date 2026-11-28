@@ -103,7 +103,6 @@ export const common = {
     signOutDescription: 'You will be signed out of English For Only Me.',
     account: 'Account',
     admin: 'Admin',
-    favorites: 'Favorites',
   },
   actions: {
     cancel: 'Cancel',
@@ -151,10 +150,6 @@ export const common = {
     stepOf: '{done} / {total}',
     stepOfLabel: 'Step {done} of {total}',
     stepTaken: '+1 step',
-    toMilestone: {
-      one: '{count} step to {milestone}',
-      other: '{count} steps to {milestone}',
-    },
     details: 'Details',
     moreItems: {
       one: '{count} more',

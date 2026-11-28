@@ -1,6 +1,6 @@
 'use client'
 
-import { BookOpen, Check, Search } from 'lucide-react'
+import { BookOpen, Check, List, Search } from 'lucide-react'
 
 import { ContentPanel } from '@/components/common/ContentPanel'
 import { Input } from '@/components/ui/input'
@@ -45,6 +45,17 @@ export function VocabularySearchPanel({
 
   return (
     <ContentPanel
+      action={
+        // The way to every saved word, in the search card's header so it
+        // costs no row of its own.
+        <ActionButton
+          href="/vocabulary/words"
+          icon={<List aria-hidden="true" />}
+          tone="paper"
+        >
+          {vocab.dashboard.wordsLink}
+        </ActionButton>
+      }
       title={t.title}
       className="content-start gap-3 p-4 py-4"
     >

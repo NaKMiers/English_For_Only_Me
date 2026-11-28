@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Headphones } from 'lucide-react'
+import { Headphones, Heart } from 'lucide-react'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { PageShell } from '@/components/common/PageShell'
@@ -19,7 +19,9 @@ import {
   type RecordTopic,
 } from '@/components/dictation/browse/RecordShelves'
 import { TopicGrid } from '@/components/dictation/browse/TopicGrid'
+import { getTopicTileImageUrl } from '@/components/dictation/browse/topicThumbnailUrl'
 import { DrawerRow } from '@/components/journey/SideDrawer'
+import { ActionButton } from '@/components/ui/ActionButton'
 import { hasMongoDbUri } from '@/constants/environments'
 import { format, plural } from '@/i18n/format'
 import { getMessages } from '@/i18n/server'
@@ -159,6 +161,10 @@ export default async function DictationPage() {
             detail: text.journeyResume,
             href: resume.practiceHref,
             kind: 'video',
+            thumbnail: {
+              thumbnailUrl: resume.thumbnailUrl ?? null,
+              youtubeVideoId: resume.youtubeVideoId ?? null,
+            },
             title: resume.title,
           },
           kind: 'resume',
@@ -183,6 +189,9 @@ export default async function DictationPage() {
               total: nearGold.total,
             }),
             href: nearGold.topic.href,
+            image: nearGold.topic.muted
+              ? null
+              : getTopicTileImageUrl(nearGold.topic.thumbnailUrl),
             kind: 'topic',
             title: nearGold.topic.title,
           },
@@ -243,12 +252,25 @@ export default async function DictationPage() {
           aria-labelledby="dictation-topics-title"
           className="grid gap-3"
         >
-          <h2
-            className="font-sans text-lg font-medium"
-            id="dictation-topics-title"
-          >
-            {text.topicsHeading}
-          </h2>
+          {/* The favorites list sits beside the heading (signed-in learners
+              only): no row of its own, and not hidden in the account menu. */}
+          <div className="flex items-center justify-between gap-3">
+            <h2
+              className="font-sans text-lg font-medium"
+              id="dictation-topics-title"
+            >
+              {text.topicsHeading}
+            </h2>
+            {canFavorite ? (
+              <ActionButton
+                href="/dictation/favorites"
+                icon={<Heart aria-hidden="true" />}
+                tone="paper"
+              >
+                {t.dictation.journey.side.favorites}
+              </ActionButton>
+            ) : null}
+          </div>
           {recordTopics.length > 0 ? (
             <RecordShelves
               labels={t.dictation}

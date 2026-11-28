@@ -14,11 +14,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 
-import {
-  JourneyCard,
-  JourneyHeadline,
-  MilestoneNote,
-} from '@/components/journey/JourneyCard'
+import { JourneyCard, JourneyHeadline } from '@/components/journey/JourneyCard'
 import { NextStopCard } from '@/components/journey/NextStopCard'
 import { DrawerHandle } from '@/components/journey/SideDrawer'
 import { StatChip, StatStrip } from '@/components/journey/StatChip'
@@ -57,10 +53,12 @@ interface Props {
 }
 
 /**
- * The top of the vocabulary page on the shared `JourneyCard`: the learner's
- * words as a garden that grows through seven stages, each tied to a rough
- * CEFR vocabulary size, with the next stage always named and counted down.
- * The next stop is the recall session when words are due, else planting new
+ * The top of the vocabulary page on the shared `JourneyCard`, kept short:
+ * the learner's words as a garden that grows through seven stages on one
+ * vine, each tied to a rough CEFR vocabulary size. Above the vine, between
+ * each pair of stages still ahead, the words to go (plain text, no lines);
+ * the chips sit top right. The next stop, a small card in a narrow right
+ * column, is the recall session when words are due, else planting new
  * words. How a word grows (the word-list views) sits in the side drawer.
  */
 export function WordGardenHero({ next, stats, withDrawer = false }: Props) {
@@ -69,9 +67,24 @@ export function WordGardenHero({ next, stats, withDrawer = false }: Props) {
   const locale = useLocale()
   const known = stats.totalKnownCount
   const position = wordGardenPosition(known)
-  const stage = WORD_STAGES[position.index]
   const nextStage = WORD_STAGES[position.index + 1]
-  const StageIcon = STAGE_ICONS[stage.key]
+  const number = (value: number) => value.toLocaleString(INTL_LOCALES[locale])
+  // The words to go between each pair of stages not yet passed.
+  const segments = WORD_STAGES.slice(1).flatMap((item, index) =>
+    index < position.index
+      ? []
+      : [
+          {
+            current: index === position.index,
+            index,
+            left:
+              index === position.index
+                ? position.left
+                : item.at - WORD_STAGES[index].at,
+            stage: item,
+          },
+        ]
+  )
   const stageName = (item: (typeof WORD_STAGES)[number]) =>
     item.level
       ? `${t.stages[item.key]} (${format(t.levelAbout, { level: item.level })})`
@@ -103,106 +116,125 @@ export function WordGardenHero({ next, stats, withDrawer = false }: Props) {
         ) : undefined
       }
       headline={
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <JourneyHeadline
-            unit={plural(t.words, known)}
-            value={known.toLocaleString(INTL_LOCALES[locale])}
-          />
-          <span className="bg-surface/85 rounded-control flex items-center gap-3 py-2 pr-4 pl-2 shadow-sm">
-            <span className="bg-accent-green text-surface rounded-control grid size-11 place-items-center">
-              <StageIcon
-                aria-hidden="true"
-                className="size-6"
-              />
-            </span>
-            <span className="grid">
-              <strong className="font-sans text-base font-medium">
-                {t.stages[stage.key]}
-              </strong>
-              <span className="text-ink-soft text-xs">
-                {stage.level
-                  ? format(t.levelAbout, { level: stage.level })
-                  : '-'}
-              </span>
-            </span>
-          </span>
-        </div>
+        <JourneyHeadline
+          unit={plural(t.words, known)}
+          value={number(known)}
+        />
       }
       metaphor={
-        // The growth path: seven stages on one vine.
-        <ol className="relative grid grid-cols-7">
-          <span
-            aria-hidden="true"
-            className="bg-surface/80 absolute top-[26px] right-[calc(100%/14)] left-[calc(100%/14)] h-1 rounded-full"
-          >
-            <span
-              className="bg-accent-green motion-grow-x block h-full rounded-full"
-              style={{ width: `${fill}%` }}
-            />
-          </span>
-          {WORD_STAGES.map((item, index) => {
-            const Icon = STAGE_ICONS[item.key]
-            const state =
-              index < position.index
-                ? 'reached'
-                : index === position.index
-                  ? 'current'
-                  : 'ahead'
-
-            return (
+        // The growth path: seven stages on one vine, the words to go
+        // written above each stage still ahead.
+        <div
+          className="relative pt-5"
+          title={t.guide}
+        >
+          <ul aria-label={t.stagesLabel}>
+            {segments.map(segment => (
               <li
-                aria-label={format(t.stageState[state], {
-                  count: Math.max(0, item.at - known),
-                  stage: stageName(item),
-                })}
-                className="relative grid min-w-0 justify-items-center gap-1"
-                key={item.key}
+                className={cn(
+                  'absolute top-0 -translate-x-1/2 text-xs whitespace-nowrap tabular-nums',
+                  segment.current
+                    ? 'text-accent-green font-medium'
+                    : 'text-ink-soft'
+                )}
+                data-garden-segment={segment.current ? 'current' : 'ahead'}
+                key={segment.stage.key}
+                style={{
+                  left: `${((segment.index + 1) / WORD_STAGES.length) * 100}%`,
+                }}
               >
-                <span className="grid h-14 place-items-center">
-                  <span
-                    className={cn(
-                      'grid place-items-center rounded-full border-2',
-                      state === 'current'
-                        ? 'bg-accent-green text-surface border-surface ring-accent-green/30 size-14 ring-4'
-                        : state === 'reached'
-                          ? 'bg-accent-green text-surface border-surface size-10'
-                          : 'bg-surface text-ink-soft border-line-strong size-10 border-dashed'
-                    )}
-                  >
-                    <Icon
-                      aria-hidden="true"
-                      className={state === 'current' ? 'size-6' : 'size-4'}
-                    />
-                  </span>
+                <span className="sr-only">
+                  {plural(t.toNext, segment.left, {
+                    count: number(segment.left),
+                    stage: stageName(segment.stage),
+                  })}
                 </span>
                 <span
                   aria-hidden="true"
-                  className={cn(
-                    'hidden max-w-full truncate text-xs sm:block',
-                    state === 'ahead' ? 'text-ink-soft' : 'font-medium'
-                  )}
+                  className="sm:hidden"
                 >
-                  {t.stages[item.key]}
+                  {number(segment.left)}
                 </span>
                 <span
                   aria-hidden="true"
-                  className="text-ink-soft text-xs tabular-nums"
+                  className="max-sm:hidden"
                 >
-                  {item.level ?? '0'}
+                  {plural(t.wordsToGo, segment.left, {
+                    count: number(segment.left),
+                  })}
                 </span>
               </li>
-            )
-          })}
-        </ol>
+            ))}
+          </ul>
+          <ol className="relative grid grid-cols-7">
+            <span
+              aria-hidden="true"
+              className="bg-surface/80 absolute top-[26px] right-[calc(100%/14)] left-[calc(100%/14)] h-1 rounded-full"
+            >
+              <span
+                className="bg-accent-green motion-grow-x block h-full rounded-full"
+                style={{ width: `${fill}%` }}
+              />
+            </span>
+            {WORD_STAGES.map((item, index) => {
+              const Icon = STAGE_ICONS[item.key]
+              const state =
+                index < position.index
+                  ? 'reached'
+                  : index === position.index
+                    ? 'current'
+                    : 'ahead'
+
+              return (
+                <li
+                  aria-label={format(t.stageState[state], {
+                    count: Math.max(0, item.at - known),
+                    stage: stageName(item),
+                  })}
+                  className="relative grid min-w-0 justify-items-center gap-1"
+                  key={item.key}
+                >
+                  <span className="grid h-14 place-items-center">
+                    <span
+                      className={cn(
+                        'grid place-items-center rounded-full border-2',
+                        state === 'current'
+                          ? 'bg-accent-green text-surface border-surface ring-accent-green/30 size-14 ring-4'
+                          : state === 'reached'
+                            ? 'bg-accent-green text-surface border-surface size-10'
+                            : 'bg-surface text-ink-soft border-line-strong size-10 border-dashed'
+                      )}
+                    >
+                      <Icon
+                        aria-hidden="true"
+                        className={state === 'current' ? 'size-6' : 'size-4'}
+                      />
+                    </span>
+                  </span>
+                  <span
+                    aria-hidden="true"
+                    className={cn(
+                      'hidden max-w-full truncate text-xs sm:block',
+                      state === 'ahead' ? 'text-ink-soft' : 'font-medium'
+                    )}
+                  >
+                    {t.stages[item.key]}
+                  </span>
+                  <span
+                    aria-hidden="true"
+                    className="text-ink-soft text-xs tabular-nums"
+                  >
+                    {item.level ?? '0'}
+                  </span>
+                </li>
+              )
+            })}
+          </ol>
+        </div>
       }
-      milestone={
-        <MilestoneNote title={t.guide}>
-          {nextStage
-            ? plural(t.toNext, position.left, { stage: stageName(nextStage) })
-            : t.forest}
-        </MilestoneNote>
-      }
+      layout="aside"
       module="vocabulary"
+      nextStopHidesWithDrawer
       nextStop={
         next.kind === 'due' ? (
           <NextStopCard
@@ -212,6 +244,7 @@ export function WordGardenHero({ next, stats, withDrawer = false }: Props) {
             href={null}
             onAction={next.onStart}
             pinLabel={messages.common.journey.nextStop}
+            size="sm"
             title={plural(t.dueTitle, next.due)}
           />
         ) : (
@@ -221,12 +254,13 @@ export function WordGardenHero({ next, stats, withDrawer = false }: Props) {
             detail={t.plantDetail}
             href={next.href}
             pinLabel={messages.common.journey.nextStop}
+            size="sm"
             title={t.plantTitle}
           />
         )
       }
       stats={
-        <StatStrip>
+        <StatStrip className="sm:justify-end">
           {chips.map(chip => (
             <StatChip
               icon={chip.icon}
@@ -238,6 +272,7 @@ export function WordGardenHero({ next, stats, withDrawer = false }: Props) {
           ))}
         </StatStrip>
       }
+      statsPlacement="top"
       title={t.title}
       titleId="word-garden-title"
     />

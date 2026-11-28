@@ -21,6 +21,11 @@ const PRIORITY_CARD_COUNT = 4
 
 export type BrowseCardLabels = Messages['dictation']['browse']['card']
 
+/** DOM id of a video card's link: the topic page's Continue scrolls to it. */
+export function videoCardId(videoId: string) {
+  return `video-card-${videoId}`
+}
+
 export interface BrowseVideoItem {
   id: string
   title: string
@@ -36,12 +41,15 @@ export interface BrowseVideoItem {
 function VideoCard({
   video,
   canFavorite,
+  isNext,
   labels,
   priority,
   className,
 }: {
   video: BrowseVideoItem
   canFavorite: boolean
+  /** The topic's next video: ringed in the "you are here" pink. */
+  isNext: boolean
   labels: BrowseCardLabels
   priority: boolean
   className?: string
@@ -52,6 +60,7 @@ function VideoCard({
         'border-line bg-surface rounded-panel relative grid min-w-0 content-start gap-1.5 border p-1.5',
         video.practiceHref &&
           'hover:bg-tint-soft focus-within:bg-tint-soft hover-pop cursor-pointer',
+        isNext && 'ring-brand/40 ring-2',
         className
       )}
     >
@@ -60,6 +69,7 @@ function VideoCard({
           href={video.practiceHref}
           aria-label={format(labels.practiceVideo, { title: video.title })}
           className="absolute inset-0 z-0"
+          id={videoCardId(video.id)}
         />
       )}
       <div className="pointer-events-none relative">
@@ -113,6 +123,7 @@ export function BrowseVideoList({
   labels = en.dictation.browse.card,
   priorityCount = PRIORITY_CARD_COUNT,
   layout = 'grid',
+  nextId = null,
 }: {
   videos: BrowseVideoItem[]
   canFavorite: boolean
@@ -124,6 +135,8 @@ export function BrowseVideoList({
   priorityCount?: number
   /** `grid` wraps; `rail` is one horizontally scrolling row (resume shelf). */
   layout?: 'grid' | 'rail'
+  /** The topic's next video, ringed in pink. */
+  nextId?: string | null
 }) {
   if (videos.length === 0)
     return (
@@ -150,6 +163,7 @@ export function BrowseVideoList({
           key={video.id}
           video={video}
           canFavorite={canFavorite}
+          isNext={video.id === nextId}
           labels={labels}
           priority={index < priorityCount}
           className={

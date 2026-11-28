@@ -205,7 +205,7 @@ current user or guest so queued writes are stored per learner.
 | `AppSidebar`                                       | `common/AppSidebar.tsx`                                                         | client  | The dark icon rail (md and up): module links from `PRIMARY_NAV_ITEMS` with a sliding highlight, labels unrolling on hover, then theme and language toggles and the squircle account avatar. `isActiveHref` matches `/` exactly and modules by subtree.                                                                                                                                                     |
 | `AppTabBar`                                        | `common/AppTabBar.tsx`                                                          | client  | Below md: the same links as a floating dark pill (`shadow-tabbar`). Left out on full-height work screens.                                                                                                                                                                                                                                                                                                  |
 | `TopbarMenu` / `TopbarMenuSheet`                   | `common/TopbarMenu.tsx`, `common/TopbarMenuSheet.tsx`                           | client  | Phone menu button; lazy-loads the Account sheet: the account control and the segmented `LocaleToggle`. It lists no modules (the tab bar has them).                                                                                                                                                                                                                                                         |
-| `AccountControl`, `UserMenu`, `UserMenuPopup`      | `common/AccountControl.tsx`, `common/UserMenu.tsx`, `common/UserMenuPopup.tsx`  | client  | Sign in, or the identity menu (favorites, admin for admins, sign out behind a confirm). `variant="rail"` is the avatar alone at the rail foot (every page from md), `chip` the home topbar chip; nothing renders when auth is not configured. Server actions in `src/lib/auth/actions.ts`.                                                                                                                 |
+| `AccountControl`, `UserMenu`, `UserMenuPopup`      | `common/AccountControl.tsx`, `common/UserMenu.tsx`, `common/UserMenuPopup.tsx`  | client  | Sign in, or the identity menu (admin for admins, sign out behind a confirm; favorites moved to the dictation page). `variant="rail"` is the avatar alone at the rail foot (every page from md), `chip` the home topbar chip; nothing renders when auth is not configured. Server actions in `src/lib/auth/actions.ts`.                                                                                     |
 | `AppCredits`                                       | `common/AppCredits.tsx`                                                         | client  | Last row of the board. Hidden on work screens.                                                                                                                                                                                                                                                                                                                                                             |
 | `ThemeProvider`, `I18nProvider`, `AccountProvider` | `common/ThemeProvider.tsx`, `src/i18n/client.tsx`, `common/AccountProvider.tsx` | client  | Mounted once in `src/app/layout.tsx` (`I18nProvider` > `AccountProvider` > `ThemeProvider`); the layout reads the session once (`readAccount`) and `useAccount()` serves it.                                                                                                                                                                                                                               |
 
@@ -242,18 +242,18 @@ graph TD
   Page --> Browse["browse area + ContinueFloat (client)"]
 ```
 
-| Piece                                             | File                                 | Role                                                                                                                                                                                                                                    |
-| ------------------------------------------------- | ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `JourneyCard`, `JourneyHeadline`, `MilestoneNote` | `journey/JourneyCard.tsx`            | Slots in a fixed order: title, headline, metaphor, milestone, stats, next stop; `layout` `split` or `stacked`; room for a drawer handle. Callers pass the headline `unit` through `plural(forms, value)`.                               |
-| `StatChip`, `StatStrip`                           | `journey/StatChip.tsx`               | A number with its icon in a pill; linked chips pop and show a chevron, static chips never do. Label visible from sm (`sr-only` below) unless `labelAlways` (home numbers, Writing criteria); `size` `md` or `lg`.                       |
-| `NextStopCard`                                    | `journey/NextStopCard.tsx`           | Pin chip, detail, title and one `ink` button (`href`, or `onAction` for a modal); `done` all-clear state; `card` or `compact`; `id` observed by `ContinueFloat`.                                                                        |
-| `DrawerRow`, `DrawerHandle`                       | `journey/SideDrawer.tsx` (client)    | Side card folded by default; grid tracks animate; open handle is `cta`; the 32px handle pill has a 44px hit area.                                                                                                                       |
-| `ContinueFloat`                                   | `journey/ContinueFloat.tsx` (client) | Floating Continue to "you are here": scroll + resize + settle measuring, `fallbackId`, `onBeforeJump`, hidden while the next stop is on screen.                                                                                         |
-| `SessionEnd`                                      | `journey/SessionEnd.tsx`             | Wins, journey step, fix-up list (folded past 3 with a native disclosure), next stop, quiet secondary links, in that order. `focusTitle` focuses the heading on mount.                                                                   |
-| `FocusOnMount`                                    | `journey/FocusOnMount.tsx` (client)  | Focuses an element by id once. End screens that replace a session in place (dictation finish, grammar result, vocabulary recall end) set `focusTitle` so focus does not fall to the body; the IELTS result page, a page load, does not. |
-| `EmptyState`, `StepDots`                          | `journey/*.tsx`                      | Empty list with one action; a static row of step dots.                                                                                                                                                                                  |
-| `InlineNotice`, `ConfirmDialog`, `Breadcrumb`     | `common/*.tsx`                       | Status / error banner (error is danger with an icon); leave / restart confirm; wayfinding used by `PageHeader breadcrumb` and `AppTopbar page`.                                                                                         |
-| `SkeletonJourney`, `SkeletonPlayer`               | `common/PageSkeletons.tsx`           | The journey card shape; a full-height focus-screen skeleton with no topbar. `SkeletonPageShell page` keeps the topbar title stable.                                                                                                     |
+| Piece                                             | File                                 | Role                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| ------------------------------------------------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `JourneyCard`, `JourneyHeadline`, `MilestoneNote` | `journey/JourneyCard.tsx`            | Slots in a fixed order: title, headline, metaphor, milestone, stats, next stop; `layout` `split`, `aside` (fixed next stop column, `asideWidth` `sm` 17rem or `lg` 26rem) or `stacked`; the left column is `@container/journey`, and under 56rem the stat chips show icon and number only; `statsPlacement` `below` or `top` (chips beside the headline); `nextStop` optional (IELTS leaves it out); `nextStopHidesWithDrawer` hides it on wide screens while a `DrawerRow` side card is open (vocabulary); room for a drawer handle. Callers pass the headline `unit` through `plural(forms, value)`. |
+| `StatChip`, `StatStrip`                           | `journey/StatChip.tsx`               | A number with its icon in a pill; linked chips pop and show a chevron, static chips never do. Label visible from sm (`sr-only` below) unless `labelAlways` (home numbers, Writing criteria); `size` `md` or `lg`.                                                                                                                                                                                                                                                                                                                                                                                      |
+| `NextStopCard`                                    | `journey/NextStopCard.tsx`           | Pin chip, detail, title and one `ink` button (`href`, or `onAction` for a modal); `done` all-clear state; `card` or `compact`; `size` `md` or `sm` (tighter card); `media` (a thumbnail left of the title, the pin on its corner; dictation); `id` observed by `ContinueFloat`.                                                                                                                                                                                                                                                                                                                        |
+| `DrawerRow`, `DrawerHandle`                       | `journey/SideDrawer.tsx` (client)    | Side card folded by default; grid tracks animate; open handle is `cta`; the 32px handle pill has a 44px hit area. Open, the row carries `data-drawer-open` on `group/drawer`: from `lg` the stat chips show icon and number only.                                                                                                                                                                                                                                                                                                                                                                      |
+| `ContinueFloat`                                   | `journey/ContinueFloat.tsx` (client) | Floating Continue to "you are here": scroll + resize + page height (ResizeObserver) + settle measuring, `fallbackId`, `onBeforeJump`, `nudge` (a small double bounce on arrival, `transform` only, none under reduced motion), hidden while the next stop is on screen unless `persistent` (IELTS, Grammar and a dictation topic: always shown).                                                                                                                                                                                                                                                       |
+| `SessionEnd`                                      | `journey/SessionEnd.tsx`             | Wins, journey step, fix-up list (folded past 3 with a native disclosure), next stop, quiet secondary links, in that order. `focusTitle` focuses the heading on mount.                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| `FocusOnMount`                                    | `journey/FocusOnMount.tsx` (client)  | Focuses an element by id once. End screens that replace a session in place (dictation finish, grammar result, vocabulary recall end) set `focusTitle` so focus does not fall to the body; the IELTS result page, a page load, does not.                                                                                                                                                                                                                                                                                                                                                                |
+| `EmptyState`, `StepDots`                          | `journey/*.tsx`                      | Empty list with one action; a static row of step dots.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `InlineNotice`, `ConfirmDialog`, `Breadcrumb`     | `common/*.tsx`                       | Status / error banner (error is danger with an icon); leave / restart confirm; wayfinding used by `PageHeader breadcrumb` and `AppTopbar page`.                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `SkeletonJourney`, `SkeletonPlayer`               | `common/PageSkeletons.tsx`           | The journey card shape; a full-height focus-screen skeleton with no topbar. `SkeletonPageShell page` keeps the topbar title stable.                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 
 Advance helpers apply a finished session to the loaded journey so the end
 screen is not stale (a replay adds 0): `advanceTopicRecord`
@@ -316,15 +316,24 @@ simple view (default, cookie-backed, `homeView.ts`) and the full view.
 ### 7.1 Landing and browse
 
 `/dictation` (server) puts the title in the topbar and renders a `DrawerRow`:
-`ListeningJourneyHero` (the scrubber metaphor on a `JourneyCard`, four chips,
-the next stop from `pickNextStop`: resume a half-done video, else due review
+`ListeningJourneyHero` (a short `JourneyCard`: the scrubber metaphor with no
+inner panel, "N to go" beside the playhead and "Track N · target" at the end,
+no milestone line; four chips in the top right; a small next stop
+(`size="sm"`, `layout="aside"`, hidden while the side drawer is open) with
+the video's thumbnail or the topic's image as `media` (then `asideWidth="lg"`)
+from
+`pickNextStop`: resume a half-done video, else due review
 sentences, else the topic nearest gold) with `DictationSide` folded beside it
-(recent unfinished videos, latest results, favorites). Below, `RecordShelves`
+(recent unfinished videos, latest results, favorites). Below, the Topics
+heading with a Favorites button beside it (signed-in learners only), then `RecordShelves`
 shows topics as records (playing, new, gold).
 
 `/dictation/[topicSlug]` passes the topic description to the topbar as the
-subtitle and renders `TopicJourney` (the topic's `RecordDisc`,
-videos done, videos to gold, next video via `pickTopicNextVideo`), then
+subtitle and renders `TopicJourney` (the topic's `RecordDisc`, videos done,
+videos to gold; no next stop row: the next video from `pickTopicNextVideo`
+gets a pink ring on its card and an always-on `TopicContinueFloat`, which
+opens its section if folded (`openBrowseDisclosure`), scrolls to the card
+(`videoCardId`), focuses it and bounces it (`nudge="li"`)), then
 `BrowseToolbar` (debounced search; the level filter folds behind a filter
 button; no sort, course order only), then `SectionAccordion` (the section
 holding the next video starts open; counts show to guests too) or, while
@@ -332,16 +341,16 @@ searching, `FlatResults` with `BrowseVideoList`, an `EmptyState` and
 `BrowsePagination` (`buildBrowseHref` keeps a non-default sort).
 `/dictation/no-topic` and `/dictation/favorites` share `VideoListPage`.
 
-| Component                                                          | File                              | Client?         | Role                                                                          |
-| ------------------------------------------------------------------ | --------------------------------- | --------------- | ----------------------------------------------------------------------------- |
-| `ListeningJourneyHero`                                             | `browse/ListeningJourneyHero.tsx` | server          | Listening journey card; playhead in the you-are-here pink.                    |
-| `DictationSide`                                                    | `browse/DictationSide.tsx`        | server          | The drawer's recent and favorites lists.                                      |
-| `RecordShelves`, `RecordDisc`                                      | `browse/RecordShelves.tsx`        | server          | Topic records whose ring fills with progress.                                 |
-| `TopicJourney`                                                     | `browse/TopicJourney.tsx`         | server          | Small stacked journey card for one topic or list.                             |
-| `VideoListPage`                                                    | `browse/VideoListPage.tsx`        | server          | Shared shell of the uncategorized and favorites lists.                        |
-| `BrowseVideoList` / `BrowseVideoListClient`                        | `browse/BrowseVideoList*.tsx`     | server / client | Video cards (whole card links to practice, a tick once done, no action pill). |
-| `SectionAccordion`, `BrowseDisclosure`                             | `browse/*.tsx`                    | server / client | Folding sections whose closed bodies ship only records.                       |
-| `BrowseToolbar`, `BrowsePagination`, `FavoriteButton`, `TopicGrid` | `browse/*.tsx`                    | mixed           | Search and level, pager (44px), favorite star (44px), fallback topic grid.    |
+| Component                                                          | File                              | Client?         | Role                                                                                          |
+| ------------------------------------------------------------------ | --------------------------------- | --------------- | --------------------------------------------------------------------------------------------- |
+| `ListeningJourneyHero`                                             | `browse/ListeningJourneyHero.tsx` | server          | Listening journey card; playhead in the you-are-here pink.                                    |
+| `DictationSide`                                                    | `browse/DictationSide.tsx`        | server          | The drawer's recent and favorites lists.                                                      |
+| `RecordShelves`, `RecordDisc`                                      | `browse/RecordShelves.tsx`        | server          | Topic records whose ring fills with progress.                                                 |
+| `TopicJourney`                                                     | `browse/TopicJourney.tsx`         | server          | Small stacked journey card for one topic or list; renders `TopicContinueFloat`.               |
+| `VideoListPage`                                                    | `browse/VideoListPage.tsx`        | server          | Shared shell of the uncategorized and favorites lists.                                        |
+| `BrowseVideoList` / `BrowseVideoListClient`                        | `browse/BrowseVideoList*.tsx`     | server / client | Video cards (whole card links to practice, a tick once done, no action pill).                 |
+| `SectionAccordion`, `BrowseDisclosure`                             | `browse/*.tsx`                    | server / client | Folding sections whose closed bodies ship only records; a window event opens one by panel id. |
+| `BrowseToolbar`, `BrowsePagination`, `FavoriteButton`, `TopicGrid` | `browse/*.tsx`                    | mixed           | Search and level, pager (44px), favorite star (44px), fallback topic grid.                    |
 
 ### 7.2 Practice
 
@@ -471,11 +480,16 @@ graph TD
   Answers are graded in the browser first and the server's verdict wins. It
   prefetches the next due page while five cards remain and re-deals without
   listening tasks for 15 minutes after "I cannot listen now".
-- `WordGardenHero`: the seven-stage garden vine as the metaphor, three today
-  chips, and the next stop (`pickNextStop` in `VocabularyLanding`): due recall
+- `WordGardenHero`: a short card. The seven-stage garden vine as the metaphor,
+  with the words to go written above each stage still ahead (the current one
+  green, the rest quiet, the number alone on phones; no milestone line and no
+  stage badge), three today chips in the top right (`statsPlacement="top"`),
+  and a small next stop (`size="sm"`) in a narrow right column
+  (`layout="aside"`) (`pickNextStop` in `VocabularyLanding`): due recall
   cards ("12 words due, Next: word", Start Recall opens the modal) or, with
   nothing due, Plant new words (scrolls to the explore deck).
-- `VocabularySearchPanel`: lookup and search in parallel; each result is a
+- `VocabularySearchPanel`: the Words link to `/vocabulary/words` in its
+  header (no row of its own on the landing); lookup and search in parallel; each result is a
   button that loads that word, with `VocabTermHeader inline` inside it (no
   nested speak button).
 - `VocabularyExplorePanel`: frequency-ranked words as a card-stack deck with one
@@ -541,14 +555,19 @@ and `grammar/error.tsx` renders `RouteError`.
 
 `GrammarPath` (`src/components/grammar/path/GrammarPath.tsx`, client) puts the
 title in the topbar, then `GrammarJourneyHero` (the CEFR staircase on a
-`JourneyCard`, stars / lessons / review due / weak spots chips, the next stop
-with the unit's progress bar), then the winding path of `UnitTrail`s.
+short `JourneyCard`: a flag on top of every step, a tick once the level is
+done, the pink "you are here" pin with "N to go" on the step being climbed and
+a quiet "N to go" on the steps ahead; stars / lessons / review due / weak spots
+chips in the top right via `statsPlacement="top"`; a sync line under the
+headline while sessions replay; no milestone line and no next stop card), then
+the winding path of `UnitTrail`s.
 
 - Nodes: round 3D buttons (`id="node-{lessonId}"`) along `ZIGZAG`; colour and
   icon follow the state. Units fold; `initialOpenUnitIds` opens the current one.
-- The shared `ContinueFloat` scrolls back to the next node, unfolding its unit
-  first (`onBeforeJump`, `fallbackId="unit-{id}"`).
-- Next-step href and label helpers live in `path/pathNext.ts` (also used by the
+- The shared `ContinueFloat` (`persistent`, always on screen while there is a
+  next node) scrolls to the next node, unfolding its unit first
+  (`onBeforeJump`, `fallbackId="unit-{id}"`).
+- Next-step href and label helpers live in `path/pathNext.ts` (used by the
   session end and notes).
 - Sync: `useSyncExternalStore` watches the outbox for pending grammar sessions
   and calls `router.refresh()` when they land.
@@ -596,11 +615,15 @@ when needed, and attempt pages only load attempts the current actor owns.
 ### 10.2 Catalogue and test page (`src/components/ielts/catalogue/`)
 
 `IeltsHome` (server) renders `DrawerRow` with `JourneyHero` (the trail of Camp,
-Ridge, Peak, Summit on a stacked `JourneyCard`, four chips, a compact next stop
-into the next skill; on phones the trail circles are 44px and only the
-milestone ahead keeps a visible label) and `ProgressTabs` folded beside it (recent attempts, weak
-spots), then `TestPath` (books as metro lines of test stations) and the shared
-`ContinueFloat`. The test page renders `TestJourney` (skills banded N of 3 with
+Ridge, Peak, Summit on a stacked `JourneyCard`; above each stage, as plain
+text with no lines, the steps left in it, from `journeySegments` in `testPath.ts`, a
+tick once the stage is done and the number alone on phones; four chips in the
+card's top right corner via `statsPlacement="top"`; no milestone line and no
+next stop card; on phones the trail circles are 44px and only the milestone
+ahead keeps a visible label) and `ProgressTabs` folded beside it (recent
+attempts, weak spots), then `TestPath` (books as metro lines of test stations)
+and a `persistent` `ContinueFloat` that is always on screen and scrolls to the
+next test station. The test page renders `TestJourney` (skills banded N of 3 with
 `SkillPips`, best band / target / attempts chips, the next skill from
 `nextSkillOf`) and `TestLaunchers` (`SkillLauncher.tsx`: one Practice / Mock
 `Segmented` for the test, one folding row per skill, the recommended one open,

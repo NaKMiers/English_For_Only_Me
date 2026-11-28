@@ -39,7 +39,11 @@ export const dictation = {
       one: 'sentence',
       other: 'sentences',
     },
-    nowPlaying: 'Now playing: Track {number}',
+    track: 'Track {number}',
+    sentencesToGo: {
+      one: '{count} to go',
+      other: '{count} to go',
+    },
     toNext: {
       one: '{count} sentence to Track {number}',
       other: '{count} sentences to Track {number}',
@@ -94,11 +98,6 @@ export const dictation = {
       other: '{count} videos to gold',
     },
     gold: 'Gold record: every video is done.',
-    resume: 'Pick up where you left off',
-    nextVideo: 'Next video',
-    start: 'Start',
-    continue: 'Continue',
-    allDone: 'Every video here is done. Replay one, or pick another record.',
   },
   topic: {
     notFound: 'Topic not found',

@@ -79,6 +79,41 @@ describe('ContinueFloat', () => {
     expect(screen.queryByRole('button')).toBeNull()
   })
 
+  test('persistent stays on screen with the target in view', () => {
+    place('here', 600)
+    place('next-stop', 100)
+    renderFloat({ nextStopId: 'next-stop', persistent: true })
+
+    const button = screen.getByRole('button', { name: 'Continue' })
+
+    expect(button.querySelector('.lucide-arrow-down')).not.toBeNull()
+    fireEvent.click(button)
+    flushFrames()
+    expect(document.getElementById('here')?.scrollIntoView).toHaveBeenCalled()
+  })
+
+  test('nudge bounces the target card once the scroll settles', () => {
+    // Only timers: the frames stay on the test's own stub.
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
+    const card = document.createElement('li')
+    const target = place('here', 2000)
+    const animate = vi.fn()
+
+    card.append(target)
+    document.body.append(card)
+    card.animate = animate
+    renderFloat({ nudge: 'li', persistent: true })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
+    flushFrames()
+    expect(animate).not.toHaveBeenCalled()
+    window.dispatchEvent(new Event('scrollend'))
+    vi.runAllTimers()
+    // Once, on the card, however the scroll ended.
+    expect(animate).toHaveBeenCalledTimes(1)
+    vi.useRealTimers()
+  })
+
   test('points down when the target is below, and up when above', () => {
     const target = place('here', 2000)
     const { container } = renderFloat()

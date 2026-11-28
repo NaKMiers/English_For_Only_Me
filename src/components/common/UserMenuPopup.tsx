@@ -1,6 +1,6 @@
 'use client'
 
-import { Heart, LogOut, Shield } from 'lucide-react'
+import { LogOut, Shield } from 'lucide-react'
 import Link from 'next/link'
 import { useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 
@@ -76,10 +76,6 @@ export function UserMenuPopup({
           side={side}
           sideOffset={side === 'right' ? 12 : 4}
         >
-          <DropdownMenuItem render={<Link href="/dictation/favorites" />}>
-            <Heart aria-hidden="true" />
-            {t.common.auth.favorites}
-          </DropdownMenuItem>
           {isAdmin && (
             <DropdownMenuItem render={<Link href="/admin" />}>
               <Shield aria-hidden="true" />

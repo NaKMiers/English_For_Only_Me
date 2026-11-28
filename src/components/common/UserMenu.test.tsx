@@ -27,7 +27,7 @@ vi.mock('./UserMenuPopup', () => {
           >
             {chip}
           </button>
-          <div role="menu">Favorites</div>
+          <div role="menu">Sign out</div>
         </>
       )
     },

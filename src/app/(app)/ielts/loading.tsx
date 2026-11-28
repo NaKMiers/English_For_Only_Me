@@ -25,7 +25,9 @@ export default async function IeltsLoading() {
       >
         <SkeletonJourney
           layout="stacked"
-          metaphorClassName="h-[92px]"
+          metaphorClassName="h-[120px]"
+          nextStop={false}
+          statsPlacement="top"
         />
         {/* The metro lines: one row of stations per book. */}
         {[0, 1, 2].map(index => (

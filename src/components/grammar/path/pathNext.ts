@@ -3,8 +3,8 @@ import type { Messages } from '@/i18n/messages'
 import type { PathNext } from '@/modules/grammar/path/buildGrammarPath'
 
 /**
- * Where the path's next step lives and what to call it. Shared by the path
- * page's next stop and the session end's fallback next stop. Pure.
+ * Where the path's next step lives and what to call it. Shared by the notes
+ * page and the session end's fallback next stop. Pure.
  */
 export function nextHref(next: PathNext) {
   switch (next.kind) {

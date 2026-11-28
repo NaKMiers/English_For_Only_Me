@@ -13,7 +13,12 @@ interface StatChipProps {
   icon: LucideIcon
   /** Extra icon classes, e.g. `fill-current` for a star. */
   iconClassName?: string
-  /** What the number counts. Visible from `sm`, `sr-only` below. */
+  /**
+   * What the number counts. Visible from `sm`, `sr-only` below, and also
+   * `sr-only` on wide screens while a `DrawerRow`'s side card is open or
+   * when the journey card's left column (`@container/journey`) is under
+   * 56rem; the chip's `title` still names it.
+   */
   label: string
   /**
    * Keep the label visible on phones too, for chips whose icons cannot
@@ -58,7 +63,8 @@ export function StatChip({
         <span
           className={cn(
             'text-ink-soft',
-            !labelAlways && 'max-sm:sr-only',
+            !labelAlways &&
+              'max-sm:sr-only lg:group-data-[drawer-open]/drawer:sr-only @max-[56rem]/journey:sr-only',
             size === 'lg' ? 'text-sm' : 'text-xs'
           )}
         >
@@ -87,6 +93,7 @@ export function StatChip({
         className={cn(shared, 'soft-press hover-pop hover:bg-surface group')}
         data-stat-chip="link"
         href={href}
+        title={label}
       >
         {body}
         <ChevronRight
@@ -100,6 +107,7 @@ export function StatChip({
     <div
       className={shared}
       data-stat-chip="static"
+      title={label}
     >
       {body}
     </div>

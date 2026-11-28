@@ -45,22 +45,22 @@ function path(lessonProgress = [passedLesson('u01-l01')]) {
 }
 
 describe('GrammarPath', () => {
-  test('meets the landing budget: one next stop, one cta, 4 chips', () => {
+  test('keeps the card short: no next stop, chips beside the headline', () => {
     const { container } = render(<GrammarPath path={path()} />)
+    const header = container.querySelector('[data-journey-slot="headline"]')
+      ?.parentElement?.parentElement
 
-    expectLandingBudget(container)
+    expect(container.querySelector('[data-journey-slot="next"]')).toBeNull()
+    expect(
+      header?.querySelector('[data-journey-slot="stats"] [data-stat-strip]')
+    ).not.toBeNull()
+    expectLandingBudget(container, { ctas: 0, nextStops: 0 })
   })
 
-  test('shows the next step and opens only the current unit', () => {
+  test('leaves the next step to the path and opens only the current unit', () => {
     render(<GrammarPath path={path()} />)
 
-    expect(
-      screen.getByRole('heading', { name: 'Continue: Lesson u01-l02' })
-    ).toBeTruthy()
-    expect(screen.getByRole('link', { name: /Start lesson/ })).toHaveProperty(
-      'href',
-      expect.stringContaining('/grammar/lessons/u01-l02')
-    )
+    expect(screen.queryByRole('link', { name: /Start lesson/ })).toBeNull()
     // Unit 1 is open, so its lessons are rendered; unit 2 is folded.
     expect(screen.getByRole('button', { name: /Lesson u01-l01, done/ }))
     expect(screen.queryByRole('button', { name: /Lesson u02-l01/ })).toBeNull()
@@ -72,7 +72,11 @@ describe('GrammarPath', () => {
     expect(
       screen.getAllByRole('listitem', { name: /you are here/ })
     ).toHaveLength(1)
-    expect(screen.getByText(/lessons? to finish/)).toBeTruthy()
+    // The step being climbed carries the lessons still to go.
+    const current = screen.getByRole('listitem', { name: /you are here/ })
+
+    expect(current.getAttribute('title')).toMatch(/lessons? to finish/)
+    expect(current.textContent).toMatch(/\d+ to go/)
   })
 
   test('links Review due to the first due lesson', () => {

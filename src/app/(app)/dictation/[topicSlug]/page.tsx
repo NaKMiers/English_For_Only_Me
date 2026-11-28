@@ -185,6 +185,7 @@ export default async function TopicPage({ params, searchParams }: PageProps) {
             groups={groups}
             canFavorite={canFavorite}
             labels={labels}
+            nextId={next?.video.id ?? null}
             openKey={next?.groupKey ?? null}
           />
         )}
