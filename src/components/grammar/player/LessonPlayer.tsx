@@ -1,6 +1,6 @@
 'use client'
 
-import { Check, Flame, Volume2, VolumeX, X } from 'lucide-react'
+import { Check, Flame, Target, Volume2, VolumeX, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import {
   useCallback,
@@ -27,7 +27,10 @@ import { useMessages } from '@/i18n/client'
 import { format, plural } from '@/i18n/format'
 import { useLessonSfx } from '@/lib/audio/useLessonSfx'
 import { cn } from '@/lib/utils'
-import type { GrammarSessionMode } from '@/modules/grammar/constants'
+import {
+  type GrammarSessionMode,
+  PASS_ACCURACY,
+} from '@/modules/grammar/constants'
 import { isPracticeCard } from '@/modules/grammar/course/types'
 import { gradeCard } from '@/modules/grammar/grading/gradeCard'
 import type { PlayerJourney } from '@/modules/grammar/path/playerJourney'
@@ -275,6 +278,22 @@ export function LessonPlayer({
             // A missed card comes back once: a pip, not a shrinking bar.
             <span className="bg-pastel-peach text-accent-orange shrink-0 rounded-full px-2 py-0.5 text-xs font-medium tabular-nums">
               {plural(messages.common.journey.retryPip, progress.retriesLeft)}
+            </span>
+          ) : null}
+          {mode === 'checkpoint' || mode === 'review' ? (
+            // The pass mark stays in sight for the whole graded run (the
+            // long intro sentence shows on the first card only).
+            <span
+              className="bg-tint text-ink-soft inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium tabular-nums"
+              data-pass-mark=""
+            >
+              <Target
+                aria-hidden
+                className="size-3.5"
+              />
+              {format(t.passMark, {
+                percent: Math.round(PASS_ACCURACY * 100),
+              })}
             </span>
           ) : null}
           <span className="text-ink-soft shrink-0 text-xs tabular-nums">

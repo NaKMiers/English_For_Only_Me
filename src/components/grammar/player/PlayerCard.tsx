@@ -117,14 +117,18 @@ function SentenceWithBlank({
 
 interface ExplainProps {
   card: ExplainCard
+  /**
+   * Drop the "Remember" tag: on the notes page every card would repeat it.
+   */
+  hideTag?: boolean
 }
 
-export function ExplainCardView({ card }: ExplainProps) {
+export function ExplainCardView({ card, hideTag = false }: ExplainProps) {
   const t = useMessages().grammar.card
 
   return (
     <div className="grid gap-4">
-      <Prompt>{t.remember}</Prompt>
+      {hideTag ? null : <Prompt>{t.remember}</Prompt>}
       <h2 className="font-sans text-2xl leading-tight font-medium sm:text-3xl">
         {card.title}
       </h2>

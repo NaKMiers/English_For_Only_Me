@@ -114,6 +114,7 @@ export const grammar: Messages['grammar'] = {
   player: {
     leave: 'Rời bài học',
     progress: 'Tiến độ: {percent}%',
+    passMark: 'Đạt {percent}%',
     streak: 'Chuỗi trả lời đúng',
     mute: 'Tắt âm thanh',
     unmute: 'Bật âm thanh',
@@ -190,6 +191,18 @@ export const grammar: Messages['grammar'] = {
     backToPath: 'Về lộ trình',
     nextLesson: 'Bài tiếp theo',
     takeCheckpoint: 'Làm bài kiểm tra',
+    detailUnlocked: 'Vừa mở khóa',
+    detailUpNext: 'Tiếp theo',
+    journeyGained: {
+      one: '+1 trong {unit}, còn {count} bài đến bài kiểm tra',
+      other: '+1 trong {unit}, còn {count} bài đến bài kiểm tra',
+    },
+    journeyHeld: {
+      one: '{unit}: còn {count} bài đến bài kiểm tra',
+      other: '{unit}: còn {count} bài đến bài kiểm tra',
+    },
+    journeyGainedOpen: '+1 trong {unit}, bài kiểm tra đã mở',
+    journeyHeldOpen: '{unit}: bài kiểm tra đã mở',
   },
   api: {
     notConfigured: 'Chưa cấu hình cơ sở dữ liệu.',

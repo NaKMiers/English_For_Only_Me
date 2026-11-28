@@ -113,6 +113,7 @@ export const grammar = {
   player: {
     leave: 'Leave lesson',
     progress: 'Progress: {percent}%',
+    passMark: 'Pass {percent}%',
     streak: 'Correct answer streak',
     mute: 'Mute sound',
     unmute: 'Turn sound on',
@@ -189,6 +190,18 @@ export const grammar = {
     backToPath: 'Back to path',
     nextLesson: 'Next lesson',
     takeCheckpoint: 'Take the checkpoint',
+    detailUnlocked: 'Unlocked',
+    detailUpNext: 'Up next',
+    journeyGained: {
+      one: '+1 in {unit}, {count} lesson to the checkpoint',
+      other: '+1 in {unit}, {count} lessons to the checkpoint',
+    },
+    journeyHeld: {
+      one: '{unit}: {count} lesson to the checkpoint',
+      other: '{unit}: {count} lessons to the checkpoint',
+    },
+    journeyGainedOpen: '+1 in {unit}, the checkpoint is open',
+    journeyHeldOpen: '{unit}: the checkpoint is open',
   },
   api: {
     notConfigured: 'The database is not configured.',

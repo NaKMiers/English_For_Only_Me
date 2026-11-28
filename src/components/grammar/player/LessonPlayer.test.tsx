@@ -159,6 +159,38 @@ describe('LessonPlayer leave guard', () => {
   })
 })
 
+describe('LessonPlayer pass mark', () => {
+  it('a checkpoint keeps its pass mark in sight after the first card', () => {
+    ownerCount += 1
+    render(
+      <OutboxOwnerProvider ownerKey={`owner-${ownerCount}`}>
+        <LessonPlayer
+          canSave={false}
+          exitHref="/grammar"
+          intro="Pass with 80% to finish the unit."
+          mode="checkpoint"
+          plays={plays}
+          targetId="u01"
+          title="Checkpoint"
+        />
+      </OutboxOwnerProvider>
+    )
+
+    fireEvent.click(action(/^continue$/i))
+
+    expect(screen.queryByText('Pass with 80% to finish the unit.')).toBeNull()
+    expect(document.querySelector('[data-pass-mark]')?.textContent).toContain(
+      'Pass 80%'
+    )
+  })
+
+  it('a lesson has no pass mark chip', () => {
+    renderPlayer(false)
+
+    expect(document.querySelector('[data-pass-mark]')).toBeNull()
+  })
+})
+
 describe('LessonPlayer saving', () => {
   it('saves the first answers once and shows the unlock from the server', async () => {
     const fetchMock = vi.fn(() => jsonResponse(200, savedResult))
@@ -167,7 +199,10 @@ describe('LessonPlayer saving', () => {
     renderPlayer()
     answerAndFinish()
 
-    expect(await screen.findByText(/Unlocked: Bài hai/)).toBeInTheDocument()
+    // The unlock is the next stop: "Unlocked · Bài hai".
+    expect(
+      (await screen.findByText('Bài hai')).closest('[data-next-stop]')
+    ).not.toBeNull()
 
     const calls = sessionCalls(fetchMock)
 
@@ -201,7 +236,7 @@ describe('LessonPlayer saving', () => {
     answerAndFinish()
 
     expect(
-      await screen.findByText(/Unlocked: Bài hai/, undefined, { timeout: 8000 })
+      await screen.findByText('Bài hai', undefined, { timeout: 8000 })
     ).toBeInTheDocument()
 
     const keys = sessionCalls(fetchMock).map(
@@ -274,9 +309,43 @@ describe('LessonPlayer session end', () => {
     const next = await screen.findByRole('link', { name: 'Next lesson' })
 
     expect(next).toHaveAttribute('href', '/grammar/lessons/u01-l02')
-    expect(screen.getByText('+1 lesson on the path')).toBeInTheDocument()
-    expect(screen.getByText(/1 of 3 lessons done/)).toBeInTheDocument()
+    // One journey line: the step taken and the distance to the checkpoint.
+    expect(
+      screen.getByText('+1 in Unit 1 · A1, 2 lessons to the checkpoint')
+    ).toBeInTheDocument()
+    expect(document.querySelectorAll('[data-next-stop]')).toHaveLength(1)
+    // Accuracy, streak and time are chips beside the stars.
+    expect(
+      document.querySelectorAll(
+        '[data-session-slot="stats"] [data-stat-chip="static"]'
+      )
+    ).toHaveLength(3)
     expect(ctaCount()).toBe(1)
+  })
+
+  it('a replay of a passed lesson adds nothing to the unit', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() => jsonResponse(200, { ...savedResult, unlocked: null }))
+    )
+    renderPlayer(true, {
+      next: { kind: 'lesson', lessonId: 'u01-l02', title: 'Bài hai' },
+      nextUnitFirstLessonId: null,
+      unit: {
+        ...unit,
+        lessons: [
+          { id: 'u01-l01', stars: 2, state: 'passed' },
+          { id: 'u01-l02', stars: 0, state: 'open' },
+          { id: 'u01-l03', stars: 0, state: 'locked' },
+        ],
+      } as unknown as PathUnit,
+    })
+    answerAndFinish()
+
+    expect(
+      await screen.findByText('Unit 1 · A1: 2 lessons to the checkpoint')
+    ).toBeInTheDocument()
+    expect(screen.queryByText(/^\+1/)).toBeNull()
   })
 
   it("a passed checkpoint opens the new unit's first lesson", async () => {
@@ -328,11 +397,13 @@ describe('LessonPlayer session end', () => {
     })
     answerAndFinish()
 
-    const next = await screen.findByRole('link', {
-      name: 'Practise 4 weak questions',
-    })
-
-    expect(next).toHaveAttribute('href', '/grammar/practice')
+    expect(
+      await screen.findByText('Practise 4 weak questions')
+    ).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Go' })).toHaveAttribute(
+      'href',
+      '/grammar/practice'
+    )
     expect(screen.getByRole('link', { name: 'Back to path' })).toHaveAttribute(
       'href',
       '/grammar'

@@ -1,12 +1,25 @@
 'use client'
 
-import { Check, CloudOff, Loader2, Lock, Star, X } from 'lucide-react'
+import {
+  Check,
+  Clock3,
+  CloudOff,
+  Flame,
+  Loader2,
+  Lock,
+  PartyPopper,
+  Star,
+  Target,
+  X,
+} from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 
 import { InlineNotice } from '@/components/common/InlineNotice'
 import { useClientOutbox } from '@/components/common/OutboxOwnerProvider'
+import { NextStopCard } from '@/components/journey/NextStopCard'
 import { SessionEnd } from '@/components/journey/SessionEnd'
+import { StatChip, StatStrip } from '@/components/journey/StatChip'
 import { ActionButton } from '@/components/ui/ActionButton'
 import { useMessages } from '@/i18n/client'
 import { format, plural } from '@/i18n/format'
@@ -42,6 +55,14 @@ import {
 // Past this the save is most likely waiting for the network: say so, while
 // the outbox keeps delivering in the background.
 const SLOW_SAVE_MS = 6000
+
+/** The one next stop after a session: where it goes and what it is. */
+interface NextStep {
+  actionLabel: string
+  detail: string
+  href: string
+  title: string
+}
 
 type SaveState =
   | { kind: 'saving' }
@@ -248,59 +269,69 @@ export function PlayerResult({
     !(journey.next.kind === 'checkpoint' && journey.next.unitId === targetId)
       ? journey.next
       : null
-  let next: { href: string; label: string } | null = null
+  let next: NextStep | null = null
 
   if (unlocked?.kind === 'lesson')
     next = {
+      actionLabel: t.nextLesson,
+      detail: t.detailUnlocked,
       href: `/grammar/lessons/${unlocked.lessonId}`,
-      label: t.nextLesson,
+      title: unlocked.title,
     }
   else if (unlocked?.kind === 'checkpoint')
     next = {
+      actionLabel: t.takeCheckpoint,
+      detail: t.detailUnlocked,
       href: `/grammar/units/${unlocked.unitId}/checkpoint`,
-      label: t.takeCheckpoint,
+      title: unlocked.title,
     }
   else if (unlocked?.kind === 'unit' && journey?.nextUnitFirstLessonId)
     next = {
+      actionLabel: t.startUnit,
+      detail: t.detailUnlocked,
       href: `/grammar/lessons/${journey.nextUnitFirstLessonId}`,
-      label: t.startUnit,
+      title: unlocked.title,
     }
   else if (pathNext) {
     const href = nextHref(pathNext)
 
     if (href)
-      next = { href, label: nextLabel(messages.grammar.path.next, pathNext) }
+      next = {
+        actionLabel: messages.grammar.path.go,
+        detail: t.detailUpNext,
+        href,
+        title: nextLabel(messages.grammar.path.next, pathNext),
+      }
   }
+
+  // Every lesson of the course is done: the all-clear instead of a stop.
+  const allClear = !next && journey?.next.kind === 'done'
 
   // The journey line: the unit after this session (a replay adds nothing).
   const unitAfter =
     journey?.unit && mode === 'lesson'
       ? advanceUnitSummary(journey.unit, targetId, passed)
       : null
-  const journeyStep = unitAfter ? (
-    <span className="grid gap-0.5">
-      {unitAfter.gained > 0 ? <span>{t.stepTaken}</span> : null}
-      {unlocked ? (
-        <span>{format(t.unlocked, { title: unlocked.title })}</span>
-      ) : null}
-      <span>
-        {format(t.journeyUnit, {
-          done: unitAfter.done,
-          total: unitAfter.total,
-          unit: format(messages.grammar.unitLevel, {
-            level: unitAfter.level,
-            order: unitAfter.order,
-          }),
-        })}
-        {' · '}
-        {unitAfter.left > 0
-          ? plural(t.toCheckpoint, unitAfter.left)
-          : t.checkpointOpen}
-      </span>
-    </span>
-  ) : unlocked ? (
-    format(t.unlocked, { title: unlocked.title })
-  ) : null
+  // One line: the step this session took and how far the checkpoint is.
+  const unitName = unitAfter
+    ? format(messages.grammar.unitLevel, {
+        level: unitAfter.level,
+        order: unitAfter.order,
+      })
+    : ''
+  const journeyStep = unitAfter
+    ? unitAfter.left > 0
+      ? format(
+          plural(
+            unitAfter.gained > 0 ? t.journeyGained : t.journeyHeld,
+            unitAfter.left
+          ),
+          { unit: unitName }
+        )
+      : format(unitAfter.gained > 0 ? t.journeyGainedOpen : t.journeyHeldOpen, {
+          unit: unitName,
+        })
+    : null
   const canRetry =
     (mode === 'lesson' && stars !== null && stars < 3) ||
     (mode !== 'lesson' && !passed)
@@ -373,14 +404,23 @@ export function PlayerResult({
         journeyStep={journeyStep}
         module="grammar"
         nextStop={
-          <ActionButton
-            className="justify-self-start"
-            data-next-stop=""
+          <NextStopCard
+            actionLabel={next?.actionLabel ?? t.backToPath}
+            className="border-line border"
+            detail={next?.detail}
+            done={
+              allClear
+                ? {
+                    icon: <PartyPopper aria-hidden />,
+                    text: messages.common.journey.allClear,
+                  }
+                : undefined
+            }
             href={next?.href ?? exitHref}
-            tone="ink"
-          >
-            {next?.label ?? t.backToPath}
-          </ActionButton>
+            pinLabel={messages.common.journey.nextStop}
+            title={next?.title ?? t.backToPath}
+            variant="compact"
+          />
         }
         notice={
           <SaveNotice
@@ -401,7 +441,7 @@ export function PlayerResult({
                   : messages.common.actions.retry}
               </ActionButton>
             ) : null}
-            {next ? (
+            {next || allClear ? (
               <Link
                 className="soft-press hover-pop text-ink-soft hover:text-ink rounded-control inline-flex min-h-11 items-center px-3 text-sm font-medium"
                 href={exitHref}
@@ -411,22 +451,35 @@ export function PlayerResult({
             ) : null}
           </>
         }
+        stats={
+          <StatStrip label={title}>
+            {stars !== null ? (
+              <StatChip
+                icon={Target}
+                label={t.accuracy}
+                tone="grammar"
+                value={`${Math.round(summary.accuracy * 100)}%`}
+              />
+            ) : null}
+            <StatChip
+              icon={Flame}
+              label={t.bestStreak}
+              tone="grammar"
+              value={`x${state.bestCombo}`}
+            />
+            <StatChip
+              icon={Clock3}
+              label={t.time}
+              tone="grammar"
+              value={formatDuration(durationMs)}
+            />
+          </StatStrip>
+        }
         title={headline(t.headlines, mode, passed, testOut)}
         titleId="player-result-title"
         wins={
           <span className="grid gap-1">
             <span className="font-medium">{title}</span>
-            <span>
-              {format(t.wins, {
-                percent: Math.round(summary.accuracy * 100),
-              })}
-            </span>
-            <span className="text-ink-soft text-xs">
-              {format(t.quietStats, {
-                streak: state.bestCombo,
-                time: formatDuration(durationMs),
-              })}
-            </span>
             {mode === 'checkpoint' && !passed ? (
               <span className="flex items-center gap-2 text-sm font-medium">
                 <Lock

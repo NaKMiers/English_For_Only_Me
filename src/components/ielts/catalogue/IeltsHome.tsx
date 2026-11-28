@@ -105,6 +105,8 @@ export async function IeltsHome({
         <ContinueFloat
           label={messages.common.journey.continue}
           nextStopId={null}
+          // The station card (it holds the pin) bounces, not its track.
+          nudge
           persistent
           targetId={HERE_STATION_ID}
         />

@@ -244,37 +244,43 @@ function CheckpointNode({ index, unit }: { index: number; unit: PathUnit }) {
       className="flex flex-col items-center gap-2.5 pt-2"
       style={{ transform: `translateX(${zigzagOffset(index)}px)` }}
     >
-      <Link
-        aria-disabled={locked}
-        aria-label={passed ? t.checkpointPassed : t.checkpoint}
-        className={cn(
-          NODE_BASE,
-          'size-[72px]',
-          locked ? 'text-ink-soft pointer-events-none' : 'text-surface'
-        )}
-        href={`/grammar/units/${unit.id}/checkpoint`}
-        id={`node-checkpoint-${unit.id}`}
-        style={nodeLedge(
-          locked
-            ? 'var(--line-strong)'
-            : passed
-              ? 'var(--accent-green)'
-              : 'var(--accent-orange)'
-        )}
-        tabIndex={locked ? -1 : undefined}
-      >
-        {passed ? (
+      {passed ? (
+        // Passed: a static green node. The checkpoint page sends a finished
+        // unit back to the path, so a link here would go nowhere.
+        <span
+          aria-label={t.checkpointPassed}
+          className="text-surface relative grid size-[72px] place-items-center rounded-full"
+          id={`node-checkpoint-${unit.id}`}
+          role="img"
+          style={nodeLedge('var(--accent-green)')}
+        >
           <Check
             aria-hidden
             className="size-8 stroke-[3]"
           />
-        ) : (
+        </span>
+      ) : (
+        <Link
+          aria-disabled={locked}
+          aria-label={t.checkpoint}
+          className={cn(
+            NODE_BASE,
+            'size-[72px]',
+            locked ? 'text-ink-soft pointer-events-none' : 'text-surface'
+          )}
+          href={`/grammar/units/${unit.id}/checkpoint`}
+          id={`node-checkpoint-${unit.id}`}
+          style={nodeLedge(
+            locked ? 'var(--line-strong)' : 'var(--accent-orange)'
+          )}
+          tabIndex={locked ? -1 : undefined}
+        >
           <Trophy
             aria-hidden
             className="size-8"
           />
-        )}
-      </Link>
+        </Link>
+      )}
       <span className={cn('text-xs font-medium', locked && 'text-ink-soft')}>
         {passed ? t.checkpointPassed : t.checkpoint}
       </span>
@@ -537,6 +543,9 @@ export function GrammarPath({ path }: Props) {
           label={messages.common.journey.continue}
           measureKey={targetUnitOpen}
           nextStopId={null}
+          // The node itself bounces: its <li> carries the zigzag transform,
+          // which the bounce would reset for a moment.
+          nudge
           onBeforeJump={() => {
             if (nextUnitId) setUnitOpen(nextUnitId, true)
           }}

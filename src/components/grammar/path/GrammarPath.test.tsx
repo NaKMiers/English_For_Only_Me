@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { beforeAll, describe, expect, test, vi } from 'vitest'
 
 import { buildGrammarPath } from '@/modules/grammar/path/buildGrammarPath'
@@ -110,5 +110,34 @@ describe('GrammarPath', () => {
     expect(
       screen.getByRole('button', { name: /Lesson u01-l01, done/ })
     ).toBeTruthy()
+  })
+
+  test('a passed checkpoint is a static node; open and locked ones keep their link', () => {
+    const unitOne = ['u01-l01', 'u01-l02', 'u01-l03', 'u01-l04', 'u01-l05']
+    const finished = buildGrammarPath({
+      course: fixtureCourse,
+      lessonProgress: unitOne.map(id => passedLesson(id)),
+      misses: [],
+      now: NOW,
+      unitProgress: [
+        {
+          completedAt: daysFrom(NOW, -1),
+          passedBy: 'checkpoint',
+          unitId: 'u01',
+        },
+      ],
+    })
+    const { container } = render(<GrammarPath path={finished} />)
+
+    // Unit 1 is done and folded: open it to see its checkpoint.
+    fireEvent.click(screen.getAllByRole('button', { name: /Unit 1/ })[0])
+
+    const passed = container.querySelector('#node-checkpoint-u01')
+    expect(passed?.tagName).toBe('SPAN')
+    expect(passed?.closest('a')).toBeNull()
+    expect(passed?.className).not.toMatch(/hover-pop/)
+    // Unit 2 is current: its checkpoint is still a link (locked for now).
+    expect(container.querySelector('#node-checkpoint-u02')?.tagName).toBe('A')
+    expectLandingBudget(container, { ctas: 0, nextStops: 0 })
   })
 })

@@ -63,6 +63,21 @@ export default async function GrammarNotesPage({ params }: Props) {
     },
   ]
 
+  const redo = (
+    <ActionButton
+      href={`/grammar/lessons/${found.lesson.id}`}
+      icon={
+        <Play
+          aria-hidden
+          className="fill-current"
+        />
+      }
+      tone="paper"
+    >
+      {t.grammar.notes.redo}
+    </ActionButton>
+  )
+
   return (
     <PageShell
       topbar={
@@ -79,21 +94,10 @@ export default async function GrammarNotesPage({ params }: Props) {
       }
     >
       <div className="mx-auto grid w-full max-w-3xl gap-5 px-4 pb-6 md:pr-6 md:pl-0">
+        {/* The title lives in the topbar from md, so the header shows on
+            phones only; Redo sits in the first card's header instead of a
+            row of its own. */}
         <PageHeader
-          actions={
-            <ActionButton
-              href={`/grammar/lessons/${found.lesson.id}`}
-              icon={
-                <Play
-                  aria-hidden
-                  className="fill-current"
-                />
-              }
-              tone="paper"
-            >
-              {t.grammar.notes.redo}
-            </ActionButton>
-          }
           breadcrumb={{ items: breadcrumb, label: t.common.journey.breadcrumb }}
           icon={<BookOpen />}
           iconClassName="bg-pastel-lilac text-accent-purple"
@@ -101,9 +105,15 @@ export default async function GrammarNotesPage({ params }: Props) {
           subtitle={found.lesson.summary}
           title={found.lesson.title}
         />
-        {explains.map(card => (
-          <ContentPanel key={card.id}>
-            <ExplainCardView card={card} />
+        {explains.map((card, index) => (
+          <ContentPanel
+            action={index === 0 ? redo : undefined}
+            key={card.id}
+          >
+            <ExplainCardView
+              card={card}
+              hideTag
+            />
           </ContentPanel>
         ))}
 
