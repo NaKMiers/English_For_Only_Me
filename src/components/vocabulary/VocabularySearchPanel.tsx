@@ -168,8 +168,9 @@ export function VocabularySearchPanel({
         <ul className="grid gap-2 sm:grid-cols-2">
           {searchResults.map(result => (
             <li key={result.entry.id}>
-              {/* The whole result loads that word above (no nested speak
-                  button here: the loaded entry has its own). */}
+              {/* The whole result loads that word above. The header is
+                  inline: no nested speak button (the loaded entry has its
+                  own) and no heading inside the button. */}
               <button
                 className="soft-press hover-pop border-line bg-surface hover:bg-tint-soft rounded-control grid w-full gap-2 border p-3 text-left"
                 disabled={isLoading}
@@ -182,6 +183,7 @@ export function VocabularySearchPanel({
                 <VocabTermHeader
                   entry={result.entry}
                   headingClassName="text-xl"
+                  inline
                 />
                 <span className="text-ink-soft text-xs font-normal">
                   {result.userItem

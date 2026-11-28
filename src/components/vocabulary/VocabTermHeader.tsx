@@ -14,6 +14,11 @@ interface Props {
   entry?: VocabEntryApiRecord
   headingClassName?: string
   iconClassName?: string
+  /**
+   * For use inside a button or link: no speak button (no nested control)
+   * and plain spans instead of a heading and a paragraph.
+   */
+  inline?: boolean
   phonetics?: VocabEntryApiRecord['phonetics']
   pronunciationClassName?: string
   size?: 'md' | 'lg' | 'xl'
@@ -57,6 +62,7 @@ export function VocabTermHeader({
   entry,
   headingClassName,
   iconClassName,
+  inline = false,
   phonetics,
   pronunciationClassName,
   size = 'md',
@@ -72,6 +78,9 @@ export function VocabTermHeader({
 
   if (!displayTerm) return null
 
+  const Heading = inline ? 'span' : 'h3'
+  const Pronunciation = inline ? 'span' : 'p'
+
   return (
     <div
       className={cn(
@@ -80,7 +89,7 @@ export function VocabTermHeader({
       )}
     >
       <div className="grid min-w-0 gap-1">
-        <h3
+        <Heading
           className={cn(
             'font-sans leading-none font-semibold wrap-break-word',
             headingClassNames[size],
@@ -88,34 +97,36 @@ export function VocabTermHeader({
           )}
         >
           {displayTerm}
-        </h3>
-        <p
+        </Heading>
+        <Pronunciation
           className={cn(
             'text-ink-soft font-sans text-sm leading-tight font-normal',
             pronunciationClassName
           )}
         >
           {pronunciation}
-        </p>
+        </Pronunciation>
       </div>
-      <Button
-        aria-label={format(t.speak, { term: displayTerm })}
-        className={cn(
-          'border-line bg-surface text-ink hover:bg-tint rounded-control soft-press size-10 shrink-0 border',
-          buttonClassName
-        )}
-        onClick={() =>
-          speakTerm ? speakTerm(displayTerm) : speakFallback(displayTerm)
-        }
-        size="icon"
-        type="button"
-        variant="ghost"
-      >
-        <Volume2
-          aria-hidden="true"
-          className={cn('size-5', iconClassName)}
-        />
-      </Button>
+      {inline ? null : (
+        <Button
+          aria-label={format(t.speak, { term: displayTerm })}
+          className={cn(
+            'border-line bg-surface text-ink hover:bg-tint rounded-control soft-press size-10 shrink-0 border',
+            buttonClassName
+          )}
+          onClick={() =>
+            speakTerm ? speakTerm(displayTerm) : speakFallback(displayTerm)
+          }
+          size="icon"
+          type="button"
+          variant="ghost"
+        >
+          <Volume2
+            aria-hidden="true"
+            className={cn('size-5', iconClassName)}
+          />
+        </Button>
+      )}
     </div>
   )
 }
