@@ -435,9 +435,16 @@ export const dictation: Messages['dictation'] = {
   reviewQueue: {
     eyebrow: 'Ôn tập',
     title: 'Danh sách ôn tập',
-    open: 'Mở danh sách',
     empty: 'Chưa có câu yếu nào đến hạn.',
     itemMeta: '{reason} - chính xác {accuracy}%',
+    dueHead: {
+      one: '{count} câu cần ôn',
+      other: '{count} câu cần ôn',
+    },
+    start: 'Bắt đầu ôn',
+    allCaughtUp: 'Đã ôn xong',
+    allCaughtUpBody: 'Không còn câu yếu nào đến hạn. Đi tiếp trạm kế ở trang chính.',
+    toLanding: 'Về Chép chính tả',
     reasons: {
       highRetry: 'Thử lại nhiều',
       lowAccuracy: 'Độ chính xác thấp',
@@ -451,7 +458,6 @@ export const dictation: Messages['dictation'] = {
     metaDescription: 'Luyện lại các câu chép chính tả yếu từ các lượt đã lưu.',
     eyebrow: 'Ôn tập',
     title: 'Danh sách câu yếu',
-    backToLab: 'Về Chép chính tả',
     description:
       'Trang này để quay lại các câu chép chính tả yếu: câu bị bỏ qua, đã xem đáp án, phải thử lại nhiều, lỗi lặp lại hoặc độ chính xác thấp.',
     empty:

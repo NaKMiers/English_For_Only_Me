@@ -435,9 +435,16 @@ export const dictation = {
   reviewQueue: {
     eyebrow: 'Review',
     title: 'Review queue',
-    open: 'Open Queue',
     empty: 'No weak sentences are due yet.',
     itemMeta: '{reason} - {accuracy}% accuracy',
+    dueHead: {
+      one: '{count} sentence to review',
+      other: '{count} sentences to review',
+    },
+    start: 'Start review',
+    allCaughtUp: 'All caught up',
+    allCaughtUpBody: 'No weak sentences are due. Take the next stop on the landing.',
+    toLanding: 'Back to Dictation Lab',
     reasons: {
       highRetry: 'High retry',
       lowAccuracy: 'Low accuracy',
@@ -451,7 +458,6 @@ export const dictation = {
     metaDescription: 'Drill weak dictation sentences from saved attempts.',
     eyebrow: 'Review',
     title: 'Weak sentence queue',
-    backToLab: 'Back To Lab',
     description:
       'This page is for returning to weak dictation segments: skipped, revealed, high-retry, repeated-mistake, and low-accuracy sentences.',
     empty:

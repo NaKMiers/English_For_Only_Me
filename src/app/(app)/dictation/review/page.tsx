@@ -1,11 +1,10 @@
-import { ArrowLeft, RotateCcw } from 'lucide-react'
+import { RotateCcw } from 'lucide-react'
 import type { Metadata } from 'next'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { PageHeader } from '@/components/common/PageHeader'
 import { PageShell } from '@/components/common/PageShell'
 import { DictationReviewQueue } from '@/components/dictation/DictationReviewQueue'
-import { ActionButton } from '@/components/ui/ActionButton'
 import { hasMongoDbUri } from '@/constants/environments'
 import { getMessages } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
@@ -49,29 +48,30 @@ export default async function Page() {
       topbar={
         <AppTopbar
           activeHref="/dictation"
+          page={{
+            breadcrumb: [
+              { href: '/dictation', label: t.dictation.browse.allTopics },
+              { label: text.title },
+            ],
+            module: 'dictation',
+            title: text.title,
+          }}
           subtitle={t.dictation.meta.labSubtitle}
         />
       }
     >
       <section className="grid gap-5 px-4 pb-6 md:pr-6 md:pl-0">
         <PageHeader
-          actions={
-            <ActionButton
-              href="/dictation"
-              icon={
-                <ArrowLeft
-                  aria-hidden="true"
-                  className="size-4"
-                />
-              }
-              tone="paper"
-            >
-              {text.backToLab}
-            </ActionButton>
-          }
-          eyebrow={text.eyebrow}
+          breadcrumb={{
+            items: [
+              { href: '/dictation', label: t.dictation.browse.allTopics },
+              { label: text.title },
+            ],
+            label: t.common.journey.breadcrumb,
+          }}
           icon={<RotateCcw />}
           iconClassName="bg-pastel-sky text-accent-blue"
+          inTopbar
           subtitle={text.description}
           title={text.title}
         />

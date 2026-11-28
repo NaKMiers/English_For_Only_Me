@@ -1,76 +1,116 @@
 'use client'
 
-import { ArrowRight, CheckCircle2 } from 'lucide-react'
+import { CheckCircle2, ChevronDown, PartyPopper, RotateCcw } from 'lucide-react'
 
-import { ContentPanel } from '@/components/common/ContentPanel'
 import { QueueRow } from '@/components/common/QueueRow'
+import { EmptyState } from '@/components/journey/EmptyState'
 import { ActionButton } from '@/components/ui/ActionButton'
 import { useMessages } from '@/i18n/client'
-import { format } from '@/i18n/format'
+import { format, plural } from '@/i18n/format'
 import type { DictationReviewItemApiRecord } from '@/modules/dictation/types'
+
+/** Rows shown before the rest fold behind "N more". */
+export const REVIEW_VISIBLE_ROWS = 5
 
 interface Props {
   emptyMessage?: string
   reviewItems: DictationReviewItemApiRecord[]
   title?: string
+  /**
+   * `page` (the review route) leads with the due count and one Start
+   * review; `embedded` (results) is the list only, since that page already
+   * has its next stop.
+   */
+  variant?: 'page' | 'embedded'
 }
 
 export function DictationReviewQueue({
   emptyMessage,
   reviewItems,
   title,
+  variant = 'page',
 }: Props) {
-  const text = useMessages().dictation.reviewQueue
+  const t = useMessages()
+  const text = t.dictation.reviewQueue
   const reasonLabel: Record<DictationReviewItemApiRecord['reason'], string> =
     text.reasons
+  const due = reviewItems.filter(item => item.status !== 'completed')
+  const first = due[0] ?? reviewItems[0] ?? null
+
+  if (reviewItems.length === 0)
+    return variant === 'page' ? (
+      <EmptyState
+        action={{ href: '/dictation', label: text.toLanding }}
+        body={emptyMessage ?? text.allCaughtUpBody}
+        icon={<PartyPopper />}
+        title={text.allCaughtUp}
+      />
+    ) : (
+      <p className="text-ink-soft text-sm">{emptyMessage ?? text.empty}</p>
+    )
+
+  const row = (item: DictationReviewItemApiRecord) => (
+    <li key={item.id}>
+      <QueueRow
+        href={`/dictation/videos/${item.videoId}/practice`}
+        title={item.label}
+        meta={format(text.itemMeta, {
+          accuracy: item.statsSnapshot.accuracy,
+          reason: reasonLabel[item.reason],
+        })}
+        action={
+          item.status === 'completed' ? (
+            <CheckCircle2
+              aria-label={t.common.journey.allClear}
+              className="text-lesson-correct size-5"
+            />
+          ) : null
+        }
+      />
+    </li>
+  )
+  const visible = reviewItems.slice(0, REVIEW_VISIBLE_ROWS)
+  const folded = reviewItems.slice(REVIEW_VISIBLE_ROWS)
 
   return (
-    <ContentPanel
-      eyebrow={text.eyebrow}
-      title={title ?? text.title}
-      action={
-        <ActionButton
-          href="/dictation/review"
-          tone="paper"
-          icon={
-            <ArrowRight
-              aria-hidden="true"
-              className="size-5"
-            />
-          }
-        >
-          {text.open}
-        </ActionButton>
-      }
+    <section
+      aria-label={title ?? text.title}
+      className="grid gap-4"
     >
-      {reviewItems.length > 0 ? (
-        <div className="grid gap-3">
-          {reviewItems.map(item => (
-            <QueueRow
-              key={item.id}
-              href={`/dictation/videos/${item.videoId}/practice`}
-              title={item.label}
-              meta={format(text.itemMeta, {
-                accuracy: item.statsSnapshot.accuracy,
-                reason: reasonLabel[item.reason],
-              })}
-              status={`${item.priority}`}
-              action={
-                item.status === 'completed' ? (
-                  <CheckCircle2
-                    aria-hidden="true"
-                    className="text-lesson-correct size-5"
-                  />
-                ) : null
-              }
-            />
-          ))}
+      {variant === 'page' ? (
+        <div className="border-line from-pastel-sky to-surface rounded-panel flex flex-wrap items-center justify-between gap-4 border bg-linear-160 p-5">
+          <p className="font-sans text-2xl font-medium tracking-tight">
+            {plural(text.dueHead, due.length)}
+          </p>
+          {first ? (
+            <ActionButton
+              data-next-stop=""
+              href={`/dictation/videos/${first.videoId}/practice`}
+              icon={<RotateCcw aria-hidden="true" />}
+              tone="ink"
+            >
+              {text.start}
+            </ActionButton>
+          ) : null}
         </div>
       ) : (
-        <p className="text-ink-soft text-base leading-7 font-normal">
-          {emptyMessage ?? text.empty}
-        </p>
+        <h2 className="font-sans text-lg font-medium">{title ?? text.title}</h2>
       )}
-    </ContentPanel>
+
+      <ul className="grid gap-2">{visible.map(row)}</ul>
+      {folded.length > 0 ? (
+        // Native disclosure: the long tail of the queue, out of the way.
+        <details className="group grid gap-2">
+          <summary className="soft-press hover-pop text-ink-soft rounded-control flex min-h-11 w-fit cursor-pointer list-none items-center gap-1.5 px-2 text-sm font-medium">
+            <ChevronDown
+              aria-hidden="true"
+              className="size-4 transition-transform group-open:rotate-180"
+            />
+            {plural(t.common.journey.moreItems, folded.length)}
+          </summary>
+          <ul className="mt-2 grid gap-2">{folded.map(row)}</ul>
+        </details>
+      ) : null}
+    </section>
   )
 }

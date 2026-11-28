@@ -1,6 +1,6 @@
 import {
+  SkeletonBlock,
   SkeletonPageShell,
-  SkeletonPanel,
   SkeletonRows,
 } from '@/components/common/PageSkeletons'
 import { getMessages } from '@/i18n/server'
@@ -9,12 +9,17 @@ export default async function Loading() {
   const t = await getMessages()
 
   return (
+    // Same topbar line and title as the page, so nothing changes on arrival.
     <SkeletonPageShell
       activeHref="/dictation"
-      subtitle={t.dictation.meta.reviewSubtitle}
+      page={{ module: 'dictation', title: t.dictation.review.title }}
+      subtitle={t.dictation.meta.labSubtitle}
     >
-      <SkeletonPanel lines={2} />
-      <SkeletonRows count={4} />
+      <SkeletonBlock className="h-24" />
+      <SkeletonRows
+        count={5}
+        rowClassName="h-16"
+      />
     </SkeletonPageShell>
   )
 }

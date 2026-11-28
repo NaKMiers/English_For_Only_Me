@@ -269,6 +269,7 @@ export default async function Page({ params }: Props) {
             <DictationReviewQueue
               reviewItems={reviewItems}
               title={text.weakSegments}
+              variant="embedded"
             />
           </>
         )}

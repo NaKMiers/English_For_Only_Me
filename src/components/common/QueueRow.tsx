@@ -30,7 +30,7 @@ export function QueueRow({
   const content = (
     <>
       <div className="grid min-w-0 gap-1">
-        <strong className="font-sans text-base leading-tight font-semibold wrap-break-word">
+        <strong className="font-sans text-base leading-tight font-medium wrap-break-word">
           {title}
         </strong>
         {meta ? (
@@ -48,7 +48,7 @@ export function QueueRow({
 
   const rowClassName = cn(
     'flex min-w-0 items-center justify-between gap-3 rounded-control border border-line bg-surface p-3',
-    (href || onClick) && 'transition-colors hover:bg-tint',
+    (href || onClick) && 'soft-press hover-pop hover:bg-tint text-left',
     className
   )
 
@@ -64,19 +64,13 @@ export function QueueRow({
 
   if (onClick)
     return (
-      <div
-        role="button"
-        tabIndex={0}
+      <button
+        className={cn(rowClassName, 'w-full')}
         onClick={onClick}
-        onKeyDown={event => {
-          if (event.key !== 'Enter' && event.key !== ' ') return
-          event.preventDefault()
-          onClick()
-        }}
-        className={cn(rowClassName, 'cursor-pointer')}
+        type="button"
       >
         {content}
-      </div>
+      </button>
     )
 
   return <div className={rowClassName}>{content}</div>

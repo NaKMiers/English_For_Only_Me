@@ -27,7 +27,7 @@ export default function Error({ error, unstable_retry }: Props) {
     <RouteError
       body={text.description}
       homeHref="/dictation"
-      homeLabel={t.dictation.review.backToLab}
+      homeLabel={t.dictation.reviewQueue.toLanding}
       onRetry={() => unstable_retry()}
       retryLabel={text.retry}
       tag={text.eyebrow}
