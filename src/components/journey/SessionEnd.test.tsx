@@ -63,4 +63,32 @@ describe('SessionEnd', () => {
 
     expect(container.querySelector('details')).toBeNull()
   })
+
+  test('focusTitle moves focus to the heading on mount, off by default', () => {
+    const { rerender } = render(
+      <SessionEnd
+        headline={{ value: '1' }}
+        module="grammar"
+        nextStop={<a href="/next">Next</a>}
+        title="Done"
+        wins="win"
+      />
+    )
+
+    expect(document.activeElement).toBe(document.body)
+
+    rerender(
+      <SessionEnd
+        focusTitle
+        headline={{ value: '1' }}
+        module="grammar"
+        nextStop={<a href="/next">Next</a>}
+        title="Done again"
+        titleId="focused-end"
+        wins="win"
+      />
+    )
+
+    expect(document.activeElement).toHaveTextContent('Done again')
+  })
 })

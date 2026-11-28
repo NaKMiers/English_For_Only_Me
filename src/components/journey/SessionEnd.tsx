@@ -5,6 +5,8 @@ import type { AppModuleKey } from '@/constants/modules'
 import { MODULE_THEMES } from '@/constants/theme'
 import { cn } from '@/lib/utils'
 
+import { FocusOnMount } from './FocusOnMount'
+
 /** Fix-up lists longer than this fold behind a "show more" disclosure. */
 export const FIX_UP_VISIBLE_LIMIT = 3
 
@@ -19,6 +21,11 @@ interface Props {
   className?: string
   /** What went wrong, to practise next. Folded when longer than 3. */
   fixUp?: FixUp | null
+  /**
+   * Focus the heading on mount: set it when the end screen replaces the
+   * session in place (the focused control is gone), not on a page load.
+   */
+  focusTitle?: boolean
   /** The big result: stars, a band, a percentage. */
   headline: { icon?: ReactNode; unit?: string; value: ReactNode }
   /** The journey step just taken, e.g. "+1 on the trail, 2 to Camp". */
@@ -45,6 +52,7 @@ interface Props {
 export function SessionEnd({
   className,
   fixUp,
+  focusTitle = false,
   headline,
   journeyStep,
   module,
@@ -80,11 +88,13 @@ export function SessionEnd({
         data-session-slot="wins"
       >
         <h2
-          className="font-sans text-2xl leading-tight font-medium tracking-tight"
+          className="font-sans text-2xl leading-tight font-medium tracking-tight focus:outline-none"
           id={titleId}
+          tabIndex={focusTitle ? -1 : undefined}
         >
           {title}
         </h2>
+        {focusTitle ? <FocusOnMount targetId={titleId} /> : null}
         <p className="flex flex-wrap items-baseline gap-x-2">
           {headline.icon ? (
             <span

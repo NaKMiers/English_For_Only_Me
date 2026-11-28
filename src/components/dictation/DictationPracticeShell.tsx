@@ -291,6 +291,13 @@ export function DictationPracticeShell({
   const [isCompleted, setIsCompleted] = useState(
     () => completions > 0 && (initialSession?.currentSegmentOrder ?? 0) === 0
   )
+  // The finish screen counts "written right" only for a run this visit
+  // covered from its first sentence: not for a video done on load, nor for
+  // a resumed run (earlier sentences were passed in another visit).
+  const [completedOnLoad, setCompletedOnLoad] = useState(isCompleted)
+  const [runFromStart, setRunFromStart] = useState(
+    () => !isCompleted && (initialSession?.currentSegmentOrder ?? 0) === 0
+  )
   const [answerDrafts, setAnswerDrafts] = useState<Record<string, string>>(() =>
     readDictationAnswerDrafts(video.id, ownerKey)
   )
@@ -1275,6 +1282,8 @@ export function DictationPracticeShell({
   const goToFirstSegment = useCallback(() => {
     beginNextRun()
     setIsCompleted(false)
+    setCompletedOnLoad(false)
+    setRunFromStart(true)
     setVocabLookupError(null)
     setShowAnswerWords(false)
     setCurrentAttempt(null)
@@ -1299,6 +1308,8 @@ export function DictationPracticeShell({
     setCurrentAttempt(null)
     setCharCorrection(null)
     setIsCompleted(false)
+    setCompletedOnLoad(false)
+    setRunFromStart(true)
     setHasStarted(true)
     setCorrectSegmentIds(new Set())
     setLocallyResetSegmentIds(new Set(segments.map(segment => segment.id)))
@@ -1728,7 +1739,8 @@ export function DictationPracticeShell({
               >
                 {isCompleted ? (
                   <PracticeFinish
-                    correct={correctSegmentIds.size}
+                    correct={runFromStart ? correctSegmentIds.size : null}
+                    focusTitle={!completedOnLoad}
                     next={nextVideo}
                     secondary={
                       <>

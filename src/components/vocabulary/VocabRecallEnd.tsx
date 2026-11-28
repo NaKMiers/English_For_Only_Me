@@ -43,6 +43,7 @@ export function VocabRecallEnd({
 
   return (
     <SessionEnd
+      focusTitle
       fixUp={
         notSaved.length > 0
           ? {

@@ -308,6 +308,7 @@ export function PlayerResult({
   return (
     <div className="mx-auto w-full max-w-2xl p-4 sm:p-8">
       <SessionEnd
+        focusTitle
         fixUp={
           misses.length > 0
             ? {

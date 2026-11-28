@@ -12,8 +12,14 @@ import type { PracticeNextVideo } from '@/modules/dictation/practice/findNextVid
 export type { PracticeNextVideo }
 
 interface Props {
-  /** Sentences written right this run. */
-  correct: number
+  /**
+   * Sentences written right this run, or null when this visit did not
+   * cover the whole video (a resumed run, or a video already done on load):
+   * a count of part of the run would read as a score for all of it.
+   */
+  correct: number | null
+  /** The end replaced the run in place: move focus to its heading. */
+  focusTitle?: boolean
   /** The next video of the topic, or null (topic done, no topic). */
   next: PracticeNextVideo | null
   /** Quiet secondary actions: see results, repeat. */
@@ -26,12 +32,19 @@ interface Props {
  * one next stop into the next video of the topic, or back to the landing
  * when the topic is done. Results and repeat stay as quiet links.
  */
-export function PracticeFinish({ correct, next, secondary, total }: Props) {
+export function PracticeFinish({
+  correct,
+  focusTitle = false,
+  next,
+  secondary,
+  total,
+}: Props) {
   const t = useMessages()
   const text = t.dictation.practice
 
   return (
     <SessionEnd
+      focusTitle={focusTitle}
       headline={{
         icon: <Headphones />,
         unit: text.finishUnit,
@@ -56,7 +69,9 @@ export function PracticeFinish({ correct, next, secondary, total }: Props) {
       secondary={secondary}
       title={text.doneTitle}
       titleId="practice-finish-title"
-      wins={format(text.finishWins, { correct, total })}
+      wins={
+        correct === null ? null : format(text.finishWins, { correct, total })
+      }
     />
   )
 }
