@@ -37,7 +37,6 @@ export const admin: Messages['admin'] = {
   dictationPage: {
     metaTitle: 'Quản trị · Chép chính tả',
     title: 'Chép chính tả',
-    backToAdmin: '← Quản trị',
     viewNav: 'Chế độ xem',
     views: {
       topics: 'Chủ đề & mục',
@@ -50,20 +49,13 @@ export const admin: Messages['admin'] = {
     metaTitle: 'Nhập video chép chính tả',
     metaDescription:
       'Lưu một video YouTube và đính kèm bản transcript tiếng Anh nhập tay.',
-    footerNote:
-      'Metadata chính thức. Transcript do bạn cung cấp. Không thu thập ngầm.',
-    back: '← Chép chính tả',
-    eyebrow: 'Trang nhập cho Listening',
     title: 'Thêm nguồn chép chính tả',
     intro:
       'Lưu một video YouTube, rồi đính kèm bản transcript tiếng Anh làm nguồn tin cậy cho việc chia câu và luyện tập sau này.',
-    tag: 'Nhập',
   },
   editPage: {
     metaTitle: 'Sửa video chép chính tả',
     metaDescription: 'Đính kèm transcript cho một video chép chính tả đã lưu.',
-    tag: 'Sửa',
-    eyebrow: 'Trang chỉnh sửa cho Listening',
     title: 'Thêm transcript còn thiếu',
     intro:
       'Đính kèm bản transcript tiếng Anh cho video YouTube đã lưu này, ứng dụng sẽ chia thành từng câu để luyện tập.',

@@ -1,7 +1,6 @@
 import type { ComponentProps, ReactNode } from 'react'
 
 import { ContentPanel } from '@/components/common/ContentPanel'
-import { MetricTile } from '@/components/common/MetricTile'
 import { IconButton } from '@/components/ui/IconButton'
 import { ActionButton } from '@/components/ui/ActionButton'
 import { PageTag } from '@/components/ui/PageTag'
@@ -42,18 +41,6 @@ export function ExamIconButton(props: ComponentProps<typeof IconButton>) {
 
 export function ExamCard(props: ComponentProps<typeof ContentPanel>) {
   return <ContentPanel {...props} />
-}
-
-export function StatTile({
-  className,
-  ...props
-}: Omit<ComponentProps<typeof MetricTile>, 'href' | 'icon' | 'trend'>) {
-  return (
-    <MetricTile
-      {...props}
-      className={cn('min-h-0', className)}
-    />
-  )
 }
 
 const BADGE_TONES = {

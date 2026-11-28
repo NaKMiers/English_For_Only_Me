@@ -108,7 +108,6 @@ const INK_CONTROL: Guard = {
 const RAW_PALETTE: Guard = {
   allow: ['src/components/ielts/widgets/TaskVisual.tsx'],
   baseline: [
-    'src/app/admin/ielts/page.tsx',
     'src/components/ielts/runner/TextHighlighter.tsx',
     'src/components/ui/badge.tsx',
     'src/components/ui/card.tsx',
@@ -144,10 +143,10 @@ const HEAVY_WEIGHT: Guard = {
     !path.startsWith('src/components/ielts/editor/'),
 }
 
-// `hover-pop` replaced `hover-lift`; the baseline goes in Phase 8.
+// `hover-pop` replaced `hover-lift`, and the utility is gone from globals.css.
 const HOVER_LIFT: Guard = {
   allow: [],
-  baseline: ['src/app/admin/page.tsx', 'src/components/common/MetricTile.tsx'],
+  baseline: [],
   pattern: /\bhover-lift\b/,
   roots: COMPONENTS_AND_APP,
 }

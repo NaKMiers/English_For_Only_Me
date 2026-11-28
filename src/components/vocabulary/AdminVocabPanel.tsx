@@ -1,11 +1,20 @@
 'use client'
 
-import { BookA, DatabaseZap, RefreshCcw } from 'lucide-react'
+import {
+  BookA,
+  CircleCheck,
+  CircleX,
+  DatabaseZap,
+  Lock,
+  RefreshCcw,
+  SearchX,
+  Sprout,
+} from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 
 import { ContentPanel } from '@/components/common/ContentPanel'
 import { PageHeader } from '@/components/common/PageHeader'
-import { MetricTile } from '@/components/common/MetricTile'
+import { StatChip, StatStrip } from '@/components/journey/StatChip'
 import { Input } from '@/components/ui/input'
 import { ActionButton } from '@/components/ui/ActionButton'
 import { format } from '@/i18n/format'
@@ -122,28 +131,33 @@ export function AdminVocabPanel({ initialQueue, mongoConfigured }: Props) {
         titleClassName="wrap-break-word"
       />
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-        <MetricTile
+      <StatStrip label={v.title}>
+        <StatChip
+          icon={Sprout}
           label={v.metrics.enrichable}
           value={String(queue.seededCount)}
         />
-        <MetricTile
+        <StatChip
+          icon={CircleCheck}
           label={v.metrics.ready}
           value={String(queue.readyCount)}
         />
-        <MetricTile
+        <StatChip
+          icon={CircleX}
           label={v.metrics.failed}
           value={String(queue.failedCount)}
         />
-        <MetricTile
+        <StatChip
+          icon={SearchX}
           label={v.metrics.notFound}
           value={String(queue.notFoundCount)}
         />
-        <MetricTile
+        <StatChip
+          icon={Lock}
           label={v.metrics.staleLocks}
           value={String(queue.staleLeaseCount)}
         />
-      </div>
+      </StatStrip>
 
       <ContentPanel
         eyebrow={v.panelEyebrow}

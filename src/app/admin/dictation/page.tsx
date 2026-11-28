@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
+import { PageHeader } from '@/components/common/PageHeader'
 import { PageShell } from '@/components/common/PageShell'
 import { AdminCreateTopicForm } from '@/components/dictation/admin/AdminCreateTopicForm'
 import {
@@ -184,23 +185,18 @@ export default async function AdminDictationPage({ searchParams }: Props) {
     <PageShell topbar={<AppTopbar subtitle={t.admin.shell.dictation} />}>
       <section className="grid gap-5 px-4 pb-6 md:pr-6 md:pl-0">
         <header className="page-hero grid gap-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <h1 className="flex items-center gap-3 font-sans text-3xl leading-none font-medium tracking-tight sm:text-4xl">
-              <span
-                aria-hidden="true"
-                className="bg-pastel-sky text-accent-blue grid size-12 shrink-0 place-items-center rounded-full sm:size-14"
-              >
-                <Headphones className="size-6 sm:size-7" />
-              </span>
-              {t.admin.dictationPage.title}
-            </h1>
-            <Link
-              href="/admin"
-              className="text-brand-ink text-sm font-medium hover:underline"
-            >
-              {t.admin.dictationPage.backToAdmin}
-            </Link>
-          </div>
+          <PageHeader
+            breadcrumb={{
+              items: [
+                { href: '/admin', label: t.admin.dashboard.title },
+                { label: t.admin.dictationPage.title },
+              ],
+              label: t.common.journey.breadcrumb,
+            }}
+            icon={<Headphones />}
+            iconClassName="bg-pastel-sky text-accent-blue"
+            title={t.admin.dictationPage.title}
+          />
           <div className="flex flex-wrap items-center justify-between gap-3">
             <nav
               aria-label={t.admin.dictationPage.viewNav}
@@ -216,8 +212,10 @@ export default async function AdminDictationPage({ searchParams }: Props) {
                   }
                   aria-current={option === view ? 'page' : undefined}
                   className={cn(
-                    'flex min-h-9 items-center gap-2 rounded-full px-3 font-sans text-sm font-medium transition-colors',
-                    option === view ? 'bg-cta text-cta-fg' : 'hover:bg-tint'
+                    'soft-press flex min-h-11 items-center gap-2 rounded-full px-3 font-sans text-sm font-medium sm:min-h-9',
+                    option === view
+                      ? 'bg-cta text-cta-fg'
+                      : 'hover:bg-tint hover-pop'
                   )}
                 >
                   <Icon

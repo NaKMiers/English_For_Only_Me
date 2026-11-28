@@ -1,10 +1,11 @@
+import { PenLine } from 'lucide-react'
 import type { Metadata } from 'next'
 import { notFound, redirect } from 'next/navigation'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { PageShell } from '@/components/common/PageShell'
 import { DictationImportForm } from '@/components/dictation/DictationImportForm'
-import { PageTag } from '@/components/ui/PageTag'
+import { PageHeader } from '@/components/common/PageHeader'
 import { hasMongoDbUri } from '@/constants/environments'
 import { getMessages } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
@@ -44,24 +45,25 @@ async function EditUnavailableState({
   const t = await getMessages()
 
   return (
-    <PageShell
-      topbar={
-        <AppTopbar
-          activeHref="/dictation"
-          subtitle={t.admin.shell.editDesk}
-        />
-      }
-    >
+    <PageShell topbar={<AppTopbar subtitle={t.admin.shell.editDesk} />}>
       <section className="px-4 pb-6 md:pr-6 md:pl-0">
-        <div className="border-line bg-surface rounded-panel border p-5">
-          <PageTag tone="red">{t.admin.editPage.tag}</PageTag>
-          <h1 className="mt-4 font-sans text-[clamp(2rem,6vw,4rem)] leading-none font-medium tracking-normal">
-            {title}
-          </h1>
-          <p className="text-ink-soft mt-4 max-w-3xl text-base leading-7 font-normal">
-            {message}
-          </p>
-        </div>
+        <PageHeader
+          breadcrumb={{
+            items: [
+              { href: '/admin', label: t.admin.dashboard.title },
+              {
+                href: '/admin/dictation',
+                label: t.common.modules.dictation.title,
+              },
+              { label: t.admin.editPage.title },
+            ],
+            label: t.common.journey.breadcrumb,
+          }}
+          icon={<PenLine />}
+          iconClassName="bg-pastel-sky text-accent-blue"
+          subtitle={message}
+          title={title}
+        />
       </section>
     </PageShell>
   )
@@ -134,37 +136,26 @@ export default async function Page({ params }: Props) {
   const segments = segmentDocuments.map(toDictationSegmentRecord)
 
   return (
-    <PageShell
-      topbar={
-        <AppTopbar
-          activeHref="/dictation"
-          subtitle={t.admin.shell.editDesk}
+    <PageShell topbar={<AppTopbar subtitle={t.admin.shell.editDesk} />}>
+      <section className="grid gap-5 px-4 pb-6 md:pr-6 md:pl-0">
+        <PageHeader
+          breadcrumb={{
+            items: [
+              { href: '/admin', label: t.admin.dashboard.title },
+              {
+                href: '/admin/dictation',
+                label: t.common.modules.dictation.title,
+              },
+              { label: t.admin.editPage.title },
+            ],
+            label: t.common.journey.breadcrumb,
+          }}
+          icon={<PenLine />}
+          iconClassName="bg-pastel-sky text-accent-blue"
+          subtitle={t.admin.editPage.intro}
+          title={t.admin.editPage.title}
         />
-      }
-    >
-      <div className="grid gap-5 p-3 sm:p-5">
-        <section
-          aria-labelledby="dictation-edit-title"
-          className="border-line bg-surface/92 rounded-panel grid min-w-0 overflow-hidden border"
-        >
-          <div className="border-line bg-surface/90 flex min-w-0 flex-wrap items-start justify-between gap-4 border-b p-4 sm:p-5">
-            <div className="grid min-w-0 gap-3">
-              <p className="text-brand text-xs leading-tight font-semibold tracking-normal">
-                {t.admin.editPage.eyebrow}
-              </p>
-              <h1
-                id="dictation-edit-title"
-                className="font-sans text-[clamp(2rem,7vw,4.75rem)] leading-none font-medium tracking-normal wrap-break-word"
-              >
-                {t.admin.editPage.title}
-              </h1>
-              <p className="text-ink-soft max-w-3xl text-base leading-7 font-normal">
-                {t.admin.editPage.intro}
-              </p>
-            </div>
-            <PageTag tone="red">{t.admin.editPage.tag}</PageTag>
-          </div>
-
+        <div className="border-line bg-surface rounded-panel border">
           <div className="p-4 sm:p-5">
             <DictationImportForm
               initialActiveTranscriptId={
@@ -179,8 +170,8 @@ export default async function Page({ params }: Props) {
               mode="edit"
             />
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
     </PageShell>
   )
 }

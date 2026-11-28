@@ -35,7 +35,6 @@ export const admin = {
   dictationPage: {
     metaTitle: 'Admin · Dictation',
     title: 'Dictation',
-    backToAdmin: '← Admin',
     viewNav: 'View',
     views: {
       topics: 'Topics & Sections',
@@ -48,21 +47,14 @@ export const admin = {
     metaTitle: 'Import Dictation Video',
     metaDescription:
       'Save a YouTube video and attach manual English transcript source text.',
-    footerNote:
-      'Official metadata. User-provided transcript. No hidden scraping.',
-    back: '← Dictation',
-    eyebrow: 'Listening module import page',
     title: 'Add Dictation Source',
     intro:
       'Save a YouTube video, then attach the English transcript source that future segmenting and practice will trust.',
-    tag: 'Import',
   },
   editPage: {
     metaTitle: 'Edit Dictation Video',
     metaDescription:
       'Attach transcript source text to a saved dictation video.',
-    tag: 'Edit',
-    eyebrow: 'Listening module edit page',
     title: 'Add Missing Transcript',
     intro:
       'Attach the English transcript source for this saved YouTube video, then the app will build sentence segments for practice.',

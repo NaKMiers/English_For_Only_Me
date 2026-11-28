@@ -548,25 +548,6 @@ body {
   }
 }
 
-/* Clickable card: lifts 2px and gains a soft shadow on hover. Uses the
-   `translate` property, so it composes with soft-press's `transform` squish.
-   Listed after .soft-press so its transition list (a superset) wins. */
-.hover-lift {
-  transition:
-    translate 220ms var(--ease-out-soft),
-    transform 160ms var(--ease-out-soft),
-    box-shadow 220ms var(--ease-out-soft),
-    background-color 150ms linear,
-    border-color 150ms linear,
-    color 150ms linear;
-}
-@media (hover: hover) and (prefers-reduced-motion: no-preference) {
-  .hover-lift:hover {
-    translate: 0 -2px;
-    box-shadow: 0 18px 40px -20px var(--shadow-color);
-  }
-}
-
 /* Clickable control: on hover it rises 2px with a soft shadow and its icon
    grows a little, so whatever can be clicked reads as clickable and what
    cannot stays still. Built into ActionButton and IconButton; add it to any

@@ -28,14 +28,7 @@ export default async function AdminVocabularyPage() {
   }
 
   return (
-    <PageShell
-      topbar={
-        <AppTopbar
-          activeHref="/admin/vocab"
-          subtitle={t.admin.shell.vocab}
-        />
-      }
-    >
+    <PageShell topbar={<AppTopbar subtitle={t.admin.shell.vocab} />}>
       <section className="grid gap-5 px-4 pb-6 md:pr-6 md:pl-0">
         <AdminVocabPanel
           initialQueue={initialQueue}

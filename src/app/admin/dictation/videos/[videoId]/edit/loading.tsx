@@ -9,10 +9,7 @@ export default async function Loading() {
   const t = await getMessages()
 
   return (
-    <SkeletonPageShell
-      activeHref="/dictation"
-      subtitle={t.admin.shell.editDesk}
-    >
+    <SkeletonPageShell subtitle={t.admin.shell.editDesk}>
       <SkeletonHero />
       <SkeletonPanel lines={6} />
     </SkeletonPageShell>

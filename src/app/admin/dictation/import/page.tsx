@@ -1,11 +1,11 @@
+import { Upload } from 'lucide-react'
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { redirect } from 'next/navigation'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { PageShell } from '@/components/common/PageShell'
 import { DictationImportForm } from '@/components/dictation/DictationImportForm'
-import { PageTag } from '@/components/ui/PageTag'
+import { PageHeader } from '@/components/common/PageHeader'
 import { getMessages } from '@/i18n/server'
 import { getOptionalUser } from '@/modules/dictation/services/getCurrentUser'
 
@@ -31,60 +31,29 @@ export default async function DictationImportPage() {
   const t = await getMessages()
 
   return (
-    <PageShell
-      topbar={
-        <AppTopbar
-          activeHref="/dictation"
-          subtitle={t.admin.shell.importDesk}
+    <PageShell topbar={<AppTopbar subtitle={t.admin.shell.importDesk} />}>
+      <section className="grid gap-5 px-4 pb-6 md:pr-6 md:pl-0">
+        <PageHeader
+          breadcrumb={{
+            items: [
+              { href: '/admin', label: t.admin.dashboard.title },
+              {
+                href: '/admin/dictation',
+                label: t.common.modules.dictation.title,
+              },
+              { label: t.admin.importPage.title },
+            ],
+            label: t.common.journey.breadcrumb,
+          }}
+          icon={<Upload />}
+          iconClassName="bg-pastel-sky text-accent-blue"
+          subtitle={t.admin.importPage.intro}
+          title={t.admin.importPage.title}
         />
-      }
-      footer={
-        <div className="border-line bg-cta text-cta-fg border-t px-5 py-4">
-          <div className="mx-auto flex max-w-[1400px] flex-wrap items-center justify-between gap-3">
-            <strong className="font-sans text-base font-semibold tracking-normal">
-              {t.common.app.name}
-            </strong>
-            <span className="text-tint-soft text-sm font-semibold">
-              {t.admin.importPage.footerNote}
-            </span>
-          </div>
+        <div className="border-line bg-surface rounded-panel border p-4 sm:p-5">
+          <DictationImportForm />
         </div>
-      }
-    >
-      <div className="grid gap-5 p-3 sm:p-5">
-        <Link
-          href="/admin/dictation"
-          className="text-brand justify-self-start text-sm font-semibold hover:underline"
-        >
-          {t.admin.importPage.back}
-        </Link>
-        <section
-          aria-labelledby="dictation-import-title"
-          className="border-line bg-surface/92 rounded-panel grid min-w-0 overflow-hidden border"
-        >
-          <div className="border-line bg-surface/90 flex min-w-0 flex-wrap items-start justify-between gap-4 border-b p-4 sm:p-5">
-            <div className="grid min-w-0 gap-3">
-              <p className="text-brand text-xs leading-tight font-semibold tracking-normal">
-                {t.admin.importPage.eyebrow}
-              </p>
-              <h1
-                id="dictation-import-title"
-                className="font-sans text-[clamp(2rem,7vw,4.75rem)] leading-none font-medium tracking-normal wrap-break-word"
-              >
-                {t.admin.importPage.title}
-              </h1>
-              <p className="text-ink-soft max-w-3xl text-base leading-7 font-normal">
-                {t.admin.importPage.intro}
-              </p>
-            </div>
-            <PageTag tone="red">{t.admin.importPage.tag}</PageTag>
-          </div>
-
-          <div className="p-4 sm:p-5">
-            <DictationImportForm />
-          </div>
-        </section>
-      </div>
+      </section>
     </PageShell>
   )
 }

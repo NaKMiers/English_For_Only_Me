@@ -1,5 +1,6 @@
 'use client'
 
+import { GraduationCap } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
 
@@ -17,7 +18,8 @@ import { gradeIeltsWritingApi, ieltsErrorMessage } from '@/requests/ieltsApi'
 
 import { TaskVisual } from '../visual/TaskVisual'
 import { WritingPrompt } from '../widgets/WritingPrompt'
-import { ExamButton, ExamCard, StatTile } from '@/components/ielts/ui'
+import { StatChip, StatStrip } from '@/components/journey/StatChip'
+import { ExamButton, ExamCard } from '@/components/ielts/ui'
 
 interface Props {
   attempt: IeltsAttemptRecord
@@ -101,16 +103,17 @@ export function WritingFeedbackDetails({
 
   return (
     <>
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <StatStrip>
         {CRITERIA(task, t.criteria).map(([key, label]) => (
-          <StatTile
-            className="min-h-24"
+          <StatChip
+            icon={GraduationCap}
             key={key}
             label={label}
+            tone="ielts"
             value={criteria[key].toFixed(1)}
           />
         ))}
-      </div>
+      </StatStrip>
       <p className="leading-[1.7]">{feedback.summary}</p>
       <MarkedEssay
         corrections={feedback.corrections}
@@ -281,35 +284,8 @@ export function WritingResult({ attempt: initial, tasks }: Props) {
 
   return (
     <div className="grid gap-6">
-      <section
-        aria-label={t.result.label}
-        className="grid grid-cols-2 gap-3 md:grid-cols-4"
-      >
-        <StatTile
-          detail={
-            attempt.scope.kind === 'part'
-              ? t.writingResult.singleTaskNoBand
-              : t.writingResult.task2Double
-          }
-          label={t.writingResult.writingBand}
-          tone="ink"
-          value={
-            attempt.writingBand === null ? '-' : attempt.writingBand.toFixed(1)
-          }
-        />
-        {tasks.map(task => {
-          const band =
-            attempt.writingFeedback?.[String(task.task) as '1' | '2']?.band
-
-          return (
-            <StatTile
-              key={task.task}
-              label={format(t.parts.task, { part: task.task })}
-              value={band == null ? '-' : band.toFixed(1)}
-            />
-          )
-        })}
-      </section>
+      {/* The writing band sits in the result head; each task's band is
+          in its card title, so no tiles repeat them here. */}
       {error ? (
         <p
           className="border-line bg-tint-soft rounded-control border px-3 py-2"

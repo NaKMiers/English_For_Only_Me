@@ -86,7 +86,7 @@ export default async function AdminDashboard() {
                 key={link.href}
                 href={link.href}
                 className={cn(
-                  'soft-press hover-lift rounded-panel grid content-start gap-3 p-4',
+                  'soft-press hover-pop rounded-panel grid content-start gap-3 p-4',
                   link.tint
                 )}
               >

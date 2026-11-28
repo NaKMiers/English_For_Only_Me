@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
+import { Breadcrumb } from '@/components/common/Breadcrumb'
 import { PageShell } from '@/components/common/PageShell'
 import { AdminTestCatalogue } from '@/components/ielts/editor/AdminTestCatalogue'
 import { CreateTestPanel } from '@/components/ielts/editor/CreateTestPanel'
@@ -41,19 +41,15 @@ export default async function AdminIeltsPage() {
 
   const pageTitle = (
     <div className="grid min-w-0 gap-0.5">
-      <nav
-        aria-label={copy.breadcrumb}
-        className="text-muted-foreground text-xs font-semibold"
-      >
-        <Link
-          className="hover:text-brand underline"
-          href="/admin"
-        >
-          {t.common.auth.admin}
-        </Link>{' '}
-        / IELTS
-      </nav>
-      <h1 className="font-sans text-2xl leading-none font-semibold wrap-break-word">
+      <Breadcrumb
+        className="text-xs"
+        items={[
+          { href: '/admin', label: t.common.auth.admin },
+          { label: t.common.modules.ielts.title },
+        ]}
+        label={copy.breadcrumb}
+      />
+      <h1 className="font-sans text-2xl leading-none font-medium wrap-break-word">
         {copy.heading}
       </h1>
     </div>
