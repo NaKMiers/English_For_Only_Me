@@ -259,4 +259,11 @@ export const vocabulary = {
     invalidOccurrence: 'Vocabulary occurrence payload is invalid.',
     invalidRecallAnswer: 'Vocabulary recall payload is invalid.',
   },
+  errorBoundary: {
+    eyebrow: 'Vocabulary',
+    title: 'Your word garden needs a retry',
+    description: 'This page failed to load. Try again; your words are safe.',
+    retry: 'Try again',
+    home: 'Back to vocabulary',
+  },
 }

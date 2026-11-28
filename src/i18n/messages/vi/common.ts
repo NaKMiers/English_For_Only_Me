@@ -10,6 +10,8 @@ export const common: Messages['common'] = {
     tagline: 'Góc học tiếng Anh của riêng bạn',
   },
   nav: {
+    accountMenu: 'Tài khoản',
+    accountMenuDescription: 'Tài khoản của bạn và ngôn ngữ của ứng dụng.',
     primary: 'Điều hướng chính',
     home: 'Bàn học',
     menu: 'Menu',
@@ -175,5 +177,12 @@ export const common: Messages['common'] = {
     ownerMismatch:
       'Thay đổi này thuộc về một tài khoản khác. Hãy tải lại trang.',
     writeKept: 'Chưa gửi: người học đã đổi. Dữ liệu được giữ lại để gửi sau.',
+  },
+  errorBoundary: {
+    eyebrow: 'Có lỗi xảy ra',
+    title: 'Trang này cần tải lại',
+    description: 'Trang chưa tải được. Hãy thử lại; dữ liệu đã lưu không mất.',
+    retry: 'Thử lại',
+    home: 'Về bàn học',
   },
 }

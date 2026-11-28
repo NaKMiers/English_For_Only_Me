@@ -11,6 +11,8 @@ export const common = {
     tagline: 'Your private English study board',
   },
   nav: {
+    accountMenu: 'Account',
+    accountMenuDescription: 'Your account and the app language.',
     primary: 'Primary',
     home: 'Study Desk',
     menu: 'Menu',
@@ -177,5 +179,12 @@ export const common = {
     ownerMismatch:
       'This change was made for a different account. Reload the page.',
     writeKept: 'Not sent: the learner changed. It is kept for later.',
+  },
+  errorBoundary: {
+    eyebrow: 'Something went wrong',
+    title: 'This page needs a retry',
+    description: 'It failed to load. Try again; nothing you saved is lost.',
+    retry: 'Try again',
+    home: 'Back to the study desk',
   },
 }

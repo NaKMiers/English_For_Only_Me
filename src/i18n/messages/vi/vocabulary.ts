@@ -259,4 +259,12 @@ export const vocabulary: Messages['vocabulary'] = {
     invalidOccurrence: 'Dữ liệu lần gặp từ không hợp lệ.',
     invalidRecallAnswer: 'Dữ liệu câu trả lời ôn tập không hợp lệ.',
   },
+  errorBoundary: {
+    eyebrow: 'Từ vựng',
+    title: 'Khu vườn từ vựng cần tải lại',
+    description:
+      'Trang này chưa tải được. Hãy thử lại; các từ của bạn vẫn an toàn.',
+    retry: 'Thử lại',
+    home: 'Về từ vựng',
+  },
 }
