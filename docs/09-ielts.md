@@ -632,9 +632,35 @@ text. `containsHtml` (`/<[a-zA-Z/!]/`) backs the `html_in_body` rule.
 
 Per the project memory note, IELTS layout must match the Cambridge paper (as
 Jumpinto shows it) and every fix goes into these shared helpers or the shared
-renderers, never into one test. See `docs/plans/ielts-jumpinto-parity-2026-11-26.md`
-for the full list of display rules and `docs/ielts-parity/tracker.md` for
-per-test data fixes.
+renderers, never into one test. The display rules the shared code implements
+(all tests):
+
+| Area                     | Rule (as the paper / Jumpinto shows it)                                                                                                                                                     | Where                                              |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| Part heading             | Small gray caps `PART 1` / `PASSAGE 2` / `TASK 2`                                                                                                                                           | `ListeningPane`, `PassagePane`, `WritingRunner`    |
+| Reading header           | Gray line "You should spend about 20 minutes on Questions X-Y, which are based on Reading Passage N."; title centered; standfirst centered bold italic                                      | `PassagePane`, `passageStandfirst.ts`              |
+| Lettered passages        | Letter `A` as a bold heading on its own line, its paragraphs below; small gap between paragraphs, bigger gap between letters; a line break inside a stored paragraph starts a new paragraph | `PassagePane`                                      |
+| Listening header         | Context line hidden when the announcer reads it; part title centered at the top of the **Audioscript** panel; borderless full-width toggle                                                  | `ListeningPane`                                    |
+| Group label              | "Question 5", "Questions 21 and 22", "Questions 1-6"                                                                                                                                        | `GroupBlock`                                       |
+| Instructions             | One sentence per line, the caps word limit in bold                                                                                                                                          | `instructionText.ts`                               |
+| Group title              | Shown for choice groups too ("Local council report on traffic and highways"), hidden when it only repeats the question                                                                      | `GroupBlock`                                       |
+| Notes / short answers    | Each stored line is its own line (one question per line)                                                                                                                                    | `markdown/parse.ts`                                |
+| Word box / matching list | Its own centered, fit-width box above the summary, centered title; recognised in any storage format (`- **A** x`, `A. x`, `A) x`, several per line, table)                                  | `publicView.ts` `bodyWithoutOptions`, `GroupBlock` |
+| Spacing                  | Tight notes (line height 1.65, 28px inputs), small frame padding, compact options                                                                                                           | `IeltsMarkdown`, `SlotInput`, `GroupBlock`         |
+| Pictures                 | Diagram/map/plan image above the notes when `group.imageUrl` is set; `visual_missing` warning when the text mentions a diagram and there is none                                            | `GroupBlock`, `checkTest.ts`                       |
+| Choices                  | Only the radio/checkbox picks; selected option is gray, never red; red is only for wrong answers in review                                                                                  | `GroupBlock`, `ReviewMark`                         |
+| Flags                    | Click a question number to flag it (amber, flag icon); a part with flags gets an amber dot in the footer                                                                                    | `QuestionNumberBadge`, `QuestionNavigator`         |
+| Writing                  | "Sample Writing Answer" collapsible under the task (practice and mock); essay box bounded and resizable; task image without a frame                                                         | `WritingRunner`, `publicView.ts`                   |
+
+Per-test data problems are fixed with scripts, not code: a missing diagram,
+map or plan (`imageUrl` empty) with `bun run ielts:attach-image -- <slug>
+<section> <firstQ> <file>`; a standfirst merged into the first paragraph with
+`bun run ielts:set-standfirst -- <slug> <section> "<text>"`; a lettered
+section stored as one block with `bun run ielts:paragraph-breaks -- <slug>
+<section> "A=<first words>" ...`. Options kept only in the body text, a
+missing group title or a wrong sample answer need a section patch.
+`bun run ielts:dump-test -- <slug>` (`scripts/dumpIeltsTest.ts`) writes a
+test's full JSON to `tmp/ielts-dumps/` (gitignored) for checking.
 
 | Helper                                               | What it does                                                                                                                     | Used by                                              |
 | ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |

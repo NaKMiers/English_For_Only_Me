@@ -68,20 +68,29 @@ export default async function AdminDashboard() {
     uncategorized = noTopic
   }
 
+  const stats = format(t.admin.dashboard.stats, {
+    topics: plural(t.admin.dashboard.topics, topicCount),
+    uncategorized: plural(t.admin.dashboard.uncategorized, uncategorized),
+  })
+
   return (
-    <PageShell topbar={<AppTopbar subtitle={t.admin.shell.admin} />}>
+    <PageShell
+      topbar={
+        // The title sits in the top row beside the brand, like every other
+        // page; PageHeader inTopbar repeats it on phones only.
+        <AppTopbar
+          page={{ subtitle: stats, title: t.admin.dashboard.title }}
+          subtitle={t.admin.shell.admin}
+        />
+      }
+    >
       <section className="grid gap-5 px-4 pb-6 md:pr-6 md:pl-0">
         <PageHeader
           eyebrow={t.admin.dashboard.tag}
           icon={<Settings />}
           iconClassName="bg-surface-muted text-ink"
-          subtitle={format(t.admin.dashboard.stats, {
-            topics: plural(t.admin.dashboard.topics, topicCount),
-            uncategorized: plural(
-              t.admin.dashboard.uncategorized,
-              uncategorized
-            ),
-          })}
+          inTopbar
+          subtitle={stats}
           title={t.admin.dashboard.title}
         />
         <div className="motion-stagger grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

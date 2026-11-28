@@ -192,13 +192,8 @@ for (const [name, guard] of Object.entries({
 
 describe('no em dash guard', () => {
   // The owner's rule: never the U+2014 character; code that needs it writes
-  // the escape. Kept out: IELTS passage dumps (exam data) and two design
-  // notes written before the rule.
+  // the escape. IELTS test dumps (exam data) live in tmp/, outside the scan.
   const DASH = new RegExp('\u2014')
-  const ALLOWED_DOCS = new Set([
-    'docs/designs/sticker-manga-corners.md',
-    'docs/designs/sticker-manga-sketch.html',
-  ])
 
   test('no source or doc file contains it', () => {
     const found = [
@@ -206,7 +201,6 @@ describe('no em dash guard', () => {
       ...files(DOCS, /\.(md|html)$/),
     ]
       .map(repoPath)
-      .filter(path => !ALLOWED_DOCS.has(path))
       .filter(path => DASH.test(readFileSync(join(ROOT, path), 'utf8')))
 
     expect(found).toEqual([])

@@ -140,8 +140,7 @@ global and not tied to it. `role` is intentionally NOT persisted (derived from
 
 Guest mode was removed on 2026-11-28: there is no anonymous identity, no guest
 cookie and no merge at sign-in. Rows that guests left behind are dropped by
-`bun run auth:drop-guest-data` (see section 8). The plan is
-`docs/plans/google-login-required-2026-11-28.md`.
+`bun run auth:drop-guest-data` (see section 8).
 
 Gate layers, outermost first: the proxy (1.1, 1.2), then the page layouts and
 `requirePageUser()` in each Server Component (1.6), then `requireUser()` in

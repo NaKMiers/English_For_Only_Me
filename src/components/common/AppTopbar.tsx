@@ -1,5 +1,6 @@
 'use client'
 
+import { Settings } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
@@ -40,7 +41,8 @@ interface Props {
    */
   page?: {
     breadcrumb?: BreadcrumbItem[]
-    module: AppModuleKey
+    /** Left out on pages outside a module (admin): a neutral settings icon. */
+    module?: AppModuleKey
     subtitle?: string
     title: string
   }
@@ -147,8 +149,10 @@ function TopbarPageTitle({
   breadcrumbLabel: string
   page: NonNullable<Props['page']>
 }) {
-  const Icon = MODULE_ICONS[page.module]
-  const theme = MODULE_THEMES[page.module]
+  const Icon = page.module ? MODULE_ICONS[page.module] : Settings
+  const iconClassName = page.module
+    ? cn(MODULE_THEMES[page.module].tint, MODULE_THEMES[page.module].accent)
+    : 'bg-surface-muted text-ink'
 
   return (
     // Capped so a long subtitle truncates instead of squeezing the app name.
@@ -175,8 +179,7 @@ function TopbarPageTitle({
           aria-hidden="true"
           className={cn(
             'grid size-12 shrink-0 place-items-center rounded-full',
-            theme.tint,
-            theme.accent
+            iconClassName
           )}
         >
           <Icon className="size-6" />

@@ -148,9 +148,7 @@ weight.
 
 Every learner page is built from the journey primitives in
 `src/components/journey/` and a few shared pieces, so pages stay the same
-by construction. The full reasoning is in
-`docs/plans/ui-calm-progress-2026-11-28.md`; this section is enough to
-build a new page.
+by construction. This section is enough to build a new page.
 
 **The landing skeleton** (every module landing, same order):
 

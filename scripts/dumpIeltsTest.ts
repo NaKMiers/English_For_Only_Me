@@ -10,7 +10,7 @@ import { ieltsTestSchema } from '@/modules/ielts/schema'
 
 /*
  * Write the newest version of one IELTS test as JSON to
- * docs/ielts-parity/dumps/<slug>.json (gitignored) and print its
+ * tmp/ielts-dumps/<slug>.json (gitignored) and print its
  * consistency report.
  *
  *   bun run ielts:dump-test -- <slug>
@@ -27,7 +27,7 @@ async function main() {
 
   const test = ieltsTestSchema.parse(doc.toObject())
   const report = checkTest(test)
-  const dir = path.join('docs', 'ielts-parity', 'dumps')
+  const dir = path.join('tmp', 'ielts-dumps')
   const file = path.join(dir, `${slug}.json`)
 
   await mkdir(dir, { recursive: true })
