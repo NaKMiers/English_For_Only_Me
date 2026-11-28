@@ -139,7 +139,7 @@ export function JourneyHero({
       layout="stacked"
       metaphor={
         // The trail: thick path, big milestones, footprints where you are.
-        <div className="relative mx-7 h-[92px]">
+        <div className="relative mx-7 h-[76px] sm:h-[92px]">
           <div
             aria-label={format(t.trail, {
               done: totals.steps,
@@ -148,7 +148,7 @@ export function JourneyHero({
             aria-valuemax={totals.totalSteps}
             aria-valuemin={0}
             aria-valuenow={totals.steps}
-            className="bg-surface/80 absolute inset-x-0 top-[22px] h-3 overflow-hidden rounded-full"
+            className="bg-surface/80 absolute inset-x-0 top-[16px] h-3 overflow-hidden rounded-full sm:top-[22px]"
             role="progressbar"
           >
             <div
@@ -169,7 +169,7 @@ export function JourneyHero({
               >
                 <span
                   className={cn(
-                    'grid size-14 place-items-center rounded-full border-[3px]',
+                    'grid size-11 place-items-center rounded-full border-[3px] sm:size-14',
                     reached
                       ? 'bg-accent-orange text-surface border-surface shadow-sm'
                       : target
@@ -179,13 +179,18 @@ export function JourneyHero({
                 >
                   <Icon
                     aria-hidden="true"
-                    className="size-6"
+                    className="size-5 sm:size-6"
                   />
                 </span>
+                {/* Camp and Ridge sit a fifth of the trail apart, too close
+                    for two labels on a phone: there only the milestone
+                    ahead keeps its word (the line under the trail names it
+                    too); the rest stay for screen readers. */}
                 <span
                   className={cn(
                     'text-xs whitespace-nowrap',
-                    reached || target ? 'font-medium' : 'text-ink-soft'
+                    reached || target ? 'font-medium' : 'text-ink-soft',
+                    !target && 'max-sm:sr-only'
                   )}
                 >
                   {t.milestones[item.key]}
@@ -196,7 +201,7 @@ export function JourneyHero({
           {/* Footprints: the learner's spot on the trail (a marker). */}
           <span
             aria-hidden="true"
-            className="bg-accent-orange text-surface border-surface absolute top-[14px] grid size-7 -translate-x-1/2 place-items-center rounded-full border-2 shadow-sm"
+            className="bg-accent-orange text-surface border-surface absolute top-[8px] grid size-7 -translate-x-1/2 place-items-center rounded-full border-2 shadow-sm sm:top-[14px]"
             style={{ left: `${percent}%` }}
             title={messages.common.journey.youAreHere}
           >

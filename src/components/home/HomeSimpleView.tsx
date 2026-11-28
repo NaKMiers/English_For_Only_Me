@@ -54,11 +54,11 @@ function UpNextRow({ row, messages }: { row: NextRow; messages: Messages }) {
     <li>
       <Link
         href={row.href}
-        className="soft-press hover-pop hover:bg-tint-soft group rounded-control flex min-h-20 items-center gap-4 px-3 py-3"
+        className="soft-press hover-pop hover:bg-tint-soft group rounded-control flex min-h-20 items-center gap-3 px-3 py-3 sm:gap-4"
       >
         <span
           className={cn(
-            'rounded-control grid size-14 shrink-0 place-items-center',
+            'rounded-control grid size-11 shrink-0 place-items-center sm:size-14',
             theme.tint,
             theme.accent
           )}
@@ -70,7 +70,9 @@ function UpNextRow({ row, messages }: { row: NextRow; messages: Messages }) {
           />
         </span>
         <span className="grid min-w-0 flex-1 gap-0.5">
-          <span className="truncate font-sans text-base font-medium">
+          {/* The label wraps rather than truncates: on a phone the due
+              pill leaves little room, and "Dictation…" says nothing. */}
+          <span className="font-sans text-base leading-tight font-medium wrap-break-word">
             {row.label}
           </span>
           <span className="text-ink-soft truncate text-sm">{row.hint}</span>
