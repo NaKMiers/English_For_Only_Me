@@ -95,21 +95,6 @@ export async function listIeltsAttempts(
   return rows.map(row => toSummary(row as LeanRow))
 }
 
-/**
- * In-progress attempts that can still be resumed. A mock whose deadline
- * passed is left out: reading it expires and scores it.
- */
-export function openAttempts(
-  summaries: IeltsAttemptSummary[],
-  now = new Date()
-) {
-  return summaries.filter(
-    item =>
-      item.status === 'in_progress' &&
-      (!item.deadlineAt || new Date(item.deadlineAt) > now)
-  )
-}
-
 /** Overall estimate from the owner's full-skill banded attempts. */
 export async function readIeltsOverall(ownerId: string) {
   const rows = await IeltsAttemptModel.find(

@@ -4,7 +4,6 @@ import { MissingEnvironmentError } from '@/constants/environments'
 import type { Messages } from '@/i18n/messages'
 import { getMessages } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
-import { revalidateDictationCatalog } from '@/lib/db/revalidateCatalog'
 import { DictationSegmentModel } from '@/models/dictation/DictationSegmentModel'
 import { DictationTranscriptModel } from '@/models/dictation/DictationTranscriptModel'
 import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
@@ -17,7 +16,6 @@ import {
   type ApiErrorDecision,
   getMissingMongoResponse,
   MISSING_MONGODB_MESSAGE,
-  parseUpdateVideoRequest,
 } from '@/modules/dictation/services/videoRouteDecisions'
 
 export const runtime = 'nodejs'
@@ -51,28 +49,6 @@ function authErrorDecision(
     }
 
   return null
-}
-
-function toArchiveError(error: unknown, t: Messages): ApiErrorDecision {
-  const authError = authErrorDecision(error, t)
-  if (authError) return authError
-
-  if (error instanceof MissingEnvironmentError)
-    return {
-      status: 500,
-      body: {
-        message: MISSING_MONGODB_MESSAGE,
-      },
-    }
-
-  console.error('Failed to archive dictation video', error)
-
-  return {
-    status: 500,
-    body: {
-      message: t.dictation.api.videoDeleteFailed,
-    },
-  }
 }
 
 export async function GET(_request: Request, { params }: Props) {
@@ -135,62 +111,6 @@ export async function GET(_request: Request, { params }: Props) {
   }
 }
 
-export async function DELETE(_request: Request, { params }: Props) {
-  const t = await getMessages()
-  const missingMongo = getMissingMongoResponse()
-
-  if (missingMongo) return jsonError(missingMongo)
-
-  const { videoId } = await params
-
-  if (!/^[a-f\d]{24}$/i.test(videoId))
-    return jsonError({
-      status: 400,
-      body: {
-        message: t.dictation.api.invalidVideoId,
-      },
-    })
-
-  try {
-    await requireAdmin()
-
-    await connectDatabase()
-
-    const video = await DictationVideoModel.findOneAndUpdate(
-      {
-        _id: videoId,
-        status: {
-          $ne: 'archived',
-        },
-      },
-      {
-        $set: {
-          status: 'archived',
-        },
-      },
-      {
-        returnDocument: 'after',
-      }
-    ).lean()
-
-    if (!video)
-      return jsonError({
-        status: 404,
-        body: {
-          message: t.dictation.api.videoNotFound,
-        },
-      })
-
-    revalidateDictationCatalog()
-
-    return NextResponse.json({
-      video: toDictationVideoRecord(video),
-    })
-  } catch (error) {
-    return jsonError(toArchiveError(error, t))
-  }
-}
-
 function toUpdateError(error: unknown, t: Messages): ApiErrorDecision {
   const authError = authErrorDecision(error, t)
   if (authError) return authError
@@ -210,74 +130,5 @@ function toUpdateError(error: unknown, t: Messages): ApiErrorDecision {
     body: {
       message: t.dictation.api.videoUpdateFailed,
     },
-  }
-}
-
-export async function PATCH(request: Request, { params }: Props) {
-  const t = await getMessages()
-  const missingMongo = getMissingMongoResponse()
-
-  if (missingMongo) return jsonError(missingMongo)
-
-  const { videoId } = await params
-
-  if (!/^[a-f\d]{24}$/i.test(videoId))
-    return jsonError({
-      status: 400,
-      body: {
-        message: t.dictation.api.invalidVideoId,
-      },
-    })
-
-  try {
-    await requireAdmin()
-
-    const body = await request.json()
-    const parsed = parseUpdateVideoRequest(body)
-
-    if (!parsed.ok) return jsonError(parsed)
-
-    await connectDatabase()
-
-    const video = await DictationVideoModel.findOneAndUpdate(
-      {
-        _id: videoId,
-        status: {
-          $ne: 'archived',
-        },
-      },
-      {
-        $set: {
-          defaultLanguage: parsed.data.defaultLanguage,
-        },
-      },
-      {
-        returnDocument: 'after',
-      }
-    ).lean()
-
-    if (!video)
-      return jsonError({
-        status: 404,
-        body: {
-          message: t.dictation.api.videoNotFound,
-        },
-      })
-
-    revalidateDictationCatalog()
-
-    return NextResponse.json({
-      video: toDictationVideoRecord(video),
-    })
-  } catch (error) {
-    if (error instanceof SyntaxError)
-      return jsonError({
-        status: 400,
-        body: {
-          message: t.dictation.api.invalidJson,
-        },
-      })
-
-    return jsonError(toUpdateError(error, t))
   }
 }

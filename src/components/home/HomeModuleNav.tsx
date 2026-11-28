@@ -13,7 +13,7 @@ export function HomeModuleNav({ messages }: { messages: Messages }) {
       aria-label={messages.home.modulesNav}
       className="flex flex-wrap gap-2"
     >
-      {APP_MODULES.filter(module => module.status === 'active').map(module => {
+      {APP_MODULES.map(module => {
         const Icon = MODULE_ICONS[module.key] ?? Sparkles
         const theme = MODULE_THEMES[module.key]
 

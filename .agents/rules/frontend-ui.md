@@ -71,9 +71,9 @@ Always show things in the simplest, most minimal way that still reads clearly.
   Headings use `font-medium`, body text the normal weight. Any replacement
   font must ship a `vietnamese` subset, or lesson data renders with mixed
   fallback glyphs.
-- Prefer a small semantic palette: `background`, `primary`, `dark-primary`,
-  `secondary`, `light`, `dark`, `light-gray`, and `dark-gray`, then add domain
-  colors intentionally.
+- Prefer the small semantic palette in `globals.css` (`ink`, `ink-soft`,
+  `surface`, `line`, `tint`, `brand`, `cta`, `danger`, the module pastels),
+  then add domain colors intentionally.
 - Keep custom spacing like `21px` and `10.5px` available through tokens when it
   improves rhythm.
 - Avoid broad redesigns while fixing behavior.
@@ -339,7 +339,8 @@ Also:
     `SelectItem`
   - `<input type="text|search|number|email">` → `Input`
   - `<input type="checkbox">` → `Checkbox`
-  - `<input type="range">` → `Slider`
+  - `<input type="range">` → a `Slider` primitive (none is kept until a
+    second caller needs one; `AudioPlayer` uses `@base-ui/react/slider`)
   - on/off preference → `Switch`
   - `<textarea>` → `Textarea`
   - `<label>` → `Label`
@@ -347,7 +348,8 @@ Also:
     (icon-only), or `Button` (base); destructive/confirm submits →
     `ConfirmSubmitButton`
   - menus → `DropdownMenu`; modals/confirms → `Dialog`; tabs → `Tabs`;
-    tooltips → `Tooltip`; progress → `Progress`; separators → `Separator`
+    tooltips → `Tooltip`; progress → `Progress`; a menu divider →
+    `DropdownMenuSeparator`
 - The primitives are themed ONCE to the pastel dashboard at the source
   (`src/components/ui/*`): corner roles, hairline `border-line`, `bg-surface`,
   `shadow-card` / `shadow-float`, `cta` for checked and selected states. When

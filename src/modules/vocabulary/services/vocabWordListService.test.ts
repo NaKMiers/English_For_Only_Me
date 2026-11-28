@@ -2,10 +2,7 @@ import { describe, expect, test, vi } from 'vitest'
 
 import { VOCAB_REQUIRES_VI_MEANING_FILTER } from '@/modules/vocabulary/vietnameseMeaning'
 
-import {
-  buildVocabWordListPipeline,
-  parseVocabWordListView,
-} from './vocabWordListService'
+import { buildVocabWordListPipeline } from './vocabWordListService'
 
 vi.mock('@/models/dictation/DictationVideoModel', () => ({}))
 vi.mock('@/models/vocabulary/UserVocabItemModel', () => ({}))
@@ -23,16 +20,6 @@ function build(page: number) {
 }
 
 describe('vocabWordListService', () => {
-  test('parses supported list views', () => {
-    expect(parseVocabWordListView('dueToday')).toBe('dueToday')
-    expect(parseVocabWordListView('knownTotal')).toBe('knownTotal')
-  })
-
-  test('falls back to learning for unknown views', () => {
-    expect(parseVocabWordListView(undefined)).toBe('learning')
-    expect(parseVocabWordListView('nope')).toBe('learning')
-  })
-
   test('filters on the entry before paging so pages and totals match', () => {
     const pipeline = build(3)
     const stageNames = pipeline.map(stage => Object.keys(stage)[0])

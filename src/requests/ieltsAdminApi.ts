@@ -2,10 +2,7 @@ import type { IeltsConsistencyReport } from '@/modules/ielts/consistency/checkTe
 import { IELTS_API_PATHS } from '@/modules/ielts/constants'
 import type { IeltsSectionInput, IeltsTestMeta } from '@/modules/ielts/schema'
 import type { VocabEntryApiRecord } from '@/modules/vocabulary/types'
-import type {
-  IeltsAdminTest,
-  IeltsAdminTestRow,
-} from '@/modules/ielts/tests/testService'
+import type { IeltsAdminTest } from '@/modules/ielts/tests/testService'
 
 /**
  * A failed admin request. `message` is the server's text, already in the
@@ -55,9 +52,6 @@ async function send<T>(
 
   return body as T
 }
-
-export const listIeltsTestsApi = () =>
-  send<{ tests: IeltsAdminTestRow[] }>(IELTS_API_PATHS.adminTests)
 
 export const createIeltsTestApi = (
   input:

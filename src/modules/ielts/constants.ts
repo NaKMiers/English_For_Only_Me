@@ -155,8 +155,6 @@ export const IELTS_WEAKNESS_MIN_QUESTIONS = 5
 export const IELTS_DRILL_MAX_GROUPS = 4
 export const IELTS_GENERATION_LOG_LIMIT = 50
 
-export const IELTS_WRITING_MIN_WORDS = { 1: 150, 2: 250 } as const
-
 /** Target bands an author can pick for a test (schema allows 4-9). */
 export const IELTS_TARGET_BANDS = [
   4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9,

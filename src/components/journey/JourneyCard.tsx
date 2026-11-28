@@ -20,8 +20,6 @@ interface Props {
   layout?: 'aside' | 'split' | 'stacked'
   /** The module's own picture of the journey (staircase, trail, garden). */
   metaphor: ReactNode
-  /** The next milestone and the steps left to it: a `MilestoneNote`. */
-  milestone?: ReactNode
   module: AppModuleKey
   /**
    * A `NextStopCard`. Left out on IELTS, where the floating Continue button
@@ -33,21 +31,20 @@ interface Props {
    * card is open, so the narrower card keeps one column (vocabulary).
    */
   nextStopHidesWithDrawer?: boolean
-  /** A `StatStrip` of at most 4 chips. */
-  stats?: ReactNode
   /**
-   * `below` puts the chips under the milestone line; `top` lifts them to the
-   * card's top right corner, beside the headline, to save height.
+   * A `StatStrip` of at most 4 chips, in the card's top right corner beside
+   * the headline (it saves the height a chip row would take).
    */
-  statsPlacement?: 'below' | 'top'
+  stats?: ReactNode
   /** The card's heading (visible small eyebrow with the module icon). */
   title: string
   titleId: string
 }
 
 /**
- * The top of every module landing: how far you came, the module's metaphor,
- * the next milestone, a few numbers and the one next stop, on the module's
+ * The top of every module landing: how far you came, the module's metaphor
+ * (with the steps left written on it), a few numbers and at most one next
+ * stop, on the module's
  * pastel gradient. Order is fixed here so every landing reads the same way.
  */
 export function JourneyCard({
@@ -57,19 +54,16 @@ export function JourneyCard({
   headline,
   layout = 'split',
   metaphor,
-  milestone,
   module,
   nextStop,
   nextStopHidesWithDrawer = false,
   stats,
-  statsPlacement = 'below',
   title,
   titleId,
 }: Props) {
   const theme = MODULE_THEMES[module]
   const Icon = MODULE_ICONS[module]
-  const statsOnTop = Boolean(stats) && statsPlacement === 'top'
-  const statsBelow = Boolean(stats) && statsPlacement === 'below'
+  const statsOnTop = Boolean(stats)
 
   return (
     <section
@@ -138,14 +132,6 @@ export function JourneyCard({
         >
           {metaphor}
         </div>
-        {milestone || statsBelow ? (
-          <div className="grid gap-3">
-            {milestone ? (
-              <div data-journey-slot="milestone">{milestone}</div>
-            ) : null}
-            {statsBelow ? <div data-journey-slot="stats">{stats}</div> : null}
-          </div>
-        ) : null}
       </div>
       {nextStop ? (
         <div
@@ -190,27 +176,6 @@ export function JourneyHeadline({ icon, total, unit, value }: HeadlineProps) {
       </strong>
       <span className="font-sans text-xl font-medium">{unit}</span>
       {total ? <span className="text-ink-soft text-sm">{total}</span> : null}
-    </p>
-  )
-}
-
-/** The "3 lessons to finish A2" line under the metaphor. */
-export function MilestoneNote({
-  children,
-  className,
-  title,
-}: {
-  children: ReactNode
-  className?: string
-  /** A quiet hint on hover, e.g. how the milestones were chosen. */
-  title?: string
-}) {
-  return (
-    <p
-      className={cn('text-sm font-medium', className)}
-      title={title}
-    >
-      {children}
     </p>
   )
 }

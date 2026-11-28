@@ -67,16 +67,12 @@ layering.
 The list is data-driven from `src/constants/modules.ts` (`APP_MODULES`); labels
 live in the message catalogue under `common.modules`.
 
-| Module        | Key             | Status    | Route            |
-| ------------- | --------------- | --------- | ---------------- |
-| Dictation Lab | `dictation`     | active    | `/dictation`     |
-| Vocabulary    | `vocabulary`    | active    | `/vocabulary`    |
-| Grammar       | `grammar`       | active    | `/grammar`       |
-| IELTS Tests   | `ielts`         | active    | `/ielts`         |
-| Writing Notes | `writing-notes` | future    | `/writing-notes` |
-| AI Coach      | `ai-coach`      | future    | `/ai-coach`      |
-| Reading       | `reading`       | secondary | `/reading`       |
-| Speaking      | `speaking`      | secondary | `/speaking`      |
+| Module        | Key          | Status | Route         |
+| ------------- | ------------ | ------ | ------------- |
+| Dictation Lab | `dictation`  | active | `/dictation`  |
+| Vocabulary    | `vocabulary` | active | `/vocabulary` |
+| Grammar       | `grammar`    | active | `/grammar`    |
+| IELTS Tests   | `ielts`      | active | `/ielts`      |
 
 The four active modules are implemented. Writing Notes, Reading and Speaking are
 hidden from navigation because the IELTS module covers them; AI Coach shows as a

@@ -97,21 +97,6 @@ export function buildVideoMongoSort(
   }
 }
 
-/** In-memory predicate mirroring the Mongo filter (for the admin table). */
-export function matchesBrowseQuery(
-  video: { title: string; level: DictationLevel | null },
-  query: BrowseQuery
-): boolean {
-  if (query.level && video.level !== query.level) return false
-  if (
-    query.search &&
-    !video.title.toLowerCase().includes(query.search.toLowerCase())
-  )
-    return false
-
-  return true
-}
-
 export interface Pagination {
   page: number
   pageSize: number

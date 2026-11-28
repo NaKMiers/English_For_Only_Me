@@ -21,31 +21,6 @@ import { VOCAB_REQUIRES_VI_MEANING_FILTER } from '@/modules/vocabulary/vietnames
 import { toUserVocabItemRecord } from './userVocabItemRecords'
 import { toVocabEntryRecord } from './vocabEntryRecords'
 
-export const VOCAB_WORD_LIST_VIEW_LABELS: Record<VocabWordListView, string> = {
-  alreadyKnow: 'Already Know',
-  dueToday: 'Due Today',
-  knownTotal: 'Known Total',
-  learning: 'Learning',
-  mastered: 'Mastered',
-}
-
-export function parseVocabWordListView(
-  value: string | string[] | undefined
-): VocabWordListView {
-  const view = Array.isArray(value) ? value[0] : value
-
-  if (
-    view === 'learning' ||
-    view === 'dueToday' ||
-    view === 'alreadyKnow' ||
-    view === 'mastered' ||
-    view === 'knownTotal'
-  )
-    return view
-
-  return 'learning'
-}
-
 function getStatusFilter(
   view: VocabWordListView,
   now: Date

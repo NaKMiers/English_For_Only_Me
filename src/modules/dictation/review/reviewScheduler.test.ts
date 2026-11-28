@@ -2,16 +2,10 @@ import { describe, expect, test } from 'vitest'
 
 import type {
   DictationAttemptApiRecord,
-  DictationReviewItemApiRecord,
   DictationSegmentApiRecord,
 } from '@/modules/dictation/types'
 
-import {
-  buildReviewCandidates,
-  completeReviewItem,
-  dismissReviewItem,
-  mergeReviewCandidates,
-} from './reviewScheduler'
+import { buildReviewCandidates } from './reviewScheduler'
 
 const now = new Date('2026-01-01T00:00:00.000Z')
 
@@ -80,37 +74,6 @@ function makeAttempt(
   }
 }
 
-function makeReviewItem(
-  reason: DictationReviewItemApiRecord['reason']
-): DictationReviewItemApiRecord {
-  return {
-    id: `review-${reason}`,
-    createdAt: now,
-    dueAt: now,
-    kind: 'segment',
-    label: 'I want coffee.',
-    lastReviewedAt: null,
-    userId: 'owner',
-    priority: 90,
-    reason,
-    segmentId: 'segment-1',
-    statsSnapshot: {
-      accuracy: 50,
-      attemptCount: 1,
-      lastAction: 'check',
-      mistakeTaxonomy: {
-        extra: 0,
-        missing: 0,
-        spellingVariant: 0,
-        wrong: 1,
-      },
-    },
-    status: 'due',
-    updatedAt: now,
-    videoId: 'video',
-  }
-}
-
 describe('review scheduler', () => {
   test('creates review candidates for skipped, revealed, retry, repeated mistake, and low accuracy', () => {
     const candidates = buildReviewCandidates({
@@ -132,28 +95,5 @@ describe('review scheduler', () => {
       'revealed',
       'skipped',
     ])
-  })
-
-  test('does not duplicate an active review item for the same segment and reason', () => {
-    const candidates = buildReviewCandidates({
-      attempts: [makeAttempt({ action: 'skip', id: 'skip' })],
-      dueAt: now,
-      segments: [makeSegment()],
-    })
-    const merged = mergeReviewCandidates({
-      candidates,
-      existingItems: [makeReviewItem('skipped')],
-    })
-
-    expect(merged.some(candidate => candidate.reason === 'skipped')).toBe(false)
-  })
-
-  test('allows dismissed items to transition locally', () => {
-    const item = makeReviewItem('lowAccuracy')
-    const reviewedAt = new Date('2026-01-02T00:00:00.000Z')
-
-    expect(dismissReviewItem(item, reviewedAt).status).toBe('dismissed')
-    expect(completeReviewItem(item, reviewedAt).status).toBe('completed')
-    expect(completeReviewItem(item, reviewedAt).lastReviewedAt).toBe(reviewedAt)
   })
 })

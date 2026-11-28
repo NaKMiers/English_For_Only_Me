@@ -164,21 +164,6 @@ function segmentCells(
   }))
 }
 
-/** Flatten the correction into coloured cells for the answer line. Exposed for
- * tests so the dual-channel mapping can be asserted without the DOM. */
-export function answerLineCells(
-  correction: CharCorrectionResult,
-  showFullAnswer: boolean
-): DisplayCell[] {
-  return correction.segments.flatMap((segment, index) => {
-    const cells = segmentCells(segment, index, showFullAnswer)
-
-    if (index === 0) return cells
-
-    return [{ char: ' ', className: '', key: `space-${index}` }, ...cells]
-  })
-}
-
 function statusMessage(
   text: Messages['dictation']['answer'],
   status: GuidedStatus,

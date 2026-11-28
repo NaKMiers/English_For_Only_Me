@@ -4,7 +4,7 @@ import { describe, expect, test } from 'vitest'
 
 import { expectLandingBudget } from '@/test/landingBudget'
 
-import { JourneyCard, JourneyHeadline, MilestoneNote } from './JourneyCard'
+import { JourneyCard, JourneyHeadline } from './JourneyCard'
 import { NextStopCard } from './NextStopCard'
 import { StatChip, StatStrip } from './StatChip'
 
@@ -20,7 +20,6 @@ describe('JourneyCard', () => {
           />
         }
         metaphor={<div>staircase</div>}
-        milestone={<MilestoneNote>3 lessons to finish A2</MilestoneNote>}
         module="grammar"
         nextStop={
           <NextStopCard
@@ -59,7 +58,7 @@ describe('JourneyCard', () => {
       [...container.querySelectorAll('[data-journey-slot]')].map(element =>
         element.getAttribute('data-journey-slot')
       )
-    ).toEqual(['title', 'headline', 'metaphor', 'milestone', 'stats', 'next'])
+    ).toEqual(['title', 'headline', 'stats', 'metaphor', 'next'])
     expect(container.firstElementChild?.className).toContain(
       'from-pastel-lilac'
     )

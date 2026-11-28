@@ -81,7 +81,7 @@ Conventions that recur across every subsystem:
   items) at read time; see `practice/` and `content/progressRepository.ts`.
 - User-facing strings are no longer hard-coded in modules: helpers take a `Messages`
   slice from `src/i18n/messages` (English `en` by default), for example
-  `getDictationStatusLabel`, `getAccessErrorMessage`, `toVocabApiError`.
+  `getAccessErrorMessage`, `toVocabApiError`.
 
 The correction engine takes this further with a tested invariant called "correction
 parity" (see the correction deep dive).
@@ -656,25 +656,17 @@ Scheduling model: `dueAt` defaults to "now" - there is no forward day-offset int
 this version; items become due immediately and are ordered by due date then priority.
 Dictation review does not use the shared recall ladder (`learning/recall`).
 
-Lifecycle helpers `dismissReviewItem` and `completeReviewItem` stamp `lastReviewedAt` and
-set status to `dismissed`/`completed`; `getReviewActionStatus(action)` maps
-`complete|dismiss` to the stored status. `mergeReviewCandidates` (a pure dedupe on
-`${segmentId}:${reason}` against `due`/`scheduled` items) is still exported but has no
-production caller; the service dedupes with `selectNewReviewCandidates` instead.
-
 ### `reviewItemService.ts` (I/O)
 
 - `selectNewReviewCandidates({ attempts, existingItems, segments })` (exported, pure):
   runs `buildReviewCandidates` and drops candidates whose
   `${segmentId}:${kind}:${reason}` matches an existing active item. Because candidates
   are grouped per segment, feeding one segment's attempts yields exactly that segment's
-  share of the video-wide result. `existingItems` may also hold closed
+  share of a video-wide result. `existingItems` may also hold closed
   (`completed`/`dismissed`) items: attempts made before a segment's latest closed
   `lastReviewedAt` are ignored, so a sentence solved in the review queue stays solved
-  until it is missed again. Both recomputes load all of the user's items for the scope
+  until it is missed again. The recompute loads all of the user's items for the segment
   (no status filter) for this.
-- `recomputeReviewItemsForVideo({ userId, videoId })` loads the user's attempts
-  (ascending), the video's segments, and existing active items, then inserts.
 - `recomputeReviewItemsForSegment({ userId, videoId, segmentId })` is the incremental
   path the attempts route runs after each attempt: only that segment's attempts (served
   by `{userId, segmentId, createdAt}`), the segment, and its active items. Idempotent, so
@@ -691,8 +683,6 @@ production caller; the service dedupes with `selectNewReviewCandidates` instead.
   item, uncapped (0 for a null owner). `/dictation/review`
   (`src/app/(app)/dictation/review/page.tsx`) runs it beside a `limit: 30` list so the
   due total is right even when the list is capped.
-- `markReviewItemForUser` sets `lastReviewedAt` and the completed/dismissed status via
-  `findOneAndUpdate` scoped to the user's id.
 - `completeReviewItemsForSegment({ userId, segmentId, now })` completes every active
   item of a segment (`updateMany`, stamps `lastReviewedAt`). The attempts route calls it
   after the recompute for a passed `review` attempt.
@@ -810,8 +800,6 @@ when the provider is unavailable.
 - `getDebriefCompletionBlocker({ completedSegmentCount, hasCompletedSession })` is the
   completion gate: returns a message (mapped to HTTP 409 upstream) if there is no completed
   session or no completed segments, else `null`.
-- `shouldCreateDebriefAttempt(latestStatus)` returns `latestStatus !== 'ready'` (regenerate
-  unless the newest debrief is already ready).
 - Regeneration key: `createDictationDebriefSnapshotHash` (`debriefPrompt.ts`) SHA-256s a
   canonicalized JSON snapshot (fixed key order, trimmed strings). In
   `generateDictationDebriefForUser`, if a `ready` debrief already exists for the same
@@ -983,9 +971,7 @@ is left, so page 2 of a `newest` search stays sorted by newest. `isBrowseQueryAc
 flat-list mode (a search or level filter is set) from the section accordion.
 `buildVideoMongoFilter` builds a case-insensitive `title` regex (metacharacters escaped) and
 an optional `level` equality; `buildVideoMongoSort` maps the sort to a Mongo sort spec
-(`order` -> `{ order: 1, createdAt: -1 }`, etc.). `matchesBrowseQuery` is an in-memory
-mirror that currently has no caller outside tests (the admin list uses
-`adminVideoFilter.ts`). `paginate(page, total, pageSize = BROWSE_PAGE_SIZE (20))` clamps
+(`order` -> `{ order: 1, createdAt: -1 }`, etc.). `paginate(page, total, pageSize = BROWSE_PAGE_SIZE (20))` clamps
 the page to `[1, totalPages]` and returns `skip`, `hasPrev`, `hasNext`.
 
 `sectionGroups.buildSectionGroups` buckets a topic's videos by `sectionId` into section
@@ -1044,7 +1030,7 @@ Files: `src/modules/dictation/preferences/{dictationPreferences,shortcuts}.ts` (
   event, and blocked storage falls back to an in-memory copy for the visit. Saved values
   win over the session's `initialPreferences`. `setPreferences` reads the store (so two
   updates in one event compose) and returns the saved value for callers that sync it
-  through `buildPreferencesWrite`. `readDictationPreferences` is the non-hook read.
+  through `buildPreferencesWrite`.
 - Answer drafts are per owner AND per video:
   `getDictationAnswerDraftsStorageKey(videoId, ownerKey)` ->
   `english-for-only-me:dictation-answer-drafts:<owner|anonymous>:<videoId>`, so two
@@ -1109,7 +1095,7 @@ Directory: `src/modules/dictation/services/`. Endpoint contracts are documented 
 ### `*RouteDecisions.ts` - pure decision functions
 
 Files: `attemptRouteDecisions`, `sessionRouteDecisions`, `segmentRouteDecisions`,
-`transcriptRouteDecisions`, `videoRouteDecisions`, `reviewItemRouteDecisions`,
+`transcriptRouteDecisions`, `videoRouteDecisions`,
 `youtubeImportDecisions`. Each contains pure functions that take a
 parsed request body, query params, or already-fetched plain documents, and return a plain
 decision object. They perform no I/O. The shared return contract is a discriminated union
@@ -1127,7 +1113,7 @@ export type AttemptRouteDecision<T> =
 
 Two categories appear: parse/validate functions that wrap a Zod `safeParse` and translate
 failure into a 400 (`parseSessionStartRequest`, `parseAttemptPayload`,
-`parseSegmentEditRequest`, `parseCreateVideoRequest`, `parseYouTubeImportRequest`, ...); and
+`parseSegmentEditRequest`, `parseYouTubeImportRequest`, ...); and
 guard/resolve functions that branch over fetched state (`getSessionStartGuardDecision`
 returns 404/409/null with messages from the request's `t.dictation.api`;
 `resolveSessionStart` returns a `{ mode: 'resume' | 'start', ... }` plan;
@@ -1220,8 +1206,7 @@ Files: `src/modules/dictation/{levels,completionBadges,videoReadiness,statusDisp
   `continuePractice` (`inProgress`), else `startPractice`. `progress` is the per-user
   `DictationVideoProgress` from `getVideoProgressForUser`.
 - `statusDisplay.ts`: `DictationDisplayStatus` is the union of video, transcript, import
-  and transcript-quality statuses. `getDictationStatusLabel(status, labels =
-en.dictation.status)` reads labels from the i18n catalogue; `getDictationStatusTone`
+  and transcript-quality statuses. `getDictationStatusTone`
   maps to `PAGE_TAG_TONES` keys via `STATUS_TONES` (`red`, `sky`, `yellow`, `ink`, `pale`,
   `default`).
 - `types.ts`: the central type module (no runtime code).
@@ -1321,7 +1306,7 @@ one entry), `VocabRecallAttempt` (an append-only, idempotent answer log), and
 | `enrichment/` | `enrichmentService.ts`                                                                                                                                                           | Leased, fallback provider pipeline that fills entries and the admin batch/queue               |
 | `explore/`    | `exploreService.ts`                                                                                                                                                              | Frequency-ranked unclassified words via an in-DB anti-join                                    |
 | `recall/`     | `recallScheduler.ts`, `recallDueCursor.ts`, `recallTaskService.ts`, `recallTaskPayload.ts`, `recallTaskToken.ts`, `recallAnswerService.ts`                                       | Ladder re-export, keyset paging, signed task builder, client-readable payload, trusted answer |
-| `stats/`      | `vocabStatsFacets.ts`, `vocabStatsService.ts`, `vocabStats.ts`                                                                                                                   | Two `$facet` aggregations (production), legacy pure aggregator                                |
+| `stats/`      | `vocabStatsFacets.ts`, `vocabStatsService.ts`                                                                                                                                    | Two `$facet` aggregations (production), legacy pure aggregator                                |
 | `services/`   | `vocabEntryService.ts`, `userVocabItemService.ts`, `vocabWordListService.ts`, `vocabDashboardService.ts`, `vocabularyRouteDecisions.ts`, `vocab*Records.ts`, `vocabApiErrors.ts` | Entry/item/word-list/dashboard logic, route decisions, record mappers, error mapping          |
 
 ### Core contracts (`types.ts`, `constants.ts`)
@@ -1362,7 +1347,7 @@ stats }`, `VocabStatsRecord`, and `VocabAdminQueueSummaryRecord`.
 `VOCAB_CORE_PROVIDER_NAMES` (the first two) are wired as live adapters; `datamuse` is
 reserved. `VOCAB_RECALL_LISTENING_TASK_TYPES` lists the two audio modes.
 `NGSL_SEED_SOURCE` and `VOCAB_FAMILY_SEED_SOURCES` describe seed lists (below).
-`VOCAB_API_PATHS` centralizes the endpoint strings (including `itemsBatch`).
+`VOCAB_API_PATHS` centralizes the endpoint strings.
 
 ### Deep dive: term normalization (`normalizeVocabTerm.ts`)
 
@@ -1510,19 +1495,10 @@ user already classified; and a final `$limit` (with `allowDiskUse`). A null `use
     `alreadyKnow` (-> `getAlreadyKnownState`) item, first asserting the entry has a VI
     meaning (else throws a 409 `MissingVietnameseMeaningError`); re-picking `shouldLearn`
     on an already-`learning` item returns it unchanged (keeps its stage).
-  - `setUserVocabItemStatusBatch({ updates })` applies many updates with one shared `now`;
-    each update is independent and a failure is reported per item (`{ vocabEntryId, item:
-null, error }`) so the client can roll back exactly those. Used by
-    `src/app/api/vocab/items/batch/route.ts`.
   - `recordVocabOccurrence` writes a `VocabOccurrence`.
-  - `listDueVocabRecallCardsForUser` and `answerVocabRecallForUser` (a direct, non-token
-    scheduler apply) remain exported but have no caller in `src/`; the live recall path is
-    `recall/`.
 - `vocabWordListService.ts` (`server-only`):
-  - `parseVocabWordListView` coerces a `view` param (default `learning`);
-    `VOCAB_WORD_LIST_VIEW_LABELS` supplies display names. Full page query parsing
-    (`page`, `perPage`, `q`, `view`, never failing) is `parseVocabWordListQuery` in
-    `vocabularyRouteDecisions.ts`.
+  - Page query parsing (`page`, `perPage`, `q`, `view`, never failing) is
+    `parseVocabWordListQuery` in `vocabularyRouteDecisions.ts`.
   - `buildVocabWordListPipeline` (exported, pure) = `$match` (status filter per view) ->
     `$sort` (per view, then `_id`) -> `$lookup` into `VocabEntry` with the VI-meaning
     filter, an optional search `$match`, and a slim projection (first definition only) ->
@@ -1645,8 +1621,6 @@ learned-today, reviews-today, `accuracyPercent`, `activeStreakDays`, `totalKnown
 - `vocabStatsService.ts` (`server-only`): `getVocabStatsForUser({ userId, now })` runs the
   two aggregations in parallel (two round trips total, replacing ten queries); an empty
   `userId` returns `buildEmptyVocabStats`.
-- `vocabStats.ts` (pure `aggregateVocabStats` / `buildDailyGrowth` over an in-memory item
-  array) is no longer called by production code; only its test imports it.
 
 ### Route decisions, record mappers, and errors
 

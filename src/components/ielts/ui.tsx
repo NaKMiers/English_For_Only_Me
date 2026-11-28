@@ -3,7 +3,6 @@ import type { ComponentProps, ReactNode } from 'react'
 import { ContentPanel } from '@/components/common/ContentPanel'
 import { IconButton } from '@/components/ui/IconButton'
 import { ActionButton } from '@/components/ui/ActionButton'
-import { PageTag } from '@/components/ui/PageTag'
 import { cn } from '@/lib/utils'
 
 /*
@@ -41,32 +40,6 @@ export function ExamIconButton(props: ComponentProps<typeof IconButton>) {
 
 export function ExamCard(props: ComponentProps<typeof ContentPanel>) {
   return <ContentPanel {...props} />
-}
-
-const BADGE_TONES = {
-  default: 'default',
-  pale: 'pale',
-  ink: 'ink',
-  accent: 'red',
-} as const
-
-export function ExamBadge({
-  children,
-  className,
-  tone = 'default',
-}: {
-  children: ReactNode
-  className?: string
-  tone?: keyof typeof BADGE_TONES
-}) {
-  return (
-    <PageTag
-      className={cn('w-fit', className)}
-      tone={BADGE_TONES[tone]}
-    >
-      {children}
-    </PageTag>
-  )
 }
 
 /**

@@ -61,7 +61,6 @@ export function SkeletonJourney({
   layout = 'split',
   metaphorClassName = 'h-40',
   nextStop = true,
-  statsPlacement = 'below',
 }: {
   chips?: number
   layout?: 'aside' | 'split' | 'stacked'
@@ -69,16 +68,10 @@ export function SkeletonJourney({
   metaphorClassName?: string
   /** False on IELTS, whose journey card has no next stop. */
   nextStop?: boolean
-  /** Mirrors `JourneyCard`'s `statsPlacement`. */
-  statsPlacement?: 'below' | 'top'
 }) {
+  // The chips sit in the card's top right, as on `JourneyCard`.
   const chipRow = (
-    <div
-      className={cn(
-        'flex flex-wrap gap-1.5',
-        statsPlacement === 'top' && 'sm:justify-end'
-      )}
-    >
+    <div className="flex flex-wrap gap-1.5 sm:justify-end">
       {Array.from({ length: chips }).map((_, index) => (
         <Skeleton
           className="h-9 w-24 rounded-full"
@@ -102,26 +95,14 @@ export function SkeletonJourney({
       )}
     >
       <div className="grid content-between gap-5">
-        <div
-          className={cn(
-            statsPlacement === 'top'
-              ? 'flex flex-wrap items-start justify-between gap-x-6 gap-y-3'
-              : 'grid'
-          )}
-        >
+        <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
           <div className="grid gap-2">
             <SkeletonLine className="h-4 w-32" />
             <SkeletonLine className="h-12 w-48" />
           </div>
-          {statsPlacement === 'top' ? chipRow : null}
+          {chipRow}
         </div>
         <Skeleton className={cn('rounded-control w-full', metaphorClassName)} />
-        {statsPlacement === 'below' ? (
-          <div className="grid gap-3">
-            <SkeletonLine className="w-56" />
-            {chipRow}
-          </div>
-        ) : null}
       </div>
       {nextStop ? (
         <div className="bg-surface rounded-panel grid content-between gap-5 p-5">
@@ -192,7 +173,6 @@ export function SkeletonVocabularyLanding() {
         chips={3}
         layout="aside"
         metaphorClassName="h-24"
-        statsPlacement="top"
       />
       <div className="grid items-start gap-5 xl:grid-cols-2">
         <SkeletonPanel lines={2} />

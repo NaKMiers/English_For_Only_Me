@@ -18,7 +18,7 @@ interface Props {
 
 /** The four live modules as big pastel tiles, like a course shelf. */
 export function HomeModuleTiles({ facts, messages }: Props) {
-  const modules = APP_MODULES.filter(module => module.status === 'active')
+  const modules = APP_MODULES
 
   return (
     <section

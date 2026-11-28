@@ -377,7 +377,7 @@ Embedded `DictationCorrectionTokenSchema` (`_id: false`, `DictationAttemptModel.
 
 ### 3.9 DictationReviewItem (`src/models/dictation/DictationReviewItemModel.ts`)
 
-Purpose: a spaced-repetition / review queue entry generated from an owner's mistakes on a segment. Recomputed per segment after each attempt (`recomputeReviewItemsForSegment`, called from `src/app/api/dictation/sessions/[sessionId]/attempts/route.ts:344`) and per video from `src/app/api/dictation/review-items/route.ts:107` (`recomputeReviewItemsForVideo`); both live in `src/modules/dictation/review/reviewItemService.ts`.
+Purpose: a spaced-repetition / review queue entry generated from an owner's mistakes on a segment. Recomputed per segment after each attempt (`recomputeReviewItemsForSegment`, called from `src/app/api/dictation/sessions/[sessionId]/attempts/route.ts:344`) (`src/modules/dictation/review/reviewItemService.ts`); a passed review attempt completes the segment's active items (`completeReviewItemsForSegment`), and attempts before a closed item no longer raise it again.
 
 Embedded `DictationReviewStatsSnapshotSchema` (`_id: false`, `DictationReviewItemModel.ts:33-84`):
 
@@ -892,7 +892,7 @@ Several fields are denormalized counters/cursors kept in sync by application cod
 - `DictationSession.currentSegmentId` / `currentSegmentOrder` / `status` / `completedAt` / `lastActiveAt`: the attempts route advances the cursor when an attempt passes and a next segment exists, and marks the session `completed` at the end; it no longer touches the shared video (`src/app/api/dictation/sessions/[sessionId]/attempts/route.ts:298-336`).
 - `DictationTranscript.cueCount`: denormalized cue count.
 - `order` fields (`DictationTopic.order`, `DictationSection.order`, `DictationVideo.order`): manual drag-to-reorder positions, rewritten in bulk via `$set: { order: index }` in `src/modules/dictation/content/adminContentRepository.ts:76,87,240`.
-- `DictationReviewItem.statsSnapshot`: a frozen copy of stats, recomputed by `recomputeReviewItemsForSegment` / `recomputeReviewItemsForVideo` (`src/modules/dictation/review/reviewItemService.ts`).
+- `DictationReviewItem.statsSnapshot`: a frozen copy of stats, recomputed by `recomputeReviewItemsForSegment` (`src/modules/dictation/review/reviewItemService.ts`).
 - `UserVocabItem.dueAt`, `recallStage`, and mastered/known timestamps: maintained by `src/modules/vocabulary/recall/recallScheduler.ts`, `src/modules/vocabulary/recall/recallAnswerService.ts`, and `src/modules/vocabulary/services/userVocabItemService.ts`.
 - `GrammarLessonProgress` (`stars`, `bestAccuracy`, ladder fields), `GrammarUnitProgress`, `GrammarCardMiss`: computed by the pure planner `src/modules/grammar/session/planGrammarSessionWrite.ts` (server re-grades every raw answer) and written by `applyWritePlan` in `src/modules/grammar/services/grammarProgressService.ts`.
 - `IeltsAttempt.result`, `writingBand`, `scoredAt`, `answerKeySnapshot`: written when an attempt is scored (`src/modules/ielts/attempts/attemptService.ts`); `writingFeedback` and `gradings` by `src/modules/ielts/writing/gradeWritingService.ts`.

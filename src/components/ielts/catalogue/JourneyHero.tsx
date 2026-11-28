@@ -265,7 +265,6 @@ export function JourneyHero({
           ))}
         </StatStrip>
       }
-      statsPlacement="top"
       title={t.title}
       titleId="ielts-journey-title"
     />

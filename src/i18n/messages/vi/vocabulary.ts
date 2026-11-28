@@ -23,7 +23,6 @@ export const vocabulary: Messages['vocabulary'] = {
     title: 'Trục từ vựng',
     intro:
       'Theo dõi từ đã biết, lấy dữ liệu từ điển miễn phí và ôn lại những từ bạn chọn học theo lịch bảy lượt.',
-    loaded: 'Đã tải "{term}".',
     queued: '"{term}" đã vào hàng ôn tập.',
     markedKnown: '"{term}" đã được đánh dấu là đã biết.',
     mastered: 'Đã thuộc "{term}". Từ này là của bạn rồi.',
@@ -75,8 +74,6 @@ export const vocabulary: Messages['vocabulary'] = {
       one: '{count} từ đến hạn ôn',
       other: '{count} từ đến hạn ôn',
     },
-    plantTitle: 'Gieo thêm từ mới',
-    plantDetail: 'Hiện chưa có từ nào đến hạn',
     plantAction: 'Khám phá từ',
     showSide: 'Xem cách từ lớn lên',
     hideSide: 'Ẩn cách từ lớn lên',
@@ -132,9 +129,7 @@ export const vocabulary: Messages['vocabulary'] = {
   },
   stats: {
     knownShare: 'Đã biết {percent}%',
-    growthEyebrow: 'Tăng trưởng',
     growthTitle: 'Số từ mới mỗi ngày',
-    focusEyebrow: 'Trọng tâm',
     hardestTitle: 'Từ khó nhất',
     misses: {
       one: 'Sai {count} lần - {percent}%',
@@ -239,8 +234,6 @@ export const vocabulary: Messages['vocabulary'] = {
     noMatches: 'Không có từ nào ở đây bắt đầu bằng "{q}".',
     clearSearch: 'Xoá tìm kiếm',
     prev: 'Trước',
-    movedToLearning: '"{term}" đã chuyển sang Đang học.',
-    markedKnown: '"{term}" đã được đánh dấu Đã biết.',
     stageDue: 'Mức {stage}/7 - đến hạn {date}',
     stage: 'Mức {stage}/7',
     masteredOn: 'Đã thuộc ngày {date}',
@@ -266,7 +259,6 @@ export const vocabulary: Messages['vocabulary'] = {
     invalidSearch: 'Từ khóa tìm kiếm không hợp lệ.',
     invalidExplore: 'Yêu cầu khám phá từ không hợp lệ.',
     invalidItem: 'Dữ liệu từ vựng không hợp lệ.',
-    invalidItemBatch: 'Dữ liệu nhóm từ vựng không hợp lệ.',
     invalidRecallQuery: 'Yêu cầu ôn tập không hợp lệ.',
     invalidOccurrence: 'Dữ liệu lần gặp từ không hợp lệ.',
     invalidRecallAnswer: 'Dữ liệu câu trả lời ôn tập không hợp lệ.',

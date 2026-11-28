@@ -12,6 +12,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useLayoutEffect, useRef } from 'react'
 
+import { shouldReduceMotion } from '@/lib/motion/useReducedMotion'
 import { navItemLabel, PRIMARY_NAV_ITEMS } from '@/constants/modules'
 import { useMessages } from '@/i18n/client'
 import { cn } from '@/lib/utils'
@@ -60,7 +61,7 @@ function useRailSlide(activeIndex: number) {
       railMemory.from < 0 ||
       activeIndex < 0 ||
       elapsed >= RAIL_SLIDE_MS ||
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      shouldReduceMotion()
     )
       return
     const slide = pill.animate(
@@ -97,7 +98,7 @@ interface Props {
 export function AppSidebar({ className }: Props) {
   const t = useMessages()
   const pathname = usePathname() ?? '/'
-  const items = PRIMARY_NAV_ITEMS.filter(item => !item.disabled)
+  const items = PRIMARY_NAV_ITEMS
   const activeIndex = items.findIndex(item => isActiveHref(pathname, item.href))
   const pillRef = useRailSlide(activeIndex)
 

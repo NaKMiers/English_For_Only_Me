@@ -95,16 +95,6 @@ export async function startIeltsDrillApi(body: {
   return readJson(response)
 }
 
-export async function readIeltsAttemptApi(
-  attemptId: string
-): Promise<{ attempt: IeltsAttemptRecord }> {
-  const response = await fetch(IELTS_API_PATHS.attempt(attemptId), {
-    cache: 'no-store',
-  })
-
-  return readJson(response)
-}
-
 export async function deleteIeltsAttemptApi(
   attemptId: string
 ): Promise<{ deleted: true }> {

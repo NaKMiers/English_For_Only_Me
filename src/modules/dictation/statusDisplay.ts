@@ -1,6 +1,4 @@
 import type { PAGE_TAG_TONES } from '@/constants/theme'
-import type { Messages } from '@/i18n/messages'
-import { en } from '@/i18n/messages/en'
 import type {
   DictationImportStatus,
   DictationTranscriptQualityStatus,
@@ -35,17 +33,6 @@ const STATUS_TONES: Record<DictationDisplayStatus, DictationStatusTone> = {
   transcriptReady: 'pale',
   waiting: 'default',
   warning: 'red',
-}
-
-/**
- * The reader-facing label for a status. Pass the learner's
- * `t.dictation.status`; English is the default.
- */
-export function getDictationStatusLabel(
-  status: DictationDisplayStatus,
-  labels: Messages['dictation']['status'] = en.dictation.status
-) {
-  return labels[status]
 }
 
 export function getDictationStatusTone(status: DictationDisplayStatus) {

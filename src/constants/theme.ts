@@ -1,16 +1,5 @@
 import type { AppModuleKey } from './modules'
 
-/** Day palette, mirrored from the `:root` vars in `src/app/globals.css`. */
-export const THEME_COLORS = {
-  canvas: '#f3eaf2',
-  surface: '#ffffff',
-  ink: '#25171f',
-  inkSoft: '#73636d',
-  line: '#f0e7ed',
-  brand: '#c93a74',
-  danger: '#c03810',
-} as const
-
 export const PAGE_TAG_TONES = {
   default: 'bg-surface-muted text-ink',
   red: 'bg-brand-soft text-brand-ink',
@@ -63,29 +52,5 @@ export const MODULE_THEMES: Record<AppModuleKey, ModuleTheme> = {
     accent: 'text-accent-orange',
     outline: 'border-accent-orange/50',
     gradient: 'from-pastel-peach to-pastel-cream/60',
-  },
-  'writing-notes': {
-    tint: 'bg-pastel-cream',
-    accent: 'text-accent-orange',
-    outline: 'border-accent-orange/50',
-    gradient: 'from-pastel-cream to-surface',
-  },
-  'ai-coach': {
-    tint: 'bg-pastel-mint',
-    accent: 'text-accent-green',
-    outline: 'border-accent-green/50',
-    gradient: 'from-pastel-mint to-surface',
-  },
-  reading: {
-    tint: 'bg-pastel-lemon',
-    accent: 'text-accent-green',
-    outline: 'border-accent-green/50',
-    gradient: 'from-pastel-lemon to-surface',
-  },
-  speaking: {
-    tint: 'bg-pastel-mint',
-    accent: 'text-accent-green',
-    outline: 'border-accent-green/50',
-    gradient: 'from-pastel-mint to-surface',
   },
 }

@@ -15,10 +15,8 @@ export const common: Messages['common'] = {
     primary: 'Điều hướng chính',
     home: 'Bàn học',
     menu: 'Menu',
-    menuDescription: 'Chuyển nhanh tới một phần học.',
     openMenu: 'Mở menu',
     closeMenu: 'Đóng menu',
-    soon: 'Sắp có',
   },
   modules: {
     dictation: {
@@ -49,38 +47,6 @@ export const common: Messages['common'] = {
       description:
         'Đề Listening, Reading và Writing đầy đủ, có chế độ luyện tập và thi thử bấm giờ, chấm band và xem bằng chứng đáp án.',
     },
-    'writing-notes': {
-      title: 'Ghi chú Writing',
-      shortTitle: 'Writing',
-      skill: 'Viết',
-      description:
-        'Mẫu Task 1 và Task 2, ý tưởng bài luận, cách nâng cấp câu và nhận xét.',
-    },
-    'ai-coach': {
-      title: 'Trợ lý AI',
-      shortTitle: 'Trợ lý',
-      skill: 'Hướng dẫn',
-      description: 'Tổng kết cá nhân, gợi ý cách học và lên lộ trình IELTS.',
-    },
-    reading: {
-      title: 'Đọc hiểu',
-      shortTitle: 'Đọc',
-      skill: 'Đọc',
-      description:
-        'Luyện đọc bài, nhận diện bẫy câu hỏi, ghi chú thời gian và xem bằng chứng đáp án.',
-    },
-    speaking: {
-      title: 'Nói',
-      shortTitle: 'Nói',
-      skill: 'Nói',
-      description:
-        'Ý tưởng cho cue card, luyện nói trôi chảy, ghi chú phát âm và cách sắp xếp câu trả lời.',
-    },
-  },
-  moduleStatus: {
-    active: 'Đang dùng',
-    future: 'Sắp có',
-    secondary: 'Phụ',
   },
   theme: {
     toDay: 'Chuyển sang giao diện ban ngày',
@@ -140,8 +106,6 @@ export const common: Messages['common'] = {
     nextStop: 'Trạm tiếp theo',
     youAreHere: 'Bạn đang ở đây',
     continue: 'Học tiếp',
-    showMore: 'Xem thêm',
-    hideMore: 'Thu gọn',
     showSide: 'Xem lịch sử và điểm yếu',
     hideSide: 'Ẩn lịch sử và điểm yếu',
     allClear: 'Đã xong hết',
@@ -165,8 +129,6 @@ export const common: Messages['common'] = {
     notFound: 'Không tìm thấy.',
     unauthorized: 'Vui lòng đăng nhập để tiếp tục.',
     forbidden: 'Bạn không có quyền truy cập mục này.',
-    invalidRequest: 'Yêu cầu không hợp lệ.',
-    serverError: 'Lỗi máy chủ. Vui lòng thử lại.',
     requestFailed: 'Yêu cầu thất bại ({status}).',
     guestSession: 'Không tạo được phiên khách.',
     ownerMismatch:

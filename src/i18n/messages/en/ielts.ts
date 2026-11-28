@@ -25,7 +25,6 @@ export const ielts = {
   },
   loading: {
     tests: 'Loading tests',
-    result: 'Loading result',
     test: 'Loading test',
   },
   modes: {
@@ -169,27 +168,7 @@ export const ielts = {
     filtersOn: 'Filters, {count} on',
     filter: 'Filter',
     clearFilters: 'Clear filters',
-    testType: 'Test type',
-    allTypes: 'All types',
-    hasSkill: 'Has skill',
-    anySkill: 'Any skill',
-    noMatch: 'No tests match the search or filters.',
     bestBand: '{skill}: best band {band}',
-    upNext: 'Up next',
-    allDone: 'Every test is done',
-    allDoneHint: 'Redo a test to beat your best band.',
-    startTest: 'Start',
-    testsDone: '{done}/{total} tests',
-    overallDone: '{done} of {total} tests done',
-    showOnPath: 'Show on the path',
-    current: 'Current',
-    nodeLabel: '{title}, {state}',
-    states: {
-      new: 'not started',
-      partial: 'in progress',
-      done: 'done',
-      next: 'up next',
-    },
   },
   /** Exam skill names: kept in English in every language (the real test). */
   skills: {
@@ -207,25 +186,8 @@ export const ielts = {
     allTests: 'All tests',
     start: 'Start {skill}',
   },
-  testJourney: {
-    title: 'This test',
-    unit: {
-      one: 'skill banded',
-      other: 'skills banded',
-    },
-    ofTotal: 'of {total}',
-    clears: '{skill} clears this test',
-    cleared: 'Test cleared: every skill has a band. Retake one to beat it.',
-    bestBand: 'Best band',
-    target: 'Target band',
-    attempts: 'Attempts',
-    start: 'Start {skill}',
-  },
   testPage: {
     target: 'Target {band}',
-    editTest: 'Edit this test',
-    audioMinutes: '{minutes} min audio',
-    noAudio: 'no audio yet',
     minutes: '{minutes} min',
     sectionCount: {
       listening: { one: '{count} part', other: '{count} parts' },
@@ -247,7 +209,6 @@ export const ielts = {
   },
   launcher: {
     modeGroupTest: 'Practice or mock for this test',
-    modeGroup: '{skill} mode',
     choose: {
       practice: 'Choose what to practise',
       mock: 'Choose what to take as a mock',
@@ -262,17 +223,12 @@ export const ielts = {
     timeUp: 'Time up',
     timeRanOut: 'Time ran out. Saved answers were graded.',
     label: 'Result',
-    skillBand: '{skill} band',
     correctCount: '{raw}/{total} correct',
     score: 'Score',
-    drillNoBand: 'A drill does not give a band',
-    partNoBand: 'Only a full 40-question test gives a band',
-    next: 'Next',
     wrongOrBlank: '{count} wrong or blank',
     weakest: 'Weakest: {type}',
     noWrong: 'No wrong answers. Well done.',
     backToTest: 'Back to test',
-    review: 'Review',
     answers: 'Answers',
     filterLabel: 'Filter questions',
     filters: {
@@ -304,7 +260,6 @@ export const ielts = {
     gradingFailed: 'Grading failed: {reason}',
     unknownReason: 'unknown reason',
     notGraded: 'Not graded yet.',
-    blank: '(Blank)',
     nothingWritten: 'Nothing written',
     gradingErrors: {
       missingTask: 'The task content is missing.',
@@ -321,15 +276,11 @@ export const ielts = {
     hideSample: 'Hide sample answer',
     showSample: 'Show sample answer',
     gradeFailed: 'Could not grade.',
-    writingBand: 'Writing band',
-    singleTaskNoBand: 'A single task does not give a Writing band',
-    task2Double: 'Task 2 counts double Task 1',
   },
   saveWord: {
     save: 'Save "{term}"',
     saveLabel: 'Save "{term}" to Vocabulary',
     savedLabel: 'Saved "{term}"',
-    saved: 'Saved',
     failed: 'Could not save',
   },
   lineDictation: {

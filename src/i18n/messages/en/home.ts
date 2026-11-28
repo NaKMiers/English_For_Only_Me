@@ -58,8 +58,6 @@ export const home = {
     videos: '{count} videos',
     dictation: 'Dictation',
     weakWords: 'Weak words',
-    newClip: 'New clip',
-    addOne: 'Add one',
     readWrite: 'Read and write',
     toReview: '{count} to review',
     due: '{count} due',

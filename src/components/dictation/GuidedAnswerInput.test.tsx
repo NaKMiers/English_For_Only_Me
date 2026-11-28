@@ -4,11 +4,7 @@ import { describe, expect, test, vi } from 'vitest'
 import { buildCharCorrection } from '@/modules/dictation/correction'
 import { setupDom } from '@/test/setupDom'
 
-import {
-  GuidedAnswerInput,
-  answerLineCells,
-  insertNextHint,
-} from './GuidedAnswerInput'
+import { GuidedAnswerInput, insertNextHint } from './GuidedAnswerInput'
 
 setupDom()
 
@@ -67,42 +63,6 @@ describe('insertNextHint', () => {
     expect(insertNextHint('the ', 'Mengs')).toBe('the Mengs')
     expect(insertNextHint('the Mengs', 'Jiangs')).toBe('the Mengs Jiangs')
     expect(insertNextHint('the ', 'Mengs', true)).toBe('the Mengs ')
-  })
-})
-
-describe('answerLineCells - dual-channel colour + underline', () => {
-  test('missing char is dotted amber, wrong char is solid red', () => {
-    const cells = answerLineCells(
-      correctionFor('One particlar', 'One particular gourd'),
-      false
-    )
-    const wrong = cells.find(cell => cell.char === 'u')
-
-    // "particlar" vs "particular": the 'u' slot holds the learner's wrong 'l',
-    // shown as the expected 'u' with a solid red underline.
-    expect(wrong?.className).toContain('decoration-solid')
-    expect(wrong?.className).toContain('danger')
-  })
-
-  test('missing tail chars are dotted amber (order -> ordered)', () => {
-    const cells = answerLineCells(
-      correctionFor('He order', 'He ordered many'),
-      false
-    )
-    const dotted = cells.filter(cell =>
-      cell.className.includes('decoration-dotted')
-    )
-
-    expect(dotted.length).toBeGreaterThan(0)
-    expect(dotted[0].className).toContain('accent-orange')
-  })
-
-  test('masks remaining words with * when showFullAnswer is off', () => {
-    const line = answerLineCells(correctionFor('As years', WALL), false)
-      .map(cell => cell.char)
-      .join('')
-
-    expect(line).toBe('As years passed *** *** **** ***** *** ******** *****')
   })
 })
 

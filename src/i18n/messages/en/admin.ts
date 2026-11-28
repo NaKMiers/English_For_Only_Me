@@ -48,8 +48,6 @@ export const admin = {
     metaDescription:
       'Save a YouTube video and attach manual English transcript source text.',
     title: 'Add Dictation Source',
-    intro:
-      'Save a YouTube video, then attach the English transcript source that future segmenting and practice will trust.',
   },
   editPage: {
     metaTitle: 'Edit Dictation Video',
@@ -95,8 +93,6 @@ export const admin = {
     deleteMessage:
       'Delete "{title}"? Its (empty) sections are removed along with it.',
     deleteConfirm: 'Delete topic',
-    deleteDisabled:
-      "Move or remove its videos first - a topic with videos can't be deleted.",
     titleLabel: 'Title',
     descriptionLabel: 'Description',
     renameHint: "Renaming updates the topic's URL ({path}).",
@@ -113,8 +109,6 @@ export const admin = {
     removeTitle: 'Remove section?',
     removeMessage: 'Remove "{title}"? This does not delete any video.',
     removeConfirm: 'Remove section',
-    removeDisabled:
-      "Move or remove its videos first - a section with videos can't be removed.",
     remove: 'Remove',
     empty: 'No videos yet - drag one here.',
   },
@@ -222,7 +216,6 @@ export const admin = {
     urlLabel: 'YouTube URL',
     savingVideo: 'Saving Video',
     saveVideo: 'Save Video',
-    saveUrlFirst: 'Save a YouTube URL first, then upload captions.',
   },
   captions: {
     fileType: 'Upload a .vtt, .srt, or .txt caption file.',
@@ -360,7 +353,6 @@ export const admin = {
   },
   api: {
     invalidJson: 'Request body must be valid JSON.',
-    accessDenied: 'Access denied.',
     alreadyImported: 'This YouTube video is already in your dictation library.',
     importFailed: 'Could not import this YouTube video.',
     chooseImage: 'Choose an image.',

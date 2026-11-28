@@ -1,7 +1,5 @@
 'use client'
 
-import { useSyncExternalStore } from 'react'
-
 import { getActiveMessages } from '@/i18n/active'
 import {
   ANONYMOUS_OUTBOX_OWNER,
@@ -282,9 +280,4 @@ export function getClientOutbox(
   current = { outbox, owner, removeListeners: listenForPageHide(outbox) }
 
   return outbox
-}
-
-/** Number of writes still waiting to reach the server, for a "saving" hint. */
-export function useOutboxPendingCount(outbox: Outbox) {
-  return useSyncExternalStore(outbox.subscribe, outbox.pendingCount, () => 0)
 }

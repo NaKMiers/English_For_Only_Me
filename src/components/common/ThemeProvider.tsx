@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from 'react'
 
+import { shouldReduceMotion } from '@/lib/motion/useReducedMotion'
 import {
   autoThemeForTime,
   manualState,
@@ -132,7 +133,7 @@ function toggleTheme() {
   // with reduced motion.
   if (
     typeof document.startViewTransition !== 'function' ||
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    shouldReduceMotion()
   ) {
     apply()
     return

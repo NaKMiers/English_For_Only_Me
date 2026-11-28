@@ -32,13 +32,6 @@ export const ANSWER_TEXT_STYLE: Record<
   xlarge: { fontSize: '2.5rem', lineHeight: '3.25rem' },
 }
 
-export const ANSWER_TEXT_SIZE_LABEL: Record<AnswerTextSize, string> = {
-  small: 'S',
-  normal: 'M',
-  large: 'L',
-  xlarge: 'XL',
-}
-
 export const VIDEO_SIZE_OPTIONS = ['small', 'normal', 'large', 'max'] as const
 
 export type VideoSize = (typeof VIDEO_SIZE_OPTIONS)[number]
@@ -317,12 +310,6 @@ function writeStoredPreferences(preferences: DictationPracticePreferences) {
   }
 
   for (const listener of preferenceListeners) listener()
-}
-
-export function readDictationPreferences() {
-  if (typeof window === 'undefined') return DEFAULT_DICTATION_PREFERENCES
-
-  return getStoredPreferencesSnapshot() ?? DEFAULT_DICTATION_PREFERENCES
 }
 
 type PreferencesUpdate =

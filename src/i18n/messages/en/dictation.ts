@@ -7,7 +7,6 @@ export const dictation = {
     browseSubtitle: 'Browse dictation topics',
     favoritesSubtitle: 'Your favorites',
     labSubtitle: 'Dictation Lab listening module',
-    reviewSubtitle: 'Weak sentence review',
     practiceTitle: 'Dictation Practice',
     practiceDescription:
       'Practice sentence-level YouTube dictation for IELTS listening.',
@@ -26,7 +25,6 @@ export const dictation = {
     journeyResume: 'Pick up where you left off',
     eyebrow: 'Listening',
     title: 'All topics',
-    favoritesLink: '★ Favorites',
     topicsHeading: 'Topics',
     descriptionSignedIn:
       'Pick a topic, then a section, then continue building your listening history.',
@@ -64,7 +62,6 @@ export const dictation = {
       recentEmpty: 'Videos you start show up here.',
       latestResults: 'Latest results',
       favorites: 'Favorites',
-      favoritesHint: 'Videos you starred',
     },
     dueTitle: {
       one: '{count} sentence to review',
@@ -145,7 +142,6 @@ export const dictation = {
       practiceVideo: 'Practice {title}',
       completed: 'Completed',
       continue: 'Continue',
-      practiceAgain: 'Practice again',
       practice: 'Practice',
       noTranscript: 'No transcript',
       empty: 'No lessons here yet.',
@@ -202,7 +198,6 @@ export const dictation = {
     replay: 'Replay current sentence',
     rewind: 'Rewind to first segment',
     previous: 'Previous segment',
-    current: 'Current segment',
     next: 'Next segment',
     restart: 'Restart progress',
     showVideo: 'Show video',
@@ -246,7 +241,6 @@ export const dictation = {
     revealed: 'Answer revealed',
   },
   practice: {
-    emptyEyebrow: 'Practice',
     emptyTitle: 'No segments ready',
     emptyDescription:
       'Build segments from the transcript before opening practice.',
@@ -346,18 +340,6 @@ export const dictation = {
     headUnit: 'first-try accuracy',
     headWins: '{percent}% done: {done} of {total} sentences',
     nextVideoAction: 'Next video',
-    eyebrow: {
-      completed: 'Completed',
-      inProgress: 'In progress',
-      notStarted: 'Results',
-    },
-    inProgressEmpty:
-      'Practice in progress. Resolve a few sentences and your stats will build here.',
-    notStartedEmpty:
-      'No completed dictation attempts yet. Practice the video first, then come back for useful stats.',
-    firstTryAccuracy: 'First-try accuracy',
-    builtFrom:
-      'Built from saved attempts only: mistakes, reveals, skips, retries, replay deltas, and time spent.',
     notReadyEyebrow: 'Not ready',
     notReadyTitle: 'No practice segments yet',
     notReadyDescription:
@@ -366,8 +348,6 @@ export const dictation = {
     savingTitle: 'Finishing up',
     savingDescription:
       'Your final attempts are still saving. Give it a moment, then refresh to see your full results.',
-    keepGoingEyebrow: 'Keep going',
-    emptyEyebrow: 'Empty',
     inProgressTitle: 'Practice in progress',
     practiceFirstTitle: 'Practice first',
     inProgressDescription:
@@ -382,30 +362,16 @@ export const dictation = {
   },
   stats: {
     completion: 'Completion',
-    resolved: '{done}/{total} sentences resolved',
-    firstTry: 'First Try',
-    firstTryDetail: 'Word accuracy on first checks',
     overall: 'Overall',
-    overallDetail: 'All checked attempts',
     time: 'Time',
-    retries: {
-      one: '{count} retry',
-      other: '{count} retries',
-    },
     retriesLabel: 'Retries',
     attempts: {
       one: '{count} attempt',
       other: '{count} attempts',
     },
-    hardestEyebrow: 'Weakest',
     hardestTitle: 'Hardest segments',
-    hardestMeta: {
-      one: '{accuracy}% accuracy across {count} attempt',
-      other: '{accuracy}% accuracy across {count} attempts',
-    },
     hardestEmpty:
       'No attempts yet. Finish a few sentences and this panel will show what to review.',
-    taxonomyEyebrow: 'Taxonomy',
     mistakeMap: 'Mistake map',
     mistakeTypes: {
       missing: 'Missing words',
@@ -417,30 +383,15 @@ export const dictation = {
       one: '{count} token',
       other: '{count} tokens',
     },
-    wordsEyebrow: 'Words',
     missedWords: 'Common missed words',
     misses: {
       one: '{count} miss',
       other: '{count} misses',
     },
     missedWordsEmpty: 'No missed words have been recorded yet.',
-    behaviorEyebrow: 'Behavior',
-    recoveryTitle: 'Recovery signals',
     replays: 'Replays',
-    replaysMeta: {
-      one: '{count} segment replay',
-      other: '{count} segment replays',
-    },
     reveals: 'Reveals',
-    revealsMeta: {
-      one: '{count} answer revealed',
-      other: '{count} answers revealed',
-    },
     skips: 'Skips',
-    skipsMeta: {
-      one: '{count} sentence skipped',
-      other: '{count} sentences skipped',
-    },
   },
   reviewQueue: {
     eyebrow: 'Review',
@@ -511,11 +462,7 @@ export const dictation = {
     invalidVideoId: 'Invalid video id.',
     invalidSegmentId: 'Invalid segment id.',
     videoNotFound: 'This dictation video was not found.',
-    videoDuplicate: 'This video is already in the dictation library.',
-    videoCreateFailed: 'Could not create the dictation video.',
     videoUpdateFailed: 'Could not update this dictation video.',
-    videoDeleteFailed: 'Could not delete this dictation video.',
-    videosLoadFailed: 'Could not load dictation videos.',
     transcriptRequired:
       'This video needs an active transcript before practice.',
     segmentsRequired: 'Build sentence segments before starting practice.',
@@ -543,8 +490,6 @@ export const dictation = {
       'The primary dictation language cannot be translated.',
     primaryLanguageNotOverridable:
       'The primary dictation language cannot be overridden.',
-    reviewItemNotFound: 'This review item was not found.',
-    reviewUpdateFailed: 'Could not update dictation review items.',
     debriefIncomplete:
       'Complete this video, with at least one saved sentence, before asking for a debrief.',
     debriefUnavailable: 'AI debrief is unavailable right now.',

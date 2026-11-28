@@ -95,7 +95,7 @@ mappers, and page-data loaders that pages call directly.
 | Module                   | Pure logic (examples)                                                                                                                                                                                                                                               | Server services (examples)                                                                                                                                                                                                                                                                                        | Detail doc                                   |
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
 | `src/modules/dictation`  | `correction/compareAnswer.ts`, `correction/normalizeAnswer.ts`, `segmenting/buildSegments.ts`, `review/reviewScheduler.ts`, `stats/globalStats.ts`, `practice/attemptCursor.ts`, `practice/practiceSync.ts` (outbox write builders), `services/*RouteDecisions.ts`. | `services/getCurrentUser.ts` (identity for every module), `content/contentRepository.ts`, `content/catalogReaders.ts` (cached catalog), `content/adminActions.ts` and `content/favoriteActions.ts` (server actions), `review/reviewItemService.ts`, `stats/globalStatsService.ts`, `ai/debriefService.ts`.        | [05](./05-modules.md)                        |
-| `src/modules/vocabulary` | `normalizeVocabTerm.ts`, `recall/recallScheduler.ts`, `recall/recallTaskToken.ts`, `stats/vocabStats.ts`, `vietnameseMeaning.ts`, `services/vocabularyRouteDecisions.ts`.                                                                                           | `services/vocabEntryService.ts`, `services/userVocabItemService.ts`, `services/vocabDashboardService.ts`, `explore/exploreService.ts`, `recall/recallAnswerService.ts`, `enrichment/enrichmentService.ts`, providers in `providers/`, NGSL seed in `seed/seedVocabulary.ts`.                                      | [05](./05-modules.md)                        |
+| `src/modules/vocabulary` | `normalizeVocabTerm.ts`, `recall/recallScheduler.ts`, `recall/recallTaskToken.ts`, `vietnameseMeaning.ts`, `services/vocabularyRouteDecisions.ts`.                                                                                                                  | `services/vocabEntryService.ts`, `services/userVocabItemService.ts`, `services/vocabDashboardService.ts`, `explore/exploreService.ts`, `recall/recallAnswerService.ts`, `enrichment/enrichmentService.ts`, providers in `providers/`, NGSL seed in `seed/seedVocabulary.ts`.                                      | [05](./05-modules.md)                        |
 | `src/modules/grammar`    | Course content as code (`course/units/u01.ts` .. `u12.ts`, `course/validateCourse.ts`), `path/buildGrammarPath.ts`, `grading/gradeCard.ts`, `session/planGrammarSessionWrite.ts`, `session/parseSessionRequest.ts`, `progress/planGrammarGuestMerge.ts`.            | `services/grammarProgressService.ts` (`getGrammarProgressForActor`, `recordGrammarSession`), `services/grammarPageData.ts`, `services/mergeGrammarGuestData.ts`.                                                                                                                                                  | [08](./08-grammar.md)                        |
 | `src/modules/ielts`      | `scoring/*` (answer keys, band tables, overall band), `consistency/checkTest.ts`, `markdown/parse.ts`, `attempts/attemptRouteDecisions.ts`, `attempts/deadline.ts`, `tests/testRouteDecisions.ts`, `drill/selectDrillGroups.ts`, `stats/shapeWeakness.ts`.          | `attempts/attemptService.ts`, `tests/testService.ts`, `generation/generationService.ts`, `audio/audioService.ts`, `writing/gradeWritingService.ts`, `drill/drillService.ts`, `vocab/testVocabService.ts`, page data in `services/*PageData.ts`, `services/mergeIeltsGuestData.ts`; `http.ts` holds route helpers. | [09](./09-ielts.md)                          |
 | `src/modules/learning`   | `recall/recallLadder.ts`: the shared 7-stage recall ladder used by vocabulary (per word) and grammar (per lesson).                                                                                                                                                  | -                                                                                                                                                                                                                                                                                                                 | [05](./05-modules.md), [08](./08-grammar.md) |
@@ -407,7 +407,7 @@ hands it to components.
   `requireAdmin()`). Section generation goes through `generation/generationService.ts`
   (Qwen strict schemas, consistency checks in `consistency/checkTest.ts`); audio goes
   through `audio/audioService.ts` (`synthesizeSpeechPcm` -> WAV -> `uploadAudioBuffer` to
-  Cloudinary); publish, archive, and new-version routes manage test status. Domain detail:
+  Cloudinary); publish, archive and unarchive routes manage test status. Domain detail:
   [09](./09-ielts.md).
 
 ```mermaid
@@ -507,14 +507,14 @@ src/app/
     guest/              Mint / confirm guest identity
     dictation/          sessions/, sessions/[sessionId]/{,attempts/}, sessions/translations/,
                         segments/[segmentId]/{,translate/}, transcripts/{,[transcriptId]/},
-                        videos/{,[videoId]/}, stats/, review-items/, debriefs/, imports/youtube/
+                        videos/[videoId]/, stats/, debriefs/, imports/youtube/
     vocab/              entries/lookup/, search/, explore/, items/{,batch/}, occurrences/,
                         recall/due/, recall/answer/, stats/
     grammar/            sessions/
     ielts/              attempts/, attempts/[attemptId]/{,answers,submit,check,grade,
                         evidence,audio-events}/, drills/
     admin/              revalidate/, vocab/enrich/, ielts/{assist,uploads/sign,tests}/,
-                        ielts/tests/[testId]/{,publish,archive,unarchive,new-version,vocab,
+                        ielts/tests/[testId]/{,publish,archive,unarchive,vocab,
                         sections/[key]/{,generate,audio}}/
 ```
 

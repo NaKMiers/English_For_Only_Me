@@ -23,12 +23,6 @@ interface Props {
   emptyMessage?: string
   reviewItems: DictationReviewItemApiRecord[]
   title?: string
-  /**
-   * `page` (the review route) leads with the due count and one Start
-   * review; `embedded` (results) is the list only, since that page already
-   * has its next stop.
-   */
-  variant?: 'page' | 'embedded'
 }
 
 export function DictationReviewQueue({
@@ -36,7 +30,6 @@ export function DictationReviewQueue({
   emptyMessage,
   reviewItems,
   title,
-  variant = 'page',
 }: Props) {
   const t = useMessages()
   const text = t.dictation.reviewQueue
@@ -46,15 +39,13 @@ export function DictationReviewQueue({
   const first = due[0] ?? reviewItems[0] ?? null
 
   if (reviewItems.length === 0)
-    return variant === 'page' ? (
+    return (
       <EmptyState
         action={{ href: '/dictation', label: text.toLanding }}
         body={emptyMessage ?? text.allCaughtUpBody}
         icon={<PartyPopper />}
         title={text.allCaughtUp}
       />
-    ) : (
-      <p className="text-ink-soft text-sm">{emptyMessage ?? text.empty}</p>
     )
 
   const row = (item: DictationReviewItemApiRecord) => (
@@ -85,25 +76,22 @@ export function DictationReviewQueue({
       aria-label={title ?? text.title}
       className="grid gap-4"
     >
-      {variant === 'page' ? (
-        <div className="border-line from-pastel-sky to-surface rounded-panel flex flex-wrap items-center justify-between gap-4 border bg-linear-160 p-5">
-          <p className="font-sans text-2xl font-medium tracking-tight">
-            {plural(text.dueHead, Math.max(dueCount ?? 0, due.length))}
-          </p>
-          {first ? (
-            <ActionButton
-              data-next-stop=""
-              href={reviewPracticeHref(first)}
-              icon={<DUE_ICON aria-hidden="true" />}
-              tone="ink"
-            >
-              {text.start}
-            </ActionButton>
-          ) : null}
-        </div>
-      ) : (
-        <h2 className="font-sans text-lg font-medium">{title ?? text.title}</h2>
-      )}
+      {/* The head: the due count and one Start review. */}
+      <div className="border-line from-pastel-sky to-surface rounded-panel flex flex-wrap items-center justify-between gap-4 border bg-linear-160 p-5">
+        <p className="font-sans text-2xl font-medium tracking-tight">
+          {plural(text.dueHead, Math.max(dueCount ?? 0, due.length))}
+        </p>
+        {first ? (
+          <ActionButton
+            data-next-stop=""
+            href={reviewPracticeHref(first)}
+            icon={<DUE_ICON aria-hidden="true" />}
+            tone="ink"
+          >
+            {text.start}
+          </ActionButton>
+        ) : null}
+      </div>
 
       <ul className="grid gap-2">{visible.map(row)}</ul>
       {folded.length > 0 ? (

@@ -21,9 +21,7 @@ describe('HomeStudyDesk', () => {
     // rest. Grammar became active, so it displaced AI Coach (a planned module
     // with no route) rather than being left off the desk; IELTS Tests, the
     // fourth active module, displaced Writing Notes the same way.
-    for (const activeModule of APP_MODULES.filter(
-      module => module.status === 'active'
-    ))
+    for (const activeModule of APP_MODULES)
       expect(html, `${activeModule.key} should be on the study desk`).toContain(
         en.common.modules[activeModule.key].title
       )
@@ -165,7 +163,7 @@ describe('HomeStudyDesk', () => {
     )
     expect(heading).toBeDefined()
     expect(heading?.closest('a')).toBeNull()
-    expect(container.textContent).not.toContain(en.home.plan.newClip)
+    expect(container.textContent).not.toContain('New clip')
     const classes = [...container.querySelectorAll('[class]')]
       .map(element => element.getAttribute('class') ?? '')
       .join(' ')

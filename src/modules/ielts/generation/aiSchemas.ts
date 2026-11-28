@@ -62,15 +62,10 @@ export const IELTS_JOB_MAX_TOKENS: Record<IeltsJobKind, number> = {
   assist: 8_000,
 }
 
-let strictCache: Partial<Record<IeltsJobKind, Record<string, unknown>>> = {}
+const strictCache: Partial<Record<IeltsJobKind, Record<string, unknown>>> = {}
 
 export function strictSchemaFor(kind: IeltsJobKind) {
   strictCache[kind] ??= toStrictJsonSchema(IELTS_JOB_SCHEMAS[kind])
 
   return strictCache[kind]
-}
-
-/** Tests only. */
-export function resetStrictSchemaCache() {
-  strictCache = {}
 }

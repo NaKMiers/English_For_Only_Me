@@ -2,7 +2,6 @@
 
 import { useRef, useState, type ReactNode } from 'react'
 
-import { InlineNotice } from '@/components/common/InlineNotice'
 import {
   useClientOutbox,
   useOutboxOwnerKey,
@@ -14,7 +13,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
 import { useMessages } from '@/i18n/client'
 import { format } from '@/i18n/format'
 import type {
@@ -48,17 +46,6 @@ import {
   updateCachedVocabUserItem,
 } from './vocabLookupCache'
 
-interface Props {
-  attemptId?: string | null
-  className?: string
-  contextSentence: string
-  reason?: 'clickedInAnswer' | 'missedWord' | 'aiDebrief'
-  segmentId?: string | null
-  videoId?: string | null
-}
-
-const WORD_PATTERN = /[A-Za-z][A-Za-z'-]*/g
-
 interface WordButtonProps {
   attemptId?: string | null
   children?: ReactNode
@@ -79,19 +66,12 @@ function getDefinition(entry: VocabEntryWithUserStateRecord) {
   return getEnglishDefinition(entry.entry)
 }
 
-function tokenize(text: string) {
-  return Array.from(text.matchAll(WORD_PATTERN)).map(match => ({
-    index: match.index ?? 0,
-    term: match[0],
-  }))
-}
-
 function normalizeLookupTerm(term: string) {
   return term.replace(/^[^A-Za-z]+|[^A-Za-z'-]+$/g, '')
 }
 
 /**
- * Shared lookup + mark state for both quick lookup surfaces. A mark closes the
+ * Shared lookup + mark state for the quick lookup surfaces (the word button, the IELTS highlighter). A mark closes the
  * dialog at once and shows the new status; the write goes through the outbox
  * and a rejected write puts the old status back and reports the error.
  */
@@ -313,87 +293,5 @@ export function QuickVocabWordButton({
         open={open}
       />
     </>
-  )
-}
-
-export function QuickVocabLookup({
-  attemptId = null,
-  className,
-  contextSentence,
-  reason = 'clickedInAnswer',
-  segmentId = null,
-  videoId = null,
-}: Props) {
-  const t = useMessages().vocabulary
-  const [error, setError] = useState<string | null>(null)
-  const [busyTerm, setBusyTerm] = useState<string | null>(null)
-  const { entry, lookup, mark, open, setOpen } = useQuickVocabEntry({
-    onMarkFailed: setError,
-  })
-
-  async function lookupWord(term: string) {
-    setBusyTerm(term)
-    setError(null)
-
-    try {
-      await lookup({
-        occurrence: {
-          attemptId,
-          contextSentence,
-          reason,
-          segmentId,
-          selectedText: term,
-          videoId,
-        },
-        term,
-      })
-    } catch (requestError) {
-      setError(getVocabRequestErrorMessage(requestError, t.errors.lookup))
-    } finally {
-      setBusyTerm(null)
-    }
-  }
-
-  function markWord(status: VocabMarkStatus) {
-    setError(null)
-    void mark(status)
-  }
-
-  const tokens = tokenize(contextSentence)
-
-  if (tokens.length === 0) return null
-
-  return (
-    <div className={className}>
-      <div className="flex flex-wrap gap-2">
-        {tokens.map(token => (
-          <Button
-            key={`${token.term}-${token.index}`}
-            className="border-line bg-surface hover:bg-tint rounded-control h-auto border px-2 py-1 text-sm font-semibold"
-            disabled={busyTerm === token.term}
-            onClick={() => lookupWord(token.term)}
-            type="button"
-            variant="ghost"
-          >
-            {token.term}
-          </Button>
-        ))}
-      </div>
-      {error ? (
-        <InlineNotice
-          className="mt-2"
-          tone="error"
-        >
-          {error}
-        </InlineNotice>
-      ) : null}
-
-      <QuickVocabDialog
-        entry={entry}
-        onMark={markWord}
-        onOpenChange={setOpen}
-        open={open}
-      />
-    </div>
   )
 }

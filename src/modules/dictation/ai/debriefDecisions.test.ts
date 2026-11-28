@@ -3,7 +3,6 @@ import { describe, expect, test } from 'vitest'
 import {
   getDebriefCompletionBlocker,
   parseDebriefPayload,
-  shouldCreateDebriefAttempt,
 } from './debriefDecisions'
 
 describe('debrief route decisions', () => {
@@ -36,12 +35,5 @@ describe('debrief route decisions', () => {
         hasCompletedSession: true,
       })
     ).toBeNull()
-  })
-
-  test('allows retry after a failed debrief but not a ready cached one', () => {
-    expect(shouldCreateDebriefAttempt('failed')).toBe(true)
-    expect(shouldCreateDebriefAttempt('pending')).toBe(true)
-    expect(shouldCreateDebriefAttempt(null)).toBe(true)
-    expect(shouldCreateDebriefAttempt('ready')).toBe(false)
   })
 })

@@ -5,6 +5,8 @@ import { useEffect, useRef, useState } from 'react'
 
 import { NEXT_STOP_ID } from './NextStopCard'
 
+import { shouldReduceMotion } from '@/lib/motion/useReducedMotion'
+
 interface Props {
   /**
    * Element to point at when the target is folded away or missing, e.g. the
@@ -175,9 +177,7 @@ export function ContinueFloat({
     // Next frame: a fold opened by onBeforeJump is in the DOM by then.
     jumpFrame.current = requestAnimationFrame(() => {
       const target = document.getElementById(targetId)
-      const reduce = window.matchMedia(
-        '(prefers-reduced-motion: reduce)'
-      ).matches
+      const reduce = shouldReduceMotion()
 
       target?.scrollIntoView({
         behavior: reduce ? 'auto' : 'smooth',

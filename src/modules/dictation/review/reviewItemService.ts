@@ -8,7 +8,6 @@ import { DictationSegmentModel } from '@/models/dictation/DictationSegmentModel'
 import { isDuplicateKeyError } from '@/modules/dictation/practice/duplicateKeyError'
 import {
   buildReviewCandidates,
-  getReviewActionStatus,
   type ReviewCandidate,
 } from '@/modules/dictation/review/reviewScheduler'
 import { toDictationAttemptRecord } from '@/modules/dictation/services/dictationAttemptRecords'
@@ -183,39 +182,6 @@ async function insertReviewCandidates(
   }
 }
 
-export async function recomputeReviewItemsForVideo({
-  userId,
-  videoId,
-}: {
-  userId: string
-  videoId: string
-}) {
-  const [attempts, segments, existingItems] = await Promise.all([
-    DictationAttemptModel.find({
-      userId,
-      videoId,
-    })
-      .sort({ createdAt: 1 })
-      .lean(),
-    DictationSegmentModel.find({
-      videoId,
-    })
-      .sort({ order: 1 })
-      .lean(),
-    // Active items (not raised twice) and closed ones (their attempts are
-    // already reviewed).
-    DictationReviewItemModel.find({
-      userId,
-      videoId,
-    }).lean(),
-  ])
-
-  return insertReviewCandidates(
-    userId,
-    selectNewReviewCandidates({ attempts, existingItems, segments })
-  )
-}
-
 /**
  * Incremental recompute after one attempt: only the attempted segment's
  * attempts (served by the `{userId, segmentId, createdAt}` index), the segment
@@ -316,33 +282,4 @@ export async function completeReviewItemsForSegment({
     { segmentId, status: { $in: ACTIVE_REVIEW_STATUSES }, userId },
     { $set: { lastReviewedAt: now, status: 'completed' } }
   )
-}
-
-export async function markReviewItemForUser({
-  action,
-  userId,
-  reviewItemId,
-}: {
-  action: 'complete' | 'dismiss'
-  userId: string
-  reviewItemId: string
-}) {
-  const now = new Date()
-  const item = await DictationReviewItemModel.findOneAndUpdate(
-    {
-      _id: reviewItemId,
-      userId,
-    },
-    {
-      $set: {
-        lastReviewedAt: now,
-        status: getReviewActionStatus(action),
-      },
-    },
-    {
-      returnDocument: 'after',
-    }
-  )
-
-  return item ? toDictationReviewItemRecord(item.toObject()) : null
 }

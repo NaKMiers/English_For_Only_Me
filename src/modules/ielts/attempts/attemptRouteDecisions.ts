@@ -208,9 +208,6 @@ export function parseStartAttempt(body: unknown) {
 export const parseStartDrill = (body: unknown) =>
   parseWith(startDrillSchema, body, 'Invalid drill request.')
 
-export const parseCheckPart = (body: unknown) =>
-  parseWith(checkPartSchema, body, 'Invalid check request.')
-
 export const parseAudioEvent = (body: unknown) =>
   parseWith(audioEventSchema, body, 'Invalid audio event.')
 

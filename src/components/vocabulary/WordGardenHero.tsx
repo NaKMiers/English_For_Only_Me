@@ -269,7 +269,6 @@ export function WordGardenHero({ next, stats, withDrawer = false }: Props) {
           ))}
         </StatStrip>
       }
-      statsPlacement="top"
       title={t.title}
       titleId="word-garden-title"
     />

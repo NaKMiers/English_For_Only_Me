@@ -466,7 +466,6 @@ export const ieltsEditor: Messages['ieltsEditor'] = {
     invalidGenerate: 'Yêu cầu tạo không hợp lệ.',
     revisionRequired: 'Thiếu revision.',
     uploadKind: 'kind phải là audio hoặc image.',
-    editedInPlace: 'Đề được sửa trực tiếp. Hãy mở đề để sửa.',
     publishErrors: {
       one: 'Còn {count} lỗi cần sửa trước khi đăng.',
       other: 'Còn {count} lỗi cần sửa trước khi đăng.',

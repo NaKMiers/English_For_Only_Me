@@ -66,16 +66,4 @@ describe('DictationReviewQueue', () => {
       screen.getByRole('link', { name: 'Back to Dictation Lab' })
     ).toHaveAttribute('href', '/dictation')
   })
-
-  test('embedded on results: the list only, no second cta', () => {
-    render(
-      <DictationReviewQueue
-        reviewItems={[item('1')]}
-        title="Weak sentences"
-        variant="embedded"
-      />
-    )
-
-    expect(screen.queryByRole('link', { name: 'Start review' })).toBeNull()
-  })
 })

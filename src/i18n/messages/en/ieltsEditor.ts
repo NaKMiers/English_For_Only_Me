@@ -463,7 +463,6 @@ export const ieltsEditor = {
     invalidGenerate: 'Invalid generate request.',
     revisionRequired: 'revision is required.',
     uploadKind: 'kind must be audio or image.',
-    editedInPlace: 'Tests are edited in place. Open the test to edit it.',
     publishErrors: {
       one: '{count} error to fix before publishing.',
       other: '{count} errors to fix before publishing.',

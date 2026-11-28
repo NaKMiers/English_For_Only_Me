@@ -50,8 +50,6 @@ export const admin: Messages['admin'] = {
     metaDescription:
       'Lưu một video YouTube và đính kèm bản transcript tiếng Anh nhập tay.',
     title: 'Thêm nguồn chép chính tả',
-    intro:
-      'Lưu một video YouTube, rồi đính kèm bản transcript tiếng Anh làm nguồn tin cậy cho việc chia câu và luyện tập sau này.',
   },
   editPage: {
     metaTitle: 'Sửa video chép chính tả',
@@ -95,8 +93,6 @@ export const admin: Messages['admin'] = {
     deleteTitle: 'Xóa chủ đề?',
     deleteMessage: 'Xóa "{title}"? Các mục (trống) của nó cũng bị xóa theo.',
     deleteConfirm: 'Xóa chủ đề',
-    deleteDisabled:
-      'Hãy chuyển hoặc gỡ các video trước: không thể xóa chủ đề còn video.',
     titleLabel: 'Tiêu đề',
     descriptionLabel: 'Mô tả',
     renameHint: 'Đổi tên sẽ cập nhật URL của chủ đề ({path}).',
@@ -113,8 +109,6 @@ export const admin: Messages['admin'] = {
     removeTitle: 'Gỡ mục?',
     removeMessage: 'Gỡ "{title}"? Thao tác này không xóa video nào.',
     removeConfirm: 'Gỡ mục',
-    removeDisabled:
-      'Hãy chuyển hoặc gỡ các video trước: không thể gỡ mục còn video.',
     remove: 'Gỡ',
     empty: 'Chưa có video nào, hãy kéo một video vào đây.',
   },
@@ -222,7 +216,6 @@ export const admin: Messages['admin'] = {
     urlLabel: 'URL YouTube',
     savingVideo: 'Đang lưu video',
     saveVideo: 'Lưu video',
-    saveUrlFirst: 'Hãy lưu URL YouTube trước, rồi tải phụ đề lên.',
   },
   captions: {
     fileType: 'Hãy tải lên tệp phụ đề .vtt, .srt hoặc .txt.',
@@ -362,7 +355,6 @@ export const admin: Messages['admin'] = {
   },
   api: {
     invalidJson: 'Nội dung yêu cầu phải là JSON hợp lệ.',
-    accessDenied: 'Không có quyền truy cập.',
     alreadyImported: 'Video YouTube này đã có trong thư viện chép chính tả.',
     importFailed: 'Không thể nhập video YouTube này.',
     invalidUrl: 'Hãy nhập một URL YouTube hợp lệ.',

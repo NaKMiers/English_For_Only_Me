@@ -192,7 +192,6 @@ export function GrammarJourneyHero({ dueHref, path, syncing }: Props) {
           ))}
         </StatStrip>
       }
-      statsPlacement="top"
       title={t.journeyTitle}
       titleId="grammar-journey-title"
     />

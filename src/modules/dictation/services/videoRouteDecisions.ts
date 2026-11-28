@@ -1,10 +1,5 @@
 import { hasMongoDbUri } from '@/constants/environments'
 import type { Messages } from '@/i18n/messages'
-import {
-  createDictationVideoPayloadSchema,
-  updateDictationVideoPayloadSchema,
-} from '@/modules/dictation/schemas/videoPayloadSchema'
-import { normalizeTranslationLanguage } from '@/modules/dictation/translations/languages'
 
 export const MISSING_MONGODB_MESSAGE =
   'MongoDB is not configured. Set MONGODB_URI on the server to use the dictation video library.'
@@ -29,10 +24,6 @@ export function getAccessErrorMessage(status: number, t: Messages) {
   return t.common.errors.forbidden
 }
 
-interface CreateVideoInput {
-  body: unknown
-}
-
 export function getMissingMongoResponse() {
   if (hasMongoDbUri()) return null
 
@@ -42,51 +33,4 @@ export function getMissingMongoResponse() {
       message: MISSING_MONGODB_MESSAGE,
     },
   } satisfies ApiErrorDecision
-}
-
-export function parseCreateVideoRequest({ body }: CreateVideoInput) {
-  const parsed = createDictationVideoPayloadSchema.safeParse(body)
-
-  if (!parsed.success)
-    return {
-      ok: false,
-      status: 400,
-      body: {
-        message: parsed.error.issues[0]?.message ?? 'Invalid video payload.',
-      },
-    } as const
-
-  const title = parsed.data.title ?? 'Untitled dictation video'
-
-  return {
-    ok: true,
-    data: {
-      title,
-      youtubeUrl: parsed.data.youtubeUrl,
-      transcriptStatus: parsed.data.transcriptStatus,
-      status: 'needsTranscript' as const,
-    },
-  } as const
-}
-
-export function parseUpdateVideoRequest(body: unknown) {
-  const parsed = updateDictationVideoPayloadSchema.safeParse(body)
-
-  if (!parsed.success)
-    return {
-      ok: false,
-      status: 400,
-      body: {
-        message: parsed.error.issues[0]?.message ?? 'Invalid video payload.',
-      },
-    } as const
-
-  return {
-    ok: true,
-    data: {
-      defaultLanguage: normalizeTranslationLanguage(
-        parsed.data.defaultLanguage
-      ),
-    },
-  } as const
 }

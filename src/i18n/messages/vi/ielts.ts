@@ -27,7 +27,6 @@ export const ielts: Messages['ielts'] = {
   },
   loading: {
     tests: 'Đang tải đề',
-    result: 'Đang tải kết quả',
     test: 'Đang tải bài thi',
   },
   modes: {
@@ -171,27 +170,7 @@ export const ielts: Messages['ielts'] = {
     filtersOn: 'Bộ lọc, đang bật {count}',
     filter: 'Lọc',
     clearFilters: 'Bỏ lọc',
-    testType: 'Loại đề',
-    allTypes: 'Mọi loại',
-    hasSkill: 'Có kỹ năng',
-    anySkill: 'Mọi kỹ năng',
-    noMatch: 'Không có đề nào khớp với tìm kiếm hoặc bộ lọc.',
     bestBand: '{skill}: band cao nhất {band}',
-    upNext: 'Tiếp theo',
-    allDone: 'Đã làm hết các đề',
-    allDoneHint: 'Làm lại một đề để vượt band cao nhất của bạn.',
-    startTest: 'Bắt đầu',
-    testsDone: '{done}/{total} đề',
-    overallDone: 'Đã xong {done}/{total} đề',
-    showOnPath: 'Xem trên lộ trình',
-    current: 'Đang học',
-    nodeLabel: '{title}, {state}',
-    states: {
-      new: 'chưa làm',
-      partial: 'đang làm dở',
-      done: 'đã xong',
-      next: 'tiếp theo',
-    },
   },
   /** Exam skill names: kept in English in every language (the real test). */
   skills: {
@@ -209,25 +188,8 @@ export const ielts: Messages['ielts'] = {
     allTests: 'Tất cả đề',
     start: 'Làm {skill}',
   },
-  testJourney: {
-    title: 'Đề này',
-    unit: {
-      one: 'kỹ năng có band',
-      other: 'kỹ năng có band',
-    },
-    ofTotal: 'trên {total}',
-    clears: '{skill} là xong đề này',
-    cleared: 'Đã xong đề: kỹ năng nào cũng có band. Làm lại để vượt band cũ.',
-    bestBand: 'Band cao nhất',
-    target: 'Band mục tiêu',
-    attempts: 'Lượt làm',
-    start: 'Làm {skill}',
-  },
   testPage: {
     target: 'Mục tiêu {band}',
-    editTest: 'Sửa đề này',
-    audioMinutes: '{minutes} phút audio',
-    noAudio: 'chưa có audio',
     minutes: '{minutes} phút',
     sectionCount: {
       listening: { one: '{count} part', other: '{count} part' },
@@ -249,7 +211,6 @@ export const ielts: Messages['ielts'] = {
   },
   launcher: {
     modeGroupTest: 'Luyện tập hay thi thử cho đề này',
-    modeGroup: 'Chế độ {skill}',
     choose: {
       practice: 'Chọn phần để luyện tập',
       mock: 'Chọn phần để thi thử',
@@ -264,17 +225,12 @@ export const ielts: Messages['ielts'] = {
     timeUp: 'Hết giờ',
     timeRanOut: 'Đã hết giờ. Các câu trả lời đã lưu được chấm.',
     label: 'Kết quả',
-    skillBand: 'Band {skill}',
     correctCount: 'Đúng {raw}/{total}',
     score: 'Điểm',
-    drillNoBand: 'Bài luyện dạng không tính band',
-    partNoBand: 'Chỉ bài đủ 40 câu mới tính band',
-    next: 'Tiếp theo',
     wrongOrBlank: '{count} câu sai hoặc bỏ trống',
     weakest: 'Yếu nhất: {type}',
     noWrong: 'Không sai câu nào. Làm tốt lắm.',
     backToTest: 'Về đề',
-    review: 'Ôn tập',
     answers: 'Đáp án',
     filterLabel: 'Lọc câu hỏi',
     filters: {
@@ -306,7 +262,6 @@ export const ielts: Messages['ielts'] = {
     gradingFailed: 'Chấm bài thất bại: {reason}',
     unknownReason: 'không rõ lý do',
     notGraded: 'Chưa được chấm.',
-    blank: '(Bỏ trống)',
     nothingWritten: 'Chưa viết gì',
     gradingErrors: {
       missingTask: 'Thiếu nội dung của task.',
@@ -323,15 +278,11 @@ export const ielts: Messages['ielts'] = {
     hideSample: 'Ẩn bài mẫu',
     showSample: 'Xem bài mẫu',
     gradeFailed: 'Không chấm được.',
-    writingBand: 'Band Writing',
-    singleTaskNoBand: 'Một task riêng lẻ không tính band Writing',
-    task2Double: 'Task 2 tính gấp đôi Task 1',
   },
   saveWord: {
     save: 'Lưu "{term}"',
     saveLabel: 'Lưu "{term}" vào Từ vựng',
     savedLabel: 'Đã lưu "{term}"',
-    saved: 'Đã lưu',
     failed: 'Không lưu được',
   },
   lineDictation: {

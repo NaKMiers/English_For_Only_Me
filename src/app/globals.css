@@ -16,11 +16,7 @@
    the primary action and the sidebar. Every utility reads these vars, so
    the night theme below only has to remap them.
    ============================================================ */
-/* `.day-palette` pins the day tokens on one subtree, for a panel designed
-   as a dark block on the day palette (the vocab recall modal) that must look
-   the same in the night theme. */
-:root,
-.day-palette {
+:root {
   --canvas: #f3eaf2;
   /* The board (PageShell). Same as `surface` by day; at night it sits one
      step darker so cards on it lift. */
@@ -82,7 +78,6 @@
   --popover-foreground: var(--ink);
   --primary: var(--cta);
   --primary-foreground: var(--cta-fg);
-  --dark-primary: var(--brand);
   --secondary: var(--surface-muted);
   --secondary-foreground: var(--ink);
   --muted: var(--tint-soft);
@@ -90,20 +85,12 @@
   --accent: var(--tint);
   --accent-foreground: var(--ink);
   --destructive: var(--danger);
-  --destructive-foreground: #ffffff;
   --border: var(--line);
   --input: var(--line-strong);
   --ring: var(--brand);
-  --chart-1: var(--brand);
-  --chart-2: var(--accent-orange);
-  --chart-3: var(--accent-blue);
-  --chart-4: var(--accent-purple);
-  --chart-5: var(--accent-green);
   --radius: 0.875rem;
   --light: var(--surface);
   --dark: var(--ink);
-  --light-gray: var(--tint-soft);
-  --dark-gray: var(--ink-soft);
 
   --html-bg:
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 900' preserveAspectRatio='none'%3E%3Cg fill='none' stroke='%23e58fb6' stroke-opacity='.35' stroke-width='1.6'%3E%3Cpath d='M-40 260 C 260 120 420 40 640 -40'/%3E%3Cpath d='M120 940 C 300 700 420 420 760 -40'/%3E%3Cpath d='M1000 -40 C 1060 300 1240 520 1480 600'/%3E%3Cpath d='M1480 120 C 1300 160 1180 60 1120 -40'/%3E%3C/g%3E%3C/svg%3E"),
@@ -192,7 +179,6 @@
   --shell-ring: 0 0 0 1px rgba(255, 255, 255, 0.05);
   --rail-bg: #0b090d;
   --rail-fg: #f2ebf0;
-  --destructive-foreground: #2a0f0a;
 
   --html-bg:
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 900' preserveAspectRatio='none'%3E%3Cg fill='none' stroke='%23ff8fbd' stroke-opacity='.12' stroke-width='1.6'%3E%3Cpath d='M-40 260 C 260 120 420 40 640 -40'/%3E%3Cpath d='M120 940 C 300 700 420 420 760 -40'/%3E%3Cpath d='M1000 -40 C 1060 300 1240 520 1480 600'/%3E%3Cpath d='M1480 120 C 1300 160 1180 60 1120 -40'/%3E%3C/g%3E%3C/svg%3E"),
@@ -265,7 +251,6 @@
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
-  --color-dark-primary: var(--dark-primary);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
@@ -273,23 +258,14 @@
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
   --color-light: var(--light);
   --color-dark: var(--dark);
-  --color-light-gray: var(--light-gray);
-  --color-dark-gray: var(--dark-gray);
   --radius-sm: calc(var(--radius) - 6px);
   --radius-md: calc(var(--radius) - 3px);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 6px);
   --radius-shell: var(--corner-shell);
   --radius-panel: var(--corner-panel);
   --radius-control: var(--corner-control);

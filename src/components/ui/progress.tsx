@@ -13,10 +13,6 @@ const TONE_FILL: Record<ProgressTone, string> = {
   vocabulary: 'bg-accent-green',
   grammar: 'bg-accent-purple',
   ielts: 'bg-accent-orange',
-  'writing-notes': 'bg-accent-orange',
-  'ai-coach': 'bg-accent-green',
-  reading: 'bg-accent-green',
-  speaking: 'bg-accent-green',
   brand: 'bg-brand',
   ink: 'bg-cta',
 }

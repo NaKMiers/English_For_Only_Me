@@ -150,7 +150,7 @@ only produces the chart form (`writingTaskOutput.visual` is
   catalogue but still readable for in-progress attempts and old reviews
   (`readIeltsTestVersion` accepts `published` or `archived`, never `draft`).
 - Tests are edited in place in every status (`tests/testService.ts` header
-  comment). The `new-version` admin route answers `410` ("edited in place").
+  comment).
 - `version` is part of the identity (`slug` + `version` unique; at most one
   `published` per slug via a partial unique index, see
   [03](./03-data-model.md)). Attempts pin `testSlug` + `testVersion`. No code
@@ -173,7 +173,6 @@ only produces the chart form (`writingTaskOutput.visual` is
 | `IELTS_WEAKNESS_MIN_QUESTIONS`                       | 5 (below this, accuracy is null)                                                                                                             |
 | `IELTS_DRILL_MAX_GROUPS`                             | 4                                                                                                                                            |
 | `IELTS_GENERATION_LOG_LIMIT`                         | 50 rows kept in `generationLog`                                                                                                              |
-| `IELTS_WRITING_MIN_WORDS`                            | Task 1 = 150, Task 2 = 250                                                                                                                   |
 | `IELTS_ANSWER_MAX_LENGTH` / `IELTS_ESSAY_MAX_LENGTH` | 300 chars per objective answer, 20,000 per essay                                                                                             |
 | `LISTENING_VOICES`                                   | 9 logical voice ids (`alloy` ... `shimmer`, stored in tests and named in the prompt) with a gender hint and the `qwenVoice` that speaks them |
 | `IELTS_API_PATHS`                                    | Client paths for learner and admin routes                                                                                                    |
@@ -316,7 +315,6 @@ attempts have `testId: null`, `testVersion: 0` and a title
 ### 5.5 Queries (`attempts/attemptQueries.ts`, `testBands.ts`)
 
 - `listIeltsAttempts` - newest 30 summaries (no answers, no key).
-- `openAttempts` - resumable in-progress attempts (mock past deadline excluded).
 - `readIeltsOverall` - last 60 full-skill, banded practice/mock attempts fed to
   `overallEstimate` (section 6.4).
 - `readIeltsTestBands` - best band per test and skill (`bestBandsByTest`) so

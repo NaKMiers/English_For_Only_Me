@@ -8,18 +8,15 @@ import { VocabOccurrenceModel } from '@/models/vocabulary/VocabOccurrenceModel'
 import {
   getAlreadyKnownState,
   getInitialLearningState,
-  applyRecallAnswer,
 } from '@/modules/vocabulary/recall/recallScheduler'
 import type {
   UserVocabItemApiRecord,
   VocabLearningSource,
   VocabOccurrenceReason,
-  VocabRecallCardRecord,
 } from '@/modules/vocabulary/types'
 import { VOCAB_REQUIRES_VI_MEANING_FILTER } from '@/modules/vocabulary/vietnameseMeaning'
 
 import { toUserVocabItemRecord } from './userVocabItemRecords'
-import { toVocabEntryRecord } from './vocabEntryRecords'
 import { toVocabOccurrenceRecord } from './vocabOccurrenceRecords'
 
 export interface RecordOccurrenceInput {
@@ -122,136 +119,4 @@ export async function setUserVocabItemStatus({
   )
 
   return item ? toUserVocabItemRecord(item.toObject()) : null
-}
-
-export interface VocabItemStatusBatchResult {
-  vocabEntryId: string
-  item: UserVocabItemApiRecord | null
-  error?: string
-}
-
-/**
- * Apply many status updates in one request. Each update is independent: a single
- * bad entry (e.g. missing Vietnamese meaning) is reported per-item instead of
- * failing the whole batch, so the client can reconcile/roll back exactly the
- * entries that failed. Reuses a single `now` so a burst of presses shares one
- * timestamp.
- */
-export async function setUserVocabItemStatusBatch({
-  now = new Date(),
-  updates,
-  userId,
-}: {
-  now?: Date
-  updates: Array<{
-    source: VocabLearningSource
-    status: 'shouldLearn' | 'alreadyKnow'
-    vocabEntryId: string
-  }>
-  userId: string
-}): Promise<VocabItemStatusBatchResult[]> {
-  return Promise.all(
-    updates.map(async update => {
-      try {
-        const item = await setUserVocabItemStatus({
-          now,
-          source: update.source,
-          status: update.status,
-          userId,
-          vocabEntryId: update.vocabEntryId,
-        })
-
-        return { item, vocabEntryId: update.vocabEntryId }
-      } catch (error) {
-        return {
-          error:
-            error instanceof Error
-              ? error.message
-              : 'Could not update this word.',
-          item: null,
-          vocabEntryId: update.vocabEntryId,
-        }
-      }
-    })
-  )
-}
-
-export async function listDueVocabRecallCardsForUser({
-  limit,
-  now = new Date(),
-  userId,
-}: {
-  limit: number
-  now?: Date
-  userId: string
-}): Promise<VocabRecallCardRecord[]> {
-  const items = await UserVocabItemModel.find({
-    dueAt: { $lte: now },
-    status: 'learning',
-    userId,
-  })
-    .sort({ dueAt: 1, updatedAt: 1 })
-    .limit(limit)
-    .lean()
-
-  if (items.length === 0) return []
-
-  const entries = await VocabEntryModel.find({
-    _id: { $in: items.map(item => item.vocabEntryId) },
-    ...VOCAB_REQUIRES_VI_MEANING_FILTER,
-  }).lean()
-  const entryById = new Map(entries.map(entry => [String(entry._id), entry]))
-
-  return items.flatMap(item => {
-    const entry = entryById.get(String(item.vocabEntryId))
-    if (!entry) return []
-
-    return [
-      {
-        entry: toVocabEntryRecord(entry),
-        item: toUserVocabItemRecord(item),
-      },
-    ]
-  })
-}
-
-export async function answerVocabRecallForUser({
-  isCorrect,
-  itemId,
-  now = new Date(),
-  userId,
-}: {
-  isCorrect: boolean
-  itemId: string
-  now?: Date
-  userId: string
-}) {
-  const item = await UserVocabItemModel.findOne({
-    _id: itemId,
-    status: 'learning',
-    userId,
-  }).lean()
-
-  if (!item) return null
-
-  const patch = applyRecallAnswer({
-    isCorrect,
-    item: toUserVocabItemRecord(item),
-    now,
-  })
-
-  const updated = await UserVocabItemModel.findOneAndUpdate(
-    {
-      _id: itemId,
-      userId,
-    },
-    {
-      $set: patch,
-    },
-    {
-      returnDocument: 'after',
-    }
-  ).lean()
-
-  return updated ? toUserVocabItemRecord(updated) : null
 }

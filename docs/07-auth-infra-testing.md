@@ -612,8 +612,6 @@ Browser wiring (`clientOutbox.ts`):
 - `pagehide` flushes with keepalive (including in-flight items) and marks the
   queue released; `visibilitychange` to hidden flushes only waiting items;
   `pageshow` from the back-forward cache resumes.
-- `useOutboxPendingCount(outbox)` feeds a "saving" hint via
-  `useSyncExternalStore`.
 
 ---
 

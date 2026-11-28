@@ -23,7 +23,7 @@ interface Props {
 export function AppTabBar({ className }: Props) {
   const t = useMessages()
   const pathname = usePathname() ?? '/'
-  const items = PRIMARY_NAV_ITEMS.filter(item => !item.disabled)
+  const items = PRIMARY_NAV_ITEMS
 
   return (
     <nav

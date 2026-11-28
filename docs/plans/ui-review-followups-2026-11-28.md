@@ -1,6 +1,7 @@
 # UI review follow-ups: same problems, other pages (2026-11-28)
 
-Status: plan, reviewed with `/plan-eng-review` on 2026-11-28; not started.
+Status: implemented on branch `claude/ui-review-followups-4a81ea`
+(2026-11-28), one commit per phase; browser checks still to do.
 Input: `docs/plans/manual-review-digest-2026-11-28.md` (principles and
 patterns P1 to P11). Baseline: the uncommitted working tree on `main` after
 commit `614414a` (the owner's two hand-review sessions). Treat the current
@@ -868,48 +869,48 @@ No critical gaps (every new path has a test or a typed guard).
 
 ## 18. Implementation tasks (checklist)
 
-- [ ] 1 (S) Due icon + guard
-- [ ] 2 (M) SessionEnd stats slot
-- [ ] 3 (S-M) skeletons
-- [ ] 4 (M) VocabDecisionButtons
-- [ ] 5 (S) affordance sweep
-- [ ] 6 (L) review deep link
-- [ ] 7 (S-M) debrief panel
-- [ ] 8 (M) practice screen
-- [ ] 9 (S) word dialog
-- [ ] 10 (S) results empty state
-- [ ] 11 (M) dictation journey step
-- [ ] 12 (S) dictation small fixes
-- [ ] 13 (S) recall deep link
-- [ ] 14 (M) vocab landing float
-- [ ] 15 (M) vocab feedback in place
-- [ ] 16 (S) explore deck
-- [ ] 17 (M) word list
-- [ ] 18 (S) recall modal + skeleton
-- [ ] 19 (S) account menu
-- [ ] 20 (S) shell comment
-- [ ] 21 (S-M) home simple
-- [ ] 22 (S-M) home full
-- [ ] 23 (S) float nudge
-- [ ] 24 (S) static passed checkpoint
-- [ ] 25 (M) lesson end
-- [ ] 26 (S) notes page
-- [ ] 27 (S) pass mark chip
-- [ ] 28 (M) IELTS test page
-- [ ] 29 (M) result head
-- [ ] 30 (M-L) review table
-- [ ] 31 (M) writing result
-- [ ] 32 (M) runner
-- [ ] 33 (S) drawer rows
-- [ ] 34 (M) examiner language
-- [ ] 35 (S) error codes
-- [ ] 36 (S) assist language
-- [ ] 37 (S-M) admin layout
-- [ ] 38 (M) admin errors
-- [ ] 39 (S-M) dead components
-- [ ] 40 (M) dead APIs
-- [ ] 41 (M) dead config/keys/CSS
-- [ ] 42 (S) rules and docs
+- [x] 1 (S) Due icon + guard
+- [x] 2 (M) SessionEnd stats slot
+- [x] 3 (S-M) skeletons
+- [x] 4 (M) VocabDecisionButtons
+- [x] 5 (S) affordance sweep
+- [x] 6 (L) review deep link (the attempt route did not clear solved items: a `review` flag now solves them without moving the session)
+- [x] 7 (S-M) debrief panel
+- [x] 8 (M) practice screen
+- [x] 9 (S) word dialog
+- [x] 10 (S) results empty state
+- [x] 11 (M) dictation journey step
+- [x] 12 (S) dictation small fixes
+- [x] 13 (S) recall deep link
+- [x] 14 (M) vocab landing float
+- [x] 15 (M) vocab feedback in place
+- [x] 16 (S) explore deck
+- [x] 17 (M) word list
+- [x] 18 (S) recall modal + skeleton
+- [x] 19 (S) account menu
+- [x] 20 (S) shell comment
+- [x] 21 (S-M) home simple
+- [x] 22 (S-M) home full
+- [x] 23 (S) float nudge
+- [x] 24 (S) static passed checkpoint
+- [x] 25 (M) lesson end
+- [x] 26 (S) notes page
+- [x] 27 (S) pass mark chip
+- [x] 28 (M) IELTS test page
+- [x] 29 (M) result head
+- [x] 30 (M-L) review table
+- [x] 31 (M) writing result
+- [x] 32 (M) runner
+- [x] 33 (S) drawer rows
+- [x] 34 (M) examiner language
+- [x] 35 (S) error codes
+- [x] 36 (S) assist language
+- [x] 37 (S-M) admin layout
+- [x] 38 (M) admin errors
+- [x] 39 (S-M) dead components (`isAdminEmail` left to the sign-in session)
+- [x] 40 (M) dead APIs
+- [x] 41 (M) dead config/keys/CSS
+- [x] 42 (S) rules and docs
 
 Source audits (raw findings with quoted code, outside the repo):
 `~/.config/Claude/side-session-notes/local_62294925-e801-4c45-bf31-b9f1a4c379d6/followup-audit-*.md`.

@@ -1,7 +1,6 @@
 import type {
   DictationAttemptApiRecord,
   DictationMistakeTaxonomyRecord,
-  DictationReviewItemApiRecord,
   DictationReviewItemKind,
   DictationReviewItemReason,
   DictationReviewStatsSnapshotRecord,
@@ -204,55 +203,4 @@ export function buildReviewCandidates({
   }
 
   return candidates
-}
-
-export function mergeReviewCandidates({
-  candidates,
-  existingItems,
-}: {
-  candidates: ReviewCandidate[]
-  existingItems: DictationReviewItemApiRecord[]
-}) {
-  const activeKeys = new Set(
-    existingItems
-      .filter(item => item.status === 'due' || item.status === 'scheduled')
-      .map(item => `${item.segmentId}:${item.reason}`)
-  )
-
-  return candidates.filter(candidate => {
-    const key = `${candidate.segmentId}:${candidate.reason}`
-
-    if (activeKeys.has(key)) return false
-
-    activeKeys.add(key)
-    return true
-  })
-}
-
-export function dismissReviewItem(
-  item: DictationReviewItemApiRecord,
-  reviewedAt: Date = new Date()
-): DictationReviewItemApiRecord {
-  return {
-    ...item,
-    lastReviewedAt: reviewedAt,
-    status: 'dismissed',
-    updatedAt: reviewedAt,
-  }
-}
-
-export function completeReviewItem(
-  item: DictationReviewItemApiRecord,
-  reviewedAt: Date = new Date()
-): DictationReviewItemApiRecord {
-  return {
-    ...item,
-    lastReviewedAt: reviewedAt,
-    status: 'completed',
-    updatedAt: reviewedAt,
-  }
-}
-
-export function getReviewActionStatus(action: 'complete' | 'dismiss') {
-  return action === 'complete' ? 'completed' : 'dismissed'
 }

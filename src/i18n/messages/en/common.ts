@@ -16,10 +16,8 @@ export const common = {
     primary: 'Primary',
     home: 'Study Desk',
     menu: 'Menu',
-    menuDescription: 'Jump to a study module.',
     openMenu: 'Open menu',
     closeMenu: 'Close menu',
-    soon: 'Soon',
   },
   modules: {
     dictation: {
@@ -50,39 +48,6 @@ export const common = {
       description:
         'Full Listening, Reading and Writing tests with practice and timed mock modes, bands and evidence review.',
     },
-    'writing-notes': {
-      title: 'Writing Notes',
-      shortTitle: 'Writing',
-      skill: 'Writing',
-      description:
-        'Task 1 and Task 2 patterns, essay ideas, sentence upgrades, and feedback.',
-    },
-    'ai-coach': {
-      title: 'AI Coach',
-      shortTitle: 'Coach',
-      skill: 'Coaching',
-      description:
-        'Personal debriefs, study suggestions, and IELTS path planning.',
-    },
-    reading: {
-      title: 'Reading',
-      shortTitle: 'Reading',
-      skill: 'Reading',
-      description:
-        'Passage practice, question traps, timing notes, and evidence review.',
-    },
-    speaking: {
-      title: 'Speaking',
-      shortTitle: 'Speaking',
-      skill: 'Speaking',
-      description:
-        'Cue-card ideas, fluency drills, pronunciation notes, and answer structure.',
-    },
-  },
-  moduleStatus: {
-    active: 'Active',
-    future: 'Future',
-    secondary: 'Secondary',
   },
   theme: {
     toDay: 'Switch to day theme',
@@ -142,8 +107,6 @@ export const common = {
     nextStop: 'Next stop',
     youAreHere: 'You are here',
     continue: 'Continue',
-    showMore: 'Show more',
-    hideMore: 'Show less',
     showSide: 'Show history and weak spots',
     hideSide: 'Hide history and weak spots',
     allClear: 'All clear',
@@ -167,8 +130,6 @@ export const common = {
     notFound: 'Not found.',
     unauthorized: 'Please sign in to continue.',
     forbidden: 'You do not have access to this.',
-    invalidRequest: 'The request was not valid.',
-    serverError: 'Server error. Please try again.',
     requestFailed: 'Request failed ({status}).',
     guestSession: 'Could not start a guest session.',
     ownerMismatch:

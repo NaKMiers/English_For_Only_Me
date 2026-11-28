@@ -279,7 +279,6 @@ export function ListeningJourneyHero({
           ))}
         </StatStrip>
       }
-      statsPlacement="top"
       title={t.title}
       titleId="listening-journey-title"
     />

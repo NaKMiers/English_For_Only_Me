@@ -22,7 +22,6 @@ export default async function GrammarLoading() {
         <SkeletonJourney
           metaphorClassName="h-36 sm:h-28"
           nextStop={false}
-          statsPlacement="top"
         />
         {/* The winding path: one centred column of unit cards. */}
         <div className="mx-auto grid w-full max-w-xl content-start gap-4 lg:max-w-2xl">

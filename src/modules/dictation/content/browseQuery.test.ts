@@ -5,7 +5,6 @@ import {
   buildVideoMongoFilter,
   buildVideoMongoSort,
   isBrowseQueryActive,
-  matchesBrowseQuery,
   paginate,
   parseBrowseQuery,
 } from './browseQuery'
@@ -73,25 +72,6 @@ describe('buildVideoMongoSort', () => {
       order: 1,
       createdAt: -1,
     })
-  })
-})
-
-describe('matchesBrowseQuery', () => {
-  const video = { title: 'Short Story One', level: 'B1' as const }
-
-  it('matches on case-insensitive title substring and level', () => {
-    expect(
-      matchesBrowseQuery(video, parseBrowseQuery({ search: 'story' }))
-    ).toBe(true)
-    expect(matchesBrowseQuery(video, parseBrowseQuery({ level: 'B1' }))).toBe(
-      true
-    )
-    expect(matchesBrowseQuery(video, parseBrowseQuery({ level: 'A1' }))).toBe(
-      false
-    )
-    expect(matchesBrowseQuery(video, parseBrowseQuery({ search: 'zzz' }))).toBe(
-      false
-    )
   })
 })
 

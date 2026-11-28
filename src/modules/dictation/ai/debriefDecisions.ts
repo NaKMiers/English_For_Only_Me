@@ -1,7 +1,6 @@
 import { z } from 'zod'
 
 import type { ApiErrorDecision } from '@/modules/dictation/services/videoRouteDecisions'
-import type { DictationDebriefStatus } from '@/modules/dictation/types'
 
 const objectIdSchema = z
   .string()
@@ -64,10 +63,4 @@ export function getDebriefCompletionBlocker({
     return 'Finish at least one saved segment before debriefing.'
 
   return null
-}
-
-export function shouldCreateDebriefAttempt(
-  latestStatus: DictationDebriefStatus | null
-) {
-  return latestStatus !== 'ready'
 }

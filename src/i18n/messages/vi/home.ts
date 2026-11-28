@@ -60,8 +60,6 @@ export const home: Messages['home'] = {
     videos: '{count} video',
     dictation: 'Chính tả',
     weakWords: 'Từ hay sai',
-    newClip: 'Clip mới',
-    addOne: 'Thêm clip',
     readWrite: 'Đọc và viết',
     toReview: '{count} cần ôn',
     due: '{count} cần ôn',

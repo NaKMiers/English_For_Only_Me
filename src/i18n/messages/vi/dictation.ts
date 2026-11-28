@@ -9,7 +9,6 @@ export const dictation: Messages['dictation'] = {
     browseSubtitle: 'Duyệt chủ đề chép chính tả',
     favoritesSubtitle: 'Bài yêu thích của bạn',
     labSubtitle: 'Phần luyện nghe chép chính tả',
-    reviewSubtitle: 'Ôn câu yếu',
     practiceTitle: 'Luyện chép chính tả',
     practiceDescription:
       'Luyện nghe chép từng câu từ video YouTube cho phần Listening IELTS.',
@@ -28,7 +27,6 @@ export const dictation: Messages['dictation'] = {
     journeyResume: 'Học tiếp chỗ đang dở',
     eyebrow: 'Listening',
     title: 'Tất cả chủ đề',
-    favoritesLink: '★ Yêu thích',
     topicsHeading: 'Chủ đề',
     descriptionSignedIn:
       'Chọn một chủ đề, rồi một phần, rồi tiếp tục xây dựng lịch sử luyện nghe của bạn.',
@@ -66,7 +64,6 @@ export const dictation: Messages['dictation'] = {
       recentEmpty: 'Video bạn đã bắt đầu sẽ hiện ở đây.',
       latestResults: 'Kết quả gần nhất',
       favorites: 'Yêu thích',
-      favoritesHint: 'Những video bạn đã gắn sao',
     },
     dueTitle: {
       one: '{count} câu cần ôn',
@@ -147,7 +144,6 @@ export const dictation: Messages['dictation'] = {
       practiceVideo: 'Luyện bài {title}',
       completed: 'Đã hoàn thành',
       continue: 'Học tiếp',
-      practiceAgain: 'Luyện lại',
       practice: 'Luyện tập',
       noTranscript: 'Chưa có transcript',
       empty: 'Chưa có bài nào ở đây.',
@@ -204,7 +200,6 @@ export const dictation: Messages['dictation'] = {
     replay: 'Nghe lại câu hiện tại',
     rewind: 'Về câu đầu tiên',
     previous: 'Câu trước',
-    current: 'Câu hiện tại',
     next: 'Câu tiếp theo',
     restart: 'Làm lại từ đầu',
     showVideo: 'Hiện video',
@@ -248,7 +243,6 @@ export const dictation: Messages['dictation'] = {
     revealed: 'Đã hiện đáp án',
   },
   practice: {
-    emptyEyebrow: 'Luyện tập',
     emptyTitle: 'Chưa có câu nào sẵn sàng',
     emptyDescription: 'Hãy tách câu từ transcript trước khi mở bài luyện.',
     backToLab: 'Về Chép chính tả',
@@ -346,18 +340,6 @@ export const dictation: Messages['dictation'] = {
     headUnit: 'chính xác lần đầu',
     headWins: 'Xong {percent}%: {done}/{total} câu',
     nextVideoAction: 'Video tiếp theo',
-    eyebrow: {
-      completed: 'Đã hoàn thành',
-      inProgress: 'Đang học',
-      notStarted: 'Kết quả',
-    },
-    inProgressEmpty:
-      'Đang luyện tập. Làm xong vài câu và thống kê của bạn sẽ hiện ở đây.',
-    notStartedEmpty:
-      'Chưa có lượt chép chính tả nào hoàn thành. Hãy luyện video này trước, rồi quay lại xem thống kê.',
-    firstTryAccuracy: 'Độ chính xác lần đầu',
-    builtFrom:
-      'Chỉ tính từ các lượt đã lưu: lỗi sai, lần xem đáp án, lần bỏ qua, lần thử lại, số lần nghe lại và thời gian luyện.',
     notReadyEyebrow: 'Chưa sẵn sàng',
     notReadyTitle: 'Chưa có câu luyện tập',
     notReadyDescription:
@@ -366,8 +348,6 @@ export const dictation: Messages['dictation'] = {
     savingTitle: 'Sắp xong',
     savingDescription:
       'Các lượt cuối của bạn vẫn đang được lưu. Đợi một chút rồi tải lại trang để xem đầy đủ kết quả.',
-    keepGoingEyebrow: 'Tiếp tục nào',
-    emptyEyebrow: 'Trống',
     inProgressTitle: 'Đang luyện tập',
     practiceFirstTitle: 'Hãy luyện trước',
     inProgressDescription: 'Làm xong vài câu, kết quả của bạn sẽ hiện ở đây.',
@@ -380,30 +360,16 @@ export const dictation: Messages['dictation'] = {
   },
   stats: {
     completion: 'Hoàn thành',
-    resolved: 'Đã xong {done}/{total} câu',
-    firstTry: 'Lần đầu',
-    firstTryDetail: 'Độ chính xác từ ở lần kiểm tra đầu',
     overall: 'Tổng thể',
-    overallDetail: 'Mọi lượt đã kiểm tra',
     time: 'Thời gian',
-    retries: {
-      one: '{count} lần thử lại',
-      other: '{count} lần thử lại',
-    },
     retriesLabel: 'Thử lại',
     attempts: {
       one: '{count} lượt',
       other: '{count} lượt',
     },
-    hardestEyebrow: 'Yếu nhất',
     hardestTitle: 'Câu khó nhất',
-    hardestMeta: {
-      one: 'Chính xác {accuracy}% qua {count} lượt',
-      other: 'Chính xác {accuracy}% qua {count} lượt',
-    },
     hardestEmpty:
       'Chưa có lượt nào. Làm xong vài câu và phần này sẽ cho thấy cần ôn gì.',
-    taxonomyEyebrow: 'Phân loại',
     mistakeMap: 'Bản đồ lỗi',
     mistakeTypes: {
       missing: 'Thiếu từ',
@@ -415,30 +381,15 @@ export const dictation: Messages['dictation'] = {
       one: '{count} từ',
       other: '{count} từ',
     },
-    wordsEyebrow: 'Từ',
     missedWords: 'Từ hay nghe sót',
     misses: {
       one: 'Sót {count} lần',
       other: 'Sót {count} lần',
     },
     missedWordsEmpty: 'Chưa ghi nhận từ nào bị nghe sót.',
-    behaviorEyebrow: 'Thói quen',
-    recoveryTitle: 'Tín hiệu gỡ lỗi',
     replays: 'Nghe lại',
-    replaysMeta: {
-      one: '{count} lần nghe lại câu',
-      other: '{count} lần nghe lại câu',
-    },
     reveals: 'Xem đáp án',
-    revealsMeta: {
-      one: '{count} lần xem đáp án',
-      other: '{count} lần xem đáp án',
-    },
     skips: 'Bỏ qua',
-    skipsMeta: {
-      one: '{count} câu bị bỏ qua',
-      other: '{count} câu bị bỏ qua',
-    },
   },
   reviewQueue: {
     eyebrow: 'Ôn tập',
@@ -508,11 +459,7 @@ export const dictation: Messages['dictation'] = {
     invalidVideoId: 'Mã video không hợp lệ.',
     invalidSegmentId: 'Mã câu không hợp lệ.',
     videoNotFound: 'Không tìm thấy video chép chính tả này.',
-    videoDuplicate: 'Video này đã có trong thư viện chép chính tả.',
-    videoCreateFailed: 'Không tạo được video chép chính tả.',
     videoUpdateFailed: 'Không cập nhật được video chép chính tả này.',
-    videoDeleteFailed: 'Không xóa được video chép chính tả này.',
-    videosLoadFailed: 'Không tải được danh sách video chép chính tả.',
     transcriptRequired: 'Video này cần có transcript trước khi luyện tập.',
     segmentsRequired: 'Hãy tách câu trước khi bắt đầu luyện tập.',
     sessionNotFound: 'Không tìm thấy buổi luyện tập này.',
@@ -537,8 +484,6 @@ export const dictation: Messages['dictation'] = {
       'Không thể dịch ngôn ngữ chính của bài chép chính tả.',
     primaryLanguageNotOverridable:
       'Không thể ghi đè ngôn ngữ chính của bài chép chính tả.',
-    reviewItemNotFound: 'Không tìm thấy mục ôn tập này.',
-    reviewUpdateFailed: 'Không cập nhật được các mục ôn tập.',
     debriefIncomplete:
       'Hãy hoàn thành video này, với ít nhất một câu đã lưu, trước khi nhờ nhận xét.',
     debriefUnavailable: 'Hiện chưa tạo được nhận xét AI.',

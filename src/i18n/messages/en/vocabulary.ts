@@ -21,7 +21,6 @@ export const vocabulary = {
     title: 'Vocab Spine',
     intro:
       'Track known words, pull in free dictionary data, and review the words you chose to learn on a seven-touch schedule.',
-    loaded: 'Loaded "{term}".',
     queued: '"{term}" is in your recall queue.',
     markedKnown: '"{term}" is marked as known.',
     mastered: 'Mastered "{term}". That one is yours now.',
@@ -73,8 +72,6 @@ export const vocabulary = {
       one: '{count} word due',
       other: '{count} words due',
     },
-    plantTitle: 'Plant new words',
-    plantDetail: 'Nothing is due right now',
     plantAction: 'Explore words',
     showSide: 'Show how your words grow',
     hideSide: 'Hide how your words grow',
@@ -131,9 +128,7 @@ export const vocabulary = {
   },
   stats: {
     knownShare: '{percent}% known',
-    growthEyebrow: 'Growth',
     growthTitle: 'Daily word growth',
-    focusEyebrow: 'Focus',
     hardestTitle: 'Hardest words',
     misses: {
       one: '{count} miss - {percent}%',
@@ -237,8 +232,6 @@ export const vocabulary = {
     noMatches: 'No word here starts with "{q}".',
     clearSearch: 'Clear search',
     prev: 'Prev',
-    movedToLearning: '"{term}" moved to Learning.',
-    markedKnown: '"{term}" marked as Already Know.',
     stageDue: 'Stage {stage}/7 - due {date}',
     stage: 'Stage {stage}/7',
     masteredOn: 'Mastered {date}',
@@ -266,7 +259,6 @@ export const vocabulary = {
     invalidSearch: 'Vocabulary search query is invalid.',
     invalidExplore: 'Vocabulary explore query is invalid.',
     invalidItem: 'Vocabulary item payload is invalid.',
-    invalidItemBatch: 'Vocabulary item batch payload is invalid.',
     invalidRecallQuery: 'Vocabulary recall query is invalid.',
     invalidOccurrence: 'Vocabulary occurrence payload is invalid.',
     invalidRecallAnswer: 'Vocabulary recall payload is invalid.',
