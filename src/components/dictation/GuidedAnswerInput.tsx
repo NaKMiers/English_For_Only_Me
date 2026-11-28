@@ -211,7 +211,7 @@ function renderBoundaryMirror(
         <span className="relative">
           <span
             data-testid="missing-word-mark"
-            className="absolute bottom-0 left-0 size-0 -translate-x-1/2 border-x-[0.22em] border-b-[0.32em] border-x-transparent border-b-amber-600"
+            className="border-b-notice absolute bottom-0 left-0 size-0 -translate-x-1/2 border-x-[0.22em] border-b-[0.32em] border-x-transparent"
           />
         </span>
         {value.slice(boundary.start)}
@@ -446,11 +446,11 @@ export function GuidedAnswerInput({
 
       {/* The visible typing field around the transparent overlay input:
           `keep-frame` keeps its border when nested boxes flatten on a phone. */}
-      <div className="keep-frame border-line bg-surface focus-within:border-brand/70 focus-within:ring-brand/15 relative rounded-2xl border transition-[border-color,box-shadow] duration-200 focus-within:ring-4">
+      <div className="keep-frame border-line bg-surface focus-within:border-brand/70 focus-within:ring-brand/15 rounded-control relative border transition-[border-color,box-shadow] duration-200 focus-within:ring-4">
         <div
           aria-hidden="true"
           style={inputTextStyle}
-          className="pointer-events-none absolute inset-0 px-3.5 py-3 font-semibold wrap-break-word whitespace-pre-wrap text-transparent"
+          className="pointer-events-none absolute inset-0 px-3.5 py-3 font-medium wrap-break-word whitespace-pre-wrap text-transparent"
         >
           {renderBoundaryMirror(value, boundary)}
         </div>
@@ -470,7 +470,7 @@ export function GuidedAnswerInput({
           className={cn(
             // field-sizing-content grows the box with the answer, so the floor
             // only has to fit a short sentence - not reserve six empty lines.
-            'placeholder:text-ink-soft/70 ring-owned-focus relative z-10 block field-sizing-content min-h-20 w-full resize-y overflow-hidden rounded-2xl border-0 bg-transparent px-3.5 py-3 font-semibold wrap-break-word whitespace-pre-wrap outline-none',
+            'placeholder:text-ink-soft/70 ring-owned-focus rounded-control relative z-10 block field-sizing-content min-h-20 w-full resize-y overflow-hidden border-0 bg-transparent px-3.5 py-3 font-medium wrap-break-word whitespace-pre-wrap outline-none',
             status === 'correct' ? 'text-lesson-correct' : 'text-ink'
           )}
         />
@@ -480,7 +480,7 @@ export function GuidedAnswerInput({
         <p
           aria-live="polite"
           className={cn(
-            'flex items-center gap-1.5 text-sm font-semibold',
+            'flex items-center gap-1.5 text-sm font-medium',
             status === 'correct' && 'text-lesson-correct',
             status === 'incorrect' && 'text-accent-orange'
           )}
@@ -502,7 +502,18 @@ export function GuidedAnswerInput({
               className="size-5 shrink-0"
             />
           ) : null}
-          {statusMessage(text, status, isMissingWord)}
+          {/* The icon says it; the words stay for screen readers. */}
+          <span
+            className={
+              status === 'correct' ||
+              status === 'incorrect' ||
+              status === 'revealed'
+                ? 'sr-only'
+                : undefined
+            }
+          >
+            {statusMessage(text, status, isMissingWord)}
+          </span>
         </p>
         {statusAction ? (
           <div className="flex flex-wrap items-center gap-2">

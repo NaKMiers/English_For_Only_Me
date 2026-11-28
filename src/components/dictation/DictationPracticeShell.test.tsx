@@ -420,6 +420,14 @@ function typeAnswer(textarea: HTMLElement, value: string) {
   })
 }
 
+// Restart, rewind and the answer preferences live in the settings menu.
+async function openSettings(view: ReturnType<typeof render>) {
+  fireEvent.click(
+    view.getByRole('button', { name: 'Playback and display settings' })
+  )
+  await view.findByRole('menu')
+}
+
 describe('DictationPracticeShell attempts', () => {
   test('Check verdict appears before the session POST resolves, then the attempt lands', async () => {
     let resolveSession: (value: { session: DictationSessionApiRecord }) => void
@@ -433,7 +441,7 @@ describe('DictationPracticeShell attempts', () => {
 
     const view = renderPracticeShell(null)
 
-    fireEvent.click(view.getByRole('button', { name: 'Start Dictation' }))
+    fireEvent.click(view.getByRole('button', { name: 'Start dictation' }))
     typeAnswer(view.getByLabelText('Type what you hear'), 'kjhk')
     fireEvent.click(view.getByRole('button', { name: 'Check' }))
 
@@ -486,7 +494,7 @@ describe('DictationPracticeShell attempts', () => {
   test('Check gives immediate incorrect feedback for a wrong answer', async () => {
     const view = renderPracticeShell()
 
-    fireEvent.click(view.getByRole('button', { name: 'Start Dictation' }))
+    fireEvent.click(view.getByRole('button', { name: 'Start dictation' }))
     typeAnswer(view.getByLabelText('Type what you hear'), 'kjhk')
     fireEvent.click(view.getByRole('button', { name: 'Check' }))
 
@@ -509,7 +517,7 @@ describe('DictationPracticeShell attempts', () => {
       }
       const view = renderPracticeShell(session, variantSegment)
 
-      fireEvent.click(view.getByRole('button', { name: 'Start Dictation' }))
+      fireEvent.click(view.getByRole('button', { name: 'Start dictation' }))
       const textarea = view.getByLabelText(
         'Type what you hear'
       ) as HTMLTextAreaElement
@@ -536,7 +544,7 @@ describe('DictationPracticeShell attempts', () => {
   test('Escape skips first, then retries when Retry is available', async () => {
     const view = renderPracticeShell()
 
-    fireEvent.click(view.getByRole('button', { name: 'Start Dictation' }))
+    fireEvent.click(view.getByRole('button', { name: 'Start dictation' }))
     const textarea = view.getByLabelText('Type what you hear')
 
     fireEvent.keyDown(textarea, { key: 'Escape' })
@@ -562,7 +570,7 @@ describe('DictationPracticeShell attempts', () => {
     }
     const view = renderPracticeShell(session, attempted, 0, [attempted])
 
-    fireEvent.click(view.getByRole('button', { name: 'Start Dictation' }))
+    fireEvent.click(view.getByRole('button', { name: 'Start dictation' }))
     const textarea = view.getByLabelText('Type what you hear')
     typeAnswer(textarea, 'my fresh attempt')
 
@@ -578,7 +586,7 @@ describe('DictationPracticeShell attempts', () => {
   test('Skip reveals the answer and switches to Finish', async () => {
     const view = renderPracticeShell()
 
-    fireEvent.click(view.getByRole('button', { name: 'Start Dictation' }))
+    fireEvent.click(view.getByRole('button', { name: 'Start dictation' }))
     fireEvent.click(view.getByRole('button', { name: 'Skip' }))
 
     await waitFor(() => {
@@ -591,7 +599,7 @@ describe('DictationPracticeShell attempts', () => {
     // Single segment => it is the last segment.
     const view = renderPracticeShell(null)
 
-    fireEvent.click(view.getByRole('button', { name: 'Start Dictation' }))
+    fireEvent.click(view.getByRole('button', { name: 'Start dictation' }))
     fireEvent.click(view.getByRole('button', { name: 'Skip' }))
 
     const finish = await view.findByRole('button', { name: 'Finish' })
@@ -635,8 +643,11 @@ describe('DictationPracticeShell attempts', () => {
 
     expect(view.getByText('Copper')).not.toBeNull()
 
-    fireEvent.click(view.getByRole('button', { name: 'Restart progress' }))
-    fireEvent.click(view.getByRole('button', { name: 'Restart' }))
+    await openSettings(view)
+    fireEvent.click(
+      await view.findByRole('menuitem', { name: 'Restart progress' })
+    )
+    fireEvent.click(await view.findByRole('button', { name: 'Restart' }))
 
     const textarea = await view.findByLabelText('Type what you hear')
 
@@ -669,9 +680,9 @@ describe('DictationPracticeShell entry screen', () => {
   }
 
   function expectStartScreen(view: ReturnType<typeof renderPracticeShell>) {
-    expect(view.getByRole('button', { name: 'Start Dictation' })).not.toBeNull()
+    expect(view.getByRole('button', { name: 'Start dictation' })).not.toBeNull()
     expect(
-      view.queryByRole('button', { name: 'Continue Dictation' })
+      view.queryByRole('button', { name: 'Continue dictation' })
     ).toBeNull()
     expect(
       view.queryByRole('button', { name: 'Repeat this exercise' })
@@ -680,11 +691,12 @@ describe('DictationPracticeShell entry screen', () => {
 
   function expectContinueScreen(view: ReturnType<typeof renderPracticeShell>) {
     expect(
-      view.getByRole('button', { name: 'Continue Dictation' })
+      view.getByRole('button', { name: 'Continue dictation' })
     ).not.toBeNull()
+    // One big Continue: restarting lives in the settings menu.
     expect(
-      view.getByRole('button', { name: 'Restart from the beginning' })
-    ).not.toBeNull()
+      view.queryByRole('button', { name: 'Restart from the beginning' })
+    ).toBeNull()
     expect(
       view.queryByRole('button', { name: 'Repeat this exercise' })
     ).toBeNull()
@@ -699,9 +711,9 @@ describe('DictationPracticeShell entry screen', () => {
       view.getByText('You have completed this exercise, good job!')
     ).not.toBeNull()
     // Not the ready panel.
-    expect(view.queryByRole('button', { name: 'Start Dictation' })).toBeNull()
+    expect(view.queryByRole('button', { name: 'Start dictation' })).toBeNull()
     expect(
-      view.queryByRole('button', { name: 'Continue Dictation' })
+      view.queryByRole('button', { name: 'Continue dictation' })
     ).toBeNull()
   }
 
@@ -743,7 +755,7 @@ describe('DictationPracticeShell leave guard', () => {
   test('an in-app link click mid-practice opens the styled modal instead of navigating', async () => {
     const view = renderPracticeShell()
 
-    fireEvent.click(view.getByRole('button', { name: 'Start Dictation' }))
+    fireEvent.click(view.getByRole('button', { name: 'Start dictation' }))
 
     const link = document.createElement('a')
     link.setAttribute('href', '/dictation')
@@ -768,7 +780,7 @@ describe('DictationPracticeShell leave guard', () => {
   test('Keep practicing dismisses the modal without navigating', async () => {
     const view = renderPracticeShell()
 
-    fireEvent.click(view.getByRole('button', { name: 'Start Dictation' }))
+    fireEvent.click(view.getByRole('button', { name: 'Start dictation' }))
 
     const link = document.createElement('a')
     link.setAttribute('href', '/dictation')
@@ -821,7 +833,7 @@ describe('DictationPracticeShell outbox integration', () => {
 
     const view = renderPracticeShell(session, segment, 0, threeSegments)
 
-    fireEvent.click(view.getByRole('button', { name: 'Start Dictation' }))
+    fireEvent.click(view.getByRole('button', { name: 'Start dictation' }))
 
     const textarea = view.getByLabelText('Type what you hear')
 
@@ -875,7 +887,7 @@ describe('DictationPracticeShell outbox integration', () => {
 
     const view = renderPracticeShell()
 
-    fireEvent.click(view.getByRole('button', { name: 'Start Dictation' }))
+    fireEvent.click(view.getByRole('button', { name: 'Start dictation' }))
     fireEvent.click(view.getByRole('button', { name: 'Skip' }))
 
     await waitFor(() => {
@@ -898,11 +910,11 @@ describe('DictationPracticeShell outbox integration', () => {
 
     const view = renderPracticeShell()
 
-    fireEvent.click(view.getByRole('button', { name: 'Start Dictation' }))
+    fireEvent.click(view.getByRole('button', { name: 'Start dictation' }))
     fireEvent.click(view.getByRole('button', { name: 'Skip' }))
     fireEvent.click(await view.findByRole('button', { name: 'Finish' }))
 
-    const results = await view.findByRole('link', { name: 'View Results' })
+    const results = await view.findByRole('link', { name: 'View results' })
 
     fireEvent.click(results)
 
@@ -934,10 +946,10 @@ describe('DictationPracticeShell outbox integration', () => {
     const whenIdle = vi.spyOn(testOutbox, 'whenIdle').mockResolvedValue(false)
     const view = renderPracticeShell()
 
-    fireEvent.click(view.getByRole('button', { name: 'Start Dictation' }))
+    fireEvent.click(view.getByRole('button', { name: 'Start dictation' }))
     fireEvent.click(view.getByRole('button', { name: 'Skip' }))
     fireEvent.click(await view.findByRole('button', { name: 'Finish' }))
-    fireEvent.click(await view.findByRole('link', { name: 'View Results' }))
+    fireEvent.click(await view.findByRole('link', { name: 'View results' }))
 
     await waitFor(() => {
       expect(routerPushMock).toHaveBeenCalledWith(
@@ -967,7 +979,7 @@ describe('DictationPracticeShell outbox integration', () => {
 
     const view = renderPracticeShell()
 
-    fireEvent.click(view.getByRole('button', { name: 'Start Dictation' }))
+    fireEvent.click(view.getByRole('button', { name: 'Start dictation' }))
     fireEvent.click(view.getByRole('button', { name: 'Skip' }))
     fireEvent.click(await view.findByRole('button', { name: 'Finish' }))
     await waitFor(() => {
@@ -1020,7 +1032,7 @@ describe('DictationPracticeShell outbox integration', () => {
 
     const view = renderPracticeShell()
 
-    fireEvent.click(view.getByRole('button', { name: 'Start Dictation' }))
+    fireEvent.click(view.getByRole('button', { name: 'Start dictation' }))
     fireEvent.click(view.getByRole('button', { name: 'Skip' }))
 
     const alert = await view.findByRole('alert')
@@ -1052,7 +1064,7 @@ describe('DictationPracticeShell outbox integration', () => {
 
     const view = renderPracticeShell()
 
-    fireEvent.click(view.getByRole('button', { name: 'Start Dictation' }))
+    fireEvent.click(view.getByRole('button', { name: 'Start dictation' }))
     fireEvent.click(view.getByRole('button', { name: 'Skip' }))
 
     // The verdict stays; the save failure is visible, not dropped.
@@ -1097,7 +1109,7 @@ describe('DictationPracticeShell outbox integration', () => {
 
     const view = renderPracticeShell(null)
 
-    fireEvent.click(view.getByRole('button', { name: 'Start Dictation' }))
+    fireEvent.click(view.getByRole('button', { name: 'Start dictation' }))
     fireEvent.click(view.getByRole('button', { name: 'Skip' }))
     fireEvent.click(await view.findByRole('button', { name: 'Finish' }))
     fireEvent.click(view.getByRole('button', { name: 'Repeat this exercise' }))
@@ -1138,7 +1150,7 @@ describe('DictationPracticeShell outbox integration', () => {
       secondSegment,
     ])
 
-    fireEvent.click(view.getByRole('button', { name: 'Start Dictation' }))
+    fireEvent.click(view.getByRole('button', { name: 'Start dictation' }))
     fireEvent.click(view.getByRole('button', { name: 'Skip' }))
     fireEvent.click(await view.findByRole('button', { name: 'Next' }))
     fireEvent.click(await view.findByRole('button', { name: 'Skip' }))
@@ -1157,8 +1169,9 @@ describe('DictationPracticeShell outbox integration', () => {
       session: freshSession,
     })
 
+    await openSettings(view)
     fireEvent.click(
-      view.getByRole('button', { name: 'Rewind to first segment' })
+      await view.findByRole('menuitem', { name: 'Rewind to first segment' })
     )
     fireEvent.click(await view.findByRole('button', { name: 'Skip' }))
 
@@ -1180,10 +1193,10 @@ describe('DictationPracticeShell outbox integration', () => {
 
     const view = renderPracticeShell()
 
-    fireEvent.click(view.getByRole('button', { name: 'Start Dictation' }))
+    fireEvent.click(view.getByRole('button', { name: 'Start dictation' }))
     fireEvent.click(view.getByRole('button', { name: 'Skip' }))
     fireEvent.click(await view.findByRole('button', { name: 'Finish' }))
-    fireEvent.click(await view.findByRole('link', { name: 'View Results' }))
+    fireEvent.click(await view.findByRole('link', { name: 'View results' }))
     expect(view.getByRole('link', { name: 'Saving...' })).not.toBeNull()
 
     fireEvent.click(view.getByRole('button', { name: 'Repeat this exercise' }))
@@ -1205,7 +1218,7 @@ describe('DictationPracticeShell outbox integration', () => {
       secondSegment,
     ])
 
-    fireEvent.click(view.getByRole('button', { name: 'Start Dictation' }))
+    fireEvent.click(view.getByRole('button', { name: 'Start dictation' }))
     fireEvent.click(view.getByRole('button', { name: 'Skip' }))
     await waitFor(() => {
       expect(attemptRequests()).toHaveLength(1)
@@ -1239,7 +1252,7 @@ describe('DictationPracticeShell outbox integration', () => {
 
     const view = renderPracticeShell(null)
 
-    fireEvent.click(view.getByRole('button', { name: 'Start Dictation' }))
+    fireEvent.click(view.getByRole('button', { name: 'Start dictation' }))
     fireEvent.click(view.getByRole('button', { name: 'Skip' }))
 
     // Pending, not failed: no alert and no Retry saving while it retries.
@@ -1283,12 +1296,16 @@ describe('DictationPracticeShell outbox integration', () => {
 
     const view = renderPracticeShell(session, segment, 0, threeSegments)
 
-    fireEvent.click(view.getByRole('button', { name: 'Start Dictation' }))
+    fireEvent.click(view.getByRole('button', { name: 'Start dictation' }))
     // An attempt holds the lane so the next writes queue up behind it.
     fireEvent.click(view.getByRole('button', { name: 'Skip' }))
-    fireEvent.click(view.getByRole('switch', { name: 'Shortcut hints' }))
-    fireEvent.click(view.getByRole('switch', { name: 'Shortcut hints' }))
-    fireEvent.click(view.getByRole('switch', { name: 'Shortcut hints' }))
+    await openSettings(view)
+    const shortcutHints = await view.findByRole('menuitemcheckbox', {
+      name: 'Shortcut hints',
+    })
+    fireEvent.click(shortcutHints)
+    fireEvent.click(shortcutHints)
+    fireEvent.click(shortcutHints)
 
     await drainHeldRequests(2)
 
@@ -1320,7 +1337,7 @@ describe('DictationPracticeShell translations', () => {
       />
     )
 
-    fireEvent.click(view.getByRole('button', { name: 'Start Dictation' }))
+    fireEvent.click(view.getByRole('button', { name: 'Start dictation' }))
     fireEvent.click(view.getByRole('button', { name: 'Skip' }))
 
     // The opening language uses its override, with no extra request.
@@ -1366,7 +1383,7 @@ describe('DictationPracticeShell translations', () => {
       />
     )
 
-    fireEvent.click(view.getByRole('button', { name: 'Start Dictation' }))
+    fireEvent.click(view.getByRole('button', { name: 'Start dictation' }))
     fireEvent.click(view.getByRole('button', { name: 'Skip' }))
     fireEvent.click(view.getByRole('button', { name: 'pick vi' }))
 
@@ -1408,7 +1425,7 @@ describe('DictationPracticeShell translations', () => {
       />
     )
 
-    fireEvent.click(view.getByRole('button', { name: 'Start Dictation' }))
+    fireEvent.click(view.getByRole('button', { name: 'Start dictation' }))
     fireEvent.click(view.getByRole('button', { name: 'Skip' }))
     fireEvent.click(view.getByRole('button', { name: 'pick vi' }))
     fireEvent.click(view.getByRole('button', { name: 'pick fr' }))
@@ -1427,7 +1444,7 @@ describe('DictationPracticeShell drafts', () => {
     const view = renderPracticeShell()
     const key = getDictationAnswerDraftsStorageKey(video.id, 'user-one')
 
-    fireEvent.click(view.getByRole('button', { name: 'Start Dictation' }))
+    fireEvent.click(view.getByRole('button', { name: 'Start dictation' }))
     typeAnswer(view.getByLabelText('Type what you hear'), 'a')
     typeAnswer(view.getByLabelText('Type what you hear'), 'ab')
     typeAnswer(view.getByLabelText('Type what you hear'), 'abc')
@@ -1444,7 +1461,7 @@ describe('DictationPracticeShell drafts', () => {
     const view = renderPracticeShell()
     const key = getDictationAnswerDraftsStorageKey(video.id, 'user-one')
 
-    fireEvent.click(view.getByRole('button', { name: 'Start Dictation' }))
+    fireEvent.click(view.getByRole('button', { name: 'Start dictation' }))
     typeAnswer(view.getByLabelText('Type what you hear'), 'typed then hid')
 
     Object.defineProperty(document, 'visibilityState', {

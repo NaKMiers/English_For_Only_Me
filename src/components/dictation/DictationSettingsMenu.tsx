@@ -1,10 +1,18 @@
 'use client'
 
-import { ChevronDown, SlidersHorizontal } from 'lucide-react'
+import {
+  ChevronDown,
+  RefreshCw,
+  SkipBack,
+  SlidersHorizontal,
+} from 'lucide-react'
 
 import {
   DropdownMenu,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
@@ -20,12 +28,25 @@ import {
   type VideoSize,
 } from '@/modules/dictation/preferences/dictationPreferences'
 
+/** The answer and shortcut preferences, toggled as checkbox items. */
+export interface PracticeToggles {
+  showAnswerImmediately: boolean
+  showFullAnswer: boolean
+  showShortcuts: boolean
+}
+
 interface Props {
   answerTextSize: AnswerTextSize
   onAnswerTextSizeChange: (size: AnswerTextSize) => void
   onPlaybackSpeedChange: (speed: number) => void
+  /** Opens the restart confirmation (the caller owns the dialog). */
+  onRestart?: () => void
+  /** Jumps back to the first sentence. */
+  onRewind?: () => void
+  onToggleChange?: (key: keyof PracticeToggles, value: boolean) => void
   onVideoSizeChange: (size: VideoSize) => void
   playbackSpeed: number
+  toggles?: PracticeToggles
   videoSize: VideoSize
 }
 
@@ -33,10 +54,11 @@ const GROUP_LABEL_CLASS_NAME =
   'text-ink-soft px-3 pt-1 font-sans text-[0.65rem] font-normal'
 
 const RADIO_ITEM_CLASS_NAME =
-  'focus:bg-tint data-checked:bg-tint min-h-9 rounded-tag py-1 pr-8 pl-3 font-sans text-xs font-semibold'
+  'focus:bg-tint data-checked:bg-tint min-h-9 rounded-tag py-1 pr-8 pl-3 font-sans text-xs font-medium'
 
 /**
- * Playback speed, answer text size, and video size behind one popover.
+ * Playback speed, answer text size, video size, the answer preferences and
+ * the rare session actions (rewind, restart) behind one popover.
  *
  * These are set-once-then-forget preferences, so fourteen pills on the toolbar
  * were spending a row of a height-locked screen on controls the learner touches
@@ -48,8 +70,12 @@ export function DictationSettingsMenu({
   answerTextSize,
   onAnswerTextSizeChange,
   onPlaybackSpeedChange,
+  onRestart,
+  onRewind,
+  onToggleChange,
   onVideoSizeChange,
   playbackSpeed,
+  toggles,
   videoSize,
 }: Props) {
   const t = useMessages()
@@ -64,7 +90,7 @@ export function DictationSettingsMenu({
       <DropdownMenuTrigger
         aria-label={text.label}
         title={text.label}
-        className="border-line bg-surface text-ink hover:bg-tint rounded-control inline-flex min-h-9 shrink-0 items-center gap-1 border px-2 font-sans text-xs font-semibold transition-colors"
+        className="soft-press hover-pop border-line bg-surface text-ink hover:bg-tint inline-flex min-h-11 shrink-0 items-center gap-1 rounded-full border px-3 font-sans text-xs font-medium"
       >
         <SlidersHorizontal
           aria-hidden="true"
@@ -140,6 +166,66 @@ export function DictationSettingsMenu({
             </DropdownMenuRadioItem>
           ))}
         </DropdownMenuRadioGroup>
+
+        {toggles && onToggleChange ? (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              <DropdownMenuLabel className={GROUP_LABEL_CLASS_NAME}>
+                {text.answers}
+              </DropdownMenuLabel>
+              {(
+                [
+                  [
+                    'showAnswerImmediately',
+                    t.dictation.practice.showAnswerImmediately,
+                  ],
+                  ['showFullAnswer', t.dictation.practice.showFullAnswer],
+                  ['showShortcuts', t.dictation.practice.shortcutHints],
+                ] as const
+              ).map(([key, label]) => (
+                <DropdownMenuCheckboxItem
+                  checked={toggles[key]}
+                  className={RADIO_ITEM_CLASS_NAME}
+                  closeOnClick={false}
+                  key={key}
+                  onCheckedChange={checked => onToggleChange(key, checked)}
+                >
+                  {label}
+                </DropdownMenuCheckboxItem>
+              ))}
+            </DropdownMenuGroup>
+          </>
+        ) : null}
+
+        {onRewind || onRestart ? (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              <DropdownMenuLabel className={GROUP_LABEL_CLASS_NAME}>
+                {text.session}
+              </DropdownMenuLabel>
+              {onRewind ? (
+                <DropdownMenuItem
+                  className={RADIO_ITEM_CLASS_NAME}
+                  onClick={onRewind}
+                >
+                  <SkipBack aria-hidden="true" />
+                  {t.dictation.controls.rewind}
+                </DropdownMenuItem>
+              ) : null}
+              {onRestart ? (
+                <DropdownMenuItem
+                  className={RADIO_ITEM_CLASS_NAME}
+                  onClick={onRestart}
+                >
+                  <RefreshCw aria-hidden="true" />
+                  {t.dictation.controls.restart}
+                </DropdownMenuItem>
+              ) : null}
+            </DropdownMenuGroup>
+          </>
+        ) : null}
       </DropdownMenuContent>
     </DropdownMenu>
   )

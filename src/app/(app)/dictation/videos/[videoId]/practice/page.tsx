@@ -5,6 +5,7 @@ import { AppTopbar } from '@/components/common/AppTopbar'
 import { PageShell } from '@/components/common/PageShell'
 import { ContentPanel } from '@/components/common/ContentPanel'
 import { DictationPracticeShell } from '@/components/dictation/DictationPracticeShell'
+import type { PracticeNextVideo } from '@/components/dictation/practice/PracticeFinish'
 import { ActionButton } from '@/components/ui/ActionButton'
 import { hasMongoDbUri } from '@/constants/environments'
 import { getMessages } from '@/i18n/server'
@@ -12,17 +13,23 @@ import { connectDatabase } from '@/lib/db/connectDatabase'
 import { DictationSegmentModel } from '@/models/dictation/DictationSegmentModel'
 import { DictationSessionModel } from '@/models/dictation/DictationSessionModel'
 import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
+import {
+  getCachedTopicCatalog,
+  getCachedTopics,
+} from '@/modules/dictation/content/catalogReaders'
 import { getCompletionCountForVideo } from '@/modules/dictation/content/progressRepository'
 import {
   buildInitialTranslationTrack,
   buildPracticeSegments,
 } from '@/modules/dictation/practice/practicePageData'
+import { nextVideoInTopic } from '@/modules/dictation/practice/nextVideo'
 import { loadInitialTranslationCues } from '@/modules/dictation/practice/practiceTranslations'
 import { loadSegmentProgressRows } from '@/modules/dictation/practice/segmentProgressService'
 import { PRACTICE_SEGMENT_FIELDS } from '@/modules/dictation/services/dictationSegmentRecords'
 import { toDictationSessionRecord } from '@/modules/dictation/services/dictationSessionRecords'
 import { toDictationVideoRecord } from '@/modules/dictation/services/dictationVideoRecords'
 import { getPracticeActorId } from '@/modules/dictation/services/getCurrentUser'
+import type { DictationVideoApiRecord } from '@/modules/dictation/types'
 import { hasDictationTranscript } from '@/modules/dictation/videoReadiness'
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -45,11 +52,9 @@ interface Props {
 async function PracticeSetupState({
   message,
   title,
-  videoId,
 }: {
   message: string
   title: string
-  videoId?: string | null
 }) {
   const t = await getMessages()
   const text = t.dictation.setup
@@ -72,23 +77,45 @@ async function PracticeSetupState({
             {message}
           </p>
           <div className="flex flex-wrap gap-3">
+            {/* Learners only get the way back: importing and transcripts
+                are admin work, reached from the admin pages. */}
             <ActionButton href="/dictation">{text.backToLab}</ActionButton>
-            {videoId ? (
-              <ActionButton href={`/admin/dictation/videos/${videoId}/edit`}>
-                {text.addTranscript}
-              </ActionButton>
-            ) : null}
-            <ActionButton
-              href="/admin/dictation/import"
-              tone="paper"
-            >
-              {text.importVideo}
-            </ActionButton>
           </div>
         </ContentPanel>
       </section>
     </PageShell>
   )
+}
+
+/**
+ * The finish screen's next stop: the next video of this video's topic, from
+ * the cached catalog only (no query per request). Null for the last video
+ * or a video with no topic; the finish screen then points at the landing.
+ */
+async function findNextVideo(
+  video: DictationVideoApiRecord
+): Promise<PracticeNextVideo | null> {
+  if (!video.topicId) return null
+
+  try {
+    const topic = (await getCachedTopics()).find(
+      item => item.id === video.topicId
+    )
+    const catalog = topic ? await getCachedTopicCatalog(topic.slug) : null
+    const next = catalog ? nextVideoInTopic(catalog, video.id) : null
+
+    return next && topic
+      ? {
+          href: `/dictation/videos/${next.id}/practice`,
+          title: next.title,
+          topicTitle: topic.title,
+        }
+      : null
+  } catch (error) {
+    // A cold or failing catalog read only loses the next stop's target.
+    console.error('Next video lookup failed.', error)
+    return null
+  }
 }
 
 export default async function Page({ params }: Props) {
@@ -145,7 +172,6 @@ export default async function Page({ params }: Props) {
       <PracticeSetupState
         title={text.transcriptNeededTitle}
         message={text.practiceTranscriptNeeded}
-        videoId={videoId}
       />
     )
 
@@ -163,12 +189,13 @@ export default async function Page({ params }: Props) {
     }),
   ])
 
+  const nextVideo = await findNextVideo(videoRecord)
+
   if (segments.length === 0)
     return (
       <PracticeSetupState
         title={text.segmentsNotReadyTitle}
         message={text.segmentsNotReady}
-        videoId={videoId}
       />
     )
 
@@ -184,6 +211,7 @@ export default async function Page({ params }: Props) {
         <DictationPracticeShell
           completions={completions}
           initialSession={session ? toDictationSessionRecord(session) : null}
+          nextVideo={nextVideo}
           initialTranslationTrack={buildInitialTranslationTrack(
             segments,
             translations.firstTrack

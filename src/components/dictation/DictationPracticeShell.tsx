@@ -1,6 +1,6 @@
 'use client'
 
-import { Headphones, ScrollText } from 'lucide-react'
+import { Headphones, Play, ScrollText } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
@@ -15,6 +15,11 @@ import { DictationPracticeHeader } from '@/components/dictation/DictationPractic
 import { DictationTranslation } from '@/components/dictation/DictationTranslation'
 import { DictationYoutubePlayer } from '@/components/dictation/DictationYoutubePlayer'
 import {
+  PracticeFinish,
+  type PracticeNextVideo,
+} from '@/components/dictation/practice/PracticeFinish'
+import { PracticeProgressStrip } from '@/components/dictation/practice/PracticeProgressStrip'
+import {
   GuidedAnswerInput,
   type GuidedStatus,
 } from '@/components/dictation/GuidedAnswerInput'
@@ -26,13 +31,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Label } from '@/components/ui/label'
 import { ActionButton } from '@/components/ui/ActionButton'
-import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { QuickVocabWordButton } from '@/components/vocabulary/QuickVocabLookup'
 import { useMessages } from '@/i18n/client'
-import { format } from '@/i18n/format'
 import { ensureGuestIdentity } from '@/lib/sync/clientOutbox'
 import type { OutboxEnqueueInput } from '@/lib/sync/outbox'
 import { cn } from '@/lib/utils'
@@ -109,6 +111,8 @@ interface Props {
   initialSession: DictationSessionApiRecord | null
   /** The opening translation language; others load when picked. */
   initialTranslationTrack: PracticeTranslationTrack | null
+  /** The next video of this topic for the finish screen's next stop. */
+  nextVideo?: PracticeNextVideo | null
   segments: DictationPracticeSegment[]
   translationLanguages: string[]
   video: PracticeVideo
@@ -220,6 +224,7 @@ export function DictationPracticeShell({
   completions,
   initialSession,
   initialTranslationTrack,
+  nextVideo = null,
   segments,
   translationLanguages,
   video,
@@ -1501,9 +1506,6 @@ export function DictationPracticeShell({
   const readyActionLabel = hasResumableProgress
     ? text.continueAction
     : text.startAction
-  const readyActionTitle = hasResumableProgress
-    ? text.continueTitle
-    : text.startTitle
 
   if (!currentSegment)
     return (
@@ -1622,7 +1624,21 @@ export function DictationPracticeShell({
                   videoSize,
                 }))
               }
+              onToggleChange={(key, value) => {
+                if (key === 'showShortcuts')
+                  updateSessionPreferences({ showShortcuts: value })
+                else
+                  setPreferences(currentPreferences => ({
+                    ...currentPreferences,
+                    [key]: value,
+                  }))
+              }}
               playbackSpeed={preferences.playbackSpeed}
+              toggles={{
+                showAnswerImmediately: preferences.showAnswerImmediately,
+                showFullAnswer: preferences.showFullAnswer,
+                showShortcuts: preferences.showShortcuts,
+              }}
               totalSegments={segments.length}
               videoSize={preferences.videoSize}
             />
@@ -1656,6 +1672,13 @@ export function DictationPracticeShell({
               </TabsTrigger>
             </TabsList>
           </div>
+
+          {hasStarted && !isCompleted ? (
+            <PracticeProgressStrip
+              current={currentIndex}
+              total={segments.length}
+            />
+          ) : null}
 
           <div
             className={cn(
@@ -1704,87 +1727,61 @@ export function DictationPracticeShell({
                 )}
               >
                 {isCompleted ? (
-                  <ContentPanel
-                    eyebrow={text.doneEyebrow}
-                    title={text.doneTitle}
-                  >
-                    <div className="flex flex-wrap gap-2">
-                      <ActionButton
-                        href={resultsHref}
-                        aria-busy={isSavingResults || undefined}
-                        onClick={event => {
-                          // Let new-tab / modified clicks through untouched.
-                          if (
-                            event.metaKey ||
-                            event.ctrlKey ||
-                            event.shiftKey ||
-                            event.altKey ||
-                            event.button !== 0
-                          )
-                            return
+                  <PracticeFinish
+                    correct={correctSegmentIds.size}
+                    next={nextVideo}
+                    secondary={
+                      <>
+                        <ActionButton
+                          href={resultsHref}
+                          aria-busy={isSavingResults || undefined}
+                          onClick={event => {
+                            // Let new-tab / modified clicks through untouched.
+                            if (
+                              event.metaKey ||
+                              event.ctrlKey ||
+                              event.shiftKey ||
+                              event.altKey ||
+                              event.button !== 0
+                            )
+                              return
 
-                          event.preventDefault()
+                            event.preventDefault()
 
-                          if (!isSavingResults) void openResults()
-                        }}
-                      >
-                        {isSavingResults ? text.saving : text.viewResults}
-                      </ActionButton>
-                      <ActionButton
-                        href="/dictation"
-                        tone="paper"
-                        icon={undefined}
-                      >
-                        {text.nextExercise}
-                      </ActionButton>
-                      <ActionButton
-                        type="button"
-                        tone="paper"
-                        onClick={restartProgress}
-                      >
-                        {text.repeatExercise}
-                      </ActionButton>
-                    </div>
-                    <ActionButton
-                      href="/dictation"
-                      tone="paper"
-                    >
-                      {text.allExercises}
-                    </ActionButton>
-                  </ContentPanel>
-                ) : !hasStarted ? (
-                  <ContentPanel
-                    eyebrow={text.readyEyebrow}
-                    title={readyActionTitle}
-                    className={
-                      hasResumableProgress ? 'bg-pastel-sky' : undefined
+                            if (!isSavingResults) void openResults()
+                          }}
+                          tone="paper"
+                        >
+                          {isSavingResults ? text.saving : text.viewResults}
+                        </ActionButton>
+                        <ActionButton
+                          type="button"
+                          tone="paper"
+                          onClick={restartProgress}
+                        >
+                          {text.repeatExercise}
+                        </ActionButton>
+                      </>
                     }
-                  >
-                    <p className="text-ink-soft text-base leading-7 font-normal">
-                      {hasResumableProgress
-                        ? format(text.resumeDescription, {
-                            current:
-                              (initialSession?.currentSegmentOrder ?? 0) + 1,
-                            total: segments.length,
-                          })
-                        : text.startDescription}
-                    </p>
+                    total={segments.length}
+                  />
+                ) : !hasStarted ? (
+                  <div className="grid min-h-40 place-items-center p-4">
                     <ActionButton
-                      type="button"
+                      className="min-h-14 px-8 text-base"
+                      icon={
+                        <Play
+                          aria-hidden="true"
+                          className="fill-current"
+                        />
+                      }
                       onClick={() => setHasStarted(true)}
+                      tone="ink"
+                      type="button"
                     >
                       {readyActionLabel}
                     </ActionButton>
-                    {hasResumableProgress ? (
-                      <ActionButton
-                        type="button"
-                        tone="paper"
-                        onClick={restartProgress}
-                      >
-                        {text.restartFromStart}
-                      </ActionButton>
-                    ) : null}
-                  </ContentPanel>
+                  </div>
                 ) : (
                   <>
                     <GuidedAnswerInput
@@ -1839,7 +1836,7 @@ export function DictationPracticeShell({
                                 <ActionButton
                                   type="button"
                                   tone="paper"
-                                  className="min-h-9 px-3 py-1 text-sm"
+                                  className="px-4 py-1 text-sm"
                                   onClick={() => setShowAnswerWords(true)}
                                 >
                                   {text.showAnswerWords}
@@ -1847,7 +1844,7 @@ export function DictationPracticeShell({
                               ) : null}
                               <ActionButton
                                 type="button"
-                                className="min-h-9 px-3 py-1 text-sm"
+                                className="px-4 py-1 text-sm"
                                 onClick={advanceAfterAttempt}
                               >
                                 {canGoNext ? text.next : text.finish}
@@ -1857,7 +1854,7 @@ export function DictationPracticeShell({
                             <>
                               <ActionButton
                                 type="button"
-                                className="min-h-9 px-3 py-1 text-sm"
+                                className="px-4 py-1 text-sm"
                                 onClick={checkDraft}
                               >
                                 {text.check}
@@ -1865,7 +1862,7 @@ export function DictationPracticeShell({
                               <ActionButton
                                 type="button"
                                 tone="paper"
-                                className="min-h-9 px-3 py-1 text-sm"
+                                className="px-4 py-1 text-sm"
                                 onClick={skipSegment}
                               >
                                 {text.skip}
@@ -1876,7 +1873,7 @@ export function DictationPracticeShell({
                             <ActionButton
                               type="button"
                               tone="paper"
-                              className="min-h-9 px-3 py-1 text-sm"
+                              className="px-4 py-1 text-sm"
                               onClick={retryCurrent}
                             >
                               {text.retry}
@@ -1905,37 +1902,6 @@ export function DictationPracticeShell({
                         textSize={preferences.answerTextSize}
                       />
                     ) : null}
-
-                    {/* Reveal preferences share one wrapping row - two stacked
-                      full-width switches cost more height than they earn. */}
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
-                      <Label className="flex items-center gap-2 text-xs font-semibold">
-                        <Switch
-                          size="default"
-                          checked={preferences.showAnswerImmediately}
-                          onCheckedChange={checked =>
-                            setPreferences(currentPreferences => ({
-                              ...currentPreferences,
-                              showAnswerImmediately: checked,
-                            }))
-                          }
-                        />
-                        {text.showAnswerImmediately}
-                      </Label>
-                      <Label className="flex items-center gap-2 text-xs font-semibold">
-                        <Switch
-                          size="default"
-                          checked={preferences.showFullAnswer}
-                          onCheckedChange={checked =>
-                            setPreferences(currentPreferences => ({
-                              ...currentPreferences,
-                              showFullAnswer: checked,
-                            }))
-                          }
-                        />
-                        {text.showFullAnswer}
-                      </Label>
-                    </div>
                   </>
                 )}
               </TabsContent>
@@ -2001,15 +1967,12 @@ export function DictationPracticeShell({
               translationError ??
               (currentSegment.startMs === null || currentSegment.endMs === null
                 ? text.untimedSegment
-                : format(text.sentencePosition, {
-                    current: currentIndex + 1,
-                    total: segments.length,
-                  }))}
+                : null)}
             {sessionError && failedWriteCount > 0 ? (
               <button
                 type="button"
                 onClick={retryFailedWrites}
-                className="text-ink decoration-brand ml-2 font-semibold underline underline-offset-2"
+                className="soft-press hover-pop text-ink decoration-brand ml-2 inline-flex min-h-11 items-center font-medium underline underline-offset-2"
               >
                 {text.retrySaving}
               </button>
@@ -2022,16 +1985,6 @@ export function DictationPracticeShell({
               <span>{text.shortcutMove}</span>
             </div>
           ) : null}
-          <Label className="flex shrink-0 items-center gap-2 text-xs font-semibold">
-            <Switch
-              size="default"
-              checked={preferences.showShortcuts}
-              onCheckedChange={checked =>
-                updateSessionPreferences({ showShortcuts: checked })
-              }
-            />
-            {text.shortcutHints}
-          </Label>
         </footer>
       </section>
     </div>

@@ -212,6 +212,8 @@ export const dictation = {
     speed: 'Speed',
     answerText: 'Answer text',
     videoSize: 'Video size',
+    answers: 'Answers',
+    session: 'Session',
     answerTextSizes: {
       small: 'Small',
       normal: 'Medium',
@@ -243,7 +245,7 @@ export const dictation = {
     emptyTitle: 'No segments ready',
     emptyDescription:
       'Build segments from the transcript before opening practice.',
-    backToLab: 'Back To Dictation Lab',
+    backToLab: 'Back to Dictation Lab',
     leaveTitle: 'Leave this practice?',
     leaveDescription:
       'You have not finished this exercise yet. Your progress is saved, so you can pick up right where you left off.',
@@ -252,23 +254,23 @@ export const dictation = {
     views: 'Practice views',
     listenTab: 'Listen & Type',
     transcriptTab: 'Full Transcript',
-    doneEyebrow: 'Done',
     doneTitle: 'You have completed this exercise, good job!',
     saving: 'Saving...',
-    viewResults: 'View Results',
-    nextExercise: 'Next Exercise',
+    viewResults: 'View results',
     repeatExercise: 'Repeat this exercise',
-    allExercises: 'View all exercises',
-    readyEyebrow: 'Ready',
-    startTitle: 'Start dictation',
-    continueTitle: 'Continue dictation',
-    startAction: 'Start Dictation',
-    continueAction: 'Continue Dictation',
-    resumeDescription:
-      'Pick up from sentence {current} of {total} and keep going.',
-    startDescription:
-      'Press start to play the first sentence and begin typing.',
-    restartFromStart: 'Restart from the beginning',
+    startAction: 'Start dictation',
+    continueAction: 'Continue dictation',
+    progressLabel: 'Sentence {current} of {total}',
+    toFinish: {
+      one: '{count} sentence to finish',
+      other: '{count} sentences to finish',
+    },
+    finishUnit: 'sentences written',
+    finishWins: '{correct} of {total} written right',
+    nextInTopic: 'Next video in {topic}',
+    topicDone: 'This topic is done: pick the next record',
+    nextVideo: 'Next video',
+    allTopicsAction: 'All topics',
     showAnswerWords: 'Show answer words',
     next: 'Next',
     finish: 'Finish',
@@ -281,8 +283,6 @@ export const dictation = {
       'Could not reach the server. Retrying - your answers will save once it connects.',
     untimedSegment:
       'Untimed segment. Use the normal player controls, then type.',
-    sentencePosition:
-      "Sentence {current} of {total}. Replay uses this segment's timestamp window.",
     retrySaving: 'Retry saving',
     shortcutReplay: 'Command / Alt · replay',
     shortcutCheck: 'Enter · check',
@@ -310,7 +310,7 @@ export const dictation = {
     },
   },
   setup: {
-    backToLab: 'Back To Dictation Lab',
+    backToLab: 'Back to Dictation Lab',
     addTranscript: 'Add Transcript',
     importVideo: 'Import Video',
     noDatabaseTitle: 'MongoDB is not configured',

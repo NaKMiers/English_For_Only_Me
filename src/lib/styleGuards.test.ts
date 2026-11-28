@@ -87,7 +87,6 @@ const CORNERS: Guard = {
   ],
   baseline: [
     'src/components/common/RouteError.tsx',
-    'src/components/dictation/GuidedAnswerInput.tsx',
     'src/components/ielts/catalogue/ProgressTabs.tsx',
     'src/components/ielts/catalogue/TestPath.tsx',
     'src/components/ui/tooltip.tsx',

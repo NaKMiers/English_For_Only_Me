@@ -1,27 +1,14 @@
 'use client'
 
-import {
-  ChevronLeft,
-  ChevronRight,
-  Eye,
-  EyeOff,
-  RefreshCw,
-  RotateCcw,
-  SkipBack,
-} from 'lucide-react'
+import { ChevronLeft, ChevronRight, Eye, EyeOff, RotateCcw } from 'lucide-react'
 import { useState } from 'react'
 
-import { DictationSettingsMenu } from '@/components/dictation/DictationSettingsMenu'
-import { IconButton } from '@/components/ui/IconButton'
-import { ActionButton } from '@/components/ui/ActionButton'
+import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+  DictationSettingsMenu,
+  type PracticeToggles,
+} from '@/components/dictation/DictationSettingsMenu'
+import { IconButton } from '@/components/ui/IconButton'
 import { useMessages } from '@/i18n/client'
 import type {
   AnswerTextSize,
@@ -42,14 +29,17 @@ interface Props {
   onReplay: () => void
   onRestart: () => void
   onSpeedChange: (speed: number) => void
+  onToggleChange: (key: keyof PracticeToggles, value: boolean) => void
   onToggleVideo: () => void
   onVideoSizeChange: (size: VideoSize) => void
   playbackSpeed: number
+  toggles: PracticeToggles
   totalSegments: number
   videoSize: VideoSize
 }
 
-const ICON_BUTTON_CLASS_NAME = 'size-9 border'
+// 44px: the strip is touched with a thumb on phones.
+const ICON_BUTTON_CLASS_NAME = 'border'
 
 export function DictationControls({
   answerTextSize,
@@ -65,9 +55,11 @@ export function DictationControls({
   onReplay,
   onRestart,
   onSpeedChange,
+  onToggleChange,
   onToggleVideo,
   onVideoSizeChange,
   playbackSpeed,
+  toggles,
   totalSegments,
   videoSize,
 }: Props) {
@@ -94,16 +86,6 @@ export function DictationControls({
           />
         </IconButton>
         <IconButton
-          label={text.rewind}
-          onClick={onGoToFirstSegment}
-          className={ICON_BUTTON_CLASS_NAME}
-        >
-          <SkipBack
-            aria-hidden="true"
-            className="size-4"
-          />
-        </IconButton>
-        <IconButton
           label={text.previous}
           disabled={!canGoPrevious}
           onClick={onGoPrevious}
@@ -116,7 +98,7 @@ export function DictationControls({
         </IconButton>
         <span
           aria-label={text.current}
-          className="border-line bg-tint rounded-control inline-flex min-h-8 items-center border px-2 font-sans text-xs font-semibold tabular-nums"
+          className="border-line bg-tint rounded-control inline-flex min-h-8 items-center border px-2 font-sans text-xs font-medium tabular-nums"
         >
           {currentIndex + 1} / {totalSegments}
         </span>
@@ -138,20 +120,14 @@ export function DictationControls({
           answerTextSize={answerTextSize}
           onAnswerTextSizeChange={onAnswerTextSizeChange}
           onPlaybackSpeedChange={onSpeedChange}
+          onRestart={() => setIsRestartConfirmOpen(true)}
+          onRewind={onGoToFirstSegment}
+          onToggleChange={onToggleChange}
           onVideoSizeChange={onVideoSizeChange}
           playbackSpeed={playbackSpeed}
+          toggles={toggles}
           videoSize={videoSize}
         />
-        <IconButton
-          label={text.restart}
-          onClick={() => setIsRestartConfirmOpen(true)}
-          className={ICON_BUTTON_CLASS_NAME}
-        >
-          <RefreshCw
-            aria-hidden="true"
-            className="size-4"
-          />
-        </IconButton>
         <IconButton
           label={isVideoHidden ? text.showVideo : text.hideVideo}
           onClick={onToggleVideo}
@@ -171,40 +147,15 @@ export function DictationControls({
         </IconButton>
       </div>
 
-      <Dialog
-        open={isRestartConfirmOpen}
+      <ConfirmDialog
+        cancelLabel={t.common.actions.cancel}
+        confirmLabel={text.restartConfirm}
+        description={text.restartDescription}
+        onConfirm={onRestart}
         onOpenChange={setIsRestartConfirmOpen}
-      >
-        <DialogContent className="border-line bg-surface rounded-panel border">
-          <DialogHeader>
-            <DialogTitle className="font-sans text-xl leading-tight font-semibold tracking-normal">
-              {text.restartTitle}
-            </DialogTitle>
-            <DialogDescription className="text-ink-soft text-base leading-7 font-normal">
-              {text.restartDescription}
-            </DialogDescription>
-          </DialogHeader>
-
-          <DialogFooter className="bg-tint border-line border-t">
-            <ActionButton
-              type="button"
-              tone="paper"
-              onClick={() => setIsRestartConfirmOpen(false)}
-            >
-              {t.common.actions.cancel}
-            </ActionButton>
-            <ActionButton
-              type="button"
-              onClick={() => {
-                setIsRestartConfirmOpen(false)
-                onRestart()
-              }}
-            >
-              {text.restartConfirm}
-            </ActionButton>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        open={isRestartConfirmOpen}
+        title={text.restartTitle}
+      />
     </div>
   )
 }
