@@ -259,11 +259,14 @@ export function HomeSimpleView({
           </h2>
           <StatStrip className="grid">
             {numbers.map(item => (
+              // Labels stay on phones: three bare numbers ("0 / 3196 /
+              // 0%") do not say what they count.
               <StatChip
-                className="bg-tint-soft"
+                className="bg-tint-soft justify-between"
                 icon={item.icon}
                 key={item.label}
                 label={item.label}
+                labelAlways
                 size="lg"
                 tone={item.tone}
                 value={item.value}

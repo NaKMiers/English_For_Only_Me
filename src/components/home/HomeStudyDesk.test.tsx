@@ -109,6 +109,19 @@ describe('HomeStudyDesk', () => {
     expect(html).not.toContain('Your modules')
   })
 
+  test('the simple view keeps its number labels visible on phones', () => {
+    const html = renderToStaticMarkup(<HomeStudyDesk />)
+
+    for (const label of [
+      en.home.simple.thisWeek,
+      en.home.simple.wordsKnown,
+      en.home.simple.accuracy,
+    ]) {
+      expect(html).toContain(label)
+      expect(html).not.toMatch(new RegExp(`max-sm:sr-only[^"]*">${label}<`))
+    }
+  })
+
   test('the buddy wears the mood of the current numbers', () => {
     const html = renderToStaticMarkup(
       <HomeStudyDesk
