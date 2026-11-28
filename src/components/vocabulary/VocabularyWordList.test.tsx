@@ -89,7 +89,7 @@ describe('VocabularyWordList', () => {
     expect(screen.getByText('2 words in this view.')).toBeInTheDocument()
   })
 
-  test('a rollback to a saved state puts the row back where it was', async () => {
+  test('a failed move puts the row back where it was', async () => {
     const known = makeWord('a', 'expect')
     const mastered = makeWord('b', 'turbulent')
 
@@ -106,23 +106,13 @@ describe('VocabularyWordList', () => {
       />
     )
 
-    // First press keeps the row in Known Total. While it is in flight, a
-    // second press moves the row out of the view.
-    fireEvent.click(screen.getAllByRole('button', { name: /Already Know/ })[1])
-    await waitFor(() => expect(responses).toHaveLength(1))
-    fireEvent.click(screen.getAllByRole('button', { name: /Should Learn/ })[1])
+    // A known word offers only "Learn it", which moves it out of the view.
+    // (The tracker's saved-state rollback is covered in vocabItemWrites.)
+    fireEvent.click(screen.getAllByRole('button', { name: /Learn it/ })[1])
     expect(screen.queryByText('turbulent')).not.toBeInTheDocument()
 
-    // The first press saves, then the second fails: roll back to the saved
-    // state, in the row's original place.
+    await waitFor(() => expect(responses).toHaveLength(1))
     responses[0](
-      new Response(
-        JSON.stringify({ item: { ...mastered.item, status: 'alreadyKnow' } }),
-        { status: 200 }
-      )
-    )
-    await waitFor(() => expect(responses).toHaveLength(2))
-    responses[1](
       new Response(JSON.stringify({ message: 'Could not save.' }), {
         status: 409,
       })
@@ -134,6 +124,25 @@ describe('VocabularyWordList', () => {
       .map(node => node.textContent)
 
     expect(terms).toEqual(['expect', 'turbulent'])
+  })
+
+  test('each row has one action: the move that changes something', () => {
+    const known = makeWord('a', 'expect')
+
+    known.item = { ...known.item, status: 'alreadyKnow' }
+
+    render(
+      <VocabularyWordList
+        activeView="knownTotal"
+        page={1}
+        perPage={50}
+        total={1}
+        words={[known]}
+      />
+    )
+
+    expect(screen.getByRole('button', { name: /Learn it/ })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Already Know/ })).toBeNull()
   })
 
   test('refills the page after a row leaves the view, so Next skips nothing', async () => {
@@ -202,7 +211,7 @@ describe('VocabularyWordList', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Next' }))
 
     expect(mocks.push).toHaveBeenCalledWith(
-      '/vocabulary/words?view=learning&page=2&perPage=1'
+      '/vocabulary/words?view=learning&page=2'
     )
   })
 })

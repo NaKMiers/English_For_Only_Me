@@ -148,6 +148,8 @@ const wordListQuerySchema = z.object({
     .min(1)
     .max(VOCAB_WORD_LIST_MAX_PAGE_SIZE)
     .catch(VOCAB_WORD_LIST_DEFAULT_PAGE_SIZE),
+  /** Word search: a prefix of the term, cut to a sane length. */
+  q: z.string().trim().max(60).catch('').default(''),
   view: z
     .enum(['learning', 'dueToday', 'alreadyKnow', 'mastered', 'knownTotal'])
     .catch('learning'),
@@ -296,6 +298,7 @@ export function parseOccurrenceRecordRequest(
 export interface VocabWordListQuery {
   page: number
   perPage: number
+  q: string
   view: VocabWordListView
 }
 
@@ -312,11 +315,13 @@ function firstParam(value: SearchParamValue) {
 export function parseVocabWordListQuery(params: {
   page?: SearchParamValue
   perPage?: SearchParamValue
+  q?: SearchParamValue
   view?: SearchParamValue
 }): VocabWordListQuery {
   return wordListQuerySchema.parse({
     page: firstParam(params.page),
     perPage: firstParam(params.perPage),
+    q: firstParam(params.q),
     view: firstParam(params.view),
   })
 }

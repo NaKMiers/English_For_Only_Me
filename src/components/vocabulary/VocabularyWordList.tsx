@@ -1,32 +1,26 @@
 'use client'
 
 import {
-  AlertCircle,
-  ArrowLeft,
   BookA,
   BookOpen,
   CalendarClock,
   Check,
   PlayCircle,
+  SearchX,
+  Sprout,
   Trophy,
 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
+import { InlineNotice } from '@/components/common/InlineNotice'
 import { useClientOutbox } from '@/components/common/OutboxOwnerProvider'
-
-import { ContentPanel } from '@/components/common/ContentPanel'
 import { PageHeader } from '@/components/common/PageHeader'
-import { Input } from '@/components/ui/input'
+import { EmptyState } from '@/components/journey/EmptyState'
+import { StepDots } from '@/components/journey/StepDots'
 import { ActionButton } from '@/components/ui/ActionButton'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { Input } from '@/components/ui/input'
 import { useLocale, useMessages } from '@/i18n/client'
 import { INTL_LOCALES, type Locale } from '@/i18n/config'
 import { format, plural } from '@/i18n/format'
@@ -59,6 +53,8 @@ interface Props {
   activeView: VocabWordListView
   page: number
   perPage: number
+  /** The word search, a term prefix (server-side). */
+  q?: string
   total: number
   words: VocabWordListRecord[]
 }
@@ -97,8 +93,6 @@ const VIEW_TAB_CLASS_NAMES: Record<VocabWordListView, string> = {
   learning: 'bg-accent-blue',
   mastered: 'bg-accent-purple',
 }
-
-const PER_PAGE_OPTIONS = [5, 10, 20, 30, 50, 100, 200] as const
 
 // Offline, or while a lane keeps retrying, the outbox never drains. A page
 // refill that waits on it goes ahead after this long.
@@ -149,12 +143,14 @@ function getStatusMeta(
 }
 
 function getStatusIcon(word: VocabWordListRecord) {
-  if (word.item.status === 'learning') return <BookOpen className="size-3.5" />
   if (word.item.status === 'mastered') return <Trophy className="size-3.5" />
   if (word.item.status === 'alreadyKnow') return <Check className="size-3.5" />
 
   return <CalendarClock className="size-3.5" />
 }
+
+/** Recall steps a learning word climbs before it is mastered. */
+const RECALL_STEPS = 7
 
 interface PendingRow {
   index: number
@@ -165,6 +161,7 @@ export function VocabularyWordList({
   activeView,
   page,
   perPage,
+  q = '',
   total,
   words,
 }: Props) {
@@ -177,7 +174,7 @@ export function VocabularyWordList({
   // The server rows `wordItems` started from. A refresh brings a new list
   // (same page, rows already shifted up), which replaces the local one.
   const [serverWords, setServerWords] = useState(words)
-  const [customPageSize, setCustomPageSize] = useState(String(perPage))
+  const [search, setSearch] = useState(q)
   const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const trackerRef = useRef(createEntryWriteTracker<PendingRow>())
@@ -197,32 +194,34 @@ export function VocabularyWordList({
   const firstItem = wordItems.length === 0 ? 0 : offset + 1
   const lastItem = offset + wordItems.length
 
-  function goTo(nextPage: number, nextPerPage = perPage) {
+  function goTo(nextPage: number) {
     router.push(
       buildVocabWordListHref({
         page: Math.min(Math.max(nextPage, 1), Math.max(pageCount, 1)),
-        perPage: nextPerPage,
+        q,
         view: activeView,
       })
     )
   }
 
-  function updatePageSize(value: number) {
-    const nextPageSize = Math.min(
-      Math.max(1, Math.floor(value)),
-      PER_PAGE_OPTIONS[PER_PAGE_OPTIONS.length - 1]
+  // Debounced search: the server filters the view by term prefix.
+  useEffect(() => {
+    if (search.trim() === q) return
+
+    const timer = setTimeout(
+      () =>
+        router.replace(
+          buildVocabWordListHref({
+            page: 1,
+            q: search.trim(),
+            view: activeView,
+          })
+        ),
+      300
     )
 
-    setCustomPageSize(String(nextPageSize))
-    if (nextPageSize !== perPage)
-      router.push(
-        buildVocabWordListHref({
-          page: 1,
-          perPage: nextPageSize,
-          view: activeView,
-        })
-      )
-  }
+    return () => clearTimeout(timer)
+  }, [activeView, q, router, search])
 
   /**
    * Rows that left this view shift every later word up the server's list, so
@@ -315,22 +314,19 @@ export function VocabularyWordList({
     }
   }
 
-  const hasPresetPageSize = PER_PAGE_OPTIONS.some(option => option === perPage)
-
   return (
     <div className="grid gap-4">
       <PageHeader
-        actions={
-          <ActionButton
-            href="/vocabulary"
-            icon={<ArrowLeft aria-hidden="true" />}
-            tone="paper"
-          >
-            {t.page.backToVocab}
-          </ActionButton>
-        }
+        breadcrumb={{
+          items: [
+            { href: '/vocabulary', label: t.dashboard.title },
+            { label: t.views[activeView] },
+          ],
+          label: messages.common.journey.breadcrumb,
+        }}
         icon={<BookA />}
         iconClassName="bg-pastel-mint text-accent-green"
+        inTopbar
         subtitle={plural(t.wordList.count, visibleTotal)}
         title={t.views[activeView]}
       />
@@ -343,12 +339,12 @@ export function VocabularyWordList({
           <Link
             key={tab.view}
             className={cn(
-              'soft-press flex min-h-10 shrink-0 items-center gap-2 rounded-full border px-4 text-sm font-medium',
+              'soft-press flex min-h-11 shrink-0 items-center gap-2 rounded-full border px-4 text-sm font-medium',
               tab.view === activeView
                 ? 'border-cta bg-cta text-cta-fg'
-                : 'border-line bg-surface text-ink hover:bg-tint-soft'
+                : 'border-line bg-surface text-ink hover:bg-tint-soft hover-pop'
             )}
-            href={tab.href}
+            href={buildVocabWordListHref({ page: 1, q, view: tab.view })}
             aria-current={tab.view === activeView ? 'page' : undefined}
           >
             <span
@@ -363,103 +359,32 @@ export function VocabularyWordList({
         ))}
       </nav>
 
-      <div className="border-line bg-surface rounded-panel grid gap-3 border p-2.5 sm:flex sm:flex-wrap sm:items-center sm:justify-between">
-        <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center">
-          <div className="flex items-center gap-2">
-            <span className="text-ink-soft shrink-0 text-xs">
-              {t.wordList.perPage}
-            </span>
-            <Select
-              value={String(perPage)}
-              onValueChange={value => {
-                if (!value) return
-                updatePageSize(Number(value))
-              }}
-            >
-              <SelectTrigger
-                aria-label={t.wordList.perPageLabel}
-                className="w-full sm:w-24"
-              >
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {hasPresetPageSize ? null : (
-                  <SelectItem value={String(perPage)}>{perPage}</SelectItem>
-                )}
-                {PER_PAGE_OPTIONS.map(option => (
-                  <SelectItem
-                    key={option}
-                    value={String(option)}
-                  >
-                    {option}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-ink-soft shrink-0 text-xs">
-              {t.wordList.custom}
-            </span>
-            <Input
-              aria-label={t.wordList.customLabel}
-              className="border-line bg-surface rounded-control h-10 w-full border px-3 font-sans sm:w-20"
-              min={1}
-              onBlur={() => updatePageSize(Number(customPageSize) || 1)}
-              onChange={event => setCustomPageSize(event.target.value)}
-              onKeyDown={event => {
-                if (event.key === 'Enter')
-                  updatePageSize(Number(customPageSize) || 1)
-              }}
-              type="number"
-              value={customPageSize}
-            />
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between gap-2 sm:justify-end">
+      <div className="flex flex-wrap items-center gap-2">
+        <Input
+          aria-label={t.wordList.searchLabel}
+          className="border-line bg-surface rounded-control min-h-11 min-w-48 flex-1 border px-3 font-sans text-sm"
+          onChange={event => setSearch(event.target.value)}
+          placeholder={t.wordList.search}
+          type="search"
+          value={search}
+        />
+        {activeView === 'dueToday' && visibleTotal > 0 ? (
           <ActionButton
-            className="min-h-10"
-            disabled={page <= 1}
-            onClick={() => goTo(page - 1)}
-            tone="paper"
+            href="/vocabulary"
+            icon={<BookOpen aria-hidden="true" />}
+            tone="ink"
           >
-            {t.wordList.prev}
+            {t.launcher.start}
           </ActionButton>
-          <span className="text-sm tabular-nums">
-            {firstItem}-{lastItem} / {visibleTotal}
-          </span>
-          <ActionButton
-            className="min-h-10"
-            disabled={page >= pageCount}
-            onClick={() => goTo(page + 1)}
-            tone="paper"
-          >
-            {messages.common.actions.next}
-          </ActionButton>
-        </div>
+        ) : null}
       </div>
 
       {message ? (
-        <div
-          aria-live="polite"
-          className="border-line bg-surface rounded-control border p-3 text-sm"
-        >
-          {message}
+        <div aria-live="polite">
+          <InlineNotice>{message}</InlineNotice>
         </div>
       ) : null}
-      {error ? (
-        <div
-          className="border-danger/30 bg-danger-soft rounded-control flex items-center gap-2 border p-3 text-sm"
-          role="alert"
-        >
-          <AlertCircle
-            aria-hidden="true"
-            className="text-danger size-4 shrink-0"
-          />
-          {error}
-        </div>
-      ) : null}
+      {error ? <InlineNotice tone="error">{error}</InlineNotice> : null}
 
       {wordItems.length > 0 ? (
         <ul className="border-line bg-surface rounded-panel motion-stagger divide-line grid divide-y border">
@@ -474,18 +399,24 @@ export function VocabularyWordList({
                   headingClassName="text-lg"
                 />
                 <p className="text-ink-soft flex flex-wrap items-center gap-x-2 text-xs">
-                  <span
-                    aria-hidden="true"
-                    className="text-ink"
-                  >
-                    {getStatusIcon(word)}
-                  </span>
+                  {word.item.status === 'learning' ? (
+                    <StepDots
+                      doneClassName="bg-accent-green"
+                      done={word.item.recallStage}
+                      label={format(t.wordList.stage, {
+                        stage: word.item.recallStage,
+                      })}
+                      total={RECALL_STEPS}
+                    />
+                  ) : (
+                    <span
+                      aria-hidden="true"
+                      className="text-ink"
+                    >
+                      {getStatusIcon(word)}
+                    </span>
+                  )}
                   <span>{getStatusMeta(word, t, locale)}</span>
-                  <span className="tabular-nums">
-                    {word.entry.frequencyRank
-                      ? `#${word.entry.frequencyRank}`
-                      : t.enrichmentStatus[word.entry.enrichmentStatus]}
-                  </span>
                 </p>
               </div>
 
@@ -496,14 +427,17 @@ export function VocabularyWordList({
                 <p className="text-ink-soft line-clamp-2 text-xs leading-5">
                   {getDefinitionPreview(word)}
                 </p>
-                <p className="text-ink-soft flex min-w-0 flex-wrap items-center gap-x-2 text-[11px]">
+                <p className="text-ink-soft flex min-w-0 flex-wrap items-center gap-x-2 text-xs">
+                  <span className="tabular-nums">
+                    {word.entry.frequencyRank
+                      ? `#${word.entry.frequencyRank}`
+                      : t.enrichmentStatus[word.entry.enrichmentStatus]}
+                  </span>
                   <span>{t.sources[word.item.source]}</span>
                   {word.sourceVideo ? (
-                    <a
-                      className="hover:text-brand flex min-w-0 items-center gap-1"
+                    <Link
+                      className="soft-press hover-pop hover:text-brand rounded-tag flex min-w-0 items-center gap-1"
                       href={`/dictation/videos/${word.sourceVideo.id}/practice`}
-                      rel="noopener noreferrer"
-                      target="_blank"
                       title={word.sourceVideo.title}
                     >
                       <PlayCircle
@@ -515,43 +449,81 @@ export function VocabularyWordList({
                           title: word.sourceVideo.title,
                         })}
                       </span>
-                    </a>
+                    </Link>
                   ) : null}
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 gap-2 md:flex">
-                <ActionButton
-                  className="min-h-9 min-w-0 px-3 text-xs [&>span:last-child]:whitespace-nowrap"
-                  disabled={word.item.status === 'learning'}
-                  icon={<BookOpen className="size-4" />}
-                  onClick={() => updateWordStatus(word, 'shouldLearn')}
-                >
-                  {t.marks.shouldLearn}
-                </ActionButton>
-                <ActionButton
-                  className="min-h-9 min-w-0 px-3 text-xs [&>span:last-child]:whitespace-nowrap"
-                  disabled={word.item.status === 'alreadyKnow'}
-                  icon={<Check className="size-4" />}
-                  onClick={() => updateWordStatus(word, 'alreadyKnow')}
-                  tone="paper"
-                >
-                  {t.marks.alreadyKnow}
-                </ActionButton>
+              {/* Only the move that changes something: a learning word can
+                  be marked known, a known word can be learnt again. */}
+              <div className="flex md:justify-end">
+                {word.item.status === 'learning' ? (
+                  <ActionButton
+                    className="min-w-0 px-4 text-xs [&>span:last-child]:whitespace-nowrap"
+                    icon={<Check className="size-4" />}
+                    onClick={() => updateWordStatus(word, 'alreadyKnow')}
+                    tone="paper"
+                  >
+                    {t.marks.alreadyKnow}
+                  </ActionButton>
+                ) : (
+                  <ActionButton
+                    className="min-w-0 px-4 text-xs [&>span:last-child]:whitespace-nowrap"
+                    icon={<BookOpen className="size-4" />}
+                    onClick={() => updateWordStatus(word, 'shouldLearn')}
+                  >
+                    {t.wordList.learnIt}
+                  </ActionButton>
+                )}
               </div>
             </li>
           ))}
         </ul>
+      ) : q ? (
+        <EmptyState
+          action={{
+            href: buildVocabWordListHref({ page: 1, view: activeView }),
+            label: t.wordList.clearSearch,
+          }}
+          icon={<SearchX />}
+          title={format(t.wordList.noMatches, { q })}
+        />
       ) : (
-        <ContentPanel
-          eyebrow={t.wordList.emptyEyebrow}
+        <EmptyState
+          action={{
+            href: '/vocabulary#vocab-explore',
+            label: t.garden.plantAction,
+          }}
+          body={t.wordList.emptyBody}
+          icon={<Sprout />}
           title={t.wordList.emptyTitle}
-        >
-          <p className="text-ink-soft text-sm leading-6 font-normal">
-            {t.wordList.emptyBody}
-          </p>
-        </ContentPanel>
+        />
       )}
+
+      {pageCount > 1 ? (
+        <nav
+          aria-label={t.wordList.viewsNav}
+          className="flex items-center justify-between gap-2"
+        >
+          <ActionButton
+            disabled={page <= 1}
+            onClick={() => goTo(page - 1)}
+            tone="paper"
+          >
+            {t.wordList.prev}
+          </ActionButton>
+          <span className="text-sm tabular-nums">
+            {firstItem}-{lastItem} / {visibleTotal}
+          </span>
+          <ActionButton
+            disabled={page >= pageCount}
+            onClick={() => goTo(page + 1)}
+            tone="paper"
+          >
+            {messages.common.actions.next}
+          </ActionButton>
+        </nav>
+      ) : null}
     </div>
   )
 }

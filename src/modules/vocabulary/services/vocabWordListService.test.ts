@@ -100,4 +100,30 @@ describe('vocabWordListService', () => {
       })
     ).toContainEqual({ $sort: { masteredAt: -1, updatedAt: -1, _id: 1 } })
   })
+
+  test('a search keeps only words starting with it, inside the join', () => {
+    const pipeline = buildVocabWordListPipeline({
+      entryCollection: 'vocabentries',
+      filter: {},
+      page: 1,
+      perPage: 10,
+      search: ' Ubi.',
+      view: 'learning',
+    })
+    const lookup = pipeline.find(stage => '$lookup' in stage) as {
+      $lookup: { pipeline: unknown[] }
+    }
+
+    expect(lookup.$lookup.pipeline).toContainEqual({
+      $match: { normalizedTerm: { $regex: '^ubi\\.' } },
+    })
+  })
+
+  test('no search adds no term filter', () => {
+    const lookup = build(1).find(stage => '$lookup' in stage) as {
+      $lookup: { pipeline: unknown[] }
+    }
+
+    expect(JSON.stringify(lookup.$lookup.pipeline)).not.toContain('$regex')
+  })
 })

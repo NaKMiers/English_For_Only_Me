@@ -75,17 +75,17 @@ export function restoreWordListRow({
 
 export function buildVocabWordListHref({
   page,
-  perPage,
+  q = '',
   view,
 }: {
   page: number
-  perPage: number
+  q?: string
   view: VocabWordListView
 }) {
   const params = new URLSearchParams({ view })
 
+  if (q) params.set('q', q)
   if (page > 1) params.set('page', String(page))
-  params.set('perPage', String(perPage))
 
   return `/vocabulary/words?${params.toString()}`
 }

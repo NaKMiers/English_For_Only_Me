@@ -174,19 +174,28 @@ export function getVocabWordListSkip({
  * first and dropping rows afterwards gave short pages, a total that counted
  * hidden words and an empty last page).
  */
+function escapeRegex(input: string) {
+  return input.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
 export function buildVocabWordListPipeline({
   entryCollection,
   filter,
   page,
   perPage,
+  search = '',
   view,
 }: {
   entryCollection: string
   filter: Record<string, unknown>
   page: number
   perPage: number
+  /** Keeps only words whose term starts with this (case-insensitive). */
+  search?: string
   view: VocabWordListView
 }): PipelineStage[] {
+  const term = search.trim().toLowerCase()
+
   return [
     { $match: filter },
     { $sort: { ...getSortForView(view), _id: 1 } },
@@ -197,6 +206,17 @@ export function buildVocabWordListPipeline({
         foreignField: '_id',
         pipeline: [
           { $match: VOCAB_REQUIRES_VI_MEANING_FILTER },
+          // The search runs inside the join, before the count: the total and
+          // the pages only hold matching words.
+          ...(term
+            ? [
+                {
+                  $match: {
+                    normalizedTerm: { $regex: `^${escapeRegex(term)}` },
+                  },
+                },
+              ]
+            : []),
           { $project: WORD_LIST_ENTRY_PROJECTION },
         ],
         as: 'entry',
@@ -227,12 +247,14 @@ export async function listVocabWordsForUser({
   now = new Date(),
   page = 1,
   perPage = VOCAB_WORD_LIST_DEFAULT_PAGE_SIZE,
+  search = '',
   userId,
   view,
 }: {
   now?: Date
   page?: number
   perPage?: number
+  search?: string
   userId: string
   view: VocabWordListView
 }): Promise<VocabWordListPageRecord> {
@@ -250,6 +272,7 @@ export async function listVocabWordsForUser({
       filter,
       page,
       perPage,
+      search,
       view,
     })
   )

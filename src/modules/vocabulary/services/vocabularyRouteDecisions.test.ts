@@ -99,18 +99,20 @@ describe('vocabulary route decisions', () => {
     expect(parseVocabWordListQuery({})).toEqual({
       page: 1,
       perPage: 50,
+      q: '',
       view: 'learning',
     })
     expect(
       parseVocabWordListQuery({ page: '3', perPage: '20', view: 'mastered' })
-    ).toEqual({ page: 3, perPage: 20, view: 'mastered' })
+    ).toEqual({ page: 3, perPage: 20, q: '', view: 'mastered' })
+    expect(parseVocabWordListQuery({ q: '  ubiq ' }).q).toBe('ubiq')
     expect(
       parseVocabWordListQuery({
         page: ['0', '9'],
         perPage: '9999',
         view: 'nope',
       })
-    ).toEqual({ page: 1, perPage: 50, view: 'learning' })
+    ).toEqual({ page: 1, perPage: 50, q: '', view: 'learning' })
   })
 
   test('validates occurrence records for cached lookups', () => {

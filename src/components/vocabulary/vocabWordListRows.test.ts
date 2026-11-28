@@ -72,12 +72,12 @@ describe('word list rows', () => {
     ).toEqual(['a', 'c'])
   })
 
-  test('page links keep the view and page size', () => {
+  test('page links keep the view and the search; the page size is fixed', () => {
+    expect(buildVocabWordListHref({ page: 1, view: 'mastered' })).toBe(
+      '/vocabulary/words?view=mastered'
+    )
     expect(
-      buildVocabWordListHref({ page: 1, perPage: 50, view: 'mastered' })
-    ).toBe('/vocabulary/words?view=mastered&perPage=50')
-    expect(
-      buildVocabWordListHref({ page: 3, perPage: 20, view: 'learning' })
-    ).toBe('/vocabulary/words?view=learning&page=3&perPage=20')
+      buildVocabWordListHref({ page: 3, q: 'ubi', view: 'learning' })
+    ).toBe('/vocabulary/words?view=learning&q=ubi&page=3')
   })
 })

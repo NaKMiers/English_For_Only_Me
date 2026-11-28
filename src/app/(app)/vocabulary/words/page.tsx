@@ -30,10 +30,11 @@ export default async function VocabularyWordsPage({
   searchParams: Promise<{
     page?: string | string[]
     perPage?: string | string[]
+    q?: string | string[]
     view?: string | string[]
   }>
 }) {
-  const { page, perPage, view } = parseVocabWordListQuery(await searchParams)
+  const { page, perPage, q, view } = parseVocabWordListQuery(await searchParams)
   const t = await getMessages()
 
   if (!hasMongoDbUri())
@@ -66,6 +67,7 @@ export default async function VocabularyWordsPage({
   const wordPage = await listVocabWordsForUser({
     page,
     perPage,
+    search: q,
     userId: actorId ?? '',
     view,
   })
@@ -75,6 +77,14 @@ export default async function VocabularyWordsPage({
       topbar={
         <AppTopbar
           activeHref="/vocabulary"
+          page={{
+            breadcrumb: [
+              { href: '/vocabulary', label: t.vocabulary.dashboard.title },
+              { label: t.vocabulary.views[view] },
+            ],
+            module: 'vocabulary',
+            title: t.vocabulary.views[view],
+          }}
           subtitle={t.vocabulary.page.subtitle}
         />
       }
@@ -82,9 +92,10 @@ export default async function VocabularyWordsPage({
       <section className="grid gap-5 px-4 pb-6 md:pr-6 md:pl-0">
         <VocabularyWordList
           activeView={view}
-          key={`${view}:${page}:${perPage}`}
+          key={`${view}:${page}:${perPage}:${q}`}
           page={wordPage.page}
           perPage={wordPage.perPage}
+          q={q}
           total={wordPage.total}
           words={wordPage.words}
         />
