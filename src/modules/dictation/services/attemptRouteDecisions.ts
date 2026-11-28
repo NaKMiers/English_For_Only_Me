@@ -16,6 +16,7 @@ const attemptPayloadSchema = z
     action: z.enum(['check', 'reveal', 'skip']),
     idempotencyKey: z.string().trim().min(8).max(120),
     replayCountDelta: z.number().int().min(0).max(500).optional(),
+    review: z.boolean().optional(),
     segmentId: objectIdSchema,
     timeSpentMs: z
       .number()
@@ -57,6 +58,7 @@ export function parseAttemptPayload(
     data: {
       ...result.data,
       replayCountDelta: result.data.replayCountDelta ?? 0,
+      review: result.data.review ?? false,
       timeSpentMs: result.data.timeSpentMs ?? 0,
       typedAnswer: result.data.typedAnswer ?? '',
     },

@@ -133,7 +133,6 @@ describe('DictationSide', () => {
             youtubeVideoId: null,
           },
         ]}
-        showFavorites
       />
     )
 
@@ -141,7 +140,6 @@ describe('DictationSide', () => {
     expect(links.map(link => link.getAttribute('href'))).toEqual([
       '/dictation/videos/v1/practice',
       '/dictation/videos/v9/results',
-      '/dictation/favorites',
     ])
     for (const link of links) expect(link.className).toContain('hover-pop')
   })

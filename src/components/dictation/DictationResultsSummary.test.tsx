@@ -2,6 +2,7 @@ import { render } from '@testing-library/react'
 import { describe, expect, test } from 'vitest'
 
 import type { DictationVideoStatsRecord } from '@/modules/dictation/types'
+import { expectLandingBudget } from '@/test/landingBudget'
 import { setupDom } from '@/test/setupDom'
 
 import { DictationResultsSummary } from './DictationResultsSummary'
@@ -25,7 +26,7 @@ const stats: DictationVideoStatsRecord = {
 }
 
 describe('DictationResultsSummary', () => {
-  test('renders the not-started empty state', () => {
+  test('before any practice: one empty state with one ink action', () => {
     const view = render(
       <DictationResultsSummary
         isEmpty
@@ -36,11 +37,15 @@ describe('DictationResultsSummary', () => {
       />
     )
 
-    expect(view.getByText('Results')).not.toBeNull()
-    expect(view.getByText(/Practice the video first/)).not.toBeNull()
+    expect(view.getByText('Practice first')).not.toBeNull()
     expect(
       view.getByRole('link', { name: 'Start practice' }).getAttribute('href')
     ).toBe('/dictation/videos/0123456789abcdef01234567/practice')
+    expect(view.container.querySelectorAll('[data-empty-state]')).toHaveLength(
+      1
+    )
+    expect(view.getAllByRole('link')).toHaveLength(1)
+    expectLandingBudget(view.container)
   })
 
   test('renders the completed state with hero numbers', () => {
@@ -59,12 +64,13 @@ describe('DictationResultsSummary', () => {
     // The head leads with the result, then one next stop.
     expect(view.getByText('72%')).not.toBeNull()
     expect(view.getByText('80% done: 8 of 10 sentences')).not.toBeNull()
-    expect(view.getByText(/saved attempts only/)).not.toBeNull()
+    // No helper sentence under the numbers.
+    expect(view.queryByText(/saved attempts only/)).toBeNull()
     expect(view.container.querySelectorAll('[data-next-stop]')).toHaveLength(1)
     expect(view.getByRole('link', { name: 'Practice again' })).not.toBeNull()
   })
 
-  test('shows an in-progress eyebrow while a session is active', () => {
+  test('in progress: the same empty state, Continue as its one action', () => {
     const view = render(
       <DictationResultsSummary
         isEmpty
@@ -75,8 +81,9 @@ describe('DictationResultsSummary', () => {
       />
     )
 
-    expect(view.getByText('In progress')).not.toBeNull()
+    expect(view.getByText('Practice in progress')).not.toBeNull()
     expect(view.getByRole('link', { name: 'Continue practice' })).not.toBeNull()
+    expectLandingBudget(view.container)
   })
 
   test('the next stop is the next video in the topic', () => {

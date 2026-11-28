@@ -19,7 +19,10 @@ import {
   type SegmentProgressRow,
 } from '@/modules/dictation/practice/segmentProgress'
 import { loadSegmentProgressRows } from '@/modules/dictation/practice/segmentProgressService'
-import { recomputeReviewItemsForSegment } from '@/modules/dictation/review/reviewItemService'
+import {
+  completeReviewItemsForSegment,
+  recomputeReviewItemsForSegment,
+} from '@/modules/dictation/review/reviewItemService'
 import { toDictationAttemptRecord } from '@/modules/dictation/services/dictationAttemptRecords'
 import { toDictationSessionRecord } from '@/modules/dictation/services/dictationSessionRecords'
 import { requirePracticeActor } from '@/modules/dictation/services/getCurrentUser'
@@ -65,6 +68,30 @@ async function loadAttemptedSegmentProgress({
 }
 
 /**
+ * Recompute the segment's review items, then, for a passed attempt made from
+ * the review queue, solve them. In that order: the recompute cannot raise the
+ * item again after it is solved (attempts up to the solve are ignored).
+ */
+async function updateReviewItems({
+  isPassed,
+  review,
+  segmentId,
+  userId,
+  videoId,
+}: {
+  isPassed: boolean
+  review?: boolean
+  segmentId: string
+  userId: string
+  videoId: string
+}) {
+  await recomputeReviewItemsForSegment({ segmentId, userId, videoId })
+
+  if (review && isPassed)
+    await completeReviewItemsForSegment({ segmentId, userId })
+}
+
+/**
  * The attempt this user already recorded under `idempotencyKey`, in any of
  * their sessions. Keys are per user: after a 404/409 the client may retry the
  * same queued attempt against a fresh session, and that must replay the
@@ -96,10 +123,12 @@ async function findAttemptByIdempotencyKey({
  */
 async function respondWithReplay({
   attempt,
+  review,
   sessionId,
   userId,
 }: {
   attempt: DictationAttemptApiRecord
+  review?: boolean
   sessionId: string
   userId: string
 }) {
@@ -111,7 +140,9 @@ async function respondWithReplay({
       userId,
       videoId: attempt.videoId,
     }),
-    recomputeReviewItemsForSegment({
+    updateReviewItems({
+      isPassed: attempt.isPassed,
+      review,
       segmentId: attempt.segmentId,
       userId,
       videoId: attempt.videoId,
@@ -204,6 +235,7 @@ export async function POST(request: Request, context: RouteContext) {
     if (submissionMode.attempt)
       return respondWithReplay({
         attempt: submissionMode.attempt,
+        review: parsedBody.data.review,
         sessionId: parsedSessionId.data.sessionId,
         userId: actor.id,
       })
@@ -221,7 +253,10 @@ export async function POST(request: Request, context: RouteContext) {
         },
       })
 
-    if (!canRecordAttemptForSession(session.status))
+    // A review attempt never touches the session (position, status), so it
+    // may land in the session that recorded the sentence's earlier attempts,
+    // whatever its status now.
+    if (!parsedBody.data.review && !canRecordAttemptForSession(session.status))
       return jsonError({
         status: 409,
         body: {
@@ -290,9 +325,40 @@ export async function POST(request: Request, context: RouteContext) {
 
       return respondWithReplay({
         attempt: toDictationAttemptRecord(winner),
+        review: parsedBody.data.review,
         sessionId: parsedSessionId.data.sessionId,
         userId: actor.id,
       })
+    }
+
+    const videoId = String(session.videoId)
+    const segmentId = String(segment._id)
+    const reviewUpdate = {
+      isPassed: correction.isPassed,
+      review: parsedBody.data.review,
+      segmentId,
+      userId: actor.id,
+      videoId,
+    }
+
+    // From the review queue: record and solve, but never move the learner's
+    // saved position or finish their session.
+    if (parsedBody.data.review) {
+      const [progress] = await Promise.all([
+        loadAttemptedSegmentProgress({ segmentId, userId: actor.id, videoId }),
+        updateReviewItems(reviewUpdate),
+      ])
+
+      return NextResponse.json(
+        {
+          attempt: toDictationAttemptRecord(attempt.toObject()),
+          mode: submissionMode.mode,
+          nextSegmentId: null,
+          progress,
+          session: toDictationSessionRecord(session.toObject()),
+        },
+        { status: 201 }
+      )
     }
 
     // Progress is per learner and derived from attempts (see
@@ -336,12 +402,10 @@ export async function POST(request: Request, context: RouteContext) {
 
     session.lastActiveAt = now
 
-    const videoId = String(session.videoId)
-    const segmentId = String(segment._id)
     const [, progress] = await Promise.all([
       session.save(),
       loadAttemptedSegmentProgress({ segmentId, userId: actor.id, videoId }),
-      recomputeReviewItemsForSegment({ segmentId, userId: actor.id, videoId }),
+      updateReviewItems(reviewUpdate),
     ])
 
     return NextResponse.json(

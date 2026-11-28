@@ -1,8 +1,8 @@
 'use client'
 
-import { BookOpen, Check, Search } from 'lucide-react'
 import { useRef, useState, type ReactNode } from 'react'
 
+import { InlineNotice } from '@/components/common/InlineNotice'
 import {
   useClientOutbox,
   useOutboxOwnerKey,
@@ -15,7 +15,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { ActionButton } from '@/components/ui/ActionButton'
 import { useMessages } from '@/i18n/client'
 import { format } from '@/i18n/format'
 import type {
@@ -32,6 +31,11 @@ import {
   type VocabOccurrenceInput,
 } from '@/requests/vocabularyApi'
 
+import {
+  decisionOf,
+  VocabDecisionButtons,
+  vocabStatusLabel,
+} from './VocabDecisionButtons'
 import { VocabTermHeader } from './VocabTermHeader'
 import {
   buildOptimisticUserItem,
@@ -191,48 +195,33 @@ export function QuickVocabDialog({
           <>
             <DialogHeader>
               <DialogTitle className="sr-only">{entry.entry.term}</DialogTitle>
+              {/* The saved pick (or a not-ready status) in words; the buttons
+                  show the pick too. */}
               <DialogDescription className="text-ink-soft text-sm font-normal">
-                {t.enrichmentStatus[entry.entry.enrichmentStatus]}
+                {vocabStatusLabel(entry, t) ?? t.itemStatus.notPicked}
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-3">
               <VocabTermHeader entry={entry.entry} />
-              <div className="border-line bg-tint rounded-control border p-3 text-right text-base leading-7 font-semibold">
-                {getVietnamese(entry, t.word.needsMeaning)}
-              </div>
-              <div className="border-line bg-surface rounded-control border p-3 text-base leading-7 font-semibold">
-                {getDefinition(entry)}
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <ActionButton
-                  className="[&>span:last-child]:whitespace-nowrap"
-                  disabled={!hasVietnameseMeaning(entry.entry)}
-                  icon={<BookOpen className="size-4" />}
-                  onClick={() => onMark('shouldLearn')}
-                >
-                  {t.marks.shouldLearn}
-                </ActionButton>
-                <ActionButton
-                  className="[&>span:last-child]:whitespace-nowrap"
-                  disabled={!hasVietnameseMeaning(entry.entry)}
-                  icon={<Check className="size-4" />}
-                  onClick={() => onMark('alreadyKnow')}
-                  tone="paper"
-                >
-                  {t.marks.alreadyKnow}
-                </ActionButton>
-              </div>
-              <p className="text-ink-soft flex items-center gap-2 text-xs font-normal">
-                <Search className="size-4" />
-                {entry.userItem
-                  ? t.itemStatus[entry.userItem.status]
-                  : t.itemStatus.notPicked}
+              {/* Compact, like the search result: the meaning as one chip,
+                  the definition as plain text, no boxes. */}
+              <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                <span className="sr-only">{t.search.vietnameseMeaning}: </span>
+                <span className="bg-pastel-mint rounded-tag px-2 py-0.5 text-base leading-7 font-medium">
+                  {getVietnamese(entry, t.word.needsMeaning)}
+                </span>
               </p>
-              {error ? (
-                <p className="text-danger text-sm font-semibold">{error}</p>
-              ) : null}
+              <p className="text-ink-soft text-sm leading-6 font-normal">
+                {getDefinition(entry)}
+              </p>
+              <VocabDecisionButtons
+                decision={decisionOf(entry.userItem?.status)}
+                disabled={!hasVietnameseMeaning(entry.entry)}
+                error={error}
+                onDecide={onMark}
+              />
               {!hasVietnameseMeaning(entry.entry) ? (
-                <p className="text-brand text-sm font-semibold">
+                <p className="text-brand-ink text-sm font-medium">
                   {t.word.meaningRequired}
                 </p>
               ) : null}
@@ -391,7 +380,12 @@ export function QuickVocabLookup({
         ))}
       </div>
       {error ? (
-        <p className="text-danger mt-2 text-sm font-semibold">{error}</p>
+        <InlineNotice
+          className="mt-2"
+          tone="error"
+        >
+          {error}
+        </InlineNotice>
       ) : null}
 
       <QuickVocabDialog

@@ -275,6 +275,9 @@ export const dictation: Messages['dictation'] = {
       one: 'câu đã chép',
       other: 'câu đã chép',
     },
+    journeyGained: '+1 cho {topic}, còn {left} bài',
+    journeyLeft: '{topic}: còn {left} bài',
+    journeyGold: 'Đã xong {topic}',
     finishWins: 'Chép đúng {correct}/{total} câu',
     nextInTopic: 'Video tiếp theo trong {topic}',
     topicDone: 'Đã xong chủ đề này: chọn đĩa tiếp theo',
@@ -367,10 +370,8 @@ export const dictation: Messages['dictation'] = {
     emptyEyebrow: 'Trống',
     inProgressTitle: 'Đang luyện tập',
     practiceFirstTitle: 'Hãy luyện trước',
-    inProgressDescription:
-      'Làm xong vài câu, thống kê và danh sách câu yếu sẽ hiện ở đây.',
-    practiceFirstDescription:
-      'Danh sách ôn tập sẽ trống cho đến khi có câu yếu thật sự cần luyện.',
+    inProgressDescription: 'Làm xong vài câu, kết quả của bạn sẽ hiện ở đây.',
+    practiceFirstDescription: 'Kết quả sẽ hiện ở đây sau lần luyện đầu tiên.',
   },
   duration: {
     minutes: '{minutes} phút',
@@ -453,6 +454,13 @@ export const dictation: Messages['dictation'] = {
     allCaughtUpBody:
       'Không còn câu yếu nào đến hạn. Đi tiếp trạm kế ở trang chính.',
     toLanding: 'Về Chép chính tả',
+    endLeft: {
+      one: 'Còn {count} câu',
+      other: 'Còn {count} câu',
+    },
+    endNext: 'Câu tiếp theo',
+    endBack: 'Về danh sách ôn tập',
+    endClear: 'Đã ôn hết danh sách',
     reasons: {
       highRetry: 'Thử lại nhiều',
       lowAccuracy: 'Độ chính xác thấp',

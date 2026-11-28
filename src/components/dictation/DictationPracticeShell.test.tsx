@@ -652,9 +652,11 @@ describe('DictationPracticeShell attempts', () => {
     const textarea = await view.findByLabelText('Type what you hear')
 
     expect((textarea as HTMLTextAreaElement).value).toBe('')
-    expect(view.getByLabelText('Current segment').textContent).toContain(
-      '1 / 2'
-    )
+    expect(
+      view.container
+        .querySelector('[data-practice-progress]')
+        ?.getAttribute('title')
+    ).toBe('1 / 2')
     expect(view.getByText('Copper')).not.toBeNull()
     expect(playSegmentMock).toHaveBeenCalledWith(
       completedSegment.startMs,
@@ -748,6 +750,163 @@ describe('DictationPracticeShell entry screen', () => {
     expectContinueScreen(
       renderPracticeShell(resumableSession, segment, 1, twoSegments)
     )
+  })
+})
+
+describe('DictationPracticeShell practice screen', () => {
+  test('Check is a full-size action and progress shows once', () => {
+    const view = renderPracticeShell(session, segment, 0, [
+      segment,
+      secondSegment,
+    ])
+
+    fireEvent.click(view.getByRole('button', { name: 'Start dictation' }))
+
+    expect(view.getByRole('button', { name: 'Check' }).className).not.toMatch(
+      /\bpy-1\b/
+    )
+    expect(view.getByRole('button', { name: 'Skip' }).className).toMatch(
+      /\bpy-1\b/
+    )
+    expect(
+      view.container.querySelectorAll('[data-practice-progress]')
+    ).toHaveLength(1)
+    expect(view.queryByText('1 / 2')).toBeNull()
+  })
+})
+
+describe('DictationPracticeShell topic step', () => {
+  function renderWithTopic(completions: number) {
+    return render(
+      <DictationPracticeShell
+        completions={completions}
+        initialSession={null}
+        initialTranslationTrack={null}
+        segments={[segment]}
+        topicRecord={{
+          done: completions > 0 ? 3 : 2,
+          topicTitle: 'TED',
+          total: 5,
+        }}
+        translationLanguages={[]}
+        video={{ ...video, topicId: 'topic-1' }}
+      />
+    )
+  }
+
+  test('a first finish shows +1 on the topic', async () => {
+    const view = renderWithTopic(0)
+
+    fireEvent.click(view.getByRole('button', { name: 'Start dictation' }))
+    fireEvent.click(view.getByRole('button', { name: 'Skip' }))
+    fireEvent.click(await view.findByRole('button', { name: 'Finish' }))
+
+    expect(await view.findByText('+1 on TED, 2 to go')).toBeTruthy()
+  })
+
+  test('a video done before shows the record without +1', () => {
+    const view = renderWithTopic(1)
+
+    expect(view.getByText('TED: 2 to go')).toBeTruthy()
+  })
+})
+
+describe('DictationPracticeShell review mode', () => {
+  const reviewSessionId = '507f1f77bcf86cd799439099'
+  const nextHref = `/dictation/videos/${video.id}/practice?segment=${segment.id}`
+
+  function renderReview({
+    completions = 1,
+    initialSession = null,
+    left = 1,
+  }: {
+    completions?: number
+    initialSession?: DictationSessionApiRecord | null
+    left?: number
+  } = {}) {
+    return render(
+      <DictationPracticeShell
+        completions={completions}
+        initialSession={initialSession}
+        initialTranslationTrack={null}
+        review={{
+          left,
+          nextHref,
+          segmentId: secondSegment.id,
+          sessionId: reviewSessionId,
+        }}
+        segments={[segment, secondSegment]}
+        translationLanguages={[]}
+        video={video}
+      />
+    )
+  }
+
+  test('a finished video opens on the review sentence, not on Done', () => {
+    const view = renderReview()
+
+    expect(
+      view.queryByRole('button', { name: 'Repeat this exercise' })
+    ).toBeNull()
+    expect(view.getByRole('button', { name: 'Start dictation' })).toBeTruthy()
+    // The ready panel counts from the review sentence (2 of 2).
+    expect(
+      view.container.querySelector('#dictation-ready-progress')?.textContent
+    ).toMatch(/2.*2/)
+  })
+
+  test('the attempt goes to the sentence session with review, and no position is written', async () => {
+    const view = renderReview()
+
+    fireEvent.click(view.getByRole('button', { name: 'Start dictation' }))
+    typeAnswer(view.getByLabelText('Type what you hear'), 'Second sentence.')
+    fireEvent.click(view.getByRole('button', { name: 'Check' }))
+
+    await waitFor(() => {
+      expect(attemptRequests()).toHaveLength(1)
+    })
+    expect(attemptRequests()[0]).toMatchObject({
+      body: expect.objectContaining({
+        review: true,
+        segmentId: secondSegment.id,
+      }),
+      url: `/api/dictation/sessions/${reviewSessionId}/attempts`,
+    })
+
+    // Next ends the review: no cursor move, no completion of the session.
+    fireEvent.click(view.getByRole('button', { name: 'Next' }))
+
+    const end = await view.findByRole('region', { name: 'Next stop' })
+    expect(end.textContent).toContain('1 sentence left')
+    expect(
+      view.getByRole('link', { name: /Next sentence/ }).getAttribute('href')
+    ).toBe(nextHref)
+    expect(patchRequests()).toEqual([])
+  })
+
+  test('a sentence that was not solved still counts as left', async () => {
+    const view = renderReview({ left: 0 })
+
+    fireEvent.click(view.getByRole('button', { name: 'Start dictation' }))
+    fireEvent.click(view.getByRole('button', { name: 'Skip' }))
+    fireEvent.click(await view.findByRole('button', { name: 'Next' }))
+
+    const end = await view.findByRole('region', { name: 'Next stop' })
+    expect(end.textContent).toContain('1 sentence left')
+    expect(patchRequests()).toEqual([])
+  })
+
+  test('an in-progress video keeps its saved position: review starts on its sentence', () => {
+    const resumable = {
+      ...session,
+      currentSegmentId: segment.id,
+      currentSegmentOrder: 0,
+    }
+    const view = renderReview({ completions: 0, initialSession: resumable })
+
+    fireEvent.click(view.getByRole('button', { name: 'Start dictation' }))
+    expect(view.getByLabelText('Type what you hear')).toBeTruthy()
+    expect(patchRequests()).toEqual([])
   })
 })
 
@@ -852,9 +1011,11 @@ describe('DictationPracticeShell outbox integration', () => {
 
     // Verdicts are on screen before a single request was answered.
     expect(view.getByRole('status').textContent).toContain('Answer revealed')
-    expect(view.getByLabelText('Current segment').textContent).toContain(
-      '3 / 3'
-    )
+    expect(
+      view.container
+        .querySelector('[data-practice-progress]')
+        ?.getAttribute('title')
+    ).toBe('3 / 3')
 
     // attempt 1, cursor -> 2, attempt 2, cursor -> 3 (three moves merged),
     // attempt 3. One in flight at a time, in the order they were made.
@@ -1390,6 +1551,13 @@ describe('DictationPracticeShell translations', () => {
     await waitFor(() => {
       expect(view.getByText('Could not load this translation.')).not.toBeNull()
     })
+    // In the translation strip, as an alert, not in the frame footer.
+    expect(
+      view.getByText('Could not load this translation.').closest('[role]')
+    ).toHaveAttribute('role', 'alert')
+    expect(
+      view.container.querySelector('footer')?.textContent ?? ''
+    ).not.toContain('Could not load this translation.')
 
     fireEvent.click(view.getByRole('button', { name: 'pick vi' }))
 

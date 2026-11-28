@@ -1,8 +1,8 @@
 'use client'
 
-import { ArrowRight, Headphones } from 'lucide-react'
+import { ArrowRight, Headphones, Play } from 'lucide-react'
 
-import { ContentPanel } from '@/components/common/ContentPanel'
+import { EmptyState } from '@/components/journey/EmptyState'
 import { NextStopCard } from '@/components/journey/NextStopCard'
 import { SessionEnd } from '@/components/journey/SessionEnd'
 import { ActionButton } from '@/components/ui/ActionButton'
@@ -28,6 +28,8 @@ interface Props {
   /** False for a video outside any topic: no "topic is done" line. */
   hasTopic?: boolean
   isEmpty: boolean
+  /** The video's topic step, e.g. "TED: 3 to go" (none off-topic). */
+  journeyStep?: string | null
   /** Null: the next stop falls back to the dictation landing. */
   next?: ResultsNextStop | null
   progress: DictationVideoProgress
@@ -41,6 +43,7 @@ interface Props {
 export function DictationResultsSummary({
   hasTopic = true,
   isEmpty,
+  journeyStep = null,
   next = null,
   progress,
   stats,
@@ -61,6 +64,7 @@ export function DictationResultsSummary({
           unit: text.headUnit,
           value: `${stats.firstTryWordAccuracy}%`,
         }}
+        journeyStep={journeyStep}
         module="dictation"
         nextStop={
           <NextStopCard
@@ -99,48 +103,46 @@ export function DictationResultsSummary({
               sizes="96px"
               className="w-24 shrink-0"
             />
-            <span className="grid gap-1">
-              <span className="font-medium">
-                {format(text.headWins, {
-                  done: stats.completedSegmentCount,
-                  percent: stats.completionPercentage,
-                  total: stats.segmentCount,
-                })}
-              </span>
-              <span className="text-ink-soft text-xs">{text.builtFrom}</span>
+            <span className="font-medium">
+              {format(text.headWins, {
+                done: stats.completedSegmentCount,
+                percent: stats.completionPercentage,
+                total: stats.segmentCount,
+              })}
             </span>
           </div>
         }
       />
     )
 
+  // Nothing to show yet: one empty state with the video and one way on.
   return (
-    <ContentPanel
-      eyebrow={text.eyebrow[progress]}
-      title={title}
-      action={
-        <ActionButton
-          href={action.href}
-          tone="paper"
-        >
-          {t.dictation.resultsAction[action.kind]}
-        </ActionButton>
+    <EmptyState
+      action={{
+        href: action.href,
+        icon: <Play aria-hidden="true" />,
+        label: t.dictation.resultsAction[action.kind],
+        tone: 'ink',
+      }}
+      body={
+        progress === 'inProgress'
+          ? text.inProgressDescription
+          : text.practiceFirstDescription
       }
-    >
-      <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
-        <p className="text-ink-soft text-base leading-7 font-normal">
-          {progress === 'inProgress'
-            ? text.inProgressEmpty
-            : text.notStartedEmpty}
-        </p>
+      media={
         <DictationVideoThumbnail
           title={title}
           thumbnailUrl={thumbnailUrl}
           youtubeVideoId={youtubeVideoId}
-          sizes="(min-width: 640px) 30vw, 100vw"
-          className="w-full max-w-xs sm:w-56"
+          sizes="224px"
+          className="w-full"
         />
-      </div>
-    </ContentPanel>
+      }
+      title={
+        progress === 'inProgress'
+          ? text.inProgressTitle
+          : text.practiceFirstTitle
+      }
+    />
   )
 }

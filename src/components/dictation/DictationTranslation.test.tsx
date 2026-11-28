@@ -14,7 +14,6 @@ describe('DictationTranslation', () => {
         isUnlocked={false}
         language="vi"
         text="Xin chao"
-        textSize="large"
       />
     )
 
@@ -27,7 +26,6 @@ describe('DictationTranslation', () => {
         isUnlocked
         language="vi"
         text="Xin chao the gioi."
-        textSize="large"
       />
     )
 
@@ -41,7 +39,6 @@ describe('DictationTranslation', () => {
         isUnlocked
         language="ja"
         text=""
-        textSize="large"
       />
     )
 
@@ -49,5 +46,35 @@ describe('DictationTranslation', () => {
       view.getByText('No caption for this moment in the selected language.')
     ).not.toBeNull()
     expect(view.getByText('Japanese')).not.toBeNull()
+  })
+
+  test('a failed fetch shows its error in the strip, with an icon', () => {
+    const view = render(
+      <DictationTranslation
+        error="Could not load the translation."
+        isUnlocked
+        language="vi"
+        text=""
+      />
+    )
+
+    const alert = view.getByRole('alert')
+    expect(alert.textContent).toContain('Could not load the translation.')
+    expect(alert.querySelector('svg')).not.toBeNull()
+  })
+
+  test('the translation is a quiet helper, not the answer', () => {
+    const view = render(
+      <DictationTranslation
+        isUnlocked
+        language="vi"
+        text="Xin chao"
+      />
+    )
+
+    const line = view.getByText('Xin chao')
+    expect(line.className).toMatch(/text-sm/)
+    expect(line.className).toMatch(/text-ink-soft/)
+    expect(line.className).not.toMatch(/font-semibold/)
   })
 })

@@ -18,9 +18,16 @@ interface Props {
 export function PracticeProgressStrip({ current, total }: Props) {
   const text = useMessages().dictation.practice
   const left = Math.max(0, total - current)
+  const position = `${current + 1} / ${total}`
 
   return (
-    <div className="flex min-w-0 shrink-0 items-center gap-3 px-1">
+    // The one progress element of the screen: its title carries "3 / 20"
+    // (the toolbar counter is gone).
+    <div
+      className="flex min-w-0 shrink-0 items-center gap-3 px-1"
+      data-practice-progress=""
+      title={position}
+    >
       <Progress
         aria-label={format(text.progressLabel, {
           current: current + 1,

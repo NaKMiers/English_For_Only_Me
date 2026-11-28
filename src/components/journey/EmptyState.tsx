@@ -4,12 +4,22 @@ import { ActionButton } from '@/components/ui/ActionButton'
 import { cn } from '@/lib/utils'
 
 interface Props {
-  /** The one next useful action. */
-  action?: { href: string; icon?: ReactNode; label: string }
+  /**
+   * The one next useful action. `ink` when it is the page's main way on
+   * (nothing else on the page competes), `paper` by default.
+   */
+  action?: {
+    href: string
+    icon?: ReactNode
+    label: string
+    tone?: 'ink' | 'paper'
+  }
   body?: ReactNode
   className?: string
   /** A rendered icon or the buddy mascot. */
   icon?: ReactNode
+  /** A picture of the thing (a video thumbnail), shown instead of the icon. */
+  media?: ReactNode
   title: string
 }
 
@@ -17,7 +27,14 @@ interface Props {
  * An empty list or queue: what the state means and the one next useful
  * action, never a bare paragraph.
  */
-export function EmptyState({ action, body, className, icon, title }: Props) {
+export function EmptyState({
+  action,
+  body,
+  className,
+  icon,
+  media,
+  title,
+}: Props) {
   return (
     <div
       className={cn(
@@ -26,7 +43,9 @@ export function EmptyState({ action, body, className, icon, title }: Props) {
       )}
       data-empty-state=""
     >
-      {icon ? (
+      {media ? (
+        <div className="w-full max-w-56">{media}</div>
+      ) : icon ? (
         <span
           aria-hidden="true"
           className="bg-tint text-ink-soft grid size-12 place-items-center rounded-full [&_svg]:size-6"
@@ -41,8 +60,9 @@ export function EmptyState({ action, body, className, icon, title }: Props) {
       {action ? (
         <ActionButton
           href={action.href}
+          data-next-stop={action.tone === 'ink' ? '' : undefined}
           icon={action.icon}
-          tone="paper"
+          tone={action.tone ?? 'paper'}
         >
           {action.label}
         </ActionButton>

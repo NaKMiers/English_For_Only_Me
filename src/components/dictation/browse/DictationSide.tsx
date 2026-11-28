@@ -1,4 +1,4 @@
-import { ChevronRight, PlayCircle, Star, Trophy } from 'lucide-react'
+import { ChevronRight, PlayCircle, Trophy } from 'lucide-react'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 
@@ -14,8 +14,6 @@ interface Props {
   latestResultsHref: string | null
   /** Videos with an unfinished session, most recent first. */
   recent: BrowseVideoItem[]
-  /** Signed-in learners keep favorites; guests do not see the link. */
-  showFavorites: boolean
 }
 
 function SideRow({
@@ -49,15 +47,14 @@ function SideRow({
 
 /**
  * The dictation landing's side card, folded behind the journey card's
- * handle: recent unfinished videos first (and the latest results), then
- * the favorites list. A server component.
+ * handle: recent unfinished videos and the latest results. Favorites sit
+ * beside the "Topics" heading instead. A server component.
  */
 export function DictationSide({
   className,
   labels,
   latestResultsHref,
   recent,
-  showFavorites,
 }: Props) {
   const resumable = recent.filter(video => video.practiceHref)
 
@@ -98,19 +95,6 @@ export function DictationSide({
       ) : (
         <p className="text-ink-soft px-2 text-sm">{labels.recentEmpty}</p>
       )}
-      {showFavorites ? (
-        <>
-          <h3 className="text-ink-soft px-2 text-sm font-medium">
-            {labels.favorites}
-          </h3>
-          <SideRow
-            href="/dictation/favorites"
-            icon={<Star />}
-          >
-            {labels.favoritesHint}
-          </SideRow>
-        </>
-      ) : null}
     </section>
   )
 }

@@ -12,7 +12,8 @@ import {
   type ResultsNextStop,
 } from '@/components/dictation/DictationResultsSummary'
 import { DictationStatsPanel } from '@/components/dictation/DictationStatsPanel'
-import { ActionButton } from '@/components/ui/ActionButton'
+import { EmptyState } from '@/components/journey/EmptyState'
+import { topicStepLine } from '@/components/dictation/practice/topicStep'
 import { hasMongoDbUri } from '@/constants/environments'
 import { format } from '@/i18n/format'
 import { getMessages } from '@/i18n/server'
@@ -22,6 +23,7 @@ import { DictationDebriefModel } from '@/models/dictation/DictationDebriefModel'
 import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
 import { getVideoProgressForUser } from '@/modules/dictation/content/progressRepository'
 import { findNextVideo } from '@/modules/dictation/practice/findNextVideo'
+import { loadVideoTopicRecord } from '@/modules/dictation/practice/topicRecord'
 import { toDictationDebriefRecord } from '@/modules/dictation/services/dictationDebriefRecords'
 import { toDictationVideoRecord } from '@/modules/dictation/services/dictationVideoRecords'
 import { getPracticeActorId } from '@/modules/dictation/services/getCurrentUser'
@@ -66,18 +68,13 @@ async function ResultsSetupState({
       }
     >
       <section className="px-4 pb-6 md:pr-6 md:pl-0">
-        <ContentPanel
-          eyebrow={t.dictation.results.eyebrow.notStarted}
+        {/* Learners only get the way back; transcripts are admin work. */}
+        <EmptyState
+          action={{ href: '/dictation', label: text.backToLab, tone: 'ink' }}
+          body={message}
+          icon={<Headphones />}
           title={title}
-        >
-          <p className="text-ink-soft text-base leading-7 font-normal">
-            {message}
-          </p>
-          <div className="flex flex-wrap gap-3">
-            {/* Learners only get the way back; transcripts are admin work. */}
-            <ActionButton href="/dictation">{text.backToLab}</ActionButton>
-          </div>
-        </ContentPanel>
+        />
       </section>
     </PageShell>
   )
@@ -144,7 +141,12 @@ export default async function Page({ params }: Props) {
     )
 
   const isEmpty = stats.segmentCount === 0 || stats.completedSegmentCount === 0
-  const nextVideo = isEmpty ? null : await findNextVideo(videoRecord)
+  const [nextVideo, topicRecord] = isEmpty
+    ? [null, null]
+    : await Promise.all([
+        findNextVideo(videoRecord),
+        loadVideoTopicRecord({ topicId: videoRecord.topicId, userId: actorId }),
+      ])
   // The results already show the weak sentences, so the next stop is the
   // next video, not a separate spaced-review queue.
   const picked = pickNextStop<ResultsNextStop>([
@@ -189,58 +191,50 @@ export default async function Page({ params }: Props) {
           inTopbar
           title={t.dictation.meta.resultsTitle}
         />
-        <DictationResultsSummary
-          hasTopic={Boolean(video.topicId)}
-          isEmpty={isEmpty}
-          next={picked.kind === 'done' ? null : picked.data}
-          progress={progress}
-          stats={stats}
-          thumbnailUrl={video.thumbnailUrl}
-          title={video.title}
-          videoId={videoId}
-          youtubeVideoId={video.youtubeVideoId}
-        />
-
-        {isEmpty ? (
-          stats.segmentCount === 0 ? (
-            <ContentPanel
-              eyebrow={text.notReadyEyebrow}
-              title={text.notReadyTitle}
-            >
-              <p className="text-ink-soft text-base leading-7 font-normal">
-                {text.notReadyDescription}
-              </p>
-            </ContentPanel>
-          ) : progress === 'completed' ? (
-            <ContentPanel
-              eyebrow={text.savingEyebrow}
-              title={text.savingTitle}
-            >
-              <p className="text-ink-soft text-base leading-7 font-normal">
-                {text.savingDescription}
-              </p>
-            </ContentPanel>
-          ) : (
-            <ContentPanel
-              eyebrow={
-                progress === 'inProgress'
-                  ? text.keepGoingEyebrow
-                  : text.emptyEyebrow
-              }
-              title={
-                progress === 'inProgress'
-                  ? text.inProgressTitle
-                  : text.practiceFirstTitle
-              }
-            >
-              <p className="text-ink-soft text-base leading-7 font-normal">
-                {progress === 'inProgress'
-                  ? text.inProgressDescription
-                  : text.practiceFirstDescription}
-              </p>
-            </ContentPanel>
-          )
+        {isEmpty && (stats.segmentCount === 0 || progress === 'completed') ? (
+          // A state of its own (no segments yet, final attempts still
+          // saving): one panel, no "practice first" beside it.
+          <ContentPanel
+            eyebrow={
+              stats.segmentCount === 0
+                ? text.notReadyEyebrow
+                : text.savingEyebrow
+            }
+            title={
+              stats.segmentCount === 0 ? text.notReadyTitle : text.savingTitle
+            }
+          >
+            <p className="text-ink-soft text-base leading-7 font-normal">
+              {stats.segmentCount === 0
+                ? text.notReadyDescription
+                : text.savingDescription}
+            </p>
+          </ContentPanel>
         ) : (
+          <DictationResultsSummary
+            hasTopic={Boolean(video.topicId)}
+            isEmpty={isEmpty}
+            // Results look back: the record as it stands, never a "+1".
+            journeyStep={
+              topicRecord
+                ? topicStepLine(
+                    topicRecord,
+                    { finished: false, wasFinishedBefore: true },
+                    t.dictation.practice
+                  )
+                : null
+            }
+            next={picked.kind === 'done' ? null : picked.data}
+            progress={progress}
+            stats={stats}
+            thumbnailUrl={video.thumbnailUrl}
+            title={video.title}
+            videoId={videoId}
+            youtubeVideoId={video.youtubeVideoId}
+          />
+        )}
+
+        {isEmpty ? null : (
           <>
             {/* The AI coach sits right under the head: the one extra step
                 worth taking here, so it is easy to find and press. */}

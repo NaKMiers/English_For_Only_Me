@@ -34,7 +34,7 @@ function DebriefList({ items, title }: { items: string[]; title: string }) {
   if (items.length === 0) return null
 
   return (
-    <div className="bg-surface/80 rounded-control grid content-start gap-2 p-3">
+    <div className="bg-surface rounded-control grid content-start gap-2 p-3">
       <h3 className="text-sm font-medium">{title}</h3>
       <ul className="grid list-disc gap-1 pl-4 text-sm leading-6">
         {items.map(item => (
@@ -126,36 +126,51 @@ export function DictationDebriefPanel({
             className="text-ink-soft size-5 shrink-0 transition-transform group-data-panel-open:rotate-180"
           />
         </CollapsibleTrigger>
-        <ActionButton
-          className="bg-brand text-surface hover:bg-brand/90 hover:text-surface min-h-12 border-transparent px-6 text-base max-sm:w-full"
-          disabled={!canGenerate || isGenerating}
-          icon={
-            isGenerating ? (
-              <Loader2
-                aria-hidden="true"
-                className="size-4 animate-spin"
-              />
-            ) : hasReadyDebrief ? (
-              <RotateCcw
-                aria-hidden="true"
-                className="size-4"
-              />
-            ) : (
-              <Sparkles
-                aria-hidden="true"
-                className="size-4"
-              />
-            )
-          }
-          onClick={generateDebrief}
-        >
-          {isGenerating
-            ? text.generating
-            : hasReadyDebrief
-              ? text.regenerate
-              : text.generate}
-        </ActionButton>
+        {canGenerate ? (
+          <ActionButton
+            className="bg-brand text-surface hover:bg-brand/90 hover:text-surface min-h-12 border-transparent px-6 text-base max-sm:w-full"
+            disabled={isGenerating}
+            icon={
+              isGenerating ? (
+                <Loader2
+                  aria-hidden="true"
+                  className="size-4 animate-spin"
+                />
+              ) : hasReadyDebrief ? (
+                <RotateCcw
+                  aria-hidden="true"
+                  className="size-4"
+                />
+              ) : (
+                <Sparkles
+                  aria-hidden="true"
+                  className="size-4"
+                />
+              )
+            }
+            onClick={generateDebrief}
+          >
+            {isGenerating
+              ? text.generating
+              : hasReadyDebrief
+                ? text.regenerate
+                : text.generate}
+          </ActionButton>
+        ) : (
+          // Not finished yet: say why in one quiet line, no disabled button.
+          <p className="text-ink-soft text-sm max-sm:w-full">{text.locked}</p>
+        )}
       </div>
+
+      {/* Next to the button that failed, not inside the closed fold. */}
+      {error ? (
+        <InlineNotice
+          className="mt-3"
+          tone="error"
+        >
+          {format(text.error, { error })}
+        </InlineNotice>
+      ) : null}
 
       <CollapsiblePanel className="grid gap-4 pt-4">
         <p className="text-ink-soft text-sm leading-5">{text.description}</p>
@@ -186,17 +201,9 @@ export function DictationDebriefPanel({
           </Collapsible>
         ) : null}
 
-        {!canGenerate ? <InlineNotice>{text.locked}</InlineNotice> : null}
-
-        {error ? (
-          <InlineNotice tone="error">
-            {format(text.error, { error })}
-          </InlineNotice>
-        ) : null}
-
         {hasReadyDebrief ? (
           <div className="grid gap-3">
-            <p className="bg-surface/80 rounded-control p-3 text-base leading-7">
+            <p className="bg-surface rounded-control p-3 text-base leading-7">
               {debrief.contentSummary}
             </p>
 
@@ -207,10 +214,10 @@ export function DictationDebriefPanel({
                   {debrief.keyVocabulary.map(item => (
                     <div
                       key={item.term}
-                      className="bg-surface/80 rounded-control grid gap-0.5 p-3 text-sm leading-6"
+                      className="bg-surface rounded-control grid gap-0.5 p-3 text-sm leading-6"
                     >
-                      <p className="font-medium">{item.term}</p>
-                      <p>{item.meaning}</p>
+                      <p className="text-base font-medium">{item.term}</p>
+                      <p className="text-ink-soft">{item.meaning}</p>
                       <p className="text-ink-soft text-xs leading-5">
                         {item.example}
                       </p>

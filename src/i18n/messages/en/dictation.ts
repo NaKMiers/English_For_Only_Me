@@ -274,6 +274,9 @@ export const dictation = {
       one: 'sentence written',
       other: 'sentences written',
     },
+    journeyGained: '+1 on {topic}, {left} to go',
+    journeyLeft: '{topic}: {left} to go',
+    journeyGold: '{topic} is done',
     finishWins: '{correct} of {total} written right',
     nextInTopic: 'Next video in {topic}',
     topicDone: 'This topic is done: pick the next record',
@@ -368,9 +371,9 @@ export const dictation = {
     inProgressTitle: 'Practice in progress',
     practiceFirstTitle: 'Practice first',
     inProgressDescription:
-      'Resolve a few sentences, then your stats and weak-segment queue appear here.',
+      'Resolve a few sentences, then your results appear here.',
     practiceFirstDescription:
-      'The review queue stays quiet until there is a real weak sentence to drill.',
+      'Your results appear here after your first practice.',
   },
   duration: {
     minutes: '{minutes}m',
@@ -453,6 +456,13 @@ export const dictation = {
     allCaughtUpBody:
       'No weak sentences are due. Take the next stop on the landing.',
     toLanding: 'Back to Dictation Lab',
+    endLeft: {
+      one: '{count} sentence left',
+      other: '{count} sentences left',
+    },
+    endNext: 'Next sentence',
+    endBack: 'Back to review',
+    endClear: 'Review queue clear',
     reasons: {
       highRetry: 'High retry',
       lowAccuracy: 'Low accuracy',

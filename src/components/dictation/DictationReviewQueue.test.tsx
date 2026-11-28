@@ -12,12 +12,13 @@ const item = (id: string, videoId = `v${id}`): DictationReviewItemApiRecord =>
     priority: 3,
     reason: 'lowAccuracy',
     statsSnapshot: { accuracy: 40 },
+    segmentId: `s${id}`,
     status: 'due',
     videoId,
   }) as unknown as DictationReviewItemApiRecord
 
 describe('DictationReviewQueue', () => {
-  test('leads with the due count and one Start review into the first video', () => {
+  test('leads with the due count and one Start review into the first sentence', () => {
     const { container } = render(
       <DictationReviewQueue reviewItems={[item('1'), item('2')]} />
     )
@@ -25,8 +26,12 @@ describe('DictationReviewQueue', () => {
     expect(screen.getByText('2 sentences to review')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Start review' })).toHaveAttribute(
       'href',
-      '/dictation/videos/v1/practice'
+      '/dictation/videos/v1/practice?segment=s1'
     )
+    // Every row opens its own sentence, not the video's start.
+    expect(
+      screen.getByRole('link', { name: /Sentence 2/ }).getAttribute('href')
+    ).toBe('/dictation/videos/v2/practice?segment=s2')
     // No internal priority number on the rows.
     expect(container.textContent).not.toContain('3')
   })

@@ -17,21 +17,63 @@ import { toDictationSegmentRecord } from '@/modules/dictation/services/dictation
 import type { DictationReviewItemStatus } from '@/modules/dictation/types'
 
 const ACTIVE_REVIEW_STATUSES: DictationReviewItemStatus[] = ['due', 'scheduled']
+const CLOSED_REVIEW_STATUSES: DictationReviewItemStatus[] = [
+  'completed',
+  'dismissed',
+]
 
 type ReviewAttemptInput = Parameters<typeof toDictationAttemptRecord>[0]
 type ReviewSegmentInput = Parameters<typeof toDictationSegmentRecord>[0]
 
 interface ExistingReviewItemKey {
   kind: string
+  /** When the item was solved or dismissed (closed items only). */
+  lastReviewedAt?: Date | null
   reason: string
   segmentId: unknown
+  /** Missing means active (older callers pass active items only). */
+  status?: string
+}
+
+function isActiveStatus(status: string | undefined) {
+  return (
+    status === undefined ||
+    ACTIVE_REVIEW_STATUSES.includes(status as DictationReviewItemStatus)
+  )
+}
+
+/**
+ * Per segment, when its last review item was closed (solved in the review
+ * queue, or dismissed). Attempts up to then are already reviewed: they must
+ * not raise the same item again on the next recompute.
+ */
+function closedAtBySegment(items: ExistingReviewItemKey[]) {
+  const closedAt = new Map<string, number>()
+
+  for (const item of items) {
+    if (
+      !item.status ||
+      !CLOSED_REVIEW_STATUSES.includes(item.status as DictationReviewItemStatus)
+    )
+      continue
+    if (!item.lastReviewedAt) continue
+
+    const key = String(item.segmentId)
+    const at = new Date(item.lastReviewedAt).getTime()
+
+    closedAt.set(key, Math.max(closedAt.get(key) ?? 0, at))
+  }
+
+  return closedAt
 }
 
 /**
  * The review candidates that do not already have an active item. Shared by the
  * video-wide and the segment-scoped recompute so both decide identically:
  * buildReviewCandidates groups by segment, so feeding it one segment's attempts
- * yields exactly that segment's share of the video-wide result.
+ * yields exactly that segment's share of the video-wide result. Only attempts
+ * made after a segment's last closed item count, so a sentence solved in the
+ * review queue stays solved until the learner misses it again.
  */
 export function selectNewReviewCandidates({
   attempts,
@@ -43,13 +85,19 @@ export function selectNewReviewCandidates({
   segments: ReviewSegmentInput[]
 }): ReviewCandidate[] {
   const existingKeys = new Set(
-    existingItems.map(
-      item => `${String(item.segmentId)}:${item.kind}:${item.reason}`
-    )
+    existingItems
+      .filter(item => isActiveStatus(item.status))
+      .map(item => `${String(item.segmentId)}:${item.kind}:${item.reason}`)
   )
+  const closedAt = closedAtBySegment(existingItems)
+  const records = attempts.map(toDictationAttemptRecord).filter(attempt => {
+    const at = closedAt.get(attempt.segmentId)
+
+    return at === undefined || new Date(attempt.createdAt).getTime() > at
+  })
 
   return buildReviewCandidates({
-    attempts: attempts.map(toDictationAttemptRecord),
+    attempts: records,
     segments: segments.map(toDictationSegmentRecord),
   }).filter(
     candidate =>
@@ -154,10 +202,11 @@ export async function recomputeReviewItemsForVideo({
     })
       .sort({ order: 1 })
       .lean(),
+    // Active items (not raised twice) and closed ones (their attempts are
+    // already reviewed).
     DictationReviewItemModel.find({
       userId,
       videoId,
-      status: { $in: ACTIVE_REVIEW_STATUSES },
     }).lean(),
   ])
 
@@ -194,11 +243,11 @@ export async function recomputeReviewItemsForSegment({
       _id: segmentId,
       videoId,
     }).lean(),
+    // Active and closed items, as in the video-wide recompute.
     DictationReviewItemModel.find({
       userId,
       videoId,
       segmentId,
-      status: { $in: ACTIVE_REVIEW_STATUSES },
     }).lean(),
   ])
 
@@ -246,6 +295,27 @@ export async function countDueReviewItemsForUser(userId: string | null) {
     userId,
     status: { $in: ACTIVE_REVIEW_STATUSES },
   })
+}
+
+/**
+ * The learner solved this sentence from the review queue: every active item
+ * of the segment is completed. The recompute then ignores the attempts made
+ * up to now (see `selectNewReviewCandidates`), so the item stays gone until
+ * the sentence is missed again.
+ */
+export async function completeReviewItemsForSegment({
+  now = new Date(),
+  segmentId,
+  userId,
+}: {
+  now?: Date
+  segmentId: string
+  userId: string
+}) {
+  await DictationReviewItemModel.updateMany(
+    { segmentId, status: { $in: ACTIVE_REVIEW_STATUSES }, userId },
+    { $set: { lastReviewedAt: now, status: 'completed' } }
+  )
 }
 
 export async function markReviewItemForUser({

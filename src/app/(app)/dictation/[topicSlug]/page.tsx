@@ -159,7 +159,9 @@ export default async function TopicPage({ params, searchParams }: PageProps) {
           groups={groups}
           journey={t.common.journey}
           labels={t.dictation.topicJourney}
-          next={next}
+          // No Continue float over search results: it would jump to a card
+          // the flat list may not show.
+          next={searchResult ? null : next}
           thumbnailUrl={topic.thumbnailUrl ?? null}
           title={topic.title}
         />
@@ -179,6 +181,7 @@ export default async function TopicPage({ params, searchParams }: PageProps) {
             completionCounts={completionCounts}
             inProgressSet={inProgressSet}
             labels={labels}
+            nextId={next?.video.id ?? null}
           />
         ) : (
           <SectionAccordion
@@ -203,6 +206,7 @@ function FlatResults({
   completionCounts,
   inProgressSet,
   labels,
+  nextId,
 }: {
   result: Awaited<ReturnType<typeof searchVideosInTopic>>
   query: ReturnType<typeof parseBrowseQuery>
@@ -212,6 +216,8 @@ function FlatResults({
   completionCounts: Map<string, number>
   inProgressSet: Set<string>
   labels: Messages['dictation']['browse']
+  /** The topic's next video: its card keeps the pink ring in the results. */
+  nextId: string | null
 }) {
   const items = videos.map(video =>
     toBrowseItem(video, { completionCounts, favoritedSet, inProgressSet })
@@ -233,6 +239,7 @@ function FlatResults({
           videos={items}
           canFavorite={canFavorite}
           labels={labels.card}
+          nextId={nextId}
         />
       )}
       <BrowsePagination

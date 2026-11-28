@@ -22,6 +22,8 @@ interface Props {
   focusTitle?: boolean
   /** False for a video outside any topic: no "topic is done" line. */
   hasTopic?: boolean
+  /** "+1 on TED, 3 to go": the topic step this run took (none off-topic). */
+  journeyStep?: string | null
   /** The next video of the topic, or null (topic done, no topic). */
   next: PracticeNextVideo | null
   /** Quiet secondary actions: see results, repeat. */
@@ -38,6 +40,7 @@ export function PracticeFinish({
   correct,
   focusTitle = false,
   hasTopic = true,
+  journeyStep = null,
   next,
   secondary,
   total,
@@ -53,6 +56,7 @@ export function PracticeFinish({
         unit: plural(text.finishUnit, total),
         value: total,
       }}
+      journeyStep={journeyStep}
       module="dictation"
       nextStop={
         <NextStopCard

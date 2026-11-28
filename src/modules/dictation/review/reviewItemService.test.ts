@@ -168,6 +168,56 @@ describe('selectNewReviewCandidates parity', () => {
   })
 })
 
+describe('selectNewReviewCandidates after a solved review', () => {
+  const segmentBAttempts = attempts.filter(
+    attempt => attempt.segmentId === segmentB
+  )
+  const lastB = segmentBAttempts[segmentBAttempts.length - 1]
+
+  it('a completed item keeps its old attempts from raising it again', () => {
+    const reasons = selectNewReviewCandidates({
+      attempts: segmentBAttempts,
+      existingItems: [
+        {
+          kind: 'segment',
+          lastReviewedAt: new Date(lastB.createdAt.getTime() + 1),
+          reason: 'skipped',
+          segmentId: segmentB,
+          status: 'completed',
+        },
+      ],
+      segments: [segments[1]],
+    })
+
+    expect(reasons).toEqual([])
+  })
+
+  it('a miss after the solve raises the sentence again', () => {
+    const solvedAt = new Date(lastB.createdAt.getTime() + 1)
+    const reasons = selectNewReviewCandidates({
+      attempts: [
+        ...segmentBAttempts,
+        {
+          ...attemptDoc(segmentB, 'skip', false, 0),
+          createdAt: new Date(solvedAt.getTime() + 1000),
+        },
+      ],
+      existingItems: [
+        {
+          kind: 'segment',
+          lastReviewedAt: solvedAt,
+          reason: 'skipped',
+          segmentId: segmentB,
+          status: 'completed',
+        },
+      ],
+      segments: [segments[1]],
+    }).map(candidate => candidate.reason)
+
+    expect(reasons).toEqual(['skipped'])
+  })
+})
+
 describe('recomputeReviewItemsForSegment', () => {
   it('queries only the attempted segment and inserts its new candidates', async () => {
     const segmentAttempts = attempts.filter(

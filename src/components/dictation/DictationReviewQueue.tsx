@@ -8,6 +8,7 @@ import { ActionButton } from '@/components/ui/ActionButton'
 import { DUE_ICON } from '@/constants/stateIcons'
 import { useMessages } from '@/i18n/client'
 import { format, plural } from '@/i18n/format'
+import { reviewPracticeHref } from '@/modules/dictation/review/reviewDeepLink'
 import type { DictationReviewItemApiRecord } from '@/modules/dictation/types'
 
 /** Rows shown before the rest fold behind "N more". */
@@ -59,7 +60,7 @@ export function DictationReviewQueue({
   const row = (item: DictationReviewItemApiRecord) => (
     <li key={item.id}>
       <QueueRow
-        href={`/dictation/videos/${item.videoId}/practice`}
+        href={reviewPracticeHref(item)}
         title={item.label}
         meta={format(text.itemMeta, {
           accuracy: item.statsSnapshot.accuracy,
@@ -92,7 +93,7 @@ export function DictationReviewQueue({
           {first ? (
             <ActionButton
               data-next-stop=""
-              href={`/dictation/videos/${first.videoId}/practice`}
+              href={reviewPracticeHref(first)}
               icon={<DUE_ICON aria-hidden="true" />}
               tone="ink"
             >

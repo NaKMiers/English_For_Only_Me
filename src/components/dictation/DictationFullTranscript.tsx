@@ -109,7 +109,7 @@ export function DictationFullTranscript<
             disabled={!canRepeat}
             onClick={onToggleRepeat}
             className={cn(
-              'border-line rounded-control inline-flex min-h-8 items-center gap-1.5 border px-2 font-sans text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-50',
+              'border-line rounded-control soft-press hover-pop inline-flex min-h-11 items-center gap-1.5 border px-2 font-sans text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-50 sm:min-h-8',
               isRepeating
                 ? 'bg-cta text-cta-fg'
                 : 'bg-surface text-ink hover:bg-tint'
@@ -126,7 +126,7 @@ export function DictationFullTranscript<
             aria-pressed={autoScroll}
             onClick={onToggleAutoScroll}
             className={cn(
-              'border-line rounded-control inline-flex min-h-8 items-center gap-1.5 border px-2 font-sans text-xs font-semibold',
+              'border-line rounded-control soft-press hover-pop inline-flex min-h-11 items-center gap-1.5 border px-2 font-sans text-xs font-semibold sm:min-h-8',
               autoScroll
                 ? 'bg-cta text-cta-fg'
                 : 'bg-surface text-ink hover:bg-tint'
@@ -169,7 +169,8 @@ export function DictationFullTranscript<
                 onClick={() => onSelectSegment(segment)}
                 aria-current={isHighlighted ? 'true' : undefined}
                 className={cn(
-                  'rounded-control grid w-full min-w-0 grid-cols-[2.25rem_minmax(0,1fr)] items-start gap-2 px-1.5 py-2 text-left transition-colors',
+                  // A dense scrolling list: press feedback and a hover tint, no rise.
+                  'soft-press rounded-control grid w-full min-w-0 grid-cols-[2.25rem_minmax(0,1fr)] items-start gap-2 px-1.5 py-2 text-left transition-colors',
                   isHighlighted ? 'bg-tint' : 'hover:bg-tint-soft'
                 )}
               >

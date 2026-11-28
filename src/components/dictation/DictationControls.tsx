@@ -20,7 +20,6 @@ interface Props {
   canGoNext: boolean
   canGoPrevious: boolean
   canReplay: boolean
-  currentIndex: number
   isVideoHidden: boolean
   onAnswerTextSizeChange: (size: AnswerTextSize) => void
   onGoNext: () => void
@@ -34,7 +33,6 @@ interface Props {
   onVideoSizeChange: (size: VideoSize) => void
   playbackSpeed: number
   toggles: PracticeToggles
-  totalSegments: number
   videoSize: VideoSize
 }
 
@@ -46,7 +44,6 @@ export function DictationControls({
   canGoNext,
   canGoPrevious,
   canReplay,
-  currentIndex,
   isVideoHidden,
   onAnswerTextSizeChange,
   onGoNext,
@@ -60,7 +57,6 @@ export function DictationControls({
   onVideoSizeChange,
   playbackSpeed,
   toggles,
-  totalSegments,
   videoSize,
 }: Props) {
   const t = useMessages()
@@ -96,12 +92,6 @@ export function DictationControls({
             className="size-4"
           />
         </IconButton>
-        <span
-          aria-label={text.current}
-          className="border-line bg-tint rounded-control inline-flex min-h-8 items-center border px-2 font-sans text-xs font-medium tabular-nums"
-        >
-          {currentIndex + 1} / {totalSegments}
-        </span>
         <IconButton
           label={text.next}
           disabled={!canGoNext}

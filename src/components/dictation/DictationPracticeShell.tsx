@@ -4,7 +4,7 @@ import { Headphones, Play, ScrollText } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import { ContentPanel } from '@/components/common/ContentPanel'
+import { InlineNotice } from '@/components/common/InlineNotice'
 import {
   useClientOutbox,
   useOutboxOwnerKey,
@@ -19,6 +19,9 @@ import {
   type PracticeNextVideo,
 } from '@/components/dictation/practice/PracticeFinish'
 import { PracticeProgressStrip } from '@/components/dictation/practice/PracticeProgressStrip'
+import { ReviewEnd } from '@/components/dictation/practice/ReviewEnd'
+import { EmptyState } from '@/components/journey/EmptyState'
+import { topicStepLine } from '@/components/dictation/practice/topicStep'
 import {
   GuidedAnswerInput,
   type GuidedStatus,
@@ -47,6 +50,7 @@ import {
   type CharCorrectionResult,
 } from '@/modules/dictation/correction'
 import type { YoutubePlayerStatus } from '@/modules/dictation/player/useYoutubeDictationPlayer'
+import type { VideoTopicRecord } from '@/modules/dictation/practice/topicRecord'
 import {
   buildAttemptWrite,
   buildCompletionWrite,
@@ -107,6 +111,21 @@ type PracticeVideo = Pick<
   'id' | 'level' | 'title' | 'youtubeVideoId'
 > & { topicId?: string | null }
 
+/**
+ * Review mode (`?segment=` from the review queue): one weak sentence, the
+ * session that recorded it reused as it is (never moved or finished), then a
+ * small end that leads to the next due sentence.
+ */
+export interface PracticeReview {
+  /** Other sentences still due after this one. */
+  left: number
+  /** The next due sentence's deep link, or the queue. */
+  nextHref: string
+  segmentId: string
+  /** The session of the sentence's last attempt; review attempts go there. */
+  sessionId: string
+}
+
 interface Props {
   completions: number
   initialSession: DictationSessionApiRecord | null
@@ -114,7 +133,10 @@ interface Props {
   initialTranslationTrack: PracticeTranslationTrack | null
   /** The next video of this topic for the finish screen's next stop. */
   nextVideo?: PracticeNextVideo | null
+  review?: PracticeReview | null
   segments: DictationPracticeSegment[]
+  /** The video's topic on the journey, for the finish screen's step. */
+  topicRecord?: VideoTopicRecord | null
   translationLanguages: string[]
   video: PracticeVideo
 }
@@ -226,7 +248,9 @@ export function DictationPracticeShell({
   initialSession,
   initialTranslationTrack,
   nextVideo = null,
+  review = null,
   segments,
+  topicRecord = null,
   translationLanguages,
   video,
 }: Props) {
@@ -238,6 +262,13 @@ export function DictationPracticeShell({
   // When set, a leave-confirmation modal is open for this pending in-app
   // destination (the learner clicked a link mid-practice).
   const [pendingLeaveHref, setPendingLeaveHref] = useState<string | null>(null)
+  const reviewIndex = review
+    ? segments.findIndex(segment => segment.id === review.segmentId)
+    : -1
+  const isReview = reviewIndex >= 0
+  // Review mode ends after its one sentence; `passed` says whether it left
+  // the queue.
+  const [reviewEnd, setReviewEnd] = useState<{ passed: boolean } | null>(null)
   const [session, setSession] = useState(initialSession)
   // The current run, read by queued writes, which run after a render or two.
   const runRef = useRef<PracticeRun>({
@@ -290,14 +321,25 @@ export function DictationPracticeShell({
   // video has no 'active' session, so initialSession is null there. This covers
   // cases 4/5/7/8 (re-entering a done video shows Done, not Restart/Start).
   const [isCompleted, setIsCompleted] = useState(
-    () => completions > 0 && (initialSession?.currentSegmentOrder ?? 0) === 0
+    () =>
+      !isReview &&
+      completions > 0 &&
+      (initialSession?.currentSegmentOrder ?? 0) === 0
   )
   // The finish screen counts "written right" only for a run this visit
   // covered from its first sentence: not for a video done on load, nor for
   // a resumed run (earlier sentences were passed in another visit).
   const [completedOnLoad, setCompletedOnLoad] = useState(isCompleted)
+  // Whether this run's video was finished before it started (an earlier
+  // visit, or an earlier run of this visit): a replay adds 0 to the topic.
+  const [runWasFinishedBefore, setRunWasFinishedBefore] = useState(
+    completions > 0
+  )
   const [runFromStart, setRunFromStart] = useState(
-    () => !isCompleted && (initialSession?.currentSegmentOrder ?? 0) === 0
+    () =>
+      !isReview &&
+      !isCompleted &&
+      (initialSession?.currentSegmentOrder ?? 0) === 0
   )
   const [answerDrafts, setAnswerDrafts] = useState<Record<string, string>>(() =>
     readDictationAnswerDrafts(video.id, ownerKey)
@@ -344,11 +386,14 @@ export function DictationPracticeShell({
   const retiredSessionIdsRef = useRef(new Set<string>())
   // Set once the learner acts. Until then a freshly started session may move
   // the cursor to where the server says; after, the local cursor wins.
-  const localCursorTouchedRef = useRef(false)
+  // Review mode starts on its sentence: the session start must not move it.
+  const localCursorTouchedRef = useRef(isReview)
   const currentAnswerRef = useRef('')
   const isMountedRef = useRef(false)
   const [currentIndex, setCurrentIndex] = useState(() =>
-    clampIndex(initialSession?.currentSegmentOrder ?? 0, segments.length)
+    isReview
+      ? reviewIndex
+      : clampIndex(initialSession?.currentSegmentOrder ?? 0, segments.length)
   )
   const [playerController, setPlayerController] = useState<PlayerController>({
     canReplay: false,
@@ -451,8 +496,9 @@ export function DictationPracticeShell({
   useEffect(() => {
     currentAnswerRef.current = currentAnswer
   }, [currentAnswer])
-  const canGoPrevious = currentIndex > 0
-  const canGoNext = currentIndex < segments.length - 1
+  // Review mode is one sentence: no moving to the others.
+  const canGoPrevious = !isReview && currentIndex > 0
+  const canGoNext = !isReview && currentIndex < segments.length - 1
   const shouldContinuePlayback =
     playerController.status === 'playing' ||
     playerController.status === 'buffering'
@@ -466,9 +512,10 @@ export function DictationPracticeShell({
       ? (activePlaybackIndex ?? currentIndex)
       : currentIndex
   const activeCaptionSegment = segments[activeCaptionIndex] ?? null
-  const displayIndex = activeCaptionIndex
-  const canGoToPreviousCaption = activeCaptionIndex > 0
-  const canGoToNextCaption = activeCaptionIndex < segments.length - 1
+  const lockedToReview = isReview && activeView === 'practice'
+  const canGoToPreviousCaption = !lockedToReview && activeCaptionIndex > 0
+  const canGoToNextCaption =
+    !lockedToReview && activeCaptionIndex < segments.length - 1
 
   const replayCurrentSegment = useCallback(() => {
     if (!currentSegment) return
@@ -744,10 +791,13 @@ export function DictationPracticeShell({
    */
   const queueSessionWrite = useCallback(
     ({
+      adopt = true,
       build,
       kind,
       onSettled,
     }: {
+      /** False for a write to another session (review mode's attempts). */
+      adopt?: boolean
       build: (activeSession: DictationSessionApiRecord) => OutboxEnqueueInput
       kind: SessionWriteKind
       onSettled?: (result: { data: unknown; ok: boolean }) => void
@@ -772,7 +822,7 @@ export function DictationPracticeShell({
 
                 const nextSession = readSessionFromWriteResult(result.data)
 
-                if (nextSession) adoptSession(run, nextSession)
+                if (nextSession && adopt) adoptSession(run, nextSession)
                 onSettled?.({ data: result.data, ok: true })
                 return
               }
@@ -822,13 +872,17 @@ export function DictationPracticeShell({
     ]
   )
 
+  // Review mode never writes the learner's saved position.
   const syncCursor = useCallback(
-    (segment: { id: string; order: number }) =>
+    (segment: { id: string; order: number }) => {
+      if (isReview) return
+
       queueSessionWrite({
         build: activeSession => buildCursorWrite(activeSession.id, segment),
         kind: 'cursor',
-      }),
-    [queueSessionWrite]
+      })
+    },
+    [isReview, queueSessionWrite]
   )
 
   const syncSessionPreferences = useCallback(
@@ -1126,11 +1180,15 @@ export function DictationPracticeShell({
       }))
 
       queueSessionWrite({
+        // Review attempts go to the session that recorded the sentence and
+        // leave its position alone (the route reads `review`).
+        adopt: !review,
         build: queuedSession =>
-          buildAttemptWrite(queuedSession.id, {
+          buildAttemptWrite(review ? review.sessionId : queuedSession.id, {
             action,
             idempotencyKey,
             replayCountDelta,
+            ...(review ? { review: true } : {}),
             segmentId,
             timeSpentMs,
             typedAnswer,
@@ -1156,6 +1214,7 @@ export function DictationPracticeShell({
       currentSegment,
       ownerKey,
       queueSessionWrite,
+      review,
       settleSegmentProgress,
       updateAnswerDrafts,
     ]
@@ -1194,6 +1253,15 @@ export function DictationPracticeShell({
     (!currentSegmentWasLocallyReset && (currentSegment?.attemptCount ?? 0) > 0)
 
   const advanceAfterAttempt = useCallback(() => {
+    // Review mode: the one sentence is done, show where to go next. Nothing
+    // is completed on the session.
+    if (isReview) {
+      setReviewEnd({ passed: Boolean(currentAttempt?.isPassed) })
+      setVocabLookupError(null)
+      setShowAnswerWords(false)
+      return
+    }
+
     // Keep the resolved answer in the draft so revisiting the segment shows it.
     if (canGoNext) {
       goToIndex(currentIndex + 1)
@@ -1219,7 +1287,14 @@ export function DictationPracticeShell({
         onSettled: () => resolve(),
       })
     )
-  }, [canGoNext, currentIndex, goToIndex, queueSessionWrite])
+  }, [
+    canGoNext,
+    currentAttempt,
+    currentIndex,
+    goToIndex,
+    isReview,
+    queueSessionWrite,
+  ])
 
   const retryCurrent = useCallback(() => {
     if (currentSegment) {
@@ -1266,6 +1341,8 @@ export function DictationPracticeShell({
     const completion = completionRef.current
 
     if (!completion && (!run.session || run.session.status === 'active')) return
+
+    setRunWasFinishedBefore(true)
 
     // The old run keeps its session, so its queued writes still land there.
     if (run.session) retiredSessionIdsRef.current.add(run.session.id)
@@ -1360,6 +1437,7 @@ export function DictationPracticeShell({
   // Results reads what the server has, so wait for this page's queued writes
   // to land first (bounded, so a dead connection cannot strand the learner).
   const resultsHref = `/dictation/videos/${video.id}/results`
+  const practiceHref = `/dictation/videos/${video.id}/practice`
   const openResults = useCallback(async () => {
     const requestId = resultsRequestIdRef.current + 1
 
@@ -1453,7 +1531,7 @@ export function DictationPracticeShell({
   // guarded: browsers only allow their own un-styleable dialog there, and
   // progress is saved + resumable, so a reload just picks up where you left off.
   useEffect(() => {
-    if (!hasStarted || isCompleted) return
+    if (!hasStarted || isCompleted || reviewEnd) return
 
     function handleClickCapture(event: MouseEvent) {
       if (
@@ -1506,7 +1584,7 @@ export function DictationPracticeShell({
     document.addEventListener('click', handleClickCapture, true)
 
     return () => document.removeEventListener('click', handleClickCapture, true)
-  }, [hasStarted, isCompleted])
+  }, [hasStarted, isCompleted, reviewEnd])
 
   // In-progress work to resume: initialSession is loaded only when status is
   // 'active', so a currentSegmentOrder past sentence 1 means the learner has
@@ -1514,22 +1592,20 @@ export function DictationPracticeShell({
   // session). This is the only state that shows the Continue/Restart ready panel;
   // an already-completed video with no in-progress work shows the finish screen
   // instead (see the `isCompleted` initializer above).
-  const hasResumableProgress = (initialSession?.currentSegmentOrder ?? 0) > 0
+  const hasResumableProgress =
+    !isReview && (initialSession?.currentSegmentOrder ?? 0) > 0
   const readyActionLabel = hasResumableProgress
     ? text.continueAction
     : text.startAction
 
   if (!currentSegment)
     return (
-      <ContentPanel
-        eyebrow={text.emptyEyebrow}
+      <EmptyState
+        action={{ href: '/dictation', label: text.backToLab, tone: 'ink' }}
+        body={text.emptyDescription}
+        icon={<Headphones />}
         title={text.emptyTitle}
-      >
-        <p className="text-ink-soft text-base leading-7 font-normal">
-          {text.emptyDescription}
-        </p>
-        <ActionButton href="/dictation">{text.backToLab}</ActionButton>
-      </ContentPanel>
+      />
     )
 
   // `max` stacks the video above the tabs, so the whole body scrolls as one
@@ -1618,7 +1694,6 @@ export function DictationPracticeShell({
               canGoNext={canGoToNextCaption}
               canGoPrevious={canGoToPreviousCaption}
               canReplay={playerController.canReplay}
-              currentIndex={displayIndex}
               isVideoHidden={preferences.isVideoHidden}
               onAnswerTextSizeChange={answerTextSize =>
                 setPreferences(currentPreferences => ({
@@ -1628,9 +1703,14 @@ export function DictationPracticeShell({
               }
               onGoNext={handleControlsGoNext}
               onGoPrevious={handleControlsGoPrevious}
-              onGoToFirstSegment={goToFirstSegment}
+              // From review mode, Rewind and Restart open the whole video.
+              onGoToFirstSegment={
+                isReview ? () => router.push(practiceHref) : goToFirstSegment
+              }
               onReplay={replayCurrentSegment}
-              onRestart={restartProgress}
+              onRestart={
+                isReview ? () => router.push(practiceHref) : restartProgress
+              }
               onSpeedChange={changeSpeed}
               onToggleVideo={toggleVideo}
               onVideoSizeChange={videoSize =>
@@ -1654,7 +1734,6 @@ export function DictationPracticeShell({
                 showFullAnswer: preferences.showFullAnswer,
                 showShortcuts: preferences.showShortcuts,
               }}
-              totalSegments={segments.length}
               videoSize={preferences.videoSize}
             />
 
@@ -1688,7 +1767,7 @@ export function DictationPracticeShell({
             </TabsList>
           </div>
 
-          {hasStarted && !isCompleted ? (
+          {hasStarted && !isCompleted && !isReview ? (
             <PracticeProgressStrip
               current={currentIndex}
               total={segments.length}
@@ -1750,6 +1829,18 @@ export function DictationPracticeShell({
                     correct={runFromStart ? correctSegmentIds.size : null}
                     focusTitle={!completedOnLoad}
                     hasTopic={Boolean(video.topicId)}
+                    journeyStep={
+                      topicRecord
+                        ? topicStepLine(
+                            topicRecord,
+                            {
+                              finished: !completedOnLoad,
+                              wasFinishedBefore: runWasFinishedBefore,
+                            },
+                            text
+                          )
+                        : null
+                    }
                     next={nextVideo}
                     secondary={
                       <>
@@ -1785,6 +1876,11 @@ export function DictationPracticeShell({
                       </>
                     }
                     total={segments.length}
+                  />
+                ) : review && reviewEnd ? (
+                  <ReviewEnd
+                    left={review.left + (reviewEnd.passed ? 0 : 1)}
+                    nextHref={review.nextHref}
                   />
                 ) : !hasStarted ? (
                   // Raw button: the whole panel is the start target, a big
@@ -1882,17 +1978,17 @@ export function DictationPracticeShell({
                               ) : null}
                               <ActionButton
                                 type="button"
-                                className="px-4 py-1 text-sm"
                                 onClick={advanceAfterAttempt}
                               >
-                                {canGoNext ? text.next : text.finish}
+                                {canGoNext || isReview
+                                  ? text.next
+                                  : text.finish}
                               </ActionButton>
                             </>
                           ) : (
                             <>
                               <ActionButton
                                 type="button"
-                                className="px-4 py-1 text-sm"
                                 onClick={checkDraft}
                               >
                                 {text.check}
@@ -1923,21 +2019,18 @@ export function DictationPracticeShell({
                     />
 
                     {vocabLookupError ? (
-                      <div
-                        role="status"
-                        className="border-line bg-tint-soft text-brand rounded-control border p-3 text-sm font-semibold"
-                      >
+                      <InlineNotice tone="error">
                         {vocabLookupError}
-                      </div>
+                      </InlineNotice>
                     ) : null}
 
                     {translationLanguages.length > 0 && selectedLanguage ? (
                       <DictationTranslation
+                        error={translationError}
                         isLoading={!selectedTrack && !translationError}
                         isUnlocked={isTranslationUnlocked}
                         language={selectedLanguage}
                         text={translationText}
-                        textSize={preferences.answerTextSize}
                       />
                     ) : null}
                   </>
@@ -2002,7 +2095,6 @@ export function DictationPracticeShell({
           >
             {sessionError ??
               (isSessionStartRetrying ? text.retryingConnection : null) ??
-              translationError ??
               (currentSegment.startMs === null || currentSegment.endMs === null
                 ? text.untimedSegment
                 : null)}

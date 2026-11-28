@@ -1,14 +1,15 @@
+import { Headphones } from 'lucide-react'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { PageShell } from '@/components/common/PageShell'
-import { ContentPanel } from '@/components/common/ContentPanel'
 import { DictationPracticeShell } from '@/components/dictation/DictationPracticeShell'
-import { ActionButton } from '@/components/ui/ActionButton'
+import { EmptyState } from '@/components/journey/EmptyState'
 import { hasMongoDbUri } from '@/constants/environments'
 import { getMessages } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
+import { DictationAttemptModel } from '@/models/dictation/DictationAttemptModel'
 import { DictationSegmentModel } from '@/models/dictation/DictationSegmentModel'
 import { DictationSessionModel } from '@/models/dictation/DictationSessionModel'
 import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
@@ -20,6 +21,12 @@ import {
 import { findNextVideo } from '@/modules/dictation/practice/findNextVideo'
 import { loadInitialTranslationCues } from '@/modules/dictation/practice/practiceTranslations'
 import { loadSegmentProgressRows } from '@/modules/dictation/practice/segmentProgressService'
+import { loadVideoTopicRecord } from '@/modules/dictation/practice/topicRecord'
+import {
+  parseReviewSegmentParam,
+  pickNextReview,
+} from '@/modules/dictation/review/reviewDeepLink'
+import { listDueReviewItemsForUser } from '@/modules/dictation/review/reviewItemService'
 import { PRACTICE_SEGMENT_FIELDS } from '@/modules/dictation/services/dictationSegmentRecords'
 import { toDictationSessionRecord } from '@/modules/dictation/services/dictationSessionRecords'
 import { toDictationVideoRecord } from '@/modules/dictation/services/dictationVideoRecords'
@@ -40,6 +47,10 @@ export const runtime = 'nodejs'
 interface Props {
   params: Promise<{
     videoId: string
+  }>
+  /** `segment`: the review queue's deep link to one weak sentence. */
+  searchParams: Promise<{
+    segment?: string | string[]
   }>
 }
 
@@ -63,26 +74,57 @@ async function PracticeSetupState({
       }
     >
       <section className="px-4 pb-6 md:pr-6 md:pl-0">
-        <ContentPanel
-          eyebrow={t.dictation.practice.emptyEyebrow}
+        {/* Learners only get the way back: importing and transcripts are
+            admin work, reached from the admin pages. */}
+        <EmptyState
+          action={{ href: '/dictation', label: text.backToLab, tone: 'ink' }}
+          body={message}
+          icon={<Headphones />}
           title={title}
-        >
-          <p className="text-ink-soft text-base leading-7 font-normal">
-            {message}
-          </p>
-          <div className="flex flex-wrap gap-3">
-            {/* Learners only get the way back: importing and transcripts
-                are admin work, reached from the admin pages. */}
-            <ActionButton href="/dictation">{text.backToLab}</ActionButton>
-          </div>
-        </ContentPanel>
+        />
       </section>
     </PageShell>
   )
 }
 
-export default async function Page({ params }: Props) {
-  const { videoId } = await params
+/**
+ * Review mode for one weak sentence: the session that recorded its last
+ * attempt (reused as it is, its position and status never change) and where
+ * the learner goes after it. Null when the learner never tried the sentence,
+ * so the page opens as normal practice.
+ */
+async function loadReviewTarget({
+  segmentId,
+  userId,
+}: {
+  segmentId: string
+  userId: string
+}) {
+  const [lastAttempt, dueItems] = await Promise.all([
+    DictationAttemptModel.findOne({ segmentId, userId })
+      .sort({ createdAt: -1 })
+      .select('sessionId')
+      .lean(),
+    listDueReviewItemsForUser({ limit: 30, userId }),
+  ])
+
+  if (!lastAttempt) return null
+
+  const next = pickNextReview(dueItems, segmentId)
+
+  return {
+    left: next.left,
+    nextHref: next.href,
+    segmentId,
+    sessionId: String(lastAttempt.sessionId),
+  }
+}
+
+export default async function Page({ params, searchParams }: Props) {
+  const [{ videoId }, { segment: segmentParam }] = await Promise.all([
+    params,
+    searchParams,
+  ])
 
   if (!/^[a-f\d]{24}$/i.test(videoId)) notFound()
 
@@ -152,7 +194,19 @@ export default async function Page({ params }: Props) {
     }),
   ])
 
-  const nextVideo = await findNextVideo(videoRecord)
+  const reviewSegmentId = actorId
+    ? parseReviewSegmentParam(
+        segmentParam,
+        segments.map(segment => String(segment._id))
+      )
+    : null
+  const [nextVideo, review, topicRecord] = await Promise.all([
+    findNextVideo(videoRecord),
+    reviewSegmentId && actorId
+      ? loadReviewTarget({ segmentId: reviewSegmentId, userId: actorId })
+      : null,
+    loadVideoTopicRecord({ topicId: videoRecord.topicId, userId: actorId }),
+  ])
 
   if (segments.length === 0)
     return (
@@ -172,14 +226,19 @@ export default async function Page({ params }: Props) {
     >
       <section className="h-full min-h-0 p-2 sm:p-3">
         <DictationPracticeShell
+          // A new sentence from the queue (same video, new `?segment=`) or the
+          // way back to normal practice starts the shell afresh.
+          key={review?.segmentId ?? 'practice'}
           completions={completions}
           initialSession={session ? toDictationSessionRecord(session) : null}
           nextVideo={nextVideo}
+          review={review}
           initialTranslationTrack={buildInitialTranslationTrack(
             segments,
             translations.firstTrack
           )}
           segments={buildPracticeSegments(segments, progressRows)}
+          topicRecord={topicRecord}
           translationLanguages={translations.languages}
           video={{
             id: videoRecord.id,

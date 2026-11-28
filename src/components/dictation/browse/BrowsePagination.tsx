@@ -45,12 +45,12 @@ export function BrowsePagination({
           {labels.prev}
         </Link>
       ) : (
+        // The end of the list: an empty spacer keeps the page count centred,
+        // no faded pill that cannot be pressed.
         <span
-          className={cn(linkClass, 'opacity-40')}
-          aria-disabled="true"
-        >
-          {labels.prev}
-        </span>
+          aria-hidden="true"
+          className="min-w-20"
+        />
       )}
       <span className="text-ink-soft font-sans text-sm font-normal">
         {format(labels.page, {
@@ -66,12 +66,12 @@ export function BrowsePagination({
           {labels.next}
         </Link>
       ) : (
+        // The end of the list: an empty spacer keeps the page count centred,
+        // no faded pill that cannot be pressed.
         <span
-          className={cn(linkClass, 'opacity-40')}
-          aria-disabled="true"
-        >
-          {labels.next}
-        </span>
+          aria-hidden="true"
+          className="min-w-20"
+        />
       )}
     </nav>
   )

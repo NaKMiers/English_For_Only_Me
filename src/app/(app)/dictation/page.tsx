@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Headphones, Heart } from 'lucide-react'
+import { Headphones, Star } from 'lucide-react'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { PageShell } from '@/components/common/PageShell'
@@ -234,7 +234,6 @@ export default async function DictationPage() {
                     : null
                 }
                 recent={inProgressItems}
-                showFavorites={canFavorite}
               />
             }
             sideId="dictation-side"
@@ -264,7 +263,7 @@ export default async function DictationPage() {
             {canFavorite ? (
               <ActionButton
                 href="/dictation/favorites"
-                icon={<Heart aria-hidden="true" />}
+                icon={<Star aria-hidden="true" />}
                 tone="paper"
               >
                 {t.dictation.journey.side.favorites}
