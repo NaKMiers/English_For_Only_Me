@@ -137,8 +137,8 @@ export async function searchVocabEntries({
 }
 
 /**
- * Which of these terms the learner already has in their vocabulary (any
- * saved status), as the input strings: lets a "Save word" button start in
+ * Which of these terms the learner already has on their learning list
+ * (learning or mastered), as the input strings: lets a "Save word" button start in
  * its saved state. Terms that do not normalize are skipped.
  */
 export async function listSavedTermsForUser({
@@ -174,7 +174,10 @@ export async function listSavedTermsForUser({
 
   if (entries.length === 0) return []
 
+  // Saved means on the learning list (or learnt from it). A word marked
+  // "already know" or ignored can still be saved from a result page.
   const saved = await UserVocabItemModel.find({
+    status: { $in: ['learning', 'mastered'] },
     userId,
     vocabEntryId: { $in: entries.map(entry => entry._id) },
   })

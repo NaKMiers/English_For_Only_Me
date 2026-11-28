@@ -18,11 +18,14 @@ import { ExamButton } from '@/components/ielts/ui'
 export function SaveWordButton({
   context,
   initiallySaved = false,
+  onSaved,
   term,
 }: {
   context: string
   /** The learner already has this word: start in the saved state. */
   initiallySaved?: boolean
+  /** Told once the word is saved, so the list can remember it. */
+  onSaved?: () => void
   term: string
 }) {
   const t = useMessages().ielts.saveWord
@@ -49,7 +52,13 @@ export function SaveWordButton({
         vocabEntryId: entry.id,
       })
 
-      setState(outcome.kind === 'failed' ? 'failed' : 'saved')
+      if (outcome.kind === 'failed') {
+        setState('failed')
+        return
+      }
+
+      setState('saved')
+      onSaved?.()
     } catch {
       setState('failed')
     }

@@ -103,6 +103,9 @@ export function ObjectiveResult({
     rows.some(row => row.outcome === 'wrong') ? 'wrong' : 'all'
   )
   const [openRow, setOpenRow] = useState<number | null>(null)
+  // Words saved before this page and from it: a row folded away or hidden
+  // by the filter comes back still saved.
+  const [saved, setSaved] = useState(() => new Set(savedTerms))
   const wrong = rows.filter(row => row.outcome !== 'correct').length
   const weakest = useMemo(() => weakestType(rows), [rows])
   const visible = rows.filter(row =>
@@ -295,7 +298,12 @@ export function ObjectiveResult({
                           {saveWord ? (
                             <SaveWordButton
                               context={row.evidence?.quote ?? ''}
-                              initiallySaved={savedTerms.includes(saveWord)}
+                              initiallySaved={saved.has(saveWord)}
+                              onSaved={() =>
+                                setSaved(current =>
+                                  new Set(current).add(saveWord)
+                                )
+                              }
                               term={saveWord}
                             />
                           ) : null}
