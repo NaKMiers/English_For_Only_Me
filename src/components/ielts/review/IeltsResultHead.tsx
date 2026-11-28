@@ -14,6 +14,8 @@ import { nextSkillOf } from '../catalogue/testPath'
 
 interface Props {
   attempt: {
+    /** The attempt's band: `result.band`, or `writingBand` for writing. */
+    band: number | null
     id: string
     result: { band: number | null; raw: number; total: number } | null
     skill: IeltsSkill
@@ -34,7 +36,7 @@ interface Props {
  */
 export function IeltsResultHead({ attempt, history, messages, test }: Props) {
   const t = messages.ielts.resultHead
-  const band = attempt.result?.band ?? null
+  const band = attempt.band
   const previous = history.find(
     item =>
       item.id !== attempt.id &&
@@ -72,7 +74,9 @@ export function IeltsResultHead({ attempt, history, messages, test }: Props) {
         value:
           band !== null
             ? band.toFixed(1)
-            : `${attempt.result?.raw ?? 0}/${attempt.result?.total ?? 0}`,
+            : attempt.result
+              ? `${attempt.result.raw}/${attempt.result.total}`
+              : '-',
       }}
       journeyStep={
         entry

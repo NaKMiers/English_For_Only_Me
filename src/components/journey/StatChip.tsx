@@ -15,6 +15,11 @@ interface StatChipProps {
   iconClassName?: string
   /** What the number counts. Visible from `sm`, `sr-only` below. */
   label: string
+  /**
+   * Keep the label visible on phones too, for chips whose icons cannot
+   * tell them apart (e.g. the four Writing criteria).
+   */
+  labelAlways?: boolean
   /** `lg` is the home simple view's bigger chip; same component. */
   size?: 'md' | 'lg'
   /** Module whose accent colours the icon. */
@@ -33,6 +38,7 @@ export function StatChip({
   icon: Icon,
   iconClassName,
   label,
+  labelAlways = false,
   size = 'md',
   tone,
   value,
@@ -51,7 +57,8 @@ export function StatChip({
         />
         <span
           className={cn(
-            'text-ink-soft max-sm:sr-only',
+            'text-ink-soft',
+            !labelAlways && 'max-sm:sr-only',
             size === 'lg' ? 'text-sm' : 'text-xs'
           )}
         >

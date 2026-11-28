@@ -2,6 +2,7 @@
 
 import { GraduationCap } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
 import type {
@@ -109,6 +110,7 @@ export function WritingFeedbackDetails({
             icon={GraduationCap}
             key={key}
             label={label}
+            labelAlways
             tone="ielts"
             value={criteria[key].toFixed(1)}
           />
@@ -263,6 +265,7 @@ function TaskFeedback({
 /** Writing result: per task the essay, criteria, corrections and grading. */
 export function WritingResult({ attempt: initial, tasks }: Props) {
   const t = useMessages().ielts
+  const router = useRouter()
   const [attempt, setAttempt] = useState(initial)
   const [busyTask, setBusyTask] = useState<1 | 2 | null>(null)
   const [error, setError] = useState('')
@@ -275,6 +278,8 @@ export function WritingResult({ attempt: initial, tasks }: Props) {
       const result = await gradeIeltsWritingApi(attempt.id, task)
 
       setAttempt(result.attempt)
+      // The Writing band lives in the server-rendered result head.
+      router.refresh()
     } catch (caught) {
       setError(ieltsErrorMessage(caught, t.writingResult.gradeFailed))
     } finally {

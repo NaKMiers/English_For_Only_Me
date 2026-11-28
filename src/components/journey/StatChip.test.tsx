@@ -38,4 +38,29 @@ describe('StatChip', () => {
     expect(screen.getByText('Stars')).toBeInTheDocument()
     expect(container.querySelector('dt')?.textContent).toBe('Stars')
   })
+
+  test('the label hides on phones unless labelAlways is set', () => {
+    render(
+      <StatStrip>
+        <StatChip
+          icon={Star}
+          label="Hidden on phones"
+          value="1"
+        />
+        <StatChip
+          icon={Star}
+          label="Always shown"
+          labelAlways
+          value="2"
+        />
+      </StatStrip>
+    )
+
+    expect(screen.getByText('Hidden on phones').className).toContain(
+      'max-sm:sr-only'
+    )
+    expect(screen.getByText('Always shown').className).not.toContain(
+      'max-sm:sr-only'
+    )
+  })
 })

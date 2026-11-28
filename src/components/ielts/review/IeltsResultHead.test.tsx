@@ -23,6 +23,7 @@ describe('IeltsResultHead', () => {
     const { container } = render(
       <IeltsResultHead
         attempt={{
+          band: 7,
           id: 'a2',
           result: { band: 7, raw: 30, total: 40 },
           skill: 'reading',
@@ -47,8 +48,10 @@ describe('IeltsResultHead', () => {
     render(
       <IeltsResultHead
         attempt={{
+          // Writing keeps its band in writingBand: no objective result.
+          band: 6,
           id: 'w1',
-          result: { band: 6, raw: 0, total: 0 },
+          result: null,
           skill: 'writing',
           testSlug: 'cam-15-3',
         }}
@@ -62,6 +65,8 @@ describe('IeltsResultHead', () => {
       />
     )
 
+    expect(screen.getByText('6.0')).toBeInTheDocument()
+    expect(screen.queryByText('0/0')).not.toBeInTheDocument()
     expect(
       screen.getByText('+1 step: 3 of 3 skills banded in this test')
     ).toBeInTheDocument()

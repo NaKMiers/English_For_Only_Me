@@ -113,6 +113,10 @@ export default async function IeltsResultPage({ params }: Props) {
         />
         <IeltsResultHead
           attempt={{
+            band:
+              attempt.skill === 'writing'
+                ? attempt.writingBand
+                : (attempt.result?.band ?? null),
             id: attempt.id,
             result: attempt.result
               ? {
