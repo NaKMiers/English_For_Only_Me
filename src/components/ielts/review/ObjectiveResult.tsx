@@ -211,7 +211,7 @@ export function ObjectiveResult({ attempt, rows, sections }: Props) {
                         <button
                           aria-controls={`ielts-row-${row.number}`}
                           aria-expanded={expanded}
-                          className="inline-flex min-h-8 items-center gap-1 font-sans font-semibold"
+                          className="soft-press hover-pop rounded-tag inline-flex min-h-11 items-center gap-1 font-sans font-medium"
                           onClick={() =>
                             setOpenRow(expanded ? null : row.number)
                           }

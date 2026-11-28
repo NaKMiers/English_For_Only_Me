@@ -172,7 +172,7 @@ export function RunnerToolbar({
       <button
         aria-label={lightUp ? t.darkOff : t.darkOn}
         aria-pressed={lightUp}
-        className="text-ink-soft hover:bg-tint hover:text-ink rounded-tag -mx-1.5 inline-grid size-9 shrink-0 place-items-center transition-colors"
+        className="soft-press hover-pop text-ink-soft hover:bg-tint hover:text-ink -mx-1.5 inline-grid size-11 shrink-0 place-items-center rounded-full"
         onClick={toggle}
         title={lightUp ? t.darkOnTitle : t.darkTitle}
         type="button"

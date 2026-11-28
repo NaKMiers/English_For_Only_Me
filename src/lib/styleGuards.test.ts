@@ -98,9 +98,7 @@ const CORNERS: Guard = {
 // `bg-ink` turns into a white slab at night: controls use `cta`.
 const INK_CONTROL: Guard = {
   allow: [],
-  baseline: [
-    'src/components/ui/tooltip.tsx',
-  ],
+  baseline: ['src/components/ui/tooltip.tsx'],
   pattern: /\bbg-ink(?![\w/-])/,
   roots: [join(SRC, 'components')],
   scope: path => !path.startsWith('src/components/ielts/editor/'),
@@ -149,10 +147,7 @@ const HEAVY_WEIGHT: Guard = {
 // `hover-pop` replaced `hover-lift`; the baseline goes in Phase 8.
 const HOVER_LIFT: Guard = {
   allow: [],
-  baseline: [
-    'src/app/admin/page.tsx',
-    'src/components/common/MetricTile.tsx',
-  ],
+  baseline: ['src/app/admin/page.tsx', 'src/components/common/MetricTile.tsx'],
   pattern: /\bhover-lift\b/,
   roots: COMPONENTS_AND_APP,
 }
@@ -199,5 +194,31 @@ describe('no em dash guard', () => {
       .filter(path => DASH.test(readFileSync(join(ROOT, path), 'utf8')))
 
     expect(found).toEqual([])
+  })
+})
+
+// Touch targets (frontend-ui.md, P27): a clickable is at least 44px on
+// phones. Two cheap, explicit checks: an icon button squeezed below its
+// 44px default (a bordered size-7/8/9 override; bare size classes are
+// icons), and a popping control whose height class is under 44px
+// without a breakpoint prefix (sm:min-h-9 for wider screens is fine).
+const SMALL_TOUCH: Guard = {
+  allow: [],
+  baseline: [],
+  pattern:
+    /className="(rounded-tag |rounded-full )?size-(7|8|9) border"|(?<![:\w-])(min-h|h)-(8|9)(?![\w-])[^"']*hover-pop|hover-pop[^"']*(?<![:\w-])(min-h|h)-(8|9)(?![\w-])/,
+  roots: COMPONENTS_AND_APP,
+  scope: path =>
+    !path.startsWith('src/components/ielts/editor/') &&
+    !path.startsWith('src/components/admin/') &&
+    !path.startsWith('src/components/dictation/admin/') &&
+    !path.startsWith('src/app/admin/'),
+}
+
+describe('SMALL_TOUCH guard', () => {
+  test('no clickable below 44px on phones', () => {
+    expect(
+      offenders({ ...SMALL_TOUCH, allow: [...SMALL_TOUCH.allow, THIS_FILE] })
+    ).toEqual([])
   })
 })

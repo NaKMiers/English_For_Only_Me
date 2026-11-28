@@ -56,7 +56,7 @@ export function DeleteAttemptButton({
       {/* Row action opening a confirm: a plain icon button by design. */}
       <button
         aria-label={format(t.label, { name: label })}
-        className="text-ink-soft hover:text-danger hover:bg-danger-soft rounded-tag grid size-8 place-items-center transition-colors"
+        className="soft-press hover-pop text-ink-soft hover:text-danger hover:bg-danger-soft grid size-11 place-items-center rounded-full"
         onClick={() => setOpen(true)}
         title={t.title}
         type="button"

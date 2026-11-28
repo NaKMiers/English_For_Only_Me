@@ -55,7 +55,6 @@ export function SaveWordButton({
   return (
     <span className="inline-flex items-center gap-2">
       <ExamIconButton
-        className="size-9"
         disabled={state === 'busy' || state === 'saved'}
         label={format(state === 'saved' ? t.savedLabel : t.saveLabel, {
           term,

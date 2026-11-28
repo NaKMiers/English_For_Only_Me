@@ -125,7 +125,7 @@ export function DictationPracticeHeader({
           <IconButton
             href={`/dictation/videos/${videoId}/results`}
             label={t.dictation.header.viewResults}
-            className="size-9 border"
+            className="border"
           >
             <Trophy
               aria-hidden="true"

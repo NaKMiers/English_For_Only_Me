@@ -90,7 +90,7 @@ export function ResetPartButton({
   return (
     <>
       <IconButton
-        className="rounded-tag size-9 border"
+        className="border"
         disabled={disabled}
         label={format(t.label, { name })}
         onClick={() => setOpen(true)}
