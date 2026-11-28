@@ -15,6 +15,7 @@ import {
   type IeltsAttemptSummary,
   listIeltsAttempts,
 } from '@/modules/ielts/attempts/attemptQueries'
+import { bandsFromAttempts } from '@/modules/ielts/attempts/testBands'
 import {
   IELTS_SKILLS,
   IELTS_TIMERS,
@@ -24,6 +25,7 @@ import type { IeltsSection } from '@/modules/ielts/schema'
 import { readPublishedIeltsTest } from '@/modules/ielts/tests/testReaders'
 import { listIeltsTestVocabForLearner } from '@/modules/ielts/vocab/testVocabService'
 import { TestLaunchers } from '@/components/ielts/catalogue/SkillLauncher'
+import { nextSkillOf } from '@/components/ielts/catalogue/testPath'
 import { TestVocabPanel } from '@/components/ielts/catalogue/TestVocabPanel'
 import { ExamSheet } from '@/components/ielts/ui'
 
@@ -41,25 +43,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 type IeltsText = Messages['ielts']
-
-function partMinutes(t: IeltsText, section: IeltsSection) {
-  if (section.skill === 'listening') {
-    const seconds = section.listening?.audio?.durationSec ?? 0
-
-    return seconds
-      ? format(t.testPage.audioMinutes, { minutes: Math.ceil(seconds / 60) })
-      : t.testPage.noAudio
-  }
-
-  const seconds =
-    section.skill === 'reading'
-      ? IELTS_TIMERS.readingPart
-      : section.writing?.task === 1
-        ? IELTS_TIMERS.writingTask1
-        : IELTS_TIMERS.writingTask2
-
-  return format(t.testPage.minutes, { minutes: seconds / 60 })
-}
 
 function partLabel(t: IeltsText, section: IeltsSection) {
   if (section.skill === 'writing')
@@ -100,6 +83,14 @@ export default async function IeltsTestPage({ params }: Props) {
 
   if (!test) notFound()
 
+  // D3: the skill to take next wears the pink ring and the one ink Go.
+  const testSkills = IELTS_SKILLS.filter(skill =>
+    test.sections.some(section => section.skill === skill)
+  )
+  const nextSkill = nextSkillOf(
+    { id: test.id, skills: testSkills.map(skill => ({ skill })) },
+    bandsFromAttempts(test.id, attempts)
+  )
   const breadcrumb = [
     { href: '/ielts', label: messages.common.modules.ielts.title },
     { label: test.title },
@@ -145,6 +136,7 @@ export default async function IeltsTestPage({ params }: Props) {
         />
 
         <TestLaunchers
+          nextSkill={nextSkill}
           skills={IELTS_SKILLS.flatMap(skill => {
             const parts = test.sections
               .filter(section => section.skill === skill)
@@ -188,7 +180,6 @@ export default async function IeltsTestPage({ params }: Props) {
                 mockBlockedReason: audioMissing ? t.testPage.mockBlocked : null,
                 parts: parts.map(section => ({
                   label: partLabel(t, section),
-                  meta: partMinutes(t, section),
                   part: section.order,
                 })),
                 partsNoun: plural(t.testPage.sectionCount[skill], parts.length),

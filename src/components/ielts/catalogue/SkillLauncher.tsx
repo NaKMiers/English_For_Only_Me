@@ -4,6 +4,7 @@ import { Play } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
 
+import { InlineNotice } from '@/components/common/InlineNotice'
 import { ExamButton } from '@/components/ielts/ui'
 import { Segmented } from '@/components/ui/segmented'
 import { useMessages } from '@/i18n/client'
@@ -16,6 +17,11 @@ export type Mode = 'practice' | 'mock'
 type Choice = number | 'full'
 
 interface Props {
+  /**
+   * The skill to take next on this test (the first without a band): its card
+   * wears the pink ring and the page's one `ink` Go.
+   */
+  isNext?: boolean
   /** Practice or mock, chosen once for the whole test. */
   mode: Mode
   /** Most recent finished attempt, linked under the options. */
@@ -24,7 +30,7 @@ interface Props {
   mockBlockedReason: string | null
   /** Meta shown on the Full test row per mode, e.g. "All parts" / "60 min". */
   fullMeta: Record<Mode, string>
-  parts: Array<{ part: number; label: string; meta: string }>
+  parts: Array<{ part: number; label: string }>
   partsNoun: string
   skill: IeltsSkill
   slug: string
@@ -54,6 +60,7 @@ export function launchHref(
  */
 export function SkillLauncher({
   fullMeta,
+  isNext = false,
   latest,
   mockBlockedReason,
   mode,
@@ -84,7 +91,11 @@ export function SkillLauncher({
   return (
     <section
       aria-label={title}
-      className="border-line bg-surface rounded-panel keep-frame flex w-[80%] shrink-0 snap-start flex-col overflow-hidden border sm:w-auto"
+      className={cn(
+        'border-line bg-surface rounded-panel keep-frame flex w-[80%] shrink-0 snap-start flex-col overflow-hidden border sm:w-auto',
+        isNext && 'ring-brand/35 ring-4'
+      )}
+      data-next-skill={isNext ? '' : undefined}
     >
       <div className="flex min-h-14 items-center gap-3 px-4 py-2">
         <span
@@ -106,57 +117,60 @@ export function SkillLauncher({
         ) : null}
       </div>
 
-      {/* flex-1 keeps every Go on one line when the cards sit side by side. */}
-      <fieldset className="border-line grid flex-1 content-start border-t py-1.5">
-        <legend className="sr-only">{t.launcher.choose[mode]}</legend>
-        {options.map(option => {
-          const disabled = option.value === 'full' && blocked
-          const checked = selected === option.value
+      {/* flex-1 keeps every Go on one line when the cards sit side by side.
+          A blocked mock shows only why (below), not faded options. */}
+      {blocked ? (
+        <div className="border-line flex-1 border-t p-3">
+          <InlineNotice>{mockBlockedReason}</InlineNotice>
+        </div>
+      ) : (
+        <fieldset className="border-line grid flex-1 content-start border-t py-1.5">
+          <legend className="sr-only">{t.launcher.choose[mode]}</legend>
+          {options.map(option => {
+            const checked = selected === option.value
 
-          return (
-            <label
-              className={cn(
-                'flex min-h-11 items-center gap-3 px-4 text-sm transition-colors',
-                option.value === 'full' && 'font-medium',
-                disabled
-                  ? 'text-ink-soft cursor-not-allowed opacity-45'
-                  : 'hover:bg-tint cursor-pointer',
-                checked && !disabled && 'bg-tint'
-              )}
-              key={option.value}
-            >
-              {/* Raw radio behind a styled dot: keeps native keyboard and
-                    disabled behaviour with the exam paper's look. */}
-              <input
-                checked={checked}
-                className="peer sr-only"
-                disabled={disabled}
-                name={`${slug}-${skill}-choice`}
-                onChange={() => setChoice(option.value)}
-                type="radio"
-                value={String(option.value)}
-              />
-              <span
-                aria-hidden="true"
+            return (
+              <label
                 className={cn(
-                  'border-line peer-focus-visible:ring-brand/40 grid size-4 shrink-0 place-items-center rounded-full border peer-focus-visible:ring-4',
-                  checked && !disabled && 'border-cta bg-cta'
+                  'flex min-h-11 items-center gap-3 px-4 text-sm transition-colors',
+                  option.value === 'full' && 'font-medium',
+                  'hover:bg-tint cursor-pointer',
+                  checked && 'bg-tint'
                 )}
+                key={option.value}
               >
-                {checked && !disabled ? (
-                  <span className="bg-cta-fg size-1.5 rounded-full" />
-                ) : null}
-              </span>
-              <span className="min-w-0 flex-1">{option.label}</span>
-              {option.meta ? (
-                <span className="text-ink-soft text-xs tabular-nums">
-                  {option.meta}
+                {/* Raw radio behind a styled dot: keeps native keyboard and
+                    disabled behaviour with the exam paper's look. */}
+                <input
+                  checked={checked}
+                  className="peer sr-only"
+                  name={`${slug}-${skill}-choice`}
+                  onChange={() => setChoice(option.value)}
+                  type="radio"
+                  value={String(option.value)}
+                />
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    'border-line peer-focus-visible:ring-brand/40 grid size-4 shrink-0 place-items-center rounded-full border peer-focus-visible:ring-4',
+                    checked && 'border-cta bg-cta'
+                  )}
+                >
+                  {checked ? (
+                    <span className="bg-cta-fg size-1.5 rounded-full" />
+                  ) : null}
                 </span>
-              ) : null}
-            </label>
-          )
-        })}
-      </fieldset>
+                <span className="min-w-0 flex-1">{option.label}</span>
+                {option.meta ? (
+                  <span className="text-ink-soft text-xs tabular-nums">
+                    {option.meta}
+                  </span>
+                ) : null}
+              </label>
+            )
+          })}
+        </fieldset>
+      )}
 
       <div className="border-line grid gap-2 border-t px-4 py-3">
         {latest ? (
@@ -170,22 +184,9 @@ export function SkillLauncher({
             </span>
           </Link>
         ) : null}
-        {blocked ? (
-          <p className="text-ink-soft text-xs font-normal">
-            {mockBlockedReason}
-          </p>
-        ) : null}
-        {/* Paper: the page's one strong action is the journey's next stop. */}
-        {blocked ? (
-          <ExamButton
-            className="w-full"
-            disabled
-            tone="paper"
-            type="button"
-          >
-            {t.launcher.go}
-          </ExamButton>
-        ) : (
+        {/* The test's next skill gets the page's one ink Go; the others
+            stay paper. A blocked mock has no Go at all. */}
+        {blocked ? null : (
           <ExamButton
             className="w-full"
             href={launchHref(slug, skill, mode, selected)}
@@ -195,7 +196,7 @@ export function SkillLauncher({
                 className="size-4 fill-current"
               />
             }
-            tone="paper"
+            tone={isNext ? 'ink' : 'paper'}
           >
             {t.launcher.go}
           </ExamButton>
@@ -213,7 +214,14 @@ type LauncherProps = Omit<Props, 'mode'>
  * skills sit side by side so a short page stays short: three columns from
  * sm, a swipeable row with the next card peeking on phones.
  */
-export function TestLaunchers({ skills }: { skills: LauncherProps[] }) {
+export function TestLaunchers({
+  nextSkill = null,
+  skills,
+}: {
+  /** The skill to take next (`nextSkillOf`), or null when all are banded. */
+  nextSkill?: IeltsSkill | null
+  skills: Omit<LauncherProps, 'isNext'>[]
+}) {
   const t = useMessages().ielts
   const [mode, setMode] = useState<Mode>('practice')
 
@@ -230,6 +238,7 @@ export function TestLaunchers({ skills }: { skills: LauncherProps[] }) {
         {skills.map(item => (
           <SkillLauncher
             {...item}
+            isNext={item.skill === nextSkill}
             key={item.skill}
             mode={mode}
           />

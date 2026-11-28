@@ -146,12 +146,14 @@ export default async function IeltsResultPage({ params }: Props) {
         {attempt.skill === 'writing' ? (
           <WritingResult
             attempt={attempt}
+            grammarLinks={data.grammarLinks}
             tasks={data.writing}
           />
         ) : (
           <ObjectiveResult
             attempt={attempt}
             rows={data.rows}
+            savedTerms={data.savedTerms}
             sections={data.sections}
           />
         )}

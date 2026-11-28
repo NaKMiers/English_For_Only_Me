@@ -1,7 +1,7 @@
 'use client'
 
-import { ChevronDown } from 'lucide-react'
-import { Fragment, useMemo, useState } from 'react'
+import { ArrowRight, ChevronDown } from 'lucide-react'
+import { useMemo, useState } from 'react'
 
 import { useMessages } from '@/i18n/client'
 import { format } from '@/i18n/format'
@@ -10,6 +10,7 @@ import type { IeltsAttemptRecord } from '@/modules/ielts/attempts/attemptRecords
 import type { IeltsQuestionType } from '@/modules/ielts/constants'
 import type { IeltsPublicSection } from '@/modules/ielts/publicView'
 import type { IeltsReviewRow } from '@/modules/ielts/services/resultPageData'
+import { reviewWordOf } from '@/modules/ielts/services/reviewWord'
 
 import { DrillButton } from '../catalogue/DrillButton'
 import { highlightText } from '../runner/PassagePane'
@@ -21,6 +22,8 @@ import { ExamCard } from '@/components/ielts/ui'
 interface Props {
   attempt: IeltsAttemptRecord
   rows: IeltsReviewRow[]
+  /** Review words the learner already saved: their buttons start saved. */
+  savedTerms?: string[]
   sections: IeltsPublicSection[]
 }
 
@@ -86,7 +89,12 @@ function weakestType(rows: IeltsReviewRow[]): IeltsQuestionType | null {
 }
 
 /** Listening / Reading result: band row, next actions, filterable review. */
-export function ObjectiveResult({ attempt, rows, sections }: Props) {
+export function ObjectiveResult({
+  attempt,
+  rows,
+  savedTerms = [],
+  sections,
+}: Props) {
   const t = useMessages().ielts
   // Wrong answers first: the list is for fixing, not for re-reading. With
   // none wrong (all right, or only blanks after time ran out) start on all,
@@ -120,28 +128,23 @@ export function ObjectiveResult({ attempt, rows, sections }: Props) {
       ) : null}
 
       <ExamCard
-        eyebrow={t.result.next}
-        title={format(t.result.wrongOrBlank, { count: wrong })}
-      >
-        <div className="flex flex-wrap items-center gap-3">
-          {weakest && attempt.skill !== 'writing' ? (
-            <>
-              <span className="font-semibold">
+        // What to drill sits in the card's header: no separate "Next" card.
+        action={
+          weakest && attempt.skill !== 'writing' ? (
+            <span className="flex flex-wrap items-center justify-end gap-2">
+              <span className="text-sm font-medium">
                 {format(t.result.weakest, { type: t.questionTypes[weakest] })}
               </span>
               <DrillButton
                 skill={attempt.skill as 'listening' | 'reading'}
                 type={weakest}
               />
-            </>
+            </span>
           ) : (
-            <span className="font-semibold">{t.result.noWrong}</span>
-          )}
-        </div>
-      </ExamCard>
-
-      <ExamCard
-        eyebrow={t.result.review}
+            <span className="text-ink-soft text-sm">{t.result.noWrong}</span>
+          )
+        }
+        eyebrow={format(t.result.wrongOrBlank, { count: wrong })}
         title={t.result.answers}
       >
         {/* Segmented filter (aria-pressed): the documented raw-button exception. */}
@@ -167,138 +170,144 @@ export function ObjectiveResult({ attempt, rows, sections }: Props) {
             </button>
           ))}
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[560px] border-collapse text-left">
-            <thead>
-              <tr className="border-line border-b font-sans text-xs">
-                <th
-                  className="py-2 pr-2"
-                  scope="col"
-                >
-                  #
-                </th>
-                <th
-                  className="py-2 pr-2"
-                  scope="col"
-                >
-                  {t.result.type}
-                </th>
-                <th
-                  className="py-2 pr-2"
-                  scope="col"
-                >
-                  {t.result.yourAnswer}
-                </th>
-                <th
-                  className="py-2 pr-2"
-                  scope="col"
-                >
-                  {t.result.answer}
-                </th>
-                <th
-                  className="py-2"
-                  scope="col"
-                >
-                  {t.result.outcome}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {visible.map(row => {
-                const expanded = openRow === row.number
-
-                return (
-                  <Fragment key={row.number}>
-                    <tr className="border-line/20 border-b align-top">
-                      <td className="py-2 pr-2">
-                        {/* Disclosure trigger (aria-expanded): documented raw-button exception. */}
-                        <button
-                          aria-controls={`ielts-row-${row.number}`}
-                          aria-expanded={expanded}
-                          className="soft-press hover-pop rounded-tag inline-flex min-h-11 items-center gap-1 font-sans font-medium"
-                          onClick={() =>
-                            setOpenRow(expanded ? null : row.number)
-                          }
-                          type="button"
-                        >
-                          <ChevronDown
-                            aria-hidden="true"
-                            className={cn(
-                              'size-4 transition-transform',
-                              expanded && 'rotate-180'
-                            )}
-                          />
-                          {row.number}
-                        </button>
-                      </td>
-                      <td className="py-2 pr-2 text-sm">
-                        {t.questionTypes[row.type]}
-                      </td>
-                      <td className="py-2 pr-2 font-semibold">
-                        {row.given || '-'}
-                        {row.overLimit ? (
-                          <span className="text-danger block text-xs">
-                            {t.result.overLimit}
-                          </span>
-                        ) : null}
-                      </td>
-                      <td className="py-2 pr-2">{row.accepted.join(' / ')}</td>
-                      <td className="py-2">
-                        <ReviewMark
-                          mark={{ outcome: row.outcome, accepted: [] }}
-                          showAccepted={false}
+        {/* Compact rows (no sideways scroll on phones): number, given ->
+            accepted, the mark; the question type as a quiet line. */}
+        <ul
+          className="divide-line grid divide-y"
+          data-review-list=""
+        >
+          {visible.map(row => {
+            // "Wrong" is for fixing: every explanation is open. Elsewhere a
+            // row folds, and the whole row is its trigger.
+            const inline = filter === 'wrong'
+            const expanded = inline || openRow === row.number
+            const head = (
+              <>
+                <span className="w-7 shrink-0 font-sans font-medium tabular-nums">
+                  {row.number}
+                </span>
+                <span className="grid min-w-0 flex-1 gap-0.5">
+                  <span className="flex flex-wrap items-baseline gap-x-2 wrap-break-word">
+                    <span
+                      className={cn(
+                        row.outcome !== 'correct' && 'text-ink-soft',
+                        row.outcome === 'wrong' && 'line-through'
+                      )}
+                    >
+                      <span className="sr-only">{t.result.yourAnswer}: </span>
+                      {row.given || '-'}
+                    </span>
+                    {row.outcome !== 'correct' ? (
+                      <>
+                        <ArrowRight
+                          aria-hidden="true"
+                          className="text-ink-soft size-3.5 shrink-0 self-center"
                         />
-                      </td>
-                    </tr>
-                    {expanded ? (
-                      <tr id={`ielts-row-${row.number}`}>
-                        <td
-                          className="pb-4"
-                          colSpan={5}
-                        >
-                          <div className="grid gap-3 pt-1">
-                            {row.explanation ? (
-                              <p className="leading-[1.7]">{row.explanation}</p>
-                            ) : null}
-                            {row.evidence ? (
-                              <EvidenceContext
-                                row={row}
-                                sections={sections}
-                              />
-                            ) : (
-                              <p className="text-ink-soft text-sm">
-                                {t.result.notGiven}
-                              </p>
-                            )}
-                            {row.outcome !== 'correct' &&
-                            row.accepted[0] &&
-                            /^[a-z][a-z' -]{1,40}$/i.test(row.accepted[0]) &&
-                            row.accepted[0].split(' ').length <= 3 ? (
-                              <SaveWordButton
-                                context={row.evidence?.quote ?? ''}
-                                term={row.accepted[0]}
-                              />
-                            ) : null}
-                            {attempt.skill === 'listening' && row.evidence ? (
-                              <LineDictation
-                                line={
-                                  sections.find(item => item.order === row.part)
-                                    ?.listening?.lines?.[
-                                    row.evidence.blockIndex
-                                  ]?.text ?? ''
-                                }
-                              />
-                            ) : null}
-                          </div>
-                        </td>
-                      </tr>
+                        <span className="text-lesson-correct font-medium">
+                          <span className="sr-only">{t.result.answer}: </span>
+                          {row.accepted.join(' / ')}
+                        </span>
+                      </>
                     ) : null}
-                  </Fragment>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
+                  </span>
+                  <span className="text-ink-soft text-xs">
+                    {t.questionTypes[row.type]}
+                    {row.overLimit ? (
+                      <span className="text-danger">
+                        {' · '}
+                        {t.result.overLimit}
+                      </span>
+                    ) : null}
+                  </span>
+                </span>
+                <ReviewMark
+                  className="shrink-0"
+                  mark={{ outcome: row.outcome, accepted: [] }}
+                  showAccepted={false}
+                  wordSrOnly
+                />
+                {inline ? null : (
+                  <ChevronDown
+                    aria-hidden="true"
+                    className={cn(
+                      'text-ink-soft mt-1 size-4 shrink-0 transition-transform',
+                      expanded && 'rotate-180'
+                    )}
+                  />
+                )}
+              </>
+            )
+
+            return (
+              <li
+                data-review-row={row.number}
+                key={row.number}
+              >
+                {inline ? (
+                  <div className="flex items-start gap-3 px-1 py-2">{head}</div>
+                ) : (
+                  // Disclosure trigger (aria-expanded): documented raw-button exception.
+                  <button
+                    aria-controls={`ielts-row-${row.number}`}
+                    aria-expanded={expanded}
+                    className="soft-press hover:bg-tint-soft rounded-control flex min-h-11 w-full items-start gap-3 px-1 py-2 text-left"
+                    onClick={() => setOpenRow(expanded ? null : row.number)}
+                    type="button"
+                  >
+                    {head}
+                  </button>
+                )}
+                {expanded ? (
+                  <div
+                    className="grid gap-2 pb-3 pl-10"
+                    id={`ielts-row-${row.number}`}
+                  >
+                    {/* The evidence is the main line; the explanation is a
+                        quiet note under it. */}
+                    {row.evidence ? (
+                      <EvidenceContext
+                        row={row}
+                        sections={sections}
+                      />
+                    ) : (
+                      <p className="text-ink-soft text-sm">
+                        {t.result.notGiven}
+                      </p>
+                    )}
+                    {row.explanation ? (
+                      <p className="text-ink-soft text-sm leading-6">
+                        {row.explanation}
+                      </p>
+                    ) : null}
+                    {(() => {
+                      const saveWord = reviewWordOf(row)
+                      const line =
+                        attempt.skill === 'listening' && row.evidence
+                          ? (sections.find(item => item.order === row.part)
+                              ?.listening?.lines?.[row.evidence.blockIndex]
+                              ?.text ?? '')
+                          : ''
+
+                      return saveWord || line ? (
+                        // One row of tools, not one row each.
+                        <div className="flex flex-wrap items-center gap-2">
+                          {line ? <LineDictation line={line} /> : null}
+                          {saveWord ? (
+                            <SaveWordButton
+                              context={row.evidence?.quote ?? ''}
+                              initiallySaved={savedTerms.includes(saveWord)}
+                              term={saveWord}
+                            />
+                          ) : null}
+                        </div>
+                      ) : null
+                    })()}
+                  </div>
+                ) : null}
+              </li>
+            )
+          })}
+        </ul>
       </ExamCard>
     </div>
   )

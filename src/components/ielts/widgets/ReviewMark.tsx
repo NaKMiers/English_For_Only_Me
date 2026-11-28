@@ -16,10 +16,17 @@ export function ReviewMark({
   className,
   mark,
   showAccepted = true,
+  wordSrOnly = false,
 }: {
   className?: string
   mark: IeltsReviewMark
   showAccepted?: boolean
+  /**
+   * Icon only, the word for screen readers (the result table, where a row
+   * of "Correct" / "Wrong" words would repeat what the icons say). The
+   * in-runner paper review keeps the word.
+   */
+  wordSrOnly?: boolean
 }) {
   const t = useMessages().ielts.widgets
   const labels = t.marks
@@ -46,8 +53,8 @@ export function ReviewMark({
         aria-hidden="true"
         className="size-4"
       />
-      {mark.outcome === 'blank' ? (
-        <span className="sr-only">{labels.blank}</span>
+      {mark.outcome === 'blank' || wordSrOnly ? (
+        <span className="sr-only">{labels[mark.outcome]}</span>
       ) : (
         labels[mark.outcome]
       )}

@@ -3,6 +3,22 @@ import { describe, expect, it } from 'vitest'
 
 import { TestLaunchers } from './SkillLauncher'
 
+function launcher(
+  skill: 'reading' | 'writing',
+  mockBlockedReason: string | null = null
+) {
+  return {
+    fullMeta: { mock: '60 min', practice: 'All 3 passages' },
+    latest: null,
+    mockBlockedReason,
+    parts: [1, 2, 3].map(part => ({ label: `Passage ${part}`, part })),
+    partsNoun: '3 passages',
+    skill,
+    slug: 't',
+    title: skill === 'reading' ? 'Reading' : 'Writing',
+  }
+}
+
 function renderLauncher(mockBlockedReason: string | null = null) {
   return render(
     <TestLaunchers
@@ -11,11 +27,7 @@ function renderLauncher(mockBlockedReason: string | null = null) {
           fullMeta: { mock: '60 min', practice: 'All 3 passages' },
           latest: null,
           mockBlockedReason,
-          parts: [1, 2, 3].map(part => ({
-            label: `Passage ${part}`,
-            meta: '20 min',
-            part,
-          })),
+          parts: [1, 2, 3].map(part => ({ label: `Passage ${part}`, part })),
           partsNoun: '3 passages',
           skill: 'reading',
           slug: 't',
@@ -51,13 +63,50 @@ describe('SkillLauncher', () => {
     expect(goHref()).toBe('/ielts/t/reading/mock')
   })
 
-  it('disables Go in mock mode when the test cannot start', () => {
+  it('a mock that cannot start shows only why: no options, no disabled Go', () => {
     renderLauncher('Needs audio.')
 
     fireEvent.click(screen.getByRole('button', { name: 'Mock' }))
 
-    expect(screen.getByRole('button', { name: 'Go' })).toBeDisabled()
+    expect(screen.queryByRole('button', { name: 'Go' })).toBeNull()
+    expect(screen.queryByRole('link', { name: 'Go' })).toBeNull()
+    expect(screen.queryByRole('radio')).toBeNull()
     expect(screen.getByText('Needs audio.')).toBeTruthy()
+  })
+
+  it('the next skill wears the ring and the one ink Go', () => {
+    const { container } = render(
+      <TestLaunchers
+        nextSkill="writing"
+        skills={[launcher('reading'), launcher('writing')]}
+      />
+    )
+
+    const ink = [...container.querySelectorAll('[class]')].filter(element =>
+      /(^|\s)bg-cta(\s|$)/.test(element.getAttribute('class') ?? '')
+    )
+    // The radio dots use cta too: count the Go links only.
+    const inkGo = ink.filter(element => element.tagName === 'A')
+    expect(inkGo).toHaveLength(1)
+    expect(
+      inkGo[0].closest('[data-next-skill]')?.getAttribute('aria-label')
+    ).toBe('Writing')
+  })
+
+  it('no ink Go when every skill has a band', () => {
+    const { container } = render(
+      <TestLaunchers
+        nextSkill={null}
+        skills={[launcher('reading'), launcher('writing')]}
+      />
+    )
+
+    expect(container.querySelector('[data-next-skill]')).toBeNull()
+    expect(
+      [...container.querySelectorAll('a')].filter(element =>
+        /(^|\s)bg-cta(\s|$)/.test(element.getAttribute('class') ?? '')
+      )
+    ).toHaveLength(0)
   })
 
   it('every skill is open, with no fold to press', () => {

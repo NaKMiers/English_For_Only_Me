@@ -26,6 +26,11 @@ export interface IeltsAnswerContextValue {
   onFocusQuestion: (number: number) => void
   /** Guided mode: show the "where is it" button per question. */
   onShowEvidence: ((number: number) => void) | null
+  /**
+   * Why the evidence of one question cannot be shown (NOT GIVEN, none yet,
+   * a failed load): said beside that question's eye button.
+   */
+  evidenceNote?: { number: number; text: string; tone: 'info' | 'error' } | null
   /** Questions the learner flagged to come back to. */
   flagged?: ReadonlySet<number>
   /** While answering: clicking a question number flags or unflags it. */

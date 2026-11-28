@@ -1,5 +1,6 @@
 'use client'
 
+import { CircleAlert } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
@@ -56,9 +57,13 @@ export function DrillButton({
       </ExamButton>
       {error ? (
         <span
-          className="text-brand text-xs font-semibold"
+          className="text-danger inline-flex items-center gap-1 text-xs font-medium"
           role="alert"
         >
+          <CircleAlert
+            aria-hidden="true"
+            className="size-3.5 shrink-0"
+          />
           {error}
         </span>
       ) : null}

@@ -1,6 +1,6 @@
 'use client'
 
-import { BookOpen, Lightbulb, ListChecks } from 'lucide-react'
+import { BookOpen, Lightbulb, ListChecks, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import {
   type ReactNode,
@@ -49,6 +49,7 @@ import { QuestionNavigator } from './QuestionNavigator'
 import { useResizableSplit } from './ResizableSplit'
 import { buildQuestionIndex, countBlanks } from './questionIndex'
 import { ExamButton } from '../ui'
+import { IconButton } from '@/components/ui/IconButton'
 import { RunnerToolbar, ToolbarToggle } from './RunnerToolbar'
 import { TextHighlighter } from './TextHighlighter'
 import { useAttemptAnswers } from './useAttemptAnswers'
@@ -293,21 +294,31 @@ export function IeltsRunner({
     else void finish()
   }
 
+  // In place: an evidence note beside its question, a check error under
+  // the part it checked. The notice bar keeps exam-wide messages.
+  const [evidenceNote, setEvidenceNote] =
+    useState<IeltsAnswerContextValue['evidenceNote']>(null)
+  const [checkErrors, setCheckErrors] = useState<Record<number, string>>({})
+
   const showEvidence = useCallback(
     async (number: number) => {
+      setEvidenceNote(null)
+
       try {
         const result = await readIeltsEvidenceApi(attempt.id, number)
         const target = sections.find(item => item.key === result.sectionKey)
 
         if (!result.evidence) {
-          setNotice(
-            format(
+          setEvidenceNote({
+            number,
+            text: format(
               result.notGiven
                 ? t.runner.evidenceNotGiven
                 : t.runner.evidenceMissing,
               { number }
-            )
-          )
+            ),
+            tone: 'info',
+          })
           return
         }
 
@@ -318,7 +329,11 @@ export function IeltsRunner({
 
         if (attempt.skill === 'listening') setShowTranscript(true)
       } catch {
-        setNotice(t.runner.evidenceFailed)
+        setEvidenceNote({
+          number,
+          text: t.runner.evidenceFailed,
+          tone: 'error',
+        })
       }
     },
     [attempt.id, attempt.skill, sections, t]
@@ -374,6 +389,7 @@ export function IeltsRunner({
       )
 
       setCheckingPart(part)
+      setCheckErrors(({ [part]: _cleared, ...rest }) => rest)
 
       try {
         const result = await checkIeltsPartApi(attempt.id, {
@@ -395,11 +411,12 @@ export function IeltsRunner({
           [part]: { raw: result.raw, total: result.total },
         }))
       } catch (caught) {
-        setNotice(
-          format(t.runner.checkFailed, {
+        setCheckErrors(current => ({
+          ...current,
+          [part]: format(t.runner.checkFailed, {
             message: ieltsErrorMessage(caught, t.runner.tryAgain),
-          })
-        )
+          }),
+        }))
       } finally {
         setCheckingPart(null)
       }
@@ -448,10 +465,12 @@ export function IeltsRunner({
         if (entry) setCurrentPart(entry.part)
       },
       onShowEvidence: isPractice && guided ? showEvidence : null,
+      evidenceNote,
       flagged,
       onToggleFlag: locked ? null : toggleFlag,
     }),
     [
+      evidenceNote,
       flagged,
       toggleFlag,
       answers,
@@ -513,6 +532,7 @@ export function IeltsRunner({
           check={partChecks[section.order] ?? null}
           className="lg:hidden"
           checking={checkingPart === section.order}
+          error={checkErrors[section.order] ?? null}
           label={partName(t, attempt.skill, section.order, attempt.mode)}
           onCheck={() => void checkPart(section.order)}
         />
@@ -617,13 +637,13 @@ export function IeltsRunner({
             role="status"
           >
             {notice}
-            <button
-              className="text-brand text-xs font-semibold underline"
+            <IconButton
+              className="size-11 shrink-0 border-transparent bg-transparent"
+              label={messages.common.actions.close}
               onClick={() => setNotice('')}
-              type="button"
             >
-              {messages.common.actions.close}
-            </button>
+              <X aria-hidden="true" />
+            </IconButton>
           </p>
         ) : null}
 

@@ -1,5 +1,6 @@
 'use client'
 
+import { X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
@@ -12,6 +13,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { SampleAnswerPanel } from '@/components/ielts/widgets/SampleAnswerPanel'
+import { InlineNotice } from '@/components/common/InlineNotice'
+import { IconButton } from '@/components/ui/IconButton'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
@@ -35,7 +38,7 @@ import { checkIeltsTaskApi, ieltsErrorMessage } from '@/requests/ieltsApi'
 import { WritingFeedbackDetails } from '../review/WritingResult'
 import { TaskVisual } from '../visual/TaskVisual'
 import { WritingPrompt } from '../widgets/WritingPrompt'
-import { ExamButton, segmentClass } from '../ui'
+import { ExamButton } from '../ui'
 import {
   PartSwitcher,
   RunnerFooter,
@@ -117,6 +120,7 @@ export function WritingRunner({
     Record<string, { essay: string; feedback: IeltsWritingTaskFeedback }>
   >({})
   const [checkingTask, setCheckingTask] = useState<string | null>(null)
+  const [checkErrors, setCheckErrors] = useState<Record<string, string>>({})
   const current = tasks[taskIndex] ?? tasks[0]
   const writing = current?.writing
   const taskKey = String(writing?.task ?? 1)
@@ -139,6 +143,7 @@ export function WritingRunner({
     }
 
     setCheckingTask(key)
+    setCheckErrors(({ [key]: _cleared, ...rest }) => rest)
 
     try {
       const { feedback } = await checkIeltsTaskApi(
@@ -157,12 +162,14 @@ export function WritingRunner({
           : format(t.writing.checked, { task: key })
       )
     } catch (error) {
-      setNotice(
-        format(t.writing.checkFailed, {
+      // Under the task it checked, not in the exam-wide notice bar.
+      setCheckErrors(current => ({
+        ...current,
+        [key]: format(t.writing.checkFailed, {
           message: ieltsErrorMessage(error, t.runner.tryAgain),
           task: key,
-        })
-      )
+        }),
+      }))
     } finally {
       setCheckingTask(null)
     }
@@ -252,6 +259,38 @@ export function WritingRunner({
         submitDisabled={!open}
         submitting={submitting}
         title={`${testTitle} · ${IELTS_SKILL_LABELS.writing}`}
+        // The Task / Essay switch shares the toolbar's row on phones (as
+        // the Reading runner's panes do), not a row of its own.
+        panes={
+          // Segmented toggles (aria-pressed): the documented raw-button exception.
+          <div
+            aria-label={t.runner.choosePanel}
+            className="border-line bg-tint rounded-control flex h-9 border p-0.5"
+            role="group"
+          >
+            {(
+              [
+                ['task', t.writing.prompt],
+                ['essay', t.writing.essay],
+              ] as const
+            ).map(([value, label]) => (
+              <button
+                aria-pressed={mobileTab === value}
+                className={cn(
+                  'rounded-tag flex min-w-0 flex-auto items-center justify-center px-2 font-sans text-[13px] font-semibold transition-colors',
+                  mobileTab === value
+                    ? 'bg-cta text-cta-fg'
+                    : 'text-ink hover:bg-surface hover-pop'
+                )}
+                key={value}
+                onClick={() => setMobileTab(value)}
+                type="button"
+              >
+                <span className="truncate">{label}</span>
+              </button>
+            ))}
+          </div>
+        }
         toggles={
           isMock ? null : (
             <div className="flex items-center gap-3">
@@ -278,35 +317,15 @@ export function WritingRunner({
           role="status"
         >
           {notice}
-          <button
-            className="text-brand text-xs font-semibold underline"
+          <IconButton
+            className="size-11 shrink-0 border-transparent bg-transparent"
+            label={messages.common.actions.close}
             onClick={() => setNotice('')}
-            type="button"
           >
-            {messages.common.actions.close}
-          </button>
+            <X aria-hidden="true" />
+          </IconButton>
         </p>
       ) : null}
-
-      {/* Segmented toggles (aria-pressed): the documented raw-button exception. */}
-      <div className="border-line bg-exam-surface flex shrink-0 justify-end gap-2 border-b px-3 py-2 lg:hidden">
-        {(
-          [
-            ['task', t.writing.prompt],
-            ['essay', t.writing.essay],
-          ] as const
-        ).map(([value, label]) => (
-          <button
-            aria-pressed={mobileTab === value}
-            className={segmentClass(mobileTab === value, 'min-h-10')}
-            key={value}
-            onClick={() => setMobileTab(value)}
-            type="button"
-          >
-            {label}
-          </button>
-        ))}
-      </div>
 
       <div
         className={cn(
@@ -390,6 +409,14 @@ export function WritingRunner({
               {format(t.writing.wordsMin, { min: writing.minWords, words })}
             </span>
           </Progress>
+          {checkErrors[taskKey] ? (
+            <InlineNotice
+              className="mt-2"
+              tone="error"
+            >
+              {checkErrors[taskKey]}
+            </InlineNotice>
+          ) : null}
           {/* Phones and tablets: the footer has no room for it. */}
           {canCheck ? (
             <CheckButton

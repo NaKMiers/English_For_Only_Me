@@ -2,6 +2,7 @@
 
 import { CheckCheck } from 'lucide-react'
 
+import { InlineNotice } from '@/components/common/InlineNotice'
 import { ExamButton } from '@/components/ielts/ui'
 import { useMessages } from '@/i18n/client'
 import { format } from '@/i18n/format'
@@ -9,7 +10,13 @@ import { formatNodes } from '@/i18n/formatNodes'
 import { cn } from '@/lib/utils'
 
 interface Props {
+  /** Classes for the button row (`lg:hidden`: the footer has it there). */
   className?: string
+  /**
+   * The last check failed: said here, under the questions it was about, on
+   * every screen size (not in the exam-wide notice bar).
+   */
+  error?: string | null
   /** The last check of this part, or null before the first one. */
   check: { raw: number; total: number } | null
   checking: boolean
@@ -26,48 +33,55 @@ export function CheckPartPanel({
   check,
   checking,
   className,
+  error = null,
   label,
   onCheck,
 }: Props) {
   const t = useMessages().ielts.check
 
   return (
-    <div
-      className={cn('flex flex-wrap items-center justify-end gap-3', className)}
-    >
-      {/* Always mounted, so the score is announced when it arrives. */}
-      <p
-        aria-live="polite"
-        className="text-sm empty:hidden"
+    <div className="grid gap-2">
+      {error ? <InlineNotice tone="error">{error}</InlineNotice> : null}
+      <div
+        className={cn(
+          'flex flex-wrap items-center justify-end gap-3',
+          className
+        )}
       >
-        {check
-          ? formatNodes(t.correct, {
-              score: (
-                <strong className="font-sans font-semibold tabular-nums">
-                  {check.raw}/{check.total}
-                </strong>
-              ),
-            })
-          : null}
-      </p>
-      <ExamButton
-        disabled={checking}
-        icon={
-          <CheckCheck
-            aria-hidden="true"
-            className="size-4"
-          />
-        }
-        onClick={onCheck}
-        tone="paper"
-        type="button"
-      >
-        {checking
-          ? t.checking
-          : check
-            ? t.checkAgain
-            : format(t.check, { part: label })}
-      </ExamButton>
+        {/* Always mounted, so the score is announced when it arrives. */}
+        <p
+          aria-live="polite"
+          className="text-sm empty:hidden"
+        >
+          {check
+            ? formatNodes(t.correct, {
+                score: (
+                  <strong className="font-sans font-semibold tabular-nums">
+                    {check.raw}/{check.total}
+                  </strong>
+                ),
+              })
+            : null}
+        </p>
+        <ExamButton
+          disabled={checking}
+          icon={
+            <CheckCheck
+              aria-hidden="true"
+              className="size-4"
+            />
+          }
+          onClick={onCheck}
+          tone="paper"
+          type="button"
+        >
+          {checking
+            ? t.checking
+            : check
+              ? t.checkAgain
+              : format(t.check, { part: label })}
+        </ExamButton>
+      </div>
     </div>
   )
 }

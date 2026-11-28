@@ -120,8 +120,9 @@ export function ProgressTabs({ attempts, className, weakness }: Props) {
                 const Icon = SKILL_ICONS[row.skill]
 
                 return (
+                  // A static row: only its Drill button is clickable.
                   <li
-                    className="hover:bg-tint-soft flex items-center gap-2.5 rounded-2xl px-2 py-1.5"
+                    className="rounded-control flex items-center gap-2.5 px-2 py-1.5"
                     key={`${row.skill}-${row.type}`}
                   >
                     <Icon
@@ -175,8 +176,10 @@ export function ProgressTabs({ attempts, className, weakness }: Props) {
                 attempt.testTitle || attempt.testSlug || t.history.drill
 
               return (
+                // The row itself is static; the attempt link (with the row's
+                // padding) is what lights up.
                 <li
-                  className="hover:bg-tint-soft flex items-center gap-2.5 rounded-2xl px-2 py-1.5"
+                  className="flex items-center gap-1.5 pl-2"
                   key={attempt.id}
                 >
                   <Icon
@@ -184,7 +187,7 @@ export function ProgressTabs({ attempts, className, weakness }: Props) {
                     className="text-ink-soft size-4 shrink-0"
                   />
                   <Link
-                    className="grid min-w-0 flex-1 leading-tight hover:underline"
+                    className="soft-press hover-pop hover:bg-tint-soft rounded-control grid min-h-11 min-w-0 flex-1 content-center px-1.5 py-1.5 leading-tight"
                     href={`/ielts/attempts/${attempt.id}`}
                   >
                     <span className="truncate text-sm font-medium">{name}</span>

@@ -135,3 +135,54 @@ export async function searchVocabEntries({
     }
   })
 }
+
+/**
+ * Which of these terms the learner already has in their vocabulary (any
+ * saved status), as the input strings: lets a "Save word" button start in
+ * its saved state. Terms that do not normalize are skipped.
+ */
+export async function listSavedTermsForUser({
+  language = VOCAB_DEFAULT_LANGUAGE,
+  terms,
+  userId,
+}: {
+  language?: string
+  terms: string[]
+  userId: string
+}): Promise<string[]> {
+  const byNormalized = new Map<string, string[]>()
+
+  for (const term of terms) {
+    const normalized = normalizeVocabTerm(term)?.normalizedTerm
+
+    if (!normalized) continue
+
+    byNormalized.set(normalized, [
+      ...(byNormalized.get(normalized) ?? []),
+      term,
+    ])
+  }
+
+  if (byNormalized.size === 0) return []
+
+  const entries = await VocabEntryModel.find({
+    language,
+    normalizedTerm: { $in: [...byNormalized.keys()] },
+  })
+    .select('_id normalizedTerm')
+    .lean()
+
+  if (entries.length === 0) return []
+
+  const saved = await UserVocabItemModel.find({
+    userId,
+    vocabEntryId: { $in: entries.map(entry => entry._id) },
+  })
+    .select('vocabEntryId')
+    .lean()
+  const savedIds = new Set(saved.map(item => String(item.vocabEntryId)))
+
+  return entries
+    .filter(entry => savedIds.has(String(entry._id)))
+    .flatMap(entry => byNormalized.get(String(entry.normalizedTerm)) ?? [])
+}

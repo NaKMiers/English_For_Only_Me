@@ -1,6 +1,6 @@
 'use client'
 
-import { GraduationCap } from 'lucide-react'
+import { ChevronDown, GraduationCap } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -11,7 +11,10 @@ import type {
 } from '@/modules/ielts/attempts/attemptRecords'
 import { SampleAnswerBody } from '@/components/ielts/widgets/SampleAnswerBody'
 import { countEssayWords } from '@/modules/ielts/scoring/wordCount'
-import type { IeltsWritingReviewTask } from '@/modules/ielts/services/resultPageData'
+import type {
+  GrammarLessonLink,
+  IeltsWritingReviewTask,
+} from '@/modules/ielts/services/resultPageData'
 import { useMessages } from '@/i18n/client'
 import type { Messages } from '@/i18n/messages'
 import { format } from '@/i18n/format'
@@ -19,11 +22,14 @@ import { gradeIeltsWritingApi, ieltsErrorMessage } from '@/requests/ieltsApi'
 
 import { TaskVisual } from '../visual/TaskVisual'
 import { WritingPrompt } from '../widgets/WritingPrompt'
+import { InlineNotice } from '@/components/common/InlineNotice'
 import { StatChip, StatStrip } from '@/components/journey/StatChip'
 import { ExamButton, ExamCard } from '@/components/ielts/ui'
 
 interface Props {
   attempt: IeltsAttemptRecord
+  /** Per grammar lesson: notes, the lesson, or no link while locked. */
+  grammarLinks?: Record<string, GrammarLessonLink>
   tasks: IeltsWritingReviewTask[]
 }
 
@@ -91,10 +97,13 @@ const CRITERIA = (
 export function WritingFeedbackDetails({
   essay,
   feedback,
+  grammarLinks,
   task,
 }: {
   essay: string
   feedback: IeltsWritingTaskFeedback
+  /** Without it (the practice runner) every lesson links to the lesson. */
+  grammarLinks?: Record<string, GrammarLessonLink>
   task: 1 | 2
 }) {
   const t = useMessages().ielts.writingResult
@@ -138,14 +147,15 @@ export function WritingFeedbackDetails({
                   {item.suggestion}
                 </strong>
               </p>
-              <p className="text-sm">{item.reason}</p>
+              <p className="text-ink-soft text-sm">{item.reason}</p>
               {item.grammarLessonId ? (
-                <Link
-                  className="w-fit font-sans text-sm font-semibold underline"
-                  href={`/grammar/lessons/${item.grammarLessonId}`}
-                >
-                  {format(t.study, { title: item.grammarLessonTitle ?? '' })}
-                </Link>
+                <GrammarLessonLinkLine
+                  link={grammarLinks?.[item.grammarLessonId] ?? 'lesson'}
+                  lessonId={item.grammarLessonId}
+                  title={format(t.study, {
+                    title: item.grammarLessonTitle ?? '',
+                  })}
+                />
               ) : null}
             </li>
           ))}
@@ -163,14 +173,50 @@ export function WritingFeedbackDetails({
   )
 }
 
+/**
+ * A correction's grammar lesson: its notes once passed, the lesson while it
+ * is open, the plain title while it is locked (its page would only send the
+ * learner back to the path).
+ */
+function GrammarLessonLinkLine({
+  link,
+  lessonId,
+  title,
+}: {
+  link: GrammarLessonLink
+  lessonId: string
+  title: string
+}) {
+  if (link === 'locked')
+    return <span className="text-ink-soft font-sans text-sm">{title}</span>
+
+  return (
+    <Link
+      className="soft-press hover-pop rounded-tag w-fit font-sans text-sm font-medium underline"
+      href={
+        link === 'notes'
+          ? `/grammar/lessons/${lessonId}/notes`
+          : `/grammar/lessons/${lessonId}`
+      }
+    >
+      {title}
+    </Link>
+  )
+}
+
 function TaskFeedback({
   busy,
+  error,
   feedback,
+  grammarLinks,
   onGrade,
   task,
 }: {
   busy: boolean
+  /** Why the last Grade press failed, shown by its button. */
+  error: string | null
   feedback: IeltsWritingTaskFeedback | undefined
+  grammarLinks?: Record<string, GrammarLessonLink>
   onGrade: () => void
   task: IeltsWritingReviewTask
 }) {
@@ -179,9 +225,28 @@ function TaskFeedback({
   const [showSample, setShowSample] = useState(false)
   const words = countEssayWords(task.essay)
   const status = busy ? 'grading' : (feedback?.status ?? 'pending')
+  const blank = !task.essay.trim()
+  const hasSample = task.sampleAnswer.trim().length > 0
 
   return (
     <ExamCard
+      // Grade sits in the card's header; a blank essay has nothing to grade.
+      action={
+        blank ? null : (
+          <ExamButton
+            disabled={busy}
+            onClick={onGrade}
+            tone={status === 'done' ? 'paper' : 'ink'}
+            type="button"
+          >
+            {busy
+              ? t.gradingButton
+              : status === 'done' || status === 'failed'
+                ? t.gradeAgain
+                : t.gradeWithAi}
+          </ExamButton>
+        )
+      }
       eyebrow={format(t.wordsMin, { min: task.minWords, words })}
       title={
         feedback?.band != null
@@ -192,8 +257,14 @@ function TaskFeedback({
           : format(messages.ielts.parts.task, { part: task.task })
       }
     >
-      <details>
-        <summary className="cursor-pointer font-sans text-sm font-semibold">
+      {error ? <InlineNotice tone="error">{error}</InlineNotice> : null}
+
+      <details className="group">
+        <summary className="soft-press hover-pop text-ink-soft hover:text-ink rounded-control flex min-h-11 w-fit cursor-pointer list-none items-center gap-1.5 px-2 font-sans text-sm font-medium">
+          <ChevronDown
+            aria-hidden="true"
+            className="size-4 transition-transform group-open:rotate-180"
+          />
           {t.prompt}
         </summary>
         <div className="mt-2 grid gap-3">
@@ -207,10 +278,13 @@ function TaskFeedback({
         </div>
       </details>
 
-      {status === 'done' && feedback?.criteria ? (
+      {blank ? (
+        <p className="text-ink-soft">{t.nothingWritten}</p>
+      ) : status === 'done' && feedback?.criteria ? (
         <WritingFeedbackDetails
           essay={task.essay}
           feedback={feedback}
+          grammarLinks={grammarLinks}
           task={task.task}
         />
       ) : (
@@ -225,34 +299,22 @@ function TaskFeedback({
                 : t.notGraded}
           </p>
           <div className="font-body border-line rounded-control bg-surface border p-4 text-[17px] leading-[1.8] whitespace-pre-wrap">
-            {task.essay || t.blank}
+            {task.essay}
           </div>
         </>
       )}
 
-      <div className="flex flex-wrap gap-2">
-        <ExamButton
-          disabled={busy || !task.essay.trim()}
-          onClick={onGrade}
-          tone={status === 'done' ? 'paper' : 'ink'}
-          type="button"
-        >
-          {busy
-            ? t.gradingButton
-            : status === 'done'
-              ? t.gradeAgain
-              : status === 'failed'
-                ? t.gradeAgain
-                : t.gradeWithAi}
-        </ExamButton>
-        <ExamButton
-          onClick={() => setShowSample(current => !current)}
-          tone="paper"
-          type="button"
-        >
-          {showSample ? t.hideSample : t.showSample}
-        </ExamButton>
-      </div>
+      {hasSample ? (
+        <div>
+          <ExamButton
+            onClick={() => setShowSample(current => !current)}
+            tone="paper"
+            type="button"
+          >
+            {showSample ? t.hideSample : t.showSample}
+          </ExamButton>
+        </div>
+      ) : null}
       {showSample && task.sampleAnswer ? (
         <div className="font-body border-line rounded-control bg-surface grid gap-3 border p-4 text-[17px] leading-[1.8]">
           <SampleAnswerBody text={task.sampleAnswer} />
@@ -263,16 +325,21 @@ function TaskFeedback({
 }
 
 /** Writing result: per task the essay, criteria, corrections and grading. */
-export function WritingResult({ attempt: initial, tasks }: Props) {
+export function WritingResult({
+  attempt: initial,
+  grammarLinks,
+  tasks,
+}: Props) {
   const t = useMessages().ielts
   const router = useRouter()
   const [attempt, setAttempt] = useState(initial)
   const [busyTask, setBusyTask] = useState<1 | 2 | null>(null)
-  const [error, setError] = useState('')
+  // One error per task, shown in that task's card by its Grade button.
+  const [errors, setErrors] = useState<Partial<Record<1 | 2, string>>>({})
 
   const grade = async (task: 1 | 2) => {
     setBusyTask(task)
-    setError('')
+    setErrors(({ [task]: _cleared, ...rest }) => rest)
 
     try {
       const result = await gradeIeltsWritingApi(attempt.id, task)
@@ -281,7 +348,10 @@ export function WritingResult({ attempt: initial, tasks }: Props) {
       // The Writing band lives in the server-rendered result head.
       router.refresh()
     } catch (caught) {
-      setError(ieltsErrorMessage(caught, t.writingResult.gradeFailed))
+      setErrors(current => ({
+        ...current,
+        [task]: ieltsErrorMessage(caught, t.writingResult.gradeFailed),
+      }))
     } finally {
       setBusyTask(null)
     }
@@ -291,18 +361,12 @@ export function WritingResult({ attempt: initial, tasks }: Props) {
     <div className="grid gap-6">
       {/* The writing band sits in the result head; each task's band is
           in its card title, so no tiles repeat them here. */}
-      {error ? (
-        <p
-          className="border-line bg-tint-soft rounded-control border px-3 py-2"
-          role="alert"
-        >
-          {error}
-        </p>
-      ) : null}
       {tasks.map(task => (
         <TaskFeedback
           busy={busyTask === task.task}
+          error={errors[task.task] ?? null}
           feedback={attempt.writingFeedback?.[String(task.task) as '1' | '2']}
+          grammarLinks={grammarLinks}
           key={task.task}
           onGrade={() => void grade(task.task)}
           task={task}

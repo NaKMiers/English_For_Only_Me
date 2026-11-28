@@ -257,6 +257,7 @@ export const ielts = {
     go: 'Go',
   },
   result: {
+    done: '{skill} done',
     heading: '{skill} result',
     timeUp: 'Time up',
     timeRanOut: 'Time ran out. Saved answers were graded.',
@@ -304,6 +305,7 @@ export const ielts = {
     unknownReason: 'unknown reason',
     notGraded: 'Not graded yet.',
     blank: '(Blank)',
+    nothingWritten: 'Nothing written',
     gradingButton: 'Grading…',
     gradeAgain: 'Grade again',
     gradeWithAi: 'Grade with AI',

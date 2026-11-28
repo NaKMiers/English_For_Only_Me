@@ -1,6 +1,6 @@
 'use client'
 
-import { BookmarkPlus, Check } from 'lucide-react'
+import { BookmarkPlus, Check, CircleAlert } from 'lucide-react'
 import { useState } from 'react'
 
 import { useClientOutbox } from '@/components/common/OutboxOwnerProvider'
@@ -8,7 +8,7 @@ import { enqueueVocabItemStatus } from '@/components/vocabulary/vocabItemWrites'
 import { useMessages } from '@/i18n/client'
 import { format } from '@/i18n/format'
 import { lookupVocabEntryApi } from '@/requests/vocabularyApi'
-import { ExamIconButton } from '@/components/ielts/ui'
+import { ExamButton } from '@/components/ielts/ui'
 
 /**
  * Save the word behind a missed answer to Vocabulary (source `ielts`):
@@ -17,15 +17,18 @@ import { ExamIconButton } from '@/components/ielts/ui'
  */
 export function SaveWordButton({
   context,
+  initiallySaved = false,
   term,
 }: {
   context: string
+  /** The learner already has this word: start in the saved state. */
+  initiallySaved?: boolean
   term: string
 }) {
   const t = useMessages().ielts.saveWord
   const outbox = useClientOutbox()
   const [state, setState] = useState<'idle' | 'busy' | 'saved' | 'failed'>(
-    'idle'
+    initiallySaved ? 'saved' : 'idle'
   )
 
   const save = async () => {
@@ -52,38 +55,46 @@ export function SaveWordButton({
     }
   }
 
+  // One labelled button with its icon inside (not an icon button plus a
+  // caption beside it); a failed save says so next to it.
   return (
-    <span className="inline-flex items-center gap-2">
-      <ExamIconButton
+    <span className="inline-flex flex-wrap items-center gap-2">
+      <ExamButton
         disabled={state === 'busy' || state === 'saved'}
-        label={format(state === 'saved' ? t.savedLabel : t.saveLabel, {
-          term,
-        })}
+        icon={
+          state === 'saved' ? (
+            <Check
+              aria-hidden="true"
+              className="size-4"
+            />
+          ) : (
+            <BookmarkPlus
+              aria-hidden="true"
+              className="size-4"
+            />
+          )
+        }
         onClick={() => void save()}
+        title={format(t.saveLabel, { term })}
+        tone="paper"
         type="button"
       >
-        {state === 'saved' ? (
-          <Check
-            aria-hidden="true"
-            className="size-4"
-          />
-        ) : (
-          <BookmarkPlus
-            aria-hidden="true"
-            className="size-4"
-          />
-        )}
-      </ExamIconButton>
-      <span
-        aria-live="polite"
-        className="text-xs font-semibold"
-      >
         {state === 'saved'
-          ? t.saved
-          : state === 'failed'
-            ? t.failed
-            : format(t.save, { term })}
-      </span>
+          ? format(t.savedLabel, { term })
+          : format(t.save, { term })}
+      </ExamButton>
+      {state === 'failed' ? (
+        <span
+          className="text-danger inline-flex items-center gap-1 text-xs"
+          role="alert"
+        >
+          <CircleAlert
+            aria-hidden="true"
+            className="size-3.5"
+          />
+          {t.failed}
+        </span>
+      ) : null}
     </span>
   )
 }

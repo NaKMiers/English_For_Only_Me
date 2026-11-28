@@ -259,6 +259,7 @@ export const ielts: Messages['ielts'] = {
     go: 'Bắt đầu',
   },
   result: {
+    done: 'Xong {skill}',
     heading: 'Kết quả {skill}',
     timeUp: 'Hết giờ',
     timeRanOut: 'Đã hết giờ. Các câu trả lời đã lưu được chấm.',
@@ -306,6 +307,7 @@ export const ielts: Messages['ielts'] = {
     unknownReason: 'không rõ lý do',
     notGraded: 'Chưa được chấm.',
     blank: '(Bỏ trống)',
+    nothingWritten: 'Chưa viết gì',
     gradingButton: 'Đang chấm…',
     gradeAgain: 'Chấm lại',
     gradeWithAi: 'Chấm bằng AI',

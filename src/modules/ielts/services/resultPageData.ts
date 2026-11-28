@@ -4,6 +4,13 @@ import { hasMongoDbUri } from '@/constants/environments'
 import { connectDatabaseWhen } from '@/lib/db/connectDatabase'
 import { getPracticeActorId } from '@/modules/dictation/services/getCurrentUser'
 
+import { grammarCourse } from '@/modules/grammar/course'
+import { buildGrammarPath } from '@/modules/grammar/path/buildGrammarPath'
+import { getGrammarProgressForActor } from '@/modules/grammar/services/grammarProgressService'
+import { listSavedTermsForUser } from '@/modules/vocabulary/services/vocabEntryService'
+
+import { reviewWordOf } from './reviewWord'
+
 import type { IeltsAttemptRecord } from '../attempts/attemptRecords'
 import { parseAttemptId } from '../attempts/attemptRouteDecisions'
 import {
@@ -37,11 +44,64 @@ export interface IeltsWritingReviewTask {
   essay: string
 }
 
+/**
+ * Where a correction's grammar lesson link goes for this learner: the notes
+ * of a lesson they passed, the lesson itself when it is open, or no link for
+ * a locked lesson (its page would send them back to the path).
+ */
+export type GrammarLessonLink = 'notes' | 'lesson' | 'locked'
+
 export interface IeltsResultPageData {
   attempt: IeltsAttemptRecord
+  /** Per grammar lesson id named by a writing correction. */
+  grammarLinks: Record<string, GrammarLessonLink>
   sections: IeltsPublicSection[]
   rows: IeltsReviewRow[]
+  /** Review words (accepted answers) already in the learner's vocabulary. */
+  savedTerms: string[]
   writing: IeltsWritingReviewTask[]
+}
+
+/** The learner's link for each grammar lesson the feedback names. */
+async function loadGrammarLinks(
+  ownerId: string,
+  attempt: IeltsAttemptRecord
+): Promise<Record<string, GrammarLessonLink>> {
+  const lessonIds = new Set(
+    Object.values(attempt.writingFeedback ?? {}).flatMap(feedback =>
+      (feedback?.corrections ?? []).flatMap(item =>
+        item.grammarLessonId ? [item.grammarLessonId] : []
+      )
+    )
+  )
+
+  if (lessonIds.size === 0) return {}
+
+  const path = buildGrammarPath({
+    course: grammarCourse,
+    now: new Date(),
+    ...(await getGrammarProgressForActor(ownerId)),
+  })
+  const states = new Map(
+    path.units.flatMap(unit =>
+      unit.lessons.map(lesson => [lesson.id, lesson.state] as const)
+    )
+  )
+  const links: Record<string, GrammarLessonLink> = {}
+
+  for (const id of lessonIds) {
+    const lesson = grammarCourse.getLesson(id)?.lesson
+    const state = lesson ? states.get(lesson.id) : undefined
+
+    links[id] =
+      !state || state === 'locked'
+        ? 'locked'
+        : state === 'open'
+          ? 'lesson'
+          : 'notes'
+  }
+
+  return links
 }
 
 /**
@@ -79,7 +139,14 @@ export async function loadResultPageData(
   )
 
   if (!finished)
-    return { attempt, sections: publicSections, rows: [], writing: [] }
+    return {
+      attempt,
+      grammarLinks: {},
+      sections: publicSections,
+      rows: [],
+      savedTerms: [],
+      writing: [],
+    }
 
   const details = new Map<
     number,
@@ -126,5 +193,22 @@ export async function loadResultPageData(
       }
     })
 
-  return { attempt, sections: publicSections, rows, writing }
+  const reviewWords = rows.flatMap(row => reviewWordOf(row) ?? [])
+  const [grammarLinks, savedTerms] = await Promise.all([
+    attempt.skill === 'writing'
+      ? loadGrammarLinks(ownerId, attempt)
+      : Promise.resolve({}),
+    reviewWords.length
+      ? listSavedTermsForUser({ terms: reviewWords, userId: ownerId })
+      : Promise.resolve([]),
+  ])
+
+  return {
+    attempt,
+    grammarLinks,
+    savedTerms,
+    sections: publicSections,
+    rows,
+    writing,
+  }
 }

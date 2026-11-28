@@ -110,11 +110,12 @@ export function IeltsResultHead({ attempt, history, messages, test }: Props) {
           </Link>
         ) : null
       }
-      title={format(messages.ielts.result.heading, {
+      // The page title already says "Listening result": the end says the win.
+      title={format(messages.ielts.result.done, {
         skill: skill(attempt.skill),
       })}
       titleId="ielts-result-head"
-      wins={
+      stats={
         <StatStrip>
           {band !== null && attempt.result ? (
             <StatChip

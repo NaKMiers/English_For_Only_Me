@@ -53,10 +53,17 @@ describe('ProgressTabs', () => {
       screen.getByRole('link', { name: /IELTS 15 Test 3/ })
     ).toHaveAttribute('href', '/ielts/attempts/a1')
     expect(screen.getByText('6.5')).toBeTruthy()
+    // Only the link pops; the row around it stays still.
+    const link = screen.getByRole('link', { name: /IELTS 15 Test 3/ })
+    expect(link.className).toMatch(/hover-pop/)
+    expect(link.closest('li')?.className ?? '').not.toMatch(/hover:/)
 
     fireEvent.click(screen.getByRole('tab', { name: /Weak spots/ }))
 
     expect(screen.getByText('40%')).toBeTruthy()
+    expect(screen.getByText('40%').closest('li')?.className ?? '').not.toMatch(
+      /hover:/
+    )
   })
 
   test('says so when nothing is finished yet', () => {

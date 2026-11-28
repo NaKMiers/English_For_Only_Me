@@ -42,6 +42,15 @@ describe('IeltsResultHead', () => {
     expect(
       screen.getByRole('link', { name: 'Start Listening' })
     ).toHaveAttribute('href', '/ielts/cam-15-3/listening')
+    // A win title (the page title says "Reading result"), chips beside it.
+    expect(
+      screen.getByRole('heading', { level: 2, name: 'Reading done' })
+    ).toBeInTheDocument()
+    expect(
+      container.querySelectorAll(
+        '[data-session-slot="stats"] [data-stat-chip="static"]'
+      ).length
+    ).toBeGreaterThan(0)
   })
 
   test('the first band for a skill is a step; a cleared test goes back to the list', () => {
