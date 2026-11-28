@@ -41,8 +41,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { useMessages } from '@/i18n/client'
-import { format, plural } from '@/i18n/format'
-import type { Messages } from '@/i18n/messages'
+import { format } from '@/i18n/format'
 import { cn } from '@/lib/utils'
 import type {
   GrammarPathView,
@@ -58,40 +57,12 @@ import {
 } from '@/modules/grammar/path/unitSummary'
 import { hasPendingGrammarSessions } from '@/requests/grammarSessionsApi'
 
+import { nextHref, nextLabel } from './pathNext'
+
 import { GrammarJourneyHero } from './GrammarJourneyHero'
 
 interface Props {
   path: GrammarPathView
-}
-
-function nextHref(next: PathNext) {
-  switch (next.kind) {
-    case 'lesson':
-      return `/grammar/lessons/${next.lessonId}`
-    case 'checkpoint':
-      return `/grammar/units/${next.unitId}/checkpoint`
-    case 'review':
-      return `/grammar/lessons/${next.lessonId}/review`
-    case 'weak':
-      return '/grammar/practice'
-    case 'done':
-      return null
-  }
-}
-
-function nextLabel(t: Messages['grammar']['path']['next'], next: PathNext) {
-  switch (next.kind) {
-    case 'lesson':
-      return format(t.lesson, { title: next.title })
-    case 'checkpoint':
-      return format(t.checkpoint, { title: next.title })
-    case 'review':
-      return format(t.review, { title: next.title })
-    case 'weak':
-      return plural(t.weak, next.count)
-    case 'done':
-      return t.done
-  }
 }
 
 function StarsInline({ stars }: { stars: number }) {

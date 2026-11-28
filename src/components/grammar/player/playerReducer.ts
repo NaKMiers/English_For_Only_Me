@@ -43,7 +43,11 @@ export interface PlayerState {
 }
 
 export type PlayerAction =
-  { type: 'draft'; draft: CardDraft } | { type: 'check' } | { type: 'continue' }
+  | { type: 'draft'; draft: CardDraft }
+  | { type: 'check' }
+  | { type: 'continue' }
+  /** Play the same cards again from the start (Redo / Retry). */
+  | { type: 'reset' }
 
 export function draftFor(play: PlayCard | undefined): CardDraft | null {
   return play && isPracticeCard(play.card) ? emptyDraft(play.card) : null
@@ -75,6 +79,7 @@ export function createPlayerReducer(plays: PlayCard[]) {
     state: PlayerState,
     action: PlayerAction
   ): PlayerState {
+    if (action.type === 'reset') return initialPlayerState(plays)
     if (state.finished) return state
 
     const play = currentPlay(plays, state)
@@ -133,6 +138,9 @@ export function createPlayerReducer(plays: PlayCard[]) {
           position: finished ? state.position : position,
         }
       }
+
+      default:
+        return state
     }
   }
 }

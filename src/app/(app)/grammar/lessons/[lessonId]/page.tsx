@@ -6,6 +6,7 @@ import { format } from '@/i18n/format'
 import { getMessages } from '@/i18n/server'
 import { grammarCourse } from '@/modules/grammar/course'
 import { isLessonUnlocked } from '@/modules/grammar/path/buildGrammarPath'
+import { buildPlayerJourney } from '@/modules/grammar/path/playerJourney'
 import { loadGrammarPageData } from '@/modules/grammar/services/grammarPageData'
 
 export const dynamic = 'force-dynamic'
@@ -34,7 +35,7 @@ export default async function GrammarLessonPage({ params }: Props) {
   if (found.lesson.id !== lessonId)
     redirect(`/grammar/lessons/${found.lesson.id}`)
 
-  const { canSave, progress } = await loadGrammarPageData()
+  const { canSave, path, progress } = await loadGrammarPageData()
 
   if (
     !isLessonUnlocked({ course: grammarCourse, ...progress }, found.lesson.id)
@@ -43,6 +44,7 @@ export default async function GrammarLessonPage({ params }: Props) {
 
   return (
     <GrammarPlayerPage
+      journey={buildPlayerJourney(path, 'lesson', found.lesson.id)}
       canSave={canSave}
       cards={found.lesson.cards}
       mode="lesson"

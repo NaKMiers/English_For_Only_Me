@@ -7,6 +7,7 @@ import { getMessages } from '@/i18n/server'
 import { CHECKPOINT_SIZE, PASS_ACCURACY } from '@/modules/grammar/constants'
 import { grammarCourse } from '@/modules/grammar/course'
 import { createRng, randomSeed } from '@/modules/grammar/rng'
+import { buildPlayerJourney } from '@/modules/grammar/path/playerJourney'
 import { loadGrammarPageData } from '@/modules/grammar/services/grammarPageData'
 import { buildCheckpointSet } from '@/modules/grammar/session/buildPracticeSet'
 
@@ -45,6 +46,7 @@ export default async function GrammarCheckpointPage({ params }: Props) {
 
   return (
     <GrammarPlayerPage
+      journey={buildPlayerJourney(path, 'checkpoint', unit.id)}
       canSave={canSave}
       cards={buildCheckpointSet(grammarCourse, unit, createRng(randomSeed()))}
       intro={intro}

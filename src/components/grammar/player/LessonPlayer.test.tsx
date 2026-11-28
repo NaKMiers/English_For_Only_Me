@@ -4,6 +4,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { OutboxOwnerProvider } from '@/components/common/OutboxOwnerProvider'
 import { GRAMMAR_SESSIONS_URL } from '@/modules/grammar/constants'
 import type { GrammarCard } from '@/modules/grammar/course/types'
+import type { PathUnit } from '@/modules/grammar/path/buildGrammarPath'
+import type { PlayerJourney } from '@/modules/grammar/path/playerJourney'
 import type { GrammarSessionResult } from '@/modules/grammar/session/planGrammarSessionWrite'
 import type { PlayCard } from '@/modules/grammar/session/preparePlayCards'
 
@@ -51,13 +53,14 @@ const savedResult: GrammarSessionResult = {
 // previous test's outbox, so nothing it queued leaks into the next one.
 let ownerCount = 0
 
-function renderPlayer(canSave = true) {
+function renderPlayer(canSave = true, journey: PlayerJourney | null = null) {
   ownerCount += 1
 
   return render(
     <OutboxOwnerProvider ownerKey={`owner-${ownerCount}`}>
       <LessonPlayer
         canSave={canSave}
+        journey={journey}
         exitHref="/grammar"
         mode="lesson"
         plays={plays}
@@ -233,5 +236,106 @@ describe('LessonPlayer saving', () => {
 
     expect(await screen.findByText(/was not saved/)).toBeInTheDocument()
     expect(fetchMock).not.toHaveBeenCalled()
+  })
+})
+
+const unit = {
+  id: 'u01',
+  level: 'A1',
+  lessons: [
+    { id: 'u01-l01', stars: 0, state: 'open' },
+    { id: 'u01-l02', stars: 0, state: 'locked' },
+    { id: 'u01-l03', stars: 0, state: 'locked' },
+  ],
+  order: 1,
+  state: 'current',
+  title: 'Be',
+} as unknown as PathUnit
+
+function ctaCount() {
+  return [...document.querySelectorAll('[class]')].filter(element =>
+    /(^|\s)bg-cta(\s|$)/.test(element.getAttribute('class') ?? '')
+  ).length
+}
+
+describe('LessonPlayer session end', () => {
+  it('ends with the journey step and exactly one cta into the next lesson', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() => jsonResponse(200, savedResult))
+    )
+    renderPlayer(true, {
+      next: { kind: 'lesson', lessonId: 'u01-l01', title: 'am, is, are' },
+      nextUnitFirstLessonId: 'u02-l01',
+      unit,
+    })
+    answerAndFinish()
+
+    const next = await screen.findByRole('link', { name: 'Next lesson' })
+
+    expect(next).toHaveAttribute('href', '/grammar/lessons/u01-l02')
+    expect(screen.getByText('+1 lesson on the path')).toBeInTheDocument()
+    expect(screen.getByText(/1 of 3 lessons done/)).toBeInTheDocument()
+    expect(ctaCount()).toBe(1)
+  })
+
+  it("a passed checkpoint opens the new unit's first lesson", async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() =>
+        jsonResponse(200, {
+          ...savedResult,
+          mode: 'checkpoint',
+          stars: null,
+          unlocked: { kind: 'unit', title: 'Unit 2', unitId: 'u02' },
+        })
+      )
+    )
+    ownerCount += 1
+    render(
+      <OutboxOwnerProvider ownerKey={`owner-${ownerCount}`}>
+        <LessonPlayer
+          canSave
+          exitHref="/grammar"
+          journey={{
+            next: { kind: 'checkpoint', title: 'Be', unitId: 'u01' },
+            nextUnitFirstLessonId: 'u02-l01',
+            unit,
+          }}
+          mode="checkpoint"
+          plays={plays}
+          targetId="u01"
+          title="Checkpoint"
+        />
+      </OutboxOwnerProvider>
+    )
+    answerAndFinish()
+
+    expect(
+      await screen.findByRole('link', { name: 'Start the next unit' })
+    ).toHaveAttribute('href', '/grammar/lessons/u02-l01')
+  })
+
+  it('a replay that unlocks nothing falls back to the path next stop', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() => jsonResponse(200, { ...savedResult, unlocked: null }))
+    )
+    renderPlayer(true, {
+      next: { count: 4, kind: 'weak' },
+      nextUnitFirstLessonId: null,
+      unit,
+    })
+    answerAndFinish()
+
+    const next = await screen.findByRole('link', {
+      name: 'Practise 4 weak questions',
+    })
+
+    expect(next).toHaveAttribute('href', '/grammar/practice')
+    expect(screen.getByRole('link', { name: 'Back to path' })).toHaveAttribute(
+      'href',
+      '/grammar'
+    )
   })
 })

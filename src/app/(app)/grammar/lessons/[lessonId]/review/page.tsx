@@ -6,6 +6,7 @@ import { format } from '@/i18n/format'
 import { getMessages } from '@/i18n/server'
 import { grammarCourse } from '@/modules/grammar/course'
 import { createRng, randomSeed } from '@/modules/grammar/rng'
+import { buildPlayerJourney } from '@/modules/grammar/path/playerJourney'
 import { loadGrammarPageData } from '@/modules/grammar/services/grammarPageData'
 import { buildReviewSet } from '@/modules/grammar/session/buildPracticeSet'
 
@@ -44,6 +45,7 @@ export default async function GrammarReviewPage({ params }: Props) {
 
   return (
     <GrammarPlayerPage
+      journey={buildPlayerJourney(path, 'review', found.lesson.id)}
       canSave={canSave}
       cards={cards}
       intro={t.grammar.sessions.reviewIntro}

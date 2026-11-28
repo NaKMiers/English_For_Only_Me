@@ -29,6 +29,7 @@ import { cn } from '@/lib/utils'
 import type { GrammarSessionMode } from '@/modules/grammar/constants'
 import { isPracticeCard } from '@/modules/grammar/course/types'
 import { gradeCard } from '@/modules/grammar/grading/gradeCard'
+import type { PlayerJourney } from '@/modules/grammar/path/playerJourney'
 import type { PlayCard } from '@/modules/grammar/session/preparePlayCards'
 
 import { SpeakButton } from '../SpeakButton'
@@ -56,12 +57,15 @@ interface Props {
   /** The learner this tab belongs to; stored with any unsaved result. */
   /** Shown above the first card, e.g. what a test-out means. */
   intro?: string
+  /** The path around this session, for the session end's next stop. */
+  journey?: PlayerJourney | null
 }
 
 export function LessonPlayer({
   canSave,
   exitHref,
   intro,
+  journey = null,
   mode,
   plays,
   targetId,
@@ -222,8 +226,16 @@ export function LessonPlayer({
           canSave={canSave}
           durationMs={startedAt && finishedAt ? finishedAt - startedAt : 0}
           exitHref={exitHref}
+          journey={journey}
           mode={mode}
           onComplete={() => playSting('complete')}
+          onRestart={() => {
+            // Same cards again, no reload: the reducer starts over.
+            setStartedAt(null)
+            setFinishedAt(null)
+            setComboFlash(null)
+            dispatch({ type: 'reset' })
+          }}
           plays={plays}
           state={state}
           targetId={targetId}

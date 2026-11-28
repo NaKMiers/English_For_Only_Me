@@ -1,6 +1,7 @@
 import { PageShell } from '@/components/common/PageShell'
 import type { GrammarSessionMode } from '@/modules/grammar/constants'
 import type { GrammarCard } from '@/modules/grammar/course/types'
+import type { PlayerJourney } from '@/modules/grammar/path/playerJourney'
 import { createRng, randomSeed } from '@/modules/grammar/rng'
 import { preparePlayCards } from '@/modules/grammar/session/preparePlayCards'
 
@@ -12,6 +13,8 @@ interface Props {
   title: string
   cards: GrammarCard[]
   canSave: boolean
+  /** The path around this session, for the session end's next stop. */
+  journey?: PlayerJourney | null
   intro?: string
 }
 
@@ -23,6 +26,7 @@ interface Props {
 export function GrammarPlayerPage({
   canSave,
   cards,
+  journey = null,
   intro,
   mode,
   targetId,
@@ -41,6 +45,7 @@ export function GrammarPlayerPage({
         canSave={canSave}
         exitHref="/grammar"
         intro={intro}
+        journey={journey}
         mode={mode}
         plays={plays}
         targetId={targetId}

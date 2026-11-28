@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { GrammarPlayerPage } from '@/components/grammar/player/GrammarPlayerPage'
 import { getMessages } from '@/i18n/server'
 import { grammarCourse } from '@/modules/grammar/course'
+import { buildPlayerJourney } from '@/modules/grammar/path/playerJourney'
 import { loadGrammarPageData } from '@/modules/grammar/services/grammarPageData'
 import { buildWeakSet } from '@/modules/grammar/session/buildPracticeSet'
 
@@ -15,7 +16,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function GrammarPracticePage() {
-  const { canSave, progress } = await loadGrammarPageData()
+  const { canSave, path, progress } = await loadGrammarPageData()
   const cards = buildWeakSet(grammarCourse, progress.misses)
 
   if (cards.length === 0) redirect('/grammar')
@@ -24,6 +25,7 @@ export default async function GrammarPracticePage() {
 
   return (
     <GrammarPlayerPage
+      journey={buildPlayerJourney(path, 'weak', 'weak')}
       canSave={canSave}
       cards={cards}
       intro={t.grammar.sessions.weakIntro}
