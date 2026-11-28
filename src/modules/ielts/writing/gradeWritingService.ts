@@ -255,14 +255,23 @@ export async function gradeWritingTask({
     >,
     isFullSkill
   )
-  const updated =
-    done && written.status !== 'scored'
+  // Grade again on a scored attempt (another language, a retry) rewrites a
+  // task band, so the Writing band follows it; `scoredAt` stays the first.
+  const updated = !done
+    ? written
+    : written.status !== 'scored'
       ? await IeltsAttemptModel.findOneAndUpdate(
           { _id: attempt._id, ownerId, status: { $ne: 'scored' } },
           { $set: { status: 'scored', scoredAt: now, writingBand: done.band } },
           { new: true }
         ).lean()
-      : written
+      : written.writingBand !== done.band
+        ? await IeltsAttemptModel.findOneAndUpdate(
+            { _id: attempt._id, ownerId },
+            { $set: { writingBand: done.band } },
+            { new: true }
+          ).lean()
+        : written
 
   return updated
     ? { ok: true, data: toIeltsAttemptRecord(updated) }

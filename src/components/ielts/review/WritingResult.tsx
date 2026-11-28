@@ -214,7 +214,7 @@ function gradingErrorText(
   error: string | undefined,
   t: Messages['ielts']['writingResult']
 ) {
-  return error && error in t.gradingErrors
+  return error && Object.hasOwn(t.gradingErrors, error)
     ? t.gradingErrors[error as IeltsGradingErrorCode]
     : t.unknownReason
 }
@@ -371,12 +371,13 @@ export function WritingResult({
   const t = useMessages().ielts
   const router = useRouter()
   const [attempt, setAttempt] = useState(initial)
-  const [busyTask, setBusyTask] = useState<1 | 2 | null>(null)
+  // Per task: grading Task 2 while Task 1 runs keeps both marked busy.
+  const [busyTasks, setBusyTasks] = useState<ReadonlySet<1 | 2>>(new Set())
   // One error per task, shown in that task's card by its Grade button.
   const [errors, setErrors] = useState<Partial<Record<1 | 2, string>>>({})
 
   const grade = async (task: 1 | 2) => {
-    setBusyTask(task)
+    setBusyTasks(current => new Set(current).add(task))
     setErrors(({ [task]: _cleared, ...rest }) => rest)
 
     try {
@@ -391,7 +392,12 @@ export function WritingResult({
         [task]: ieltsErrorMessage(caught, t.writingResult.gradeFailed),
       }))
     } finally {
-      setBusyTask(null)
+      setBusyTasks(current => {
+        const rest = new Set(current)
+
+        rest.delete(task)
+        return rest
+      })
     }
   }
 
@@ -401,7 +407,7 @@ export function WritingResult({
           in its card title, so no tiles repeat them here. */}
       {tasks.map(task => (
         <TaskFeedback
-          busy={busyTask === task.task}
+          busy={busyTasks.has(task.task)}
           error={errors[task.task] ?? null}
           feedback={attempt.writingFeedback?.[String(task.task) as '1' | '2']}
           grammarLinks={grammarLinks}
