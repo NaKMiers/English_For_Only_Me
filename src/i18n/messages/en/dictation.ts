@@ -11,7 +11,7 @@ export const dictation = {
     practiceTitle: 'Dictation Practice',
     practiceDescription:
       'Practice sentence-level YouTube dictation for IELTS listening.',
-    resultsTitle: 'Dictation Results',
+    resultsTitle: 'Dictation results',
     resultsDescription:
       'Review one video result and the weak sentences to drill next.',
   },
@@ -311,8 +311,6 @@ export const dictation = {
   },
   setup: {
     backToLab: 'Back to Dictation Lab',
-    addTranscript: 'Add Transcript',
-    importVideo: 'Import Video',
     noDatabaseTitle: 'MongoDB is not configured',
     practiceNoDatabase:
       'Set MONGODB_URI on the server before opening a saved practice session.',
@@ -328,11 +326,20 @@ export const dictation = {
       'This video has no practice segments yet. Segments are built automatically when its transcript is saved - re-open it in admin and save the captions to rebuild.',
   },
   resultsAction: {
-    startPractice: 'Start Practice',
-    continuePractice: 'Continue Practice',
-    practiceAgain: 'Practice Again',
+    startPractice: 'Start practice',
+    continuePractice: 'Continue practice',
+    practiceAgain: 'Practice again',
   },
   results: {
+    headUnit: 'first-try accuracy',
+    headWins: '{percent}% done: {done} of {total} sentences',
+    reviewWeak: {
+      one: 'Review {count} weak sentence',
+      other: 'Review {count} weak sentences',
+    },
+    reviewDetail: 'Spaced review',
+    reviewAction: 'Start review',
+    nextVideoAction: 'Next video',
     eyebrow: {
       completed: 'Completed',
       inProgress: 'In progress',

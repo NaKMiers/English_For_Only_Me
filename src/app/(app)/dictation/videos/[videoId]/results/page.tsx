@@ -1,20 +1,28 @@
+import { Headphones } from 'lucide-react'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
+import { PageHeader } from '@/components/common/PageHeader'
 import { PageShell } from '@/components/common/PageShell'
 import { ContentPanel } from '@/components/common/ContentPanel'
 import { DictationDebriefPanel } from '@/components/dictation/DictationDebriefPanel'
-import { DictationResultsSummary } from '@/components/dictation/DictationResultsSummary'
+import {
+  DictationResultsSummary,
+  type ResultsNextStop,
+} from '@/components/dictation/DictationResultsSummary'
 import { DictationReviewQueue } from '@/components/dictation/DictationReviewQueue'
 import { DictationStatsPanel } from '@/components/dictation/DictationStatsPanel'
 import { ActionButton } from '@/components/ui/ActionButton'
 import { hasMongoDbUri } from '@/constants/environments'
+import { format, plural } from '@/i18n/format'
 import { getMessages } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
+import { pickNextStop } from '@/lib/journey/nextStop'
 import { DictationDebriefModel } from '@/models/dictation/DictationDebriefModel'
 import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
 import { getVideoProgressForUser } from '@/modules/dictation/content/progressRepository'
+import { findNextVideo } from '@/modules/dictation/practice/findNextVideo'
 import { listDueReviewItemsForUser } from '@/modules/dictation/review/reviewItemService'
 import { toDictationDebriefRecord } from '@/modules/dictation/services/dictationDebriefRecords'
 import { toDictationVideoRecord } from '@/modules/dictation/services/dictationVideoRecords'
@@ -43,11 +51,9 @@ interface Props {
 async function ResultsSetupState({
   message,
   title,
-  videoId,
 }: {
   message: string
   title: string
-  videoId?: string | null
 }) {
   const t = await getMessages()
   const text = t.dictation.setup
@@ -70,18 +76,8 @@ async function ResultsSetupState({
             {message}
           </p>
           <div className="flex flex-wrap gap-3">
+            {/* Learners only get the way back; transcripts are admin work. */}
             <ActionButton href="/dictation">{text.backToLab}</ActionButton>
-            {videoId ? (
-              <ActionButton href={`/admin/dictation/videos/${videoId}/edit`}>
-                {text.addTranscript}
-              </ActionButton>
-            ) : null}
-            <ActionButton
-              href="/admin/dictation/import"
-              tone="paper"
-            >
-              {text.importVideo}
-            </ActionButton>
           </div>
         </ContentPanel>
       </section>
@@ -151,24 +147,68 @@ export default async function Page({ params }: Props) {
       <ResultsSetupState
         title={t.dictation.setup.transcriptNeededTitle}
         message={t.dictation.setup.resultsTranscriptNeeded}
-        videoId={videoId}
       />
     )
 
   const isEmpty = stats.segmentCount === 0 || stats.completedSegmentCount === 0
+  const nextVideo = isEmpty ? null : await findNextVideo(videoRecord)
+  // One rule for every module: due review first, then the next new step.
+  const picked = pickNextStop<ResultsNextStop>([
+    reviewItems.length > 0
+      ? {
+          data: {
+            actionLabel: text.reviewAction,
+            detail: text.reviewDetail,
+            href: '/dictation/review',
+            title: plural(text.reviewWeak, reviewItems.length),
+          },
+          kind: 'due',
+        }
+      : null,
+    nextVideo
+      ? {
+          data: {
+            actionLabel: text.nextVideoAction,
+            detail: format(t.dictation.practice.nextInTopic, {
+              topic: nextVideo.topicTitle,
+            }),
+            href: nextVideo.href,
+            title: nextVideo.title,
+          },
+          kind: 'next',
+        }
+      : null,
+  ])
+  const breadcrumb = [
+    { href: '/dictation', label: t.dictation.browse.allTopics },
+    { label: video.title },
+  ]
 
   return (
     <PageShell
       topbar={
         <AppTopbar
           activeHref="/dictation"
+          page={{
+            breadcrumb,
+            module: 'dictation',
+            title: t.dictation.meta.resultsTitle,
+          }}
           subtitle={t.dictation.meta.labSubtitle}
         />
       }
     >
       <section className="grid gap-5 px-4 pb-6 md:pr-6 md:pl-0">
+        <PageHeader
+          breadcrumb={{ items: breadcrumb, label: t.common.journey.breadcrumb }}
+          icon={<Headphones />}
+          iconClassName="bg-pastel-sky text-accent-blue"
+          inTopbar
+          title={t.dictation.meta.resultsTitle}
+        />
         <DictationResultsSummary
           isEmpty={isEmpty}
+          next={picked.kind === 'done' ? null : picked.data}
           progress={progress}
           stats={stats}
           thumbnailUrl={video.thumbnailUrl}

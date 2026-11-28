@@ -1,7 +1,10 @@
 'use client'
 
+import { ArrowRight, Headphones } from 'lucide-react'
+
 import { ContentPanel } from '@/components/common/ContentPanel'
-import { MetricTile } from '@/components/common/MetricTile'
+import { NextStopCard } from '@/components/journey/NextStopCard'
+import { SessionEnd } from '@/components/journey/SessionEnd'
 import { ActionButton } from '@/components/ui/ActionButton'
 import { useMessages } from '@/i18n/client'
 import { format } from '@/i18n/format'
@@ -13,8 +16,18 @@ import { getDictationResultsAction } from '@/modules/dictation/videoReadiness'
 
 import { DictationVideoThumbnail } from './DictationVideoThumbnail'
 
+/** The results page's one next stop: weak-sentence review or the next video. */
+export interface ResultsNextStop {
+  actionLabel: string
+  detail: string
+  href: string
+  title: string
+}
+
 interface Props {
   isEmpty: boolean
+  /** Null: the next stop falls back to the dictation landing. */
+  next?: ResultsNextStop | null
   progress: DictationVideoProgress
   stats: DictationVideoStatsRecord
   thumbnailUrl?: string | null
@@ -25,6 +38,7 @@ interface Props {
 
 export function DictationResultsSummary({
   isEmpty,
+  next = null,
   progress,
   stats,
   thumbnailUrl = null,
@@ -35,6 +49,62 @@ export function DictationResultsSummary({
   const t = useMessages()
   const text = t.dictation.results
   const action = getDictationResultsAction({ isEmpty, progress, videoId })
+
+  if (!isEmpty)
+    return (
+      <SessionEnd
+        headline={{
+          icon: <Headphones />,
+          unit: text.headUnit,
+          value: `${stats.firstTryWordAccuracy}%`,
+        }}
+        module="dictation"
+        nextStop={
+          <NextStopCard
+            actionIcon={<ArrowRight aria-hidden="true" />}
+            actionLabel={
+              next?.actionLabel ?? t.dictation.practice.allTopicsAction
+            }
+            detail={next?.detail ?? t.dictation.practice.topicDone}
+            href={next?.href ?? '/dictation'}
+            pinLabel={t.common.journey.nextStop}
+            title={next?.title ?? t.dictation.landing.title}
+            variant="compact"
+          />
+        }
+        secondary={
+          <ActionButton
+            href={action.href}
+            tone="paper"
+          >
+            {t.dictation.resultsAction[action.kind]}
+          </ActionButton>
+        }
+        title={title}
+        titleId="results-head-title"
+        wins={
+          <div className="flex flex-wrap items-center gap-3">
+            <DictationVideoThumbnail
+              title={title}
+              thumbnailUrl={thumbnailUrl}
+              youtubeVideoId={youtubeVideoId}
+              sizes="96px"
+              className="w-24 shrink-0"
+            />
+            <span className="grid gap-1">
+              <span className="font-medium">
+                {format(text.headWins, {
+                  done: stats.completedSegmentCount,
+                  percent: stats.completionPercentage,
+                  total: stats.segmentCount,
+                })}
+              </span>
+              <span className="text-ink-soft text-xs">{text.builtFrom}</span>
+            </span>
+          </div>
+        }
+      />
+    )
 
   return (
     <ContentPanel
@@ -49,53 +119,20 @@ export function DictationResultsSummary({
         </ActionButton>
       }
     >
-      {isEmpty ? (
-        <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
-          <p className="text-ink-soft text-base leading-7 font-normal">
-            {progress === 'inProgress'
-              ? text.inProgressEmpty
-              : text.notStartedEmpty}
-          </p>
-          <DictationVideoThumbnail
-            title={title}
-            thumbnailUrl={thumbnailUrl}
-            youtubeVideoId={youtubeVideoId}
-            sizes="(min-width: 640px) 30vw, 100vw"
-            className="w-full max-w-xs sm:w-56"
-          />
-        </div>
-      ) : (
-        <div className="grid gap-4">
-          <div className="grid gap-3 sm:grid-cols-2">
-            <MetricTile
-              label={t.dictation.stats.completion}
-              value={`${stats.completionPercentage}%`}
-              detail={format(t.dictation.stats.resolved, {
-                done: stats.completedSegmentCount,
-                total: stats.segmentCount,
-              })}
-              tone="red"
-            />
-            <MetricTile
-              label={text.firstTryAccuracy}
-              value={`${stats.firstTryWordAccuracy}%`}
-              detail={t.dictation.stats.firstTryDetail}
-            />
-          </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <DictationVideoThumbnail
-              title={title}
-              thumbnailUrl={thumbnailUrl}
-              youtubeVideoId={youtubeVideoId}
-              sizes="160px"
-              className="w-40 shrink-0"
-            />
-            <p className="text-ink-soft min-w-0 flex-1 text-sm leading-6 font-normal">
-              {text.builtFrom}
-            </p>
-          </div>
-        </div>
-      )}
+      <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+        <p className="text-ink-soft text-base leading-7 font-normal">
+          {progress === 'inProgress'
+            ? text.inProgressEmpty
+            : text.notStartedEmpty}
+        </p>
+        <DictationVideoThumbnail
+          title={title}
+          thumbnailUrl={thumbnailUrl}
+          youtubeVideoId={youtubeVideoId}
+          sizes="(min-width: 640px) 30vw, 100vw"
+          className="w-full max-w-xs sm:w-56"
+        />
+      </div>
     </ContentPanel>
   )
 }

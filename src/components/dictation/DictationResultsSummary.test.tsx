@@ -39,7 +39,7 @@ describe('DictationResultsSummary', () => {
     expect(view.getByText('Results')).not.toBeNull()
     expect(view.getByText(/Practice the video first/)).not.toBeNull()
     expect(
-      view.getByRole('link', { name: 'Start Practice' }).getAttribute('href')
+      view.getByRole('link', { name: 'Start practice' }).getAttribute('href')
     ).toBe('/dictation/videos/0123456789abcdef01234567/practice')
   })
 
@@ -56,10 +56,12 @@ describe('DictationResultsSummary', () => {
       />
     )
 
-    expect(view.getByText('Completed')).not.toBeNull()
-    expect(view.getByText('80%')).not.toBeNull()
+    // The head leads with the result, then one next stop.
+    expect(view.getByText('72%')).not.toBeNull()
+    expect(view.getByText('80% done: 8 of 10 sentences')).not.toBeNull()
     expect(view.getByText(/saved attempts only/)).not.toBeNull()
-    expect(view.getByRole('link', { name: 'Practice Again' })).not.toBeNull()
+    expect(view.container.querySelectorAll('[data-next-stop]')).toHaveLength(1)
+    expect(view.getByRole('link', { name: 'Practice again' })).not.toBeNull()
   })
 
   test('shows an in-progress eyebrow while a session is active', () => {
@@ -74,6 +76,28 @@ describe('DictationResultsSummary', () => {
     )
 
     expect(view.getByText('In progress')).not.toBeNull()
-    expect(view.getByRole('link', { name: 'Continue Practice' })).not.toBeNull()
+    expect(view.getByRole('link', { name: 'Continue practice' })).not.toBeNull()
+  })
+
+  test('the next stop is the weak-sentence review when one is due', () => {
+    const view = render(
+      <DictationResultsSummary
+        isEmpty={false}
+        next={{
+          actionLabel: 'Start review',
+          detail: 'Spaced review',
+          href: '/dictation/review',
+          title: 'Review 3 weak sentences',
+        }}
+        progress="completed"
+        stats={stats}
+        title="IELTS video"
+        videoId="0123456789abcdef01234567"
+      />
+    )
+
+    expect(
+      view.getByRole('link', { name: 'Start review' }).getAttribute('href')
+    ).toBe('/dictation/review')
   })
 })

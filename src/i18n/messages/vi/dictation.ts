@@ -311,8 +311,6 @@ export const dictation: Messages['dictation'] = {
   },
   setup: {
     backToLab: 'Về Chép chính tả',
-    addTranscript: 'Thêm transcript',
-    importVideo: 'Nhập video',
     noDatabaseTitle: 'Chưa cấu hình MongoDB',
     practiceNoDatabase:
       'Hãy đặt MONGODB_URI trên máy chủ trước khi mở buổi luyện tập đã lưu.',
@@ -333,6 +331,15 @@ export const dictation: Messages['dictation'] = {
     practiceAgain: 'Luyện lại',
   },
   results: {
+    headUnit: 'chính xác lần đầu',
+    headWins: 'Xong {percent}%: {done}/{total} câu',
+    reviewWeak: {
+      one: 'Ôn {count} câu còn yếu',
+      other: 'Ôn {count} câu còn yếu',
+    },
+    reviewDetail: 'Ôn tập ngắt quãng',
+    reviewAction: 'Bắt đầu ôn',
+    nextVideoAction: 'Video tiếp theo',
     eyebrow: {
       completed: 'Đã hoàn thành',
       inProgress: 'Đang học',

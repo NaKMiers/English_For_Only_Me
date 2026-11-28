@@ -7,13 +7,9 @@ import { NextStopCard } from '@/components/journey/NextStopCard'
 import { SessionEnd } from '@/components/journey/SessionEnd'
 import { useMessages } from '@/i18n/client'
 import { format } from '@/i18n/format'
+import type { PracticeNextVideo } from '@/modules/dictation/practice/findNextVideo'
 
-/** Where the finish screen sends the learner next. */
-export interface PracticeNextVideo {
-  href: string
-  title: string
-  topicTitle: string
-}
+export type { PracticeNextVideo }
 
 interface Props {
   /** Sentences written right this run. */
