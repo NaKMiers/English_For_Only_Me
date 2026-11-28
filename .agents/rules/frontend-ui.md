@@ -6,7 +6,8 @@ clear actions, responsive by default, and reusable component primitives.
 ## Language
 
 The UI speaks English (default) or Vietnamese, picked by the learner with the
-EN/VI pill beside the day / night toggle (rail on desktop, topbar on phones).
+EN/VI toggle beside the day / night toggle at the foot of the rail on
+desktop, and in the Account sheet (the topbar menu) on phones.
 The choice is a cookie (`efom-locale`), so server components render the right
 language on the first paint; routes do not change.
 
@@ -130,8 +131,8 @@ weight.
   never get it, so clickable and not clickable stay easy to tell apart.
 - Motion is calm and short, transform / opacity only, and every helper
   lives in the MOTION block of `globals.css`: `page-enter` (PageShell `main`,
-  replays per route), `motion-stagger` on a card grid or list, `hover-lift`
-  on a clickable card, `motion-grow-x` / `motion-grow-y` for bars,
+  replays per route), `motion-stagger` on a card grid or list, `hover-pop`
+  on anything clickable, `motion-grow-x` / `motion-grow-y` for bars,
   `motion-draw` for an SVG line. Entrances use `backwards` fill so no
   transform stays behind. Work screens (practice, lesson player, IELTS
   runner) get a quick fade at most. Reduced motion turns movement off.
@@ -143,23 +144,96 @@ weight.
   `accent-*` become light tones. The rail keeps its own `rail` / `rail-fg`.
   Check both themes after a visual change.
 
-### Page patterns
+### Page patterns (calm pages, progress you can feel)
 
-- Every module page starts with `PageHeader` (`src/components/common`):
-  module icon in its pastel circle, h1, one line under it, actions on the
-  right, an optional eyebrow (breadcrumb). Page content uses one padding
-  rhythm, `px-4 pb-6 md:pr-6 md:pl-0`, and its `loading.tsx` uses the same
-  padding and `SkeletonHero`, so nothing shifts when data lands.
-- Lead with the one next action (Grammar's Continue card, Vocabulary's
-  recall card), put counts in a compact strip of links (vocabulary status
-  strip) instead of tall metric tiles, and fold what is finished (grammar
-  units in `Collapsible`, IELTS progress under one line).
-- Long lists get a jump aid (the grammar unit index) and dense rows
-  (vocabulary word list), not a column of big cards.
-- Phones: `AppTabBar` floats at the bottom below `md` on normal pages and is
-  left out on full-height work screens; `PageShell` keeps room for it.
-- Route error boundaries render `RouteError` (mascot, retry, back to the
-  module).
+Every learner page is built from the journey primitives in
+`src/components/journey/` and a few shared pieces, so pages stay the same
+by construction. The full reasoning is in
+`docs/plans/ui-calm-progress-2026-11-28.md`; this section is enough to
+build a new page.
+
+**The landing skeleton** (every module landing, same order):
+
+1. Title in the topbar from md: `AppTopbar page={{ module, title,
+subtitle?, breadcrumb? }}` (a module key, never an icon component),
+   plus `PageHeader inTopbar` which shows the same title on phones only.
+2. One `JourneyCard` on the module gradient: `JourneyHeadline` (how far
+   the learner came, a count), the module's own metaphor (grammar
+   staircase, IELTS trail, dictation scrubber, vocabulary garden),
+   `MilestoneNote` ("3 lessons to finish A2": steps left, never a
+   percentage), a `StatStrip` of at most 4 `StatChip`s (at most 2 linked),
+   and one `NextStopCard`.
+3. Optional side drawer: `DrawerRow` + `DrawerHandle` (closed by default)
+   for history, weak spots, favorites.
+4. The browse area: the metaphor at full length (path, metro lines, record
+   shelves, word list). A `ContinueFloat` (`targetId`, `nextStopId`) may
+   scroll back to "you are here"; it hides while the next stop is on
+   screen.
+
+**Budget above the fold:** 1 `cta` (the next stop), at most 4 stat chips,
+1 drawer handle, 0 header action buttons. `expectLandingBudget` in
+`src/test/landingBudget.ts` checks it in tests: use it for every new
+landing and session end.
+
+**The next stop** follows one rule, `pickNextStop` in
+`src/lib/journey/nextStop.ts`: resume an unfinished item, else a due
+review, else the next new step, else the all-clear `done` state. Each
+module only builds its candidates. The next stop links straight into the
+work screen, never to another chooser.
+
+**Every session ends with `SessionEnd`** (dictation practice and results,
+vocabulary recall, grammar player, IELTS result): wins first, then the
+journey step just taken (computed with the module's advance helper so a
+replay adds 0: `advanceTopicRecord`, `advanceGardenPosition`,
+`advanceUnitSummary`), then the fix-up list (folded past 3), then exactly
+one next stop that goes somewhere real.
+
+**Shared pieces:**
+
+| Need                         | Use                                                        |
+| ---------------------------- | ---------------------------------------------------------- |
+| Journey card and parts       | `JourneyCard`, `JourneyHeadline`, `MilestoneNote`          |
+| Numbers                      | `StatStrip` + `StatChip` (static never pops, linked does)  |
+| The one next action          | `NextStopCard` (`card` or `compact`; `href` or `onAction`) |
+| Folded side card             | `DrawerRow`, `DrawerHandle`                                |
+| Back to "you are here"       | `ContinueFloat`                                            |
+| Empty list or queue          | `EmptyState` (always one action)                           |
+| A step count (word, recall)  | `StepDots`                                                 |
+| Status or error banner       | `InlineNotice` (`error` is danger with an icon)            |
+| Leave / restart / submit     | `ConfirmDialog`                                            |
+| Mutually exclusive toggles   | `Segmented` (selected is `cta`, 44px on phones)            |
+| Bars                         | `Progress` with a module `tone`                            |
+| Wayfinding                   | `PageHeader breadcrumb` / `Breadcrumb`                     |
+| Loading                      | `SkeletonJourney`, `SkeletonPlayer` (focus screens)        |
+| IELTS full-screen exam frame | `ExamFrame`                                                |
+
+**Corners:** outer cards and the next stop `rounded-panel`, tiles and rows
+inside a card `rounded-control`, chips, pills and buttons `rounded-full`.
+Never a hand-typed `rounded-[Npx]`, `rounded-2xl` or `rounded-3xl`.
+
+**Guards** (`src/lib/styleGuards.test.ts`, shrink-only baselines): corner
+roles, no `bg-ink` on a control, no raw Tailwind palette /
+`text-white` / `text-muted-foreground`, no `font-bold` / `font-black` in
+learner components, no `hover-lift`, no em dash in `src` or `docs`, and
+44px touch targets (`SMALL_TOUCH`). When a page cleans a baseline file,
+remove it from the list (the stale check fails until you do).
+
+Also:
+
+- Page content uses one padding rhythm, `px-4 pb-6 md:pr-6 md:pl-0`, and
+  its `loading.tsx` draws the page's own shape (journey card, rows, player)
+  inside the real topbar (`SkeletonPageShell page={...}`), so nothing
+  shifts when data lands.
+- Long lists get a jump aid (a search field or the Continue float) and
+  dense rows, not a column of big cards; finished things fold.
+- Every touch target is at least 44px on phones (`min-h-11`, or an
+  invisible hit area around a small glyph like `SpeakButton`).
+- Phones: `AppTabBar` floats at the bottom below `md` on normal pages and
+  is left out on full-height work screens; `PageShell` keeps room for it.
+  The topbar menu is the Account sheet (account, language), not a second
+  module list.
+- Route error boundaries render `RouteError` (retry optional, back to the
+  module); every module and the app root have one.
 - Adding a corner role means adding it in `globals.css` AND to
   `extendTailwindMerge` in `src/lib/utils.ts`.
 
