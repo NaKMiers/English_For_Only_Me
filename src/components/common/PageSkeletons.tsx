@@ -40,7 +40,7 @@ export function SkeletonHero({
   withEyebrow?: boolean
 }) {
   return (
-    <header className="page-hero flex items-center gap-3 sm:gap-4">
+    <header className="flex items-center gap-3 sm:gap-4">
       <Skeleton className="size-12 shrink-0 rounded-full sm:size-14" />
       <div className="grid min-w-0 flex-1 gap-2">
         {withEyebrow ? <SkeletonLine className="h-3 w-24" /> : null}

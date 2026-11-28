@@ -184,7 +184,7 @@ export default async function AdminDictationPage({ searchParams }: Props) {
   return (
     <PageShell topbar={<AppTopbar subtitle={t.admin.shell.dictation} />}>
       <section className="grid gap-5 px-4 pb-6 md:pr-6 md:pl-0">
-        <header className="page-hero grid gap-4">
+        <header className="grid gap-4">
           <PageHeader
             breadcrumb={{
               items: [

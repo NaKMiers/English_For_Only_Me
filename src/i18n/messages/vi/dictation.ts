@@ -534,7 +534,6 @@ export const dictation: Messages['dictation'] = {
       'Không thể ghi đè ngôn ngữ chính của bài chép chính tả.',
     reviewItemNotFound: 'Không tìm thấy mục ôn tập này.',
     reviewUpdateFailed: 'Không cập nhật được các mục ôn tập.',
-    statsLoadFailed: 'Không tải được thống kê chép chính tả.',
     debriefIncomplete:
       'Hãy hoàn thành video này, với ít nhất một câu đã lưu, trước khi nhờ nhận xét.',
     debriefUnavailable: 'Hiện chưa tạo được nhận xét AI.',

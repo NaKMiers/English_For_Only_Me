@@ -538,7 +538,6 @@ export const dictation = {
       'The primary dictation language cannot be overridden.',
     reviewItemNotFound: 'This review item was not found.',
     reviewUpdateFailed: 'Could not update dictation review items.',
-    statsLoadFailed: 'Could not load dictation stats.',
     debriefIncomplete:
       'Complete this video, with at least one saved sentence, before asking for a debrief.',
     debriefUnavailable: 'AI debrief is unavailable right now.',
