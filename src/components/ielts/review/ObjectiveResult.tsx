@@ -88,8 +88,12 @@ function weakestType(rows: IeltsReviewRow[]): IeltsQuestionType | null {
 /** Listening / Reading result: band row, next actions, filterable review. */
 export function ObjectiveResult({ attempt, rows, sections }: Props) {
   const t = useMessages().ielts
-  // Wrong answers first: the list is for fixing, not for re-reading.
-  const [filter, setFilter] = useState<Filter>('wrong')
+  // Wrong answers first: the list is for fixing, not for re-reading. With
+  // none wrong (all right, or only blanks after time ran out) start on all,
+  // so the table never opens empty.
+  const [filter, setFilter] = useState<Filter>(() =>
+    rows.some(row => row.outcome === 'wrong') ? 'wrong' : 'all'
+  )
   const [openRow, setOpenRow] = useState<number | null>(null)
   const wrong = rows.filter(row => row.outcome !== 'correct').length
   const weakest = useMemo(() => weakestType(rows), [rows])
