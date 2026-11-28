@@ -191,8 +191,8 @@ export function RunnerToolbar({
       </button>
 
       <ExamButton
-        // Red, not ink: a black face melts into its own black shadow.
-        className="bg-brand text-surface min-h-10 px-3 sm:px-4"
+        // The one cta of the exam screen (no brand override).
+        className="min-h-11 px-3 sm:px-4"
         disabled={submitDisabled || submitting}
         icon={
           <Send
@@ -231,8 +231,10 @@ export function ToolbarToggle({
     <button
       aria-pressed={checked}
       className={cn(
-        'border-line rounded-tag soft-press inline-flex h-9 items-center justify-center gap-1.5 border px-2.5 font-sans text-xs font-semibold transition-colors max-sm:w-9 max-sm:px-0 [&_svg]:size-4',
-        checked ? 'bg-ink text-surface' : 'bg-surface text-ink hover:bg-tint'
+        'border-line rounded-tag soft-press inline-flex min-h-11 items-center justify-center gap-1.5 border px-2.5 font-sans text-xs font-medium transition-colors max-sm:w-11 max-sm:px-0 sm:min-h-9 [&_svg]:size-4',
+        checked
+          ? 'bg-cta text-cta-fg'
+          : 'bg-surface text-ink hover:bg-tint hover-pop'
       )}
       onClick={() => onCheckedChange(!checked)}
       title={label}

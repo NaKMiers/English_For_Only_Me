@@ -204,7 +204,7 @@ export function ObjectiveResult({ attempt, rows, sections }: Props) {
               className={cn(
                 'border-line rounded-control min-h-9 border px-3 font-sans text-sm font-semibold',
                 filter === value
-                  ? 'bg-brand text-surface'
+                  ? 'bg-cta text-cta-fg'
                   : 'hover:bg-tint-soft bg-surface'
               )}
               key={value}
@@ -314,7 +314,7 @@ export function ObjectiveResult({ attempt, rows, sections }: Props) {
                                 sections={sections}
                               />
                             ) : (
-                              <p className="text-muted-foreground text-sm">
+                              <p className="text-ink-soft text-sm">
                                 {t.result.notGiven}
                               </p>
                             )}

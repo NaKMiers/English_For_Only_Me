@@ -158,7 +158,9 @@ export function PartSwitcher({
             className={cn(
               'border-line relative grid h-8 min-w-8 place-items-center border-l px-1.5 font-sans text-sm font-semibold tabular-nums transition-colors first:border-l-0',
               item.text && 'px-3',
-              active ? 'bg-ink text-surface' : 'bg-surface hover:bg-tint'
+              active
+                ? 'bg-cta text-cta-fg'
+                : 'bg-surface hover:bg-tint hover-pop'
             )}
             key={item.part}
             onClick={() => onChange(item.part)}
@@ -178,7 +180,7 @@ export function PartSwitcher({
             {item.flagged ? (
               <span
                 aria-hidden="true"
-                className="absolute bottom-1 left-1 size-1.5 rounded-full bg-amber-400"
+                className="bg-notice absolute bottom-1 left-1 size-1.5 rounded-full"
               />
             ) : null}
           </button>

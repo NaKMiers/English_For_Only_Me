@@ -33,9 +33,9 @@ export function QuestionNumberBadge({
     'rounded-tag inline-flex shrink-0 items-center justify-center font-bold tabular-nums',
     SIZE_CLASS[size],
     isFlagged
-      ? 'bg-amber-300 text-ink'
+      ? 'bg-highlight text-ink'
       : currentNumber === number
-        ? 'bg-ink text-surface'
+        ? 'bg-cta text-cta-fg'
         : 'bg-tint-soft text-ink'
   )
   const icon = isFlagged ? (

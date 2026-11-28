@@ -564,7 +564,9 @@ export function IeltsRunner({
             aria-pressed={active}
             className={cn(
               'rounded-tag flex min-w-0 flex-auto items-center justify-center gap-1.5 px-2 font-sans text-[13px] font-semibold transition-colors',
-              active ? 'bg-ink text-surface' : 'text-ink hover:bg-surface'
+              active
+                ? 'bg-cta text-cta-fg'
+                : 'text-ink hover:bg-surface hover-pop'
             )}
             key={value}
             onClick={() => setMobileTab(value)}
@@ -611,7 +613,7 @@ export function IeltsRunner({
 
         {notice ? (
           <p
-            className="border-line text-ink flex shrink-0 items-center justify-between gap-3 border-b bg-yellow-100 px-4 py-2 text-sm"
+            className="border-line text-ink bg-notice-soft flex shrink-0 items-center justify-between gap-3 border-b px-4 py-2 text-sm"
             role="status"
           >
             {notice}

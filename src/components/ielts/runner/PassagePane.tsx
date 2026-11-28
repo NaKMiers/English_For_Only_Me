@@ -42,7 +42,7 @@ function highlightAt(text: string, start: number, length: number) {
     <>
       {text.slice(0, start)}
       <mark
-        className="decoration-lesson-correct rounded-tag bg-yellow-200 px-0.5 text-inherit underline decoration-2 underline-offset-4"
+        className="decoration-lesson-correct bg-highlight rounded-tag px-0.5 text-inherit underline decoration-2 underline-offset-4"
         data-ielts-evidence
       >
         {text.slice(start, start + length)}
@@ -105,13 +105,11 @@ export const PassagePane = memo(function PassagePane({
       ref={rootRef}
     >
       <header className="grid gap-1">
-        <h2 className="text-muted-foreground font-sans text-lg leading-none font-semibold tracking-wide">
+        <h2 className="text-ink-soft font-sans text-lg leading-none font-semibold tracking-wide">
           {heading ?? partLabel}
         </h2>
         {intro ? (
-          <p className="text-muted-foreground text-[15px] leading-snug">
-            {intro}
-          </p>
+          <p className="text-ink-soft text-[15px] leading-snug">{intro}</p>
         ) : null}
       </header>
       <div className="grid gap-2 pt-3 text-center">

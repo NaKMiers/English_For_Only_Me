@@ -88,11 +88,31 @@ export function ExamBadge({
  */
 export function segmentClass(active: boolean, className?: string) {
   return cn(
-    'border-line rounded-control soft-press min-h-9 border px-3 font-sans text-sm font-semibold',
+    'border-line rounded-control soft-press min-h-11 border px-3 font-sans text-sm font-medium sm:min-h-9',
     active
-      ? 'bg-cta text-cta-fg translate-x-[2px] translate-y-[2px]'
-      : 'bg-surface text-ink hover:bg-tint-soft',
+      ? 'bg-cta text-cta-fg'
+      : 'bg-surface text-ink hover:bg-tint-soft hover-pop',
     className
+  )
+}
+
+/**
+ * The full-screen exam frame (runner, mock, drill and their skeleton): it
+ * covers the app shell so the test reads like paper.
+ */
+export function ExamFrame({
+  children,
+  className,
+}: {
+  children: ReactNode
+  className?: string
+}) {
+  return (
+    <div
+      className={cn('ielts-exam fixed inset-0 z-[70] flex flex-col', className)}
+    >
+      {children}
+    </div>
   )
 }
 

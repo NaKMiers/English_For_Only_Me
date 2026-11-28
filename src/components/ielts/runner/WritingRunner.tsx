@@ -18,6 +18,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { INTL_LOCALES } from '@/i18n/config'
 import { useLocale, useMessages } from '@/i18n/client'
 import { format, plural } from '@/i18n/format'
+import { Progress } from '@/components/ui/progress'
 import { cn } from '@/lib/utils'
 import type {
   IeltsAttemptRecord,
@@ -273,7 +274,7 @@ export function WritingRunner({
 
       {notice ? (
         <p
-          className="border-line text-ink flex shrink-0 items-center justify-between gap-3 border-b bg-yellow-100 px-4 py-2 text-sm"
+          className="border-line text-ink bg-notice-soft flex shrink-0 items-center justify-between gap-3 border-b px-4 py-2 text-sm"
           role="status"
         >
           {notice}
@@ -323,7 +324,7 @@ export function WritingRunner({
           )}
         >
           <div className="font-body grid w-full gap-4 text-[17px] leading-[1.7]">
-            <h2 className="text-muted-foreground font-sans text-lg leading-none font-semibold tracking-wide">
+            <h2 className="text-ink-soft font-sans text-lg leading-none font-semibold tracking-wide">
               {format(t.parts.task, { part: writing.task })}
             </h2>
             <WritingPrompt text={writing.prompt} />
@@ -367,16 +368,28 @@ export function WritingRunner({
             spellCheck={!isMock && spellCheck}
             value={essay}
           />
-          <p
-            className={cn(
-              'text-sm font-semibold tabular-nums',
-              words < writing.minWords
-                ? 'text-muted-foreground'
-                : 'text-lesson-correct'
-            )}
+          {/* A thin bar toward the minimum: each sentence visibly counts. */}
+          <Progress
+            aria-label={format(t.writing.wordsMin, {
+              min: writing.minWords,
+              words,
+            })}
+            className="items-center"
+            tone="ielts"
+            trackClassName="h-1.5"
+            value={Math.min(100, Math.round((words / writing.minWords) * 100))}
           >
-            {format(t.writing.wordsMin, { min: writing.minWords, words })}
-          </p>
+            <span
+              className={cn(
+                'order-last w-full text-sm font-medium tabular-nums',
+                words < writing.minWords
+                  ? 'text-ink-soft'
+                  : 'text-lesson-correct'
+              )}
+            >
+              {format(t.writing.wordsMin, { min: writing.minWords, words })}
+            </span>
+          </Progress>
           {/* Phones and tablets: the footer has no room for it. */}
           {canCheck ? (
             <CheckButton
@@ -398,7 +411,7 @@ export function WritingRunner({
                   : format(t.writing.aiCheck, { task: writing.task })}
               </p>
               {check.essay !== essay ? (
-                <p className="text-muted-foreground text-sm">
+                <p className="text-ink-soft text-sm">
                   {t.writing.essayChanged}
                 </p>
               ) : null}

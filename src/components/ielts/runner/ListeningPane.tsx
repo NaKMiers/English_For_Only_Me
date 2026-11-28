@@ -82,7 +82,7 @@ function Transcript({
       {lines.map((line, index) => (
         <li key={index}>
           {lineNumbers ? (
-            <span className="text-muted-foreground mr-1.5 font-sans text-xs tabular-nums">
+            <span className="text-ink-soft mr-1.5 font-sans text-xs tabular-nums">
               {index}
             </span>
           ) : null}
@@ -352,7 +352,7 @@ function MockAudio({
         ) : null}
       </div>
       {section?.listening?.context ? (
-        <p className={cn('text-muted-foreground text-sm font-semibold')}>
+        <p className={cn('text-ink-soft text-sm font-semibold')}>
           {section.listening.context}
         </p>
       ) : null}
@@ -441,7 +441,7 @@ export function ListeningPart({
   return (
     <div className="grid w-full gap-3">
       <header className="grid gap-2">
-        <h2 className="text-muted-foreground font-sans text-lg leading-none font-semibold tracking-wide">
+        <h2 className="text-ink-soft font-sans text-lg leading-none font-semibold tracking-wide">
           Part {section.order}
         </h2>
         {/* With an audioscript the title heads the script, as on Jumpinto. */}

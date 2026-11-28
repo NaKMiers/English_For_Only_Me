@@ -4,6 +4,7 @@ import { notFound, redirect } from 'next/navigation'
 import { IeltsRunner } from '@/components/ielts/runner/IeltsRunner'
 import { getMessages } from '@/i18n/server'
 import { loadResultPageData } from '@/modules/ielts/services/resultPageData'
+import { ExamFrame } from '@/components/ielts/ui'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -29,13 +30,13 @@ export default async function IeltsDrillPage({ params }: Props) {
     redirect(`/ielts/attempts/${data.attempt.id}`)
 
   return (
-    <div className="ielts-exam fixed inset-0 z-[70] flex flex-col">
+    <ExamFrame>
       <IeltsRunner
         attempt={data.attempt}
         backHref="/ielts"
         sections={data.sections}
         testTitle={data.attempt.testTitle}
       />
-    </div>
+    </ExamFrame>
   )
 }

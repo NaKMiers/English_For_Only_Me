@@ -100,10 +100,6 @@ const CORNERS: Guard = {
 const INK_CONTROL: Guard = {
   allow: [],
   baseline: [
-    'src/components/ielts/runner/IeltsRunner.tsx',
-    'src/components/ielts/runner/RunnerFooter.tsx',
-    'src/components/ielts/runner/RunnerToolbar.tsx',
-    'src/components/ielts/widgets/QuestionNumberBadge.tsx',
     'src/components/ui/tooltip.tsx',
   ],
   pattern: /\bbg-ink(?![\w/-])/,
@@ -116,14 +112,7 @@ const RAW_PALETTE: Guard = {
   allow: ['src/components/ielts/widgets/TaskVisual.tsx'],
   baseline: [
     'src/app/admin/ielts/page.tsx',
-    'src/components/ielts/review/ObjectiveResult.tsx',
-    'src/components/ielts/runner/IeltsRunner.tsx',
-    'src/components/ielts/runner/ListeningPane.tsx',
-    'src/components/ielts/runner/PassagePane.tsx',
-    'src/components/ielts/runner/RunnerFooter.tsx',
     'src/components/ielts/runner/TextHighlighter.tsx',
-    'src/components/ielts/runner/WritingRunner.tsx',
-    'src/components/ielts/widgets/QuestionNumberBadge.tsx',
     'src/components/ui/badge.tsx',
     'src/components/ui/card.tsx',
     'src/components/ui/dialog.tsx',

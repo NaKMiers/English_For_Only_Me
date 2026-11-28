@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import { AttemptLoader } from '@/components/ielts/runner/AttemptLoader'
 import { getMessages } from '@/i18n/server'
 import { loadRunnerPageData } from '@/modules/ielts/services/runnerPageData'
+import { ExamFrame } from '@/components/ielts/ui'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -31,7 +32,7 @@ export default async function IeltsMockPage({ params, searchParams }: Props) {
   if (!data) notFound()
 
   return (
-    <div className="ielts-exam fixed inset-0 z-[70] flex flex-col">
+    <ExamFrame>
       <AttemptLoader
         backHref={`/ielts/${data.testSlug}`}
         key={`${data.skill}-${data.startPart ?? 'first'}`}
@@ -42,6 +43,6 @@ export default async function IeltsMockPage({ params, searchParams }: Props) {
         testSlug={data.testSlug}
         testTitle={data.testTitle}
       />
-    </div>
+    </ExamFrame>
   )
 }
