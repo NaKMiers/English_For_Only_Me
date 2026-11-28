@@ -49,7 +49,7 @@ versions below are read from `package.json`.
 | --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `src/app`                   | App Router tree: pages, layouts, `loading`/`error` boundaries, route handlers under `api/**/route.ts`, plus root `layout.tsx`, `page.tsx`, `loading.tsx`, `error.tsx`, `robots.ts`, `globals.css`, and the public login page `auth/login`.                                                                                                                                                                      |
 | `src/components`            | Shared React UI: `ui` (themed primitives), `common` (shell, nav, providers, account control), `auth` (the login hero and card), `admin` (`AdminMenuTrigger`, `users/` for user management), `journey` (landing and session-end primitives: `JourneyCard`, `NextStopCard`, `StatChip`, `SessionEnd`, ...), and domain folders `dictation`, `vocabulary`, `grammar`, `ielts`, `home`. See [06](./06-frontend.md). |
-| `src/constants`             | Reusable settings and env wrappers: `environments.ts`, `modules.ts` (module list, nav, `MODULE_ICONS`), `theme.ts`.                                                                                                                                                                                                                                                                                             |
+| `src/constants`             | Reusable settings and env wrappers: `environments.ts`, `modules.ts` (the four modules in `APP_MODULES`, nav, `MODULE_ICONS`), `theme.ts` (`PAGE_TAG_TONES`, `MODULE_THEMES`), `stateIcons.ts` (`DUE_ICON`, `DONE_ICON`: one icon per learner state, shared by every module's UI).                                                                                                                               |
 | `src/i18n`                  | EN/VI UI text: `config.ts` (locales, cookie), `server.ts` (`getLocale`, `getMessages`), `client.tsx` (`I18nProvider`, `useMessages`), `actions.ts`, `format*.ts*`, `messages/{en,vi}`.                                                                                                                                                                                                                          |
 | `src/lib`                   | Framework-level infrastructure shared by all modules (table below).                                                                                                                                                                                                                                                                                                                                             |
 | `src/models`                | Mongoose schemas and models: `UserModel.ts` (with `status` / `lockedAt`) plus `dictation/`, `vocabulary/`, `grammar/`, `ielts/`; `userOwnedModels.ts` (`USER_OWNED_MODELS`: every per-user collection and its owner field, used by the admin delete and `scripts/dropGuestData.ts`). See [03](./03-data-model.md).                                                                                              |
@@ -321,9 +321,9 @@ sequenceDiagram
 
 Scenario: the learner looks up a word. The route creates a shell entry on demand, then
 enriches it from dictionary and translation providers before returning definitions and the
-Vietnamese meaning. (Status marks and recall answers are outbox writes on the
-`vocab:items` lane, `src/components/vocabulary/vocabItemWrites.ts` and
-`src/components/vocabulary/vocabRecallSession.ts`.)
+Vietnamese meaning. (Status marks and recall answers are outbox writes: marks on the
+`vocab:items` lane, `src/components/vocabulary/vocabItemWrites.ts`, recall answers on
+the `vocab:recall` lane, `src/components/vocabulary/vocabRecallSession.ts`.)
 
 1. `src/components/vocabulary/QuickVocabLookup.tsx` (`'use client'`) calls
    `lookupVocabEntryApi` (`src/requests/vocabularyApi.ts`, `POST /api/vocab/entries/lookup`)
@@ -370,8 +370,8 @@ instance per tab and owner, and `useClientOutbox()` (`src/components/common/Outb
 hands it to components.
 
 - Lanes: items in one lane are delivered in order with one in flight; lanes run in
-  parallel. Lanes in use: one per dictation session, `grammar`, `vocab:items`, and one per
-  IELTS attempt (`ieltsAttemptLane`). A `mergeKey` replaces a newer queued item in place
+  parallel. Lanes in use: one per dictation session (`getPracticeLane`), `grammar`,
+  `vocab:items`, `vocab:recall`, and one per IELTS attempt (`ieltsAttemptLane`). A `mergeKey` replaces a newer queued item in place
   (IELTS autosave snapshots, repeated vocabulary marks).
 - Storage: `efom.outbox.v1.<owner>.<tabId>` in localStorage; the tab id lives in
   sessionStorage, and tabs adopt queues left by closed tabs of the same owner.
@@ -434,7 +434,7 @@ flowchart LR
     ED["TestEditor<br/>components/ielts/editor"] -->|ieltsAdminApi| AR["api/admin/ielts/**<br/>requireAdmin()"]
     AR --> GEN["generationService<br/>Qwen + checkTest"]
     AR --> AUD["audioService<br/>Qwen TTS -> Cloudinary"]
-    AR --> TS["testService<br/>publish / archive / version"]
+    AR --> TS["testService<br/>publish / archive / unarchive"]
   end
   ATT --> M[("IeltsAttempt / IeltsTest<br/>models")]
   GR --> M
@@ -600,9 +600,10 @@ src/app/
   (app)/                Route GROUP - learner-facing, no URL segment
     layout.tsx          requirePageUser + OutboxOwnerProvider
                         (each module folder below has its own error.tsx)
-    dictation/          page, favorites/, review/, stats/, no-topic/, [topicSlug]/,
-                        videos/[videoId]/practice/, videos/[videoId]/results/
-    vocabulary/         page, words/
+    dictation/          page, favorites/, review/, no-topic/, [topicSlug]/,
+                        videos/[videoId]/practice/ (?segment= review deep link),
+                        videos/[videoId]/results/
+    vocabulary/         page (?recall=1 opens the recall session), words/
     grammar/            page (path), practice/, lessons/[lessonId]/{,notes/,review/},
                         units/[unitId]/checkpoint/
     ielts/              page (catalogue), [slug]/, [slug]/[skill]/, [slug]/[skill]/mock/,
@@ -618,8 +619,8 @@ src/app/
     auth/[...nextauth]/ Auth.js handler (Google callback)
     dictation/          sessions/, sessions/[sessionId]/{,attempts/}, sessions/translations/,
                         segments/[segmentId]/{,translate/}, transcripts/{,[transcriptId]/},
-                        videos/[videoId]/, stats/, debriefs/, imports/youtube/
-    vocab/              entries/lookup/, search/, explore/, items/{,batch/}, occurrences/,
+                        videos/[videoId]/ (admin detail GET), debriefs/, imports/youtube/
+    vocab/              entries/lookup/, search/, explore/, items/, occurrences/,
                         recall/due/, recall/answer/, stats/
     grammar/            sessions/
     ielts/              attempts/, attempts/[attemptId]/{,answers,submit,check,grade,

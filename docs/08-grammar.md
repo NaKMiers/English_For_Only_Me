@@ -69,7 +69,7 @@ Consumers outside the module:
 | `src/components/grammar/player/PlayerResult.tsx`           | `PlayerJourney`, `advanceUnitSummary` (session end journey line and next step)                                                            |
 | `src/components/grammar/path/GrammarJourneyHero.tsx`       | `levelProgress`, `currentLevel` (level staircase on the path page)                                                                        |
 | `src/app/api/grammar/sessions/route.ts`                    | `parseSessionRequest`, `recordGrammarSession`                                                                                             |
-| `src/app/page.tsx`                                         | `buildGrammarPath(...).next` for the home dashboard                                                                                       |
+| `src/app/page.tsx`                                         | `buildGrammarPath(...).next` and `.review` (the "N due" link) for the home dashboard                                                      |
 | `src/modules/ielts/writing/gradeWritingService.ts`         | Lesson ids and English titles, so the IELTS examiner can link a correction to a lesson                                                    |
 
 ---
@@ -203,7 +203,8 @@ works on them alone.
 ## 5. The path view (`path/buildGrammarPath.ts`)
 
 `buildGrammarPath({ course, lessonProgress, unitProgress, misses, now })`
-returns `GrammarPathView` (`units`, `next`, `currentUnitId`, `totals`). It is
+returns `GrammarPathView` (`units`, `next`, `review`, `currentUnitId`,
+`totals`). It is
 the single place every path state is derived, covered by
 `path/buildGrammarPath.test.ts`. Progress rows whose lesson no longer exists
 (after alias resolution) are ignored; so are unit rows for unknown units.
@@ -273,6 +274,11 @@ played).
 | 3        | `review`     | The most overdue `due` lesson (smallest `dueAt`) | `lessonId`, `title`      |
 | 4        | `weak`       | Open misses exist (`countOpenMisses` > 0)        | `count`                  |
 | 5        | `done`       | Nothing else                                     | -                        |
+
+`review` is the most overdue `due` lesson (`{ kind: 'review', lessonId, title }`)
+whatever `next` is, or `null` when nothing is due. It exists because `next`
+prefers an open lesson: the home dashboard's grammar "N due" link opens
+`review`, so it lands on the overdue review instead of the next new lesson.
 
 `countOpenMisses` counts distinct cards with `clearedAt === null` that still
 exist in the course and are not explain cards.

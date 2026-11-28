@@ -121,3 +121,20 @@ here; this is the single canonical copy (no Claude-side duplicate).
   detail metadata lacked `requireAdmin`; a deleted account showed the
   locked notice; unused i18n keys). Baseline left at 4fdcc8c because other
   sessions' commits on main since then were not synced by this run.
+- 2026-11-28: full sync from `4fdcc8c` to `a864dfe` after the UI review
+  follow-ups (42 items, plan `docs/plans/ui-review-followups-2026-11-28.md`),
+  its code review fixes and the merge with Google sign-in. Earlier runs had
+  each left the baseline at `4fdcc8c`, so this run verified every doc against
+  the code rather than only appending. Two writers (02+06; 03+04+05+07+08+09)
+  took 4 to 6 minutes under the owner's RAM limit (no vitest, tsc, eslint or
+  build inside a docs run, at most 2 subagents); the driver did 01 and README.
+  New mappings: `src/constants/stateIcons.ts` (`DUE_ICON`, `DONE_ICON`) -> 02
+  and 06; `src/modules/dictation/review/reviewDeepLink.ts` (`?segment=`) -> 05
+  and 06; `VOCAB_RECALL_PARAM` (`?recall=1`) -> 05 and 06;
+  `src/lib/ai/languageNames.ts` (AI output in the app locale) -> 07, 09, 04.
+  When checking cited paths, expand `{a,b}` brace lists before testing
+  existence; a naive split on commas reports false misses. Gaps reported, not
+  fixed: a stale `statsPlacement` comment in `SessionEnd.tsx`; guest-era
+  `userId: null` branches in several dictation and vocabulary services;
+  `isAccountBlocked` only used by tests; the read-only video detail route
+  answers `videoUpdateFailed` on 500.

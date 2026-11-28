@@ -419,7 +419,9 @@ flowchart TD
   G -- fail --> H["task failed + error"]
   G -- ok --> I["task done, push gradings[]"]
   I --> J{"all tasks done?"}
-  J -- yes --> K["status scored,<br/>writingBand if full skill"]
+  J -- yes --> K{"already scored?"}
+  K -- no --> L["status scored, scoredAt,<br/>writingBand if full skill"]
+  K -- "yes (grade again)" --> M["writingBand follows<br/>the new task band,<br/>scoredAt kept"]
 ```
 
 Grading ledger limits:
@@ -440,6 +442,11 @@ Language and failures:
   without `language` was written in Vietnamese; the result page offers "Grade
   again" in the app language when they differ (never automatic, it spends a
   grading).
+- Grading again: `gradeWritingTask` accepts a `scored` attempt as well as a
+  `submitted` one. Completion is judged on the freshly written document, so
+  two tasks graded at the same time still end `scored` with a band; on an
+  attempt that is already `scored`, a changed task band rewrites
+  `writingBand` (full skill only) and `scoredAt` stays the first one.
 - A failed task stores an `IeltsGradingErrorCode` in `error` (`missingTask`,
   `emptyEssay`, `invalidOutput`, `providerFailed`); the learner sees
   `ielts.writingResult.gradingErrors[code]` and older raw messages read as an
@@ -659,11 +666,11 @@ the learner's own `UserVocabItem` state when signed in;
 
 ## 16. Page data (`services/**`)
 
-| Loader               | Returns                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `loadIeltsHomeData`  | Catalogue, attempt summaries, overall estimate, best bands per test, weakness stats for the signed-in learner (`requirePageUser`), `isAdmin`, and `error` (`notConfigured` without `MONGODB_URI`, `loadFailed` on exceptions).                                                                                                                                                                                                                                                                                                                                                              |
-| `loadRunnerPageData` | Public sections of one skill (all parts; `?part=` only picks the starting part), `prevSkill` / `nextSkill` in L, R, W order present in the test; null for a bad slug, skill or part. Mock omits the transcript.                                                                                                                                                                                                                                                                                                                                                                             |
-| `loadResultPageData` | The owner's attempt (via `readAttemptForOwner`, which may expire and finalize it), public sections, and when finished: review rows (given, accepted, outcome, `overLimit`, explanation, evidence, section key), Writing tasks (prompt, visual, sample answer, essay), `savedTerms` (review words, `reviewWordOf` in `services/reviewWord.ts`, already in the learner's vocabulary via `listSavedTermsForUser`) and `grammarLinks` (per lesson a correction names: `notes` when passed, `lesson` when open, `locked`, from the learner's grammar path). In progress: sections only, no keys. |
+| Loader               | Returns                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `loadIeltsHomeData`  | Catalogue, attempt summaries, overall estimate, best bands per test, weakness stats for the signed-in learner (`requirePageUser`), `isAdmin`, and `error` (`notConfigured` without `MONGODB_URI`, `loadFailed` on exceptions).                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| `loadRunnerPageData` | Public sections of one skill (all parts; `?part=` only picks the starting part), `prevSkill` / `nextSkill` in L, R, W order present in the test; null for a bad slug, skill or part. Mock omits the transcript.                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `loadResultPageData` | The owner's attempt (via `readAttemptForOwner`, which may expire and finalize it), public sections, and when finished: review rows (given, accepted, outcome, `overLimit`, explanation, evidence, section key), Writing tasks (prompt, visual, sample answer, essay), `savedTerms` (review words, `reviewWordOf` in `services/reviewWord.ts`, already on the learner's learning list, `learning` or `mastered`, via `listSavedTermsForUser`; a word marked "already know" can still be saved) and `grammarLinks` (per lesson a correction names: `notes` when passed, `lesson` when open, `locked`, from the learner's grammar path). In progress: sections only, no keys. |
 
 ---
 

@@ -41,7 +41,7 @@ Dictation subdirectories:
 | `transcripts/`  | `normalizeTranscriptSource`, `formatCuesAsCaptionText`, `sourceHash`                                     | Caption/plain-text ingestion, hashing, SRT reconstruction          |
 | `translations/` | `captionOverlap`, `segmentTranslation`, `languages`                                                      | Time-overlap captions, manual overrides, language codes and labels |
 | `practice/`     | `segmentProgress`, `attemptCursor`, `practiceSync`, `practicePageData`, `nextVideo`, ...                 | Per-learner progress overlay, attempt cursor, outbox, next video   |
-| `review/`       | `reviewScheduler`, `reviewItemService`                                                                   | Review candidates and idempotent insertion                         |
+| `review/`       | `reviewScheduler`, `reviewItemService`, `reviewDeepLink`                                                 | Review candidates, idempotent insertion, `?segment=` deep link     |
 | `stats/`        | `globalStats`, `globalStatsService`, `videoStats`, `videoStatsService`                                   | Global (facet pipeline) and per-video analytics                    |
 | `ai/`           | `debriefDecisions`, `debriefPrompt`, `debriefSchema`, `debriefService`                                   | LLM post-video debrief                                             |
 | `content/`      | `contentRepository`, `catalogReaders`, `adminContentRepository`, `adminActions`, `adminVideoFilter`, ... | Topic/Section/Video catalog, caching, admin, favorites, progress   |
@@ -558,7 +558,7 @@ attemptStatus, lastAttemptAt }`; `applyAttemptToProgress` is the client-side opt
   the learner's own; segments without a row reset to `EMPTY_SEGMENT_PROGRESS`
   (`notStarted`, 0, null), so legacy values on the shared document are ignored.
 - `loadSegmentProgressRows({ userId, videoId, segmentId? })` runs the pipeline; a null
-  owner (first-time visitor) returns `[]` without querying.
+  owner returns `[]` without querying (callers always pass the signed-in user's id now).
 
 `buildPracticeSegments` (`practicePageData.ts`) maps segment docs through
 `toDictationPracticeSegmentContent` (`services/dictationSegmentRecords.ts`, which drops
@@ -624,7 +624,7 @@ outbox id, so a replay after reload is deduped by the route's prior-attempt look
 
 ## review/ - review queue
 
-Files: `src/modules/dictation/review/{reviewScheduler,reviewItemService}.ts`.
+Files: `src/modules/dictation/review/{reviewScheduler,reviewItemService,reviewDeepLink}.ts`.
 
 Responsibility: from a user's attempts on a video, decide which segments deserve a review
 item, de-duplicate against existing items, and manage item lifecycle.
@@ -1018,7 +1018,7 @@ Files: `src/modules/dictation/preferences/{dictationPreferences,shortcuts}.ts` (
 
 - Preferences live in `localStorage` under `english-for-only-me:dictation-preferences`.
   `DictationPracticePreferences` covers `answerTextSize` (`small|normal|large|xlarge`,
-  sizing in `ANSWER_TEXT_STYLE`, labels S/M/L/XL), `playbackSpeed` (`0.75|1|1.25|1.5`),
+  sizing in `ANSWER_TEXT_STYLE`; the labels are UI text), `playbackSpeed` (`0.75|1|1.25|1.5`),
   `videoSize` (`small|normal|large|max`), `isVideoHidden`, `showAnswerImmediately`,
   `showFullAnswer`, and `showShortcuts`. `DEFAULT_DICTATION_PREFERENCES` mirrors
   DailyDictation (reveal the marked answer after Check but keep the not-yet-correct part
@@ -1149,8 +1149,9 @@ Sign-in with Google is required for every practice route and page, so identity i
 signed-in user's id and nothing else. `src/lib/auth/currentUser.ts` (`server-only`, shared
 by every module) resolves it:
 
-- `getOptionalUser` - null without a session; wrapped in React `cache` so the JWT is
-  decoded once per request.
+- `getOptionalUser` - null without a session, and null for an account an admin locked
+  or deleted (`getAccountBlock`, `src/lib/auth/accountStatus.ts`); wrapped in React
+  `cache` so the JWT is decoded once per request.
 - `requireUser()` -> `CurrentUser` for route handlers and server functions. Throws
   `UnauthenticatedError` (401) without a session; the id passes through `assertOwnerKey`
   (`src/lib/auth/ownerKey.ts`, a 24-char hex ObjectId, `InvalidOwnerKeyError`/400
@@ -1314,7 +1315,6 @@ stats }`, `VocabStatsRecord`, and `VocabAdminQueueSummaryRecord`.
 | `VOCAB_ADMIN_ENRICH_DEFAULT_LIMIT` / `_MAX_LIMIT`      | 5 / 10                               |                                                                  |
 | `VOCAB_EXPLORE_DEFAULT_LIMIT` / `_MAX_LIMIT`           | 20 / 50                              |                                                                  |
 | `VOCAB_EXPLORE_INITIAL_LIMIT`                          | 8                                    | cards rendered into landing HTML; rest fetched after hydration   |
-| `VOCAB_ITEM_STATUS_BATCH_MAX`                          | 100                                  | batch status endpoint                                            |
 | `VOCAB_RECALL_DEFAULT_LIMIT` / `_MAX_LIMIT`            | 20 / 50                              | due queue page size                                              |
 | `VOCAB_RECALL_PREFETCH_REMAINING`                      | 5                                    | client fetches the next page when 5 tasks remain                 |
 | `VOCAB_SEARCH_DEFAULT_LIMIT` / `_MAX_LIMIT`            | 12 / 25                              |                                                                  |
@@ -1328,7 +1328,9 @@ stats }`, `VocabStatsRecord`, and `VocabAdminQueueSummaryRecord`.
 `VOCAB_CORE_PROVIDER_NAMES` (the first two) are wired as live adapters; `datamuse` is
 reserved. `VOCAB_RECALL_LISTENING_TASK_TYPES` lists the two audio modes.
 `NGSL_SEED_SOURCE` and `VOCAB_FAMILY_SEED_SOURCES` describe seed lists (below).
-`VOCAB_API_PATHS` centralizes the endpoint strings.
+`VOCAB_API_PATHS` centralizes the endpoint strings. `VOCAB_RECALL_PARAM` (`recall`) and
+`VOCAB_RECALL_HREF` (`/vocabulary?recall=1`) are the recall deep link: the vocabulary page
+opens the recall session on arrival.
 
 ### Deep dive: term normalization (`normalizeVocabTerm.ts`)
 
@@ -1462,7 +1464,8 @@ with counts (`processed/ready/failed/notFound/rateLimited/skipped` and `errors`)
 `frequencyRank` then `normalizedTerm`; for a known user a `$lookup` into `UserVocabItem`
 scoped to that user with `$limit: 1`, then `$match { userItems: [] }` to drop words the
 user already classified; and a final `$limit` (with `allowDiskUse`). A null `userId`
-(first-time visitor) skips the anti-join. Every result has `userItem: null`.
+skips the anti-join (no caller passes one now that sign-in is required). Every result
+has `userItem: null`.
 
 ### services/ - entry, user item, word-list, and dashboard logic
 
@@ -1471,6 +1474,11 @@ user already classified; and a final `$limit` (with `allowDiskUse`). A null `use
   `getVocabEntryWithUserState` joins an entry with the caller's `UserVocabItem`.
   `searchVocabEntries` matches an anchored, metacharacter-escaped `normalizedTerm` prefix
   regex (VI-meaning gated, sorted by `frequencyRank`) and attaches per-entry user state.
+  `listSavedTermsForUser({ terms, userId })` returns which of the given terms the learner
+  already has on the learning list (`learning` or `mastered`; an `alreadyKnow` or `ignored`
+  item does not count, so it can still be saved), as the input strings; terms that do not
+  normalize are skipped. The IELTS result page uses it to start its "Save word" buttons
+  saved (`docs/09-ielts.md`).
 - `userVocabItemService.ts` (`server-only`):
   - `setUserVocabItemStatus` upserts a `shouldLearn` (-> `getInitialLearningState`) or
     `alreadyKnow` (-> `getAlreadyKnownState`) item, first asserting the entry has a VI

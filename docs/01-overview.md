@@ -74,16 +74,16 @@ layering.
 The list is data-driven from `src/constants/modules.ts` (`APP_MODULES`); labels
 live in the message catalogue under `common.modules`.
 
-| Module        | Key          | Status | Route         |
-| ------------- | ------------ | ------ | ------------- |
-| Dictation Lab | `dictation`  | active | `/dictation`  |
-| Vocabulary    | `vocabulary` | active | `/vocabulary` |
-| Grammar       | `grammar`    | active | `/grammar`    |
-| IELTS Tests   | `ielts`      | active | `/ielts`      |
+| Module        | Key          | Route         |
+| ------------- | ------------ | ------------- |
+| Dictation Lab | `dictation`  | `/dictation`  |
+| Vocabulary    | `vocabulary` | `/vocabulary` |
+| Grammar       | `grammar`    | `/grammar`    |
+| IELTS Tests   | `ielts`      | `/ielts`      |
 
-The four active modules are implemented. Writing Notes, Reading and Speaking are
-hidden from navigation because the IELTS module covers them; AI Coach shows as a
-disabled item.
+These four are the whole list: the planned modules (Writing Notes, AI Coach,
+Reading, Speaking) and the module `status` field were removed on 2026-11-28, so
+every module in `APP_MODULES` is live and shows in the navigation.
 
 ## Core domain vocabulary
 

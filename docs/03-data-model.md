@@ -42,7 +42,7 @@ export const XModel =
   (models.X as Model<XDocument> | undefined) ?? model<XDocument>('X', XSchema)
 ```
 
-(for example `src/models/UserModel.ts:70-72`, `src/models/dictation/DictationVideoModel.ts:192-194`, `src/models/ielts/IeltsTestModel.ts:213-215`). The four grammar models use a looser variant, `(models.X as Model<XDocument>) || model('X', XSchema)` (for example `src/models/grammar/GrammarSessionModel.ts:37-39`). Document types are derived with `InferSchemaType<typeof XSchema>` rather than hand-written interfaces.
+(for example `src/models/UserModel.ts:69-71`, `src/models/dictation/DictationVideoModel.ts:192-194`, `src/models/ielts/IeltsTestModel.ts:213-215`). The four grammar models use a looser variant, `(models.X as Model<XDocument>) || model('X', XSchema)` (for example `src/models/grammar/GrammarSessionModel.ts:37-39`). Document types are derived with `InferSchemaType<typeof XSchema>` rather than hand-written interfaces.
 
 Registered model names (the string passed to `model(...)`):
 
@@ -238,7 +238,7 @@ Purpose: a practicable lesson (currently always a YouTube source). Carries conte
 | `level`              | String enum `['A1','A2','B1','B2','C1','C2']` | default `null`, indexed                        | Per-video CEFR level (`DictationLevel`, `src/modules/dictation/levels.ts`). |
 | `order`              | Number                                        | required, default `0`, indexed                 | Manual sort order within section/topic.                                     |
 
-- Removed since the last sync: `completedSessionCount` and `lastPracticedAt` no longer exist on the schema, and practice no longer writes `status` (`src/app/api/dictation/sessions/[sessionId]/attempts/route.ts:330-334`).
+- Removed since the last sync: `completedSessionCount` and `lastPracticedAt` no longer exist on the schema, and practice no longer writes `status` (`src/app/api/dictation/sessions/[sessionId]/attempts/route.ts:406-411`).
 - Indexes (field-level `index: true`): `status`, `topicId`, `sectionId`, `level`, `order`. `youtubeVideoId` is intentionally not field-indexed (it is covered by the partial unique index). Additional `schema.index(...)` (`DictationVideoModel.ts:169-183`):
   - `{ createdAt: -1 }`
   - `{ topicId: 1, sectionId: 1 }`
@@ -307,7 +307,7 @@ Purpose: one dictation sentence/line derived from a transcript. This is the unit
 - Field comments for `hints`/`hintsOverridden`/`translations`: `DictationSegmentModel.ts:79-97`. `translations` is a plain object rather than a `Map` so it serializes the same through `toObject()` and `lean()`.
 - Indexes: field-level on `videoId`, `transcriptId`, `transcriptSourceHash`, `order`, `attemptStatus`. Compound (`DictationSegmentModel.ts:137-138`): `{ transcriptId: 1, order: 1 }` and `{ videoId: 1, order: 1 }`.
 - Timestamps: yes. Hooks / virtuals: none.
-- Caveat: `attemptStatus`/`attemptCount`/`lastAttemptAt` are no longer read or written by practice. Per-learner progress is computed from the learner's own `DictationAttempt` rows by an aggregation (`src/modules/dictation/practice/segmentProgress.ts:8-12`, `buildSegmentProgressPipeline`). Segment create/rebuild paths still insert the defaults (`src/modules/dictation/services/rebuildTranscriptSegments.ts:84-85`, `src/app/api/dictation/segments/[segmentId]/route.ts:325-326`), and `scripts/resetSharedSegmentProgress.ts` resets stale values left by the old shared-progress code.
+- Caveat: `attemptStatus`/`attemptCount`/`lastAttemptAt` are no longer read or written by practice. Per-learner progress is computed from the learner's own `DictationAttempt` rows by an aggregation (`src/modules/dictation/practice/segmentProgress.ts:8-12`, `buildSegmentProgressPipeline`). Segment create/rebuild paths still insert the defaults (`src/modules/dictation/services/rebuildTranscriptSegments.ts:84-85`, `src/app/api/dictation/segments/[segmentId]/route.ts:335-336`), and `scripts/resetSharedSegmentProgress.ts` resets stale values left by the old shared-progress code.
 
 ### 3.7 DictationSession (`src/models/dictation/DictationSessionModel.ts`)
 
@@ -331,7 +331,7 @@ Purpose: a per-owner practice run over one video/transcript. Tracks the current 
 - Indexes: field-level on `userId`, `videoId`, `transcriptId`, `status`, `lastActiveAt`. Compound (`DictationSessionModel.ts:91-104`):
   - `{ userId: 1, videoId: 1, status: 1 }`
   - `{ userId: 1, lastActiveAt: -1 }`
-  - `{ userId: 1, videoId: 1 }` unique, `partialFilterExpression: { status: 'active' }`: at most one in-flight session per owner per video. Starting practice reuses the open session and collapses legacy strays to `abandoned` (`src/app/api/dictation/sessions/route.ts:106-128`).
+  - `{ userId: 1, videoId: 1 }` unique, `partialFilterExpression: { status: 'active' }`: at most one in-flight session per owner per video. Starting practice reuses the open session and collapses legacy strays to `abandoned` (`src/app/api/dictation/sessions/route.ts:118-136`).
 - Timestamps: yes. Hooks / virtuals: none.
 
 ### 3.8 DictationAttempt (`src/models/dictation/DictationAttemptModel.ts`)
@@ -380,7 +380,7 @@ Embedded `DictationCorrectionTokenSchema` (`_id: false`, `DictationAttemptModel.
 
 ### 3.9 DictationReviewItem (`src/models/dictation/DictationReviewItemModel.ts`)
 
-Purpose: a spaced-repetition / review queue entry generated from an owner's mistakes on a segment. Recomputed per segment after each attempt (`recomputeReviewItemsForSegment`, called from `src/app/api/dictation/sessions/[sessionId]/attempts/route.ts:344`) (`src/modules/dictation/review/reviewItemService.ts`); a passed review attempt completes the segment's active items (`completeReviewItemsForSegment`), and attempts before a closed item no longer raise it again.
+Purpose: a spaced-repetition / review queue entry generated from an owner's mistakes on a segment. Recomputed per segment after each attempt (`recomputeReviewItemsForSegment`, called by `updateReviewItems` in `src/app/api/dictation/sessions/[sessionId]/attempts/route.ts:76-92`) (`src/modules/dictation/review/reviewItemService.ts`); a passed review attempt completes the segment's active items (`completeReviewItemsForSegment`), and attempts before a closed item no longer raise it again.
 
 Embedded `DictationReviewStatsSnapshotSchema` (`_id: false`, `DictationReviewItemModel.ts:33-84`):
 
@@ -699,44 +699,44 @@ Embedded subdocuments (all `_id: false`):
 
 `IeltsAttemptSchema` (`IeltsAttemptModel.ts:70-109`):
 
-| Field               | Type                                 | Required / Default      | Meaning                                                                                                                              |
-| ------------------- | ------------------------------------ | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `ownerId`           | String                               | required, owner key     | Owner (user id); `trim`.                                                                                                             |
-| `idempotencyKey`    | String                               | required                | Start-request idempotency key; `trim`.                                                                                               |
-| `testId`            | ObjectId                             | default `null`          | Test document; `null` for drills (which use `items[]`). No `ref`.                                                                    |
-| `testSlug`          | String                               | default `''`            | Test slug snapshot.                                                                                                                  |
-| `testVersion`       | Number                               | default `0`             | Test version snapshot.                                                                                                               |
-| `testTitle`         | String                               | default `''`            | Test title snapshot.                                                                                                                 |
-| `track`             | String enum `IELTS_TRACKS`           | default `'academic'`    | `academic` / `general`.                                                                                                              |
-| `skill`             | String enum `IELTS_SKILLS`           | required                | `listening` / `reading` / `writing`.                                                                                                 |
-| `mode`              | String enum `IELTS_ATTEMPT_MODES`    | required                | `practice` / `mock` / `drill`.                                                                                                       |
-| `scope`             | ScopeSchema                          | required                | Whole skill or one part.                                                                                                             |
-| `items`             | [DrillItemSchema]                    | default `[]`            | Drill groups pulled from published tests, with drill-to-original question numbering.                                                 |
-| `sessionId`         | String                               | default `null`          | Client mock-session id grouping skills into one overall band estimate (`src/modules/ielts/scoring/overall.ts:50-66`).                |
-| `status`            | String enum `IELTS_ATTEMPT_STATUSES` | default `'in_progress'` | `in_progress` / `submitted` / `scored` / `expired`.                                                                                  |
-| `startedAt`         | Date                                 | required                | Start time.                                                                                                                          |
-| `deadlineAt`        | Date                                 | default `null`          | Mock deadline; saves/submits are accepted for `IELTS_TIMERS.graceSeconds` (60 s) after it.                                           |
-| `audioEvents`       | [Mixed]                              | default `[]`            | Listening audio interruptions (capped by `IELTS_MAX_AUDIO_EVENTS` = 10).                                                             |
-| `answers`           | Mixed                                | default `{}`            | `{ "<number>": string \| string[] }`; writing stores `{ "1": essay, "2": essay }`.                                                   |
-| `savedSeq`          | Number                               | default `0`             | Monotonic save sequence; an answers PUT applies only when `savedSeq < seq` (`src/modules/ielts/attempts/attemptService.ts:478-487`). |
-| `submittedAt`       | Date                                 | default `null`          | Submit or expiry time.                                                                                                               |
-| `scoredAt`          | Date                                 | default `null`          | Scoring time.                                                                                                                        |
-| `result`            | Mixed                                | default `null`          | Objective scoring result.                                                                                                            |
-| `answerKeySnapshot` | Mixed                                | default `null`          | Answer key captured at scoring time (`attemptService.ts:202`).                                                                       |
-| `writingFeedback`   | Mixed                                | default `null`          | Per-task AI feedback.                                                                                                                |
-| `writingBand`       | Number                               | default `null`          | Writing band (full-skill attempts only).                                                                                             |
-| `gradings`          | [GradingSchema]                      | default `[]`            | Successful AI gradings, counted by the daily cap.                                                                                    |
+| Field               | Type                                 | Required / Default      | Meaning                                                                                                                                   |
+| ------------------- | ------------------------------------ | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `ownerId`           | String                               | required, owner key     | Owner (user id); `trim`.                                                                                                                  |
+| `idempotencyKey`    | String                               | required                | Start-request idempotency key; `trim`.                                                                                                    |
+| `testId`            | ObjectId                             | default `null`          | Test document; `null` for drills (which use `items[]`). No `ref`.                                                                         |
+| `testSlug`          | String                               | default `''`            | Test slug snapshot.                                                                                                                       |
+| `testVersion`       | Number                               | default `0`             | Test version snapshot.                                                                                                                    |
+| `testTitle`         | String                               | default `''`            | Test title snapshot.                                                                                                                      |
+| `track`             | String enum `IELTS_TRACKS`           | default `'academic'`    | `academic` / `general`.                                                                                                                   |
+| `skill`             | String enum `IELTS_SKILLS`           | required                | `listening` / `reading` / `writing`.                                                                                                      |
+| `mode`              | String enum `IELTS_ATTEMPT_MODES`    | required                | `practice` / `mock` / `drill`.                                                                                                            |
+| `scope`             | ScopeSchema                          | required                | Whole skill or one part.                                                                                                                  |
+| `items`             | [DrillItemSchema]                    | default `[]`            | Drill groups pulled from published tests, with drill-to-original question numbering.                                                      |
+| `sessionId`         | String                               | default `null`          | Client mock-session id grouping skills into one overall band estimate (`src/modules/ielts/scoring/overall.ts:50-66`).                     |
+| `status`            | String enum `IELTS_ATTEMPT_STATUSES` | default `'in_progress'` | `in_progress` / `submitted` / `scored` / `expired`.                                                                                       |
+| `startedAt`         | Date                                 | required                | Start time.                                                                                                                               |
+| `deadlineAt`        | Date                                 | default `null`          | Mock deadline; saves/submits are accepted for `IELTS_TIMERS.graceSeconds` (60 s) after it.                                                |
+| `audioEvents`       | [Mixed]                              | default `[]`            | Listening audio interruptions (capped by `IELTS_MAX_AUDIO_EVENTS` = 10).                                                                  |
+| `answers`           | Mixed                                | default `{}`            | `{ "<number>": string \| string[] }`; writing stores `{ "1": essay, "2": essay }`.                                                        |
+| `savedSeq`          | Number                               | default `0`             | Monotonic save sequence; an answers PUT applies only when `savedSeq < seq` (`src/modules/ielts/attempts/attemptService.ts:478-487`).      |
+| `submittedAt`       | Date                                 | default `null`          | Submit or expiry time.                                                                                                                    |
+| `scoredAt`          | Date                                 | default `null`          | Scoring time.                                                                                                                             |
+| `result`            | Mixed                                | default `null`          | Objective scoring result.                                                                                                                 |
+| `answerKeySnapshot` | Mixed                                | default `null`          | Answer key captured at scoring time (`attemptService.ts:202`).                                                                            |
+| `writingFeedback`   | Mixed                                | default `null`          | Per-task AI feedback (`IeltsWritingTaskFeedback` in `src/modules/ielts/attempts/attemptRecords.ts`), with `language` and `promptVersion`. |
+| `writingBand`       | Number                               | default `null`          | Writing band (full-skill attempts only).                                                                                                  |
+| `gradings`          | [GradingSchema]                      | default `[]`            | Successful AI gradings, counted by the daily cap.                                                                                         |
 
 - Indexes (`IeltsAttemptModel.ts:111-120`):
   - `{ ownerId: 1, idempotencyKey: 1 }` unique.
   - `{ ownerId: 1, testId: 1, skill: 1, 'scope.kind': 1, startedAt: -1 }` (resume and history per test).
   - `{ ownerId: 1, status: 1, mode: 1 }`.
-  - `{ ownerId: 1, 'gradings.at': 1 }` (daily grading count, `src/modules/ielts/writing/gradeWritingService.ts:47-59`).
+  - `{ ownerId: 1, 'gradings.at': 1 }` (daily grading count, `src/modules/ielts/writing/gradeWritingService.ts:49-62`).
 - Options: `timestamps: true`, `minimize: false` (so empty `answers: {}` is stored, not dropped).
 
 ### 3.23 IeltsGradingLedger (`src/models/ielts/IeltsGradingLedgerModel.ts`)
 
-Purpose: AI writing gradings that outlived their attempt. The daily grading cap counts `gradings.at` inside attempts; when a learner deletes an attempt, its gradings from today (UTC) move here so deleting cannot reset the cap (comment `IeltsGradingLedgerModel.ts:11-16`; written in `src/modules/ielts/attempts/attemptService.ts:225-247`, counted in `src/modules/ielts/writing/gradeWritingService.ts:47-59`).
+Purpose: AI writing gradings that outlived their attempt. The daily grading cap counts `gradings.at` inside attempts; when a learner deletes an attempt, its gradings from today (UTC) move here so deleting cannot reset the cap (comment `IeltsGradingLedgerModel.ts:11-16`; written in `src/modules/ielts/attempts/attemptService.ts:225-247`, counted in `src/modules/ielts/writing/gradeWritingService.ts:49-62`).
 
 | Field     | Type   | Required / Default | Meaning                              |
 | --------- | ------ | ------------------ | ------------------------------------ |
@@ -891,14 +891,14 @@ Pass thresholds live next to the modes: `PASS_ACCURACY` 0.8, three stars at 0.95
 
 Several fields are denormalized counters/cursors kept in sync by application code, not computed on read:
 
-- `DictationVideo.sentenceCount` and `DictationTranscript.segmentCount`: set to the created segment count when segments are rebuilt (`src/modules/dictation/services/rebuildTranscriptSegments.ts:88-92`), reset to `0` when a transcript is created (`src/app/api/dictation/transcripts/route.ts`), and recounted with `countDocuments` on segment delete/split (`updateSegmentCount`, `src/app/api/dictation/segments/[segmentId]/route.ts:105-120`).
-- `DictationSession.currentSegmentId` / `currentSegmentOrder` / `status` / `completedAt` / `lastActiveAt`: the attempts route advances the cursor when an attempt passes and a next segment exists, and marks the session `completed` at the end; it no longer touches the shared video (`src/app/api/dictation/sessions/[sessionId]/attempts/route.ts:298-336`).
+- `DictationVideo.sentenceCount` and `DictationTranscript.segmentCount`: set to the created segment count when segments are rebuilt (`src/modules/dictation/services/rebuildTranscriptSegments.ts:88-92`), reset to `0` when a transcript is created (`src/app/api/dictation/transcripts/route.ts`), and recounted with `countDocuments` on segment delete/split (`updateSegmentCount`, `src/app/api/dictation/segments/[segmentId]/route.ts:108-131`).
+- `DictationSession.currentSegmentId` / `currentSegmentOrder` / `status` / `completedAt` / `lastActiveAt`: the attempts route advances the cursor when an attempt passes and a next segment exists, and marks the session `completed` at the end; a `review` attempt (from the review queue's `?segment=` deep link) leaves the session untouched; it no longer touches the shared video (`src/app/api/dictation/sessions/[sessionId]/attempts/route.ts:376-413`).
 - `DictationTranscript.cueCount`: denormalized cue count.
 - `order` fields (`DictationTopic.order`, `DictationSection.order`, `DictationVideo.order`): manual drag-to-reorder positions, rewritten in bulk via `$set: { order: index }` in `src/modules/dictation/content/adminContentRepository.ts:76,87,240`.
 - `DictationReviewItem.statsSnapshot`: a frozen copy of stats, recomputed by `recomputeReviewItemsForSegment` (`src/modules/dictation/review/reviewItemService.ts`).
 - `UserVocabItem.dueAt`, `recallStage`, and mastered/known timestamps: maintained by `src/modules/vocabulary/recall/recallScheduler.ts`, `src/modules/vocabulary/recall/recallAnswerService.ts`, and `src/modules/vocabulary/services/userVocabItemService.ts`.
 - `GrammarLessonProgress` (`stars`, `bestAccuracy`, ladder fields), `GrammarUnitProgress`, `GrammarCardMiss`: computed by the pure planner `src/modules/grammar/session/planGrammarSessionWrite.ts` (server re-grades every raw answer) and written by `applyWritePlan` in `src/modules/grammar/services/grammarProgressService.ts`.
-- `IeltsAttempt.result`, `writingBand`, `scoredAt`, `answerKeySnapshot`: written when an attempt is scored (`src/modules/ielts/attempts/attemptService.ts`); `writingFeedback` and `gradings` by `src/modules/ielts/writing/gradeWritingService.ts`.
+- `IeltsAttempt.result`, `writingBand`, `scoredAt`, `answerKeySnapshot`: written when an attempt is scored (`src/modules/ielts/attempts/attemptService.ts`); `writingFeedback` and `gradings` by `src/modules/ielts/writing/gradeWritingService.ts`, which also sets `status: 'scored'`, `scoredAt` and `writingBand` for a writing attempt once every task has feedback; grading a `scored` attempt again updates `writingBand` and keeps the first `scoredAt`.
 
 Derived on read (never stored):
 
@@ -907,7 +907,7 @@ Derived on read (never stored):
 - Topic `levelRange`, `sectionCount`, `lessonCount` by aggregation for the browse grid (comment `DictationTopicModel.ts:11-15`; `DictationTopicSummaryRecord`, `types.ts:131`).
 - Global learner stats (`DictationGlobalStatsRecord`, `DictationVideoStatsRecord`) from attempts/segments (`src/modules/dictation/stats/videoStats.ts`).
 - IELTS overall band estimate from the newest scored attempts, grouped by `sessionId` or by test (`src/modules/ielts/scoring/overall.ts`).
-- IELTS daily grading count from `IeltsAttempt.gradings.at` plus `IeltsGradingLedger` rows (`countGradingsToday`, `src/modules/ielts/writing/gradeWritingService.ts:47-59`).
+- IELTS daily grading count from `IeltsAttempt.gradings.at` plus `IeltsGradingLedger` rows (`countGradingsToday`, `src/modules/ielts/writing/gradeWritingService.ts:49-62`).
 
 ## 6. Ownership and Multi-Tenancy
 
