@@ -5,15 +5,12 @@ import dynamic from 'next/dynamic'
 import { useState, type ReactNode } from 'react'
 
 import { IconButton } from '@/components/ui/IconButton'
-import type { NavItem } from '@/constants/modules'
 import { useMessages } from '@/i18n/client'
 
 interface Props {
-  activeHref: string
   /** The topbar's auth slot, repeated in the menu for phones. */
   authControl?: ReactNode
   className?: string
-  navItems: NavItem[]
 }
 
 const loadTopbarMenuSheet = () => import('./TopbarMenuSheet')
@@ -32,12 +29,7 @@ function prefetchSheet() {
  * right-side drawer loads on the first click (hover or focus prefetches it), the
  * same way UserMenu keeps its popup off the initial bundle.
  */
-export function TopbarMenu({
-  activeHref,
-  authControl,
-  className,
-  navItems,
-}: Props) {
+export function TopbarMenu({ authControl, className }: Props) {
   const t = useMessages()
   const [isActivated, setIsActivated] = useState(false)
   const [open, setOpen] = useState(false)
@@ -65,9 +57,7 @@ export function TopbarMenu({
       </IconButton>
       {isActivated && (
         <TopbarMenuSheet
-          activeHref={activeHref}
           authControl={authControl}
-          navItems={navItems}
           open={open}
           onOpenChange={setOpen}
         />

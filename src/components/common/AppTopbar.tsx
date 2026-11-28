@@ -5,12 +5,7 @@ import Link from 'next/link'
 import type { ReactNode } from 'react'
 
 import { TopbarMenu } from '@/components/common/TopbarMenu'
-import {
-  MODULE_ICONS,
-  PRIMARY_NAV_ITEMS,
-  type AppModuleKey,
-  type NavItem,
-} from '@/constants/modules'
+import { MODULE_ICONS, type AppModuleKey } from '@/constants/modules'
 import { MODULE_THEMES } from '@/constants/theme'
 import { useMessages } from '@/i18n/client'
 import { cn } from '@/lib/utils'
@@ -20,6 +15,10 @@ import { Breadcrumb, type BreadcrumbItem } from './Breadcrumb'
 import { ThemeToggle } from './ThemeToggle'
 
 interface Props {
+  /**
+   * Kept for callers: the rail and tab bar find the active module from the
+   * path, and the phone sheet no longer lists modules.
+   */
   activeHref?: string
   /**
    * Page content for the right end of the row (md and up), where the home
@@ -32,8 +31,6 @@ interface Props {
    * height, like the IELTS test editor.
    */
   compact?: boolean
-  /** Links for the phone menu. The rail (AppSidebar) carries them from md. */
-  navItems?: NavItem[]
   /**
    * The page's own title block on the right from md (module icon, optional
    * breadcrumb, h1, one line), so the board starts with the journey. The
@@ -62,11 +59,9 @@ interface Props {
  * never blinks during navigation.
  */
 export function AppTopbar({
-  activeHref = '/',
   aside,
   className,
   compact = false,
-  navItems = PRIMARY_NAV_ITEMS,
   page,
   showAccount = false,
   subtitle,
@@ -106,7 +101,14 @@ export function AppTopbar({
           >
             {title ?? t.common.app.name}
           </strong>
-          <span className="text-ink-soft truncate text-sm leading-tight">
+          {/* On phones a page with its own title (PageHeader inTopbar)
+              shows its subtitle there: one title, one subtitle. */}
+          <span
+            className={cn(
+              'text-ink-soft truncate text-sm leading-tight',
+              page && 'max-md:hidden'
+            )}
+          >
             {subtitle ?? t.common.app.tagline}
           </span>
         </span>
@@ -130,9 +132,7 @@ export function AppTopbar({
         ) : null}
         <ThemeToggle className="size-11 md:hidden" />
         <TopbarMenu
-          activeHref={activeHref}
           authControl={<AccountControl />}
-          navItems={navItems}
           className="md:hidden"
         />
       </div>

@@ -443,7 +443,8 @@ export const dictation = {
     },
     start: 'Start review',
     allCaughtUp: 'All caught up',
-    allCaughtUpBody: 'No weak sentences are due. Take the next stop on the landing.',
+    allCaughtUpBody:
+      'No weak sentences are due. Take the next stop on the landing.',
     toLanding: 'Back to Dictation Lab',
     reasons: {
       highRetry: 'High retry',

@@ -443,7 +443,8 @@ export const dictation: Messages['dictation'] = {
     },
     start: 'Bắt đầu ôn',
     allCaughtUp: 'Đã ôn xong',
-    allCaughtUpBody: 'Không còn câu yếu nào đến hạn. Đi tiếp trạm kế ở trang chính.',
+    allCaughtUpBody:
+      'Không còn câu yếu nào đến hạn. Đi tiếp trạm kế ở trang chính.',
     toLanding: 'Về Chép chính tả',
     reasons: {
       highRetry: 'Thử lại nhiều',
