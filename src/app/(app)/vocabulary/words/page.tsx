@@ -6,6 +6,7 @@ import { ContentPanel } from '@/components/common/ContentPanel'
 import { ActionButton } from '@/components/ui/ActionButton'
 import { VocabularyWordList } from '@/components/vocabulary/VocabularyWordList'
 import { hasMongoDbUri } from '@/constants/environments'
+import { plural } from '@/i18n/format'
 import { getMessages } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { getPracticeActorId } from '@/modules/dictation/services/getCurrentUser'
@@ -83,6 +84,8 @@ export default async function VocabularyWordsPage({
               { label: t.vocabulary.views[view] },
             ],
             module: 'vocabulary',
+            // The list's own header (with the live count) hides from md up.
+            subtitle: plural(t.vocabulary.wordList.count, wordPage.total),
             title: t.vocabulary.views[view],
           }}
           subtitle={t.vocabulary.page.subtitle}

@@ -95,6 +95,7 @@ export default async function IeltsResultPage({ params }: Props) {
           page={{
             breadcrumb,
             module: 'ielts',
+            subtitle: summary,
             title: format(t.ielts.result.heading, { skill: skillLabel }),
           }}
           subtitle={t.ielts.shell.subtitle}
