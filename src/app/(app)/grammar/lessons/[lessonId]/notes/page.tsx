@@ -68,7 +68,12 @@ export default async function GrammarNotesPage({ params }: Props) {
       topbar={
         <AppTopbar
           activeHref="/grammar"
-          page={{ breadcrumb, module: 'grammar', title: found.lesson.title }}
+          page={{
+            breadcrumb,
+            module: 'grammar',
+            subtitle: found.lesson.summary,
+            title: found.lesson.title,
+          }}
           subtitle={t.grammar.subtitle}
         />
       }

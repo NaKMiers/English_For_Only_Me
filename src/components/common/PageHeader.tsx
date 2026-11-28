@@ -18,7 +18,8 @@ interface Props {
   className?: string
   /**
    * The page's title also sits in the topbar (`AppTopbar page`) from md, so
-   * this header only shows on phones.
+   * the title block only shows on phones. Actions stay at every width (the
+   * top bar has no slot for them); pass the subtitle to the top bar too.
    */
   inTopbar?: boolean
   /** One short line under the title. */
@@ -49,11 +50,16 @@ export function PageHeader({
     <header
       className={cn(
         'page-hero flex flex-wrap items-center justify-between gap-x-4 gap-y-3',
-        inTopbar && 'md:hidden',
+        inTopbar && (actions ? 'md:justify-end' : 'md:hidden'),
         className
       )}
     >
-      <div className="flex min-w-0 flex-1 basis-72 items-center gap-3 sm:gap-4">
+      <div
+        className={cn(
+          'flex min-w-0 flex-1 basis-72 items-center gap-3 sm:gap-4',
+          inTopbar && 'md:hidden'
+        )}
+      >
         {icon ? (
           <span
             aria-hidden="true"

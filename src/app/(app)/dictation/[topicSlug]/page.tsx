@@ -135,7 +135,12 @@ export default async function TopicPage({ params, searchParams }: PageProps) {
       topbar={
         <AppTopbar
           activeHref="/dictation"
-          page={{ breadcrumb, module: 'dictation', title: topic.title }}
+          page={{
+            breadcrumb,
+            module: 'dictation',
+            subtitle: topic.description || undefined,
+            title: topic.title,
+          }}
           subtitle={t.dictation.meta.browseSubtitle}
         />
       }

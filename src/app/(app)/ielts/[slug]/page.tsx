@@ -170,22 +170,6 @@ export default async function IeltsTestPage({ params }: Props) {
           titleClassName="wrap-break-word"
         />
 
-        {isAdmin ? (
-          // The page header (and its edit action) hides from md up, where
-          // the top bar carries the title: the edit link stays reachable.
-          <div className="hidden justify-end md:flex">
-            <ExamIconButton
-              href={`/admin/ielts/${test.id}`}
-              label={t.testPage.editTest}
-            >
-              <PenLine
-                aria-hidden="true"
-                className="size-4"
-              />
-            </ExamIconButton>
-          </div>
-        ) : null}
-
         <TestJourney
           attempts={attempts}
           entry={entry}

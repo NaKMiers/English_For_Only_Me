@@ -63,6 +63,7 @@ export default async function Page() {
               { label: text.title },
             ],
             module: 'dictation',
+            subtitle: text.description,
             title: text.title,
           }}
           subtitle={t.dictation.meta.labSubtitle}
