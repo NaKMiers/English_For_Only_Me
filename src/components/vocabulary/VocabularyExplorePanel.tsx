@@ -1,11 +1,12 @@
 'use client'
 
-import { BookOpen, ChevronLeft, ChevronRight, X } from 'lucide-react'
+import { BookOpen, Check, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useEffect, useEffectEvent, useRef } from 'react'
 
 import { ContentPanel } from '@/components/common/ContentPanel'
 import { Button } from '@/components/ui/button'
 import { ActionButton } from '@/components/ui/ActionButton'
+import { Progress } from '@/components/ui/progress'
 import { PageTag } from '@/components/ui/PageTag'
 import { useMessages } from '@/i18n/client'
 import { format } from '@/i18n/format'
@@ -67,23 +68,6 @@ function getExploreDecisionLabel(
   return t.unpicked
 }
 
-function getExploreMapClassName({
-  active,
-  decision,
-}: {
-  active: boolean
-  decision: ExploreDecision | undefined
-}) {
-  return cn(
-    'size-5 rounded-tag border border-line transition-transform hover:-translate-y-0.5',
-    decision === 'shouldLearn' && 'bg-brand-soft hover:bg-brand-soft/70',
-    decision === 'alreadyKnow' &&
-      'bg-lesson-correct/35 hover:bg-lesson-correct/25',
-    !decision && 'bg-surface hover:bg-pastel-sky',
-    active && 'outline-brand scale-110 outline-3 outline-offset-2'
-  )
-}
-
 function getExploreStackCardClassName({
   active,
   decision,
@@ -94,7 +78,7 @@ function getExploreStackCardClassName({
   visible: boolean
 }) {
   return cn(
-    'border-line absolute top-0 left-1/2 flex h-full min-h-96 w-[min(84%,760px)] flex-col gap-4 rounded-control border p-4 shadow-card transition-[opacity,transform] duration-300 ease-out',
+    'border-line rounded-panel absolute top-0 left-1/2 flex h-full min-h-96 w-[min(84%,760px)] flex-col gap-4 border p-4 shadow-card transition-[opacity,transform] duration-300 ease-out',
     decision === 'shouldLearn' && 'bg-brand-soft',
     decision === 'alreadyKnow' && 'bg-lesson-correct/10',
     !decision && 'bg-surface',
@@ -186,6 +170,7 @@ export function VocabularyExplorePanel({
   const vocab = useMessages().vocabulary
   const t = vocab.explore
   const deckRef = useRef<HTMLDivElement>(null)
+  const decidedCount = entries.filter(entry => decisions[entry.entry.id]).length
 
   useExploreArrowKeys({
     activeIndex,
@@ -208,7 +193,7 @@ export function VocabularyExplorePanel({
           <div className="flex items-center justify-between gap-3">
             <Button
               aria-label={t.previous}
-              className="border-line bg-surface hover:bg-tint rounded-control soft-press size-11 border disabled:opacity-35"
+              className="border-line bg-surface hover:bg-tint soft-press hover-pop size-11 rounded-full border disabled:opacity-35"
               disabled={activeIndex === 0}
               onClick={() => moveExplore(-1)}
               size="icon"
@@ -228,7 +213,7 @@ export function VocabularyExplorePanel({
             </span>
             <Button
               aria-label={t.next}
-              className="border-line bg-surface hover:bg-tint rounded-control soft-press size-11 border disabled:opacity-35"
+              className="border-line bg-surface hover:bg-tint soft-press hover-pop size-11 rounded-full border disabled:opacity-35"
               disabled={activeIndex >= entries.length - 1}
               onClick={() => moveExplore(1)}
               size="icon"
@@ -258,7 +243,13 @@ export function VocabularyExplorePanel({
                   aria-label={
                     active
                       ? undefined
-                      : format(t.open, { term: entry.entry.term })
+                      : format(t.openWithDecision, {
+                          decision: getExploreDecisionLabel(
+                            decision,
+                            vocab.decisions
+                          ),
+                          term: entry.entry.term,
+                        })
                   }
                   aria-hidden={!visible}
                   className={getExploreStackCardClassName({
@@ -332,7 +323,7 @@ export function VocabularyExplorePanel({
                       <ActionButton
                         className="min-w-0 px-2 text-xs sm:px-4 sm:text-sm [&>span:last-child]:whitespace-nowrap"
                         disabled={decision === 'alreadyKnow'}
-                        icon={<X className="size-4" />}
+                        icon={<Check className="size-4" />}
                         onClick={() =>
                           markEntry({
                             entry,
@@ -351,61 +342,28 @@ export function VocabularyExplorePanel({
             })}
           </div>
 
-          <div className="bg-tint-soft rounded-control grid gap-3 p-3">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="text-ink-soft text-xs font-normal">{t.map}</span>
-              <div
-                aria-label={t.legend}
-                className="flex flex-wrap gap-2"
-              >
-                <span
-                  aria-label={t.legendUnpicked}
-                  className="border-line bg-surface rounded-tag size-5 border"
-                  role="img"
-                  title={vocab.decisions.unpicked}
-                />
-                <span
-                  aria-label={t.legendShouldLearn}
-                  className="border-line bg-brand-soft rounded-tag size-5 border"
-                  role="img"
-                  title={vocab.decisions.shouldLearn}
-                />
-                <span
-                  aria-label={t.legendAlreadyKnow}
-                  className="border-line rounded-tag bg-lesson-correct/35 size-5 border"
-                  role="img"
-                  title={vocab.decisions.alreadyKnow}
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-[repeat(auto-fill,minmax(1.25rem,1fr))] gap-2">
-              {entries.map((entry, index) => {
-                const decision = decisions[entry.entry.id]
-
-                return (
-                  <Button
-                    key={entry.entry.id}
-                    aria-label={format(t.openWithDecision, {
-                      decision: getExploreDecisionLabel(
-                        decision,
-                        vocab.decisions
-                      ),
-                      term: entry.entry.term,
-                    })}
-                    className={getExploreMapClassName({
-                      active: index === activeIndex,
-                      decision,
-                    })}
-                    onClick={() => showExploreIndex(index)}
-                    size="icon"
-                    title={entry.entry.term}
-                    type="button"
-                    variant="default"
-                  />
-                )
+          {/* One thin bar instead of a grid of tiny targets. */}
+          <Progress
+            aria-label={format(t.decided, {
+              done: decidedCount,
+              total: entries.length,
+            })}
+            className="items-center"
+            tone="vocabulary"
+            trackClassName="h-2"
+            value={
+              entries.length > 0
+                ? Math.round((decidedCount / entries.length) * 100)
+                : 0
+            }
+          >
+            <span className="text-ink-soft order-last w-full text-xs tabular-nums">
+              {format(t.decided, {
+                done: decidedCount,
+                total: entries.length,
               })}
-            </div>
-          </div>
+            </span>
+          </Progress>
         </div>
       ) : (
         <p className="text-ink-soft text-sm leading-6 font-normal">

@@ -155,11 +155,7 @@ export const vocabulary = {
     arrowKeysHint: 'Use the Left and Right arrow keys to move',
     open: 'Open {term}',
     openWithDecision: 'Open {term}: {decision}',
-    map: 'Explore map',
-    legend: 'Explore map color legend',
-    legendUnpicked: 'White means unpicked',
-    legendShouldLearn: 'Pink means should learn',
-    legendAlreadyKnow: 'Green means already know',
+    decided: '{done} of {total} decided',
   },
   launcher: {
     start: 'Start Recall',

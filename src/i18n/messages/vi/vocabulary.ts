@@ -157,11 +157,7 @@ export const vocabulary: Messages['vocabulary'] = {
     arrowKeysHint: 'Dùng phím mũi tên trái và phải để di chuyển',
     open: 'Mở {term}',
     openWithDecision: 'Mở {term}: {decision}',
-    map: 'Bản đồ khám phá',
-    legend: 'Chú thích màu của bản đồ khám phá',
-    legendUnpicked: 'Trắng là chưa chọn',
-    legendShouldLearn: 'Hồng là cần học',
-    legendAlreadyKnow: 'Xanh lá là đã biết',
+    decided: 'Đã chọn {done}/{total} từ',
   },
   launcher: {
     start: 'Bắt đầu ôn',

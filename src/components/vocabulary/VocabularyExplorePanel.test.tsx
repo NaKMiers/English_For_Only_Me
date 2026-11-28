@@ -136,3 +136,27 @@ describe('VocabularyExplorePanel arrow keys', () => {
     expect(showExploreIndex).not.toHaveBeenCalled()
   })
 })
+
+describe('VocabularyExplorePanel progress', () => {
+  it('shows one decided bar instead of a map of tiny buttons', () => {
+    const view = render(
+      <VocabularyExplorePanel
+        activeIndex={0}
+        decisions={{ '1': 'shouldLearn' }}
+        entries={entries}
+        markEntry={() => {}}
+        moveExplore={() => {}}
+        showExploreIndex={() => {}}
+      />
+    )
+
+    expect(view.getByText('1 of 3 decided')).toBeInTheDocument()
+    expect(
+      view.getByRole('progressbar', { name: '1 of 3 decided' })
+    ).toBeInTheDocument()
+    // Non-active cards still open by name, with their decision.
+    expect(
+      view.getByRole('button', { name: 'Open lid: Unpicked' })
+    ).toBeInTheDocument()
+  })
+})

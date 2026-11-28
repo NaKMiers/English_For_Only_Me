@@ -735,9 +735,10 @@ describe('VocabularyDashboard', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Should Learn' }))
     fireEvent.click(screen.getByRole('button', { name: 'Should Learn' }))
 
-    expect(
-      await screen.findByRole('button', { name: 'Open term3: Unpicked' })
-    ).toBeInTheDocument()
+    // The new deck is dealt: its first word is the active card, and the bar
+    // starts again from nothing decided.
+    expect(await screen.findByText('0 of 2 decided')).toBeInTheDocument()
+    expect(screen.getByText('term3')).toBeInTheDocument()
     expect(whenIdle).toHaveBeenCalledWith({ timeoutMs: OUTBOX_IDLE_TIMEOUT_MS })
   })
 

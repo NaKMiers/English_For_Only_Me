@@ -165,28 +165,37 @@ export function VocabularySearchPanel({
       ) : null}
 
       {searchResults.length > 0 ? (
-        <div className="grid gap-2 sm:grid-cols-2">
+        <ul className="grid gap-2 sm:grid-cols-2">
           {searchResults.map(result => (
-            <div
-              key={result.entry.id}
-              className="border-line bg-surface rounded-control grid gap-2 border p-3"
-            >
-              <VocabTermHeader
-                entry={result.entry}
-                headingClassName="text-xl"
-                speakTerm={speakTerm}
-              />
-              <p className="text-ink-soft text-xs font-normal">
-                {result.userItem
-                  ? vocab.itemStatus[result.userItem.status]
-                  : vocab.enrichmentStatus[result.entry.enrichmentStatus]}
-              </p>
-              <p className="line-clamp-2 text-right text-sm leading-6 font-medium">
-                {getVietnameseMeaning(result.entry) ?? vocab.word.needsMeaning}
-              </p>
-            </div>
+            <li key={result.entry.id}>
+              {/* The whole result loads that word above (no nested speak
+                  button here: the loaded entry has its own). */}
+              <button
+                className="soft-press hover-pop border-line bg-surface hover:bg-tint-soft rounded-control grid w-full gap-2 border p-3 text-left"
+                disabled={isLoading}
+                onClick={() => {
+                  onQueryChange(result.entry.term)
+                  void runLookup(result.entry.term)
+                }}
+                type="button"
+              >
+                <VocabTermHeader
+                  entry={result.entry}
+                  headingClassName="text-xl"
+                />
+                <span className="text-ink-soft text-xs font-normal">
+                  {result.userItem
+                    ? vocab.itemStatus[result.userItem.status]
+                    : vocab.enrichmentStatus[result.entry.enrichmentStatus]}
+                </span>
+                <span className="line-clamp-2 text-right text-sm leading-6 font-medium">
+                  {getVietnameseMeaning(result.entry) ??
+                    vocab.word.needsMeaning}
+                </span>
+              </button>
+            </li>
           ))}
-        </div>
+        </ul>
       ) : null}
     </ContentPanel>
   )
