@@ -654,6 +654,101 @@ body {
   }
 }
 
+/* ============================================================
+   LOGIN HERO (LoginHero)
+   A pastel aurora built from the module colours, a faint dot grid that
+   fades out towards the edges, three soft orbs drifting behind Buddy,
+   module cards that float on their own rhythm and a caret that blinks
+   while the dictation line types itself. Every colour is a token, so the
+   night theme just works. Reduced motion keeps everything still.
+   ============================================================ */
+.login-hero {
+  isolation: isolate;
+  background:
+    radial-gradient(
+      ellipse 55% 45% at 18% 12%,
+      var(--pastel-sky),
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 50% 45% at 88% 18%,
+      var(--brand-soft),
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 60% 50% at 75% 100%,
+      var(--pastel-peach),
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 50% 45% at 5% 92%,
+      var(--pastel-mint),
+      transparent 70%
+    ),
+    var(--pastel-lilac);
+}
+.login-hero-grid {
+  background-image: radial-gradient(var(--line-strong) 1px, transparent 1.2px);
+  background-size: 22px 22px;
+  mask-image: radial-gradient(ellipse 65% 60% at 50% 45%, #000, transparent);
+  opacity: 0.75;
+}
+.login-glass {
+  background-color: color-mix(in srgb, var(--surface) 78%, transparent);
+  border: 1px solid color-mix(in srgb, var(--surface) 90%, transparent);
+  box-shadow: var(--shadow-float);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  backdrop-filter: blur(14px) saturate(1.2);
+}
+:root[data-theme='lightup'] .login-glass {
+  border-color: var(--line-strong);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .login-orb {
+    animation: login-drift var(--drift-duration, 16s) ease-in-out infinite;
+  }
+  .login-float {
+    animation: login-float var(--float-duration, 6s) ease-in-out
+      var(--float-delay, 0s) infinite;
+  }
+  .login-rise {
+    --rise: 14px;
+    animation: soft-rise 700ms var(--ease-out-soft) var(--rise-delay, 0ms)
+      backwards;
+  }
+  .login-caret {
+    animation: login-caret 1s steps(1) infinite;
+  }
+  .login-buddy.buddy-bob {
+    animation-duration: 4.8s;
+  }
+}
+@keyframes login-drift {
+  0%,
+  100% {
+    translate: 0 0;
+    scale: 1;
+  }
+  50% {
+    translate: var(--drift-x, 28px) var(--drift-y, -22px);
+    scale: 1.12;
+  }
+}
+@keyframes login-float {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -10px;
+  }
+}
+@keyframes login-caret {
+  50% {
+    opacity: 0;
+  }
+}
+
 /* Dictation journey: the waveform bars right behind the playhead bounce like
    a live meter, records on the "playing" shelf turn slowly, and any record
    spins up a little on hover. Reduced motion keeps them still. */

@@ -1,4 +1,4 @@
-import { BookA, GraduationCap, Headphones, Settings } from 'lucide-react'
+import { BookA, GraduationCap, Headphones, Settings, Users } from 'lucide-react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
@@ -44,6 +44,13 @@ const LINKS = [
     key: 'vocab',
     ...MODULE_THEMES.vocabulary,
   },
+  {
+    href: '/admin/users',
+    icon: Users,
+    key: 'users',
+    tint: 'bg-pastel-rose',
+    accent: 'text-accent-pink',
+  },
 ] as const
 
 export default async function AdminDashboard() {
@@ -77,7 +84,7 @@ export default async function AdminDashboard() {
           })}
           title={t.admin.dashboard.title}
         />
-        <div className="motion-stagger grid gap-3 sm:grid-cols-3">
+        <div className="motion-stagger grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {LINKS.map(link => {
             const Icon = link.icon
 

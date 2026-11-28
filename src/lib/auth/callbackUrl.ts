@@ -3,6 +3,12 @@ export const DEFAULT_CALLBACK_URL = '/'
 
 export const LOGIN_PATH = '/auth/login'
 
+/** `?error=` code for an account an admin has locked (see accountStatus.ts). */
+export const ACCOUNT_LOCKED_ERROR = 'AccountLocked'
+
+/** The login page with the locked-account notice. */
+export const LOCKED_LOGIN_URL = `${LOGIN_PATH}?error=${ACCOUNT_LOCKED_ERROR}`
+
 /** Paths a sign-in must never send the learner back to. */
 function isBlockedPath(pathname: string) {
   return (
@@ -56,7 +62,14 @@ export function safeCallbackUrl(
 
   if (isBlockedPath(url.pathname)) return DEFAULT_CALLBACK_URL
 
-  return `${url.pathname}${url.search}${url.hash}`
+  const result = `${url.pathname}${url.search}${url.hash}`
+
+  // Check the serialized path too: URL parsing resolves dot segments, so
+  // `/.//evil.com` or `/a/..//evil.com` comes out as `//evil.com`.
+  if (!result.startsWith('/') || result.startsWith('//'))
+    return DEFAULT_CALLBACK_URL
+
+  return result
 }
 
 /** `/auth/login?callbackUrl=<path>` for a page the learner should return to. */

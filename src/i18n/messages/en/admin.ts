@@ -4,6 +4,7 @@ export const admin = {
     admin: 'Admin',
     dictation: 'Admin · Dictation',
     vocab: 'Admin vocabulary enrichment',
+    users: 'Admin · Users',
     importDesk: 'Dictation Lab import desk',
     editDesk: 'Dictation Lab edit desk',
   },
@@ -29,6 +30,10 @@ export const admin = {
       vocab: {
         title: 'Vocabulary',
         desc: 'Seed and enrich the global vocabulary cache.',
+      },
+      users: {
+        title: 'Users',
+        desc: 'See who signs in, how much they practise; lock or delete accounts.',
       },
     },
   },
@@ -62,6 +67,78 @@ export const admin = {
   },
   vocabPage: {
     metaTitle: 'Admin Vocabulary',
+  },
+  users: {
+    metaTitle: 'Admin · Users',
+    title: 'Users',
+    subtitle: 'Everyone who has signed in with Google.',
+    summary: {
+      total: 'Users',
+      activeThisWeek: 'Active this week',
+      locked: 'Locked',
+      admins: 'Admins',
+    },
+    searchLabel: 'Search users',
+    searchPlaceholder: 'Search by name or email',
+    sortLabel: 'Sort users',
+    sorts: {
+      recent: 'Last sign-in',
+      newest: 'Newest',
+      name: 'Name',
+      active: 'Most practice',
+    },
+    showing: { one: '{count} user', other: '{count} users' },
+    empty: 'Nobody has signed in yet.',
+    noMatch: 'No user matches "{query}".',
+    noName: 'No name',
+    never: 'Never',
+    openUser: 'Open {name}',
+    role: { admin: 'Admin' },
+    status: { locked: 'Locked' },
+    activity: {
+      dictation: 'Dictation sessions',
+      grammar: 'Grammar lessons',
+      ielts: 'IELTS attempts',
+      vocabulary: 'Words in the deck',
+    },
+    detail: {
+      joined: 'Joined',
+      lastLogin: 'Last sign-in',
+      lockedSince: 'Locked since',
+      practice: 'Practice',
+      manage: 'Manage account',
+      lock: 'Lock account',
+      lockHint:
+        'They cannot sign in, and their current session ends within a minute.',
+      unlock: 'Unlock account',
+      unlockHint: 'They can sign in with Google again.',
+      lockTitle: 'Lock {name}?',
+      lockDescription:
+        'They cannot sign in until you unlock the account. Their practice is kept.',
+      unlockTitle: 'Unlock {name}?',
+      unlockDescription: 'They can sign in with Google again right away.',
+      delete: 'Delete account',
+      deleteHint:
+        'Removes the account and all of its practice. This cannot be undone.',
+      deleteTitle: 'Delete {name} for good?',
+      deleteDescription:
+        'Every dictation session, grammar lesson, IELTS attempt and saved word of this account is deleted. This cannot be undone.',
+      deleteConfirmLabel: 'Type {email} to confirm',
+      deleteConfirm: 'Delete for good',
+      protectedSelf:
+        'This is your own account, so you cannot lock or delete it here.',
+      protectedAdmin:
+        'Admins come from ADMIN_EMAILS. Remove this email there before locking or deleting the account.',
+      locked: 'Account locked.',
+      unlocked: 'Account unlocked.',
+    },
+    errors: {
+      notFound: 'This user no longer exists.',
+      self: 'You cannot lock or delete your own account.',
+      admin: 'Admins cannot be locked or deleted here.',
+      confirmMismatch: 'The email you typed does not match.',
+      failed: 'That did not work. Please try again.',
+    },
   },
   confirm: {
     defaultTitle: 'Are you sure?',

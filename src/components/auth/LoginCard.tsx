@@ -1,25 +1,18 @@
 'use client'
 
+import { ArrowRight, ShieldCheck } from 'lucide-react'
+import Image from 'next/image'
+import type { CSSProperties } from 'react'
 import { useFormStatus } from 'react-dom'
 
 import { InlineNotice } from '@/components/common/InlineNotice'
-import { HomeBuddyMascot } from '@/components/home/HomeBuddyMascot'
-import { ActionButton } from '@/components/ui/ActionButton'
-import { MODULE_ICONS, type AppModuleKey } from '@/constants/modules'
-import { MODULE_THEMES } from '@/constants/theme'
 import { useMessages } from '@/i18n/client'
 import { signInAction } from '@/lib/auth/actions'
 import { cn } from '@/lib/utils'
 
 /** What the login page has to say besides the button. */
-export type LoginNotice = 'accessDenied' | 'generic' | 'notConfigured' | null
-
-const CHIP_MODULES: AppModuleKey[] = [
-  'dictation',
-  'grammar',
-  'ielts',
-  'vocabulary',
-]
+export type LoginNotice =
+  'accessDenied' | 'generic' | 'locked' | 'notConfigured' | null
 
 interface Props {
   /** Same-origin path to land on after Google, already sanitised. */
@@ -59,35 +52,44 @@ function GoogleMark() {
 }
 
 /**
- * The single call to action. Pending while the form posts, so a double click
- * cannot start two Google round trips.
+ * The single call to action: a tall ink pill with Google's mark in a white
+ * disc and an arrow that slides on hover. Pending while the form posts, so a
+ * double click cannot start two Google round trips.
  */
 function ContinueWithGoogleButton() {
   const t = useMessages()
   const { pending } = useFormStatus()
 
   return (
-    <ActionButton
+    <button
       aria-busy={pending || undefined}
-      className="w-full"
+      className="group soft-press hover-pop bg-cta text-cta-fg hover:bg-cta/90 focus-visible:ring-brand/50 flex min-h-14 w-full items-center gap-3 rounded-full py-2 pr-5 pl-2 text-base font-medium outline-none focus-visible:ring-4 disabled:opacity-60"
       disabled={pending}
-      icon={
-        <span className="bg-surface grid size-6 place-items-center rounded-full">
-          <GoogleMark />
-        </span>
-      }
-      tone="ink"
       type="submit"
     >
-      {pending ? t.common.auth.openingGoogle : t.common.auth.continueWithGoogle}
-    </ActionButton>
+      <span className="grid size-10 shrink-0 place-items-center rounded-full bg-white">
+        <GoogleMark />
+      </span>
+      <span className="flex-1 text-center">
+        {pending
+          ? t.common.auth.openingGoogle
+          : t.common.auth.continueWithGoogle}
+      </span>
+      <ArrowRight
+        aria-hidden="true"
+        className={cn(
+          'size-5 shrink-0 transition-transform duration-300 group-hover:translate-x-1',
+          pending && 'animate-pulse'
+        )}
+      />
+    </button>
   )
 }
 
 /**
- * The login page's card: Buddy, the app name, one tagline, the four modules
- * as quiet chips, and "Continue with Google". Google is the only way in, so
- * there is no sign-up, password or reset.
+ * The login page's right half: the brand, a big welcome, one line of why,
+ * "Continue with Google" and a quiet reassurance. Google is the only way in,
+ * so there is no sign-up, password or reset.
  */
 export function LoginCard({
   callbackUrl,
@@ -99,88 +101,83 @@ export function LoginCard({
   const noticeText =
     notice === 'accessDenied'
       ? t.common.auth.errorAccessDenied
-      : notice === 'notConfigured'
-        ? t.common.auth.notConfigured
-        : notice === 'generic'
-          ? t.common.auth.errorGeneric
-          : null
+      : notice === 'locked'
+        ? t.common.auth.errorLocked
+        : notice === 'notConfigured'
+          ? t.common.auth.notConfigured
+          : notice === 'generic'
+            ? t.common.auth.errorGeneric
+            : null
 
   return (
     <section
       aria-labelledby="login-title"
-      className={cn(
-        'bg-surface border-line rounded-panel shadow-card flex w-full max-w-sm flex-col items-center gap-5 border px-6 pt-6 pb-7 text-center sm:px-8',
-        className
-      )}
+      className={cn('flex w-full max-w-md flex-col gap-9', className)}
     >
-      <HomeBuddyMascot
-        className="size-32 sm:size-36"
-        eager
-        mood="ready"
-      />
+      <div className="login-rise flex items-center gap-3">
+        <Image
+          alt=""
+          aria-hidden="true"
+          className="shadow-card rounded-control size-11"
+          height={44}
+          loading="eager"
+          src="/logo.png"
+          width={44}
+        />
+        <span className="text-ink text-base font-medium">
+          {t.common.auth.loginTitle}
+        </span>
+      </div>
 
-      <div className="flex flex-col gap-2">
+      <div
+        className="login-rise flex flex-col gap-4"
+        style={{ '--rise-delay': '90ms' } as CSSProperties}
+      >
         <h1
-          className="text-ink text-2xl font-medium"
+          className="text-ink text-4xl leading-[1.08] font-medium tracking-tight text-balance sm:text-5xl"
           id="login-title"
         >
-          {t.common.auth.loginTitle}
+          {t.common.auth.loginHeading}
         </h1>
-        <p className="text-ink-soft text-sm leading-relaxed">
+        <p className="text-ink-soft max-w-sm text-base leading-relaxed text-pretty">
           {t.common.auth.loginTagline}
         </p>
       </div>
 
-      <ul className="grid w-full grid-cols-2 gap-2">
-        {CHIP_MODULES.map(key => {
-          const Icon = MODULE_ICONS[key]
-          const theme = MODULE_THEMES[key]
+      <div
+        className="login-rise flex flex-col gap-4"
+        style={{ '--rise-delay': '180ms' } as CSSProperties}
+      >
+        {configured ? (
+          <form action={signInAction}>
+            <input
+              name="callbackUrl"
+              type="hidden"
+              value={callbackUrl}
+            />
+            <ContinueWithGoogleButton />
+          </form>
+        ) : null}
 
-          return (
-            <li
-              className={cn(
-                'flex min-h-10 items-center justify-center gap-2 rounded-full px-3 text-sm',
-                theme.tint,
-                theme.accent
-              )}
-              key={key}
-            >
-              {Icon ? (
-                <Icon
-                  aria-hidden="true"
-                  className="size-4 shrink-0"
-                />
-              ) : null}
-              <span className="text-ink">
-                {t.common.modules[key].shortTitle}
-              </span>
-            </li>
-          )
-        })}
-      </ul>
+        {noticeText ? (
+          <InlineNotice
+            className="w-full text-left"
+            tone={notice === 'notConfigured' ? 'info' : 'error'}
+          >
+            {noticeText}
+          </InlineNotice>
+        ) : null}
 
-      {configured ? (
-        <form
-          action={signInAction}
-          className="w-full"
-        >
-          <input
-            name="callbackUrl"
-            type="hidden"
-            value={callbackUrl}
-          />
-          <ContinueWithGoogleButton />
-        </form>
-      ) : null}
-
-      {noticeText ? (
-        <InlineNotice
-          className="w-full text-left"
-          tone={notice === 'notConfigured' ? 'info' : 'error'}
-        >
-          {noticeText}
-        </InlineNotice>
-      ) : null}
+        {configured ? (
+          <p className="text-ink-soft flex items-center gap-2 text-sm">
+            <ShieldCheck
+              aria-hidden="true"
+              className="text-accent-green size-4 shrink-0"
+            />
+            {t.common.auth.loginFootnote}
+          </p>
+        ) : null}
+      </div>
     </section>
   )
 }

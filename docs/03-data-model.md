@@ -42,7 +42,7 @@ export const XModel =
   (models.X as Model<XDocument> | undefined) ?? model<XDocument>('X', XSchema)
 ```
 
-(for example `src/models/UserModel.ts:55-57`, `src/models/dictation/DictationVideoModel.ts:192-194`, `src/models/ielts/IeltsTestModel.ts:213-215`). The four grammar models use a looser variant, `(models.X as Model<XDocument>) || model('X', XSchema)` (for example `src/models/grammar/GrammarSessionModel.ts:37-39`). Document types are derived with `InferSchemaType<typeof XSchema>` rather than hand-written interfaces.
+(for example `src/models/UserModel.ts:70-72`, `src/models/dictation/DictationVideoModel.ts:192-194`, `src/models/ielts/IeltsTestModel.ts:213-215`). The four grammar models use a looser variant, `(models.X as Model<XDocument>) || model('X', XSchema)` (for example `src/models/grammar/GrammarSessionModel.ts:37-39`). Document types are derived with `InferSchemaType<typeof XSchema>` rather than hand-written interfaces.
 
 Registered model names (the string passed to `model(...)`):
 
@@ -162,18 +162,22 @@ Every model uses Mongoose `{ timestamps: true }` (adding `createdAt`/`updatedAt`
 
 ### 3.1 User (`src/models/UserModel.ts`)
 
-Purpose: app user, provisioned on first Google sign-in (Auth.js v5, JWT sessions). Persists only durable identity plus a login timestamp. `role` is NOT stored here; it is derived from `ADMIN_EMAILS` at token time (class comment `UserModel.ts:11-19`; `src/types/next-auth.d.ts` puts `role: UserRole` and `uid` on the session/JWT, not the DB).
+Purpose: app user, provisioned on first Google sign-in (Auth.js v5, JWT sessions). Persists durable identity, a login timestamp and the admin's lock (`status`, `lockedAt`). `role` is NOT stored here; it is derived from `ADMIN_EMAILS` at token time (class comment `UserModel.ts:15-24`; `src/types/next-auth.d.ts` puts `role: UserRole` and `uid` on the session/JWT, not the DB).
 
-| Field         | Type   | Required / Default      | Meaning                              |
-| ------------- | ------ | ----------------------- | ------------------------------------ |
-| `email`       | String | required, unique        | Login email; `trim`, `lowercase`.    |
-| `googleSub`   | String | default `null`, indexed | Google subject id (stable OAuth id). |
-| `name`        | String | default `null`          | Display name; `trim`.                |
-| `image`       | String | default `null`          | Avatar URL.                          |
-| `lastLoginAt` | Date   | default `null`          | Last successful login time.          |
+| Field         | Type   | Required / Default                       | Meaning                                                                    |
+| ------------- | ------ | ---------------------------------------- | -------------------------------------------------------------------------- |
+| `email`       | String | required, unique                         | Login email; `trim`, `lowercase`.                                          |
+| `googleSub`   | String | default `null`, indexed                  | Google subject id (stable OAuth id).                                       |
+| `name`        | String | default `null`                           | Display name; `trim`.                                                      |
+| `image`       | String | default `null`                           | Avatar URL.                                                                |
+| `lastLoginAt` | Date   | default `null`                           | Last successful login time.                                                |
+| `status`      | String | enum `USER_STATUSES`, default `'active'` | `'locked'` when an admin shut the account; sign-in and sessions refuse it. |
+| `lockedAt`    | Date   | default `null`                           | When the lock was set; reset to `null` on unlock.                          |
 
-- Indexes: unique index on `email` (via field `unique: true`); single-field index on `googleSub`.
-- Timestamps: yes. Enums / hooks: none.
+- Indexes: unique index on `email` (via field `unique: true`); single-field index on `googleSub`. `status` has no index: it is only read by `_id` or `email`.
+- Timestamps: yes. Enum: `USER_STATUSES = ['active', 'locked']` (exported type `UserStatus`, `UserModel.ts:11-13`). Hooks: none.
+- Lock: only the admin user-management service writes `status`/`lockedAt` (`setUserLocked` in `src/modules/admin/users/userAdminService.ts`). The lock is enforced on read, not by the JWT: `getAccountBlock` (`src/lib/auth/accountStatus.ts`) treats a `locked` or missing `User` as signed out, and `isEmailLocked` makes the Auth.js `signIn` callback refuse the next Google sign-in (`src/lib/auth/auth.ts`). See doc 07, "Admin user management".
+- Delete: `deleteUserAndData` removes the user's rows in every `USER_OWNED_MODELS` collection (section 6.2) and then the `User` row. A later Google sign-in with the same email provisions a fresh, empty `User`.
 - Note: `User._id` (ObjectId) is the identity that `DictationFavorite.userId` references. Its 24-char hex string form is the signed-in owner key stored in every string `userId`/`ownerId` (section 6.1).
 
 ### 3.2 DictationTopic (`src/models/dictation/DictationTopicModel.ts`)
@@ -915,13 +919,13 @@ Every per-owner row is keyed by one owner key: the signed-in user's `User._id` a
 
 Where the contract is enforced:
 
-| Layer                             | Enforcement                                                                                                                                                                                                                                                         |
-| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Schema `match: OWNER_KEY_PATTERN` | `DictationSession`, `DictationAttempt`, `DictationReviewItem`, `DictationDebrief` (`userId`) and `IeltsAttempt` (`ownerId`).                                                                                                                                        |
-| `requireUser()`                   | Throws 401 without a session, 400 when the id is not an ObjectId (`assertOwnerKey`), 409 when a queued outbox write names another learner; returns the `CurrentUser` (`src/lib/auth/currentUser.ts`). Used by the dictation, vocabulary, grammar, and IELTS routes. |
-| `requirePageUser()`               | Same identity for Server Components; redirects to the login page instead of throwing (`src/lib/auth/currentUser.ts`).                                                                                                                                               |
-| Service-level `assertOwnerKey`    | Grammar reads and writes (`src/modules/grammar/services/grammarProgressService.ts:74,180`).                                                                                                                                                                         |
-| None at schema level              | `UserVocabItem`, `VocabOccurrence`, `VocabRecallAttempt`, the four grammar models, `IeltsGradingLedger` (string owner, no `match`).                                                                                                                                 |
+| Layer                             | Enforcement                                                                                                                                                                                                                                                                                                                                                       |
+| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Schema `match: OWNER_KEY_PATTERN` | `DictationSession`, `DictationAttempt`, `DictationReviewItem`, `DictationDebrief` (`userId`) and `IeltsAttempt` (`ownerId`).                                                                                                                                                                                                                                      |
+| `requireUser()`                   | Throws 401 without a session or when the account is locked or deleted (`getAccountBlock`, `src/lib/auth/accountStatus.ts`), 400 when the id is not an ObjectId (`assertOwnerKey`), 409 when a queued outbox write names another learner; returns the `CurrentUser` (`src/lib/auth/currentUser.ts`). Used by the dictation, vocabulary, grammar, and IELTS routes. |
+| `requirePageUser()`               | Same identity for Server Components; redirects to the login page instead of throwing, with the locked notice (`LOCKED_LOGIN_URL`) for a locked or deleted account (`src/lib/auth/currentUser.ts`).                                                                                                                                                                |
+| Service-level `assertOwnerKey`    | Grammar reads and writes (`src/modules/grammar/services/grammarProgressService.ts:74,180`).                                                                                                                                                                                                                                                                       |
+| None at schema level              | `UserVocabItem`, `VocabOccurrence`, `VocabRecallAttempt`, the four grammar models, `IeltsGradingLedger` (string owner, no `match`).                                                                                                                                                                                                                               |
 
 Callers scope every per-user query to the id `requireUser()` returns, never to a client-supplied one. Pages render `toClientOwnerKey(id)`, a truncated SHA-256 hash used to namespace localStorage and to check queued outbox writes, so the raw id is not put into HTML (`src/lib/auth/clientOwnerKey.ts`).
 
@@ -935,9 +939,18 @@ Callers scope every per-user query to the id `requireUser()` returns, never to a
 | Per-user, `userId: ObjectId` | `DictationFavorite`                                                                                                                                                                                                              |
 | Identity                     | `User`                                                                                                                                                                                                                           |
 
+The per-owner and per-user rows above (14 collections) are also listed in code, once: `USER_OWNED_MODELS` in `src/models/userOwnedModels.ts` pairs each model with its owner field (`'userId'` or `'ownerId'`). It is the single source for every "all of one learner's data" operation:
+
+| Consumer                                                            | Use                                                                                  |
+| ------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `deleteUserAndData` (`src/modules/admin/users/userAdminService.ts`) | `deleteMany({ [ownerField]: userId })` on each model, then deletes the `User` row.   |
+| `scripts/dropGuestData.ts`                                          | Builds its cleanup targets (`collection`, `ownerField`) from the list (section 6.3). |
+
+A new per-user collection must be added to `USER_OWNED_MODELS`, or an admin delete and the guest cleanup will both miss it. `DictationFavorite` is listed with `ownerField: 'userId'` although that field is an `ObjectId`; Mongoose casts the string id in `deleteMany`.
+
 ### 6.3 Legacy guest rows
 
-Guest mode (anonymous `guest_...` owner ids) was removed; nothing reads or writes such ids any more and no merge into an account exists. Rows an earlier version left under a `guest_...` `userId` / `ownerId` may still exist until the one-off cleanup script runs: `bun run auth:drop-guest-data` is a dry run that counts them per collection, and `--apply --i-am-sure` deletes them (`scripts/dropGuestData.ts`, pure planner `scripts/lib/guestCleanup.ts`). Collection names come from the models, and the delete cannot be undone.
+Guest mode (anonymous `guest_...` owner ids) was removed; nothing reads or writes such ids any more and no merge into an account exists. Rows an earlier version left under a `guest_...` `userId` / `ownerId` may still exist until the one-off cleanup script runs: `bun run auth:drop-guest-data` is a dry run that counts them per collection, and `--apply --i-am-sure` deletes them (`scripts/dropGuestData.ts`, pure planner `scripts/lib/guestCleanup.ts`). Its targets are built from `USER_OWNED_MODELS` (section 6.2), so collection names and owner fields come from the models, and the delete cannot be undone. `DictationFavorite` and `IeltsGradingLedger` are expected to hold 0 guest rows (guests could not favorite or grade) but stay in the list so a stray row cannot survive.
 
 ## 7. Idempotency
 

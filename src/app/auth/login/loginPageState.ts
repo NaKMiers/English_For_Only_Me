@@ -1,9 +1,10 @@
 import type { LoginNotice } from '@/components/auth/LoginCard'
+import { ACCOUNT_LOCKED_ERROR } from '@/lib/auth/callbackUrl'
 
 /**
  * The notice for Auth.js's `?error=` code. AccessDenied is the learner (or
- * Google) saying no; Configuration is the server's setup; every other code
- * reads as a plain "try again".
+ * Google) saying no; AccountLocked is an admin's lock; Configuration is the
+ * server's setup; every other code reads as a plain "try again".
  */
 export function noticeForError(
   error: string | null | undefined,
@@ -12,6 +13,7 @@ export function noticeForError(
   if (!configured) return 'notConfigured'
   if (!error) return null
   if (error === 'AccessDenied') return 'accessDenied'
+  if (error === ACCOUNT_LOCKED_ERROR) return 'locked'
   if (error === 'Configuration') return 'notConfigured'
 
   return 'generic'

@@ -1,20 +1,7 @@
 import mongoose, { disconnect } from 'mongoose'
 
 import { connectDatabase } from '@/lib/db/connectDatabase'
-import { DictationAttemptModel } from '@/models/dictation/DictationAttemptModel'
-import { DictationDebriefModel } from '@/models/dictation/DictationDebriefModel'
-import { DictationFavoriteModel } from '@/models/dictation/DictationFavoriteModel'
-import { DictationReviewItemModel } from '@/models/dictation/DictationReviewItemModel'
-import { DictationSessionModel } from '@/models/dictation/DictationSessionModel'
-import { GrammarCardMissModel } from '@/models/grammar/GrammarCardMissModel'
-import { GrammarLessonProgressModel } from '@/models/grammar/GrammarLessonProgressModel'
-import { GrammarSessionModel } from '@/models/grammar/GrammarSessionModel'
-import { GrammarUnitProgressModel } from '@/models/grammar/GrammarUnitProgressModel'
-import { IeltsAttemptModel } from '@/models/ielts/IeltsAttemptModel'
-import { IeltsGradingLedgerModel } from '@/models/ielts/IeltsGradingLedgerModel'
-import { UserVocabItemModel } from '@/models/vocabulary/UserVocabItemModel'
-import { VocabOccurrenceModel } from '@/models/vocabulary/VocabOccurrenceModel'
-import { VocabRecallAttemptModel } from '@/models/vocabulary/VocabRecallAttemptModel'
+import { USER_OWNED_MODELS } from '@/models/userOwnedModels'
 
 import {
   type GuestCleanupTarget,
@@ -35,37 +22,14 @@ import {
  *   bun run auth:drop-guest-data --apply --i-am-sure  # deletes the rows
  */
 
-const userOwned = [
-  DictationSessionModel,
-  DictationAttemptModel,
-  DictationReviewItemModel,
-  DictationDebriefModel,
-  // Guests could not favorite; listed so a stray row cannot survive.
-  DictationFavoriteModel,
-  GrammarLessonProgressModel,
-  GrammarUnitProgressModel,
-  GrammarCardMissModel,
-  GrammarSessionModel,
-  UserVocabItemModel,
-  VocabOccurrenceModel,
-  VocabRecallAttemptModel,
-]
-const ownerOwned = [
-  IeltsAttemptModel,
-  // Guests could not grade, so this is expected to be 0.
-  IeltsGradingLedgerModel,
-]
-
-const TARGETS: GuestCleanupTarget[] = [
-  ...userOwned.map(model => ({
+// Guests could not favorite or grade, so those collections are expected to
+// hold 0 guest rows; they stay in the list so a stray row cannot survive.
+const TARGETS: GuestCleanupTarget[] = USER_OWNED_MODELS.map(
+  ({ model, ownerField }) => ({
     collection: model.collection.name,
-    ownerField: 'userId' as const,
-  })),
-  ...ownerOwned.map(model => ({
-    collection: model.collection.name,
-    ownerField: 'ownerId' as const,
-  })),
-]
+    ownerField,
+  })
+)
 
 async function main() {
   const { apply } = parseGuestCleanupArgs(process.argv.slice(2))

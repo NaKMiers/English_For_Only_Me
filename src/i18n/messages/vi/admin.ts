@@ -6,6 +6,7 @@ export const admin: Messages['admin'] = {
     admin: 'Quản trị',
     dictation: 'Quản trị · Chép chính tả',
     vocab: 'Quản trị · Bổ sung từ vựng',
+    users: 'Quản trị · Người dùng',
     importDesk: 'Dictation Lab · Nhập video',
     editDesk: 'Dictation Lab · Chỉnh sửa',
   },
@@ -31,6 +32,10 @@ export const admin: Messages['admin'] = {
       vocab: {
         title: 'Từ vựng',
         desc: 'Khởi tạo và bổ sung kho từ vựng dùng chung.',
+      },
+      users: {
+        title: 'Người dùng',
+        desc: 'Xem ai đăng nhập, luyện tập bao nhiêu; khóa hoặc xóa tài khoản.',
       },
     },
   },
@@ -63,6 +68,78 @@ export const admin: Messages['admin'] = {
   },
   vocabPage: {
     metaTitle: 'Quản trị từ vựng',
+  },
+  users: {
+    metaTitle: 'Quản trị · Người dùng',
+    title: 'Người dùng',
+    subtitle: 'Tất cả những ai đã đăng nhập bằng Google.',
+    summary: {
+      total: 'Người dùng',
+      activeThisWeek: 'Hoạt động tuần này',
+      locked: 'Đã khóa',
+      admins: 'Quản trị viên',
+    },
+    searchLabel: 'Tìm người dùng',
+    searchPlaceholder: 'Tìm theo tên hoặc email',
+    sortLabel: 'Sắp xếp người dùng',
+    sorts: {
+      recent: 'Đăng nhập gần nhất',
+      newest: 'Mới tham gia',
+      name: 'Tên',
+      active: 'Luyện nhiều nhất',
+    },
+    showing: { one: '{count} người dùng', other: '{count} người dùng' },
+    empty: 'Chưa có ai đăng nhập.',
+    noMatch: 'Không có người dùng nào khớp với "{query}".',
+    noName: 'Chưa có tên',
+    never: 'Chưa bao giờ',
+    openUser: 'Mở {name}',
+    role: { admin: 'Quản trị' },
+    status: { locked: 'Đã khóa' },
+    activity: {
+      dictation: 'Buổi nghe chép',
+      grammar: 'Bài ngữ pháp',
+      ielts: 'Lượt làm IELTS',
+      vocabulary: 'Từ trong bộ thẻ',
+    },
+    detail: {
+      joined: 'Tham gia',
+      lastLogin: 'Đăng nhập gần nhất',
+      lockedSince: 'Bị khóa từ',
+      practice: 'Luyện tập',
+      manage: 'Quản lý tài khoản',
+      lock: 'Khóa tài khoản',
+      lockHint:
+        'Người này không đăng nhập được nữa, phiên đang dùng sẽ kết thúc trong vòng một phút.',
+      unlock: 'Mở khóa tài khoản',
+      unlockHint: 'Người này có thể đăng nhập lại bằng Google.',
+      lockTitle: 'Khóa {name}?',
+      lockDescription:
+        'Người này không đăng nhập được cho tới khi bạn mở khóa. Dữ liệu luyện tập vẫn được giữ.',
+      unlockTitle: 'Mở khóa {name}?',
+      unlockDescription: 'Người này có thể đăng nhập lại bằng Google ngay.',
+      delete: 'Xóa tài khoản',
+      deleteHint:
+        'Xóa tài khoản và toàn bộ dữ liệu luyện tập. Không thể hoàn tác.',
+      deleteTitle: 'Xóa vĩnh viễn {name}?',
+      deleteDescription:
+        'Mọi buổi nghe chép, bài ngữ pháp, lượt làm IELTS và từ đã lưu của tài khoản này sẽ bị xóa. Không thể hoàn tác.',
+      deleteConfirmLabel: 'Gõ {email} để xác nhận',
+      deleteConfirm: 'Xóa vĩnh viễn',
+      protectedSelf:
+        'Đây là tài khoản của bạn, nên bạn không thể khóa hay xóa nó ở đây.',
+      protectedAdmin:
+        'Quản trị viên được khai báo trong ADMIN_EMAILS. Hãy bỏ email này khỏi đó trước khi khóa hoặc xóa tài khoản.',
+      locked: 'Đã khóa tài khoản.',
+      unlocked: 'Đã mở khóa tài khoản.',
+    },
+    errors: {
+      notFound: 'Người dùng này không còn tồn tại.',
+      self: 'Bạn không thể khóa hoặc xóa tài khoản của chính mình.',
+      admin: 'Không thể khóa hoặc xóa quản trị viên ở đây.',
+      confirmMismatch: 'Email bạn gõ không khớp.',
+      failed: 'Chưa thực hiện được. Vui lòng thử lại.',
+    },
   },
   confirm: {
     defaultTitle: 'Bạn chắc chứ?',

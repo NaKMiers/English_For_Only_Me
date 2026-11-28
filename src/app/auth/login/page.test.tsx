@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
+  block: null as string | null,
   configured: true,
   user: null as { id: string } | null,
   redirect: vi.fn((url: string) => {
@@ -18,6 +19,7 @@ vi.mock('next/headers', () => ({
 }))
 vi.mock('@/lib/auth/currentUser', () => ({
   getOptionalUser: async () => mocks.user,
+  getSessionBlock: async () => mocks.block,
 }))
 vi.mock('@/constants/environments', async importOriginal => ({
   ...(await importOriginal<typeof import('@/constants/environments')>()),
@@ -33,6 +35,16 @@ async function renderPage(params: Record<string, string> = {}) {
 }
 
 beforeEach(() => {
+  // The hero reads prefers-reduced-motion; jsdom has no matchMedia.
+  vi.stubGlobal(
+    'matchMedia',
+    vi.fn(() => ({
+      matches: true,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    }))
+  )
+  mocks.block = null
   mocks.configured = true
   mocks.user = null
   mocks.redirect.mockClear()
@@ -68,6 +80,11 @@ describe('LoginPage', () => {
     expect(document.querySelector('input[name=callbackUrl]')).toHaveValue(
       '/dictation'
     )
+    // The hero beside the form is decoration only.
+    expect(screen.getByTestId('login-hero')).toHaveAttribute(
+      'aria-hidden',
+      'true'
+    )
   })
 
   it('fails closed when Google sign-in is not configured', async () => {
@@ -97,9 +114,19 @@ describe('LoginPage', () => {
 })
 
 describe('noticeForError', () => {
+  it('tells a locked learner why even without an error code', async () => {
+    mocks.block = 'locked'
+    await renderPage()
+
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'This account has been locked'
+    )
+  })
+
   it('maps the Auth.js codes', () => {
     expect(noticeForError(undefined, true)).toBeNull()
     expect(noticeForError('AccessDenied', true)).toBe('accessDenied')
+    expect(noticeForError('AccountLocked', true)).toBe('locked')
     expect(noticeForError('Configuration', true)).toBe('notConfigured')
     expect(noticeForError('Verification', true)).toBe('generic')
     expect(noticeForError(null, false)).toBe('notConfigured')

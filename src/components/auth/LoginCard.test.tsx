@@ -11,7 +11,7 @@ vi.mock('react-dom', async importOriginal => ({
 const { LoginCard } = await import('./LoginCard')
 
 describe('LoginCard', () => {
-  it('shows the name, tagline, four module chips and the one button', () => {
+  it('shows the brand, the welcome, the one button and the reassurance', () => {
     formStatus.pending = false
     const { container } = render(
       <LoginCard
@@ -22,12 +22,11 @@ describe('LoginCard', () => {
     )
 
     expect(
-      screen.getByRole('heading', { level: 1, name: 'English For Only Me' })
+      screen.getByRole('heading', { level: 1, name: 'Welcome back' })
     ).toBeVisible()
-    expect(screen.getByText(/Your private English study board/)).toBeVisible()
-    expect(
-      screen.getAllByRole('listitem').map(item => item.textContent)
-    ).toEqual(['Dictation', 'Grammar', 'IELTS', 'Vocab'])
+    expect(screen.getByText('English For Only Me')).toBeVisible()
+    expect(screen.getByText(/Listen, write and remember/)).toBeVisible()
+    expect(screen.getByText(/Google is the only way in/)).toBeVisible()
     expect(screen.getAllByRole('button')).toHaveLength(1)
     expect(
       screen.getByRole('button', { name: 'Continue with Google' })
@@ -36,8 +35,8 @@ describe('LoginCard', () => {
       container.querySelector('input[type=hidden][name=callbackUrl]')
     ).toHaveValue('/grammar')
     expect(screen.queryByRole('alert')).toBeNull()
-    // Buddy is the page's largest paint, so it must not wait to lazy-load.
-    expect(container.querySelector('img[data-mood=ready]')).toHaveAttribute(
+    // The logo sits above the fold, so it must not wait to lazy-load.
+    expect(container.querySelector('img[src*="logo"]')).toHaveAttribute(
       'loading',
       'eager'
     )
@@ -86,6 +85,21 @@ describe('LoginCard', () => {
 
     expect(screen.getByRole('alert')).toHaveTextContent(
       'Google sign-in was cancelled'
+    )
+    expect(screen.getByRole('button')).toBeEnabled()
+  })
+
+  it('tells a locked learner why, and keeps the button', () => {
+    render(
+      <LoginCard
+        callbackUrl="/"
+        configured
+        notice="locked"
+      />
+    )
+
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'This account has been locked'
     )
     expect(screen.getByRole('button')).toBeEnabled()
   })

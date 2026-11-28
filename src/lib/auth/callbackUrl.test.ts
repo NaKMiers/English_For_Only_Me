@@ -30,6 +30,23 @@ describe('safeCallbackUrl', () => {
       expect(safeCallbackUrl(raw, ORIGIN)).toBe('/')
   })
 
+  it('rejects dot segments that normalize into a protocol-relative path', () => {
+    for (const raw of [
+      '/.//evil.example',
+      '/..//evil.example',
+      '/a/..//evil.example',
+      '/%2e//evil.example',
+      `${ORIGIN}/.//evil.example`,
+    ])
+      expect(safeCallbackUrl(raw, ORIGIN)).toBe('/')
+
+    expect(loginUrlFor('/.//evil.example')).toBe('/auth/login')
+  })
+
+  it('still resolves harmless dot segments to a same-origin path', () => {
+    expect(safeCallbackUrl('/grammar/../dictation')).toBe('/dictation')
+  })
+
   it('rejects an absolute URL when the origin is unknown', () => {
     expect(safeCallbackUrl(`${ORIGIN}/grammar`)).toBe('/')
   })

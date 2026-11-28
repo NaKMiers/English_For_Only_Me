@@ -108,3 +108,16 @@ here; this is the single canonical copy (no Claude-side duplicate).
   parallel writers (07; 02+06; 03+05+08; 04) took 1 to 3 minutes; the driver
   did 01, 09 and README. Gap a writer found and the session fixed: dictation
   and vocabulary error mappers turned `InvalidOwnerKeyError` into 500.
+- 2026-11-28: login page redesign (`LoginHero` + `LoginCard`, `.login-*` CSS)
+  and admin user management (lock / unlock / delete). New mappings:
+  `src/modules/admin/**` and `src/lib/auth/accountStatus.ts` -> 07 (section 2
+  "Admin user management") + 02 + 03 (User `status`/`lockedAt`);
+  `src/components/admin/**` and `src/app/admin/users/**` -> 06 (7.4) + 02;
+  admin server actions with no route -> 04 section 8 "Server actions";
+  `src/models/userOwnedModels.ts` (`USER_OWNED_MODELS`, the one list of
+  per-user collections) -> 03 6.2 + 07 8. Two parallel writers (07+03;
+  06+02+04) took about 3 minutes; the driver did 01 and README. Writers
+  found real gaps that the session fixed before commit (admin list page and
+  detail metadata lacked `requireAdmin`; a deleted account showed the
+  locked notice; unused i18n keys). Baseline left at 4fdcc8c because other
+  sessions' commits on main since then were not synced by this run.

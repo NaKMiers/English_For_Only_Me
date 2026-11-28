@@ -63,8 +63,17 @@ export const common: Messages['common'] = {
   auth: {
     loginMetaTitle: 'Đăng nhập',
     loginTitle: 'English For Only Me',
+    loginHeading: 'Chào mừng bạn quay lại',
     loginTagline:
-      'Góc học tiếng Anh riêng của bạn. Đăng nhập để học tiếp từ chỗ đã dừng.',
+      'Mỗi ngày nghe, viết và nhớ thêm một chút. Đăng nhập để học tiếp đúng chỗ bạn đã dừng.',
+    loginFootnote: 'Chỉ đăng nhập bằng Google, không cần nhớ mật khẩu.',
+    loginHeroNowPlaying: 'Nghe chép',
+    loginModuleHints: {
+      dictation: 'Nghe rồi gõ lại',
+      vocabulary: 'Từ vựng nhớ lâu',
+      grammar: 'Lộ trình 12 bài',
+      ielts: 'Đề thi thử band 7+',
+    },
     continueWithGoogle: 'Tiếp tục với Google',
     openingGoogle: 'Đang mở Google...',
     notConfigured:
@@ -72,6 +81,7 @@ export const common: Messages['common'] = {
     errorAccessDenied:
       'Đăng nhập Google đã bị huỷ hoặc không được cho phép. Hãy thử lại.',
     errorGeneric: 'Đăng nhập chưa thành công. Vui lòng thử lại.',
+    errorLocked: 'Tài khoản này đã bị khóa. Hãy liên hệ chủ trang.',
     signOut: 'Đăng xuất',
     signOutTitle: 'Đăng xuất?',
     signOutDescription: 'Bạn sẽ đăng xuất khỏi English For Only Me.',

@@ -9,6 +9,8 @@ interface Props {
   /** Load at once: Buddy is the page's largest paint (the login card). */
   eager?: boolean
   mood: BuddyMood
+  /** Rendered width hint for `next/image`; the default fits the home card. */
+  sizes?: string
 }
 
 /**
@@ -16,7 +18,12 @@ interface Props {
  * mood (`public/buddy/<mood>.png`, 512px with a transparent background).
  * Purely decorative: the card names the mood in text beside it.
  */
-export function HomeBuddyMascot({ className, eager = false, mood }: Props) {
+export function HomeBuddyMascot({
+  className,
+  eager = false,
+  mood,
+  sizes = '176px',
+}: Props) {
   return (
     <Image
       src={`/buddy/${mood}.png`}
@@ -25,7 +32,7 @@ export function HomeBuddyMascot({ className, eager = false, mood }: Props) {
       width={512}
       height={512}
       loading={eager ? 'eager' : undefined}
-      sizes="176px"
+      sizes={sizes}
       data-mood={mood}
       className={cn('buddy-bob object-contain', className)}
     />

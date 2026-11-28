@@ -2,16 +2,20 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { toClientOwnerKey } from './clientOwnerKey'
 
-const { auth, headerValue, memoized, redirect } = vi.hoisted(() => ({
-  auth: vi.fn(),
-  headerValue: { current: null as string | null },
-  memoized: [] as unknown[],
-  redirect: vi.fn((url: string) => {
-    throw new Error(`NEXT_REDIRECT ${url}`)
-  }),
-}))
+const { auth, getAccountBlock, headerValue, memoized, redirect } = vi.hoisted(
+  () => ({
+    auth: vi.fn(),
+    getAccountBlock: vi.fn(async (): Promise<string | null> => null),
+    headerValue: { current: null as string | null },
+    memoized: [] as unknown[],
+    redirect: vi.fn((url: string) => {
+      throw new Error(`NEXT_REDIRECT ${url}`)
+    }),
+  })
+)
 
 vi.mock('@/lib/auth/auth', () => ({ auth }))
+vi.mock('@/lib/auth/accountStatus', () => ({ getAccountBlock }))
 vi.mock('next/headers', () => ({
   headers: async () =>
     new Headers(
@@ -62,6 +66,8 @@ function signIn(id = USER_ID, role = 'user') {
 
 beforeEach(() => {
   auth.mockReset()
+  getAccountBlock.mockReset()
+  getAccountBlock.mockResolvedValue(null)
   redirect.mockClear()
   headerValue.current = null
   for (const clear of memo.clear) clear()
@@ -165,5 +171,41 @@ describe('requireAdmin', () => {
     for (const clear of memo.clear) clear()
     signIn(USER_ID, 'admin')
     await expect(requireAdmin()).resolves.toMatchObject({ role: 'admin' })
+  })
+})
+
+describe('a locked or deleted account', () => {
+  it('reads as signed out everywhere', async () => {
+    signIn()
+    getAccountBlock.mockResolvedValue('locked')
+
+    await expect(getOptionalUser()).resolves.toBeNull()
+    await expect(requireUser()).rejects.toBeInstanceOf(UnauthenticatedError)
+    expect(getAccountBlock).toHaveBeenCalledWith(USER_ID)
+  })
+
+  it('sends a locked account to the login page with the locked notice', async () => {
+    signIn()
+    getAccountBlock.mockResolvedValue('locked')
+
+    await expect(requirePageUser('/grammar')).rejects.toThrow(
+      'NEXT_REDIRECT /auth/login?error=AccountLocked'
+    )
+  })
+
+  it('sends a deleted account to the plain login page', async () => {
+    signIn()
+    getAccountBlock.mockResolvedValue('deleted')
+
+    await expect(requirePageUser('/grammar')).rejects.toThrow(
+      'NEXT_REDIRECT /auth/login?callbackUrl=%2Fgrammar'
+    )
+  })
+
+  it('is not looked up without a session', async () => {
+    auth.mockResolvedValue(null)
+
+    await expect(getOptionalUser()).resolves.toBeNull()
+    expect(getAccountBlock).not.toHaveBeenCalled()
   })
 })

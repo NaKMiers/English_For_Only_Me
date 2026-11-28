@@ -114,16 +114,17 @@ weight.
 All motion lives in `src/app/globals.css` and respects
 `prefers-reduced-motion` (no movement, or opacity only).
 
-| Utility                                           | Behaviour                                                                                                                            |
-| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `page-enter` / `page-enter-quick`                 | Route entrance on `main` (`soft-rise` 320ms, or a 140ms fade on work screens).                                                       |
-| `motion-stagger`                                  | Children rise in one after another (cards, tiles, lists).                                                                            |
-| `motion-grow-x` / `motion-grow-y` / `motion-draw` | Progress bars, bar charts and sparklines ease in.                                                                                    |
-| `hover-pop`                                       | Everything clickable rises 2px with a soft shadow on hover; static blocks never get it (`hover-lift` was removed).                   |
-| `soft-press`                                      | Pressable controls squish slightly on press; unlayered so it beats `transition-all` from `buttonVariants`.                           |
-| View transitions                                  | `::view-transition-old/new(root)` cross-fade the theme switch in 320ms.                                                              |
-| `ring-owned-focus`                                | Opts a field out of the global focus outline when its rounded wrapper draws the ring with `focus-within` (the dictation answer box). |
-| `marker`                                          | Highlighter-pen background for an emphasised phrase ("made for you" on the home plan).                                               |
+| Utility                                           | Behaviour                                                                                                                                                                                                                                                                   |
+| ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `page-enter` / `page-enter-quick`                 | Route entrance on `main` (`soft-rise` 320ms, or a 140ms fade on work screens).                                                                                                                                                                                              |
+| `motion-stagger`                                  | Children rise in one after another (cards, tiles, lists).                                                                                                                                                                                                                   |
+| `motion-grow-x` / `motion-grow-y` / `motion-draw` | Progress bars, bar charts and sparklines ease in.                                                                                                                                                                                                                           |
+| `hover-pop`                                       | Everything clickable rises 2px with a soft shadow on hover; static blocks never get it (`hover-lift` was removed).                                                                                                                                                          |
+| `soft-press`                                      | Pressable controls squish slightly on press; unlayered so it beats `transition-all` from `buttonVariants`.                                                                                                                                                                  |
+| View transitions                                  | `::view-transition-old/new(root)` cross-fade the theme switch in 320ms.                                                                                                                                                                                                     |
+| `ring-owned-focus`                                | Opts a field out of the global focus outline when its rounded wrapper draws the ring with `focus-within` (the dictation answer box).                                                                                                                                        |
+| `marker`                                          | Highlighter-pen background for an emphasised phrase ("made for you" on the home plan).                                                                                                                                                                                      |
+| Login hero (`.login-*`)                           | `LoginHero` only (section 4.2): `.login-hero` aurora, `.login-hero-grid`, `.login-glass`; motion `.login-orb` (`login-drift`), `.login-float` (`login-float`), `.login-rise` (`soft-rise` with `--rise-delay`), `.login-caret` (`login-caret`). Still under reduced motion. |
 
 Primitive dialogs, sheets, dropdowns, selects, tabs, collapsibles and the
 progress bar carry their own soft open / close transitions in
@@ -275,25 +276,56 @@ baselines only shrink.
 `/auth/login` (`src/app/auth/login/page.tsx`, a server page with
 `dynamic = 'force-dynamic'`) is the only page a visitor can see without a session. It sits
 outside the `(app)` group and renders no `PageShell`: no rail, no tab bar, no topbar and no
-`OutboxOwnerProvider`. It is a `bg-canvas` page with `LocaleToggle variant="round"` and
-`ThemeToggle` top right, a centred `LoginCard`, and `AppCredits` at the foot. The page
-logic (redirect of a signed-in visitor, `callbackUrl` and `?error=` handling) is in
-[02](./02-architecture.md) section 6; `loginPageState.ts` maps the error code to a notice.
+`OutboxOwnerProvider`. It is a `bg-canvas` grid, one column on phones and two from `lg`
+(`lg:grid-cols-[minmax(0,1.08fr)_minmax(0,1fr)]`): the decorative `LoginHero` on the left
+(sticky and full height from `lg`, a short `h-[300px] sm:h-[420px]` band on top below
+that), the `LoginCard` on the right with `AppCredits` at its foot. `LocaleToggle
+variant="round"` and `ThemeToggle` float top right (`absolute`, `z-10`). The page logic
+(redirect of a signed-in visitor, `callbackUrl` and `?error=` handling) is in
+[02](./02-architecture.md) section 6; `loginPageState.ts` maps the error code to a notice
+(`AccessDenied`, `AccountLocked` from `ACCOUNT_LOCKED_ERROR`, `Configuration`, anything
+else).
+
+```mermaid
+graph LR
+  Page["auth/login/page.tsx (server)"] --> Hero["LoginHero (client, aria-hidden)"]
+  Page --> Card["LoginCard (client)"]
+  Page --> Toggles["LocaleToggle round + ThemeToggle (top right)"]
+  Page --> Credits["AppCredits"]
+  Hero --> Buddy["HomeBuddyMascot mood=happy"]
+  Hero --> Cards["4 floating glass module cards"]
+  Hero --> Strip["dictation strip (LOGIN_HERO_SENTENCES)"]
+  Card --> Form["form action=signInAction"]
+```
+
+`src/components/auth/LoginHero.tsx` (client) is pure decoration, so the whole block is
+`aria-hidden="true"` (the card beside it carries every word that matters):
+
+| Part            | What it is                                                                                                                                                                                                                                                                                                                                                  |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Backdrop        | `.login-hero` pastel aurora (radial gradients of `--pastel-sky`, `--brand-soft`, `--pastel-peach` and `--pastel-mint` over `--pastel-lilac`), a `.login-hero-grid` dot grid masked towards the edges and three blurred `.login-orb` spans drifting (`login-drift`, per-orb `--drift-*` values). Rounded `rounded-shell` from `lg`, `rounded-b-panel` below. |
+| Buddy           | `HomeBuddyMascot mood="happy"`, `eager`, large (`size-36` up to `xl:size-72`) with a matching `sizes` hint, on a soft halo and ring.                                                                                                                                                                                                                        |
+| Module cards    | `FLOATING_CARDS`: dictation, grammar, vocabulary and IELTS as `.login-glass` pills around Buddy, each with its `MODULE_ICONS` icon in its `MODULE_THEMES` tint, `common.modules[key].shortTitle` and a hint (`common.auth.loginModuleHints[key]`, from `sm`). Phones show only dictation and IELTS.                                                         |
+| Dictation strip | From `sm`, a glass strip at the foot: headphones, the `loginHeroNowPlaying` label and `useTypedSentence` typing `LOGIN_HERO_SENTENCES` (English practice data in both UI languages) letter by letter with a `.login-caret`, holding each finished line with a tick before the next.                                                                         |
+| Reduced motion  | `useReducedMotion()` (`src/lib/motion/useReducedMotion.ts`): the strip shows the first sentence, finished; the CSS keeps orbs, cards and caret still.                                                                                                                                                                                                       |
 
 `src/components/auth/LoginCard.tsx` (client, because the button needs `useFormStatus`) is
-one `bg-surface` panel, in order:
+the right half, a bare `max-w-md` column (no panel), in order:
 
-| Part           | What it is                                                                                                                                                                                                                                                                                                           |
-| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Buddy          | `HomeBuddyMascot mood="ready"`, decorative.                                                                                                                                                                                                                                                                          |
-| Title, tagline | App name as the h1 (`common.auth.loginTitle`) and one `text-ink-soft` line (`loginTagline`).                                                                                                                                                                                                                         |
-| Module chips   | The four modules as static pills tinted from `MODULE_THEMES` (tint and accent) with `MODULE_ICONS` and `common.modules[key].shortTitle`; not links and no hover pop.                                                                                                                                                 |
-| Button         | The page's one `cta`: `ActionButton tone="ink"` "Continue with Google" with an inline Google "G" mark, in a `<form action={signInAction}>` with a hidden, already sanitised `callbackUrl`. While the form posts it is disabled and reads "Opening Google..." (`aria-busy`), so a double click starts one round trip. |
-| Notice         | `InlineNotice` for `?error=` (`AccessDenied`, `Configuration`, any other code) or when Google OAuth is not configured; in that case there is no button (fail closed).                                                                                                                                                |
+| Part             | What it is                                                                                                                                                                                                                                                                                                                                                                                          |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Brand            | `/logo.png` (44px, decorative) and the app name (`common.auth.loginTitle`).                                                                                                                                                                                                                                                                                                                         |
+| Heading, tagline | A large h1 (`loginHeading`, `id="login-title"`, the section's label) and one `text-ink-soft` line (`loginTagline`).                                                                                                                                                                                                                                                                                 |
+| Button           | The page's one call to action: a custom tall (`min-h-14`) `bg-cta` pill with Google's "G" mark in a white disc, the label and an `ArrowRight` that slides on hover, in a `<form action={signInAction}>` with a hidden, already sanitised `callbackUrl`. While the form posts it is disabled, reads "Opening Google..." (`aria-busy`) and the arrow pulses, so a double click starts one round trip. |
+| Notice           | `InlineNotice` for `?error=` (`accessDenied`, `locked`, `generic` as errors; `locked` also when the session's account is locked, via `getSessionBlock`) or when Google OAuth is not configured (`notConfigured`, info tone); in that case there is no button (fail closed).                                                                                                                         |
+| Footnote         | With the button only: a `ShieldCheck` and `loginFootnote` (Google is the only way in).                                                                                                                                                                                                                                                                                                              |
 
-All text is the `common.auth.*` catalogue (`loginMetaTitle`, `loginTitle`, `loginTagline`,
-`continueWithGoogle`, `openingGoogle`, `notConfigured`, `errorAccessDenied`,
-`errorGeneric`). The page title uses `loginMetaTitle` and `robots: { index: false }`.
+Brand, heading and button group enter with `.login-rise` on staggered `--rise-delay`s.
+All text is the `common.auth.*` catalogue (`loginMetaTitle`, `loginTitle`, `loginHeading`,
+`loginTagline`, `loginFootnote`, `loginHeroNowPlaying`, `loginModuleHints.{dictation,
+vocabulary,grammar,ielts}`, `continueWithGoogle`, `openingGoogle`, `notConfigured`,
+`errorAccessDenied`, `errorLocked`, `errorGeneric`). The page title uses `loginMetaTitle`
+and `robots: { index: false }`.
 
 ---
 
@@ -307,20 +339,22 @@ needs a Google session: `src/proxy.ts` sends a visitor without one to
 (`src/lib/auth/currentUser.ts`) as a second check. Learner data is scoped by `user.id`;
 see `docs/07-auth-infra-testing.md`.
 
-| URL                                           | File                                                    | Purpose                                                                                                                                                                              | Auth      |
-| --------------------------------------------- | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------- |
-| `/auth/login`                                 | `src/app/auth/login/page.tsx`                           | The login card: Continue with Google, or a redirect to `callbackUrl` when already signed in (section 4.2).                                                                           | Public    |
-| `/`                                           | `src/app/page.tsx`                                      | Home (`HomeStudyDesk`): simple view (up next, next stop, numbers, buddy) or the full view.                                                                                           | Signed in |
-| `/dictation`                                  | `src/app/(app)/dictation/page.tsx`                      | Dictation landing: listening journey card, side drawer (recent, favorites), record shelves.                                                                                          | Signed in |
-| `/dictation/[topicSlug]`                      | `src/app/(app)/dictation/[topicSlug]/page.tsx`          | Topic record card, then sections (accordion) or filtered flat results.                                                                                                               | Signed in |
-| `/dictation/favorites`, `/dictation/no-topic` | `src/app/(app)/dictation/{favorites,no-topic}/page.tsx` | Favourites and uncategorised lessons.                                                                                                                                                | Signed in |
-| `/dictation/videos/[videoId]/practice`        | `.../practice/page.tsx`                                 | Practice (`DictationPracticeShell`, full height).                                                                                                                                    | Signed in |
-| `/dictation/videos/[videoId]/results`         | `.../results/page.tsx`                                  | Per-video results, AI debrief, weak segments.                                                                                                                                        | Signed in |
-| `/dictation/review`                           | `src/app/(app)/dictation/review/page.tsx`               | Due review queue with one Start review.                                                                                                                                              | Signed in |
-| `/vocabulary`, `/vocabulary/words`            | `src/app/(app)/vocabulary/**`                           | Word garden landing; word list with search.                                                                                                                                          | Signed in |
-| `/grammar` and children                       | `src/app/(app)/grammar/**`                              | Grammar path, lesson player, notes, review, weak-spot practice, unit checkpoint.                                                                                                     | Signed in |
-| `/ielts` and children                         | `src/app/(app)/ielts/**`                                | IELTS catalogue, test page, runners (practice, mock, drill), attempt review.                                                                                                         | Signed in |
-| `/admin/**`                                   | `src/app/admin/**`                                      | Admin: dictation content, IELTS editor, vocabulary enrichment. The proxy and `src/app/admin/layout.tsx` send a signed-out visitor to the login page and a non-admin to `/dictation`. | Admin     |
+| URL                                           | File                                                    | Purpose                                                                                                                                                                                     | Auth      |
+| --------------------------------------------- | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
+| `/auth/login`                                 | `src/app/auth/login/page.tsx`                           | Hero and login card: Continue with Google, or a redirect to `callbackUrl` when already signed in (section 4.2).                                                                             | Public    |
+| `/`                                           | `src/app/page.tsx`                                      | Home (`HomeStudyDesk`): simple view (up next, next stop, numbers, buddy) or the full view.                                                                                                  | Signed in |
+| `/dictation`                                  | `src/app/(app)/dictation/page.tsx`                      | Dictation landing: listening journey card, side drawer (recent, favorites), record shelves.                                                                                                 | Signed in |
+| `/dictation/[topicSlug]`                      | `src/app/(app)/dictation/[topicSlug]/page.tsx`          | Topic record card, then sections (accordion) or filtered flat results.                                                                                                                      | Signed in |
+| `/dictation/favorites`, `/dictation/no-topic` | `src/app/(app)/dictation/{favorites,no-topic}/page.tsx` | Favourites and uncategorised lessons.                                                                                                                                                       | Signed in |
+| `/dictation/videos/[videoId]/practice`        | `.../practice/page.tsx`                                 | Practice (`DictationPracticeShell`, full height).                                                                                                                                           | Signed in |
+| `/dictation/videos/[videoId]/results`         | `.../results/page.tsx`                                  | Per-video results, AI debrief, weak segments.                                                                                                                                               | Signed in |
+| `/dictation/review`                           | `src/app/(app)/dictation/review/page.tsx`               | Due review queue with one Start review.                                                                                                                                                     | Signed in |
+| `/vocabulary`, `/vocabulary/words`            | `src/app/(app)/vocabulary/**`                           | Word garden landing; word list with search.                                                                                                                                                 | Signed in |
+| `/grammar` and children                       | `src/app/(app)/grammar/**`                              | Grammar path, lesson player, notes, review, weak-spot practice, unit checkpoint.                                                                                                            | Signed in |
+| `/ielts` and children                         | `src/app/(app)/ielts/**`                                | IELTS catalogue, test page, runners (practice, mock, drill), attempt review.                                                                                                                | Signed in |
+| `/admin/**`                                   | `src/app/admin/**`                                      | Admin: dictation content, IELTS editor, vocabulary enrichment, users. The proxy and `src/app/admin/layout.tsx` send a signed-out visitor to the login page and a non-admin to `/dictation`. | Admin     |
+| `/admin/users`                                | `src/app/admin/users/page.tsx` (+ `loading.tsx`)        | User directory: summary tiles, search, sort, one row per account (section 7.4).                                                                                                             | Admin     |
+| `/admin/users/[userId]`                       | `src/app/admin/users/[userId]/page.tsx`                 | One account: profile, practice per module, lock / unlock and delete (section 7.4). `notFound()` for an unknown id.                                                                          | Admin     |
 
 Module sections below list each module's routes in detail.
 
@@ -497,6 +531,39 @@ calls `importYouTubeVideoApi` (`src/requests/dictationImportsApi.ts`).
 The Import button sits in the dictation admin `PageHeader` actions. Topic and
 section delete items only show when they can run (empty), not disabled with a
 tooltip.
+
+#### Admin dashboard and user management
+
+The admin dashboard (`src/app/admin/page.tsx`) shows one card per tool in a
+`sm:grid-cols-2 lg:grid-cols-4` grid: dictation, IELTS, vocabulary and Users
+(`/admin/users`, `bg-pastel-rose` / `text-accent-pink`, text
+`admin.dashboard.links.users`).
+
+`/admin/users` (`src/app/admin/users/page.tsx`, server) loads every account with
+`listUsersForAdmin()` (`src/modules/admin/users/userAdminService.ts`) when the
+database is configured and passes the rows plus one server `now` to the client
+`UserDirectory`, so relative dates match on both sides. `loading.tsx` renders a
+panel, a row of 4 tiles and a list panel. `/admin/users/[userId]`
+(`src/app/admin/users/[userId]/page.tsx`) calls `requireAdmin()`, loads one row
+with `getUserForAdmin()` (`notFound()` when missing), and renders a profile panel
+(large avatar, name, email, badges, joined / last sign-in / locked since), the
+practice chips (`variant="full"`) and a "Manage account" panel with
+`UserActions block={managementBlock(user, admin.id)}`. Both pages use the
+breadcrumb `PageHeader` (dashboard > Users > name) and `AppTopbar
+subtitle={t.admin.shell.users}`.
+
+| Component                               | File                            | Client? | Role                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| --------------------------------------- | ------------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `UserDirectory`                         | `admin/users/UserDirectory.tsx` | client  | Four summary tiles from `summarizeUsers` (users, active this week, locked, admins), a search box (name or email, case- and accent-insensitive through `filterAndSortUsers`, `useDeferredValue`), a `Segmented` sort (`USER_SORTS`: `recent`, `newest`, `name`, `active`), a live "N users" count, then one `Link` row per account to `/admin/users/<id>` with avatar, name, email, badges, compact practice chips and, from md, the relative last sign-in and join date. Empty and no-match states. |
+| `UserActions`                           | `admin/users/UserActions.tsx`   | client  | Lock / unlock behind a `ConfirmDialog`, delete behind a `Dialog` whose confirm button enables only when the account's email is typed back (`deleteConfirmationMatches`); calls `setUserLockedAction` / `deleteUserAction` in a transition, shows the result in an `InlineNotice`, then refreshes (or replaces to `/admin/users` after a delete). With a `block` (`self`, or an `ADMIN_EMAILS` admin) it renders only an info notice.                                                                |
+| `UserStatusBadges`, `UserActivityChips` | `admin/users/UserBadges.tsx`    | client  | Admin and Locked badges (an active learner gets none); four module chips with counts (dictation sessions, grammar lessons, IELTS attempts, words in the deck) tinted from `MODULE_THEMES`, `compact` (icon and number, label in `title` and `sr-only`) or `full` (tiles).                                                                                                                                                                                                                           |
+| `UserAvatar`                            | `admin/users/UserAvatar.tsx`    | server  | Google photo (`unoptimized`, `referrerPolicy="no-referrer"`) or the first letter on `bg-brand-soft`; `md` or `lg`; decorative.                                                                                                                                                                                                                                                                                                                                                                      |
+
+Text lives in `admin.users.*` (`src/i18n/messages/{en,vi}/admin.ts`: summary,
+search, sorts, activity, `detail.*`, `errors.*`) plus `admin.shell.users`.
+Dates come from `formatRelativeDate` / `formatCalendarDate`
+(`src/modules/admin/users/formatUserDates.ts`). Server side: [02](./02-architecture.md)
+section 6 and [04](./04-api-reference.md) section 8.
 
 ---
 

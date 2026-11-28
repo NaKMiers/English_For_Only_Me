@@ -64,8 +64,17 @@ export const common = {
   auth: {
     loginMetaTitle: 'Sign in',
     loginTitle: 'English For Only Me',
+    loginHeading: 'Welcome back',
     loginTagline:
-      'Your private English study board. Sign in to pick up where you left off.',
+      'Listen, write and remember a little more every day. Sign in to pick up right where you left off.',
+    loginFootnote: 'Google is the only way in. No passwords to remember.',
+    loginHeroNowPlaying: 'Dictation',
+    loginModuleHints: {
+      dictation: 'Listen and type',
+      vocabulary: 'Words that stick',
+      grammar: 'A 12-unit path',
+      ielts: 'Mock tests for band 7+',
+    },
     continueWithGoogle: 'Continue with Google',
     openingGoogle: 'Opening Google...',
     notConfigured:
@@ -73,6 +82,7 @@ export const common = {
     errorAccessDenied:
       'Google sign-in was cancelled or not allowed. Try again.',
     errorGeneric: 'Sign-in did not work. Please try again.',
+    errorLocked: 'This account has been locked. Contact the site owner.',
     signOut: 'Sign out',
     signOutTitle: 'Sign out?',
     signOutDescription: 'You will be signed out of English For Only Me.',

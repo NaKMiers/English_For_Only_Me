@@ -37,6 +37,10 @@ Vietnamese switch. The app degrades gracefully when optional services
   lives per signed-in learner. Writes go through a client outbox, so practice
   survives a flaky network and an expired session (the write is held until
   the learner signs back in).
+- Admins manage users at `/admin/users`: see who signs in and how much they
+  practise, lock or unlock an account (a locked account cannot sign in and is
+  signed out within a minute), or delete an account with all of its data.
+  ADMIN_EMAILS admins and your own account are protected.
 
 ## Audience for these docs
 

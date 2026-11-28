@@ -33,9 +33,10 @@ without loading Mongoose.
   pages never show) and the `authorized` (`authorizePage`), `jwt` and
   `session` callbacks. It is typed `satisfies NextAuthConfig`.
 - `src/lib/auth/auth.ts` - the full Node-runtime instance. It spreads
-  `authConfig`, sets `session: { strategy: 'jwt' }`, and overrides the `jwt`
-  callback with a DB-touching version that provisions the Mongoose user and
-  stamps its id and role. It exports `{ handlers, auth, signIn, signOut }`.
+  `authConfig`, sets `session: { strategy: 'jwt' }`, adds a `signIn` callback
+  that refuses an account an admin locked, and overrides the `jwt` callback
+  with a DB-touching version that provisions the Mongoose user and stamps its
+  id and role. It exports `{ handlers, auth, signIn, signOut }`.
 - `src/proxy.ts` builds its own NextAuth instance from `authConfig` alone
   (`export default auth`). Its matcher is
   `'/((?!api|_next/static|_next/image|.*\\.[a-zA-Z0-9]+$).*)'`: every path
@@ -59,7 +60,7 @@ graph TD
   C --> E[auth / signIn / signOut<br/>root layout, currentUser.ts]
   C --> H[actions.ts, use server<br/>signInAction / signOutAction]
   H --> I[LoginCard<br/>AccountControl]
-  C -. provisionUserOnSignIn .-> F[(MongoDB via Mongoose)]
+  C -. signIn: isEmailLocked<br/>jwt: provisionUserOnSignIn .-> F[(MongoDB via Mongoose)]
   B -. authorized callback only .-> G[/login redirect or admin check, no DB/]
   classDef edge fill:#eef,stroke:#333;
 ```
@@ -92,12 +93,20 @@ sign-out, etc.).
 
   API routes are not matched; they check for themselves (see 1.6).
 
+- `signIn` callback (Node only, `auth.ts`): when Google returns a profile
+  with an email and `isEmailLocked(email)` (`src/lib/auth/accountStatus.ts`)
+  is true, it returns `LOCKED_LOGIN_URL` (`/auth/login?error=AccountLocked`),
+  so Auth.js redirects there instead of creating a session; otherwise `true`.
+  It runs before the `jwt` callback, so a locked account is never
+  re-provisioned. An unknown email passes (a deleted user's next sign-in
+  creates a fresh account, see section 2). Tested in `src/lib/auth/auth.test.ts`.
 - `jwt` callback (DB-free version, `auth.config.ts`): stamps
   `token.role = resolveRole(token.email)` on every pass.
 - `jwt` callback (Node override, `auth.ts`): on sign-in (`user.email` present)
   it calls `provisionUserOnSignIn(...)` (passing `token.sub` as `googleSub`)
   and sets `token.uid` to the Mongo ObjectId. It always ends by refreshing
-  `token.role` from the allowlist. Nothing else happens at sign-in.
+  `token.role` from the allowlist. Apart from the lock check above, nothing
+  else happens at sign-in.
 - `session` callback (`auth.config.ts`): copies `token.uid` into
   `session.user.id` (falling back to the existing id) and recomputes
   `session.user.role` from `token.email`.
@@ -141,20 +150,32 @@ every API route (1.6).
 `src/lib/auth/callbackUrl.ts` holds the return-path rules:
 
 - `LOGIN_PATH` is `/auth/login`; `DEFAULT_CALLBACK_URL` is `/`.
+- `ACCOUNT_LOCKED_ERROR` is `'AccountLocked'`, the app's own `?error=` code;
+  `LOCKED_LOGIN_URL` is `/auth/login?error=AccountLocked`. Both the `signIn`
+  callback (1.2) and `requirePageUser` (1.6) send a locked account there.
 - `safeCallbackUrl(raw, origin?)` is the open-redirect guard. It returns a
   same-origin path (with its query and hash) or falls back to `/`. A plain
   path is accepted; an absolute URL is accepted only when it is on `origin`
   (Auth.js hands the proxy's redirect an absolute `callbackUrl`). Rejected:
   another origin, protocol-relative `//host` and `/\host`, control characters
   and backslashes, the login page itself, anything under `/api`, and garbage.
+  The serialized result is checked again after URL parsing: parsing resolves
+  dot segments, so `/.//evil.com`, `/a/..//evil.com` and `/%2e//evil.com`
+  would otherwise come out as the protocol-relative `//evil.com`; any result
+  that does not start with exactly one `/` falls back to `/`. Harmless dot
+  segments still resolve (`/grammar/../dictation` -> `/dictation`). Covered by
+  `src/lib/auth/callbackUrl.test.ts`.
 - `loginUrlFor(path)` builds `/auth/login?callbackUrl=<encoded path>` (just
   `/auth/login` when the path would be `/`).
 
 The login page is `src/app/auth/login/page.tsx` (`force-dynamic`, `nodejs`
 runtime, `noindex`) with the client `src/components/auth/LoginCard.tsx` and
 `loginPageState.ts` (`noticeForError` maps Auth.js `?error=`: `AccessDenied` ->
-access denied, `Configuration` -> not configured, any other code -> a generic
-"try again"). The page reads this request's own origin from the forwarded
+access denied, `AccountLocked` (`ACCOUNT_LOCKED_ERROR`) -> the `locked` notice,
+`Configuration` -> not configured, any other code -> a generic "try again"). Without
+an error code the page still shows the `locked` notice when the session's
+account is locked (`getSessionBlock()` in `src/lib/auth/currentUser.ts`), so a
+learner bounced there by an API 401 learns why. The page reads this request's own origin from the forwarded
 host headers, sanitises `callbackUrl` with `safeCallbackUrl`, and redirects an
 already signed-in learner straight to it. It fails closed: when
 `hasGoogleAuth()` is false it shows a "not configured" notice and no button,
@@ -170,14 +191,20 @@ deleted with guest mode (every page is behind the sign-in).
 `src/lib/auth/currentUser.ts` (`server-only`; moved from the
 dictation module's `getCurrentUser.ts`) is the shared identity
 seam. It defines `UnauthenticatedError` (status 401) and `ForbiddenError`
-(status 403), and these resolvers:
+(status 403). Every resolver reads one private, React `cache()`-wrapped
+`readSessionAccess()`, which decodes the JWT once per request and returns
+`{ user, block }`: no session -> `{ user: null, block: null }`; a session
+whose account `getAccountBlock(id)` reports as `'locked'` or `'deleted'` ->
+`{ user: null, block }`; otherwise the `CurrentUser` with `block: null`. Sessions are
+JWTs, so a lock cannot revoke an issued cookie; this per-request check is
+what makes it bite (section 2, "Admin user management"). The resolvers:
 
-| Resolver                     | Returns                 | Notes                                                                                                                                                                                                                                                                                                                                                                           |
-| ---------------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `getOptionalUser()`          | `CurrentUser` or `null` | Wrapped in React `cache()` so the JWT is decoded once per request. `null` only on the login page in practice                                                                                                                                                                                                                                                                    |
-| `requireUser()`              | `CurrentUser`           | For Route Handlers and server functions. Throws `UnauthenticatedError` (401) without a session, `InvalidOwnerKeyError` (400) when `session.user.id` is not a 24-hex ObjectId (`assertOwnerKey`), and `OutboxOwnerMismatchError` (409) when the `x-outbox-owner` header names another learner. Callers scope every per-user query to the returned id, never a client-supplied id |
-| `requirePageUser(returnTo?)` | `CurrentUser`           | For Server Components: without a session it `redirect`s to `loginUrlFor(returnTo ?? '/')` instead of throwing                                                                                                                                                                                                                                                                   |
-| `requireAdmin()`             | `CurrentUser`           | `requireUser()` then `ForbiddenError` if `role !== 'admin'`                                                                                                                                                                                                                                                                                                                     |
+| Resolver                     | Returns                 | Notes                                                                                                                                                                                                                                                                                                                                                                                                           |
+| ---------------------------- | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `getOptionalUser()`          | `CurrentUser` or `null` | `readSessionAccess().user`. `null` without a session or when the account is locked or deleted; in practice only on the login page, which therefore does not bounce a locked learner back into the app                                                                                                                                                                                                           |
+| `requireUser()`              | `CurrentUser`           | For Route Handlers and server functions. Throws `UnauthenticatedError` (401) without a session or for a locked/deleted account, `InvalidOwnerKeyError` (400) when `session.user.id` is not a 24-hex ObjectId (`assertOwnerKey`), and `OutboxOwnerMismatchError` (409) when the `x-outbox-owner` header names another learner. Callers scope every per-user query to the returned id, never a client-supplied id |
+| `requirePageUser(returnTo?)` | `CurrentUser`           | For Server Components: a locked account is `redirect`ed to `LOCKED_LOGIN_URL`; a deleted account or no session `redirect`s to `loginUrlFor(returnTo ?? '/')` instead of throwing                                                                                                                                                                                                                                |
+| `requireAdmin()`             | `CurrentUser`           | `requireUser()` then `ForbiddenError` if `role !== 'admin'`                                                                                                                                                                                                                                                                                                                                                     |
 
 `requirePracticeActor`, `PracticeActor` and `getPracticeActorId` no longer
 exist: there is one kind of caller, a signed-in user.
@@ -276,6 +303,85 @@ rail foot by `AppSidebar`) reads it with `useAccount()`: `UserMenu` (with
 sign-out) when signed in, nothing otherwise. There is no sign-in button in the
 app chrome; sign-in lives only on the login page (1.5). `isAdmin` only shapes
 the menu; admin access is still enforced server-side (section 1.6).
+
+### Admin user management
+
+Admins can list every account, open one, lock or unlock it, and delete it with
+all of its data (pages `/admin/users` and `/admin/users/[userId]`; the UI is
+described in `docs/06-frontend.md`). This section covers the authorization and data
+rules. The code is split into a pure half and a database half under
+`src/modules/admin/users/`:
+
+| File                  | Role                                                                                                                                                                                                                                                                                                                          |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `userDirectory.ts`    | Pure: the `AdminUserRow` shape, `filterAndSortUsers` (name/email search, case- and accent-insensitive; sorts `recent`, `newest`, `name`, `active`), `summarizeUsers` (total, active in 7 days, locked, admins), `managementBlock(target, actorId)` (`'self'`, `'admin'` or `null`), `deleteConfirmationMatches(email, typed)` |
+| `userAdminService.ts` | `server-only`, database: `listUsersForAdmin` / `getUserForAdmin` (with per-module activity counts from one grouped `$group` aggregate per module over `DictationSession`, `GrammarLessonProgress`, `IeltsAttempt`, `UserVocabItem`), `setUserLocked`, `deleteUserAndData`                                                     |
+| `userAdminActions.ts` | `'use server'`: `setUserLockedAction(userId, locked)` and `deleteUserAction(userId, typedEmail)`; each calls `requireAdmin()` first and revalidates both admin user pages                                                                                                                                                     |
+| `formatUserDates.ts`  | Relative and calendar date labels for the pages                                                                                                                                                                                                                                                                               |
+
+Authorization and data rules:
+
+- Who: only admins. The proxy and `src/app/admin/layout.tsx` gate the pages
+  (1.6); the detail page and both server actions call `requireAdmin()`
+  themselves, so a forged action call from a non-admin gets `ForbiddenError`.
+- Never yourself, never an admin: `managementBlock` returns `'self'` when the
+  target is the acting admin and `'admin'` when the target's role (derived from
+  `ADMIN_EMAILS`, section 2) is admin. The service re-checks it on every lock,
+  unlock and delete (`loadManageable`), not just the UI. To manage an admin,
+  remove the email from `ADMIN_EMAILS` first.
+- Lock: `setUserLocked` sets `status: 'locked'` and `lockedAt: now` (unlock:
+  `status: 'active'`, `lockedAt: null`, fields in `docs/03-data-model.md`
+  3.1), then `forgetAccountStatus(userId)` so this server instance re-reads at
+  once.
+- Delete: `deleteUserAction` re-checks that the typed email matches the
+  account (`deleteConfirmationMatches`, case and surrounding spaces ignored;
+  the dialog's disabled button is only a convenience). `deleteUserAndData`
+  runs `deleteMany({ [ownerField]: userId })` on every collection in
+  `USER_OWNED_MODELS` (`src/models/userOwnedModels.ts`, 14 collections), then
+  deletes the `User` row and forgets the cached status. Practice rows go
+  first, so a failure part-way leaves the user row and the admin can retry.
+  It cannot be undone; it logs the number of deleted rows.
+- After a delete: the old session reads as blocked (`getAccountBlock` says
+  `'deleted'`), and pages send it to the plain login page, not the locked
+  notice. If the same person signs in with Google again, `signIn` lets an
+  unknown email through and `provisionUserOnSignIn` creates a fresh, empty
+  account with a new ObjectId.
+
+`src/lib/auth/accountStatus.ts` is the enforcement point:
+
+| Export                           | Behavior                                                                                                                                                                                                                                                                                                                                   |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `getAccountBlock(userId, now?)`  | `'locked'`, `'deleted'` (no `User` row) or `null` (`AccountBlock`). In-memory `Map` cache per user id for `ACCOUNT_STATUS_TTL_MS` (60 s), at most 5000 entries (cleared when full). Skips the lookup (returns `null`) without `MONGODB_URI` or for a malformed id (left to `assertOwnerKey`, 400). Fails open on a database error (logged) |
+| `isAccountBlocked(userId, now?)` | `getAccountBlock(...) !== null`                                                                                                                                                                                                                                                                                                            |
+| `isEmailLocked(email)`           | `true` when the `User` with that trimmed, lower-cased email is `locked`. `false` without `MONGODB_URI`. Used by the `signIn` callback                                                                                                                                                                                                      |
+| `forgetAccountStatus(userId)`    | Drops one cached answer; called by `setUserLocked` and `deleteUserAndData`                                                                                                                                                                                                                                                                 |
+| `clearAccountStatusCache()`      | Test seam: empties the cache                                                                                                                                                                                                                                                                                                               |
+
+How a lock takes effect:
+
+```mermaid
+flowchart TD
+  A[Admin clicks Lock<br/>setUserLockedAction] --> B[requireAdmin + managementBlock]
+  B --> C[(User.status = locked<br/>lockedAt = now)]
+  C --> D[forgetAccountStatus userId]
+  D --> E[Learner's next request<br/>readSessionAccess]
+  E --> F{getAccountBlock<br/>cache hit under 60 s?}
+  F -- miss --> G[(User.findById status)]
+  G --> H[block = locked]
+  F -- hit --> H
+  H --> I[Page: requirePageUser<br/>redirect to /auth/login?error=AccountLocked]
+  H --> J[API: requireUser<br/>401 UnauthenticatedError]
+  I --> K[Login page shows the locked notice]
+  L[Learner signs in with Google again] --> M{signIn callback<br/>isEmailLocked?}
+  M -- yes --> I
+  M -- no --> N[jwt callback provisions as usual]
+```
+
+Timing: the cache is per server instance. The instance that served the admin
+action forgets the entry, so the lock bites there on the next request; other
+instances see it once their cached answer is older than 60 s. The proxy only
+decodes the JWT, so it does not see the lock; the layouts and route handlers
+do.
 
 ---
 
@@ -680,9 +786,9 @@ jsdom without the guard aborting the import.
 
 The config has no `include`/`exclude`, so Vitest's defaults apply and
 `.claude/` is not excluded: a run at the repo root also collects any copies
-under `.claude/worktrees/**` (a repo-root `bunx vitest list --filesOnly` lists
-233 files here, `--dir src` lists the 232 under `src/`, but a checkout with
-worktrees lists hundreds more). Always scope the run with `--dir src` (or
+under `.claude/worktrees/**` (this checkout has 252 test files under `src/`
+plus `scripts/lib/guestCleanup.test.ts`, but a checkout with worktrees lists
+hundreds more). Always scope the run with `--dir src` (or
 `--exclude '.claude/**'`).
 
 #### E2E sign-in without Google
@@ -727,7 +833,7 @@ There is no `package.json` script for Playwright.
 
 ### 7.4 Test inventory and style
 
-- `find src -name '*.test.ts' -o -name '*.test.tsx' | wc -l` => 232 co-located
+- `find src -name '*.test.ts' -o -name '*.test.tsx' | wc -l` => 252 co-located
   unit test files.
 - E2E files (each `test.skip`s itself unless its env is set; the signed-in ones
   run as the seeded learner from 7.2):
@@ -741,7 +847,15 @@ There is no `package.json` script for Playwright.
 | `src/modules/vocabulary/vocabularyCore.e2e.ts` | `PLAYWRIGHT_BASE_URL`, `MONGODB_URI` | Search a term, add it to learning, answer a recall task, see stats update                                                                                                                                               |
 
 - Unit tests in this doc's scope include
-  `src/lib/auth/{roles,callbackUrl,auth.config,actions,currentUser,ownerKey,clientOwnerKey,userProvisioning}.test.ts`,
+  `src/lib/auth/{roles,callbackUrl,auth,auth.config,actions,accountStatus,currentUser,ownerKey,clientOwnerKey,userProvisioning}.test.ts`
+  (`accountStatus` covers the cache, forget, skip and fail-open paths;
+  `auth` the `signIn` callback; `currentUser` that a locked or deleted
+  account reads as signed out and is redirected with the locked notice;
+  `callbackUrl` the dot-segment open-redirect cases),
+  `src/modules/admin/users/{userDirectory,userAdminActions,formatUserDates}.test.ts`
+  (search, sort, summary, `managementBlock`, the typed-email check, and that
+  both actions re-check `requireAdmin`),
+  `src/components/admin/users/{UserDirectory,UserActions}.test.tsx`,
   `src/proxy.test.ts` (checks the matcher with `unstable_doesMiddlewareMatch`),
   `src/app/auth/login/page.test.tsx`, `src/components/auth/LoginCard.test.tsx`,
   route tests that expect 401 without a session
@@ -772,7 +886,7 @@ There is no `package.json` script for Playwright.
 - Pure decision functions are extracted from route handlers so they test
   "without a full database/auth environment" (for example `authorizePage`,
   `safeCallbackUrl`, `decideRevalidateRequest`, `outboxOwnerMatchesUser`,
-  `extractYouTubeId`),
+  `extractYouTubeId`, `managementBlock`),
   and network helpers take an injectable `fetcher`.
 
 ### 7.5 Quality gates
@@ -814,8 +928,10 @@ env file.
 
 `auth:drop-guest-data` is the one-off cleanup for guest mode, removed on
 2026-11-28. It is a dry run by default: it prints the database name and, per
-collection, how many rows have an owner id matching `^guest_` (the dictation,
-grammar, vocabulary and IELTS per-user collections, named from their models).
+collection, how many rows have an owner id matching `^guest_`. Its targets
+are built from `USER_OWNED_MODELS` (`src/models/userOwnedModels.ts`), the same
+list of 14 per-user collections and owner fields the admin delete uses, so the
+two stay complete together.
 `--apply --i-am-sure` deletes them and cannot be undone. The pure argument
 parsing and plan live in `scripts/lib/guestCleanup.ts`. It has not been run in
 production yet.

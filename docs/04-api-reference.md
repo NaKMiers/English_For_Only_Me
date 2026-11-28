@@ -88,18 +88,18 @@ invalid.'`, `'Segment id is invalid.'`, first zod issue text, segment guard
 
 Common statuses across modules:
 
-| Status | Meaning                                                                                                                                             |
-| ------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `400`  | invalid JSON (`SyntaxError`), zod failure, invalid id param (dictation), out-of-range query                                                         |
-| `401`  | `UnauthenticatedError` from `requireUser`/`requireAdmin` (no session) -> `common.errors.unauthorized`, "Please sign in to continue."                |
-| `403`  | `ForbiddenError` from `requireAdmin` -> `common.errors.forbidden`; IELTS practice-only features on a mock attempt                                   |
-| `404`  | resource missing or not owned by the user; IELTS invalid ObjectId params also map to `404`                                                          |
-| `409`  | duplicate key (`code 11000`), stale revision/guard, `OutboxOwnerMismatchError` (queued for another learner), invalid state transition               |
-| `410`  | retired endpoint                                                                                                                                    |
-| `422`  | IELTS publish blocked by the consistency report                                                                                                     |
-| `429`  | IELTS writing grading daily limit                                                                                                                   |
-| `500`  | unexpected error (logged), dictation/vocab missing Mongo                                                                                            |
-| `503`  | Qwen (`DASHSCOPE_API_KEY`) not configured or failed (dictation translate, IELTS), grammar/IELTS missing Mongo, grammar idempotency claim still busy |
+| Status | Meaning                                                                                                                                                                        |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `400`  | invalid JSON (`SyntaxError`), zod failure, invalid id param (dictation), out-of-range query                                                                                    |
+| `401`  | `UnauthenticatedError` from `requireUser`/`requireAdmin` (no session, or an account an admin locked or deleted) -> `common.errors.unauthorized`, "Please sign in to continue." |
+| `403`  | `ForbiddenError` from `requireAdmin` -> `common.errors.forbidden`; IELTS practice-only features on a mock attempt                                                              |
+| `404`  | resource missing or not owned by the user; IELTS invalid ObjectId params also map to `404`                                                                                     |
+| `409`  | duplicate key (`code 11000`), stale revision/guard, `OutboxOwnerMismatchError` (queued for another learner), invalid state transition                                          |
+| `410`  | retired endpoint                                                                                                                                                               |
+| `422`  | IELTS publish blocked by the consistency report                                                                                                                                |
+| `429`  | IELTS writing grading daily limit                                                                                                                                              |
+| `500`  | unexpected error (logged), dictation/vocab missing Mongo                                                                                                                       |
+| `503`  | Qwen (`DASHSCOPE_API_KEY`) not configured or failed (dictation translate, IELTS), grammar/IELTS missing Mongo, grammar idempotency claim still busy                            |
 
 Dictation routes map any thrown error with numeric `status` 401/403/409 through
 `getAccessErrorMessage` (`401 -> common.errors.unauthorized`,
@@ -122,17 +122,23 @@ in the Auth.js `jwt` callback (`src/lib/auth/auth.ts`). `/api/*` is excluded
 from the proxy matcher (`src/proxy.ts`), which only gates pages, so each route
 handler is its own gate.
 
-| Helper              | Returns                                | Throws                                                                                       | Used by                                          |
-| ------------------- | -------------------------------------- | -------------------------------------------------------------------------------------------- | ------------------------------------------------ |
-| `getOptionalUser()` | `CurrentUser \| null` (React `cache`d) | never                                                                                        | `/api/admin/revalidate`, `setFavoriteAction`     |
-| `requireUser()`     | `CurrentUser`                          | `UnauthenticatedError` (401); `InvalidOwnerKeyError` (400); `OutboxOwnerMismatchError` (409) | every per-user route handler, and `requireAdmin` |
-| `requireAdmin()`    | `CurrentUser`                          | the `requireUser` errors, or `ForbiddenError` (403) when `role !== 'admin'`                  | every admin route                                |
-| `requirePageUser()` | `CurrentUser`                          | redirects to `/auth/login?callbackUrl=...` instead of throwing                               | Server Components (not route handlers)           |
+| Helper              | Returns                                                                      | Throws                                                                                                                                | Used by                                          |
+| ------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| `getOptionalUser()` | `CurrentUser \| null` (React `cache`d; null for a locked or deleted account) | never                                                                                                                                 | `/api/admin/revalidate`, `setFavoriteAction`     |
+| `requireUser()`     | `CurrentUser`                                                                | `UnauthenticatedError` (401); `InvalidOwnerKeyError` (400); `OutboxOwnerMismatchError` (409)                                          | every per-user route handler, and `requireAdmin` |
+| `requireAdmin()`    | `CurrentUser`                                                                | the `requireUser` errors, or `ForbiddenError` (403) when `role !== 'admin'`                                                           | every admin route, the admin user server actions |
+| `requirePageUser()` | `CurrentUser`                                                                | redirects to `/auth/login?callbackUrl=...` (or `/auth/login?error=AccountLocked` for a locked or deleted account) instead of throwing | Server Components (not route handlers)           |
 
 `requireUser()` details:
 
 - No session -> `UnauthenticatedError` (`401`, `common.errors.unauthorized`,
   "Please sign in to continue."). There is no guest identity or guest cookie.
+- A session whose account an admin locked or deleted also gets `401`: the JWT is still
+  valid, but `getOptionalUser()` asks `isAccountBlocked` (`src/lib/auth/accountStatus.ts`,
+  `User.status` cached 60 s per user id, failing open on a database error) and returns
+  null. So every per-user API answers `401` for such an account within a minute of the
+  admin action (at once on the instance that ran it), and the client outbox sends the
+  tab to the login page (section "Client outbox contract").
 - The session id must pass `assertOwnerKey` (`src/lib/auth/ownerKey.ts`,
   pattern `^[a-f0-9]{24}$`, an ObjectId) before any query is scoped to it,
   else `InvalidOwnerKeyError` (`400`).
@@ -260,7 +266,10 @@ File: `src/app/api/auth/[...nextauth]/route.ts` re-exports Auth.js `handlers`
 (`export const { GET, POST } = handlers`) from `src/lib/auth/auth.ts` (JWT
 session strategy). The `jwt` callback provisions the Mongoose user on sign-in
 (`provisionUserOnSignIn`), sets `token.uid` to its ObjectId, and stamps
-`token.role = resolveRole(token.email)`. Google is the only way in: there is no
+`token.role = resolveRole(token.email)`. Before that, a `signIn` callback refuses
+an email whose account is locked (`isEmailLocked`) by redirecting to
+`LOCKED_LOGIN_URL` (`/auth/login?error=AccountLocked`, `src/lib/auth/callbackUrl.ts`).
+Google is the only way in: there is no
 guest identity and no `/api/guest` route (it no longer exists and answers
 `404`). A caller without a session gets `401` from every per-user route (see
 "Auth and current-user resolution" in section 1); pages redirect to
@@ -804,6 +813,27 @@ Client: `src/requests/ieltsAdminApi.ts`. Its `send` helper throws
 show a blocked publish report or the attempt count. `uploadIeltsFileApi` signs,
 then posts the file straight to Cloudinary from the browser.
 
+### Server actions: admin users
+
+Not HTTP routes: there is no `/api/admin/users`. The user management pages
+(`/admin/users`, `/admin/users/[userId]`) read through
+`src/modules/admin/users/userAdminService.ts` directly, and the client
+`UserActions` (`src/components/admin/users/UserActions.tsx`) calls two
+`'use server'` actions in `src/modules/admin/users/userAdminActions.ts`:
+
+| Action                                 | Steps                                                                                                                                                                                                                                                                 | Result                                                       |
+| -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| `setUserLockedAction(userId, locked)`  | `requireAdmin()`, `connectDatabase()`, `setUserLocked` (sets `status: 'locked'` and `lockedAt`, or `active` and `lockedAt: null`; clears the account-status cache)                                                                                                    | `{ ok: true }` or `{ ok: false, message }`                   |
+| `deleteUserAction(userId, typedEmail)` | `requireAdmin()`, `connectDatabase()`, `getUserForAdmin`, then `deleteConfirmationMatches(email, typedEmail)` (trimmed, case-insensitive) re-checked on the server, then `deleteUserAndData`: `deleteMany` on every `USER_OWNED_MODELS` collection, then the user row | `{ ok: true }` or `{ ok: false, message }`; cannot be undone |
+
+- Both revalidate `/admin/users` and `/admin/users/<userId>` on success.
+- Refusals come back as `{ ok: false, message }` from `admin.users.errors.*`:
+  `notFound` (unknown or malformed id), `self` (the admin's own account), `admin`
+  (an `ADMIN_EMAILS` admin; `managementBlock` in `userDirectory.ts`), and
+  `confirmMismatch` (typed email does not match). A non-admin caller is not a
+  message: `requireAdmin` throws (`UnauthenticatedError` / `ForbiddenError`), and
+  `UserActions` shows `errors.failed`.
+
 ### POST /api/admin/revalidate
 
 File: `src/app/api/admin/revalidate/route.ts`. Decision:
@@ -859,6 +889,9 @@ client-supplied id.
 | user            | dictation sessions, attempts, review items, debriefs; all `/api/vocab/**`; `POST /api/grammar/sessions`; all `/api/ielts/**` (`401` without a session) |
 | admin           | dictation video detail, transcripts, segment PATCH and translate, YouTube import; `/api/admin/vocab/enrich`; all `/api/admin/ielts/**`                 |
 | admin or secret | `POST /api/admin/revalidate`                                                                                                                           |
+
+A locked or deleted account counts as signed out at every `user` and `admin` gate
+(`401`). The admin user server actions (section 8) sit behind `requireAdmin` as well.
 
 Ordering caveat for callers: body-first routes (`POST /api/dictation/transcripts`,
 `PATCH /api/dictation/segments/[segmentId]`, `POST .../translate`,
