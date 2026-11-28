@@ -119,6 +119,81 @@ describe('synthesizeSpeechPcm', () => {
     expect(result).toEqual({ ok: false, message: 'Bad voice' })
   })
 
+  test('retries a rate-limited synthesize request, then succeeds', async () => {
+    const ok = speechFetch()
+    let synthCalls = 0
+    const fetcher = vi.fn(
+      async (url: string | URL | Request, init?: RequestInit) => {
+        if (String(url).includes('SpeechSynthesizer') && synthCalls++ < 2)
+          return new Response(
+            JSON.stringify({
+              code: 'Throttling.RateQuota',
+              message: 'Requests rate limit exceeded',
+            }),
+            { status: 429 }
+          )
+
+        return ok(url, init)
+      }
+    )
+    const result = await synthesizeSpeechPcm({
+      ...REQUEST,
+      fetcher,
+      retryDelaysMs: [0, 0, 0],
+    })
+
+    expect(result).toEqual({ ok: true, pcm: new Uint8Array([7, 8, 9, 10]) })
+    expect(synthCalls).toBe(3)
+  })
+
+  test('gives up after the last retry with the provider message', async () => {
+    const fetcher = vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({
+            code: 'Throttling.RateQuota',
+            message: 'Requests rate limit exceeded',
+          }),
+          { status: 429 }
+        )
+    )
+    const result = await synthesizeSpeechPcm({
+      ...REQUEST,
+      fetcher,
+      retryDelaysMs: [0, 0],
+    })
+
+    expect(result).toEqual({
+      ok: false,
+      message: 'Requests rate limit exceeded',
+    })
+    expect(fetcher).toHaveBeenCalledTimes(3)
+  })
+
+  test('does not retry other provider errors', async () => {
+    const fetcher = speechFetch({ synthStatus: 400 })
+
+    await synthesizeSpeechPcm({ ...REQUEST, fetcher, retryDelaysMs: [0, 0] })
+
+    expect(fetcher).toHaveBeenCalledTimes(1)
+  })
+
+  test('stops waiting when the budget runs out', async () => {
+    const fetcher = vi.fn(
+      async () =>
+        new Response(JSON.stringify({ code: 'Throttling' }), { status: 429 })
+    )
+    const result = await synthesizeSpeechPcm({
+      ...REQUEST,
+      fetcher,
+      retryDelaysMs: [60_000],
+      signal: AbortSignal.timeout(20),
+    })
+
+    expect(result).toEqual({ ok: false, message: 'Speech request timed out.' })
+    expect(fetcher).toHaveBeenCalledTimes(1)
+  })
+
   test('refuses an audio URL outside Alibaba Cloud', async () => {
     const fetcher = speechFetch({ audioUrl: 'http://evil.example.test/a.wav' })
     const result = await synthesizeSpeechPcm({ ...REQUEST, fetcher })

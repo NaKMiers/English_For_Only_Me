@@ -20,8 +20,10 @@ import { adoptSaved, type IeltsAdminTest } from '../tests/testService'
 import { toIeltsTestRecord } from '../tests/testRecords'
 import { assemblePcm, type PcmLine } from './wav'
 
-// Each line is two requests (synthesize, download); Qwen TTS allows 180 RPM.
-const PARALLEL_LINES = 4
+// Each line is two requests (synthesize, download). Qwen TTS allows 180 RPM
+// but enforces it per second (about 3 rps): four synthesize calls at once were
+// refused, so two at a time, and `synthesizeSpeechPcm` retries a refusal.
+const PARALLEL_LINES = 2
 // Part of the audio hash, so a new TTS provider never reuses old public ids.
 const VOICE_PROVIDER = 'qwen'
 const AUDIO_BUDGET_MS = 240_000
@@ -31,7 +33,7 @@ const SPEECH_INSTRUCTIONS =
 type LeanDoc = Record<string, unknown>
 
 /**
- * Text-to-speech for one listening part: lines in batches of four, joined
+ * Text-to-speech for one listening part: lines in batches of two, joined
  * into one WAV with exact line offsets, uploaded to Cloudinary (served as
  * mp3), then written onto the draft section with its revision guard.
  */

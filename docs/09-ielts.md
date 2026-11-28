@@ -547,7 +547,10 @@ Details:
 
 `generateSectionAudio` (listening keys only) synthesizes each script line with
 Qwen TTS (`synthesizeSpeechPcm` in `src/lib/ai/qwenSpeech.ts`, model from
-`getQwenTtsModel()`), four lines in parallel, within a 240 s budget. Each line
+`getQwenTtsModel()`), two lines in parallel, within a 240 s budget. The
+workspace quota (180 RPM) is enforced per second, so a rate-limited
+synthesize request (429 or a `Throttling*` code) is retried after 1 s, 2 s and
+4 s before the part fails. Each line
 is spoken by `qwenVoiceFor(line.voice)` (`constants.ts`): the stored logical id
 maps to a Qwen voice (alloy Brian, ash Eric, coral Emily, echo Andy, fable
 Luca, nova Ava, onyx David, sage Luna, shimmer Abby; unknown ids get the
