@@ -1,6 +1,6 @@
 # Data Model Reference
 
-This document is the persistence-layer reference for "English For Only Me", an IELTS-focused English practice app built on Next.js and Mongoose (MongoDB) with four learning modules: dictation, vocabulary, grammar, and IELTS mock tests. It describes the connection pattern, every Mongoose model in `src/models/` (23 models across `dictation/`, `vocabulary/`, `grammar/`, `ielts/`, plus `User`), their fields, indexes (unique, partial, and TTL), status and enum unions, derived counters, the owner-key contract that separates signed-in users from guests, how each module folds guest data into an account on sign-in, and the idempotency guarantees, so an AI can reason about the data layer without opening every schema file. Every claim is grounded in real source and cites a repo-relative path.
+This document is the persistence-layer reference for "English For Only Me", an IELTS-focused English practice app built on Next.js and Mongoose (MongoDB) with four learning modules: dictation, vocabulary, grammar, and IELTS mock tests. It describes the connection pattern, every Mongoose model in `src/models/` (23 models across `dictation/`, `vocabulary/`, `grammar/`, `ielts/`, plus `User`), their fields, indexes (unique, partial, and TTL), status and enum unions, derived counters, the owner-key contract that scopes every per-user row to the signed-in user, and the idempotency guarantees, so an AI can reason about the data layer without opening every schema file. Every claim is grounded in real source and cites a repo-relative path.
 
 ## 1. Database Overview
 
@@ -14,7 +14,6 @@ Connection setup lives in `src/lib/db/connectDatabase.ts`. It is a `server-only`
 - `connectDatabase()` returns the cached `connection` immediately if present (`connectDatabase.ts:63`).
 - Otherwise it starts (once) `mongoose.connect(getMongoDbUri(), getConnectOptions())` and caches the promise (`connectDatabase.ts:65-69`).
 - On success the resolved connection is cached and returned; on failure the promise is reset to `null` so the next call retries (`connectDatabase.ts:71-77`).
-- `connectDatabaseWhen(value)` resolves `value` and connects only when it is truthy (for example a practice actor id), so an anonymous visitor served from the catalog cache never waits on a connection handshake (`connectDatabase.ts:80-92`).
 
 `getConnectOptions(nodeEnv)` (`connectDatabase.ts:23-48`):
 
@@ -28,7 +27,7 @@ Connection setup lives in `src/lib/db/connectDatabase.ts`. It is a `server-only`
 
 `getManualSchemaConnectOptions()` forces `autoCreate: false` and `autoIndex: false` in every environment; owner-run scripts such as `scripts/syncIndexes.ts` and `scripts/resetSharedSegmentProgress.ts` use it so a dry run writes nothing (`connectDatabase.ts:50-60`).
 
-The Mongo URI comes from `getMongoDbUri()` in `src/constants/environments.ts`. Callers `await connectDatabase()` before running queries (for example `src/modules/dictation/services/mergeGuestData.ts:88`).
+The Mongo URI comes from `getMongoDbUri()` in `src/constants/environments.ts`. Callers `await connectDatabase()` before running queries (for example `src/modules/grammar/services/grammarProgressService.ts`).
 
 ### 1.2 Index builds
 
@@ -55,10 +54,10 @@ Registered model names (the string passed to `model(...)`):
 | `DictationVideo`        | `src/models/dictation/DictationVideoModel.ts`      | global content                    |
 | `DictationTranscript`   | `src/models/dictation/DictationTranscriptModel.ts` | global content                    |
 | `DictationSegment`      | `src/models/dictation/DictationSegmentModel.ts`    | global content\*                  |
-| `DictationSession`      | `src/models/dictation/DictationSessionModel.ts`    | per-owner (user or guest)         |
-| `DictationAttempt`      | `src/models/dictation/DictationAttemptModel.ts`    | per-owner (user or guest)         |
-| `DictationReviewItem`   | `src/models/dictation/DictationReviewItemModel.ts` | per-owner (user or guest)         |
-| `DictationDebrief`      | `src/models/dictation/DictationDebriefModel.ts`    | per-owner (user or guest)         |
+| `DictationSession`      | `src/models/dictation/DictationSessionModel.ts`    | per-owner (user id)               |
+| `DictationAttempt`      | `src/models/dictation/DictationAttemptModel.ts`    | per-owner (user id)               |
+| `DictationReviewItem`   | `src/models/dictation/DictationReviewItemModel.ts` | per-owner (user id)               |
+| `DictationDebrief`      | `src/models/dictation/DictationDebriefModel.ts`    | per-owner (user id)               |
 | `DictationFavorite`     | `src/models/dictation/DictationFavoriteModel.ts`   | per-user (signed in only)         |
 | `VocabEntry`            | `src/models/vocabulary/VocabEntryModel.ts`         | global dictionary cache           |
 | `UserVocabItem`         | `src/models/vocabulary/UserVocabItemModel.ts`      | per-owner vocabulary state        |
@@ -79,7 +78,7 @@ Grammar course content (units, lessons, cards) is not stored in MongoDB: it live
 
 ## 2. Entity-Relationship Overview
 
-References are stored as raw `ObjectId` or string fields (with `ref:` hints on some ObjectIds), not populated relations. Per-owner collections key on a string owner (`userId`, or `ownerId` for IELTS) that holds either a user ObjectId string or a guest id; only `DictationFavorite.userId` is an `ObjectId ref User`. The diagrams are split per module for readability.
+References are stored as raw `ObjectId` or string fields (with `ref:` hints on some ObjectIds), not populated relations. Per-owner collections key on a string owner (`userId`, or `ownerId` for IELTS) that holds the signed-in user's ObjectId string; only `DictationFavorite.userId` is an `ObjectId ref User`. The diagrams are split per module for readability.
 
 ### 2.1 Dictation
 
@@ -312,7 +311,7 @@ Purpose: a per-owner practice run over one video/transcript. Tracks the current 
 
 | Field                 | Type                                             | Required / Default                         | Meaning                                  |
 | --------------------- | ------------------------------------------------ | ------------------------------------------ | ---------------------------------------- |
-| `userId`              | String                                           | required, owner key, indexed               | Owner (user id or guest id); `trim`.     |
+| `userId`              | String                                           | required, owner key, indexed               | Owner (user id); `trim`.                 |
 | `videoId`             | ObjectId (`ref DictationVideo`)                  | required, indexed                          | Video being practiced.                   |
 | `transcriptId`        | ObjectId (`ref DictationTranscript`)             | required, indexed                          | Transcript in use.                       |
 | `status`              | String enum `['active','completed','abandoned']` | required, default `'active'`, indexed      | Session lifecycle; see 4.5.              |
@@ -349,7 +348,7 @@ Embedded `DictationCorrectionTokenSchema` (`_id: false`, `DictationAttemptModel.
 
 | Field                      | Type                                    | Required / Default                 | Meaning                                                                                                                                                  |
 | -------------------------- | --------------------------------------- | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `userId`                   | String                                  | required, owner key, indexed       | Owner (user id or guest id); `trim`.                                                                                                                     |
+| `userId`                   | String                                  | required, owner key, indexed       | Owner (user id); `trim`.                                                                                                                                 |
 | `videoId`                  | ObjectId (`ref DictationVideo`)         | required, indexed                  | Denormalized parent video.                                                                                                                               |
 | `transcriptId`             | ObjectId (`ref DictationTranscript`)    | required, indexed                  | Denormalized transcript.                                                                                                                                 |
 | `sessionId`                | ObjectId (`ref DictationSession`)       | required, indexed                  | Owning session.                                                                                                                                          |
@@ -390,19 +389,19 @@ Embedded `DictationReviewStatsSnapshotSchema` (`_id: false`, `DictationReviewIte
 
 `DictationReviewItemSchema`:
 
-| Field            | Type                                       | Required / Default                                  | Meaning                              |
-| ---------------- | ------------------------------------------ | --------------------------------------------------- | ------------------------------------ |
-| `userId`         | String                                     | required, owner key, indexed                        | Owner (user id or guest id); `trim`. |
-| `videoId`        | ObjectId (`ref DictationVideo`)            | required, indexed                                   | Denormalized parent video.           |
-| `segmentId`      | ObjectId (`ref DictationSegment`)          | required, indexed                                   | Segment under review.                |
-| `kind`           | String enum `['pattern','segment','word']` | required, default `'segment'`                       | Item granularity; see 4.7.           |
-| `reason`         | String enum (5 values)                     | required, indexed                                   | Why flagged; see 4.7.                |
-| `label`          | String                                     | required, `maxlength 500`                           | Human-readable label; `trim`.        |
-| `status`         | String enum (4 values)                     | required, default `'due'`, indexed                  | Review lifecycle; see 4.7.           |
-| `priority`       | Number                                     | required, default `50`, `min 0`, `max 100`, indexed | Sort priority.                       |
-| `dueAt`          | Date                                       | required, default `Date.now`, indexed               | When it becomes due.                 |
-| `lastReviewedAt` | Date                                       | default `null`                                      | Last review time.                    |
-| `statsSnapshot`  | DictationReviewStatsSnapshotSchema         | required, default `() => ({})`                      | Frozen stats at flag time.           |
+| Field            | Type                                       | Required / Default                                  | Meaning                       |
+| ---------------- | ------------------------------------------ | --------------------------------------------------- | ----------------------------- |
+| `userId`         | String                                     | required, owner key, indexed                        | Owner (user id); `trim`.      |
+| `videoId`        | ObjectId (`ref DictationVideo`)            | required, indexed                                   | Denormalized parent video.    |
+| `segmentId`      | ObjectId (`ref DictationSegment`)          | required, indexed                                   | Segment under review.         |
+| `kind`           | String enum `['pattern','segment','word']` | required, default `'segment'`                       | Item granularity; see 4.7.    |
+| `reason`         | String enum (5 values)                     | required, indexed                                   | Why flagged; see 4.7.         |
+| `label`          | String                                     | required, `maxlength 500`                           | Human-readable label; `trim`. |
+| `status`         | String enum (4 values)                     | required, default `'due'`, indexed                  | Review lifecycle; see 4.7.    |
+| `priority`       | Number                                     | required, default `50`, `min 0`, `max 100`, indexed | Sort priority.                |
+| `dueAt`          | Date                                       | required, default `Date.now`, indexed               | When it becomes due.          |
+| `lastReviewedAt` | Date                                       | default `null`                                      | Last review time.             |
+| `statsSnapshot`  | DictationReviewStatsSnapshotSchema         | required, default `() => ({})`                      | Frozen stats at flag time.    |
 
 - Indexes: field-level on `userId`, `videoId`, `segmentId`, `reason`, `status`, `priority`, `dueAt`. Compound (`DictationReviewItemModel.ts:161-194`):
   - `{ userId: 1, status: 1, dueAt: 1, priority: -1 }` (due-queue query)
@@ -427,7 +426,7 @@ Embedded `DictationDebriefVocabularySchema` (`_id: false`, `DictationDebriefMode
 
 | Field               | Type                                       | Required / Default                     | Meaning                                                          |
 | ------------------- | ------------------------------------------ | -------------------------------------- | ---------------------------------------------------------------- |
-| `userId`            | String                                     | required, owner key, indexed           | Owner (user id or guest id); `trim`.                             |
+| `userId`            | String                                     | required, owner key, indexed           | Owner (user id); `trim`.                                         |
 | `videoId`           | ObjectId (`ref DictationVideo`)            | required, indexed                      | Denormalized parent video.                                       |
 | `sessionId`         | ObjectId (`ref DictationSession`)          | required, indexed                      | Debriefed session.                                               |
 | `status`            | String enum `['failed','pending','ready']` | required, default `'pending'`, indexed | Generation lifecycle; see 4.8.                                   |
@@ -449,7 +448,7 @@ Embedded `DictationDebriefVocabularySchema` (`_id: false`, `DictationDebriefMode
 
 ### 3.11 DictationFavorite (`src/models/dictation/DictationFavoriteModel.ts`)
 
-Purpose: a per-user star on a video. Keyed by the authenticated user's Mongo `ObjectId` (comment `DictationFavoriteModel.ts:11-15`). Unlike every other per-owner collection, `userId` here is an `ObjectId` (`ref User`), not an owner-key string; favoriting requires a signed-in user (`src/modules/dictation/content/favoriteActions.ts`), so guests never create favorites.
+Purpose: a per-user star on a video. Keyed by the authenticated user's Mongo `ObjectId` (comment `DictationFavoriteModel.ts:11-15`). Unlike every other per-owner collection, `userId` here is an `ObjectId` (`ref User`), not an owner-key string; favoriting requires a signed-in user (`src/modules/dictation/content/favoriteActions.ts`).
 
 | Field     | Type                            | Required / Default | Meaning            |
 | --------- | ------------------------------- | ------------------ | ------------------ |
@@ -487,11 +486,11 @@ Purpose: the global dictionary cache for the vocabulary module. A row can start 
 
 ### 3.13 UserVocabItem (`src/models/vocabulary/UserVocabItemModel.ts`)
 
-Purpose: a per-owner learning state for one `VocabEntry`. `userId` is a string, so both signed-in users and guests can own vocabulary items. The schema does not apply `OWNER_KEY_PATTERN`; the routes resolve the owner through `requirePracticeActor()` (section 6.1).
+Purpose: a per-owner learning state for one `VocabEntry`. `userId` is a string holding the signed-in user's id. The schema does not apply `OWNER_KEY_PATTERN`; the routes resolve the owner through `requireUser()` (section 6.1).
 
 | Field                                       | Type                        | Required / Default                      | Meaning                                               |
 | ------------------------------------------- | --------------------------- | --------------------------------------- | ----------------------------------------------------- |
-| `userId`                                    | String                      | required, indexed                       | Owner (user id or guest id); `trim`.                  |
+| `userId`                                    | String                      | required, indexed                       | Owner (user id); `trim`.                              |
 | `vocabEntryId`                              | ObjectId (`ref VocabEntry`) | required, indexed                       | Global entry being learned or marked known.           |
 | `status`                                    | String enum                 | required, default `'learning'`, indexed | `learning`, `alreadyKnow`, `mastered`, `ignored`.     |
 | `source`                                    | String enum                 | required, default `'manual'`            | `search`, `explore`, `dictionary`, `manual`, `ielts`. |
@@ -528,7 +527,7 @@ Purpose: an append-only record of one vocabulary recall answer. It backs vocab a
 
 | Field                                   | Type                           | Required / Default                    | Meaning                                                    |
 | --------------------------------------- | ------------------------------ | ------------------------------------- | ---------------------------------------------------------- |
-| `userId`                                | String                         | required, indexed                     | Owner (user id or guest id).                               |
+| `userId`                                | String                         | required, indexed                     | Owner (user id).                                           |
 | `itemId`                                | ObjectId (`ref UserVocabItem`) | required, indexed                     | Owner-specific vocab item being reviewed.                  |
 | `vocabEntryId`                          | ObjectId (`ref VocabEntry`)    | required, indexed                     | Global entry reviewed.                                     |
 | `taskType`                              | String enum                    | required, indexed                     | One of the five recall task types (4.11).                  |
@@ -610,7 +609,7 @@ Purpose: the idempotency record for one finished grammar session. It is inserted
 | `claimedAt`      | Date                                | required           | Claim time; a claim older than `STALE_CLAIM_MS` (60 s) may be taken over. |
 | `response`       | Mixed                               | default `null`     | Stored `GrammarSessionResult`; `null` while the claim is in flight.       |
 
-- Indexes: unique `{ userId: 1, idempotencyKey: 1 }` (`GrammarSessionModel.ts:31`). No TTL: rows persist until a guest merge deletes the guest's rows.
+- Indexes: unique `{ userId: 1, idempotencyKey: 1 }` (`GrammarSessionModel.ts:31`). No TTL: rows persist.
 - Timestamps: yes.
 
 ### 3.20 IeltsTest (`src/models/ielts/IeltsTestModel.ts`)
@@ -698,7 +697,7 @@ Embedded subdocuments (all `_id: false`):
 
 | Field               | Type                                 | Required / Default      | Meaning                                                                                                                              |
 | ------------------- | ------------------------------------ | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `ownerId`           | String                               | required, owner key     | Owner (user id or guest id); `trim`.                                                                                                 |
+| `ownerId`           | String                               | required, owner key     | Owner (user id); `trim`.                                                                                                             |
 | `idempotencyKey`    | String                               | required                | Start-request idempotency key; `trim`.                                                                                               |
 | `testId`            | ObjectId                             | default `null`          | Test document; `null` for drills (which use `items[]`). No `ref`.                                                                    |
 | `testSlug`          | String                               | default `''`            | Test slug snapshot.                                                                                                                  |
@@ -910,25 +909,21 @@ Derived on read (never stored):
 
 ### 6.1 Owner key contract
 
-Every per-owner row is keyed by a single string owner key (`src/lib/auth/ownerKey.ts:1-11`):
+Every per-owner row is keyed by one owner key: the signed-in user's `User._id` as a 24-char lowercase hex string (`src/lib/auth/ownerKey.ts`). Sign-in with Google is required, so there is no other kind of owner. The Auth.js `jwt` callback provisions the `User` row and stamps its ObjectId into the token (`src/lib/auth/auth.ts`).
 
-| Shape                       | Meaning                                                                                          |
-| --------------------------- | ------------------------------------------------------------------------------------------------ |
-| 24 lowercase hex chars      | A signed-in user's `User._id` as a string.                                                       |
-| `guest_` + 32 lowercase hex | An anonymous guest id (`crypto.randomUUID()` without dashes, `src/lib/auth/guestUser.ts:27-29`). |
-
-`OWNER_KEY_PATTERN = /^([a-f0-9]{24}|guest_[a-f0-9]{32})$/`. A key is never null, empty, or any other shape; ambiguous keys could leak rows across users, so they are rejected before any query or write (`assertOwnerKey`, which throws `InvalidOwnerKeyError` with status 400).
+`OWNER_KEY_PATTERN = /^[a-f0-9]{24}$/`. A key is never null, empty, or any other shape; ambiguous keys could leak rows across users, so they are rejected before any query or write (`assertOwnerKey`, which throws `InvalidOwnerKeyError` with status 400).
 
 Where the contract is enforced:
 
-| Layer                             | Enforcement                                                                                                                                                                                                                    |
-| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Schema `match: OWNER_KEY_PATTERN` | `DictationSession`, `DictationAttempt`, `DictationReviewItem`, `DictationDebrief` (`userId`) and `IeltsAttempt` (`ownerId`).                                                                                                   |
-| `requirePracticeActor()`          | Returns `{ id: assertOwnerKey(user.id), isGuest: false }` or mints/reads a guest id and asserts it (`src/modules/dictation/services/getCurrentUser.ts:102-113`). Used by the dictation, vocabulary, grammar, and IELTS routes. |
-| Service-level `assertOwnerKey`    | Grammar reads and writes (`src/modules/grammar/services/grammarProgressService.ts:74,180`).                                                                                                                                    |
-| None at schema level              | `UserVocabItem`, `VocabOccurrence`, `VocabRecallAttempt`, the four grammar models, `IeltsGradingLedger` (string owner, no `match`).                                                                                            |
+| Layer                             | Enforcement                                                                                                                                                                                                                                                         |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Schema `match: OWNER_KEY_PATTERN` | `DictationSession`, `DictationAttempt`, `DictationReviewItem`, `DictationDebrief` (`userId`) and `IeltsAttempt` (`ownerId`).                                                                                                                                        |
+| `requireUser()`                   | Throws 401 without a session, 400 when the id is not an ObjectId (`assertOwnerKey`), 409 when a queued outbox write names another learner; returns the `CurrentUser` (`src/lib/auth/currentUser.ts`). Used by the dictation, vocabulary, grammar, and IELTS routes. |
+| `requirePageUser()`               | Same identity for Server Components; redirects to the login page instead of throwing (`src/lib/auth/currentUser.ts`).                                                                                                                                               |
+| Service-level `assertOwnerKey`    | Grammar reads and writes (`src/modules/grammar/services/grammarProgressService.ts:74,180`).                                                                                                                                                                         |
+| None at schema level              | `UserVocabItem`, `VocabOccurrence`, `VocabRecallAttempt`, the four grammar models, `IeltsGradingLedger` (string owner, no `match`).                                                                                                                                 |
 
-The browser never sees the raw guest id (it is a bearer credential in an httpOnly cookie); pages render `toClientOwnerKey(id)`, a truncated SHA-256 hash used to namespace localStorage and to check queued outbox writes (`src/lib/auth/clientOwnerKey.ts:9-17`).
+Callers scope every per-user query to the id `requireUser()` returns, never to a client-supplied one. Pages render `toClientOwnerKey(id)`, a truncated SHA-256 hash used to namespace localStorage and to check queued outbox writes, so the raw id is not put into HTML (`src/lib/auth/clientOwnerKey.ts`).
 
 ### 6.2 Global vs per-owner collections
 
@@ -937,45 +932,12 @@ The browser never sees the raw guest id (it is a bearer credential in an httpOnl
 | Global content / cache       | `DictationTopic`, `DictationSection`, `DictationVideo`, `DictationTranscript`, `DictationSegment`, `VocabEntry`, `IeltsTest`, `IeltsTestVocab`                                                                                   |
 | Per-owner, `userId: String`  | `DictationSession`, `DictationAttempt`, `DictationReviewItem`, `DictationDebrief`, `UserVocabItem`, `VocabOccurrence`, `VocabRecallAttempt`, `GrammarLessonProgress`, `GrammarUnitProgress`, `GrammarCardMiss`, `GrammarSession` |
 | Per-owner, `ownerId: String` | `IeltsAttempt`, `IeltsGradingLedger`                                                                                                                                                                                             |
-| Per-user, `userId: ObjectId` | `DictationFavorite` (signed-in users only)                                                                                                                                                                                       |
+| Per-user, `userId: ObjectId` | `DictationFavorite`                                                                                                                                                                                                              |
 | Identity                     | `User`                                                                                                                                                                                                                           |
 
-### 6.3 Guest identity
+### 6.3 Legacy guest rows
 
-`src/lib/auth/guestUser.ts` keeps the guest id in the httpOnly cookie `dictationGuestId` (one-year max age, `sameSite: lax`, `secure` in production). `getGuestId()` only reads (safe in Server Components); `getOrCreateGuestId()` mints and sets it (Route Handlers / Server Functions only). A second cookie, `dictationGuestMergeOwner`, is set only while a guest merge is unfinished and records which account that merge belongs to. `isGuestId()` distinguishes guest ids from user ids by the `guest_` prefix.
-
-### 6.4 Guest merge on sign-in
-
-On every sign-in the Auth.js `jwt` callback provisions the user and then calls `foldGuestIntoUser(id)` (`src/lib/auth/auth.ts:20-35`). `src/lib/auth/guestMerge.ts` decides what happens to the browser's guest data and runs each module's merge:
-
-```mermaid
-flowchart TD
-    A["sign-in: foldGuestIntoUser(userId)"] --> B{"guest cookie?"}
-    B -- no --> Z["none"]
-    B -- yes --> C{"merge-owner cookie set<br/>for another account?"}
-    C -- yes --> D["abandon: clearGuestCookie()<br/>(rows stay under the guest id)"]
-    C -- no --> E["merge: run every module,<br/>even if one fails"]
-    E --> F["mergeGuestDataIntoUser (dictation)"]
-    E --> G["mergeGrammarGuestData (grammar)"]
-    E --> H["mergeIeltsGuestData (IELTS)"]
-    E --> V["mergeVocabGuestData (vocabulary)"]
-    F & G & H & V --> I{"all succeeded?"}
-    I -- yes --> J["clearGuestCookie()"]
-    I -- no --> K["setGuestMergeOwner(userId)<br/>only this account retries next sign-in"]
-```
-
-`guestMergeStep` returns `none` without a guest id, `abandon` when a pending merge belongs to a different account (so a shared browser never hands leftovers to the next person), and `merge` otherwise (`guestMerge.ts:14-35`). Each module merge is wrapped by `attempt()`, which logs and returns `false` on error; the whole fold never throws and never blocks login (`guestMerge.ts:37-82`). Re-running a merge whose rows already moved is a no-op.
-
-Per-module merge behavior:
-
-| Module     | Merge function (file)                                                             | What moves                                                                                                                                              | Collision handling                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| ---------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Dictation  | `mergeGuestDataIntoUser` (`src/modules/dictation/services/mergeGuestData.ts`)     | `updateMany({ userId: guestId }, { $set: { userId } })` on Session, Attempt, ReviewItem, Debrief                                                        | Attempts are safe: their unique key includes `sessionId`, and guest session ids are ObjectIds the user cannot own. Guest active review items that duplicate a user's active item (same segment, kind, reason) are first set to `dismissed`, kept as history, so the partial unique index holds (`mergeGuestData.ts:26-64`). Sessions are moved as-is. Favorites are excluded (guests cannot create them).                                                                                                                                                                           |
-| Grammar    | `mergeGrammarGuestData` (`src/modules/grammar/services/mergeGrammarGuestData.ts`) | Lesson progress, unit progress, card misses: combined pairwise and upserted under the user                                                              | Rows are unique per (owner, lesson/unit/card), so a plain move would collide. `planGrammarGuestMerge` (`src/modules/grammar/progress/planGrammarGuestMerge.ts`) combines each pair: lessons take best stars and accuracy, summed attempts, earliest completion, `lesson` beats `test`, ladder from whichever side has one (the user's when both); units take the earliest completion, `checkpoint` beats `test`; misses take the higher count, latest miss, open if either is open. Afterwards all guest grammar rows, including `GrammarSession` idempotency records, are deleted. |
-| IELTS      | `mergeIeltsGuestData` (`src/modules/ielts/services/mergeIeltsGuestData.ts`)       | `updateMany({ ownerId: guestId }, { $set: { ownerId: userId } })` on `IeltsAttempt`                                                                     | On a duplicate-key error (the user already has the same `idempotencyKey`), it falls back to moving rows one by one and leaves only the clashing attempt with the guest. `IeltsGradingLedger` rows are not moved; they expire via TTL.                                                                                                                                                                                                                                                                                                                                               |
-| Vocabulary | `mergeVocabGuestData` (`src/modules/vocabulary/services/mergeVocabGuestData.ts`)  | `UserVocabItem` rows for words only the guest has move as they are (same `_id`); every `VocabRecallAttempt` and `VocabOccurrence` row moves to the user | Items are unique per `(userId, vocabEntryId)`. For a word both sides have, the pure `planVocabGuestMerge` (`src/modules/vocabulary/services/planVocabGuestMerge.ts`) keeps the user's status, stage and schedule, sums `reviewCount` / `correctCount` / `wrongCount`, keeps the earliest `firstSeenAt` and the latest `lastReviewedAt`, repoints the guest's recall attempts at the user's item, then deletes the guest item. A recall attempt whose `idempotencyKey` the user already has is dropped instead of moved.                                                             |
-
-Each merge first returns early when the id is not a guest id or equals the user id, then calls `connectDatabase()`. Dictation and grammar log the moved volume as an audit trail (`mergeGuestData.ts:107-115`, `mergeGrammarGuestData.ts:71-78`).
+Guest mode (anonymous `guest_...` owner ids) was removed; nothing reads or writes such ids any more and no merge into an account exists. Rows an earlier version left under a `guest_...` `userId` / `ownerId` may still exist until the one-off cleanup script runs: `bun run auth:drop-guest-data` is a dry run that counts them per collection, and `--apply --i-am-sure` deletes them (`scripts/dropGuestData.ts`, pure planner `scripts/lib/guestCleanup.ts`). Collection names come from the models, and the delete cannot be undone.
 
 ## 7. Idempotency
 

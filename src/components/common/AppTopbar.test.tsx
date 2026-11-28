@@ -22,7 +22,6 @@ describe('AppTopbar', () => {
   test('shows the account chip only when asked (the home page)', () => {
     const account = {
       account: { firstName: 'Khoa', image: null, initial: 'K', isAdmin: false },
-      enabled: true,
     }
     const plain = renderToStaticMarkup(
       <AccountProvider value={account}>
@@ -38,5 +37,17 @@ describe('AppTopbar', () => {
     expect(plain).not.toContain('aria-haspopup="menu"')
     expect(home).toContain('aria-haspopup="menu"')
     expect(home).toContain('Khoa')
+  })
+
+  test('never offers a sign-in control (the login page is the only way in)', () => {
+    const html = renderToStaticMarkup(
+      <AccountProvider value={{ account: null }}>
+        <AppTopbar showAccount />
+      </AccountProvider>
+    )
+
+    expect(html).not.toContain('aria-haspopup="menu"')
+    expect(html).not.toContain('Sign in')
+    expect(html).not.toContain('<form')
   })
 })

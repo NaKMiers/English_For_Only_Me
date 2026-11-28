@@ -94,12 +94,7 @@ function containsElement(value: unknown): boolean {
 
 describe('BrowseVideoList', () => {
   test('gives only the first four cards a high fetch priority', () => {
-    const html = renderToStaticMarkup(
-      <BrowseVideoList
-        videos={videos}
-        canFavorite={false}
-      />
-    )
+    const html = renderToStaticMarkup(<BrowseVideoList videos={videos} />)
 
     expect(html.match(/<img[^>]*fetchPriority="high"/g)).toHaveLength(4)
     expect(html.match(/<img[^>]*loading="lazy"/g)).toHaveLength(2)
@@ -109,10 +104,7 @@ describe('BrowseVideoList', () => {
 describe('SectionAccordion', () => {
   test('mounts a section list only after its toggle opens it', () => {
     render(
-      <SectionAccordion
-        groups={[{ key: 'intro', title: 'Intro', videos }]}
-        canFavorite
-      />
+      <SectionAccordion groups={[{ key: 'intro', title: 'Intro', videos }]} />
     )
 
     const toggle = screen.getByRole('button', { name: /Intro/ })
@@ -132,10 +124,7 @@ describe('SectionAccordion', () => {
 describe('SectionAccordion payload', () => {
   test('a closed section ships plain video records, not rendered cards', () => {
     const tree = renderServerTree(
-      <SectionAccordion
-        groups={[{ key: 'intro', title: 'Intro', videos }]}
-        canFavorite
-      />
+      <SectionAccordion groups={[{ key: 'intro', title: 'Intro', videos }]} />
     )
     const [disclosure] = findElements(tree, BrowseDisclosure)
     const body = disclosure?.props.children

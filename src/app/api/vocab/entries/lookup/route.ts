@@ -6,7 +6,7 @@ import { connectDatabase } from '@/lib/db/connectDatabase'
 import { UserVocabItemModel } from '@/models/vocabulary/UserVocabItemModel'
 import { VocabEntryModel } from '@/models/vocabulary/VocabEntryModel'
 import { enrichVocabEntryIfNeeded } from '@/modules/vocabulary/enrichment/enrichmentService'
-import { requirePracticeActor } from '@/modules/dictation/services/getCurrentUser'
+import { requireUser } from '@/lib/auth/currentUser'
 import { isEnglishTermCandidate } from '@/modules/vocabulary/normalizeVocabTerm'
 import {
   findOrCreateVocabEntryShell,
@@ -38,7 +38,7 @@ export async function POST(request: Request) {
 
     if (!parsed.ok) return jsonError(parsed)
 
-    const actor = await requirePracticeActor()
+    const user = await requireUser()
 
     await connectDatabase()
 
@@ -94,7 +94,7 @@ export async function POST(request: Request) {
           ...occurrence,
           reason: occurrence.reason,
           selectedText: occurrence.selectedText ?? shell.term,
-          userId: actor.id,
+          userId: user.id,
           vocabEntryId: resolved.id,
         }).catch(error => {
           console.error('Vocabulary occurrence write failed', error)
@@ -103,7 +103,7 @@ export async function POST(request: Request) {
 
     const record = await getVocabEntryWithUserState({
       entryId: resolved.id,
-      userId: actor.id,
+      userId: user.id,
     })
 
     if (!record)

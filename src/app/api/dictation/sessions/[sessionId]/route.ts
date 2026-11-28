@@ -9,7 +9,8 @@ import { DictationSegmentModel } from '@/models/dictation/DictationSegmentModel'
 import { DictationSessionModel } from '@/models/dictation/DictationSessionModel'
 import { resolveSessionCompletedAt } from '@/modules/dictation/practice/sessionCompletion'
 import { toDictationSessionRecord } from '@/modules/dictation/services/dictationSessionRecords'
-import { requirePracticeActor } from '@/modules/dictation/services/getCurrentUser'
+import { requireUser } from '@/lib/auth/currentUser'
+import { InvalidOwnerKeyError } from '@/lib/auth/ownerKey'
 import {
   parseSessionIdParam,
   parseSessionPatchRequest,
@@ -34,6 +35,15 @@ function jsonError(decision: ApiErrorDecision) {
 }
 
 function toSessionError(error: unknown, t: Messages): ApiErrorDecision {
+  // A session whose id is not an ObjectId (see ownerKey.ts).
+  if (error instanceof InvalidOwnerKeyError)
+    return {
+      status: 400,
+      body: {
+        message: t.common.errors.invalidRequest,
+      },
+    }
+
   if (
     typeof error === 'object' &&
     error !== null &&
@@ -77,13 +87,13 @@ export async function GET(_request: Request, context: RouteContext) {
   if (!parsed.ok) return jsonError(parsed)
 
   try {
-    const actor = await requirePracticeActor()
+    const user = await requireUser()
 
     await connectDatabase()
 
     const session = await DictationSessionModel.findOne({
       _id: parsed.data.sessionId,
-      userId: actor.id,
+      userId: user.id,
     }).lean()
 
     if (!session)
@@ -119,13 +129,13 @@ export async function PATCH(request: Request, context: RouteContext) {
 
     if (!parsedBody.ok) return jsonError(parsedBody)
 
-    const actor = await requirePracticeActor()
+    const user = await requireUser()
 
     await connectDatabase()
 
     const session = await DictationSessionModel.findOne({
       _id: parsedId.data.sessionId,
-      userId: actor.id,
+      userId: user.id,
     })
 
     if (!session)

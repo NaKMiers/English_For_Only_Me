@@ -54,7 +54,6 @@ describe('AppSidebar', () => {
             initial: 'K',
             isAdmin: false,
           },
-          enabled: true,
         }}
       >
         <AppSidebar />
@@ -62,6 +61,18 @@ describe('AppSidebar', () => {
     )
 
     expect(html).toMatch(/aria-haspopup="menu"[^>]*>.*>K<.*sr-only">Khoa</)
+  })
+
+  test('has no sign-in control at the foot of the rail', () => {
+    const html = renderToStaticMarkup(
+      <AccountProvider value={{ account: null }}>
+        <AppSidebar />
+      </AccountProvider>
+    )
+
+    expect(html).not.toContain('aria-haspopup="menu"')
+    expect(html).not.toContain('Sign in')
+    expect(html).not.toContain('<form')
   })
 
   test('home only matches itself, modules match their subtree', () => {

@@ -156,7 +156,7 @@ export function getAdminEmails() {
   )
 }
 
-/** Canonical origin for SEO (metadata, sitemap). No trailing slash. */
+/** Canonical origin for page metadata and scripts. No trailing slash. */
 export function getSiteUrl() {
   const raw =
     getOptionalServerEnv(ENV_KEYS.siteUrl) ??

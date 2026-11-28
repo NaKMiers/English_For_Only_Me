@@ -6,7 +6,7 @@ import { VocabularyDashboard } from '@/components/vocabulary/VocabularyDashboard
 import { hasMongoDbUri } from '@/constants/environments'
 import { getMessages } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
-import { getPracticeActorId } from '@/modules/dictation/services/getCurrentUser'
+import { requirePageUser } from '@/lib/auth/currentUser'
 import { getVocabularyDashboardData } from '@/modules/vocabulary/services/vocabDashboardService'
 import type { VocabularyDashboardInitialData } from '@/modules/vocabulary/types'
 
@@ -22,14 +22,13 @@ export async function generateMetadata(): Promise<Metadata> {
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
-async function loadInitialData(): Promise<VocabularyDashboardInitialData | null> {
+async function loadInitialData(
+  userId: string
+): Promise<VocabularyDashboardInitialData | null> {
   try {
-    const [actorId] = await Promise.all([
-      getPracticeActorId(),
-      connectDatabase(),
-    ])
+    await connectDatabase()
 
-    return await getVocabularyDashboardData({ actorId })
+    return await getVocabularyDashboardData({ userId })
   } catch (error) {
     // The dashboard can still load itself in the browser and show the API's
     // error message there, so a failed server read is not a blank page.
@@ -42,7 +41,9 @@ async function loadInitialData(): Promise<VocabularyDashboardInitialData | null>
 export default async function VocabularyPage() {
   const t = await getMessages()
   const mongoConfigured = hasMongoDbUri()
-  const initialData = mongoConfigured ? await loadInitialData() : null
+  // Outside loadInitialData's try: the login redirect must not be caught.
+  const user = await requirePageUser()
+  const initialData = mongoConfigured ? await loadInitialData(user.id) : null
 
   return (
     <PageShell

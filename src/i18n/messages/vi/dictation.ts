@@ -30,8 +30,6 @@ export const dictation: Messages['dictation'] = {
     topicsHeading: 'Chủ đề',
     descriptionSignedIn:
       'Chọn một chủ đề, rồi một phần, rồi tiếp tục xây dựng lịch sử luyện nghe của bạn.',
-    descriptionGuest:
-      'Chọn một chủ đề, rồi một phần, rồi luyện một bài. Đăng nhập để lưu tiến độ và bài yêu thích.',
   },
   journey: {
     title: 'Hành trình luyện nghe',
@@ -137,7 +135,6 @@ export const dictation: Messages['dictation'] = {
       one: '{count} bài',
       other: '{count} bài',
     },
-    signInToFavorite: 'Đăng nhập để lưu bài yêu thích',
     addFavorite: 'Thêm vào yêu thích',
     removeFavorite: 'Bỏ khỏi yêu thích',
     card: {

@@ -15,7 +15,8 @@ import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
 import { toDictationSegmentRecord } from '@/modules/dictation/services/dictationSegmentRecords'
 import { toDictationTranscriptRecord } from '@/modules/dictation/services/dictationTranscriptRecords'
 import { toDictationVideoRecord } from '@/modules/dictation/services/dictationVideoRecords'
-import { getOptionalUser } from '@/modules/dictation/services/getCurrentUser'
+import { NON_ADMIN_HOME } from '@/lib/auth/auth.config'
+import { requirePageUser } from '@/lib/auth/currentUser'
 import { normalizeTranslationLanguage } from '@/modules/dictation/translations/languages'
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -73,13 +74,9 @@ export default async function Page({ params }: Props) {
   const { videoId } = await params
 
   // Editing mutates catalog content, so only an admin may open it.
-  const user = await getOptionalUser()
-  if (!user)
-    redirect(
-      `/api/auth/signin?callbackUrl=/admin/dictation/videos/${videoId}/edit`
-    )
+  const user = await requirePageUser(`/admin/dictation/videos/${videoId}/edit`)
 
-  if (user.role !== 'admin') redirect('/dictation')
+  if (user.role !== 'admin') redirect(NON_ADMIN_HOME)
 
   const t = await getMessages()
 

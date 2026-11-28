@@ -9,7 +9,7 @@ import { revalidateDictationCatalog } from '@/lib/db/revalidateCatalog'
 import { getYouTubeVideoMetadata } from '@/lib/youtube/getYouTubeVideoMetadata'
 import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
 import { toDictationVideoRecord } from '@/modules/dictation/services/dictationVideoRecords'
-import { requireAdmin } from '@/modules/dictation/services/getCurrentUser'
+import { requireAdmin } from '@/lib/auth/currentUser'
 import {
   type ApiErrorDecision,
   getMissingMongoResponse,

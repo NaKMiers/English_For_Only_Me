@@ -39,7 +39,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { QuickVocabWordButton } from '@/components/vocabulary/QuickVocabLookup'
 import { useMessages } from '@/i18n/client'
 import { format } from '@/i18n/format'
-import { ensureGuestIdentity } from '@/lib/sync/clientOutbox'
 import type { OutboxEnqueueInput } from '@/lib/sync/outbox'
 import { cn } from '@/lib/utils'
 import {
@@ -674,11 +673,6 @@ export function DictationPracticeShell({
 
       for (let failures = 1; ; failures += 1)
         try {
-          // A first-time visitor has no guest cookie yet. Mint it once, before
-          // the session start, so the session and every queued write share
-          // one owner.
-          if (!ownerKey) await ensureGuestIdentity()
-
           const response = await startOrResumeDictationSessionApi({
             videoId: video.id,
           })
@@ -700,7 +694,7 @@ export function DictationPracticeShell({
           )
         }
     },
-    [ownerKey, video.id]
+    [video.id]
   )
 
   const ensurePracticeSession = useCallback(
@@ -1100,7 +1094,7 @@ export function DictationPracticeShell({
         correction,
         expectedText: currentSegment.text,
         idempotencyKey,
-        userId: activeSession?.userId ?? ownerKey ?? '',
+        userId: activeSession?.userId ?? ownerKey,
         replayCountDelta,
         segmentId: currentSegment.id,
         sessionId: activeSession?.id ?? '',

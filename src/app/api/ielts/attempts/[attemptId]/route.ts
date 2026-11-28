@@ -14,7 +14,7 @@ import {
   ieltsMissingMongo,
   ieltsRouteFailure,
 } from '@/modules/ielts/http'
-import { requirePracticeActor } from '@/modules/dictation/services/getCurrentUser'
+import { requireUser } from '@/lib/auth/currentUser'
 
 export const runtime = 'nodejs'
 
@@ -33,11 +33,11 @@ export async function GET(_request: Request, context: RouteContext) {
   if (!id.ok) return ieltsDecisionError(id)
 
   try {
-    const actor = await requirePracticeActor()
+    const user = await requireUser()
 
     await connectDatabase()
 
-    const attempt = await readAttemptForOwner(actor.id, id.data)
+    const attempt = await readAttemptForOwner(user.id, id.data)
 
     if (!attempt)
       return ieltsDecisionError(ieltsMessageError(404, 'attemptNotFound'))
@@ -59,11 +59,11 @@ export async function DELETE(_request: Request, context: RouteContext) {
   if (!id.ok) return ieltsDecisionError(id)
 
   try {
-    const actor = await requirePracticeActor()
+    const user = await requireUser()
 
     await connectDatabase()
 
-    const deleted = await deleteAttemptForOwner(actor.id, id.data)
+    const deleted = await deleteAttemptForOwner(user.id, id.data)
 
     if (!deleted)
       return ieltsDecisionError(ieltsMessageError(404, 'attemptNotFound'))

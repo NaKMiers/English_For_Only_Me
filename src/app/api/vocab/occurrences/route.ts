@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 import { getMessages } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { VocabEntryModel } from '@/models/vocabulary/VocabEntryModel'
-import { requirePracticeActor } from '@/modules/dictation/services/getCurrentUser'
+import { requireUser } from '@/lib/auth/currentUser'
 import { recordVocabOccurrence } from '@/modules/vocabulary/services/userVocabItemService'
 import { toVocabApiError } from '@/modules/vocabulary/services/vocabApiErrors'
 import {
@@ -35,10 +35,7 @@ export async function POST(request: Request) {
 
     if (!parsed.ok) return jsonError(parsed)
 
-    const [actor] = await Promise.all([
-      requirePracticeActor(),
-      connectDatabase(),
-    ])
+    const [user] = await Promise.all([requireUser(), connectDatabase()])
     const { occurrence, vocabEntryId } = parsed.data
 
     if (!(await VocabEntryModel.exists({ _id: vocabEntryId })))
@@ -49,7 +46,7 @@ export async function POST(request: Request) {
 
     await recordVocabOccurrence({
       ...occurrence,
-      userId: actor.id,
+      userId: user.id,
       vocabEntryId,
     })
 

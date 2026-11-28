@@ -10,13 +10,10 @@ interface FetchCall {
   url: string
 }
 
-// Guest identity calls succeed at once; outbox writes wait for the test.
+// Outbox writes wait for the test to answer them.
 function stubFetch() {
   const calls: FetchCall[] = []
   const fetchMock = vi.fn((url: RequestInfo | URL, init?: RequestInit) => {
-    if (String(url) === '/api/guest')
-      return Promise.resolve(new Response('{}', { status: 200 }))
-
     return new Promise<Response>(resolve => {
       calls.push({
         init: init ?? {},
@@ -79,24 +76,6 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
-describe('ensureGuestIdentity', () => {
-  it('forgets a failed attempt so the next write tries again', async () => {
-    const { ensureGuestIdentity } = await loadModule()
-    const fetchImpl = vi
-      .fn()
-      .mockResolvedValueOnce(new Response('{}', { status: 500 }))
-      .mockResolvedValueOnce(new Response('{}', { status: 200 }))
-
-    await expect(ensureGuestIdentity(fetchImpl)).rejects.toThrow(
-      'Could not start a guest session.'
-    )
-    await expect(ensureGuestIdentity(fetchImpl)).resolves.toBeUndefined()
-    // Once it worked, the result is shared.
-    await expect(ensureGuestIdentity(fetchImpl)).resolves.toBeUndefined()
-    expect(fetchImpl).toHaveBeenCalledTimes(2)
-  })
-})
-
 describe('getClientOutbox', () => {
   it('never caches during server rendering', async () => {
     const { getClientOutbox } = await loadModule()
@@ -131,89 +110,99 @@ describe('getClientOutbox', () => {
     )
   })
 
-  it('moves anonymous writes into the guest queue once the visitor is a guest', async () => {
+  it('holds the write on a 401 and sends the tab to sign in, once', async () => {
     const { calls } = stubFetch()
+    const assign = vi.fn()
+
+    vi.stubGlobal('location', {
+      ...window.location,
+      assign,
+      pathname: '/grammar/lessons/u01-l01',
+      search: '?step=3',
+    })
+
     const { getClientOutbox } = await loadModule()
-    const anonymous = getClientOutbox(null)
-    const result = anonymous.enqueue({
-      body: {},
-      id: 'first-answer',
-      lane: 'l',
-      url: '/answer',
-    })
+    const outbox = getClientOutbox('hash-a')
+    const flush = vi.spyOn(outbox, 'flushWithKeepalive')
 
+    void outbox.enqueue({ body: {}, id: 'a1', lane: 'a', url: '/a1' })
+    void outbox.enqueue({ body: {}, id: 'b1', lane: 'b', url: '/b1' })
     await flushMicrotasks()
-    expect(calls).toHaveLength(1)
-
-    const guest = getClientOutbox('guest-hash', { isGuest: true })
-
+    calls[0].resolve(401)
+    calls[1].resolve(401)
     await flushMicrotasks()
-    expect(guest).not.toBe(anonymous)
-    expect(guest.pendingCount()).toBe(1)
-    expect(anonymous.pendingCount()).toBe(0)
-    expect(
+
+    expect(assign).toHaveBeenCalledTimes(1)
+    expect(assign).toHaveBeenCalledWith(
+      '/auth/login?callbackUrl=%2Fgrammar%2Flessons%2Fu01-l01%3Fstep%3D3'
+    )
+    expect(outbox.pendingCount()).toBe(2)
+
+    // Leaving for the login page resends nothing: it would only meet a 401.
+    window.dispatchEvent(new Event('pagehide'))
+    expect(flush).not.toHaveBeenCalled()
+
+    // The stored queue is released, so the next load takes it over at once.
+    const stored = JSON.parse(
       window.localStorage.getItem(
-        getOutboxTabStorageKey('anonymous', getTabId())
-      )
-    ).toBeNull()
+        getOutboxTabStorageKey('hash-a', getTabId())
+      ) ?? '{}'
+    ) as { heartbeatAt: number; items: Array<{ id: string }> }
 
-    // Re-sent under the guest, with the same idempotency key.
-    const resent = calls[1]
-
-    expect(new Headers(resent.init.headers).get('x-outbox-owner')).toBe(
-      'guest-hash'
-    )
-    expect(new Headers(resent.init.headers).get('idempotency-key')).toBe(
-      'first-answer'
-    )
-
-    resent.resolve(200, { saved: true })
-    await expect(result).resolves.toMatchObject({
-      data: { saved: true },
-      ok: true,
-    })
+    expect(stored.heartbeatAt).toBe(0)
+    expect(stored.items.map(item => item.id)).toEqual(['a1', 'b1'])
   })
 
-  it('adopts an anonymous queue left in storage by an earlier load', async () => {
-    stubFetch()
+  it('replays the held write after signing back in as the same learner', async () => {
+    const before = stubFetch()
+
+    vi.stubGlobal('location', { ...window.location, assign: vi.fn() })
 
     const first = await loadModule()
 
     void first
-      .getClientOutbox(null)
-      .enqueue({ body: {}, id: 'stored', lane: 'l', url: '/a' })
+      .getClientOutbox('hash-a')
+      .enqueue({ body: { n: 1 }, id: 'a1', lane: 'l', url: '/a1' })
     await flushMicrotasks()
-
-    // A reload in the same tab, now with a guest cookie. The old page fires
-    // pagehide before the new one runs.
+    before.calls[0].resolve(401)
+    await flushMicrotasks()
+    // The tab leaves for the login page.
     window.dispatchEvent(new Event('pagehide'))
-    await flushMicrotasks()
 
-    const { calls } = stubFetch()
+    // Back as the same Google account: the same owner key.
+    const after = stubFetch()
     const second = await loadModule()
-    const guest = second.getClientOutbox('guest-hash', { isGuest: true })
+    const replayed = second.getClientOutbox('hash-a')
 
     await flushMicrotasks()
-    expect(guest.pendingCount()).toBe(1)
-    expect(calls.map(call => call.url)).toEqual(['/a'])
+    expect(replayed.pendingCount()).toBe(1)
+    expect(after.calls.map(call => call.url)).toEqual(['/a1'])
+    expect(
+      new Headers(after.calls[0].init.headers).get('idempotency-key')
+    ).toBe('a1')
   })
 
-  it('does not hand anonymous writes to a signed-in user', async () => {
-    stubFetch()
+  it('never sends the held write as another learner', async () => {
+    const before = stubFetch()
 
-    const { getClientOutbox } = await loadModule()
+    vi.stubGlobal('location', { ...window.location, assign: vi.fn() })
 
-    void getClientOutbox(null).enqueue({ body: {}, lane: 'l', url: '/a' })
+    const first = await loadModule()
+
+    void first
+      .getClientOutbox('hash-a')
+      .enqueue({ body: {}, id: 'a1', lane: 'l', url: '/a1' })
     await flushMicrotasks()
+    before.calls[0].resolve(401)
+    await flushMicrotasks()
+    window.dispatchEvent(new Event('pagehide'))
 
-    const user = getClientOutbox('user-hash', { isGuest: false })
+    const after = stubFetch()
+    const second = await loadModule()
 
-    expect(user.pendingCount()).toBe(0)
-    expect(
-      window.localStorage.getItem(
-        getOutboxTabStorageKey('anonymous', getTabId())
-      )
-    ).not.toBeNull()
+    expect(second.getClientOutbox('hash-b').pendingCount()).toBe(0)
+    await flushMicrotasks()
+    expect(after.calls).toHaveLength(0)
   })
 
   it('disposes the previous owner on a switch and keeps its queue stored', async () => {

@@ -47,7 +47,7 @@ Dictation subdirectories:
 | `content/`      | `contentRepository`, `catalogReaders`, `adminContentRepository`, `adminActions`, `adminVideoFilter`, ... | Topic/Section/Video catalog, caching, admin, favorites, progress   |
 | `preferences/`  | `dictationPreferences`, `shortcuts`                                                                      | Local preferences store, per-owner drafts, keyboard shortcuts      |
 | `player/`       | `useYoutubeDictationPlayer`                                                                              | YouTube playback control hook                                      |
-| `services/`     | `*RouteDecisions`, `dictation*Records`, `getCurrentUser`, `mergeGuestData`, `rebuildTranscriptSegments`  | Route building blocks, identity, guest merge                       |
+| `services/`     | `*RouteDecisions`, `dictation*Records`, `rebuildTranscriptSegments`                                      | Route building blocks and record mappers                           |
 | (root)          | `levels`, `completionBadges`, `videoReadiness`, `statusDisplay`, `types`                                 | Shared enums, badge tiers, CTAs, status tones, type contracts      |
 
 ---
@@ -862,7 +862,7 @@ separated from `server-only` repositories and `'use server'` actions.
 ```mermaid
 flowchart LR
   subgraph Public pages
-    P1[/dictation, topic,<br/>no-topic, sitemap/]
+    P1[/dictation, topic,<br/>no-topic/]
   end
   subgraph Admin pages
     A1[/admin/dictation/]
@@ -991,7 +991,8 @@ counts to 0.
   idempotent set-state (upsert when true, delete when false; never a toggle) so outbox
   replays land on the last desired state. It throws for a malformed id or for adding an
   archived/missing video (removal stays allowed), and returns
-  `{ favorited: null, needsAuth: true }` for anonymous users.
+  `{ favorited: null, needsAuth: true }` when the session has ended (the client sends
+  the learner back to the login page).
 - `progressRepository.ts` (`server-only`): per-user progress is derived from sessions,
   never stored on the shared video.
   - `getCompletionCountsForUser` - `Map<videoId, count>` of `status: 'completed'`
@@ -1033,11 +1034,10 @@ Files: `src/modules/dictation/preferences/{dictationPreferences,shortcuts}.ts` (
   through `buildPreferencesWrite`.
 - Answer drafts are per owner AND per video:
   `getDictationAnswerDraftsStorageKey(videoId, ownerKey)` ->
-  `english-for-only-me:dictation-answer-drafts:<owner|anonymous>:<videoId>`, so two
-  accounts sharing a browser never see each other's typing. `readDictationAnswerDrafts`
-  adopts drafts typed under `anonymous` once an owner key exists (owner's own drafts win,
-  anonymous key removed) and migrates the legacy un-namespaced key once (then removes
-  it). `writeDictationAnswerDrafts` removes the key when empty and swallows storage
+  `english-for-only-me:dictation-answer-drafts:<ownerKey>:<videoId>`, so two
+  accounts sharing a browser never see each other's typing. Both read and write need an
+  owner key. `readDictationAnswerDrafts` migrates the legacy un-namespaced key once (then
+  removes it). `writeDictationAnswerDrafts` removes the key when empty and swallows storage
   errors.
 
 `shortcuts.ts` defines the keyboard model. `getDictationShortcutAction(event)` maps keys to a
@@ -1143,47 +1143,28 @@ example `EMPTY_ATTEMPT_STATS`, `EMPTY_STATS_SNAPSHOT`).
 `toDictationVideoRecord` no longer maps `completedSessionCount` or `lastPracticedAt`
 (per-user progress is not stored on the video).
 
-### Identity: `getCurrentUser.ts` and `mergeGuestData.ts`
+### Identity: `src/lib/auth/currentUser.ts`
 
-`getCurrentUser.ts` (`server-only`) resolves the actor. Practice does not require login:
+Sign-in with Google is required for every practice route and page, so identity is a
+signed-in user's id and nothing else. `src/lib/auth/currentUser.ts` (`server-only`, shared
+by every module) resolves it:
 
-- `getOptionalUser` - null when anonymous; wrapped in React `cache` so the JWT is decoded
-  once per request.
-- `requireUser` (throws `UnauthenticatedError`/401), `requireAdmin` (throws
-  `ForbiddenError`/403 unless `role === 'admin'`).
-- `requirePracticeActor()` -> `PracticeActor { id, isGuest }` (mints the guest cookie, so
-  route-handler/server-function only). The id passes through `assertOwnerKey`
-  (`src/lib/auth/ownerKey.ts`), the write-boundary guard that rejects a null/empty/malformed
-  owner. It also reads the `OUTBOX_OWNER_HEADER` and calls
-  `assertOutboxOwnerMatchesActor` (`src/lib/auth/clientOwnerKey.ts`), throwing a 409 when
+- `getOptionalUser` - null without a session; wrapped in React `cache` so the JWT is
+  decoded once per request.
+- `requireUser()` -> `CurrentUser` for route handlers and server functions. Throws
+  `UnauthenticatedError` (401) without a session; the id passes through `assertOwnerKey`
+  (`src/lib/auth/ownerKey.ts`, a 24-char hex ObjectId, `InvalidOwnerKeyError`/400
+  otherwise), the write-boundary guard. It also reads the `OUTBOX_OWNER_HEADER` and calls
+  `assertOutboxOwnerMatchesUser` (`src/lib/auth/clientOwnerKey.ts`), throwing a 409 when
   a write queued for a previous learner (tab left open across sign-in/out) arrives.
-- `getPracticeActorId()` - read-only variant for Server Components: user id, existing
-  guest id, or null; never writes a cookie.
+- `requirePageUser(returnTo?)` - the Server Component variant: redirects to the login page
+  instead of throwing.
+- `requireAdmin` (throws `UnauthenticatedError`/401 or `ForbiddenError`/403 unless
+  `role === 'admin'`).
 
-Per-user queries are always scoped to this resolved id, never a client-supplied id.
-
-`mergeGuestData.ts` (`server-only`) promotes cookie-scoped guest data on first sign-in.
-`mergeGuestDataIntoUser(guestId, userId)` guards against non-guest or identical ids, then:
-
-1. `dismissCollidingGuestReviewItems` marks `dismissed` any guest active review item whose
-   `segmentId:kind:reason` already has an active twin for the user (kept as history), so
-   the move cannot break the partial unique index.
-2. `updateMany({ userId: guestId }, { $set: { userId } })` in parallel across sessions,
-   attempts, review items, and debriefs.
-3. Logs an audit line with per-collection moved counts when anything moved.
-
-Favorites are excluded (login-gated, unique `{ userId, videoId }` index). IELTS has its own
-merge (`src/modules/ielts/services/mergeIeltsGuestData.ts`, see `docs/09-ielts.md`).
-
-Vocabulary merges through `mergeVocabGuestData`
-(`src/modules/vocabulary/services/mergeVocabGuestData.ts`). Items are unique per
-`(userId, vocabEntryId)`, so the pure `planVocabGuestMerge`
-(`src/modules/vocabulary/services/planVocabGuestMerge.ts`) splits guest items into
-words to move as they are and words both sides saved. For a shared word the user's
-status, stage and schedule win; review counts are summed, the earliest
-`firstSeenAt` and latest `lastReviewedAt` are kept, the guest's recall attempts are
-repointed at the user's item and the guest item is deleted. Recall attempts whose
-`idempotencyKey` the user already has are dropped; occurrences always move.
+Per-user queries are always scoped to this resolved id, never a client-supplied id. There
+is no guest identity and no guest-to-account merge; legacy `guest_...` rows are removed by
+`scripts/dropGuestData.ts` (see `docs/03-data-model.md`).
 
 ---
 
@@ -1290,8 +1271,8 @@ Responsibility: seed English word lists, normalize lookup terms, enrich entries 
 free dictionary + translation providers, gate every user-facing word on a Vietnamese
 meaning, manage per-user word status, schedule spaced recall as server-signed tasks with
 paged delivery, power Explore and the dashboard, and aggregate vocabulary stats. It
-reuses the same pure-vs-`server-only` split as dictation, and shares the identity/actor
-helpers in `src/modules/dictation/services/getCurrentUser.ts`.
+reuses the same pure-vs-`server-only` split as dictation, and shares the identity
+helpers in `src/lib/auth/currentUser.ts`.
 
 The MongoDB collections it revolves around are `VocabEntry` (global, deduped word shells
 enriched by providers), `UserVocabItem` (per-user learning state and recall schedule for
@@ -1515,11 +1496,10 @@ user already classified; and a final `$limit` (with `allowDiskUse`). A null `use
     (grouped in Mongo, then one `DictationVideo` read for `title`/`youtubeUrl`). Views:
     `learning` and `dueToday` (sorted `dueAt`), `alreadyKnow` and `knownTotal` (sorted
     `knownAt`), `mastered` (sorted `masteredAt`).
-- `vocabDashboardService.ts` (`server-only`): `getVocabularyDashboardData({ actorId | null })`
+- `vocabDashboardService.ts` (`server-only`): `getVocabularyDashboardData({ userId })`
   reads everything the landing page shows on first paint in one parallel round trip:
   stats, the first due page (`VOCAB_RECALL_DEFAULT_LIMIT`), and the first
-  `VOCAB_EXPLORE_INITIAL_LIMIT` Explore cards. A null actor gets zeroed stats, an empty due
-  page, and the unfiltered Explore deck (no guest cookie is minted on a page GET).
+  `VOCAB_EXPLORE_INITIAL_LIMIT` Explore cards.
 
 ### recall/ - Deep dive: paged, signed recall
 
@@ -1576,7 +1556,7 @@ are minted per page, so a page is used well inside the 30-minute token lifetime.
 `base64url(JSON payload).HMAC-SHA256`. The payload (`VocabRecallTaskTokenPayload`:
 `taskId`, `itemId`, `entryId`, `recallStage`, `type`, `correctOptionId`, `correctAnswer`,
 `expiresAt`) is readable by the browser and deliberately carries NO user id (it lands in
-SSR HTML and the localStorage outbox, and a guest id is a bearer credential). The owner is
+SSR HTML and the localStorage outbox, so the user id is kept out of it). The owner is
 bound inside the signature instead: `signPayload` HMACs `${userId}.${encodedPayload}` with
 `AUTH_SECRET` / `NEXTAUTH_SECRET` (dev fallback). `verifyVocabRecallTaskToken` uses
 `timingSafeEqual` and checks expiry, so a token only verifies for its owner.
@@ -1647,7 +1627,7 @@ documented in their own files:
 
 - `docs/08-grammar.md` - lessons, grading (`normalizeGrammarAnswer`), sessions, and how
   grammar lessons schedule on the shared recall ladder above.
-- `docs/09-ielts.md` - tests, attempts, drills, and IELTS guest-data merge.
+- `docs/09-ielts.md` - tests, attempts, and drills.
 
 Cross-module touch points documented here: the shared ladder
 (`src/modules/learning/recall/recallLadder.ts`), `isDuplicateKeyError`

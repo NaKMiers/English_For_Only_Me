@@ -25,7 +25,8 @@ import { ActionButton } from '@/components/ui/ActionButton'
 import { hasMongoDbUri } from '@/constants/environments'
 import { format, plural } from '@/i18n/format'
 import { getMessages } from '@/i18n/server'
-import { connectDatabaseWhen } from '@/lib/db/connectDatabase'
+import { requirePageUser } from '@/lib/auth/currentUser'
+import { connectDatabase } from '@/lib/db/connectDatabase'
 import { pickNextStop } from '@/lib/journey/nextStop'
 import { toBrowseItem } from '@/modules/dictation/content/browseItem'
 import {
@@ -39,10 +40,6 @@ import {
   getLatestCompletedVideoForUser,
   listInProgressVideosForUser,
 } from '@/modules/dictation/content/progressRepository'
-import {
-  getOptionalUser,
-  getPracticeActorId,
-} from '@/modules/dictation/services/getCurrentUser'
 import { getGlobalStatsForUser } from '@/modules/dictation/stats/globalStatsService'
 import type {
   DictationGlobalStatsRecord,
@@ -67,28 +64,19 @@ export default async function DictationPage() {
   const text = t.dictation.landing
   let topics: DictationTopicSummaryRecord[] = []
   let globalStats: DictationGlobalStatsRecord | null = null
-  let hasPracticeActor = false
   let latestCompletedVideo: DictationVideoApiRecord | null = null
   let noTopicCount = 0
   let inProgressItems: ReturnType<typeof toBrowseItem>[] = []
-  let canFavorite = false
   let doneByTopic = new Map<string, number>()
 
   if (hasMongoDbUri()) {
-    // The catalog and the anonymous stats total come from the cache, so only a
-    // known practice actor needs a connection for their own rows.
-    const [user, actorId] = await Promise.all([
-      getOptionalUser(),
-      connectDatabaseWhen(getPracticeActorId()),
-    ])
-    hasPracticeActor = Boolean(actorId)
-    canFavorite = Boolean(user)
+    // The catalog comes from the cache; the learner's own rows need the
+    // connection.
+    const [user] = await Promise.all([requirePageUser(), connectDatabase()])
 
     // Loaded once and shared: the stats card and the in-progress cards both
     // need this user's completion counts.
-    const completionCountsPromise = actorId
-      ? getCompletionCountsForUser(actorId)
-      : Promise.resolve<Map<string, number>>(new Map())
+    const completionCountsPromise = getCompletionCountsForUser(user.id)
 
     const [
       topicSummaries,
@@ -102,14 +90,12 @@ export default async function DictationPage() {
     ] = await Promise.all([
       getCachedTopicSummaries(),
       getCachedNoTopicCount(),
-      getGlobalStatsForUser(actorId, {
+      getGlobalStatsForUser(user.id, {
         completionCounts: completionCountsPromise,
       }),
-      actorId ? getLatestCompletedVideoForUser(actorId) : Promise.resolve(null),
-      actorId
-        ? listInProgressVideosForUser(actorId)
-        : Promise.resolve<DictationVideoApiRecord[]>([]),
-      user ? listFavoriteVideoIds(user.id) : Promise.resolve<string[]>([]),
+      getLatestCompletedVideoForUser(user.id),
+      listInProgressVideosForUser(user.id),
+      listFavoriteVideoIds(user.id),
       completionCountsPromise,
       getCachedVideoTopicIds(),
     ])
@@ -200,9 +186,7 @@ export default async function DictationPage() {
       : null,
   ])
   const nextStop = picked.kind === 'done' ? null : picked.data
-  const subtitle = hasPracticeActor
-    ? text.descriptionSignedIn
-    : text.descriptionGuest
+  const subtitle = text.descriptionSignedIn
 
   return (
     <PageShell
@@ -251,8 +235,8 @@ export default async function DictationPage() {
           aria-labelledby="dictation-topics-title"
           className="grid gap-3"
         >
-          {/* The favorites list sits beside the heading (signed-in learners
-              only): no row of its own, and not hidden in the account menu. */}
+          {/* The favorites list sits beside the heading: no row of its own,
+              and not hidden in the account menu. */}
           <div className="flex items-center justify-between gap-3">
             <h2
               className="font-sans text-lg font-medium"
@@ -260,15 +244,13 @@ export default async function DictationPage() {
             >
               {text.topicsHeading}
             </h2>
-            {canFavorite ? (
-              <ActionButton
-                href="/dictation/favorites"
-                icon={<Star aria-hidden="true" />}
-                tone="paper"
-              >
-                {t.dictation.journey.side.favorites}
-              </ActionButton>
-            ) : null}
+            <ActionButton
+              href="/dictation/favorites"
+              icon={<Star aria-hidden="true" />}
+              tone="paper"
+            >
+              {t.dictation.journey.side.favorites}
+            </ActionButton>
           </div>
           {recordTopics.length > 0 ? (
             <RecordShelves

@@ -465,9 +465,6 @@ export const ielts: Messages['ielts'] = {
     checkPracticeOnly: 'Chỉ có thể kiểm tra từng part khi luyện tập.',
     writingPerTask: 'Writing được chấm theo từng task, không theo part.',
     partNotInAttempt: 'Part đó không có trong bài làm này.',
-    signInToGrade:
-      'Hãy đăng nhập để được AI chấm bài. Bạn có thể tự so với bài mẫu.',
-    signInForAi: 'Hãy đăng nhập để được AI chấm bài.',
     onlyWritingGraded: 'Chỉ bài Writing mới được chấm.',
     onlyWritingAi: 'Chỉ task Writing mới được AI chấm.',
     submitBeforeGrading: 'Hãy nộp bài trước khi chấm.',

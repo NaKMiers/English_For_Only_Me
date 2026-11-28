@@ -1,5 +1,5 @@
 import { connectDatabase } from '@/lib/db/connectDatabase'
-import { requireAdmin } from '@/modules/dictation/services/getCurrentUser'
+import { requireAdmin } from '@/lib/auth/currentUser'
 import {
   ieltsDecisionError,
   ieltsDecisionResponse,

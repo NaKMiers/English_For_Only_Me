@@ -9,7 +9,7 @@ import { hasMongoDbUri } from '@/constants/environments'
 import { plural } from '@/i18n/format'
 import { getMessages } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
-import { getPracticeActorId } from '@/modules/dictation/services/getCurrentUser'
+import { requirePageUser } from '@/lib/auth/currentUser'
 import { parseVocabWordListQuery } from '@/modules/vocabulary/services/vocabularyRouteDecisions'
 import { listVocabWordsForUser } from '@/modules/vocabulary/services/vocabWordListService'
 
@@ -63,12 +63,12 @@ export default async function VocabularyWordsPage({
       </PageShell>
     )
 
-  const [actorId] = await Promise.all([getPracticeActorId(), connectDatabase()])
+  const [user] = await Promise.all([requirePageUser(), connectDatabase()])
   const wordPage = await listVocabWordsForUser({
     page,
     perPage,
     search: q,
-    userId: actorId ?? '',
+    userId: user.id,
     view,
   })
 

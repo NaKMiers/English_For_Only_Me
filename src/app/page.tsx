@@ -5,8 +5,8 @@ import { HomeStudyDesk } from '@/components/home/HomeStudyDesk'
 import { HOME_VIEW_COOKIE, parseHomeView } from '@/components/home/homeView'
 import { hasMongoDbUri } from '@/constants/environments'
 import { getLocale, getMessages } from '@/i18n/server'
+import { requirePageUser } from '@/lib/auth/currentUser'
 import { connectDatabase } from '@/lib/db/connectDatabase'
-import { getOptionalUser } from '@/modules/dictation/services/getCurrentUser'
 import { getGlobalStatsForUser } from '@/modules/dictation/stats/globalStatsService'
 import { grammarCourse } from '@/modules/grammar/course'
 import { buildGrammarPath } from '@/modules/grammar/path/buildGrammarPath'
@@ -17,7 +17,9 @@ export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
 export default async function Home() {
-  const [locale, messages, cookieStore] = await Promise.all([
+  // Home sits outside the (app) layout, so it checks the session itself.
+  const [user, locale, messages, cookieStore] = await Promise.all([
+    requirePageUser(),
     getLocale(),
     getMessages(),
     cookies(),
@@ -28,13 +30,13 @@ export default async function Home() {
     view: parseHomeView(cookieStore.get(HOME_VIEW_COOKIE)?.value),
   }
 
-  if (!hasMongoDbUri()) return <HomeStudyDesk {...text} />
-
-  // Stats are per-user; anonymous visitors see the desk without personal stats.
-  // Auth is a local JWT decode, so it goes first and spares anonymous visitors
-  // the connection handshake entirely.
-  const user = await getOptionalUser()
-  if (!user) return <HomeStudyDesk {...text} />
+  if (!hasMongoDbUri())
+    return (
+      <HomeStudyDesk
+        {...text}
+        userName={user.name}
+      />
+    )
 
   await connectDatabase()
 

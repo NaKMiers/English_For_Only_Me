@@ -9,8 +9,8 @@ import { hasMongoDbUri } from '@/constants/environments'
 import { format, plural } from '@/i18n/format'
 import type { Messages } from '@/i18n/messages'
 import { getMessages } from '@/i18n/server'
-import { connectDatabase, connectDatabaseWhen } from '@/lib/db/connectDatabase'
-import { getPracticeActorId } from '@/modules/dictation/services/getCurrentUser'
+import { connectDatabase } from '@/lib/db/connectDatabase'
+import { requirePageUser } from '@/lib/auth/currentUser'
 import {
   type IeltsAttemptSummary,
   listIeltsAttempts,
@@ -68,17 +68,11 @@ export default async function IeltsTestPage({ params }: Props) {
 
   if (!hasMongoDbUri() || !/^[a-z0-9-]{1,80}$/.test(slug)) notFound()
 
-  const actorId = await connectDatabaseWhen(getPracticeActorId())
+  const [user] = await Promise.all([requirePageUser(), connectDatabase()])
   const [test, attempts, vocab] = await Promise.all([
     readPublishedIeltsTest(slug),
-    actorId
-      ? listIeltsAttempts(actorId, { testSlug: slug, limit: 20 })
-      : Promise.resolve([]),
-    // Guests without an id yet skip the connect above; the word list is not
-    // cached, so it always needs the connection.
-    connectDatabase().then(() =>
-      listIeltsTestVocabForLearner({ slug, userId: actorId })
-    ),
+    listIeltsAttempts(user.id, { testSlug: slug, limit: 20 }),
+    listIeltsTestVocabForLearner({ slug, userId: user.id }),
   ])
 
   if (!test) notFound()

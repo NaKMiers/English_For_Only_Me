@@ -31,9 +31,12 @@ Vietnamese switch. The app degrades gracefully when optional services
   evidence), mock (timed, no transcript) or drill (one question type), and read
   a band result with per-question review. Writing tasks get AI grading. Admins
   author tests in an editor with AI-assisted generation and audio.
-- Progress lives per learner: a signed-in user, or a guest cookie whose data
-  merges into the account on sign-in. Writes go through a client outbox, so
-  practice survives a flaky network.
+- Everything needs a Google account: every page except `/auth/login`
+  redirects a signed-out visitor there, and every per-user API answers 401.
+  There is no sign-up, password or guest mode (removed 2026-11-28). Progress
+  lives per signed-in learner. Writes go through a client outbox, so practice
+  survives a flaky network and an expired session (the write is held until
+  the learner signs back in).
 
 ## Audience for these docs
 
@@ -52,7 +55,7 @@ cites repo-relative file paths as anchors.
 | UI primitives   | `@base-ui/react`, shadcn-style components, `lucide-react` icons                                                                    |
 | i18n            | In-house typed EN / VI catalogue (`src/i18n/**`), cookie `efom-locale`                                                             |
 | Data            | MongoDB via Mongoose 9                                                                                                             |
-| Auth            | Auth.js v5 (`next-auth` 5 beta), Google OAuth + JWT sessions + guest cookie                                                        |
+| Auth            | Auth.js v5 (`next-auth` 5 beta), Google OAuth (required) + JWT sessions                                                            |
 | Validation      | Zod 4                                                                                                                              |
 | AI              | Qwen on Alibaba Cloud Model Studio (dictation debrief and translation, IELTS writing grading and test generation, speech)          |
 | Media           | YouTube Data API (import), Cloudinary (thumbnails, IELTS images and audio)                                                         |
@@ -97,7 +100,7 @@ disabled item.
 | IELTS test / section          | A test with Listening, Reading and Writing sections; versioned and published by admins.                         |
 | Attempt mode                  | `practice`, `mock` or `drill`.                                                                                  |
 | Band                          | The IELTS 0 to 9 score derived from raw marks or writing grading.                                               |
-| Guest / owner key             | A cookie-backed anonymous learner id, and its hashed form used to scope client-side queues.                     |
+| Owner key                     | The signed-in user's ObjectId, and its hashed form used to scope client-side queues.                            |
 | Outbox                        | The client queue that stores writes per learner and replays them in order with idempotency keys.                |
 
 The field-level model is in [docs/03-data-model.md](./03-data-model.md).

@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 
 import {
   getConnectOptions,
@@ -33,33 +33,5 @@ describe('getManualSchemaConnectOptions', () => {
       expect(options.autoIndex).toBe(false)
       expect(options.bufferCommands).toBe(false)
     }
-  })
-})
-
-describe('connectDatabaseWhen', () => {
-  it('connects only for a truthy value and passes it through', async () => {
-    vi.resetModules()
-    const connect = vi.fn(async () => ({}))
-    vi.doMock('mongoose', () => ({ default: { connect } }))
-    vi.doMock('@/constants/environments', () => ({
-      getMongoDbUri: () => 'mongodb://example.invalid/test',
-    }))
-    const globals = globalThis as { mongooseCache?: unknown }
-    const previous = globals.mongooseCache
-    globals.mongooseCache = undefined
-
-    const { connectDatabaseWhen } = await import('./connectDatabase')
-
-    expect(await connectDatabaseWhen(Promise.resolve(null))).toBeNull()
-    expect(await connectDatabaseWhen('')).toBe('')
-    expect(connect).not.toHaveBeenCalled()
-    expect(await connectDatabaseWhen(Promise.resolve('guest_1'))).toBe(
-      'guest_1'
-    )
-    expect(connect).toHaveBeenCalledTimes(1)
-
-    globals.mongooseCache = previous
-    vi.doUnmock('mongoose')
-    vi.doUnmock('@/constants/environments')
   })
 })

@@ -1,27 +1,24 @@
 import { OutboxOwnerProvider } from '@/components/common/OutboxOwnerProvider'
 import { toClientOwnerKey } from '@/lib/auth/clientOwnerKey'
-import { isGuestId } from '@/lib/auth/guestUser'
-import { getPracticeActorId } from '@/modules/dictation/services/getCurrentUser'
+import { requirePageUser } from '@/lib/auth/currentUser'
 
 /**
- * Hands the learner's client owner key (a hash of the user or existing guest
- * id, or null) to the client outbox so queued writes are stored per learner in
- * this browser. Never the raw guest id: that is the guest's credential. Reads
- * only the session JWT and a cookie: no database work, so it does not delay
- * the route's loading skeleton.
+ * Every learner page needs a session: the proxy sends signed-out visitors to
+ * the login page, and this redirects too as defense in depth. Hands the
+ * learner's client owner key (a hash of the user id, never the raw id) to the
+ * client outbox so queued writes are stored per learner in this browser.
+ * Reads only the session JWT: no database work, so it does not delay the
+ * route's loading skeleton.
  */
 export default async function AppLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const actorId = await getPracticeActorId()
+  const user = await requirePageUser()
 
   return (
-    <OutboxOwnerProvider
-      isGuest={isGuestId(actorId)}
-      ownerKey={actorId ? toClientOwnerKey(actorId) : null}
-    >
+    <OutboxOwnerProvider ownerKey={toClientOwnerKey(user.id)}>
       {children}
     </OutboxOwnerProvider>
   )

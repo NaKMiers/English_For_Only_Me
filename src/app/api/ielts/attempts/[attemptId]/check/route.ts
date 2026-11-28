@@ -13,7 +13,7 @@ import {
   readJsonBody,
 } from '@/modules/ielts/http'
 import { checkPracticeWriting } from '@/modules/ielts/writing/gradeWritingService'
-import { requirePracticeActor } from '@/modules/dictation/services/getCurrentUser'
+import { requireUser } from '@/lib/auth/currentUser'
 
 export const runtime = 'nodejs'
 // A writing check is one examiner request (aborted at 240 s).
@@ -46,7 +46,7 @@ export async function POST(request: Request, context: RouteContext) {
   if (!parsed.ok) return ieltsDecisionError(parsed)
 
   try {
-    const actor = await requirePracticeActor()
+    const user = await requireUser()
     const input = parsed.data
 
     await connectDatabase()
@@ -56,7 +56,7 @@ export async function POST(request: Request, context: RouteContext) {
         await checkPracticePart({
           ...input,
           attemptId: id.data,
-          ownerId: actor.id,
+          ownerId: user.id,
         })
       )
 
@@ -64,8 +64,7 @@ export async function POST(request: Request, context: RouteContext) {
       await checkPracticeWriting({
         attemptId: id.data,
         essay: input.essay,
-        isGuest: actor.isGuest,
-        ownerId: actor.id,
+        ownerId: user.id,
         task: input.task,
         language: await getLocale(),
       }),

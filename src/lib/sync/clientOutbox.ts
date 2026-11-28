@@ -1,20 +1,7 @@
 'use client'
 
-import { getActiveMessages } from '@/i18n/active'
-import {
-  ANONYMOUS_OUTBOX_OWNER,
-  createOutbox,
-  type Outbox,
-  type OutboxHandOffEntry,
-} from '@/lib/sync/outbox'
-
-/**
- * The owner used before a first-time visitor has a guest cookie. Their first
- * write mints one through POST /api/guest, so parallel first writes can never
- * mint two different guest ids.
- */
-export { ANONYMOUS_OUTBOX_OWNER }
-export const GUEST_IDENTITY_PATH = '/api/guest'
+import { loginUrlFor } from '@/lib/auth/callbackUrl'
+import { createOutbox, type Outbox } from '@/lib/sync/outbox'
 
 const TAB_ID_STORAGE_KEY = 'efom.outbox.tab'
 const TAB_CLAIM_KEY_PREFIX = 'efom.outbox.tab-claim.'
@@ -35,7 +22,6 @@ interface TabClaim {
 }
 
 let current: CurrentOutbox | null = null
-let guestIdentityPromise: Promise<void> | null = null
 let pageTabId: string | null = null
 
 function getBrowserStorage() {
@@ -167,31 +153,6 @@ function getTabId() {
   return pageTabId
 }
 
-export function ensureGuestIdentity(fetchImpl: typeof fetch = fetch) {
-  guestIdentityPromise ??= fetchImpl(GUEST_IDENTITY_PATH, { method: 'POST' })
-    .then(response => {
-      if (!response.ok)
-        throw new Error(getActiveMessages().common.errors.guestSession)
-    })
-    .catch(error => {
-      // Let the next write try again instead of caching a failure forever.
-      guestIdentityPromise = null
-      throw error
-    })
-
-  return guestIdentityPromise
-}
-
-function createFetchForOwner(owner: string): typeof fetch {
-  if (owner !== ANONYMOUS_OUTBOX_OWNER) return (...args) => fetch(...args)
-
-  return async (...args) => {
-    await ensureGuestIdentity()
-
-    return fetch(...args)
-  }
-}
-
 function listenForPageHide(outbox: Outbox) {
   // Unloading (or entering the back-forward cache): the browser cancels
   // in-flight requests, so resend those too, and release the queue so the
@@ -220,64 +181,73 @@ function listenForPageHide(outbox: Outbox) {
 }
 
 /**
- * Stop the outbox of the previous owner (sign-in or sign-out without a full
- * reload). A first-time visitor who has just become a guest is the same
- * learner, so their anonymous writes move over; any other previous owner
- * keeps its queue in storage for when that learner is back.
+ * Stop the outbox of the previous owner (a sign-out and a sign-in as someone
+ * else without a full reload). Its queue stays in storage for when that
+ * learner is back; it is never sent as the new one.
  */
-function retirePrevious(adoptAnonymous: boolean): OutboxHandOffEntry[] {
-  if (!current) return []
+function retirePrevious() {
+  if (!current) return
 
   const previous = current
 
   current = null
   previous.removeListeners()
-
-  if (previous.owner === ANONYMOUS_OUTBOX_OWNER && adoptAnonymous)
-    return previous.outbox.release()
-
   previous.outbox.dispose()
-
-  return []
 }
 
-interface ClientOutboxOptions {
-  /** True when `ownerKey` belongs to a guest; only a guest adopts anonymous writes. */
-  isGuest?: boolean
+/**
+ * The session ended while writes were queued (R1). The outbox keeps them and
+ * has paused; release the stored queue so the next load takes it over at once,
+ * then send the tab to the login page with this page as the way back. The
+ * pagehide handlers go first: a keepalive resend would only meet another 401.
+ * Signing back in as the same learner gives the same owner key, so the queue
+ * replays; another account never sees it.
+ */
+function handleUnauthorized(entry: () => CurrentOutbox | null) {
+  let handled = false
+
+  return () => {
+    const active = entry()
+
+    if (handled || !active) return
+
+    handled = true
+    active.removeListeners()
+    active.outbox.markReleased()
+    window.location.assign(
+      loginUrlFor(`${window.location.pathname}${window.location.search}`)
+    )
+  }
 }
 
 /**
  * One shared outbox for the whole tab, so every component that writes for the
  * same learner shares lanes and ordering. Pass the client owner key the server
- * rendered (a hash of the user or guest id), or null for a first-time visitor.
+ * rendered (a hash of the user id).
  */
-export function getClientOutbox(
-  ownerKey: string | null,
-  { isGuest = false }: ClientOutboxOptions = {}
-): Outbox {
-  const owner = ownerKey ?? ANONYMOUS_OUTBOX_OWNER
-
+export function getClientOutbox(ownerKey: string): Outbox {
   // During server rendering there is nothing to deliver, and a module-level
   // cache would be shared across every request's learner, so never cache.
-  if (typeof window === 'undefined') return createOutbox({ owner })
+  if (typeof window === 'undefined') return createOutbox({ owner: ownerKey })
 
-  if (current?.owner === owner) return current.outbox
+  if (current?.owner === ownerKey) return current.outbox
 
-  const adoptAnonymous = owner !== ANONYMOUS_OUTBOX_OWNER && isGuest
-  const adoptItems = retirePrevious(adoptAnonymous)
-  // Writes queued before the guest cookie existed were stored under the
-  // anonymous owner. Once the server knows this is a guest, they become the
-  // guest's own queue: it is the same learner in the same browser.
+  retirePrevious()
+
+  let entry: CurrentOutbox | null = null
   const outbox = createOutbox({
-    adoptItems,
-    adoptOwners: adoptAnonymous ? [ANONYMOUS_OUTBOX_OWNER] : [],
-    fetchImpl: createFetchForOwner(owner),
-    owner,
+    onUnauthorized: handleUnauthorized(() => entry),
+    owner: ownerKey,
     storage: getBrowserStorage(),
     tabId: getTabId(),
   })
 
-  current = { outbox, owner, removeListeners: listenForPageHide(outbox) }
+  entry = {
+    outbox,
+    owner: ownerKey,
+    removeListeners: listenForPageHide(outbox),
+  }
+  current = entry
 
   return outbox
 }

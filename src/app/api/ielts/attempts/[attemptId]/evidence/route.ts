@@ -10,7 +10,7 @@ import {
   ieltsMissingMongo,
   ieltsRouteFailure,
 } from '@/modules/ielts/http'
-import { requirePracticeActor } from '@/modules/dictation/services/getCurrentUser'
+import { requireUser } from '@/lib/auth/currentUser'
 
 export const runtime = 'nodejs'
 
@@ -35,7 +35,7 @@ export async function GET(request: Request, context: RouteContext) {
   if (!number.ok) return ieltsDecisionError(number)
 
   try {
-    const actor = await requirePracticeActor()
+    const user = await requireUser()
 
     await connectDatabase()
 
@@ -43,7 +43,7 @@ export async function GET(request: Request, context: RouteContext) {
       await readPracticeEvidence({
         attemptId: id.data,
         number: number.data,
-        ownerId: actor.id,
+        ownerId: user.id,
       })
     )
   } catch (error) {

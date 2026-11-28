@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 
 import { getMessages } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
-import { requirePracticeActor } from '@/modules/dictation/services/getCurrentUser'
+import { requireUser } from '@/lib/auth/currentUser'
 import { submitVocabRecallAnswerForUser } from '@/modules/vocabulary/recall/recallAnswerService'
 import { toVocabApiError } from '@/modules/vocabulary/services/vocabApiErrors'
 import {
@@ -29,7 +29,7 @@ export async function POST(request: Request) {
 
     if (!parsed.ok) return jsonError(parsed)
 
-    const actor = await requirePracticeActor()
+    const user = await requireUser()
 
     await connectDatabase()
 
@@ -38,7 +38,7 @@ export async function POST(request: Request) {
       idempotencyKey: parsed.data.idempotencyKey,
       selectedOptionId: parsed.data.selectedOptionId,
       token: parsed.data.token,
-      userId: actor.id,
+      userId: user.id,
     })
 
     if (!result)

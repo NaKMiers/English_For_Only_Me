@@ -28,8 +28,6 @@ export const dictation = {
     topicsHeading: 'Topics',
     descriptionSignedIn:
       'Pick a topic, then a section, then continue building your listening history.',
-    descriptionGuest:
-      'Pick a topic, then a section, then practice a lesson. Sign in to save your progress and favorites.',
   },
   journey: {
     title: 'Your listening journey',
@@ -135,7 +133,6 @@ export const dictation = {
       one: '{count} lesson',
       other: '{count} lessons',
     },
-    signInToFavorite: 'Sign in to save favorites',
     addFavorite: 'Add favorite',
     removeFavorite: 'Remove favorite',
     card: {

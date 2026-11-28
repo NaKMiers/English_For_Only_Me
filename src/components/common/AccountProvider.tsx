@@ -11,16 +11,11 @@ export interface AccountRecord {
 }
 
 export interface AccountState {
-  /** Signed-in learner, or null when signed out. */
+  /** Signed-in learner, or null on the login page (the only signed-out page). */
   account: AccountRecord | null
-  /** False when Google auth is not configured: the control renders nothing. */
-  enabled: boolean
 }
 
-const AccountContext = createContext<AccountState>({
-  account: null,
-  enabled: false,
-})
+const AccountContext = createContext<AccountState>({ account: null })
 
 /**
  * Holds the session read once by the root layout. The root layout survives

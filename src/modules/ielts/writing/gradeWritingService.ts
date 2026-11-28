@@ -85,14 +85,13 @@ function completion(
 }
 
 /**
- * Grade one task of a submitted writing attempt. Guests cannot grade, the
- * daily limit counts only successful runs, and a task already being graded
- * (by another click or tab) is not graded twice.
+ * Grade one task of a submitted writing attempt. The daily limit counts only
+ * successful runs, and a task already being graded (by another click or tab)
+ * is not graded twice.
  */
 export async function gradeWritingTask({
   attemptId,
   fetcher,
-  isGuest,
   now = new Date(),
   ownerId,
   task,
@@ -100,15 +99,12 @@ export async function gradeWritingTask({
 }: {
   attemptId: string
   fetcher?: typeof fetch
-  isGuest: boolean
   now?: Date
   ownerId: string
   task: 1 | 2
   /** The app language the feedback is written in. */
   language: Locale
 }): Promise<IeltsDecision<IeltsAttemptRecord>> {
-  if (isGuest) return ieltsMessageError(401, 'signInToGrade')
-
   const attempt = await IeltsAttemptModel.findOne({
     _id: attemptId,
     ownerId,
@@ -283,13 +279,12 @@ export async function gradeWritingTask({
  * is submitted. The essay comes from the screen (it may be newer than the
  * last autosave). The feedback goes back to the runner only, nothing on the
  * attempt changes except the grading count, which keeps the daily limit
- * honest. Same guest, configuration and limit rules as graded results.
+ * honest. Same configuration and limit rules as graded results.
  */
 export async function checkPracticeWriting({
   attemptId,
   essay,
   fetcher,
-  isGuest,
   now = new Date(),
   ownerId,
   task,
@@ -298,15 +293,12 @@ export async function checkPracticeWriting({
   attemptId: string
   essay: string
   fetcher?: typeof fetch
-  isGuest: boolean
   now?: Date
   ownerId: string
   task: 1 | 2
   /** The app language the feedback is written in. */
   language: Locale
 }): Promise<IeltsDecision<IeltsWritingTaskFeedback>> {
-  if (isGuest) return ieltsMessageError(401, 'signInForAi')
-
   const attempt = await IeltsAttemptModel.findOne({
     _id: attemptId,
     ownerId,

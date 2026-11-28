@@ -1,11 +1,8 @@
 import 'server-only'
 
 import { hasMongoDbUri } from '@/constants/environments'
-import { connectDatabaseWhen } from '@/lib/db/connectDatabase'
-import {
-  getOptionalUser,
-  getPracticeActorId,
-} from '@/modules/dictation/services/getCurrentUser'
+import { requirePageUser } from '@/lib/auth/currentUser'
+import { connectDatabase } from '@/lib/db/connectDatabase'
 
 import {
   type IeltsAttemptSummary,
@@ -33,7 +30,7 @@ export interface IeltsHomeData {
   error: 'notConfigured' | 'loadFailed' | null
 }
 
-/** Everything /ielts shows. Learner rows only when a practice actor exists. */
+/** Everything /ielts shows for the signed-in learner. */
 export async function loadIeltsHomeData(): Promise<IeltsHomeData> {
   const empty: IeltsHomeData = {
     catalog: [],
@@ -45,20 +42,21 @@ export async function loadIeltsHomeData(): Promise<IeltsHomeData> {
     error: null,
   }
 
+  // Outside the try: the login redirect must not be caught as a load failure.
+  const user = await requirePageUser()
+
   if (!hasMongoDbUri()) return { ...empty, error: 'notConfigured' }
 
   try {
-    const [user, actorId] = await Promise.all([
-      getOptionalUser(),
-      connectDatabaseWhen(getPracticeActorId()),
-    ])
+    await connectDatabase()
+
     const [catalog, attempts, overall, testBands, weakness] = await Promise.all(
       [
         readIeltsCatalog(),
-        actorId ? listIeltsAttempts(actorId) : Promise.resolve([]),
-        actorId ? readIeltsOverall(actorId) : Promise.resolve(null),
-        actorId ? readIeltsTestBands(actorId) : Promise.resolve({}),
-        actorId ? readWeaknessStats(actorId) : Promise.resolve(null),
+        listIeltsAttempts(user.id),
+        readIeltsOverall(user.id),
+        readIeltsTestBands(user.id),
+        readWeaknessStats(user.id),
       ]
     )
 
@@ -68,7 +66,7 @@ export async function loadIeltsHomeData(): Promise<IeltsHomeData> {
       overall,
       testBands,
       weakness,
-      isAdmin: user?.role === 'admin',
+      isAdmin: user.role === 'admin',
       error: null,
     }
   } catch (error) {

@@ -32,13 +32,11 @@ export function sectionPanelId(groupKey: string) {
 
 function SectionPanel({
   group,
-  canFavorite,
   defaultOpen,
   labels,
   nextId,
 }: {
   group: BrowseSectionGroup
-  canFavorite: boolean
   defaultOpen: boolean
   labels: BrowseLabels
   nextId: string | null
@@ -54,7 +52,6 @@ function SectionPanel({
       header={
         <>
           <span className="font-sans text-base font-medium">{group.title}</span>
-          {/* Progress shows to guests too: their practice is saved. */}
           <PageTag tone={finished ? 'gold' : doneCount > 0 ? 'sky' : 'pale'}>
             {group.videos.length > 0
               ? `${doneCount}/${group.videos.length}`
@@ -66,7 +63,6 @@ function SectionPanel({
       <BrowseVideoListClient
         id={panelId}
         videos={group.videos}
-        canFavorite={canFavorite}
         emptyLabel={labels.emptySection}
         labels={labels.card}
         className="border-line border-t p-3"
@@ -79,13 +75,11 @@ function SectionPanel({
 
 export function SectionAccordion({
   groups,
-  canFavorite,
   labels = en.dictation.browse,
   nextId = null,
   openKey = null,
 }: {
   groups: BrowseSectionGroup[]
-  canFavorite: boolean
   /** The topic's next video, ringed in pink in its section. */
   nextId?: string | null
   /** The section holding the next video starts open; the rest fold. */
@@ -109,7 +103,6 @@ export function SectionAccordion({
         <SectionPanel
           key={group.key}
           group={group}
-          canFavorite={canFavorite}
           defaultOpen={group.key === openKey}
           labels={labels}
           nextId={nextId}

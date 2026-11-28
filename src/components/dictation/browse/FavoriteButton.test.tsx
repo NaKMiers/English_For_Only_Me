@@ -33,7 +33,6 @@ function renderButton(initialFavorited = false) {
     <FavoriteButton
       videoId="video-1"
       initialFavorited={initialFavorited}
-      canFavorite
     />
   )
 
@@ -116,7 +115,8 @@ describe('FavoriteButton', () => {
     expect(button).toHaveAttribute('aria-pressed', 'true')
   })
 
-  test('sends anonymous users to sign-in when the session expired', async () => {
+  test('sends the learner to the login page when the session expired', async () => {
+    window.history.replaceState(null, '', '/dictation/topic-a?level=b1')
     setFavoriteAction.mockResolvedValueOnce({
       favorited: null,
       needsAuth: true,
@@ -128,6 +128,8 @@ describe('FavoriteButton', () => {
     })
 
     expect(button).toHaveAttribute('aria-pressed', 'false')
-    expect(push).toHaveBeenCalledWith('/api/auth/signin?callbackUrl=/dictation')
+    expect(push).toHaveBeenCalledWith(
+      '/auth/login?callbackUrl=%2Fdictation%2Ftopic-a%3Flevel%3Db1'
+    )
   })
 })

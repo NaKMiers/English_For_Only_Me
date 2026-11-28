@@ -29,7 +29,7 @@ describe('pickNextStop', () => {
     ).toEqual({ data: 'first', kind: 'due' })
   })
 
-  test('no candidates (a brand new guest, everything done) is done', () => {
+  test('no candidates (a brand new learner, everything done) is done', () => {
     expect(pickNextStop([])).toEqual({ kind: 'done' })
     expect(pickNextStop([null, undefined, false])).toEqual({ kind: 'done' })
   })

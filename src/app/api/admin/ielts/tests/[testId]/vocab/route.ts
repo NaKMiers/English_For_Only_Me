@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 import { getMessages } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { IeltsTestModel } from '@/models/ielts/IeltsTestModel'
-import { requireAdmin } from '@/modules/dictation/services/getCurrentUser'
+import { requireAdmin } from '@/lib/auth/currentUser'
 import {
   ieltsDecisionError,
   ieltsJsonError,

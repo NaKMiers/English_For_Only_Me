@@ -12,7 +12,7 @@ import {
   readJsonBody,
 } from '@/modules/ielts/http'
 import { gradeWritingTask } from '@/modules/ielts/writing/gradeWritingService'
-import { requirePracticeActor } from '@/modules/dictation/services/getCurrentUser'
+import { requireUser } from '@/lib/auth/currentUser'
 
 export const runtime = 'nodejs'
 // One examiner request (aborted at 240 s) fits inside this.
@@ -41,15 +41,14 @@ export async function POST(request: Request, context: RouteContext) {
   if (!parsed.ok) return ieltsDecisionError(parsed)
 
   try {
-    const actor = await requirePracticeActor()
+    const user = await requireUser()
 
     await connectDatabase()
 
     return ieltsDecisionResponse(
       await gradeWritingTask({
         attemptId: id.data,
-        isGuest: actor.isGuest,
-        ownerId: actor.id,
+        ownerId: user.id,
         task: parsed.data.task,
         language: await getLocale(),
       }),

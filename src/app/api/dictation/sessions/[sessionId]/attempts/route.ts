@@ -25,7 +25,8 @@ import {
 } from '@/modules/dictation/review/reviewItemService'
 import { toDictationAttemptRecord } from '@/modules/dictation/services/dictationAttemptRecords'
 import { toDictationSessionRecord } from '@/modules/dictation/services/dictationSessionRecords'
-import { requirePracticeActor } from '@/modules/dictation/services/getCurrentUser'
+import { requireUser } from '@/lib/auth/currentUser'
+import { InvalidOwnerKeyError } from '@/lib/auth/ownerKey'
 import {
   parseAttemptPayload,
   resolveAttemptSubmissionMode,
@@ -169,6 +170,15 @@ async function respondWithReplay({
 }
 
 function toAttemptError(error: unknown, t: Messages): ApiErrorDecision {
+  // A session whose id is not an ObjectId (see ownerKey.ts).
+  if (error instanceof InvalidOwnerKeyError)
+    return {
+      status: 400,
+      body: {
+        message: t.common.errors.invalidRequest,
+      },
+    }
+
   if (
     typeof error === 'object' &&
     error !== null &&
@@ -217,13 +227,13 @@ export async function POST(request: Request, context: RouteContext) {
 
     if (!parsedBody.ok) return jsonError(parsedBody)
 
-    const actor = await requirePracticeActor()
+    const user = await requireUser()
 
     await connectDatabase()
 
     const existingAttempt = await findAttemptByIdempotencyKey({
       idempotencyKey: parsedBody.data.idempotencyKey,
-      userId: actor.id,
+      userId: user.id,
     })
     const submissionMode = resolveAttemptSubmissionMode(
       existingAttempt ? toDictationAttemptRecord(existingAttempt) : null
@@ -237,12 +247,12 @@ export async function POST(request: Request, context: RouteContext) {
         attempt: submissionMode.attempt,
         review: parsedBody.data.review,
         sessionId: parsedSessionId.data.sessionId,
-        userId: actor.id,
+        userId: user.id,
       })
 
     const session = await DictationSessionModel.findOne({
       _id: parsedSessionId.data.sessionId,
-      userId: actor.id,
+      userId: user.id,
     })
 
     if (!session)
@@ -290,7 +300,7 @@ export async function POST(request: Request, context: RouteContext) {
     })
     const now = new Date()
     const attempt = new DictationAttemptModel({
-      userId: actor.id,
+      userId: user.id,
       videoId: session.videoId,
       transcriptId: session.transcriptId,
       sessionId: session._id,
@@ -318,7 +328,7 @@ export async function POST(request: Request, context: RouteContext) {
 
       const winner = await findAttemptByIdempotencyKey({
         idempotencyKey: parsedBody.data.idempotencyKey,
-        userId: actor.id,
+        userId: user.id,
       })
 
       if (!winner) throw error
@@ -327,7 +337,7 @@ export async function POST(request: Request, context: RouteContext) {
         attempt: toDictationAttemptRecord(winner),
         review: parsedBody.data.review,
         sessionId: parsedSessionId.data.sessionId,
-        userId: actor.id,
+        userId: user.id,
       })
     }
 
@@ -337,7 +347,7 @@ export async function POST(request: Request, context: RouteContext) {
       isPassed: correction.isPassed,
       review: parsedBody.data.review,
       segmentId,
-      userId: actor.id,
+      userId: user.id,
       videoId,
     }
 
@@ -345,7 +355,7 @@ export async function POST(request: Request, context: RouteContext) {
     // saved position or finish their session.
     if (parsedBody.data.review) {
       const [progress] = await Promise.all([
-        loadAttemptedSegmentProgress({ segmentId, userId: actor.id, videoId }),
+        loadAttemptedSegmentProgress({ segmentId, userId: user.id, videoId }),
         updateReviewItems(reviewUpdate),
       ])
 
@@ -404,7 +414,7 @@ export async function POST(request: Request, context: RouteContext) {
 
     const [, progress] = await Promise.all([
       session.save(),
-      loadAttemptedSegmentProgress({ segmentId, userId: actor.id, videoId }),
+      loadAttemptedSegmentProgress({ segmentId, userId: user.id, videoId }),
       updateReviewItems(reviewUpdate),
     ])
 

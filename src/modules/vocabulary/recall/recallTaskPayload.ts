@@ -11,7 +11,7 @@ import type {
  * the same `gradeVocabRecallAnswer`, so the two verdicts cannot drift.
  *
  * The payload never carries the user id: it lands in SSR HTML and in the
- * outbox in localStorage, and a guest id is a bearer credential.
+ * outbox in localStorage, and the raw id stays on the server.
  */
 export interface VocabRecallTaskTokenPayload {
   correctAnswer: string

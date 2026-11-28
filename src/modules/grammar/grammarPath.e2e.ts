@@ -37,7 +37,8 @@ async function playThrough(page: Page) {
   const action = page.locator('[data-slot=player-actions] button').last()
 
   for (let step = 0; step < 60; step += 1) {
-    if (await page.getByRole('heading', { level: 1 }).count()) return
+    if (await page.getByRole('heading', { name: 'Lesson done!' }).count())
+      return
 
     if ((await action.textContent())?.includes('Check'))
       await answerCurrentCard(page)
@@ -48,8 +49,9 @@ async function playThrough(page: Page) {
   throw new Error('The lesson did not finish within 60 steps.')
 }
 
-// A brand-new browser context has no guest cookie: this is a first visit.
-test('a first-time guest finishes lesson 1 and unlocks lesson 2', async ({
+// The seeded e2e learner (signed in by the global setup, which also resets
+// their grammar progress) is a new learner on every run.
+test('a new learner finishes lesson 1 and unlocks lesson 2', async ({
   page,
 }) => {
   await page.goto('/grammar')
@@ -57,7 +59,9 @@ test('a first-time guest finishes lesson 1 and unlocks lesson 2', async ({
     page.getByRole('heading', { name: 'Grammar path' })
   ).toBeVisible()
 
-  await page.getByRole('link', { name: /Continue: am, is, are/ }).click()
+  // The open step on the path opens its lesson card.
+  await page.getByRole('button', { name: /am, is, are, open/ }).click()
+  await page.getByRole('link', { name: 'Start lesson' }).click()
   await expect(page).toHaveURL(/\/grammar\/lessons\/u01-l01$/)
 
   await playThrough(page)

@@ -4,7 +4,7 @@ import { hasMongoDbUri } from '@/constants/environments'
 import { getMessages } from '@/i18n/server'
 import { authErrorResponse } from '@/lib/auth/authErrorMessage'
 import { connectDatabase } from '@/lib/db/connectDatabase'
-import { requirePracticeActor } from '@/modules/dictation/services/getCurrentUser'
+import { requireUser } from '@/lib/auth/currentUser'
 import { parseSessionRequest } from '@/modules/grammar/session/parseSessionRequest'
 import { recordGrammarSession } from '@/modules/grammar/services/grammarProgressService'
 
@@ -39,12 +39,12 @@ export async function POST(request: Request) {
   if (!parsed.ok) return jsonError(400, t.invalidResult)
 
   try {
-    const actor = await requirePracticeActor()
+    const user = await requireUser()
 
     await connectDatabase()
 
     const outcome = await recordGrammarSession({
-      actorId: actor.id,
+      actorId: user.id,
       idempotencyKey: parsed.idempotencyKey,
       submission: parsed.submission,
     })
@@ -52,7 +52,6 @@ export async function POST(request: Request) {
     if (!outcome.ok) {
       // Structured so a "finished but not saved" report can be traced.
       console.warn('grammar session rejected', {
-        actor: actor.isGuest ? 'guest' : 'user',
         message: outcome.message,
         mode: parsed.submission.mode,
         status: outcome.status,
@@ -64,8 +63,8 @@ export async function POST(request: Request) {
 
     return NextResponse.json(outcome.result)
   } catch (error) {
-    // Signed out, or queued in a tab for another learner (signed in or out
-    // since): final, so the outbox settles it instead of retrying.
+    // Signed out (the outbox holds the write and sends the tab to the login
+    // page), or queued in a tab for another learner: final either way.
     const auth = authErrorResponse(error, messages)
 
     if (auth) return jsonError(auth.status, auth.message)

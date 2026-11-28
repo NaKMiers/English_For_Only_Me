@@ -3,7 +3,7 @@ import { z } from 'zod'
 
 import { getMessages } from '@/i18n/server'
 import { createSignedUploadParams } from '@/lib/cloudinary/uploadAudio'
-import { requireAdmin } from '@/modules/dictation/services/getCurrentUser'
+import { requireAdmin } from '@/lib/auth/currentUser'
 import {
   ieltsDecisionError,
   ieltsJsonError,

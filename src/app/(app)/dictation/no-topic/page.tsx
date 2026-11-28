@@ -4,7 +4,8 @@ import type { BrowseVideoItem } from '@/components/dictation/browse/SectionAccor
 import { VideoListPage } from '@/components/dictation/browse/VideoListPage'
 import { hasMongoDbUri } from '@/constants/environments'
 import { getMessages } from '@/i18n/server'
-import { connectDatabaseWhen } from '@/lib/db/connectDatabase'
+import { requirePageUser } from '@/lib/auth/currentUser'
+import { connectDatabase } from '@/lib/db/connectDatabase'
 import { toBrowseItem } from '@/modules/dictation/content/browseItem'
 import { getCachedNoTopicVideos } from '@/modules/dictation/content/catalogReaders'
 import { listFavoriteVideoIds } from '@/modules/dictation/content/favoriteRepository'
@@ -12,10 +13,6 @@ import {
   getCompletionCountsForUser,
   getInProgressVideoIdsForUser,
 } from '@/modules/dictation/content/progressRepository'
-import {
-  getOptionalUser,
-  getPracticeActorId,
-} from '@/modules/dictation/services/getCurrentUser'
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getMessages()
@@ -31,28 +28,21 @@ export const runtime = 'nodejs'
 
 export default async function NoTopicPage() {
   const t = await getMessages()
-  let canFavorite = false
   let items: BrowseVideoItem[] = []
 
   if (hasMongoDbUri()) {
-    // Completion badges follow the practice actor (guest or user); favoriting
-    // stays login-only. The videos come from the catalog cache, so only a known
-    // actor needs a connection.
-    const [user, actorId, videos] = await Promise.all([
-      getOptionalUser(),
-      connectDatabaseWhen(getPracticeActorId()),
+    // The videos come from the catalog cache; the learner's badges and
+    // favorites need the connection.
+    const [user, videos] = await Promise.all([
+      requirePageUser(),
       getCachedNoTopicVideos(),
+      connectDatabase(),
     ])
-    canFavorite = Boolean(user)
 
     const [favoritedIds, completionCounts, inProgressSet] = await Promise.all([
-      user ? listFavoriteVideoIds(user.id) : Promise.resolve<string[]>([]),
-      actorId
-        ? getCompletionCountsForUser(actorId)
-        : Promise.resolve<Map<string, number>>(new Map()),
-      actorId
-        ? getInProgressVideoIdsForUser(actorId)
-        : Promise.resolve<Set<string>>(new Set()),
+      listFavoriteVideoIds(user.id),
+      getCompletionCountsForUser(user.id),
+      getInProgressVideoIdsForUser(user.id),
     ])
     const favoritedSet = new Set(favoritedIds)
 
@@ -63,7 +53,6 @@ export default async function NoTopicPage() {
 
   return (
     <VideoListPage
-      canFavorite={canFavorite}
       emptyTitle={t.dictation.noTopic.empty}
       items={items}
       messages={t}

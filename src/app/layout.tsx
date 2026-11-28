@@ -7,7 +7,6 @@ import {
   type AccountState,
 } from '@/components/common/AccountProvider'
 import { ThemeProvider } from '@/components/common/ThemeProvider'
-import { hasGoogleAuth } from '@/constants/environments'
 import { I18nProvider } from '@/i18n/client'
 import { DEFAULT_LOCALE } from '@/i18n/config'
 import { getLocale, getMessages } from '@/i18n/server'
@@ -71,12 +70,11 @@ export const viewport: Viewport = {
 /**
  * The session, read once here. The root layout outlives every navigation, so
  * the topbar account control keeps it instead of re-reading it per route.
+ * Null only on the login page: every other page needs a session.
  */
 async function readAccount(): Promise<AccountState> {
-  if (!hasGoogleAuth()) return { account: null, enabled: false }
-
   const user = (await auth())?.user
-  if (!user) return { account: null, enabled: true }
+  if (!user) return { account: null }
 
   // First word of the name, or the mailbox part of the email without one.
   const firstName =
@@ -89,7 +87,6 @@ async function readAccount(): Promise<AccountState> {
       initial: firstName.charAt(0).toUpperCase(),
       isAdmin: user.role === 'admin',
     },
-    enabled: true,
   }
 }
 

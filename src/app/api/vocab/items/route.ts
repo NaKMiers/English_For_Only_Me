@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 
 import { getMessages } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
-import { requirePracticeActor } from '@/modules/dictation/services/getCurrentUser'
+import { requireUser } from '@/lib/auth/currentUser'
 import { toVocabApiError } from '@/modules/vocabulary/services/vocabApiErrors'
 import { setUserVocabItemStatus } from '@/modules/vocabulary/services/userVocabItemService'
 import {
@@ -29,14 +29,14 @@ export async function POST(request: Request) {
 
     if (!parsed.ok) return jsonError(parsed)
 
-    const actor = await requirePracticeActor()
+    const user = await requireUser()
 
     await connectDatabase()
 
     const item = await setUserVocabItemStatus({
       source: parsed.data.source,
       status: parsed.data.status,
-      userId: actor.id,
+      userId: user.id,
       vocabEntryId: parsed.data.vocabEntryId,
     })
 

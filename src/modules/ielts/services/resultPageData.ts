@@ -1,8 +1,8 @@
 import 'server-only'
 
 import { hasMongoDbUri } from '@/constants/environments'
-import { connectDatabaseWhen } from '@/lib/db/connectDatabase'
-import { getPracticeActorId } from '@/modules/dictation/services/getCurrentUser'
+import { requirePageUser } from '@/lib/auth/currentUser'
+import { connectDatabase } from '@/lib/db/connectDatabase'
 
 import { grammarCourse } from '@/modules/grammar/course'
 import { buildGrammarPath } from '@/modules/grammar/path/buildGrammarPath'
@@ -118,11 +118,8 @@ export async function loadResultPageData(
 
   if (!id.ok) return null
 
-  const ownerId = await connectDatabaseWhen(getPracticeActorId())
-
-  if (!ownerId) return null
-
-  const attempt = await readAttemptForOwner(ownerId, id.data)
+  const [user] = await Promise.all([requirePageUser(), connectDatabase()])
+  const attempt = await readAttemptForOwner(user.id, id.data)
 
   if (!attempt) return null
 
@@ -196,10 +193,10 @@ export async function loadResultPageData(
   const reviewWords = rows.flatMap(row => reviewWordOf(row) ?? [])
   const [grammarLinks, savedTerms] = await Promise.all([
     attempt.skill === 'writing'
-      ? loadGrammarLinks(ownerId, attempt)
+      ? loadGrammarLinks(user.id, attempt)
       : Promise.resolve({}),
     reviewWords.length
-      ? listSavedTermsForUser({ terms: reviewWords, userId: ownerId })
+      ? listSavedTermsForUser({ terms: reviewWords, userId: user.id })
       : Promise.resolve([]),
   ])
 

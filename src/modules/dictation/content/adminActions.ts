@@ -13,7 +13,7 @@ import {
   isDictationLevel,
   type DictationLevel,
 } from '@/modules/dictation/levels'
-import { requireAdmin } from '@/modules/dictation/services/getCurrentUser'
+import { requireAdmin } from '@/lib/auth/currentUser'
 
 import {
   assignVideos,

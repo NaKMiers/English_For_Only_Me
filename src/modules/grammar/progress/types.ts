@@ -1,7 +1,7 @@
 /**
  * Persistence-agnostic progress shapes. The Mongo services map documents to
- * these, and every pure function (path builder, session planner, guest merge)
- * works on them alone.
+ * these, and every pure function (path builder, session planner) works on
+ * them alone.
  */
 
 export type LessonPassedBy = 'lesson' | 'test'

@@ -14,7 +14,6 @@ describe('VideoListPage', () => {
   test('an empty list offers the way back to the topics', () => {
     render(
       <VideoListPage
-        canFavorite
         emptyTitle={en.dictation.favorites.empty}
         items={[]}
         messages={en}
@@ -37,7 +36,6 @@ describe('VideoListPage', () => {
   test('a list shows the record card and rings the next unplayed video', () => {
     render(
       <VideoListPage
-        canFavorite={false}
         emptyTitle="none"
         items={[
           {

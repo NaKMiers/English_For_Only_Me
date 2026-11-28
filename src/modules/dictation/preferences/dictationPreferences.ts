@@ -117,18 +117,15 @@ function toDraftMap(value: unknown): Record<string, string> {
   )
 }
 
-/** The owner used before a first-time visitor has a guest id. */
-const ANONYMOUS_DRAFT_OWNER = 'anonymous'
-
 /**
  * Drafts are stored per learner as well as per video, so two accounts sharing
  * one browser never see each other's typing.
  */
 export function getDictationAnswerDraftsStorageKey(
   videoId: string,
-  ownerKey?: string | null
+  ownerKey: string
 ) {
-  return `${DICTATION_ANSWER_DRAFTS_STORAGE_KEY}:${ownerKey ?? ANONYMOUS_DRAFT_OWNER}:${videoId}`
+  return `${DICTATION_ANSWER_DRAFTS_STORAGE_KEY}:${ownerKey}:${videoId}`
 }
 
 /** The key drafts used before they were namespaced by owner. */
@@ -154,37 +151,9 @@ function parseDrafts(storedValue: string | null) {
   }
 }
 
-/**
- * Drafts typed before the guest cookie existed were saved under the anonymous
- * owner. Once the learner has an owner key they move over (and are removed, so
- * no later account on this browser sees them); the owner's own drafts win.
- */
-function adoptAnonymousDrafts(
-  storage: Storage,
-  videoId: string,
-  key: string,
-  drafts: Record<string, string> | null
-) {
-  const anonymousKey = getDictationAnswerDraftsStorageKey(videoId, null)
-
-  if (anonymousKey === key) return drafts
-
-  const anonymousDrafts = parseDrafts(storage.getItem(anonymousKey))
-
-  if (!anonymousDrafts) return drafts
-
-  const merged = { ...anonymousDrafts, ...drafts }
-
-  storage.removeItem(anonymousKey)
-  if (Object.keys(merged).length > 0)
-    storage.setItem(key, JSON.stringify(merged))
-
-  return merged
-}
-
 export function readDictationAnswerDrafts(
   videoId: string,
-  ownerKey?: string | null
+  ownerKey: string
 ): Record<string, string> {
   const storage = getDraftStorage()
 
@@ -192,10 +161,7 @@ export function readDictationAnswerDrafts(
 
   try {
     const key = getDictationAnswerDraftsStorageKey(videoId, ownerKey)
-    const ownDrafts = parseDrafts(storage.getItem(key))
-    const drafts = ownerKey
-      ? adoptAnonymousDrafts(storage, videoId, key, ownDrafts)
-      : ownDrafts
+    const drafts = parseDrafts(storage.getItem(key))
 
     if (drafts) return drafts
 
@@ -220,7 +186,7 @@ export function readDictationAnswerDrafts(
 export function writeDictationAnswerDrafts(
   videoId: string,
   drafts: Record<string, string>,
-  ownerKey?: string | null
+  ownerKey: string
 ) {
   const storage = getDraftStorage()
 
