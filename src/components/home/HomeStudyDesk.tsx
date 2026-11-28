@@ -32,6 +32,10 @@ import { DEFAULT_HOME_VIEW, type HomeView } from './homeView'
 
 /** What the grammar path wants next, for the plan. */
 export interface GrammarTodayRecord {
+  /** The most overdue review's page, null when nothing is due. */
+  dueHref?: string | null
+  /** That review's lesson title. */
+  dueTitle?: string | null
   /** The path's next step page (`nextHref(PathNext)`), null when done. */
   nextHref?: string | null
   nextTitle: string | null
@@ -321,6 +325,8 @@ export function HomeStudyDesk({
               dictationDue={dictationStats?.dueReviewItemCount ?? 0}
               grammarDue={grammarToday?.dueCount ?? 0}
               messages={messages}
+              grammarDueHref={grammarToday?.dueHref ?? null}
+              grammarDueTitle={grammarToday?.dueTitle ?? null}
               nextGrammarHref={grammarToday?.nextHref ?? null}
               nextGrammarTitle={grammarToday?.nextTitle ?? null}
               vocabularyDue={vocabStats?.dueTodayCount ?? 0}

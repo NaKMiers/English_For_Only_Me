@@ -55,4 +55,17 @@ describe('HomeSimpleView', () => {
       screen.getByRole('list').querySelector('a[href="/vocabulary"]')
     ).not.toBeNull()
   })
+
+  test('grammar reviews due: "N due" opens the most overdue review, not the next lesson', () => {
+    const { container } = renderSimple({
+      grammarDue: 3,
+      grammarDueHref: '/grammar/lessons/a1-have/review',
+      grammarDueTitle: 'Have got',
+    })
+
+    const nextStop = container.querySelector('[data-next-stop]')
+    expect(nextStop?.querySelector('a')?.getAttribute('href')).toBe(
+      '/grammar/lessons/a1-have/review'
+    )
+  })
 })

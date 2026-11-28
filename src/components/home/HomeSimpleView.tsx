@@ -39,6 +39,9 @@ interface Props {
   buddy: ReactNode
   dictationDue: number
   grammarDue: number
+  /** The most overdue grammar review, where "N due" leads. */
+  grammarDueHref?: string | null
+  grammarDueTitle?: string | null
   messages: Messages
   /** The grammar path's next step (lesson, review, checkpoint), if any. */
   nextGrammarHref?: string | null
@@ -115,6 +118,8 @@ export function HomeSimpleView({
   dictationDue,
   grammarDue,
   messages,
+  grammarDueHref = null,
+  grammarDueTitle = null,
   nextGrammarHref = null,
   nextGrammarTitle,
   vocabularyDue,
@@ -143,9 +148,16 @@ export function HomeSimpleView({
     },
     {
       due: grammarDue,
-      hint: nextGrammarTitle ?? t.grammarStart,
-      // The next lesson (or review, checkpoint) itself, not the path.
-      href: nextGrammarHref ?? '/grammar',
+      // With reviews due, the row counts them, so it opens the most overdue
+      // one; otherwise the next lesson (or checkpoint) itself, not the path.
+      hint:
+        grammarDue > 0
+          ? (grammarDueTitle ?? nextGrammarTitle ?? t.grammarStart)
+          : (nextGrammarTitle ?? t.grammarStart),
+      href:
+        grammarDue > 0
+          ? (grammarDueHref ?? '/grammar')
+          : (nextGrammarHref ?? '/grammar'),
       icon: PenLine,
       label: t.grammar,
       module: 'grammar',
@@ -177,7 +189,12 @@ export function HomeSimpleView({
     {
       data: {
         detail: t.focusLesson,
-        row: { ...rows[2], label: nextGrammarTitle ?? t.grammarStart },
+        row: {
+          ...rows[2],
+          // The next lesson, whatever is due.
+          href: nextGrammarHref ?? '/grammar',
+          label: nextGrammarTitle ?? t.grammarStart,
+        },
       },
       kind: 'next' as const,
     },

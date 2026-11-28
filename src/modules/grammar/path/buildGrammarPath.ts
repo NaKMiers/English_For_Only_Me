@@ -59,6 +59,11 @@ export type PathNext =
 export interface GrammarPathView {
   units: PathUnit[]
   next: PathNext
+  /**
+   * The most overdue review, whatever `next` is: a "N due" link opens it
+   * (`next` prefers the next open lesson).
+   */
+  review?: Extract<PathNext, { kind: 'review' }> | null
   currentUnitId: string | null
   totals: {
     stars: number
@@ -273,15 +278,17 @@ export function buildGrammarPath({
 
   const weakCount = countOpenMisses(course, misses)
   let next: PathNext = { kind: 'done' }
+  const review: Extract<PathNext, { kind: 'review' }> | null = mostOverdue
+    ? {
+        kind: 'review',
+        lessonId: mostOverdue.lessonId,
+        title: mostOverdue.title,
+      }
+    : null
 
   if (firstOpen) next = firstOpen
   else if (firstCheckpoint) next = firstCheckpoint
-  else if (mostOverdue)
-    next = {
-      kind: 'review',
-      lessonId: mostOverdue.lessonId,
-      title: mostOverdue.title,
-    }
+  else if (review) next = review
   else if (weakCount > 0) next = { count: weakCount, kind: 'weak' }
 
   return {
@@ -290,6 +297,7 @@ export function buildGrammarPath({
       units.findLast(unit => unit.state !== 'locked')?.id ??
       null,
     next,
+    review,
     totals: {
       dueCount,
       maxStars: totalLessons * 3,

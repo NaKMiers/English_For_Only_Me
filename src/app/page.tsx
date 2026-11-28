@@ -56,6 +56,8 @@ export default async function Home() {
       dictationStats={dictationStats}
       grammarToday={{
         dueCount: grammarPath.totals.dueCount,
+        dueHref: grammarPath.review ? nextHref(grammarPath.review) : null,
+        dueTitle: grammarPath.review?.title ?? null,
         nextHref: nextHref(next),
         nextTitle: 'title' in next ? next.title : null,
       }}
