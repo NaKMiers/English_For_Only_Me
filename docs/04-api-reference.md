@@ -479,6 +479,7 @@ File: `src/app/api/dictation/sessions/[sessionId]/attempts/route.ts`. Schema:
 | `idempotencyKey`   | trimmed, 8-120                    |
 | `segmentId`        | 24-hex                            |
 | `replayCountDelta` | optional int 0-500                |
+| `review`           | optional boolean (default false)  |
 | `timeSpentMs`      | optional int 0 to 6 h             |
 | `typedAnswer`      | optional, max 5000 (default `''`) |
 
@@ -493,20 +494,29 @@ Invalid -> `400` "Attempt payload is invalid." Flow:
 2. Session must be owned (`404`) and not `abandoned`
    (`canRecordAttemptForSession` in
    `src/modules/dictation/practice/attemptCursor.ts`; `409`
-   `sessionNotActive`). Completed sessions still accept attempts.
+   `sessionNotActive`). Completed sessions still accept attempts. A `review`
+   attempt skips this check (it never touches the session).
 3. Any segment of the session's transcript and video is accepted (the browser
    grades locally and may be ahead of the server cursor); otherwise `404`
    (`segmentNotFound`).
 4. `buildDictationCorrection` grades; the attempt is saved. A duplicate-key
    race on `{ userId, sessionId, idempotencyKey }` answers with the winner as
    a replay.
-5. Cursor (`resolveAttemptCursor`): a passed `check` or a `skip` moves to the
+5. Review attempts (`review: true`, sent by the practice page's review mode
+   from the queue's `?segment=` deep link) stop here: the session's cursor,
+   status and `lastActiveAt` are left alone, `updateReviewItems` recomputes
+   the segment's items and, for a passed attempt, completes them
+   (`completeReviewItemsForSegment`), and the response carries
+   `nextSegmentId: null` and the unchanged session.
+6. Cursor (`resolveAttemptCursor`): a passed `check` or a `skip` moves to the
    segment after the attempted one, or completes the session when there is
    none; any other attempt moves the cursor to the attempted segment. A
    non-active session keeps its cursor. Shared segment and video documents are
    never written; per-learner progress is derived from attempts
    (`src/modules/dictation/practice/segmentProgressService.ts`).
-6. `recomputeReviewItemsForSegment` runs for the actor.
+7. `recomputeReviewItemsForSegment` runs for the actor (`updateReviewItems`;
+   the replay path in step 1 also completes items for a passed review
+   attempt).
 
 Success `201`:
 `{ attempt, mode: 'create', nextSegmentId: string | null, progress, session }`

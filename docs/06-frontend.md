@@ -235,7 +235,7 @@ graph TD
   Page["server page"] --> Helper["module journey helper<br/>(unitSummary, testPath, listeningJourney, wordGarden)"]
   Helper --> Pick["pickNextStop<br/>src/lib/journey/nextStop.ts<br/>resume > due > next > done"]
   Pick --> Card["JourneyCard (module gradient)"]
-  Card --> Headline["JourneyHeadline + metaphor + MilestoneNote"]
+  Card --> Headline["JourneyHeadline + metaphor (steps left on it)"]
   Card --> Stats["StatStrip of StatChip (max 4)"]
   Card --> Next["NextStopCard (the one cta)"]
   Card --> Handle["DrawerHandle (client)"]
@@ -249,11 +249,11 @@ graph TD
 | `NextStopCard`                                    | `journey/NextStopCard.tsx`           | Pin chip, detail, title and one `ink` button (`href`, or `onAction` for a modal); `done` all-clear state; `card` or `compact`; `size` `md` or `sm` (tighter card); `media` (a thumbnail left of the title, the pin on its corner; dictation); `id` observed by `ContinueFloat`.                                                                                                                                                                                                                                                                                                                        |
 | `DrawerRow`, `DrawerHandle`                       | `journey/SideDrawer.tsx` (client)    | Side card folded by default; grid tracks animate; open handle is `cta`; the 32px handle pill has a 44px hit area. Open, the row carries `data-drawer-open` on `group/drawer`: from `lg` the stat chips show icon and number only.                                                                                                                                                                                                                                                                                                                                                                      |
 | `ContinueFloat`                                   | `journey/ContinueFloat.tsx` (client) | Floating Continue to "you are here": scroll + resize + page height (ResizeObserver) + settle measuring, `fallbackId`, `onBeforeJump`, `nudge` (a small double bounce on arrival, `transform` only, none under reduced motion), hidden while the next stop is on screen unless `persistent` (IELTS, Grammar and a dictation topic: always shown).                                                                                                                                                                                                                                                       |
-| `SessionEnd`                                      | `journey/SessionEnd.tsx`             | Wins, journey step, fix-up list (folded past 3 with a native disclosure), next stop, quiet secondary links, in that order. `focusTitle` focuses the heading on mount.                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| `SessionEnd`                                      | `journey/SessionEnd.tsx`             | Wins, journey step, fix-up list (folded past 3 with a native disclosure), next stop (a `NextStopCard variant="compact"`), quiet secondary links, in that order. `stats` puts static `StatChip`s on the headline's row (top right); `wins` is optional. `focusTitle` focuses the heading on mount.                                                                                                                                                                                                                                                                                                      |
 | `FocusOnMount`                                    | `journey/FocusOnMount.tsx` (client)  | Focuses an element by id once. End screens that replace a session in place (dictation finish, grammar result, vocabulary recall end) set `focusTitle` so focus does not fall to the body; the IELTS result page, a page load, does not.                                                                                                                                                                                                                                                                                                                                                                |
-| `EmptyState`, `StepDots`                          | `journey/*.tsx`                      | Empty list with one action; a static row of step dots.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `EmptyState`, `StepDots`                          | `journey/*.tsx`                      | Empty list with one action (`tone: 'ink'` when it is the page's way on, then it counts as the next stop; `media` shows a thumbnail instead of the icon); a static row of step dots.                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | `InlineNotice`, `ConfirmDialog`, `Breadcrumb`     | `common/*.tsx`                       | Status / error banner (error is danger with an icon); leave / restart confirm; wayfinding used by `PageHeader breadcrumb` and `AppTopbar page`.                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| `SkeletonJourney`, `SkeletonPlayer`               | `common/PageSkeletons.tsx`           | The journey card shape; a full-height focus-screen skeleton with no topbar. `SkeletonPageShell page` keeps the topbar title stable.                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `SkeletonJourney`, `SkeletonPlayer`               | `common/PageSkeletons.tsx`           | The journey card shape; a full-height focus-screen skeleton with no topbar; `SkeletonTopicStrip` (dictation topic, favorites, uncategorized), `SkeletonIeltsTest` (mode switch, three launchers, words), `SkeletonVocabularyLanding` (route and dashboard first load). `SkeletonPageShell page` keeps the topbar title stable (a blank title for dynamic ones).                                                                                                                                                                                                                                        |
 
 Advance helpers apply a finished session to the loaded journey so the end
 screen is not stale (a replay adds 0): `advanceTopicRecord`
@@ -261,10 +261,14 @@ screen is not stale (a replay adds 0): `advanceTopicRecord`
 (`vocabulary/wordGarden.ts`), `advanceUnitSummary`
 (`src/modules/grammar/path/unitSummary.ts`).
 
+State icons live in `src/constants/stateIcons.ts`: `DUE_ICON` (the brain) is
+the one "due" icon on chips, nodes, rows and buttons; `DONE_ICON` the tick.
+
 Style guards in `src/lib/styleGuards.test.ts` keep it consistent: corner
 roles, no `bg-ink` control, no raw palette, no heavy weights in learner
-components, no `hover-lift`, no em dash, 44px touch targets; baselines only
-shrink.
+components, no `hover-lift`, no em dash, 44px touch targets, `RotateCcw`
+only in replay / redo / retry / restore files (`ROTATE_FOR_REPLAY`);
+baselines only shrink.
 
 ---
 
@@ -301,12 +305,12 @@ vocabulary stats and grammar progress and passes them to `HomeStudyDesk`
 (`src/components/home/HomeStudyDesk.tsx`). `HomeViewSwitch` flips between the
 simple view (default, cookie-backed, `homeView.ts`) and the full view.
 
-| Component                                       | File                      | Role                                                                                                                                                                                                                                                                                                                                                  |
-| ----------------------------------------------- | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `HomeSimpleView`                                | `home/HomeSimpleView.tsx` | Up next rows per module (due chip, or a tick once nothing is due; the title wraps and the icon tile shrinks to 44px on phones), one `NextStopCard` picked by `pickNextStop` (most reviews due, else the next grammar lesson), three At a glance `StatChip`s (`size="lg"`, `labelAlways`, so phones still say what each number counts), and the buddy. |
-| `HomeStudyDesk` full view                       | `home/HomeStudyDesk.tsx`  | Five blocks: learning progress tiles, `HomeModuleTiles`, weak words, today's plan (due counts as hints; the old schedule merged in) and the buddy.                                                                                                                                                                                                    |
-| `HomeModuleNav`, `HomeModuleTiles`              | `home/*.tsx`              | Plain module name pills (no numbers in navigation); pastel module tiles.                                                                                                                                                                                                                                                                              |
-| `HomeBuddyCard`, `HomeBuddyMascot`, `buddyMood` | `home/*.tsx`              | The study buddy whose mood follows the numbers (`public/buddy/*.png`).                                                                                                                                                                                                                                                                                |
+| Component                                       | File                      | Role                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| ----------------------------------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `HomeSimpleView`                                | `home/HomeSimpleView.tsx` | Up next rows per module (due chip, or a tick once nothing is due; the title wraps and the icon tile shrinks to 44px on phones), one `NextStopCard` picked by `pickNextStop` (most reviews due, else the next grammar lesson) linking into the work screen (`/vocabulary?recall=1`, the grammar path's `nextHref`, `/dictation/review`) with its row left out of Up next, three At a glance `StatChip`s (`size="lg"`, `labelAlways`, so phones still say what each number counts), and the buddy. |
+| `HomeStudyDesk` full view                       | `home/HomeStudyDesk.tsx`  | Five blocks: learning progress tiles under a plain heading (dictation in sky), `HomeModuleTiles`, weak words, today's plan (due counts as hints; opaque fills, the mixed group on `bg-tint`) and the buddy (tall only from xl).                                                                                                                                                                                                                                                                  |
+| `HomeModuleNav`, `HomeModuleTiles`              | `home/*.tsx`              | Plain module name pills (no numbers in navigation); pastel module tiles.                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| `HomeBuddyCard`, `HomeBuddyMascot`, `buddyMood` | `home/*.tsx`              | The study buddy whose mood follows the numbers (`public/buddy/*.png`).                                                                                                                                                                                                                                                                                                                                                                                                                           |
 
 ---
 
@@ -405,22 +409,41 @@ run this visit covered from the first sentence (fresh start, restart or
 rewind), not for a resumed run or a video already done on load; the finish
 takes focus unless it was the state on load. The verdict word in `GuidedAnswerInput` is screen-reader
 only. The practice and results pages render learner-safe setup states (no admin
-links) when a transcript or segments are missing; practice loads with
-`SkeletonPlayer`.
+links, an `EmptyState` with one way back) when a transcript or segments are
+missing; practice loads with `SkeletonPlayer`.
+
+Review mode (`?segment=` from the review queue, parsed with
+`parseReviewSegmentParam` in `src/modules/dictation/review/reviewDeepLink.ts`):
+the shell gets `review` (`PracticeReview`: the sentence, the session of its last
+attempt, how many others are due and the next one's deep link), opens on that
+sentence (never on Done), locks prev / next, writes no cursor or completion,
+sends attempts with `review: true` to that session, and after Next shows
+`practice/ReviewEnd.tsx` (a compact next stop: "N sentences left", Next
+sentence or Back to review). Rewind and Restart open the whole video. The page
+keys the shell on the segment so a new sentence starts afresh. The finish
+screen also shows the topic step (`topicRecord`, `practice/topicStep.ts`).
+The translation strip is a quiet helper (small, `text-ink-soft`) that also
+shows its own load error; a lookup error is an error `InlineNotice`; Check and
+Next are full-size buttons; the toolbar has no sentence counter (the
+`PracticeProgressStrip` title carries "3 / 20").
 
 ### 7.3 Results and review
 
 `/dictation/videos/[videoId]/results` has a breadcrumb `PageHeader`, then
 `DictationResultsSummary`: once there is practice it is a `SessionEnd` head
-(first-try accuracy, done share, one next stop: review weak sentences when due,
-else the next video of the topic; Practice again as the quiet link). Below,
+(first-try accuracy, done share, the topic step, one next stop into the next
+video of the topic; Practice again as the quiet link). Before any practice it
+is one `EmptyState` (thumbnail, one sentence, Start or Continue practice as the
+`ink` action); the no-segments and still-saving states are a panel of their
+own instead. Below a practiced head, `DictationDebriefPanel` (a tinted fold:
+the generate error sits under the button outside the fold, a video not yet
+finished shows one quiet line instead of a disabled button) and
 `DictationStatsPanel` (overall and time in one line, hardest sentences, and
-mistake map, missed words and recovery folded behind Details),
-`DictationDebriefPanel` (paper button, notes on demand, `InlineNotice` errors)
-and `DictationReviewQueue variant="embedded"`. The results next stop uses the
-same no-topic fallback as the finish screen. `/dictation/review` renders
-`DictationReviewQueue` with the due count and one Start review (rows past five
-fold; empty is "All caught up"). The list is capped, so the head counts every
+mistake map, missed words and recovery folded behind Details). The results next
+stop uses the same no-topic fallback as the finish screen. `/dictation/review`
+renders `DictationReviewQueue` with the due count and one Start review (rows
+past five fold; empty is "All caught up"); every row and Start open the
+sentence itself through `reviewPracticeHref` (`?segment=`). The list is capped, so the head counts every
 due item through `countDueReviewItemsForUser`
 (`src/modules/dictation/review/reviewItemService.ts`), the same number as the
 landing. `formatDuration`
@@ -434,13 +457,18 @@ content and hand it to client components; mutations go through server actions in
 `src/modules/dictation/content/adminActions.ts`, except `DictationImportForm`, which
 calls `importYouTubeVideoApi` (`src/requests/dictationImportsApi.ts`).
 
-| Component                                                                               | File                    | Role                                                                                                                  |
-| --------------------------------------------------------------------------------------- | ----------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `AdminTopicList`, `AdminTopicCard`, `AdminCreateTopicForm`, `AdminTopicThumbnailFields` | `dictation/admin/*.tsx` | Topic board: drag-reorder topics and sections, edit, create, thumbnail upload.                                        |
-| `AdminUnassignedPanel`, `AdminVideoRow`, `VideoAssignTable`, `VideoFilterBar`           | `dictation/admin/*.tsx` | Unassigned pool, shared video row (level select, edit, soft delete), list view with bulk assign and reorder, filters. |
-| `AdminTrashPanel`, `AdminTrashVideoMenu`                                                | `dictation/admin/*.tsx` | Deleted videos with restore and permanent delete.                                                                     |
-| `adminVideoDnd`, `ConfirmSubmitButton`                                                  | `dictation/admin/*.tsx` | Native HTML5 drag and drop primitives with MIME-typed payloads; confirm-then-submit button.                           |
-| `DictationImportForm`, `AdminVideoTranscriptPreview`                                    | `dictation/*.tsx`       | Import or edit a video, then the caption manager; transcript preview.                                                 |
+| Component                                                                               | File                         | Role                                                                                                                                                                                   |
+| --------------------------------------------------------------------------------------- | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `AdminTopicList`, `AdminTopicCard`, `AdminCreateTopicForm`, `AdminTopicThumbnailFields` | `dictation/admin/*.tsx`      | Topic board: drag-reorder topics and sections, edit, create, thumbnail upload.                                                                                                         |
+| `AdminUnassignedPanel`, `AdminVideoRow`, `VideoAssignTable`, `VideoFilterBar`           | `dictation/admin/*.tsx`      | Unassigned pool, shared video row (level select, edit, soft delete), list view with bulk assign and reorder, filters.                                                                  |
+| `AdminTrashPanel`, `AdminTrashVideoMenu`                                                | `dictation/admin/*.tsx`      | Deleted videos with restore and permanent delete.                                                                                                                                      |
+| `adminVideoDnd`, `ConfirmSubmitButton`                                                  | `dictation/admin/*.tsx`      | Native HTML5 drag and drop primitives with MIME-typed payloads; confirm-then-submit button (`ActionButton`s).                                                                          |
+| `DictationImportForm`, `AdminVideoTranscriptPreview`                                    | `dictation/*.tsx`            | Import or edit a video (URL and Save on one row from sm; the pages render it without a wrapping card), then the caption manager (a remove error on its track row); transcript preview. |
+| `AdminMenuTrigger`                                                                      | `admin/AdminMenuTrigger.tsx` | The shared "more actions" menu trigger (icon-button look, pops) of every admin row and the IELTS editor header.                                                                        |
+
+The Import button sits in the dictation admin `PageHeader` actions. Topic and
+section delete items only show when they can run (empty), not disabled with a
+tooltip.
 
 ---
 
@@ -464,7 +492,8 @@ Every component below is a client component.
 graph TD
   Dash["VocabularyDashboard<br/>state owner, request helpers, client outbox"]
   Dash --> Landing["VocabularyLanding<br/>layout only"]
-  Landing --> Garden["WordGardenHero (JourneyCard)<br/>next stop: Start Recall or plant new words"]
+  Landing --> Garden["WordGardenHero (JourneyCard)<br/>next stop: Start Recall when due"]
+  Landing --> Float["ContinueFloat (nothing due)<br/>bounces the explore deck"]
   Landing --> Drawer["VocabularyStatsOverview (drawer)<br/>how a word grows, growth, hardest words"]
   Landing --> Search["VocabularySearchPanel"]
   Landing --> Explore["VocabularyExplorePanel<br/>card-stack deck, decided bar"]
@@ -483,16 +512,27 @@ graph TD
   with the words to go written above each stage still ahead (the current one
   green, the rest quiet, the number alone on phones; no milestone line and no
   stage badge), three today chips in the top right (`statsPlacement="top"`),
-  and a small next stop (`size="sm"`) in a narrow right column
-  (`layout="aside"`) (`pickNextStop` in `VocabularyLanding`): due recall
-  cards ("12 words due, Next: word", Start Recall opens the modal) or, with
-  nothing due, Plant new words (scrolls to the explore deck).
+  and, with cards due, a small next stop (`size="sm"`) in a narrow right
+  column (`layout="aside"`) (`pickNextStop` in `VocabularyLanding`): "12 words
+  due, Next: word", Start Recall opens the modal. With nothing due there is no
+  next stop; a `persistent` `ContinueFloat` points at the explore deck's top
+  card (`VOCAB_EXPLORE_ACTIVE_ID`, `nudge="[data-explore-deck]"`).
+- `?recall=1` (`VOCAB_RECALL_HREF` in `src/modules/vocabulary/constants.ts`,
+  linked from the word list's Start review and the home vocabulary row) opens
+  the recall modal once on arrival and is removed from the URL with
+  `history.replaceState`.
+- A word mark's result and error show under the buttons that made it (the
+  search card through `VocabDecisionButtons`, the deck under its buttons), not
+  at the top of the page; the top notice is for page-wide loads only.
 - `VocabularySearchPanel`: the Words link to `/vocabulary/words` in its
   header (no row of its own on the landing); lookup and search in parallel; each result is a
   button that loads that word, with `VocabTermHeader inline` inside it (no
   nested speak button).
 - `VocabularyExplorePanel`: frequency-ranked words as a card-stack deck with one
-  mint "N of M decided" bar. Also used by the IELTS test page.
+  mint "N of M decided" bar. Every visible card is opaque; neighbours are
+  tinted (`bg-tint text-ink-soft`) and pop as click targets; the top card uses
+  `VocabDecisionButtons` (the pick pressed, not disabled). Also used by the
+  IELTS test page.
 
 ### 8.3 Recall popup
 
@@ -513,20 +553,24 @@ Plant new words; it takes focus (`focusTitle`). Afterwards `VocabRecallSessionSu
   filter, `q` param, matched inside the entry join in
   `buildVocabWordListPipeline`), one fixed page size with the pager at the
   bottom, rows with `StepDots` for the recall step and only the move that
-  changes something (learning: Already know; known: Learn it). Due today offers
-  Start recall; empty and no-match states offer one action. The page keys the
+  changes something (learning: Already know; known: Learn it). A failed move
+  shows its error on that row (no success line). Due today offers Start recall
+  (straight into the session, `/vocabulary?recall=1`); the pager hides its ends;
+  empty and no-match states offer one action. The page keys the
   list on view, page and page size only (not `q`), so a search never remounts
   it and the search box keeps focus. The word count also goes to the topbar
   subtitle, and the pager nav has its own name (`pagerNav`).
-- `AdminVocabPanel`: a `StatStrip` of the queue counts (enrichable, ready,
-  failed, not found, stale locks), refresh, and `Enrich N`.
+- `AdminVocabPanel`: the queue counts (enrichable, ready, failed, not found,
+  stale locks) and the refresh `IconButton` in the header, a refresh failure
+  under it, and `Enrich N` with its result and error as notices.
 
 ### 8.5 Shared vocabulary pieces
 
-| Component                                   | File                              | Role                                                                                                                                                                                                                                                  |
-| ------------------------------------------- | --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `VocabTermHeader`                           | `vocabulary/VocabTermHeader.tsx`  | Term, pronunciation and a speak button; sizes `md` / `lg` / `xl`. `inline` renders spans and no speak button, for use inside a button or link.                                                                                                        |
-| `QuickVocabLookup` / `QuickVocabWordButton` | `vocabulary/QuickVocabLookup.tsx` | Click-to-look-up word buttons and dialog (meaning, definition, marks). Used by `DictationPracticeShell` through `GuidedAnswerInput.renderCorrectionWord` and by the IELTS `TextHighlighter`. Results cached for five minutes (`vocabLookupCache.ts`). |
+| Component                                   | File                                  | Role                                                                                                                                                                                                                                                                                                               |
+| ------------------------------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `VocabTermHeader`                           | `vocabulary/VocabTermHeader.tsx`      | Term, pronunciation and a speak button; sizes `md` / `lg` / `xl`. `inline` renders spans and no speak button, for use inside a button or link.                                                                                                                                                                     |
+| `VocabDecisionButtons`                      | `vocabulary/VocabDecisionButtons.tsx` | Should learn / Already know with the saved pick pressed (`aria-pressed`, `PICKED_CLASS_NAME`), a no-op on the current pick, the error under the buttons; `decisionOf`, `vocabStatusLabel`. Used by search, the explore deck and the word dialog.                                                                   |
+| `QuickVocabLookup` / `QuickVocabWordButton` | `vocabulary/QuickVocabLookup.tsx`     | Click-to-look-up word buttons and a compact dialog (meaning chip, plain definition, `VocabDecisionButtons` showing the saved pick). Used by `DictationPracticeShell` through `GuidedAnswerInput.renderCorrectionWord` and by the IELTS `TextHighlighter`. Results cached for five minutes (`vocabLookupCache.ts`). |
 
 ---
 
@@ -565,7 +609,9 @@ the winding path of `UnitTrail`s.
   icon follow the state. Units fold; `initialOpenUnitIds` opens the current one.
 - The shared `ContinueFloat` (`persistent`, always on screen while there is a
   next node) scrolls to the next node, unfolding its unit first
-  (`onBeforeJump`, `fallbackId="unit-{id}"`).
+  (`onBeforeJump`, `fallbackId="unit-{id}"`), and bounces the node itself
+  (`nudge`; its `li` carries the zigzag transform). A passed checkpoint is a
+  static green node (no link: its page redirects a finished unit back).
 - Next-step href and label helpers live in `path/pathNext.ts` (used by the
   session end and notes).
 - Sync: `useSyncExternalStore` watches the outbox for pending grammar sessions
@@ -573,17 +619,19 @@ the winding path of `UnitTrail`s.
 
 ### 9.3 The lesson player
 
-| Component           | File                           | Client? | Role                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| ------------------- | ------------------------------ | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GrammarPlayerPage` | `player/GrammarPlayerPage.tsx` | server  | Shuffles the cards once per request (`preparePlayCards` with a fresh `randomSeed`) and renders a full-height `PageShell` with `LessonPlayer` keyed on that seed, so a refresh remounts the player on a new draw.                                                                                                                                                                                                                                                                                                                                                                                                            |
-| `LessonPlayer`      | `player/LessonPlayer.tsx`      | client  | `useReducer(createPlayerReducer)` (`playerReducer.ts`: first answer counts, a miss is requeued once, combo and best combo). Progress bar, combo badge and milestone flashes, sound toggle, leave dialog once anything is answered, `beforeunload` guard. Enter checks or continues; 1 to 4 pick a choice. A feedback panel shows the expected answer with `SpeakButton` and the card's explanation; the Correct / Not quite word is announced in an `aria-live` region and the step count uses `sr-only` text.                                                                                                              |
-| `PlayerCard`        | `player/PlayerCard.tsx`        | client  | `ExplainCardView` (also used by notes) and `PracticeCardView` for `choice`, `fill` (tiles or input), `order` (tap or drag tiles via `useTileDrag.ts`, pointer events) and `fix` (tap the wrong word). Wrong states use `danger`, right states `lesson-correct`.                                                                                                                                                                                                                                                                                                                                                             |
-| `PlayerResult`      | `player/PlayerResult.tsx`      | client  | `SessionEnd`: stars or pass mark, first-try accuracy (streak and time as a quiet line), the journey step from `advanceUnitSummary`, misses folded, one next step (unlocked lesson, checkpoint, the new unit's first lesson, else the path's next step); Redo / Retry call `router.refresh()` inside a transition (button disabled meanwhile), so a retry draws a fresh session with current journey data. The heading takes focus (`focusTitle`). Saves once through the outbox (`buildGrammarSessionWrite`, lane `grammar`, POST `/api/grammar/sessions`) with states saving, queued, saved, retryable, rejected, offline. |
-| `SpeakButton`       | `grammar/SpeakButton.tsx`      | client  | `speechSynthesis` (en-US, rate 0.92); renders nothing when unsupported.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| Component           | File                           | Client? | Role                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| ------------------- | ------------------------------ | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GrammarPlayerPage` | `player/GrammarPlayerPage.tsx` | server  | Shuffles the cards once per request (`preparePlayCards` with a fresh `randomSeed`) and renders a full-height `PageShell` with `LessonPlayer` keyed on that seed, so a refresh remounts the player on a new draw.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `LessonPlayer`      | `player/LessonPlayer.tsx`      | client  | `useReducer(createPlayerReducer)` (`playerReducer.ts`: first answer counts, a miss is requeued once, combo and best combo). Progress bar, combo badge and milestone flashes, sound toggle, leave dialog once anything is answered, `beforeunload` guard. Enter checks or continues; 1 to 4 pick a choice. A feedback panel shows the expected answer with `SpeakButton` and the card's explanation; the Correct / Not quite word is announced in an `aria-live` region and the step count uses `sr-only` text.                                                                                                                                                                                                                                                                                      |
+| `PlayerCard`        | `player/PlayerCard.tsx`        | client  | `ExplainCardView` (also used by notes) and `PracticeCardView` for `choice`, `fill` (tiles or input), `order` (tap or drag tiles via `useTileDrag.ts`, pointer events) and `fix` (tap the wrong word). Wrong states use `danger`, right states `lesson-correct`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `PlayerResult`      | `player/PlayerResult.tsx`      | client  | `SessionEnd`: stars or pass mark, accuracy / best streak / time as chips in the `stats` slot, one journey line from `advanceUnitSummary` ("+1 in Unit 3 · A1, 2 lessons to the checkpoint"; a replay drops the +1), misses folded, one compact `NextStopCard` (Unlocked or Up next: the unlocked lesson, checkpoint, the new unit's first lesson, else the path's next step; the all-clear `done` when the course is finished); Redo / Retry call `router.refresh()` inside a transition (button disabled meanwhile), so a retry draws a fresh session with current journey data. The heading takes focus (`focusTitle`). Saves once through the outbox (`buildGrammarSessionWrite`, lane `grammar`, POST `/api/grammar/sessions`) with states saving, queued, saved, retryable, rejected, offline. |
+| `SpeakButton`       | `grammar/SpeakButton.tsx`      | client  | `speechSynthesis` (en-US, rate 0.92); renders nothing when unsupported.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 
 `lessonProgress` (`player/playerReducer.ts`) measures first-pass cards over the
 lesson's own cards, so a miss adds a retry pip instead of shrinking the bar, and
-the step count (3 / 9) never goes back. Notes end with one next stop. The player sits on `.lesson-stage`, a soft brand and peach glow behind the card
+the step count (3 / 9) never goes back. Checkpoint and review runs keep a
+"Pass 80%" chip beside it. Notes end with one next stop; Redo sits in the first
+card's header and the cards drop the Remember tag (`ExplainCardView hideTag`). The player sits on `.lesson-stage`, a soft brand and peach glow behind the card
 column.
 
 ---
@@ -621,12 +669,12 @@ next stop card; on phones the trail circles are 44px and only the milestone
 ahead keeps a visible label) and `ProgressTabs` folded beside it (recent
 attempts, weak spots), then `TestPath` (books as metro lines of test stations)
 and a `persistent` `ContinueFloat` that is always on screen and scrolls to the
-next test station. The test page renders `TestJourney` (skills banded N of 3 with
-`SkillPips`, best band / target / attempts chips, the next skill from
-`nextSkillOf`) and `TestLaunchers` (`SkillLauncher.tsx`: one Practice / Mock
-`Segmented` for the test, one folding row per skill, the recommended one open,
-minutes only on the full test, Go as a paper button; the trigger is named by
-its own text, so the part count and latest band are read too). Skill names come from
+next test station, bouncing it (`nudge`). The test page renders
+`TestLaunchers` (`SkillLauncher.tsx`: one Practice / Mock `Segmented` for the
+test, every skill as an open card side by side from sm, minutes only on the full
+test; the next skill from `nextSkillOf` wears the pink ring and the page's one
+`ink` Go, the others `paper`; a mock that cannot start shows only its reason)
+and `TestVocabPanel`. Skill names come from
 `t.ielts.skills`.
 
 ### 10.3 Runners (`src/components/ielts/runner/`)
@@ -639,28 +687,39 @@ full-screen stage outside `PageShell` that paints its own surface
 | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `AttemptLoader`                                      | Starts or resumes the attempt (`startIeltsAttemptApi`, idempotency key in sessionStorage, one retry on 409); renders `WritingRunner` or `IeltsRunner`; exports `RunnerSkeleton`.                                                                                                                                                                          |
 | `IeltsRunner`                                        | Listening and Reading: `RunnerToolbar`, a resizable split (`useResizableSplit`, 30 to 75 percent, saved per runner) between the material (`PassagePane`, or `ListeningPlayer` + `ListeningMaterial`) and the questions (`GroupBlock`s + `CheckPartPanel`), then `TextHighlighter` and `QuestionNavigator`. Alt+Q swaps panes; below lg reading uses tabs. |
-| `WritingRunner`                                      | Task pane (`WritingPrompt`, `TaskVisual`, `SampleAnswerPanel`) beside the essay editor; `RunnerFooter` + `PartSwitcher`; practice "check task" via `checkIeltsTaskApi`.                                                                                                                                                                                   |
+| `WritingRunner`                                      | Task pane (`WritingPrompt`, `TaskVisual`, `SampleAnswerPanel`) beside the essay editor; the Task / Essay switch sits in `RunnerToolbar panes` on phones; `RunnerFooter` + `PartSwitcher`; practice "check task" via `checkIeltsTaskApi`, its error under the essay.                                                                                       |
 | `PassagePane`, `ListeningPane`                       | Paper-style passage (evidence marks via `highlightText`); listening player, parts and material (mock: one start button, no seek, no transcript, audio events posted).                                                                                                                                                                                     |
 | `RunnerToolbar`, `RunnerFooter`, `QuestionNavigator` | Exit, title, mode, toggles, clock (announced at 10, 5 and 1 minutes), theme toggle, Submit; bottom bar with part switcher (44px on phones, 32px from md) and skill links.                                                                                                                                                                                 |
 | `TextHighlighter`                                    | Selection menu: highlight, clear, clear all, look up (`QuickVocabDialog`). Paints with the CSS Custom Highlight API (`::highlight(ielts-user)`) inside `data-highlight-scope` elements; highlights last for the visit.                                                                                                                                    |
 | `useAttemptAnswers`, `useMockDeadline`               | Answers in state with a localStorage snapshot and debounced outbox autosave; mock countdown with a five-minute warning.                                                                                                                                                                                                                                   |
 
-Practice adds Guided mode, evidence, check part / task, reset part, the
-transcript and skill links; mock adds the countdown, a leave warning and forces
+The top notice bar is for exam-wide messages (time, submit) and closes with a
+44px `IconButton`; a check error shows in `CheckPartPanel` under the part it
+checked, and "no evidence" beside the question's eye button
+(`IeltsAnswerContext.evidenceNote`). Practice adds Guided mode, evidence, check
+part / task, reset part, the transcript and skill links; mock adds the countdown, a leave warning and forces
 spell check off; drill has neither set of extras.
 
 ### 10.4 Review, widgets, visuals and editor
 
-- Review (`review/`): `IeltsResultHead` (`SessionEnd`: band or score, target and
-  change since last time, the test step, one next stop into the next skill or
-  back to the list; the page passes `writingBand` for Writing and
+- Review (`review/`): `IeltsResultHead` (`SessionEnd` titled with a win,
+  "Listening done": band or score as the headline, score / target / change as
+  chips in the `stats` slot, the test step, one next stop into the next skill
+  or back to the list; the page passes `writingBand` for Writing and
   `result.band` otherwise, and the score reads `-` when there is none),
   `ObjectiveResult` (opens on wrong answers when there are any, else on all;
-  weak-type drill, filterable review with `ReviewMark`, `LineDictation`,
-  `SaveWordButton`, `DrillButton`) and `WritingResult` (grading via
-  `gradeIeltsWritingApi`, then `router.refresh()` so the server head shows the
-  band; the four criteria chips keep their labels on phones; exports
-  `WritingFeedbackDetails`).
+  the weakest type and `DrillButton` in the Answers card header; compact rows
+  of number, struck given answer -> green key and an icon-only `ReviewMark
+wordSrOnly`; the Wrong filter shows evidence and explanation inline, All and
+  Blank fold each row behind the whole row; `LineDictation` and a labelled
+  `SaveWordButton` share one row, the save starting saved for words in
+  `savedTerms`) and `WritingResult` (grading via `gradeIeltsWritingApi`, then
+  `router.refresh()`; Grade in each task card's header with its error beside
+  it; no Show sample without a sample; a blank essay says Nothing written;
+  failed gradings show catalogue text for the stored code; feedback in another
+  language than the app's offers "Grade again in English" and says it uses one
+  of today's gradings; grammar links go to the notes, the lesson, or no link
+  while locked (`grammarLinks`); exports `WritingFeedbackDetails`).
 - Widgets (`widgets/`): `GroupBlock` (one question group in the paper layout),
   `IeltsMarkdown` (safe Markdown subset with answer slots), `SlotInput`,
   `QuestionNumberBadge`, `EvidenceIconButton`, `ReviewMark` (colour always with an
@@ -669,6 +728,8 @@ spell check off; drill has neither set of extras.
 - `visual/TaskVisual.tsx`: Task 1 line, bar and pie charts as plain SVG, tables
   and images, always on white exam paper (`EXAM_PAPER`) so they read in the night
   theme.
+- Drawer (`catalogue/ProgressTabs.tsx`): rows are static; only the attempt
+  link (with the row padding) and the Drill button pop.
 - `ui.tsx`: thin wrappers over the app primitives (`ExamButton`, `ExamIconButton`,
   `ExamCard`, `ExamBadge`, `ExamSheet`, `ExamFrame`, `segmentClass`). Runner selected
   states use `cta`, notices use the `notice` / `notice-soft` / `highlight` tokens.

@@ -399,14 +399,14 @@ weakest first, and returns the top 3 with enough data as `weakest`.
 
 ## 8. Writing (`writing/**`)
 
-| File                     | Role                                                                                                                                                                                     |
-| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `promptBlocks.ts`        | `parseWritingPrompt`: lines starting with `> ` form the bordered task box; `plainWritingPrompt` strips them.                                                                             |
-| `sampleAnswer.ts`        | `splitSampleAnswer`: optional `# Title` first line, paragraphs split on blank lines.                                                                                                     |
-| `examinerPrompt.ts`      | Builds messages; the essay is wrapped as data and instructions inside it are ignored; criteria paraphrased.                                                                              |
-| `examinerSchema.ts`      | Strict output: four criteria 0-9, summary, up to 12 corrections (quote, suggestion, reason, `grammarLessonId`), `improved`.                                                              |
-| `runExaminer.ts`         | One Qwen structured call (low reasoning, 6000 output tokens, 240 s timeout); drops corrections whose quote is not in the essay and lesson ids that do not exist; computes the task band. |
-| `gradeWritingService.ts` | `gradeWritingTask` (graded results) and `checkPracticeWriting` (practice check before submit).                                                                                           |
+| File                     | Role                                                                                                                                                                                                                                                                                                                                                          |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `promptBlocks.ts`        | `parseWritingPrompt`: lines starting with `> ` form the bordered task box; `plainWritingPrompt` strips them.                                                                                                                                                                                                                                                  |
+| `sampleAnswer.ts`        | `splitSampleAnswer`: optional `# Title` first line, paragraphs split on blank lines.                                                                                                                                                                                                                                                                          |
+| `examinerPrompt.ts`      | Builds messages; the essay is wrapped as data and instructions inside it are ignored; criteria paraphrased. `ExaminerInput.language` (the app locale) names the language of `summary` and every `reason` through `LANGUAGE_NAMES` (`src/lib/ai/languageNames.ts`); `suggestion` and `improved` stay English. `EXAMINER_PROMPT_VERSION` (`ielts-examiner-v2`). |
+| `examinerSchema.ts`      | Strict output: four criteria 0-9, summary, up to 12 corrections (quote, suggestion, reason, `grammarLessonId`), `improved`.                                                                                                                                                                                                                                   |
+| `runExaminer.ts`         | One Qwen structured call (low reasoning, 6000 output tokens, 240 s timeout); drops corrections whose quote is not in the essay and lesson ids that do not exist; computes the task band; stamps `language` and `promptVersion` on the feedback. A failure returns `code` (`providerFailed` or `invalidOutput`) plus the raw `message` for the log.            |
+| `gradeWritingService.ts` | `gradeWritingTask` (graded results) and `checkPracticeWriting` (practice check before submit); both take `language` (the grade and check routes pass `getLocale()`).                                                                                                                                                                                          |
 
 ```mermaid
 flowchart TD
@@ -436,6 +436,19 @@ Grading ledger limits:
   of 2 days on `at`).
 - Grammar lesson ids for corrections come from `grammarCourse` in
   `src/modules/grammar/course`.
+
+Language and failures:
+
+- `IeltsWritingTaskFeedback` (`attempts/attemptRecords.ts`; `writingFeedback`
+  is `Mixed` in the model) carries `language` and `promptVersion`. Feedback
+  without `language` was written in Vietnamese; the result page offers "Grade
+  again" in the app language when they differ (never automatic, it spends a
+  grading).
+- A failed task stores an `IeltsGradingErrorCode` in `error` (`missingTask`,
+  `emptyEssay`, `invalidOutput`, `providerFailed`); the learner sees
+  `ielts.writingResult.gradingErrors[code]` and older raw messages read as an
+  unknown reason. The raw message is only logged. The practice check answers
+  `500` with `gradingInvalidOutput` or `gradingProviderFailed`.
 
 ---
 
@@ -535,7 +548,8 @@ Details:
   `draft-questions`, `paraphrase-distractors`, `suggest-evidence`,
   `check-answers`. Returns a proposal and saves nothing; proposed groups are
   checked with the same rules and the issues appended to `notes`. Summary and
-  notes are requested in Vietnamese.
+  notes are written in the admin's app language (`language` from the assist
+  route's `getLocale()`, named with `LANGUAGE_NAMES`).
 - **Evals.** `scripts/evalIeltsGeneration.ts` (`bun run ielts:eval-generation
 [-- keys...]`) runs draft plus at most one repair in memory against real
   Qwen and reports pass rate and tokens; nothing is written. It is manual,
@@ -649,12 +663,12 @@ the learner's own `UserVocabItem` state when signed in;
 
 ## 16. Page data and merge (`services/**`)
 
-| Loader                | Returns                                                                                                                                                                                                                                                                                                       |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `loadIeltsHomeData`   | Catalogue, attempt summaries, overall estimate, best bands per test, weakness stats (learner rows only when a practice actor exists), `isAdmin`, and `error` (`notConfigured` without `MONGODB_URI`, `loadFailed` on exceptions).                                                                             |
-| `loadRunnerPageData`  | Public sections of one skill (all parts; `?part=` only picks the starting part), `prevSkill` / `nextSkill` in L, R, W order present in the test; null for a bad slug, skill or part. Mock omits the transcript.                                                                                               |
-| `loadResultPageData`  | The owner's attempt (via `readAttemptForOwner`, which may expire and finalize it), public sections, and when finished: review rows (given, accepted, outcome, `overLimit`, explanation, evidence, section key) and Writing tasks (prompt, visual, sample answer, essay). In progress: sections only, no keys. |
-| `mergeIeltsGuestData` | On sign-in, moves a guest's attempts to the user; on a duplicate idempotency key it falls back to one-by-one so only the clashing attempt stays with the guest. See [07](./07-auth-infra-testing.md).                                                                                                         |
+| Loader                | Returns                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `loadIeltsHomeData`   | Catalogue, attempt summaries, overall estimate, best bands per test, weakness stats (learner rows only when a practice actor exists), `isAdmin`, and `error` (`notConfigured` without `MONGODB_URI`, `loadFailed` on exceptions).                                                                                                                                                                                                                                                                                                                                                           |
+| `loadRunnerPageData`  | Public sections of one skill (all parts; `?part=` only picks the starting part), `prevSkill` / `nextSkill` in L, R, W order present in the test; null for a bad slug, skill or part. Mock omits the transcript.                                                                                                                                                                                                                                                                                                                                                                             |
+| `loadResultPageData`  | The owner's attempt (via `readAttemptForOwner`, which may expire and finalize it), public sections, and when finished: review rows (given, accepted, outcome, `overLimit`, explanation, evidence, section key), Writing tasks (prompt, visual, sample answer, essay), `savedTerms` (review words, `reviewWordOf` in `services/reviewWord.ts`, already in the learner's vocabulary via `listSavedTermsForUser`) and `grammarLinks` (per lesson a correction names: `notes` when passed, `lesson` when open, `locked`, from the learner's grammar path). In progress: sections only, no keys. |
+| `mergeIeltsGuestData` | On sign-in, moves a guest's attempts to the user; on a duplicate idempotency key it falls back to one-by-one so only the clashing attempt stays with the guest. See [07](./07-auth-infra-testing.md).                                                                                                                                                                                                                                                                                                                                                                                       |
 
 ---
 

@@ -91,3 +91,8 @@ here; this is the single canonical copy (no Claude-side duplicate).
   its request helpers have no UI caller after `/dictation/stats` was removed;
   `src/components/common/SketchChart.tsx` is unused; the `page-hero` class is
   used but not defined in `globals.css`.
+- Branch runs beside a parallel session that is rewriting docs in the main
+  checkout (2026-11-28, UI follow-ups branch): edit only the sections the
+  branch changed, keep the wording local, and do not move
+  `docs/.doc-state.json`, so the later merge stays small and the owner's own
+  sync still sees every commit since the old baseline.

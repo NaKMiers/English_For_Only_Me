@@ -159,10 +159,11 @@ subtitle?, breadcrumb? }}` (a module key, never an icon component),
    plus `PageHeader inTopbar` which shows the same title on phones only.
 2. One `JourneyCard` on the module gradient: `JourneyHeadline` (how far
    the learner came, a count), the module's own metaphor (grammar
-   staircase, IELTS trail, dictation scrubber, vocabulary garden),
-   `MilestoneNote` ("3 lessons to finish A2": steps left, never a
-   percentage), a `StatStrip` of at most 4 `StatChip`s (at most 2 linked),
-   and one `NextStopCard`.
+   staircase, IELTS trail, dictation scrubber, vocabulary garden) with
+   the steps left written on the metaphor itself (never a percentage), a
+   `StatStrip` of at most 4 `StatChip`s in the card's top right
+   (`statsPlacement="top"`, at most 2 linked), and at most one
+   `NextStopCard`.
 3. Optional side drawer: `DrawerRow` + `DrawerHandle` (closed by default)
    for history, weak spots, favorites.
 4. The browse area: the metaphor at full length (path, metro lines, record
@@ -171,12 +172,13 @@ subtitle?, breadcrumb? }}` (a module key, never an icon component),
    screen.
 
 **IELTS and Grammar keep the card short:** no `NextStopCard` and no
-`MilestoneNote`. The steps left sit on the metaphor itself as plain text
+milestone line under the metaphor. The steps left sit on the metaphor itself as plain text
 with no lines that compete with it (IELTS: a number above each stage of
 the trail; Grammar: a flag on top of each step, a tick when done, the pink
 pin with "N to go" on the step being climbed, a quiet "N to go" ahead).
 The chips sit in the card's top right (`statsPlacement="top"`), and a
-`persistent` `ContinueFloat` is the way on. Their landing tests call
+`persistent` `ContinueFloat` with `nudge` (the node or station bounces once
+the scroll settles) is the way on. Their landing tests call
 `expectLandingBudget(container, { ctas: 0, nextStops: 0 })`.
 
 **A dictation topic page has no next stop row either:** the next video's
@@ -185,10 +187,11 @@ section, scrolls to the card, focuses it and gives it a small bounce
 (`nudge`; the learner sees where it sits before playing it).
 
 **Vocabulary and Dictation keep a small next stop** (it goes somewhere
-real: the recall session, a video to resume): same short card (vocabulary:
+real: the recall session, a video to resume; vocabulary with nothing due
+has none and a `persistent` `ContinueFloat` bounces the explore deck): same short card (vocabulary:
 words to go above each stage of the vine still ahead and no stage badge;
 dictation: "N to go" beside the playhead and the next track at the end of
-the waveform, no inner panel; chips top right, no `MilestoneNote`), with
+the waveform, no inner panel; chips top right, no milestone line), with
 the next stop as a `NextStopCard size="sm"` in a narrow right column
 (`layout="aside"`, `nextStopHidesWithDrawer`). A stop with a picture (the
 dictation video's thumbnail) passes it as `media` and takes
@@ -219,13 +222,18 @@ vocabulary recall, grammar player, IELTS result): wins first, then the
 journey step just taken (computed with the module's advance helper so a
 replay adds 0: `advanceTopicRecord`, `advanceGardenPosition`,
 `advanceUnitSummary`), then the fix-up list (folded past 3), then exactly
-one next stop that goes somewhere real.
+one next stop that goes somewhere real. Numbers like accuracy, streak or
+time are static `StatChip`s in the `stats` slot on the headline's row (top
+right, the twin of `JourneyCard statsPlacement="top"`), not a chip row
+under the big number. The next stop is a `NextStopCard variant="compact"`
+(title, detail, one `ink` button, or `done` for the all-clear), never a
+bare button. Its title is a win ("Listening done"), not the page title.
 
 **Shared pieces:**
 
 | Need                         | Use                                                        |
 | ---------------------------- | ---------------------------------------------------------- |
-| Journey card and parts       | `JourneyCard`, `JourneyHeadline`, `MilestoneNote`          |
+| Journey card and parts       | `JourneyCard`, `JourneyHeadline`                           |
 | Numbers                      | `StatStrip` + `StatChip` (static never pops, linked does)  |
 | The one next action          | `NextStopCard` (`card` or `compact`; `href` or `onAction`) |
 | Folded side card             | `DrawerRow`, `DrawerHandle`                                |
@@ -233,6 +241,9 @@ one next stop that goes somewhere real.
 | Empty list or queue          | `EmptyState` (always one action)                           |
 | A step count (word, recall)  | `StepDots`                                                 |
 | Status or error banner       | `InlineNotice` (`error` is danger with an icon)            |
+| Should learn / Already know  | `VocabDecisionButtons` (picked state, error under it)      |
+| State icons                  | `DUE_ICON` (due), `DONE_ICON` (done) in `stateIcons.ts`    |
+| An admin row's actions       | `AdminMenuTrigger` in a `DropdownMenu`                     |
 | Leave / restart / submit     | `ConfirmDialog`                                            |
 | Mutually exclusive toggles   | `Segmented` (selected is `cta`, 44px on phones)            |
 | Bars                         | `Progress` with a module `tone`                            |
@@ -247,9 +258,32 @@ Never a hand-typed `rounded-[Npx]`, `rounded-2xl` or `rounded-3xl`.
 **Guards** (`src/lib/styleGuards.test.ts`, shrink-only baselines): corner
 roles, no `bg-ink` on a control, no raw Tailwind palette /
 `text-white` / `text-muted-foreground`, no `font-bold` / `font-black` in
-learner components, no `hover-lift`, no em dash in `src` or `docs`, and
-44px touch targets (`SMALL_TOUCH`). When a page cleans a baseline file,
+learner components, no `hover-lift`, no em dash in `src` or `docs`, 44px
+touch targets (`SMALL_TOUCH`), and `RotateCcw` only for real replay /
+redo / retry / restore actions (`ROTATE_FOR_REPLAY`). When a page cleans a baseline file,
 remove it from the list (the stale check fails until you do).
+
+**State, feedback and controls** (the follow-up review, 2026-11-28):
+
+- One state, one icon: "due" is `DUE_ICON` (the brain) everywhere it
+  shows (chips, nodes, rows, buttons); the rotate arrow is for replay,
+  redo, retry and restore only.
+- Errors render next to the control that caused them: under the button
+  pressed, on the failed row, in the card of the section or task, as
+  `InlineNotice tone="error"`. A page-top notice is only for page-wide
+  messages (a load that failed, time running out).
+- A disabled control whose reason is hidden (a tooltip, a closed fold) is
+  a bug: hide the control and, when the learner needs to know, say why in
+  one quiet line. Pager ends are spacers, not faded buttons.
+- No whole-card opacity and no translucent stacked cards: dim with a tint
+  (`bg-tint text-ink-soft`), keep cards and chips on opaque tokens
+  (`bg-surface`, a pastel), and keep `bg-surface/xx` for decoration only.
+- A next stop links into the work screen with its deep link when the
+  landing is a chooser: `/vocabulary?recall=1`, the grammar path's
+  `nextHref`, the dictation review queue's `?segment=`.
+- AI text a learner reads follows the app locale (`getLocale()` and
+  `LANGUAGE_NAMES` from `src/lib/ai/languageNames.ts`), and stored AI
+  output keeps the language it was written in.
 
 Also:
 

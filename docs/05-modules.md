@@ -668,7 +668,11 @@ production caller; the service dedupes with `selectNewReviewCandidates` instead.
   runs `buildReviewCandidates` and drops candidates whose
   `${segmentId}:${kind}:${reason}` matches an existing active item. Because candidates
   are grouped per segment, feeding one segment's attempts yields exactly that segment's
-  share of the video-wide result.
+  share of the video-wide result. `existingItems` may also hold closed
+  (`completed`/`dismissed`) items: attempts made before a segment's latest closed
+  `lastReviewedAt` are ignored, so a sentence solved in the review queue stays solved
+  until it is missed again. Both recomputes load all of the user's items for the scope
+  (no status filter) for this.
 - `recomputeReviewItemsForVideo({ userId, videoId })` loads the user's attempts
   (ascending), the video's segments, and existing active items, then inserts.
 - `recomputeReviewItemsForSegment({ userId, videoId, segmentId })` is the incremental
@@ -689,6 +693,29 @@ production caller; the service dedupes with `selectNewReviewCandidates` instead.
   due total is right even when the list is capped.
 - `markReviewItemForUser` sets `lastReviewedAt` and the completed/dismissed status via
   `findOneAndUpdate` scoped to the user's id.
+- `completeReviewItemsForSegment({ userId, segmentId, now })` completes every active
+  item of a segment (`updateMany`, stamps `lastReviewedAt`). The attempts route calls it
+  after the recompute for a passed `review` attempt.
+
+### Review deep link (`reviewDeepLink.ts`, pure)
+
+`reviewPracticeHref({ videoId, segmentId })` builds
+`/dictation/videos/<videoId>/practice?segment=<segmentId>` (every queue row and the
+queue's Start link use it). `parseReviewSegmentParam(value, segmentIds)` keeps the
+param only when it names one of the video's active-transcript segments, else the
+practice page opens as normal practice. `pickNextReview(dueItems, currentSegmentId)`
+returns `{ left, href }`: other due sentences counted once each and the first one's
+deep link, or `REVIEW_QUEUE_HREF` (`/dictation/review`). The practice page reuses the
+session of the sentence's last attempt for review attempts, so no position moves (see
+the attempts route in `04-api-reference.md`).
+
+### Topic step on session ends (`practice/topicRecord.ts`)
+
+`loadVideoTopicRecord({ topicId, userId })` (server) counts the topic's finished videos
+for the learner from the cached catalog (`getCachedTopics`, `getCachedVideoTopicIds`)
+and `getCompletionCountsForUser`. The practice finish screen and the results page turn
+it into "+1 on TED, 3 to go" with `advanceTopicRecord`
+(`src/components/dictation/practice/topicStep.ts`); a replay or the results page adds 0.
 
 ---
 
