@@ -289,7 +289,6 @@ Most guard on `hasMongoDbUri()` (`src/constants/environments.ts`) and render a
 | `/grammar` and children                       | `src/app/(app)/grammar/**`                              | Grammar path, lesson player, notes, review, weak-spot practice, unit checkpoint.                                                                    | Open  |
 | `/ielts` and children                         | `src/app/(app)/ielts/**`                                | IELTS catalogue, test page, runners (practice, mock, drill), attempt review.                                                                        | Open  |
 | `/admin/**`                                   | `src/app/admin/**`                                      | Admin: dictation content, IELTS editor, vocabulary enrichment. `src/app/admin/layout.tsx` redirects anonymous users to sign-in and non-admins away. | Admin |
-| `/zz-dev-ielts-editor`                        | `src/app/zz-dev-ielts-editor/page.tsx`                  | Development-only IELTS editor sandbox.                                                                                                              | Dev   |
 
 Module sections below list each module's routes in detail.
 
@@ -605,7 +604,6 @@ when needed, and attempt pages only load attempts the current actor owns.
 | `/ielts/drill/[attemptId]`              | `src/app/(app)/ielts/drill/[attemptId]/page.tsx` | Stage + `IeltsRunner`                                                                                                                                                      | Redirects to the attempt once it is finished.                 |
 | `/ielts/attempts/[attemptId]`           | `.../attempts/[attemptId]/page.tsx`              | Breadcrumb `PageHeader`, `IeltsResultHead`, `ObjectiveResult` or `WritingResult`                                                                                           | Redirects back to the runner while in progress.               |
 | `/admin/ielts`, `/admin/ielts/[testId]` | `src/app/admin/ielts/**`                         | `AdminTestCatalogue` + `CreateTestPanel`; `TestEditor`                                                                                                                     | Admin guard (proxy and admin layout).                         |
-| `/zz-dev-ielts-editor`                  | `src/app/zz-dev-ielts-editor/page.tsx`           | `TestEditor` with a sample test                                                                                                                                            | Development only (`notFound()` otherwise).                    |
 
 `src/app/(app)/ielts/loading.tsx` (journey card and metro lines), `[slug]/loading.tsx`,
 `[skill]/loading.tsx` and `drill/[attemptId]/loading.tsx` (`RunnerSkeleton` in

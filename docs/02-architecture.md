@@ -232,8 +232,6 @@ resolves identity through `src/modules/dictation/services/getCurrentUser.ts`
   `src/app/sitemap.ts`, `src/app/admin/layout.tsx`, most pages under `src/app/(app)/**`
   and `src/app/admin/**`). Route handlers set `runtime = 'nodejs'` because Mongoose is not
   edge-compatible. Shared catalog data is cached separately (section 5.6).
-- `src/app/zz-dev-ielts-editor/page.tsx` is a temporary visual harness that calls
-  `notFound()` outside `NODE_ENV === 'development'`.
 
 ## 5. Request / data-flow walkthroughs
 
@@ -489,7 +487,6 @@ src/app/
   error.tsx             App-wide error boundary (RouteError)
   sitemap.ts            Dynamic sitemap (cached topics)
   globals.css           Tailwind v4 tokens + theme
-  zz-dev-ielts-editor/  Dev-only editor harness (404 outside development)
   (app)/                Route GROUP - learner-facing, no URL segment
     layout.tsx          OutboxOwnerProvider
                         (each module folder below has its own error.tsx)

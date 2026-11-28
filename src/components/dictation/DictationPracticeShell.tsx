@@ -35,6 +35,7 @@ import { ActionButton } from '@/components/ui/ActionButton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { QuickVocabWordButton } from '@/components/vocabulary/QuickVocabLookup'
 import { useMessages } from '@/i18n/client'
+import { format } from '@/i18n/format'
 import { ensureGuestIdentity } from '@/lib/sync/clientOutbox'
 import type { OutboxEnqueueInput } from '@/lib/sync/outbox'
 import { cn } from '@/lib/utils'
@@ -1535,6 +1536,9 @@ export function DictationPracticeShell({
   // column there. Every other size keeps the two-column split on lg, where the
   // video and the practice/transcript pane each own their scrollbar.
   const isVideoStacked = preferences.videoSize === 'max'
+  // Before Start, the practice column is one big start panel as tall as the
+  // video beside it: the row sizes to the video instead of the viewport.
+  const isReadyPanel = activeView === 'practice' && !hasStarted && !isCompleted
 
   return (
     <div className="mx-auto flex h-full min-h-0 w-full min-w-0 flex-col">
@@ -1695,6 +1699,7 @@ export function DictationPracticeShell({
             className={cn(
               'grid min-h-0 min-w-0 flex-1 items-start gap-2 overflow-y-auto',
               !isVideoStacked && 'lg:overflow-hidden',
+              isReadyPanel && 'content-start',
               VIDEO_GRID_CLASS_NAME[preferences.videoSize]
             )}
           >
@@ -1726,7 +1731,9 @@ export function DictationPracticeShell({
             <div
               className={cn(
                 'flex min-w-0 flex-col',
-                !isVideoStacked && 'lg:h-full lg:min-h-0'
+                isReadyPanel
+                  ? 'self-stretch'
+                  : !isVideoStacked && 'lg:h-full lg:min-h-0'
               )}
             >
               <TabsContent
@@ -1734,7 +1741,8 @@ export function DictationPracticeShell({
                 className={cn(
                   'grid min-w-0 content-start gap-2',
                   !isVideoStacked &&
-                    'lg:min-h-0 lg:snap-y lg:snap-proximity lg:overflow-y-auto lg:pr-1 lg:*:snap-start'
+                    'lg:min-h-0 lg:snap-y lg:snap-proximity lg:overflow-y-auto lg:pr-1 lg:*:snap-start',
+                  isReadyPanel && 'flex-1 content-stretch'
                 )}
               >
                 {isCompleted ? (
@@ -1779,22 +1787,39 @@ export function DictationPracticeShell({
                     total={segments.length}
                   />
                 ) : !hasStarted ? (
-                  <div className="grid min-h-40 place-items-center p-4">
-                    <ActionButton
-                      className="min-h-14 px-8 text-base"
-                      icon={
-                        <Play
-                          aria-hidden="true"
-                          className="fill-current"
-                        />
-                      }
-                      onClick={() => setHasStarted(true)}
-                      tone="ink"
-                      type="button"
-                    >
-                      {readyActionLabel}
-                    </ActionButton>
-                  </div>
+                  // Raw button: the whole panel is the start target, a big
+                  // play disc in the middle, not a small pill floating in
+                  // empty space.
+                  <button
+                    aria-describedby="dictation-ready-progress"
+                    aria-label={readyActionLabel}
+                    className="group border-line rounded-panel focus-visible:ring-brand/40 from-pastel-sky via-pastel-lilac/40 to-surface hover:shadow-card grid min-h-56 w-full place-items-center border bg-linear-160 p-6 text-center transition-shadow outline-none focus-visible:ring-4"
+                    onClick={() => setHasStarted(true)}
+                    type="button"
+                  >
+                    <span className="grid justify-items-center gap-4">
+                      <span
+                        aria-hidden="true"
+                        className="bg-cta text-cta-fg shadow-card grid size-20 place-items-center rounded-full transition-transform duration-200 group-hover:scale-105 group-active:scale-95 motion-reduce:transition-none sm:size-24"
+                      >
+                        <Play className="ml-1 size-9 fill-current sm:size-10" />
+                      </span>
+                      <span className="grid gap-1">
+                        <span className="font-sans text-xl font-medium">
+                          {readyActionLabel}
+                        </span>
+                        <span
+                          className="text-ink-soft text-sm font-normal"
+                          id="dictation-ready-progress"
+                        >
+                          {format(text.progressLabel, {
+                            current: currentIndex + 1,
+                            total: segments.length,
+                          })}
+                        </span>
+                      </span>
+                    </span>
+                  </button>
                 ) : (
                   <>
                     <GuidedAnswerInput

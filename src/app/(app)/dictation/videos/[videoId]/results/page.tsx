@@ -11,11 +11,10 @@ import {
   DictationResultsSummary,
   type ResultsNextStop,
 } from '@/components/dictation/DictationResultsSummary'
-import { DictationReviewQueue } from '@/components/dictation/DictationReviewQueue'
 import { DictationStatsPanel } from '@/components/dictation/DictationStatsPanel'
 import { ActionButton } from '@/components/ui/ActionButton'
 import { hasMongoDbUri } from '@/constants/environments'
-import { format, plural } from '@/i18n/format'
+import { format } from '@/i18n/format'
 import { getMessages } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { pickNextStop } from '@/lib/journey/nextStop'
@@ -23,7 +22,6 @@ import { DictationDebriefModel } from '@/models/dictation/DictationDebriefModel'
 import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
 import { getVideoProgressForUser } from '@/modules/dictation/content/progressRepository'
 import { findNextVideo } from '@/modules/dictation/practice/findNextVideo'
-import { listDueReviewItemsForUser } from '@/modules/dictation/review/reviewItemService'
 import { toDictationDebriefRecord } from '@/modules/dictation/services/dictationDebriefRecords'
 import { toDictationVideoRecord } from '@/modules/dictation/services/dictationVideoRecords'
 import { getPracticeActorId } from '@/modules/dictation/services/getCurrentUser'
@@ -108,35 +106,30 @@ export default async function Page({ params }: Props) {
 
   // The reads below are keyed by the URL's video id and the learner, so they
   // start together with the video lookup instead of waiting for it.
-  const [video, stats, reviewItems, latestDebrief, progress] =
-    await Promise.all([
-      DictationVideoModel.findOne({
-        _id: videoId,
-        status: {
-          $ne: 'archived',
-        },
-      }).lean(),
-      getVideoStatsForUser({
-        userId: actorId,
-        videoId,
-      }),
-      listDueReviewItemsForUser({
-        userId: actorId,
-        videoId,
-      }),
-      actorId
-        ? DictationDebriefModel.findOne({
-            userId: actorId,
-            status: 'ready',
-            videoId,
-          })
-            .sort({ createdAt: -1 })
-            .lean()
-        : Promise.resolve(null),
-      actorId
-        ? getVideoProgressForUser({ userId: actorId, videoId })
-        : Promise.resolve<DictationVideoProgress>('notStarted'),
-    ])
+  const [video, stats, latestDebrief, progress] = await Promise.all([
+    DictationVideoModel.findOne({
+      _id: videoId,
+      status: {
+        $ne: 'archived',
+      },
+    }).lean(),
+    getVideoStatsForUser({
+      userId: actorId,
+      videoId,
+    }),
+    actorId
+      ? DictationDebriefModel.findOne({
+          userId: actorId,
+          status: 'ready',
+          videoId,
+        })
+          .sort({ createdAt: -1 })
+          .lean()
+      : Promise.resolve(null),
+    actorId
+      ? getVideoProgressForUser({ userId: actorId, videoId })
+      : Promise.resolve<DictationVideoProgress>('notStarted'),
+  ])
 
   if (!video) notFound()
 
@@ -152,19 +145,9 @@ export default async function Page({ params }: Props) {
 
   const isEmpty = stats.segmentCount === 0 || stats.completedSegmentCount === 0
   const nextVideo = isEmpty ? null : await findNextVideo(videoRecord)
-  // One rule for every module: due review first, then the next new step.
+  // The results already show the weak sentences, so the next stop is the
+  // next video, not a separate spaced-review queue.
   const picked = pickNextStop<ResultsNextStop>([
-    reviewItems.length > 0
-      ? {
-          data: {
-            actionLabel: text.reviewAction,
-            detail: text.reviewDetail,
-            href: '/dictation/review',
-            title: plural(text.reviewWeak, reviewItems.length),
-          },
-          kind: 'due',
-        }
-      : null,
     nextVideo
       ? {
           data: {
@@ -259,7 +242,8 @@ export default async function Page({ params }: Props) {
           )
         ) : (
           <>
-            <DictationStatsPanel stats={stats} />
+            {/* The AI coach sits right under the head: the one extra step
+                worth taking here, so it is easy to find and press. */}
             <DictationDebriefPanel
               canGenerate={progress === 'completed'}
               initialDebrief={
@@ -267,11 +251,7 @@ export default async function Page({ params }: Props) {
               }
               videoId={videoId}
             />
-            <DictationReviewQueue
-              reviewItems={reviewItems}
-              title={text.weakSegments}
-              variant="embedded"
-            />
+            <DictationStatsPanel stats={stats} />
           </>
         )}
       </section>

@@ -7,9 +7,9 @@ import { StatChip, StatStrip } from '@/components/journey/StatChip'
 import { format } from '@/i18n/format'
 import type { Messages } from '@/i18n/messages'
 import type { IeltsAttemptSummary } from '@/modules/ielts/attempts/attemptQueries'
+import { bandsFromAttempts } from '@/modules/ielts/attempts/testBands'
 import type { IeltsSkill } from '@/modules/ielts/constants'
 
-import { bandsFromAttempts } from '../catalogue/TestJourney'
 import { nextSkillOf } from '../catalogue/testPath'
 
 interface Props {

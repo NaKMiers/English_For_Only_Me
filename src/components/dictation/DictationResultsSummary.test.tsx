@@ -79,15 +79,15 @@ describe('DictationResultsSummary', () => {
     expect(view.getByRole('link', { name: 'Continue practice' })).not.toBeNull()
   })
 
-  test('the next stop is the weak-sentence review when one is due', () => {
+  test('the next stop is the next video in the topic', () => {
     const view = render(
       <DictationResultsSummary
         isEmpty={false}
         next={{
-          actionLabel: 'Start review',
-          detail: 'Spaced review',
-          href: '/dictation/review',
-          title: 'Review 3 weak sentences',
+          actionLabel: 'Next video',
+          detail: 'Next in TED',
+          href: '/dictation/videos/abcdef0123456789abcdef01/practice',
+          title: 'Another talk',
         }}
         progress="completed"
         stats={stats}
@@ -97,7 +97,7 @@ describe('DictationResultsSummary', () => {
     )
 
     expect(
-      view.getByRole('link', { name: 'Start review' }).getAttribute('href')
-    ).toBe('/dictation/review')
+      view.getByRole('link', { name: 'Next video' }).getAttribute('href')
+    ).toBe('/dictation/videos/abcdef0123456789abcdef01/practice')
   })
 })

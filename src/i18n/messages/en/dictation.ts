@@ -342,12 +342,6 @@ export const dictation = {
   results: {
     headUnit: 'first-try accuracy',
     headWins: '{percent}% done: {done} of {total} sentences',
-    reviewWeak: {
-      one: 'Review {count} weak sentence',
-      other: 'Review {count} weak sentences',
-    },
-    reviewDetail: 'Spaced review',
-    reviewAction: 'Start review',
     nextVideoAction: 'Next video',
     eyebrow: {
       completed: 'Completed',
@@ -377,7 +371,6 @@ export const dictation = {
       'Resolve a few sentences, then your stats and weak-segment queue appear here.',
     practiceFirstDescription:
       'The review queue stays quiet until there is a real weak sentence to drill.',
-    weakSegments: 'Weak segments from this video',
   },
   duration: {
     minutes: '{minutes}m',
@@ -395,6 +388,11 @@ export const dictation = {
     retries: {
       one: '{count} retry',
       other: '{count} retries',
+    },
+    retriesLabel: 'Retries',
+    attempts: {
+      one: '{count} attempt',
+      other: '{count} attempts',
     },
     hardestEyebrow: 'Weakest',
     hardestTitle: 'Hardest segments',

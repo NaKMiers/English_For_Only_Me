@@ -63,7 +63,7 @@ export function TopbarMenuSheet({ authControl, onOpenChange, open }: Props) {
         {/* Modules live in the phone tab bar; this sheet is the account:
             who is signed in, then the language. */}
         {/* The rail holds the language pill from md; phones get it here. */}
-        <div className="mx-auto flex w-full max-w-xl items-center justify-between gap-3 px-4 pb-4">
+        <div className="mx-auto flex w-full max-w-xl items-center justify-between gap-3 px-4 py-4">
           <span className="text-ink-soft text-sm">
             {t.common.language.label}
           </span>

@@ -677,8 +677,8 @@ else as a 500. Endpoint contracts are in [04](./04-api-reference.md).
 `fixtures/sampleTest.ts` exports `IELTS_SAMPLE_TEST`, an original Academic
 test (all names, places and figures invented) whose evidence quotes are copied
 verbatim from their blocks, so it passes `checkTest` with no errors. It is
-used by `scripts/seedIeltsSample.ts` (`bun run ielts:seed-sample`), the dev
-page `src/app/zz-dev-ielts-editor/page.tsx`, and unit tests across the module
+used by `scripts/seedIeltsSample.ts` (`bun run ielts:seed-sample`) and unit
+tests across the module
 (`publicView`, `attemptService`, `checkTest`, `runSectionJob`,
 `selectDrillGroups`, `testRecords`) and components (`GroupBlock`,
 `SectionPicker`). Other `*.test.ts` files sit next to the pure helpers they

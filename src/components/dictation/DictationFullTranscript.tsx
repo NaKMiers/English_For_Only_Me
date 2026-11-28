@@ -148,7 +148,7 @@ export function DictationFullTranscript<
           opts into stretching to a height-bound ancestor instead (practice shell). */}
       <ol
         className={cn(
-          'grid max-h-128 min-h-0 min-w-0 snap-y snap-proximity auto-rows-max gap-1 overflow-y-auto pr-1',
+          'grid max-h-128 min-h-0 min-w-0 snap-y snap-proximity auto-rows-max gap-0.5 overflow-y-auto pr-1',
           fillAvailableHeight && 'lg:max-h-none'
         )}
       >
@@ -169,34 +169,42 @@ export function DictationFullTranscript<
                 onClick={() => onSelectSegment(segment)}
                 aria-current={isHighlighted ? 'true' : undefined}
                 className={cn(
-                  'border-line rounded-control grid w-full min-w-0 grid-cols-[auto_minmax(0,1fr)] items-start gap-2 border p-1.5 text-left transition-colors',
-                  isHighlighted ? 'bg-tint-soft' : 'bg-surface hover:bg-tint'
+                  'rounded-control grid w-full min-w-0 grid-cols-[2.25rem_minmax(0,1fr)] items-start gap-2 px-1.5 py-2 text-left transition-colors',
+                  isHighlighted ? 'bg-tint' : 'hover:bg-tint-soft'
                 )}
               >
-                <span className="border-line bg-surface text-ink rounded-tag mt-0.5 grid size-6 place-items-center border text-xs font-semibold">
-                  {isHighlighted ? (
-                    <Play
-                      aria-hidden="true"
-                      className="text-brand size-3"
-                    />
-                  ) : (
-                    index + 1
-                  )}
+                {/* Number with the time under it: a quiet left rail, so the
+                    sentence line holds only the sentence (and its status). */}
+                <span className="grid justify-items-center gap-0.5">
+                  <span
+                    className={cn(
+                      'rounded-tag grid size-6 place-items-center text-xs font-medium tabular-nums',
+                      isHighlighted
+                        ? 'bg-surface text-brand'
+                        : 'bg-tint-soft text-ink-soft'
+                    )}
+                  >
+                    {isHighlighted ? (
+                      <Play
+                        aria-hidden="true"
+                        className="size-3 fill-current"
+                      />
+                    ) : (
+                      index + 1
+                    )}
+                  </span>
+                  {timestamp ? (
+                    <span className="text-ink-soft text-[0.65rem] leading-none tabular-nums">
+                      {timestamp}
+                    </span>
+                  ) : null}
                 </span>
-                {/* Timestamp and status ride inline with the sentence instead of
-                    owning a meta line above it: at 56 captions that line was
-                    costing a third of the list's height for two short chips. */}
-                <span className="grid min-w-0 gap-0.5">
-                  <span className="text-ink min-w-0 text-base leading-6 font-semibold wrap-break-word">
-                    {timestamp ? (
-                      <span className="text-ink-soft mr-1.5 text-[0.65rem] font-normal tabular-nums">
-                        {timestamp}
-                      </span>
-                    ) : null}
+                <span className="grid min-w-0 gap-1">
+                  <span className="text-ink min-w-0 text-base leading-6 font-medium wrap-break-word">
                     {statusMeta ? (
                       <span
                         className={cn(
-                          'rounded-tag mr-1.5 inline-block border px-1 text-[0.6rem] leading-4 font-semibold',
+                          'rounded-tag mr-1.5 inline-block border px-1 align-[0.1em] text-[0.6rem] leading-4 font-semibold',
                           statusMeta.className
                         )}
                       >
@@ -207,10 +215,12 @@ export function DictationFullTranscript<
                         }
                       </span>
                     ) : null}
-                    {segment.text}
+                    <span>{segment.text}</span>
                   </span>
+                  {/* The translation is a helper, not a second headline:
+                      smaller, soft ink, regular weight. */}
                   {translation ? (
-                    <span className="text-brand border-line/30 min-w-0 border-l pl-1.5 text-sm leading-5 font-semibold wrap-break-word italic">
+                    <span className="text-ink-soft min-w-0 text-sm leading-5 font-normal wrap-break-word">
                       {translation}
                     </span>
                   ) : null}

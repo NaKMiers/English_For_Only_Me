@@ -2,6 +2,7 @@
 
 import {
   BookOpen,
+  Brain,
   Check,
   ChevronDown,
   Crown,
@@ -90,14 +91,14 @@ function StarsInline({ stars }: { stars: number }) {
 
 /**
  * Each unit wears one module-safe pastel (pink is the brand, so it is only
- * used for the current lesson). `--node` is the solid colour of a finished
- * lesson; the 3D ledge under every node is the same colour mixed darker.
+ * used for the current lesson). Finished lessons are always green so "done"
+ * reads the same in every unit.
  */
 const UNIT_TONES = [
-  { banner: 'bg-pastel-lilac', node: 'var(--accent-purple)' },
-  { banner: 'bg-pastel-sky', node: 'var(--accent-blue)' },
-  { banner: 'bg-pastel-mint', node: 'var(--accent-green)' },
-  { banner: 'bg-pastel-peach', node: 'var(--accent-orange)' },
+  { banner: 'bg-pastel-lilac' },
+  { banner: 'bg-pastel-sky' },
+  { banner: 'bg-pastel-mint' },
+  { banner: 'bg-pastel-peach' },
 ] as const
 
 function unitTone(unit: PathUnit) {
@@ -130,17 +131,18 @@ function nodeLedge(color: string): CSSProperties {
   }
 }
 
-/** One lesson as a round 3D button on the winding path. */
+/**
+ * One lesson as a round 3D button on the winding path. The icon shows the
+ * state, not the action: a green tick for done, a brain for "time to recall".
+ */
 function PathNode({
   index,
   lesson,
   onSelect,
-  toneColor,
 }: {
   index: number
   lesson: PathLesson
   onSelect: () => void
-  toneColor: string
 }) {
   const t = useMessages().grammar.path
   const isOpen = lesson.state === 'open'
@@ -154,7 +156,7 @@ function PathNode({
           ? 'var(--accent-orange)'
           : lesson.state === 'due'
             ? 'var(--brand-soft)'
-            : toneColor
+            : 'var(--accent-green)'
   const Icon =
     lesson.state === 'open'
       ? Play
@@ -163,7 +165,7 @@ function PathNode({
         : lesson.state === 'mastered'
           ? Crown
           : lesson.state === 'due'
-            ? RotateCcw
+            ? Brain
             : Check
 
   return (
@@ -206,8 +208,7 @@ function PathNode({
           aria-hidden
           className={cn(
             isOpen ? 'size-8 fill-current' : 'size-7',
-            (lesson.state === 'passed' || lesson.state === 'due') &&
-              'stroke-[3]'
+            lesson.state === 'passed' && 'stroke-[3]'
           )}
         />
       </button>
@@ -423,7 +424,6 @@ function UnitTrail({
                 key={lesson.id}
                 lesson={lesson}
                 onSelect={() => onSelectLesson(lesson)}
-                toneColor={tone.node}
               />
             ))}
             <CheckpointNode

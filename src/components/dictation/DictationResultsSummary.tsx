@@ -16,7 +16,7 @@ import { getDictationResultsAction } from '@/modules/dictation/videoReadiness'
 
 import { DictationVideoThumbnail } from './DictationVideoThumbnail'
 
-/** The results page's one next stop: weak-sentence review or the next video. */
+/** The results page's one next stop: the next video in the topic. */
 export interface ResultsNextStop {
   actionLabel: string
   detail: string

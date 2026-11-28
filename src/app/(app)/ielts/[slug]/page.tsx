@@ -1,15 +1,14 @@
 import type { Metadata } from 'next'
-import { GraduationCap, PenLine } from 'lucide-react'
+import { GraduationCap } from 'lucide-react'
 import { notFound } from 'next/navigation'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { PageHeader } from '@/components/common/PageHeader'
 import { PageShell } from '@/components/common/PageShell'
-import { hasGoogleAuth, hasMongoDbUri } from '@/constants/environments'
+import { hasMongoDbUri } from '@/constants/environments'
 import { format, plural } from '@/i18n/format'
 import type { Messages } from '@/i18n/messages'
 import { getMessages } from '@/i18n/server'
-import { auth } from '@/lib/auth/auth'
 import { connectDatabase, connectDatabaseWhen } from '@/lib/db/connectDatabase'
 import { getPracticeActorId } from '@/modules/dictation/services/getCurrentUser'
 import {
@@ -25,13 +24,8 @@ import type { IeltsSection } from '@/modules/ielts/schema'
 import { readPublishedIeltsTest } from '@/modules/ielts/tests/testReaders'
 import { listIeltsTestVocabForLearner } from '@/modules/ielts/vocab/testVocabService'
 import { TestLaunchers } from '@/components/ielts/catalogue/SkillLauncher'
-import {
-  bandsFromAttempts,
-  TestJourney,
-} from '@/components/ielts/catalogue/TestJourney'
-import { nextSkillOf } from '@/components/ielts/catalogue/testPath'
 import { TestVocabPanel } from '@/components/ielts/catalogue/TestVocabPanel'
-import { ExamIconButton, ExamSheet } from '@/components/ielts/ui'
+import { ExamSheet } from '@/components/ielts/ui'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -92,7 +86,7 @@ export default async function IeltsTestPage({ params }: Props) {
   if (!hasMongoDbUri() || !/^[a-z0-9-]{1,80}$/.test(slug)) notFound()
 
   const actorId = await connectDatabaseWhen(getPracticeActorId())
-  const [test, attempts, vocab, session] = await Promise.all([
+  const [test, attempts, vocab] = await Promise.all([
     readPublishedIeltsTest(slug),
     actorId
       ? listIeltsAttempts(actorId, { testSlug: slug, limit: 20 })
@@ -102,19 +96,10 @@ export default async function IeltsTestPage({ params }: Props) {
     connectDatabase().then(() =>
       listIeltsTestVocabForLearner({ slug, userId: actorId })
     ),
-    hasGoogleAuth() ? auth() : null,
   ])
 
   if (!test) notFound()
 
-  // Role comes from the server session (ADMIN_EMAILS), never the client.
-  const isAdmin = session?.user?.role === 'admin'
-  const entry = {
-    id: test.id,
-    skills: IELTS_SKILLS.filter(skill =>
-      test.sections.some(section => section.skill === skill)
-    ).map(skill => ({ skill })),
-  }
   const breadcrumb = [
     { href: '/ielts', label: messages.common.modules.ielts.title },
     { label: test.title },
@@ -144,20 +129,9 @@ export default async function IeltsTestPage({ params }: Props) {
       }
     >
       <ExamSheet>
+        {/* Kept calm: header, the skills, then the words. Editing lives in
+            /admin/ielts, the test's journey on the IELTS home. */}
         <PageHeader
-          actions={
-            isAdmin ? (
-              <ExamIconButton
-                href={`/admin/ielts/${test.id}`}
-                label={t.testPage.editTest}
-              >
-                <PenLine
-                  aria-hidden="true"
-                  className="size-4"
-                />
-              </ExamIconButton>
-            ) : null
-          }
           breadcrumb={{
             items: breadcrumb,
             label: messages.common.journey.breadcrumb,
@@ -170,16 +144,7 @@ export default async function IeltsTestPage({ params }: Props) {
           titleClassName="wrap-break-word"
         />
 
-        <TestJourney
-          attempts={attempts}
-          entry={entry}
-          messages={messages}
-          slug={slug}
-          targetBand={test.targetBand}
-        />
-
         <TestLaunchers
-          recommended={nextSkillOf(entry, bandsFromAttempts(test.id, attempts))}
           skills={IELTS_SKILLS.flatMap(skill => {
             const parts = test.sections
               .filter(section => section.skill === skill)

@@ -3,13 +3,9 @@ import { describe, expect, it } from 'vitest'
 
 import { TestLaunchers } from './SkillLauncher'
 
-function renderLauncher(
-  mockBlockedReason: string | null = null,
-  recommended: 'reading' | null = 'reading'
-) {
+function renderLauncher(mockBlockedReason: string | null = null) {
   return render(
     <TestLaunchers
-      recommended={recommended}
       skills={[
         {
           fullMeta: { mock: '60 min', practice: 'All 3 passages' },
@@ -44,13 +40,13 @@ describe('SkillLauncher', () => {
     expect(goHref()).toBe('/ielts/t/reading?part=2')
   })
 
-  it('allows only the full test in mock mode', () => {
+  it('hides the parts in mock mode, leaving only the full test', () => {
     renderLauncher()
 
     fireEvent.click(screen.getByRole('radio', { name: /Passage 2/ }))
     fireEvent.click(screen.getByRole('button', { name: 'Mock' }))
 
-    expect(screen.getByRole('radio', { name: /Passage 2/ })).toBeDisabled()
+    expect(screen.queryByRole('radio', { name: /Passage 2/ })).toBeNull()
     expect(screen.getByRole('radio', { name: /Full test/ })).toBeChecked()
     expect(goHref()).toBe('/ielts/t/reading/mock')
   })
@@ -64,12 +60,11 @@ describe('SkillLauncher', () => {
     expect(screen.getByText('Needs audio.')).toBeTruthy()
   })
 
-  it('the recommended skill starts open, the others fold', () => {
-    renderLauncher(null, null)
+  it('every skill is open, with no fold to press', () => {
+    renderLauncher()
 
-    expect(screen.queryByRole('link', { name: 'Go' })).toBeNull()
-    fireEvent.click(screen.getByRole('button', { name: /^Reading/ }))
-    expect(screen.getByRole('link', { name: 'Go' })).toBeInTheDocument()
+    expect(screen.getByRole('radio', { name: /Passage 1/ })).toBeVisible()
+    expect(screen.queryByRole('button', { name: /^Reading/ })).toBeNull()
   })
 
   it('one mode switch for the test, minutes only on the full test', () => {

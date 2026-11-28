@@ -342,12 +342,6 @@ export const dictation: Messages['dictation'] = {
   results: {
     headUnit: 'chính xác lần đầu',
     headWins: 'Xong {percent}%: {done}/{total} câu',
-    reviewWeak: {
-      one: 'Ôn {count} câu còn yếu',
-      other: 'Ôn {count} câu còn yếu',
-    },
-    reviewDetail: 'Ôn tập ngắt quãng',
-    reviewAction: 'Bắt đầu ôn',
     nextVideoAction: 'Video tiếp theo',
     eyebrow: {
       completed: 'Đã hoàn thành',
@@ -377,7 +371,6 @@ export const dictation: Messages['dictation'] = {
       'Làm xong vài câu, thống kê và danh sách câu yếu sẽ hiện ở đây.',
     practiceFirstDescription:
       'Danh sách ôn tập sẽ trống cho đến khi có câu yếu thật sự cần luyện.',
-    weakSegments: 'Câu yếu trong video này',
   },
   duration: {
     minutes: '{minutes} phút',
@@ -395,6 +388,11 @@ export const dictation: Messages['dictation'] = {
     retries: {
       one: '{count} lần thử lại',
       other: '{count} lần thử lại',
+    },
+    retriesLabel: 'Thử lại',
+    attempts: {
+      one: '{count} lượt',
+      other: '{count} lượt',
     },
     hardestEyebrow: 'Yếu nhất',
     hardestTitle: 'Câu khó nhất',

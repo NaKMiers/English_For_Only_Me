@@ -80,7 +80,9 @@ function getExploreStackCardClassName({
   return cn(
     'border-line rounded-panel absolute top-0 left-1/2 flex h-full min-h-96 w-[min(84%,760px)] flex-col gap-4 border p-4 shadow-card transition-[opacity,transform] duration-300 ease-out',
     decision === 'shouldLearn' && 'bg-brand-soft',
-    decision === 'alreadyKnow' && 'bg-lesson-correct/10',
+    // Solid tints only: the deck stacks cards, a see-through one shows the
+    // card behind it.
+    decision === 'alreadyKnow' && 'bg-pastel-mint',
     !decision && 'bg-surface',
     !active && 'cursor-pointer hover:opacity-80',
     !visible && 'pointer-events-none opacity-0'

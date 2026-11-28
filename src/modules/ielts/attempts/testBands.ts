@@ -1,4 +1,5 @@
 import type { IeltsSkill } from '../constants'
+import type { IeltsAttemptSummary } from './attemptQueries'
 
 /** Best band per skill, keyed by test id. Only tests the learner has a band on. */
 export type IeltsTestBands = Record<string, Partial<Record<IeltsSkill, number>>>
@@ -21,4 +22,18 @@ export function bestBandsByTest(rows: IeltsTestBandRow[]): IeltsTestBands {
   }
 
   return bands
+}
+
+/** Best band per skill of one test, from its finished attempts. */
+export function bandsFromAttempts(
+  testId: string,
+  attempts: Pick<IeltsAttemptSummary, 'band' | 'skill' | 'status'>[]
+): IeltsTestBands {
+  const best: Partial<Record<IeltsSkill, number>> = {}
+
+  for (const attempt of attempts)
+    if (attempt.status !== 'in_progress' && attempt.band !== null)
+      best[attempt.skill] = Math.max(best[attempt.skill] ?? 0, attempt.band)
+
+  return { [testId]: best }
 }

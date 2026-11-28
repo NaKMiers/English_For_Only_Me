@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 
 import { MissingEnvironmentError } from '@/constants/environments'
 import type { Messages } from '@/i18n/messages'
-import { getMessages } from '@/i18n/server'
+import { getLocale, getMessages } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { generateDictationDebriefForUser } from '@/modules/dictation/ai/debriefService'
 import { parseDebriefPayload } from '@/modules/dictation/ai/debriefDecisions'
@@ -69,6 +69,9 @@ export async function POST(request: Request) {
     await connectDatabase()
 
     const result = await generateDictationDebriefForUser({
+      // The app language is the default; the learner's notes can ask for
+      // another one.
+      language: await getLocale(),
       notes: parsed.data.notes,
       userId: actor.id,
       videoId: parsed.data.videoId,

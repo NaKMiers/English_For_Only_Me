@@ -183,6 +183,9 @@ export function VocabularyDashboard({
     mongoConfigured && !initialData
   )
   const [statusMessage, setStatusMessage] = useState<string | null>(null)
+  // A failed lookup is the search card's own news: shown under its input,
+  // not in the page-level notice at the top.
+  const [lookupError, setLookupError] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const itemWritesRef = useRef(createEntryWriteTracker<EntrySnapshot>())
@@ -573,7 +576,7 @@ export function VocabularyDashboard({
     if (!cleanTerm) return
 
     setIsLoading(true)
-    setErrorMessage(null)
+    setLookupError(null)
     setStatusMessage(null)
 
     try {
@@ -588,7 +591,10 @@ export function VocabularyDashboard({
         format(vocab.dashboard.loaded, { term: entry.entry.term })
       )
     } catch (error) {
-      reportError(error, errorText.lookup)
+      // Drop the previous word so the error is not read as its result.
+      setSelectedEntry(null)
+      setSearchResults([])
+      setLookupError(getVocabRequestErrorMessage(error, errorText.lookup))
     } finally {
       setIsLoading(false)
     }
@@ -762,7 +768,11 @@ export function VocabularyDashboard({
           <VocabularySearchPanel
             isLoading={isLoading}
             markEntry={markEntry}
-            onQueryChange={setQuery}
+            lookupError={lookupError}
+            onQueryChange={value => {
+              setQuery(value)
+              setLookupError(null)
+            }}
             query={query}
             runLookup={runLookup}
             searchResults={searchResults}

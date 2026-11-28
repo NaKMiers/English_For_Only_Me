@@ -3,6 +3,7 @@ import 'server-only'
 import { Types } from 'mongoose'
 
 import { getIeltsGoal, getQwenDebriefModel } from '@/constants/environments'
+import type { Locale } from '@/i18n/config'
 import { requestQwenDebriefStructuredOutput } from '@/lib/ai/qwenDebriefClient'
 import { DictationDebriefModel } from '@/models/dictation/DictationDebriefModel'
 import { DictationSessionModel } from '@/models/dictation/DictationSessionModel'
@@ -47,10 +48,12 @@ function getTranscriptExcerpt(rawText: string) {
 }
 
 async function buildDebriefSnapshot({
+  language,
   notes,
   userId,
   videoId,
 }: {
+  language: Locale
   notes: string
   userId: string
   videoId: string
@@ -135,6 +138,7 @@ async function buildDebriefSnapshot({
     snapshot: {
       hardestSegments: stats.hardestSegments.slice(0, 5),
       ieltsGoal: getIeltsGoal(),
+      language,
       mistakeTaxonomy: stats.mistakeTaxonomy,
       notes,
       revealCount: stats.revealCount,
@@ -188,15 +192,19 @@ async function createFailedDebrief({
 }
 
 export async function generateDictationDebriefForUser({
+  language = 'en',
   notes = '',
   userId,
   videoId,
 }: {
+  /** The app language, the debrief's default language. */
+  language?: Locale
   notes?: string
   userId: string
   videoId: string
 }): Promise<DictationDebriefServiceResult> {
   const snapshotResult = await buildDebriefSnapshot({
+    language,
     notes,
     userId,
     videoId,

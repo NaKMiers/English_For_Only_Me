@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { bestBandsByTest } from './testBands'
+import { bandsFromAttempts, bestBandsByTest } from './testBands'
 
 describe('bestBandsByTest', () => {
   it('keeps the highest band per test and skill', () => {
@@ -20,5 +20,17 @@ describe('bestBandsByTest', () => {
 
   it('returns an empty map without attempts', () => {
     expect(bestBandsByTest([])).toEqual({})
+  })
+})
+
+describe('bandsFromAttempts', () => {
+  it('takes the best band per skill from finished attempts only', () => {
+    expect(
+      bandsFromAttempts('t1', [
+        { band: 6, skill: 'reading', status: 'submitted' },
+        { band: 7, skill: 'reading', status: 'submitted' },
+        { band: 8, skill: 'listening', status: 'in_progress' },
+      ])
+    ).toEqual({ t1: { reading: 7 } })
   })
 })
