@@ -92,7 +92,9 @@ export default async function VocabularyWordsPage({
       <section className="grid gap-5 px-4 pb-6 md:pr-6 md:pl-0">
         <VocabularyWordList
           activeView={view}
-          key={`${view}:${page}:${perPage}:${q}`}
+          // No `q` in the key: a new search must not remount the list, or
+          // the search box loses focus and the keys typed meanwhile.
+          key={`${view}:${page}:${perPage}`}
           page={wordPage.page}
           perPage={wordPage.perPage}
           q={q}
