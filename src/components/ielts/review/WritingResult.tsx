@@ -11,6 +11,7 @@ import { SampleAnswerBody } from '@/components/ielts/widgets/SampleAnswerBody'
 import { countEssayWords } from '@/modules/ielts/scoring/wordCount'
 import type { IeltsWritingReviewTask } from '@/modules/ielts/services/resultPageData'
 import { useMessages } from '@/i18n/client'
+import type { Messages } from '@/i18n/messages'
 import { format } from '@/i18n/format'
 import { gradeIeltsWritingApi, ieltsErrorMessage } from '@/requests/ieltsApi'
 
@@ -66,12 +67,17 @@ function MarkedEssay({
   )
 }
 
-const CRITERIA = (task: 1 | 2) =>
+// The official criteria names come from the catalogue (kept in English in
+// every language, like the exam itself).
+const CRITERIA = (
+  task: 1 | 2,
+  names: Messages['ielts']['writingResult']['criteria']
+) =>
   [
-    ['taskResponse', task === 1 ? 'Task Achievement' : 'Task Response'],
-    ['cc', 'Coherence & Cohesion'],
-    ['lr', 'Lexical Resource'],
-    ['gra', 'Grammatical Range & Accuracy'],
+    ['taskResponse', task === 1 ? names.taskAchievement : names.taskResponse],
+    ['cc', names.cc],
+    ['lr', names.lr],
+    ['gra', names.gra],
   ] as const
 
 /**
@@ -96,7 +102,7 @@ export function WritingFeedbackDetails({
   return (
     <>
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {CRITERIA(task).map(([key, label]) => (
+        {CRITERIA(task, t.criteria).map(([key, label]) => (
           <StatTile
             className="min-h-24"
             key={key}
@@ -163,7 +169,8 @@ function TaskFeedback({
   onGrade: () => void
   task: IeltsWritingReviewTask
 }) {
-  const t = useMessages().ielts.writingResult
+  const messages = useMessages()
+  const t = messages.ielts.writingResult
   const [showSample, setShowSample] = useState(false)
   const words = countEssayWords(task.essay)
   const status = busy ? 'grading' : (feedback?.status ?? 'pending')
@@ -177,7 +184,7 @@ function TaskFeedback({
               band: feedback.band.toFixed(1),
               task: task.task,
             })
-          : `Task ${task.task}`
+          : format(messages.ielts.parts.task, { part: task.task })
       }
     >
       <details>
@@ -297,7 +304,7 @@ export function WritingResult({ attempt: initial, tasks }: Props) {
           return (
             <StatTile
               key={task.task}
-              label={`Task ${task.task}`}
+              label={format(t.parts.task, { part: task.task })}
               value={band == null ? '-' : band.toFixed(1)}
             />
           )

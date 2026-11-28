@@ -188,6 +188,16 @@ export const ielts: Messages['ielts'] = {
     reading: 'Reading',
     writing: 'Writing',
   },
+  resultHead: {
+    target: 'Mục tiêu',
+    delta: 'So với lần trước',
+    stepTaken: '+1 bước: đề này có {done}/{total} kỹ năng có band',
+    banded: 'Đề này có {done}/{total} kỹ năng có band',
+    nextSkill: 'Kỹ năng tiếp theo của đề này',
+    testCleared: 'Đã xong đề này: chọn đề tiếp theo',
+    allTests: 'Tất cả đề',
+    start: 'Làm {skill}',
+  },
   testJourney: {
     title: 'Đề này',
     unit: 'kỹ năng có band',
@@ -265,6 +275,13 @@ export const ielts: Messages['ielts'] = {
     notGiven: 'Không có trong bài (NOT GIVEN).',
   },
   writingResult: {
+    criteria: {
+      taskAchievement: 'Task Achievement',
+      taskResponse: 'Task Response',
+      cc: 'Coherence & Cohesion',
+      lr: 'Lexical Resource',
+      gra: 'Grammatical Range & Accuracy',
+    },
     study: 'Học bài: {title}',
     rewritten: 'Đoạn viết lại (cao hơn khoảng 1 band)',
     wordsMin: '{words} từ · tối thiểu {min}',

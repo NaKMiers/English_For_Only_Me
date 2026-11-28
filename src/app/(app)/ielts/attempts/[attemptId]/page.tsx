@@ -1,16 +1,19 @@
-import { ChevronRight, GraduationCap } from 'lucide-react'
+import { GraduationCap } from 'lucide-react'
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { PageHeader } from '@/components/common/PageHeader'
 import { PageShell } from '@/components/common/PageShell'
+import { IeltsResultHead } from '@/components/ielts/review/IeltsResultHead'
 import { ObjectiveResult } from '@/components/ielts/review/ObjectiveResult'
 import { WritingResult } from '@/components/ielts/review/WritingResult'
 import { format } from '@/i18n/format'
 import { getMessages } from '@/i18n/server'
-import { IELTS_SKILL_LABELS } from '@/modules/ielts/constants'
+import { getPracticeActorId } from '@/modules/dictation/services/getCurrentUser'
+import { listIeltsAttempts } from '@/modules/ielts/attempts/attemptQueries'
+import { IELTS_SKILLS } from '@/modules/ielts/constants'
+import { readPublishedIeltsTest } from '@/modules/ielts/tests/testReaders'
 import { loadResultPageData } from '@/modules/ielts/services/resultPageData'
 import { ExamSheet } from '@/components/ielts/ui'
 
@@ -52,7 +55,28 @@ export default async function IeltsResultPage({ params }: Props) {
   }
 
   const title = attempt.testTitle || t.ielts.history.drill
-  const skillLabel = IELTS_SKILL_LABELS[attempt.skill]
+  const skillLabel = t.ielts.skills[attempt.skill]
+  // Fresh journey data for the head, read with the queries the test page
+  // already uses: the published test (cached) and this test's attempts.
+  const actorId = await getPracticeActorId()
+  const [test, history] = await Promise.all([
+    attempt.testSlug
+      ? readPublishedIeltsTest(attempt.testSlug).catch(() => null)
+      : Promise.resolve(null),
+    actorId && attempt.testSlug
+      ? listIeltsAttempts(actorId, {
+          limit: 20,
+          testSlug: attempt.testSlug,
+        }).catch(() => [])
+      : Promise.resolve([]),
+  ])
+  const breadcrumb = [
+    { href: '/ielts', label: t.common.modules.ielts.title },
+    ...(attempt.testSlug
+      ? [{ href: `/ielts/${attempt.testSlug}`, label: title }]
+      : []),
+    { label: skillLabel },
+  ]
   const summary = [
     t.ielts.modes[attempt.mode],
     attempt.scope.kind === 'part'
@@ -68,49 +92,51 @@ export default async function IeltsResultPage({ params }: Props) {
       topbar={
         <AppTopbar
           activeHref="/ielts"
+          page={{
+            breadcrumb,
+            module: 'ielts',
+            title: format(t.ielts.result.heading, { skill: skillLabel }),
+          }}
           subtitle={t.ielts.shell.subtitle}
         />
       }
     >
       <ExamSheet>
         <PageHeader
-          eyebrow={
-            <nav
-              aria-label={t.ielts.shell.breadcrumb}
-              className="flex flex-wrap items-center gap-x-1.5"
-            >
-              <Link
-                className="hover:text-brand"
-                href="/ielts"
-              >
-                IELTS
-              </Link>
-              {attempt.testSlug ? (
-                <>
-                  <ChevronRight
-                    aria-hidden="true"
-                    className="size-3.5"
-                  />
-                  <Link
-                    className="hover:text-brand"
-                    href={`/ielts/${attempt.testSlug}`}
-                  >
-                    {title}
-                  </Link>
-                </>
-              ) : null}
-              <ChevronRight
-                aria-hidden="true"
-                className="size-3.5"
-              />
-              <span>{skillLabel}</span>
-            </nav>
-          }
+          breadcrumb={{ items: breadcrumb, label: t.common.journey.breadcrumb }}
           icon={<GraduationCap />}
           iconClassName="bg-pastel-peach text-accent-orange"
+          inTopbar
           subtitle={summary}
           title={format(t.ielts.result.heading, { skill: skillLabel })}
           titleClassName="wrap-break-word"
+        />
+        <IeltsResultHead
+          attempt={{
+            id: attempt.id,
+            result: attempt.result
+              ? {
+                  band: attempt.result.band ?? null,
+                  raw: attempt.result.raw,
+                  total: attempt.result.total,
+                }
+              : null,
+            skill: attempt.skill,
+            testSlug: attempt.testSlug,
+          }}
+          history={history}
+          messages={t}
+          test={
+            test
+              ? {
+                  id: test.id,
+                  skills: IELTS_SKILLS.filter(skill =>
+                    test.sections.some(section => section.skill === skill)
+                  ),
+                  targetBand: test.targetBand,
+                }
+              : null
+          }
         />
         {attempt.skill === 'writing' ? (
           <WritingResult

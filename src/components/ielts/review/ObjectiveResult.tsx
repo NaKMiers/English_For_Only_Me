@@ -7,10 +7,7 @@ import { useMessages } from '@/i18n/client'
 import { format } from '@/i18n/format'
 import { cn } from '@/lib/utils'
 import type { IeltsAttemptRecord } from '@/modules/ielts/attempts/attemptRecords'
-import {
-  IELTS_SKILL_LABELS,
-  type IeltsQuestionType,
-} from '@/modules/ielts/constants'
+import type { IeltsQuestionType } from '@/modules/ielts/constants'
 import type { IeltsPublicSection } from '@/modules/ielts/publicView'
 import type { IeltsReviewRow } from '@/modules/ielts/services/resultPageData'
 
@@ -19,7 +16,7 @@ import { highlightText } from '../runner/PassagePane'
 import { ReviewMark } from '../widgets/ReviewMark'
 import { LineDictation } from './LineDictation'
 import { SaveWordButton } from './SaveWordButton'
-import { ExamButton, ExamCard, StatTile } from '@/components/ielts/ui'
+import { ExamCard } from '@/components/ielts/ui'
 
 interface Props {
   attempt: IeltsAttemptRecord
@@ -91,9 +88,9 @@ function weakestType(rows: IeltsReviewRow[]): IeltsQuestionType | null {
 /** Listening / Reading result: band row, next actions, filterable review. */
 export function ObjectiveResult({ attempt, rows, sections }: Props) {
   const t = useMessages().ielts
-  const [filter, setFilter] = useState<Filter>('all')
+  // Wrong answers first: the list is for fixing, not for re-reading.
+  const [filter, setFilter] = useState<Filter>('wrong')
   const [openRow, setOpenRow] = useState<number | null>(null)
-  const result = attempt.result
   const wrong = rows.filter(row => row.outcome !== 'correct').length
   const weakest = useMemo(() => weakestType(rows), [rows])
   const visible = rows.filter(row =>
@@ -103,10 +100,6 @@ export function ObjectiveResult({ attempt, rows, sections }: Props) {
         ? row.outcome === 'wrong'
         : row.outcome === 'blank'
   )
-  const partLabel = (part: number) =>
-    format(attempt.skill === 'listening' ? t.parts.part : t.parts.passage, {
-      part,
-    })
 
   return (
     <div className="grid gap-6">
@@ -121,43 +114,6 @@ export function ObjectiveResult({ attempt, rows, sections }: Props) {
           {t.result.timeRanOut}
         </p>
       ) : null}
-
-      <section
-        aria-label={t.result.label}
-        className="grid grid-cols-2 gap-3 md:grid-cols-4"
-      >
-        {result?.band !== null && result?.band !== undefined ? (
-          <StatTile
-            detail={format(t.result.correctCount, {
-              raw: result.raw,
-              total: result.total,
-            })}
-            label={format(t.result.skillBand, {
-              skill: IELTS_SKILL_LABELS[attempt.skill],
-            })}
-            tone="ink"
-            value={result.band.toFixed(1)}
-          />
-        ) : (
-          <StatTile
-            detail={
-              attempt.mode === 'drill'
-                ? t.result.drillNoBand
-                : t.result.partNoBand
-            }
-            label={t.result.score}
-            tone="ink"
-            value={`${result?.raw ?? 0}/${result?.total ?? 0}`}
-          />
-        )}
-        {(result?.perPart ?? []).map(part => (
-          <StatTile
-            key={part.part}
-            label={partLabel(part.part)}
-            value={`${part.raw}/${part.total}`}
-          />
-        ))}
-      </section>
 
       <ExamCard
         eyebrow={t.result.next}
@@ -177,14 +133,6 @@ export function ObjectiveResult({ attempt, rows, sections }: Props) {
           ) : (
             <span className="font-semibold">{t.result.noWrong}</span>
           )}
-          {attempt.testSlug ? (
-            <ExamButton
-              href={`/ielts/${attempt.testSlug}`}
-              tone="paper"
-            >
-              {t.result.backToTest}
-            </ExamButton>
-          ) : null}
         </div>
       </ExamCard>
 
@@ -202,10 +150,10 @@ export function ObjectiveResult({ attempt, rows, sections }: Props) {
             <button
               aria-pressed={filter === value}
               className={cn(
-                'border-line rounded-control min-h-9 border px-3 font-sans text-sm font-semibold',
+                'border-line rounded-control soft-press min-h-11 border px-3 font-sans text-sm font-medium sm:min-h-9',
                 filter === value
                   ? 'bg-cta text-cta-fg'
-                  : 'hover:bg-tint-soft bg-surface'
+                  : 'hover:bg-tint-soft bg-surface hover-pop'
               )}
               key={value}
               onClick={() => setFilter(value)}

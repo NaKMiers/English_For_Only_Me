@@ -186,6 +186,16 @@ export const ielts = {
     reading: 'Reading',
     writing: 'Writing',
   },
+  resultHead: {
+    target: 'Target',
+    delta: 'Since last time',
+    stepTaken: '+1 step: {done} of {total} skills banded in this test',
+    banded: '{done} of {total} skills banded in this test',
+    nextSkill: 'Next skill in this test',
+    testCleared: 'This test is cleared: pick the next one',
+    allTests: 'All tests',
+    start: 'Start {skill}',
+  },
   testJourney: {
     title: 'This test',
     unit: 'skills banded',
@@ -263,6 +273,13 @@ export const ielts = {
     notGiven: 'Not in the text (NOT GIVEN).',
   },
   writingResult: {
+    criteria: {
+      taskAchievement: 'Task Achievement',
+      taskResponse: 'Task Response',
+      cc: 'Coherence & Cohesion',
+      lr: 'Lexical Resource',
+      gra: 'Grammatical Range & Accuracy',
+    },
     study: 'Study: {title}',
     rewritten: 'Rewritten paragraph (about 1 band higher)',
     wordsMin: '{words} words · minimum {min}',
