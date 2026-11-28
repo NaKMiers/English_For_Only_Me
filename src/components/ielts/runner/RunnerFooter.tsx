@@ -27,7 +27,7 @@ interface Props {
 }
 
 const SKILL_LINK_CLASS =
-  'border-line bg-surface hover:bg-tint rounded-control inline-flex h-9 shrink-0 items-center gap-1 border px-2.5 font-sans text-sm font-semibold transition-colors sm:gap-1.5 sm:px-3'
+  'border-line bg-surface hover:bg-tint rounded-control soft-press hover-pop inline-flex h-11 shrink-0 items-center gap-1 border px-2.5 font-sans text-sm font-semibold sm:h-9 sm:gap-1.5 sm:px-3'
 
 /** Previous / next skill link. `compact` hides the label on phones. */
 function SkillLink({

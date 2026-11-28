@@ -22,7 +22,7 @@ export function HomeModuleNav({ messages }: { messages: Messages }) {
             key={module.key}
             href={module.href}
             className={cn(
-              'soft-press bg-surface hover:bg-tint-soft inline-flex min-h-11 items-center gap-2 rounded-full border-[1.5px] px-4 text-sm font-medium',
+              'soft-press hover-pop bg-surface hover:bg-tint-soft inline-flex min-h-11 items-center gap-2 rounded-full border-[1.5px] px-4 text-sm font-medium',
               theme.outline,
               theme.accent
             )}

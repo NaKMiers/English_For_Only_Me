@@ -12,6 +12,12 @@ export default async function Loading() {
   return (
     <SkeletonPageShell
       activeHref="/grammar"
+      page={{
+        breadcrumb: [{ href: '/grammar', label: t.grammar.path.title }],
+        module: 'grammar',
+        // The lesson's title lands with the data; a blank keeps the row height.
+        title: '\u00a0',
+      }}
       subtitle={t.grammar.subtitle}
     >
       <div className="mx-auto grid w-full max-w-3xl gap-5">

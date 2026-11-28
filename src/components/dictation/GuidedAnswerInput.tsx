@@ -435,7 +435,7 @@ export function GuidedAnswerInput({
               key={hint}
               type="button"
               onClick={() => fillHint(hint)}
-              className="rounded-tag border-accent-orange bg-pastel-peach text-accent-orange hover:bg-pastel-peach border px-2 py-0.5"
+              className="rounded-tag border-accent-orange bg-pastel-peach text-accent-orange soft-press hover-pop hover:bg-surface border px-2 py-0.5"
             >
               {hint}
             </button>

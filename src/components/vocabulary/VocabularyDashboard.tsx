@@ -5,10 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { ContentPanel } from '@/components/common/ContentPanel'
 import { useClientOutbox } from '@/components/common/OutboxOwnerProvider'
-import {
-  SkeletonJourney,
-  SkeletonPanel,
-} from '@/components/common/PageSkeletons'
+import { SkeletonVocabularyLanding } from '@/components/common/PageSkeletons'
 import { useMessages } from '@/i18n/client'
 import { format } from '@/i18n/format'
 import {
@@ -728,16 +725,7 @@ export function VocabularyDashboard({
   if (isInitialLoad)
     return (
       <div className="grid gap-5 px-4 pb-6 md:pr-6 md:pl-0">
-        <SkeletonJourney
-          chips={3}
-          layout="aside"
-          metaphorClassName="h-24"
-          statsPlacement="top"
-        />
-        <div className="grid gap-5 xl:grid-cols-2">
-          <SkeletonPanel lines={2} />
-          <SkeletonPanel lines={4} />
-        </div>
+        <SkeletonVocabularyLanding />
       </div>
     )
 

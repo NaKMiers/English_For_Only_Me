@@ -10,6 +10,14 @@ export default async function Loading() {
   return (
     <SkeletonPageShell
       activeHref="/vocabulary"
+      page={{
+        breadcrumb: [
+          { href: '/vocabulary', label: t.vocabulary.dashboard.title },
+        ],
+        module: 'vocabulary',
+        // The view's name comes from the URL; a blank keeps the row height.
+        title: '\u00a0',
+      }}
       subtitle={t.vocabulary.page.subtitle}
     >
       <div className="flex gap-2 overflow-hidden">

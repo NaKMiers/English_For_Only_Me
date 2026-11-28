@@ -103,7 +103,7 @@ export function DictationDebriefPanel({
       render={<section aria-labelledby="dictation-debrief-title" />}
     >
       <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
-        <CollapsibleTrigger className="group rounded-control flex min-w-48 flex-1 items-center gap-4 text-left">
+        <CollapsibleTrigger className="group soft-press hover-pop rounded-control flex min-w-48 flex-1 items-center gap-4 text-left">
           <span
             aria-hidden="true"
             className="bg-surface text-accent-purple shadow-card grid size-12 shrink-0 place-items-center rounded-full"

@@ -66,7 +66,7 @@ export function DictationPracticeHeader({
               render={
                 <Link
                   href="/"
-                  className="shrink-0"
+                  className="soft-press hover-pop shrink-0 rounded-full"
                 />
               }
             >

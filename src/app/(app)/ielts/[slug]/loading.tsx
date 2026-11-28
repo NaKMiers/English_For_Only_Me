@@ -1,30 +1,25 @@
 import {
-  SkeletonJourney,
+  SkeletonIeltsTest,
   SkeletonPageShell,
-  SkeletonRows,
 } from '@/components/common/PageSkeletons'
-import { Skeleton } from '@/components/ui/skeleton'
 import { getMessages } from '@/i18n/server'
 
-/** Same order as the test page: journey card, mode switch, skill rows. */
+/** Same order as the test page: mode switch, three launchers, the words. */
 export default async function Loading() {
   const t = await getMessages()
 
   return (
     <SkeletonPageShell
       activeHref="/ielts"
+      page={{
+        breadcrumb: [{ href: '/ielts', label: t.common.modules.ielts.title }],
+        module: 'ielts',
+        // The test's title lands with the data; a blank keeps the row height.
+        title: '\u00a0',
+      }}
       subtitle={t.ielts.shell.subtitle}
     >
-      <SkeletonJourney
-        chips={3}
-        layout="stacked"
-        metaphorClassName="h-11"
-      />
-      <Skeleton className="h-12 w-56 rounded-full" />
-      <SkeletonRows
-        count={3}
-        rowClassName="h-14"
-      />
+      <SkeletonIeltsTest />
     </SkeletonPageShell>
   )
 }

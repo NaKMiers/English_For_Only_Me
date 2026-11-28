@@ -2,7 +2,7 @@
 
 import { Volume2 } from 'lucide-react'
 
-import { Button } from '@/components/ui/button'
+import { IconButton } from '@/components/ui/IconButton'
 import { useMessages } from '@/i18n/client'
 import { format } from '@/i18n/format'
 import { cn } from '@/lib/utils'
@@ -108,24 +108,18 @@ export function VocabTermHeader({
         </Pronunciation>
       </div>
       {inline ? null : (
-        <Button
-          aria-label={format(t.speak, { term: displayTerm })}
-          className={cn(
-            'border-line bg-surface text-ink hover:bg-tint rounded-control soft-press size-10 shrink-0 border',
-            buttonClassName
-          )}
+        <IconButton
+          className={cn('rounded-control size-10', buttonClassName)}
+          label={format(t.speak, { term: displayTerm })}
           onClick={() =>
             speakTerm ? speakTerm(displayTerm) : speakFallback(displayTerm)
           }
-          size="icon"
-          type="button"
-          variant="ghost"
         >
           <Volume2
             aria-hidden="true"
             className={cn('size-5', iconClassName)}
           />
-        </Button>
+        </IconButton>
       )}
     </div>
   )

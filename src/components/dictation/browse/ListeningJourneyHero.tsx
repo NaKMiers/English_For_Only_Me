@@ -4,7 +4,6 @@ import {
   Flame,
   Headphones,
   Play,
-  RotateCcw,
   Video,
   type LucideIcon,
 } from 'lucide-react'
@@ -13,6 +12,7 @@ import { JourneyCard, JourneyHeadline } from '@/components/journey/JourneyCard'
 import { NextStopCard } from '@/components/journey/NextStopCard'
 import { DrawerHandle } from '@/components/journey/SideDrawer'
 import { StatChip, StatStrip } from '@/components/journey/StatChip'
+import { DUE_ICON } from '@/constants/stateIcons'
 import { format, plural } from '@/i18n/format'
 import type { Messages } from '@/i18n/messages'
 import { cn } from '@/lib/utils'
@@ -96,7 +96,7 @@ export function ListeningJourneyHero({
     },
     {
       href: '/dictation/review',
-      icon: RotateCcw,
+      icon: DUE_ICON,
       label: t.reviewDue,
       value: String(stats.dueReviewItemCount),
     },

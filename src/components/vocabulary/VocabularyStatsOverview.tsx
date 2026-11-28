@@ -5,12 +5,12 @@ import {
   ChevronDown,
   Flower2,
   Leaf,
-  RotateCcw,
   Sprout,
   type LucideIcon,
 } from 'lucide-react'
 import Link from 'next/link'
 
+import { DUE_ICON } from '@/constants/stateIcons'
 import { useMessages } from '@/i18n/client'
 import { format, plural } from '@/i18n/format'
 import type { Messages } from '@/i18n/messages'
@@ -23,7 +23,7 @@ interface Props {
 }
 
 /** Icon per word-list view, in vocabStatusLinks order. */
-const FLOW_ICONS: LucideIcon[] = [Sprout, RotateCcw, BookCheck, Flower2, Leaf]
+const FLOW_ICONS: LucideIcon[] = [Sprout, DUE_ICON, BookCheck, Flower2, Leaf]
 
 function FlowLink({
   href,

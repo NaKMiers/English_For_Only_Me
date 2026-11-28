@@ -1,10 +1,11 @@
 'use client'
 
-import { CheckCircle2, ChevronDown, PartyPopper, RotateCcw } from 'lucide-react'
+import { CheckCircle2, ChevronDown, PartyPopper } from 'lucide-react'
 
 import { QueueRow } from '@/components/common/QueueRow'
 import { EmptyState } from '@/components/journey/EmptyState'
 import { ActionButton } from '@/components/ui/ActionButton'
+import { DUE_ICON } from '@/constants/stateIcons'
 import { useMessages } from '@/i18n/client'
 import { format, plural } from '@/i18n/format'
 import type { DictationReviewItemApiRecord } from '@/modules/dictation/types'
@@ -92,7 +93,7 @@ export function DictationReviewQueue({
             <ActionButton
               data-next-stop=""
               href={`/dictation/videos/${first.videoId}/practice`}
-              icon={<RotateCcw aria-hidden="true" />}
+              icon={<DUE_ICON aria-hidden="true" />}
               tone="ink"
             >
               {text.start}

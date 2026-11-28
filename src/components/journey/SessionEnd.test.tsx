@@ -1,7 +1,12 @@
 import { render, screen } from '@testing-library/react'
+import { Clock3, Target } from 'lucide-react'
 import { describe, expect, test } from 'vitest'
 
+import { expectLandingBudget } from '@/test/landingBudget'
+
+import { NextStopCard } from './NextStopCard'
 import { SessionEnd } from './SessionEnd'
+import { StatChip, StatStrip } from './StatChip'
 
 describe('SessionEnd', () => {
   test('wins, journey step, fix-up, next stop: in that order whatever the props', () => {
@@ -90,5 +95,56 @@ describe('SessionEnd', () => {
     )
 
     expect(document.activeElement).toHaveTextContent('Done again')
+  })
+
+  test('stats chips sit beside the headline, inside the wins header', () => {
+    const { container } = render(
+      <SessionEnd
+        headline={{ value: '3', unit: 'stars' }}
+        journeyStep="+1 in Unit 3"
+        module="grammar"
+        nextStop={
+          <NextStopCard
+            actionLabel="Start"
+            href="/grammar/lessons/next"
+            pinLabel="Next stop"
+            title="Past simple"
+            variant="compact"
+          />
+        }
+        stats={
+          <StatStrip label="Stats">
+            <StatChip
+              icon={Target}
+              label="Accuracy"
+              value="90%"
+            />
+            <StatChip
+              icon={Clock3}
+              label="Time"
+              value="2:10"
+            />
+          </StatStrip>
+        }
+        title="Lesson done!"
+      />
+    )
+
+    const header = container.querySelector('[data-session-slot="wins"]')
+    const stats = header?.querySelector('[data-session-slot="stats"]')
+    expect(stats).not.toBeNull()
+    expect(stats?.querySelectorAll('[data-stat-chip="static"]')).toHaveLength(2)
+    // The chips share the heading's row, not a row of their own.
+    expect(
+      stats?.parentElement?.contains(
+        screen.getByRole('heading', { name: 'Lesson done!' })
+      )
+    ).toBe(true)
+
+    const slots = [...container.querySelectorAll('[data-session-slot]')].map(
+      element => element.getAttribute('data-session-slot')
+    )
+    expect(slots).toEqual(['wins', 'stats', 'journey', 'next'])
+    expectLandingBudget(container)
   })
 })

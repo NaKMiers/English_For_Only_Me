@@ -1,6 +1,6 @@
 import {
-  SkeletonJourney,
   SkeletonPageShell,
+  SkeletonTopicStrip,
   SkeletonVideoGrid,
 } from '@/components/common/PageSkeletons'
 import { getMessages } from '@/i18n/server'
@@ -11,13 +11,18 @@ export default async function Loading() {
   return (
     <SkeletonPageShell
       activeHref="/dictation"
+      page={{
+        breadcrumb: [
+          { href: '/dictation', label: t.dictation.browse.allTopics },
+          { label: t.dictation.browse.uncategorized },
+        ],
+        module: 'dictation',
+        subtitle: t.dictation.noTopic.description,
+        title: t.dictation.browse.uncategorized,
+      }}
       subtitle={t.dictation.meta.browseSubtitle}
     >
-      <SkeletonJourney
-        chips={0}
-        layout="stacked"
-        metaphorClassName="h-2"
-      />
+      <SkeletonTopicStrip />
       <SkeletonVideoGrid count={6} />
     </SkeletonPageShell>
   )

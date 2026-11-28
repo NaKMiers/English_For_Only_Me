@@ -1,4 +1,3 @@
-import { RotateCcw } from 'lucide-react'
 import type { Metadata } from 'next'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
@@ -6,6 +5,7 @@ import { PageHeader } from '@/components/common/PageHeader'
 import { PageShell } from '@/components/common/PageShell'
 import { DictationReviewQueue } from '@/components/dictation/DictationReviewQueue'
 import { hasMongoDbUri } from '@/constants/environments'
+import { DUE_ICON } from '@/constants/stateIcons'
 import { getMessages } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import {
@@ -79,7 +79,7 @@ export default async function Page() {
             ],
             label: t.common.journey.breadcrumb,
           }}
-          icon={<RotateCcw />}
+          icon={<DUE_ICON />}
           iconClassName="bg-pastel-sky text-accent-blue"
           inTopbar
           subtitle={text.description}

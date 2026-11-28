@@ -13,7 +13,13 @@ export default async function Loading() {
   return (
     <SkeletonPageShell
       activeHref="/dictation"
-      page={{ module: 'dictation', title: t.dictation.meta.resultsTitle }}
+      page={{
+        breadcrumb: [
+          { href: '/dictation', label: t.dictation.browse.allTopics },
+        ],
+        module: 'dictation',
+        title: t.dictation.meta.resultsTitle,
+      }}
       subtitle={t.dictation.meta.labSubtitle}
     >
       <SkeletonBlock className="h-56" />

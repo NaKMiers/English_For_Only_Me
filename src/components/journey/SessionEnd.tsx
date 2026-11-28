@@ -31,17 +31,26 @@ interface Props {
   /** The journey step just taken, e.g. "+1 on the trail, 2 to Camp". */
   journeyStep?: ReactNode
   module: AppModuleKey
-  /** One `NextStopCard` (compact) or the one `ink` action. */
+  /**
+   * One `NextStopCard variant="compact"` that goes somewhere real (the next
+   * lesson, the next video, the review queue), not a bare button.
+   */
   nextStop: ReactNode
   /** Save state, e.g. a queued or failed notice. */
   notice?: ReactNode
   /** Quiet secondary links under the next stop. */
   secondary?: ReactNode
+  /**
+   * Static `StatChip`s (accuracy, streak, time) on the headline's row, top
+   * right: the twin of `JourneyCard statsPlacement="top"`, so the end screen
+   * does not stack a chip row under the big number.
+   */
+  stats?: ReactNode
   /** The end screen's heading, e.g. "Lesson done!". */
   title: string
   titleId?: string
   /** What went right: accuracy, words moved, sentences written. */
-  wins: ReactNode
+  wins?: ReactNode
 }
 
 /**
@@ -59,6 +68,7 @@ export function SessionEnd({
   nextStop,
   notice,
   secondary,
+  stats,
   title,
   titleId = 'session-end-title',
   wins,
@@ -87,33 +97,45 @@ export function SessionEnd({
         )}
         data-session-slot="wins"
       >
-        <h2
-          className="font-sans text-2xl leading-tight font-medium tracking-tight focus:outline-none"
-          id={titleId}
-          tabIndex={focusTitle ? -1 : undefined}
-        >
-          {title}
-        </h2>
-        {focusTitle ? <FocusOnMount targetId={titleId} /> : null}
-        <p className="flex flex-wrap items-baseline gap-x-2">
-          {headline.icon ? (
-            <span
-              aria-hidden="true"
-              className={cn('self-center [&_svg]:size-7', theme.accent)}
+        <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-3">
+          <div className="grid min-w-0 gap-3">
+            <h2
+              className="font-sans text-2xl leading-tight font-medium tracking-tight focus:outline-none"
+              id={titleId}
+              tabIndex={focusTitle ? -1 : undefined}
             >
-              {headline.icon}
-            </span>
+              {title}
+            </h2>
+            <p className="flex flex-wrap items-baseline gap-x-2">
+              {headline.icon ? (
+                <span
+                  aria-hidden="true"
+                  className={cn('self-center [&_svg]:size-7', theme.accent)}
+                >
+                  {headline.icon}
+                </span>
+              ) : null}
+              <strong className="font-sans text-5xl leading-none font-light tracking-tight tabular-nums">
+                {headline.value}
+              </strong>
+              {headline.unit ? (
+                <span className="font-sans text-lg font-medium">
+                  {headline.unit}
+                </span>
+              ) : null}
+            </p>
+          </div>
+          {stats ? (
+            <div
+              className="flex flex-wrap justify-end gap-2"
+              data-session-slot="stats"
+            >
+              {stats}
+            </div>
           ) : null}
-          <strong className="font-sans text-5xl leading-none font-light tracking-tight tabular-nums">
-            {headline.value}
-          </strong>
-          {headline.unit ? (
-            <span className="font-sans text-lg font-medium">
-              {headline.unit}
-            </span>
-          ) : null}
-        </p>
-        <div className="text-sm">{wins}</div>
+        </div>
+        {focusTitle ? <FocusOnMount targetId={titleId} /> : null}
+        {wins ? <div className="text-sm">{wins}</div> : null}
         {journeyStep ? (
           <div
             className={cn('text-sm font-medium', theme.accent)}

@@ -1,6 +1,6 @@
 'use client'
 
-import { BookOpen, Check, CircleCheck, List, Search } from 'lucide-react'
+import { List, Search } from 'lucide-react'
 
 import { ContentPanel } from '@/components/common/ContentPanel'
 import { InlineNotice } from '@/components/common/InlineNotice'
@@ -8,13 +8,17 @@ import { Input } from '@/components/ui/input'
 import { ActionButton } from '@/components/ui/ActionButton'
 import { useMessages } from '@/i18n/client'
 import { format } from '@/i18n/format'
-import { cn } from '@/lib/utils'
 import type { VocabEntryWithUserStateRecord } from '@/modules/vocabulary/types'
 import {
   hasVietnameseMeaning,
   getVietnameseMeaning,
 } from '@/modules/vocabulary/vietnameseMeaning'
 
+import {
+  decisionOf,
+  VocabDecisionButtons,
+  vocabStatusLabel,
+} from './VocabDecisionButtons'
 import { VocabTermHeader } from './VocabTermHeader'
 
 interface Props {
@@ -34,26 +38,6 @@ interface Props {
   speakTerm: (term: string) => void
 }
 
-type Decision = 'shouldLearn' | 'alreadyKnow'
-
-/** The learner's pick for a word, read from their saved item. */
-function decisionOf(result: VocabEntryWithUserStateRecord): Decision | null {
-  const status = result.userItem?.status
-
-  if (status === 'learning') return 'shouldLearn'
-  if (status === 'alreadyKnow' || status === 'mastered') return 'alreadyKnow'
-
-  return null
-}
-
-/** A picked mark reads as chosen, without taking the page's one dark CTA. */
-const PICKED_CLASS_NAME: Record<Decision, string> = {
-  alreadyKnow:
-    'border-lesson-correct bg-pastel-mint text-ink hover:bg-pastel-mint',
-  shouldLearn:
-    'border-brand bg-brand-soft text-brand-ink hover:bg-brand-soft hover:text-brand-ink',
-}
-
 export function VocabularySearchPanel({
   isLoading,
   lookupError,
@@ -68,18 +52,8 @@ export function VocabularySearchPanel({
   const vocab = useMessages().vocabulary
   const t = vocab.search
 
-  // "Ready" is the normal case, so only a word that is not ready says so;
-  // a word the learner has picked shows their pick (Should learn / Already
-  // know, or Mastered) instead.
   function statusOf(result: VocabEntryWithUserStateRecord) {
-    const status = result.userItem?.status
-    const decision = decisionOf(result)
-
-    if (status === 'mastered') return vocab.itemStatus.mastered
-    if (decision) return vocab.decisions[decision]
-    if (result.entry.enrichmentStatus === 'ready') return null
-
-    return vocab.enrichmentStatus[result.entry.enrichmentStatus]
+    return vocabStatusLabel(result, vocab)
   }
 
   function detailLine(result: VocabEntryWithUserStateRecord) {
@@ -94,7 +68,9 @@ export function VocabularySearchPanel({
     return phonetic?.text ?? `/${result.entry.term}/`
   }
 
-  const decision = selectedEntry ? decisionOf(selectedEntry) : null
+  const decision = selectedEntry
+    ? decisionOf(selectedEntry.userItem?.status)
+    : null
 
   return (
     <ContentPanel
@@ -205,62 +181,14 @@ export function VocabularySearchPanel({
             </p>
           ) : null}
 
-          <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
-            <ActionButton
-              aria-pressed={decision === 'shouldLearn'}
-              className={cn(
-                '[&>span:last-child]:whitespace-nowrap',
-                decision === 'shouldLearn' && PICKED_CLASS_NAME.shouldLearn
-              )}
-              disabled={isLoading || !hasVietnameseMeaning(selectedEntry.entry)}
-              icon={
-                decision === 'shouldLearn' ? (
-                  <CircleCheck className="size-4" />
-                ) : (
-                  <BookOpen className="size-4" />
-                )
-              }
-              onClick={() => {
-                if (decision === 'shouldLearn') return
-
-                markEntry({
-                  entry: selectedEntry,
-                  source: 'dictionary',
-                  status: 'shouldLearn',
-                })
-              }}
-              tone={decision === 'alreadyKnow' ? 'paper' : 'primary'}
-            >
-              {vocab.marks.shouldLearn}
-            </ActionButton>
-            <ActionButton
-              aria-pressed={decision === 'alreadyKnow'}
-              className={cn(
-                '[&>span:last-child]:whitespace-nowrap',
-                decision === 'alreadyKnow' && PICKED_CLASS_NAME.alreadyKnow
-              )}
-              disabled={isLoading || !hasVietnameseMeaning(selectedEntry.entry)}
-              icon={
-                decision === 'alreadyKnow' ? (
-                  <CircleCheck className="size-4" />
-                ) : (
-                  <Check className="size-4" />
-                )
-              }
-              onClick={() => {
-                if (decision === 'alreadyKnow') return
-
-                markEntry({
-                  entry: selectedEntry,
-                  source: 'dictionary',
-                  status: 'alreadyKnow',
-                })
-              }}
-              tone="paper"
-            >
-              {vocab.marks.alreadyKnow}
-            </ActionButton>
-          </div>
+          <VocabDecisionButtons
+            busy={isLoading}
+            decision={decision}
+            disabled={!hasVietnameseMeaning(selectedEntry.entry)}
+            onDecide={status =>
+              markEntry({ entry: selectedEntry, source: 'dictionary', status })
+            }
+          />
           {!hasVietnameseMeaning(selectedEntry.entry) ? (
             <p className="text-brand-ink text-sm font-medium">
               {vocab.word.meaningRequired}

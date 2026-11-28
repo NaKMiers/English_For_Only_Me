@@ -21,7 +21,7 @@ export function EvidenceIconButton({ number }: { number: number }) {
   return (
     <button
       aria-label={format(t.showEvidence, { number })}
-      className="text-ink-soft/60 hover:text-brand hover:bg-tint-soft rounded-tag relative -my-1 inline-grid size-6 shrink-0 place-items-center align-middle transition-colors after:absolute after:-inset-2 after:content-['']"
+      className="text-ink-soft/60 hover:text-brand hover:bg-tint-soft rounded-tag soft-press hover-pop relative -my-1 inline-grid size-6 shrink-0 place-items-center align-middle after:absolute after:-inset-2 after:content-['']"
       onClick={() => onShowEvidence(number)}
       title={t.showInText}
       type="button"

@@ -6,13 +6,13 @@ import {
   Dumbbell,
   Loader2,
   MapPin,
-  RotateCcw,
   Star,
   type LucideIcon,
 } from 'lucide-react'
 
 import { JourneyCard, JourneyHeadline } from '@/components/journey/JourneyCard'
 import { StatChip, StatStrip } from '@/components/journey/StatChip'
+import { DUE_ICON } from '@/constants/stateIcons'
 import { useMessages } from '@/i18n/client'
 import { format, plural } from '@/i18n/format'
 import { cn } from '@/lib/utils'
@@ -63,7 +63,7 @@ export function GrammarJourneyHero({ dueHref, path, syncing }: Props) {
     },
     {
       href: dueHref,
-      icon: RotateCcw,
+      icon: DUE_ICON,
       label: t.reviewDue,
       value: String(path.totals.dueCount),
     },

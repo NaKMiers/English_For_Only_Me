@@ -151,12 +151,30 @@ const HOVER_LIFT: Guard = {
   roots: COMPONENTS_AND_APP,
 }
 
+// "Due" wears `DUE_ICON` (the brain). The rotate arrow is for real replay,
+// redo, retry and restore actions only, so it never reads as a state.
+const ROTATE_FOR_REPLAY: Guard = {
+  allow: [
+    'src/components/common/AudioPlayer.tsx',
+    'src/components/dictation/DictationControls.tsx',
+    'src/components/dictation/DictationDebriefPanel.tsx',
+    'src/components/dictation/DictationHintEditor.tsx',
+    'src/components/dictation/DictationTranslationEditor.tsx',
+    'src/components/dictation/admin/AdminTrashVideoMenu.tsx',
+    'src/components/ielts/runner/PracticeActions.tsx',
+    'src/components/vocabulary/VocabRecallModal.tsx',
+  ],
+  pattern: /\bRotateCcw\b/,
+  roots: COMPONENTS_AND_APP,
+}
+
 for (const [name, guard] of Object.entries({
   CORNERS,
   HEAVY_WEIGHT,
   HOVER_LIFT,
   INK_CONTROL,
   RAW_PALETTE,
+  ROTATE_FOR_REPLAY,
 }))
   describe(`${name} guard`, () => {
     test('no new offender outside the allowlist', () => {

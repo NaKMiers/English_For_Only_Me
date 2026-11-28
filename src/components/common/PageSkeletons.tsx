@@ -138,6 +138,71 @@ export function SkeletonJourney({
 }
 
 /**
+ * The dictation topic strip (`TopicJourney`): the 64px record disc, the
+ * eyebrow and count lines, and the thin progress bar. No next stop panel:
+ * the strip has none (the Continue float is the way on).
+ */
+export function SkeletonTopicStrip() {
+  return (
+    <div
+      aria-hidden="true"
+      className="border-line bg-surface-muted rounded-panel flex items-center gap-3 border p-3 sm:gap-4 sm:p-4"
+    >
+      <Skeleton className="size-16 shrink-0 rounded-full" />
+      <div className="grid min-w-0 flex-1 gap-1.5">
+        <SkeletonLine className="h-3 w-28" />
+        <SkeletonLine className="h-8 w-40" />
+        <Skeleton className="h-1.5 w-full rounded-full" />
+      </div>
+    </div>
+  )
+}
+
+/**
+ * The IELTS test page: the Practice / Mock switch, the three skill launchers
+ * side by side from sm (a swipeable row on phones), then the words panel.
+ */
+export function SkeletonIeltsTest() {
+  return (
+    <>
+      <Skeleton className="h-11 w-48 rounded-full" />
+      <div className="flex gap-2 overflow-hidden sm:grid sm:grid-cols-3">
+        {Array.from({ length: 3 }).map((_, index) => (
+          <SkeletonBlock
+            className="h-64 w-[80%] shrink-0 sm:w-auto"
+            key={index}
+          />
+        ))}
+      </div>
+      <SkeletonPanel lines={4} />
+    </>
+  )
+}
+
+/**
+ * The vocabulary landing (`VocabularyLanding`): the garden card with its
+ * chips on top and the small next stop aside, then the explore deck and the
+ * search card (search first, as on the page). Used by the route `loading.tsx` and the dashboard's own first
+ * load, so both draw the same shape.
+ */
+export function SkeletonVocabularyLanding() {
+  return (
+    <>
+      <SkeletonJourney
+        chips={3}
+        layout="aside"
+        metaphorClassName="h-24"
+        statsPlacement="top"
+      />
+      <div className="grid items-start gap-5 xl:grid-cols-2">
+        <SkeletonPanel lines={2} />
+        <SkeletonPanel lines={5} />
+      </div>
+    </>
+  )
+}
+
+/**
  * A focus screen (lesson player, dictation practice): header row, one card
  * and the footer bar, one viewport tall, with no topbar or tab bar so they do
  * not flash before the full-height page lands.

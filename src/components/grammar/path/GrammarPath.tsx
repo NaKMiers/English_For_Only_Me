@@ -2,14 +2,12 @@
 
 import {
   BookOpen,
-  Brain,
   Check,
   ChevronDown,
   Crown,
   Lock,
   PenLine,
   Play,
-  RotateCcw,
   Star,
   Trophy,
 } from 'lucide-react'
@@ -41,6 +39,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { DUE_ICON } from '@/constants/stateIcons'
 import { useMessages } from '@/i18n/client'
 import { format } from '@/i18n/format'
 import { cn } from '@/lib/utils'
@@ -165,7 +164,7 @@ function PathNode({
         : lesson.state === 'mastered'
           ? Crown
           : lesson.state === 'due'
-            ? Brain
+            ? DUE_ICON
             : Check
 
   return (
@@ -364,7 +363,7 @@ function UnitTrail({
               ) : null}
               {summary.dueCount > 0 ? (
                 <span className="text-brand-ink flex items-center gap-1 font-medium">
-                  <RotateCcw
+                  <DUE_ICON
                     aria-hidden
                     className="size-3"
                   />
@@ -584,7 +583,7 @@ export function GrammarPath({ path }: Props) {
                   {lesson.state === 'due' ? (
                     <ActionButton
                       href={`/grammar/lessons/${lesson.id}/review`}
-                      icon={<RotateCcw aria-hidden />}
+                      icon={<DUE_ICON aria-hidden />}
                       tone="ink"
                     >
                       {t.review}

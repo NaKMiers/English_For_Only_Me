@@ -4,7 +4,6 @@ import {
   Headphones,
   PenLine,
   Plus,
-  RotateCcw,
   Sparkles,
   type LucideIcon,
 } from 'lucide-react'
@@ -15,6 +14,7 @@ import { AppTopbar } from '@/components/common/AppTopbar'
 import { PageShell } from '@/components/common/PageShell'
 import { Sparkline } from '@/components/common/Sparkline'
 import { MODULE_ICONS } from '@/constants/modules'
+import { DUE_ICON } from '@/constants/stateIcons'
 import { DEFAULT_LOCALE, INTL_LOCALES, type Locale } from '@/i18n/config'
 import { format, plural } from '@/i18n/format'
 import type { Messages } from '@/i18n/messages'
@@ -414,7 +414,7 @@ export function HomeStudyDesk({
                         count: dictationStats?.dueReviewItemCount ?? 0,
                       }),
                       href: '/dictation/review',
-                      icon: RotateCcw,
+                      icon: DUE_ICON,
                       label: t.plan.weakWords,
                       tone: 'text-accent-orange',
                     },

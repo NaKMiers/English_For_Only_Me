@@ -1,7 +1,6 @@
 import {
-  SkeletonJourney,
   SkeletonPageShell,
-  SkeletonPanel,
+  SkeletonVocabularyLanding,
 } from '@/components/common/PageSkeletons'
 import { getMessages } from '@/i18n/server'
 
@@ -19,16 +18,7 @@ export default async function Loading() {
       subtitle={t.vocabulary.page.subtitle}
     >
       {/* Same order as VocabularyLanding: garden card, then browse area. */}
-      <SkeletonJourney
-        chips={3}
-        layout="aside"
-        metaphorClassName="h-24"
-        statsPlacement="top"
-      />
-      <div className="grid items-start gap-5 xl:grid-cols-2">
-        <SkeletonPanel lines={1} />
-        <SkeletonPanel lines={6} />
-      </div>
+      <SkeletonVocabularyLanding />
     </SkeletonPageShell>
   )
 }
