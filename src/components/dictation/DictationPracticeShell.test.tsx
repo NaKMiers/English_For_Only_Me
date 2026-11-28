@@ -896,6 +896,40 @@ describe('DictationPracticeShell review mode', () => {
     expect(patchRequests()).toEqual([])
   })
 
+  test('a review sentence outside this transcript opens normal practice', async () => {
+    const view = render(
+      <DictationPracticeShell
+        completions={0}
+        initialSession={null}
+        initialTranslationTrack={null}
+        review={{
+          left: 0,
+          nextHref,
+          segmentId: '507f1f77bcf86cd7994390aa',
+          sessionId: reviewSessionId,
+        }}
+        segments={[segment, secondSegment]}
+        translationLanguages={[]}
+        video={video}
+      />
+    )
+
+    fireEvent.click(view.getByRole('button', { name: 'Start dictation' }))
+    typeAnswer(
+      view.getByLabelText('Type what you hear'),
+      'At harvest, the Mengs.'
+    )
+    fireEvent.click(view.getByRole('button', { name: 'Check' }))
+
+    await waitFor(() => {
+      expect(attemptRequests()).toHaveLength(1)
+    })
+    // Neither the review flag nor the review session: the screen and the
+    // attempt agree on normal practice.
+    expect(attemptRequests()[0].body).not.toHaveProperty('review')
+    expect(attemptRequests()[0].url).not.toContain(reviewSessionId)
+  })
+
   test('an in-progress video keeps its saved position: review starts on its sentence', () => {
     const resumable = {
       ...session,

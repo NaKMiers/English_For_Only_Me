@@ -248,7 +248,7 @@ export function DictationPracticeShell({
   initialSession,
   initialTranslationTrack,
   nextVideo = null,
-  review = null,
+  review: reviewProp = null,
   segments,
   topicRecord = null,
   translationLanguages,
@@ -262,10 +262,13 @@ export function DictationPracticeShell({
   // When set, a leave-confirmation modal is open for this pending in-app
   // destination (the learner clicked a link mid-practice).
   const [pendingLeaveHref, setPendingLeaveHref] = useState<string | null>(null)
-  const reviewIndex = review
-    ? segments.findIndex(segment => segment.id === review.segmentId)
+  const reviewIndex = reviewProp
+    ? segments.findIndex(segment => segment.id === reviewProp.segmentId)
     : -1
-  const isReview = reviewIndex >= 0
+  // A sentence missing from this transcript opens normal practice, so the
+  // screen and the attempts agree on the mode.
+  const review = reviewIndex >= 0 ? reviewProp : null
+  const isReview = review !== null
   // Review mode ends after its one sentence; `passed` says whether it left
   // the queue.
   const [reviewEnd, setReviewEnd] = useState<{ passed: boolean } | null>(null)
@@ -1832,7 +1835,17 @@ export function DictationPracticeShell({
                     journeyStep={
                       topicRecord
                         ? topicStepLine(
-                            topicRecord,
+                            // The page's record predates this visit: a first
+                            // finish earlier in it already counts once.
+                            runWasFinishedBefore && completions === 0
+                              ? {
+                                  ...topicRecord,
+                                  done: Math.min(
+                                    topicRecord.total,
+                                    topicRecord.done + 1
+                                  ),
+                                }
+                              : topicRecord,
                             {
                               finished: !completedOnLoad,
                               wasFinishedBefore: runWasFinishedBefore,
