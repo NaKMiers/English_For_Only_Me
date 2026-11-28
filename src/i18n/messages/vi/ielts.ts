@@ -182,6 +182,23 @@ export const ielts: Messages['ielts'] = {
       next: 'tiếp theo',
     },
   },
+  /** Exam skill names: kept in English in every language (the real test). */
+  skills: {
+    listening: 'Listening',
+    reading: 'Reading',
+    writing: 'Writing',
+  },
+  testJourney: {
+    title: 'Đề này',
+    unit: 'kỹ năng có band',
+    ofTotal: 'trên {total}',
+    clears: '{skill} là xong đề này',
+    cleared: 'Đã xong đề: kỹ năng nào cũng có band. Làm lại để vượt band cũ.',
+    bestBand: 'Band cao nhất',
+    target: 'Band mục tiêu',
+    attempts: 'Lượt làm',
+    start: 'Làm {skill}',
+  },
   testPage: {
     target: 'Mục tiêu {band}',
     editTest: 'Sửa đề này',
@@ -207,6 +224,7 @@ export const ielts: Messages['ielts'] = {
     vocabTitle: 'Khám phá từ vựng trong đề',
   },
   launcher: {
+    modeGroupTest: 'Luyện tập hay thi thử cho đề này',
     modeGroup: 'Chế độ {skill}',
     choose: {
       practice: 'Chọn phần để luyện tập',

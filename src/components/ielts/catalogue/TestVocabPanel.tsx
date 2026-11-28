@@ -1,8 +1,15 @@
 'use client'
 
+import { ChevronDown } from 'lucide-react'
 import { useRef, useState } from 'react'
 
+import { InlineNotice } from '@/components/common/InlineNotice'
 import { useClientOutbox } from '@/components/common/OutboxOwnerProvider'
+import {
+  Collapsible,
+  CollapsiblePanel,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible'
 import {
   type ExploreDecision,
   VocabularyExplorePanel,
@@ -126,30 +133,33 @@ export function TestVocabPanel({ entries: initialEntries }: Props) {
   if (!entries.length) return null
 
   return (
-    <section
+    // Folded behind one row: the words are a warm-up, not the page.
+    <Collapsible
       aria-label={t.vocabLabel}
       className="grid gap-2"
     >
-      <VocabularyExplorePanel
-        activeIndex={activeIndex}
-        decisions={decisions}
-        entries={entries}
-        eyebrow={format(t.vocabEyebrow, { count: entries.length })}
-        markEntry={input => void markEntry(input)}
-        moveExplore={delta => showIndex(activeIndex + delta)}
-        numbering="position"
-        showExploreIndex={showIndex}
-        source="ielts"
-        title={t.vocabTitle}
-      />
-      {error ? (
-        <p
-          className="text-brand text-sm font-semibold"
-          role="alert"
-        >
-          {error}
-        </p>
-      ) : null}
-    </section>
+      <CollapsibleTrigger className="soft-press hover-pop group border-line bg-surface rounded-panel flex min-h-12 w-full items-center justify-between gap-3 border px-4 py-3 text-left font-sans text-base font-medium">
+        {format(t.vocabEyebrow, { count: entries.length })}
+        <ChevronDown
+          aria-hidden="true"
+          className="size-5 transition-transform group-data-panel-open:rotate-180"
+        />
+      </CollapsibleTrigger>
+      <CollapsiblePanel className="grid gap-2">
+        <VocabularyExplorePanel
+          activeIndex={activeIndex}
+          decisions={decisions}
+          entries={entries}
+          eyebrow={format(t.vocabEyebrow, { count: entries.length })}
+          markEntry={input => void markEntry(input)}
+          moveExplore={delta => showIndex(activeIndex + delta)}
+          numbering="position"
+          showExploreIndex={showIndex}
+          source="ielts"
+          title={t.vocabTitle}
+        />
+        {error ? <InlineNotice tone="error">{error}</InlineNotice> : null}
+      </CollapsiblePanel>
+    </Collapsible>
   )
 }

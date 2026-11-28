@@ -180,6 +180,23 @@ export const ielts = {
       next: 'up next',
     },
   },
+  /** Exam skill names: kept in English in every language (the real test). */
+  skills: {
+    listening: 'Listening',
+    reading: 'Reading',
+    writing: 'Writing',
+  },
+  testJourney: {
+    title: 'This test',
+    unit: 'skills banded',
+    ofTotal: 'of {total}',
+    clears: '{skill} clears this test',
+    cleared: 'Test cleared: every skill has a band. Retake one to beat it.',
+    bestBand: 'Best band',
+    target: 'Target band',
+    attempts: 'Attempts',
+    start: 'Start {skill}',
+  },
   testPage: {
     target: 'Target {band}',
     editTest: 'Edit this test',
@@ -205,6 +222,7 @@ export const ielts = {
     vocabTitle: 'Explore Words from the Tests',
   },
   launcher: {
+    modeGroupTest: 'Practice or mock for this test',
     modeGroup: '{skill} mode',
     choose: {
       practice: 'Choose what to practise',

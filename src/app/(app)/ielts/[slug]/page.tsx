@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
-import { ChevronLeft, GraduationCap, PenLine } from 'lucide-react'
-import Link from 'next/link'
+import { GraduationCap, PenLine } from 'lucide-react'
 import { notFound } from 'next/navigation'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
@@ -18,7 +17,6 @@ import {
   listIeltsAttempts,
 } from '@/modules/ielts/attempts/attemptQueries'
 import {
-  IELTS_SKILL_LABELS,
   IELTS_SKILLS,
   IELTS_TIMERS,
   type IeltsSkill,
@@ -26,9 +24,14 @@ import {
 import type { IeltsSection } from '@/modules/ielts/schema'
 import { readPublishedIeltsTest } from '@/modules/ielts/tests/testReaders'
 import { listIeltsTestVocabForLearner } from '@/modules/ielts/vocab/testVocabService'
-import { SkillLauncher } from '@/components/ielts/catalogue/SkillLauncher'
+import { TestLaunchers } from '@/components/ielts/catalogue/SkillLauncher'
+import {
+  bandsFromAttempts,
+  TestJourney,
+} from '@/components/ielts/catalogue/TestJourney'
+import { nextSkillOf } from '@/components/ielts/catalogue/testPath'
 import { TestVocabPanel } from '@/components/ielts/catalogue/TestVocabPanel'
-import { ExamBadge, ExamIconButton, ExamSheet } from '@/components/ielts/ui'
+import { ExamIconButton, ExamSheet } from '@/components/ielts/ui'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -106,12 +109,31 @@ export default async function IeltsTestPage({ params }: Props) {
 
   // Role comes from the server session (ADMIN_EMAILS), never the client.
   const isAdmin = session?.user?.role === 'admin'
+  const entry = {
+    id: test.id,
+    skills: IELTS_SKILLS.filter(skill =>
+      test.sections.some(section => section.skill === skill)
+    ).map(skill => ({ skill })),
+  }
+  const breadcrumb = [
+    { href: '/ielts', label: messages.common.modules.ielts.title },
+    { label: test.title },
+  ]
+  // Track and target in one quiet line (they were two badges).
+  const trackLine = [
+    t.tracks[test.track],
+    format(t.testPage.target, { band: test.targetBand }),
+    test.description || null,
+  ]
+    .filter(Boolean)
+    .join(' · ')
 
   return (
     <PageShell
       topbar={
         <AppTopbar
           activeHref="/ielts"
+          page={{ breadcrumb, module: 'ielts', title: test.title }}
           subtitle={t.shell.subtitle}
         />
       }
@@ -119,48 +141,41 @@ export default async function IeltsTestPage({ params }: Props) {
       <ExamSheet>
         <PageHeader
           actions={
-            <>
-              <ExamBadge tone="pale">{t.tracks[test.track]}</ExamBadge>
-              <ExamBadge>
-                {format(t.testPage.target, { band: test.targetBand })}
-              </ExamBadge>
-              {isAdmin ? (
-                <ExamIconButton
-                  className="size-9"
-                  href={`/admin/ielts/${test.id}`}
-                  label={t.testPage.editTest}
-                >
-                  <PenLine
-                    aria-hidden="true"
-                    className="size-4"
-                  />
-                </ExamIconButton>
-              ) : null}
-            </>
-          }
-          eyebrow={
-            <nav aria-label={t.shell.breadcrumb}>
-              <Link
-                className="hover:text-brand flex w-fit items-center gap-1"
-                href="/ielts"
+            isAdmin ? (
+              <ExamIconButton
+                href={`/admin/ielts/${test.id}`}
+                label={t.testPage.editTest}
               >
-                <ChevronLeft
+                <PenLine
                   aria-hidden="true"
                   className="size-4"
                 />
-                IELTS
-              </Link>
-            </nav>
+              </ExamIconButton>
+            ) : null
           }
+          breadcrumb={{
+            items: breadcrumb,
+            label: messages.common.journey.breadcrumb,
+          }}
           icon={<GraduationCap />}
           iconClassName="bg-pastel-peach text-accent-orange"
-          subtitle={test.description || undefined}
+          inTopbar
+          subtitle={trackLine}
           title={test.title}
           titleClassName="wrap-break-word"
         />
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {IELTS_SKILLS.map(skill => {
+        <TestJourney
+          attempts={attempts}
+          entry={entry}
+          messages={messages}
+          slug={slug}
+          targetBand={test.targetBand}
+        />
+
+        <TestLaunchers
+          recommended={nextSkillOf(entry, bandsFromAttempts(test.id, attempts))}
+          skills={IELTS_SKILLS.flatMap(skill => {
             const parts = test.sections
               .filter(section => section.skill === skill)
               .sort((left, right) => left.order - right.order)
@@ -169,11 +184,11 @@ export default async function IeltsTestPage({ params }: Props) {
               skill === 'listening' &&
               parts.some(section => !section.listening?.audio?.url)
 
-            if (!parts.length) return null
+            if (!parts.length) return []
 
-            return (
-              <SkillLauncher
-                fullMeta={{
+            return [
+              {
+                fullMeta: {
                   practice: format(t.testPage.allSections[skill], {
                     count: parts.length,
                   }),
@@ -186,37 +201,34 @@ export default async function IeltsTestPage({ params }: Props) {
                               ? IELTS_TIMERS.readingSkill
                               : IELTS_TIMERS.writingSkill) / 60,
                         }),
-                }}
-                key={skill}
-                latest={
-                  last
-                    ? {
-                        href: `/ielts/attempts/${last.id}`,
-                        label:
-                          last.band !== null
-                            ? format(t.testPage.latestBand, {
-                                band: last.band.toFixed(1),
-                              })
-                            : last.raw !== null
-                              ? `${last.raw}/${last.total}`
-                              : t.testPage.view,
-                      }
-                    : null
-                }
-                mockBlockedReason={audioMissing ? t.testPage.mockBlocked : null}
-                parts={parts.map(section => ({
+                },
+                latest: last
+                  ? {
+                      href: `/ielts/attempts/${last.id}`,
+                      label:
+                        last.band !== null
+                          ? format(t.testPage.latestBand, {
+                              band: last.band.toFixed(1),
+                            })
+                          : last.raw !== null
+                            ? `${last.raw}/${last.total}`
+                            : t.testPage.view,
+                    }
+                  : null,
+                mockBlockedReason: audioMissing ? t.testPage.mockBlocked : null,
+                parts: parts.map(section => ({
                   label: partLabel(t, section),
                   meta: partMinutes(t, section),
                   part: section.order,
-                }))}
-                partsNoun={plural(t.testPage.sectionCount[skill], parts.length)}
-                skill={skill}
-                slug={slug}
-                title={IELTS_SKILL_LABELS[skill]}
-              />
-            )
+                })),
+                partsNoun: plural(t.testPage.sectionCount[skill], parts.length),
+                skill,
+                slug,
+                title: t.skills[skill],
+              },
+            ]
           })}
-        </div>
+        />
 
         <TestVocabPanel entries={vocab} />
       </ExamSheet>
