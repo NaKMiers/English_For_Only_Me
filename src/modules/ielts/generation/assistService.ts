@@ -1,9 +1,11 @@
 import 'server-only'
 
 import { getQwenApiKey } from '@/constants/environments'
+import type { Locale } from '@/i18n/config'
 import { format } from '@/i18n/format'
 import type { Messages } from '@/i18n/messages'
 import { en } from '@/i18n/messages/en'
+import { LANGUAGE_NAMES } from '@/lib/ai/languageNames'
 
 import {
   ieltsError,
@@ -75,6 +77,7 @@ export async function assistSection({
   copy = en.ieltsEditor.generation,
   instruction,
   key,
+  language = 'en',
   request = qwenRequester(),
   section,
 }: {
@@ -83,6 +86,8 @@ export async function assistSection({
   copy?: Messages['ieltsEditor']['generation']
   instruction: string
   key: IeltsSectionKey
+  /** The admin's app language: `summary` and `notes` are written in it. */
+  language?: Locale
   request?: IeltsRequester
   section: IeltsSectionInput
 }): Promise<IeltsDecision<IeltsAssistProposal>> {
@@ -101,7 +106,7 @@ export async function assistSection({
           'You help an admin edit an IELTS-style practice section on a private site. All material is original; keep it original and never copy published tests.',
           ACTION_BRIEFS[action],
           `Questions in this section are numbered ${from}-${to}. Evidence blockIndex is the [index] shown in the material. Bodies use only simple Markdown with {{qN}} slots, never HTML.`,
-          '`summary`: one or two Vietnamese sentences on what you changed or found. `notes`: short Vietnamese bullet points.',
+          `\`summary\`: one or two sentences in ${LANGUAGE_NAMES[language]} on what you changed or found. \`notes\`: short bullet points in ${LANGUAGE_NAMES[language]}. The section material itself stays in English.`,
         ].join('\n\n'),
       },
       {

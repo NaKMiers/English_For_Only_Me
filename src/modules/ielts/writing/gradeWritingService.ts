@@ -1,5 +1,7 @@
 import 'server-only'
 
+import type { Locale } from '@/i18n/config'
+
 import {
   getIeltsWritingDailyLimit,
   getQwenApiKey,
@@ -94,6 +96,7 @@ export async function gradeWritingTask({
   now = new Date(),
   ownerId,
   task,
+  language,
 }: {
   attemptId: string
   fetcher?: typeof fetch
@@ -101,6 +104,8 @@ export async function gradeWritingTask({
   now?: Date
   ownerId: string
   task: 1 | 2
+  /** The app language the feedback is written in. */
+  language: Locale
 }): Promise<IeltsDecision<IeltsAttemptRecord>> {
   if (isGuest) return ieltsMessageError(401, 'signInToGrade')
 
@@ -170,7 +175,7 @@ export async function gradeWritingTask({
       {
         $set: {
           [`writingFeedback.${key}.status`]: 'failed',
-          [`writingFeedback.${key}.error`]: 'The task content is missing.',
+          [`writingFeedback.${key}.error`]: 'missingTask',
         },
       }
     )
@@ -192,9 +197,14 @@ export async function gradeWritingTask({
           essay,
           wordCount: countEssayWords(essay),
           lessons: examinerLessons(),
+          language,
         },
       })
-    : ({ ok: false, message: 'The essay is empty, nothing to grade.' } as const)
+    : ({
+        ok: false,
+        code: 'emptyEssay',
+        message: 'The essay is empty, nothing to grade.',
+      } as const)
 
   if (!result.ok) {
     console.warn('ielts writing grading failed', {
@@ -208,7 +218,9 @@ export async function gradeWritingTask({
       {
         $set: {
           [`writingFeedback.${key}.status`]: 'failed',
-          [`writingFeedback.${key}.error`]: result.message,
+          // A code: the learner reads catalogue text in their language, the
+          // raw message is only in the log above.
+          [`writingFeedback.${key}.error`]: result.code,
           [`writingFeedback.${key}.startedAt`]: null,
         },
       },
@@ -272,6 +284,7 @@ export async function checkPracticeWriting({
   now = new Date(),
   ownerId,
   task,
+  language,
 }: {
   attemptId: string
   essay: string
@@ -280,6 +293,8 @@ export async function checkPracticeWriting({
   now?: Date
   ownerId: string
   task: 1 | 2
+  /** The app language the feedback is written in. */
+  language: Locale
 }): Promise<IeltsDecision<IeltsWritingTaskFeedback>> {
   if (isGuest) return ieltsMessageError(401, 'signInForAi')
 
@@ -330,6 +345,7 @@ export async function checkPracticeWriting({
       essay,
       wordCount: countEssayWords(essay),
       lessons: examinerLessons(),
+      language,
     },
   })
 
@@ -340,7 +356,12 @@ export async function checkPracticeWriting({
       task,
     })
 
-    return ieltsMessageError(500, 'couldNotGrade', { reason: result.message })
+    return ieltsMessageError(
+      500,
+      result.code === 'invalidOutput'
+        ? 'gradingInvalidOutput'
+        : 'gradingProviderFailed'
+    )
   }
 
   await IeltsAttemptModel.updateOne(

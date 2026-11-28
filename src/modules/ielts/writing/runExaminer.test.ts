@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { runExaminer } from './runExaminer'
 
 const INPUT = {
+  language: 'en' as const,
   task: 2 as const,
   track: 'academic' as const,
   prompt: 'Discuss both views.',
@@ -72,6 +73,10 @@ describe('runExaminer', () => {
     if (!result.ok) return
 
     expect(result.feedback.band).toBe(5.5)
+    // The feedback keeps the language it was asked in, and the prompt
+    // version that wrote it.
+    expect(result.feedback.language).toBe('en')
+    expect(result.feedback.promptVersion).toMatch(/^ielts-examiner-/)
     expect(result.feedback.corrections.map(item => item.quote)).toEqual([
       'People has',
       'many reason',
@@ -100,7 +105,11 @@ describe('runExaminer', () => {
         input: INPUT,
         model: 'm',
       })
-    ).toMatchObject({ ok: false, message: expect.stringContaining('JSON') })
+    ).toMatchObject({
+      code: 'invalidOutput',
+      message: expect.stringContaining('JSON'),
+      ok: false,
+    })
     expect(
       await runExaminer({
         apiKey: 'k',
@@ -108,6 +117,6 @@ describe('runExaminer', () => {
         input: INPUT,
         model: 'm',
       })
-    ).toMatchObject({ ok: false, message: 'refused' })
+    ).toMatchObject({ code: 'providerFailed', message: 'refused', ok: false })
   })
 })

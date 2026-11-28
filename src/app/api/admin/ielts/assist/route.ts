@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import { getMessages } from '@/i18n/server'
+import { getLocale, getMessages } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import { requireAdmin } from '@/modules/dictation/services/getCurrentUser'
 import {
@@ -55,6 +55,7 @@ export async function POST(request: Request) {
         copy: t.ieltsEditor.generation,
         instruction: parsed.data.instruction,
         key: parsed.data.key,
+        language: await getLocale(),
         section: parsed.data.section,
       }),
       proposal => ({ proposal })

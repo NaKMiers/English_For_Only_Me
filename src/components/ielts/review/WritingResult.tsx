@@ -7,6 +7,7 @@ import { useState } from 'react'
 
 import type {
   IeltsAttemptRecord,
+  IeltsGradingErrorCode,
   IeltsWritingTaskFeedback,
 } from '@/modules/ielts/attempts/attemptRecords'
 import { SampleAnswerBody } from '@/components/ielts/widgets/SampleAnswerBody'
@@ -15,7 +16,7 @@ import type {
   GrammarLessonLink,
   IeltsWritingReviewTask,
 } from '@/modules/ielts/services/resultPageData'
-import { useMessages } from '@/i18n/client'
+import { useLocale, useMessages } from '@/i18n/client'
 import type { Messages } from '@/i18n/messages'
 import { format } from '@/i18n/format'
 import { gradeIeltsWritingApi, ieltsErrorMessage } from '@/requests/ieltsApi'
@@ -204,6 +205,20 @@ function GrammarLessonLinkLine({
   )
 }
 
+/**
+ * A failed grading's reason in the learner's language: the stored code's
+ * catalogue text. Older feedback stored a raw (English) message, which is
+ * not shown.
+ */
+function gradingErrorText(
+  error: string | undefined,
+  t: Messages['ielts']['writingResult']
+) {
+  return error && error in t.gradingErrors
+    ? t.gradingErrors[error as IeltsGradingErrorCode]
+    : t.unknownReason
+}
+
 function TaskFeedback({
   busy,
   error,
@@ -227,6 +242,16 @@ function TaskFeedback({
   const status = busy ? 'grading' : (feedback?.status ?? 'pending')
   const blank = !task.essay.trim()
   const hasSample = task.sampleAnswer.trim().length > 0
+  const locale = useLocale()
+  // Feedback keeps the language it was written in (older feedback has no
+  // language: it was written in Vietnamese). In another language than the
+  // app's, Grade again offers the app's language; never automatic, since
+  // it spends one of today's gradings.
+  const otherLanguage =
+    status === 'done' && (feedback?.language ?? 'vi') !== locale
+      ? (feedback?.language ?? 'vi')
+      : null
+  const languageNames = messages.common.language.names
 
   return (
     <ExamCard
@@ -241,9 +266,11 @@ function TaskFeedback({
           >
             {busy
               ? t.gradingButton
-              : status === 'done' || status === 'failed'
-                ? t.gradeAgain
-                : t.gradeWithAi}
+              : otherLanguage
+                ? format(t.gradeAgainIn, { language: languageNames[locale] })
+                : status === 'done' || status === 'failed'
+                  ? t.gradeAgain
+                  : t.gradeWithAi}
           </ExamButton>
         )
       }
@@ -258,6 +285,17 @@ function TaskFeedback({
       }
     >
       {error ? <InlineNotice tone="error">{error}</InlineNotice> : null}
+      {otherLanguage ? (
+        <p
+          className="text-ink-soft text-sm"
+          data-other-language=""
+        >
+          {format(t.otherLanguage, {
+            language: languageNames[otherLanguage],
+          })}{' '}
+          {t.usesGrading}
+        </p>
+      ) : null}
 
       <details className="group">
         <summary className="soft-press hover-pop text-ink-soft hover:text-ink rounded-control flex min-h-11 w-fit cursor-pointer list-none items-center gap-1.5 px-2 font-sans text-sm font-medium">
@@ -294,7 +332,7 @@ function TaskFeedback({
               ? format(t.grading, { task: task.task })
               : status === 'failed'
                 ? format(t.gradingFailed, {
-                    reason: feedback?.error || t.unknownReason,
+                    reason: gradingErrorText(feedback?.error, t),
                   })
                 : t.notGraded}
           </p>

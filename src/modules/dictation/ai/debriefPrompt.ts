@@ -1,16 +1,12 @@
 import { createHash } from 'node:crypto'
 
 import type { Locale } from '@/i18n/config'
+import { LANGUAGE_NAMES } from '@/lib/ai/languageNames'
 import type { DictationVideoStatsRecord } from '@/modules/dictation/types'
 
 import { DICTATION_DEBRIEF_LIMITS as LIMITS } from './debriefSchema'
 
 export const DICTATION_DEBRIEF_PROMPT_VERSION = 'dictation-debrief-v3'
-
-const LANGUAGE_NAMES: Record<Locale, string> = {
-  en: 'English',
-  vi: 'Vietnamese',
-}
 
 /** The length asked for: 80% of the hard limit, so a slight overrun still fits. */
 function target(max: number) {

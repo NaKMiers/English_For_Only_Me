@@ -1,9 +1,16 @@
 import { requestQwenStructuredOutput } from '@/lib/ai/qwenClientCore'
 import { toStrictJsonSchema } from '@/lib/ai/strictJsonSchema'
 
-import type { IeltsWritingTaskFeedback } from '../attempts/attemptRecords'
+import type {
+  IeltsGradingErrorCode,
+  IeltsWritingTaskFeedback,
+} from '../attempts/attemptRecords'
 import { roundTaskBand } from '../scoring/roundBand'
-import { buildExaminerMessages, type ExaminerInput } from './examinerPrompt'
+import {
+  buildExaminerMessages,
+  EXAMINER_PROMPT_VERSION,
+  type ExaminerInput,
+} from './examinerPrompt'
 import { examinerOutputSchema } from './examinerSchema'
 
 const EXAMINER_SCHEMA = toStrictJsonSchema(examinerOutputSchema)
@@ -21,7 +28,12 @@ export function withTimeout(
 
 export type ExaminerResult =
   | { ok: true; feedback: IeltsWritingTaskFeedback; usage: unknown }
-  | { ok: false; message: string }
+  /** `code` is what the learner sees (catalogue text); `message` is logged. */
+  | {
+      ok: false
+      code: Extract<IeltsGradingErrorCode, 'invalidOutput' | 'providerFailed'>
+      message: string
+    }
 
 /**
  * One examiner request: build the prompt, call Qwen, parse with the Zod
@@ -51,14 +63,19 @@ export async function runExaminer({
     schemaName: 'ielts_writing_feedback',
   })
 
-  if (!response.ok) return { ok: false, message: response.message }
+  if (!response.ok)
+    return { ok: false, code: 'providerFailed', message: response.message }
 
   let json: unknown
 
   try {
     json = JSON.parse(response.text)
   } catch {
-    return { ok: false, message: 'The examiner returned invalid JSON.' }
+    return {
+      ok: false,
+      code: 'invalidOutput',
+      message: 'The examiner returned invalid JSON.',
+    }
   }
 
   const parsed = examinerOutputSchema.safeParse(json)
@@ -66,6 +83,7 @@ export async function runExaminer({
   if (!parsed.success)
     return {
       ok: false,
+      code: 'invalidOutput',
       message: `The examiner output did not match the schema: ${parsed.error.issues[0]?.message ?? 'unknown'}`,
     }
 
@@ -84,7 +102,9 @@ export async function runExaminer({
     feedback: {
       status: 'done',
       error: '',
+      language: input.language,
       model,
+      promptVersion: EXAMINER_PROMPT_VERSION,
       criteria: {
         taskResponse: criteria.taskResponse,
         cc: criteria.coherenceCohesion,

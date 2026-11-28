@@ -134,4 +134,56 @@ describe('WritingResult', () => {
       screen.getByRole('link', { name: 'Study: Present perfect' })
     ).toHaveAttribute('href', '/grammar/lessons/u05-l02/notes')
   })
+
+  test('feedback in the app language: plain Grade again, no language note', () => {
+    render(
+      <WritingResult
+        attempt={attempt({ '1': { ...doneFeedback, language: 'en' } })}
+        tasks={[task(1)]}
+      />
+    )
+
+    expect(screen.getByRole('button', { name: 'Grade again' })).toBeEnabled()
+    expect(document.querySelector('[data-other-language]')).toBeNull()
+  })
+
+  test('older feedback (no language: Vietnamese) offers Grade again in English, and says it uses a grading', () => {
+    render(
+      <WritingResult
+        attempt={attempt({ '1': doneFeedback })}
+        tasks={[task(1)]}
+      />
+    )
+
+    expect(
+      screen.getByRole('button', { name: 'Grade again in English' })
+    ).toBeEnabled()
+    expect(
+      document.querySelector('[data-other-language]')?.textContent
+    ).toContain("Uses one of today's gradings.")
+  })
+
+  test('a failed grading shows its code in words, never the raw message', () => {
+    render(
+      <WritingResult
+        attempt={attempt({
+          '1': { ...doneFeedback, error: 'providerFailed', status: 'failed' },
+          '2': {
+            ...doneFeedback,
+            error: 'Upstream 502 from provider',
+            status: 'failed',
+          },
+        })}
+        tasks={[task(1), task(2)]}
+      />
+    )
+
+    expect(
+      screen.getByText('Grading failed: The AI grader did not answer.')
+    ).toBeInTheDocument()
+    expect(screen.queryByText(/Upstream 502/)).toBeNull()
+    expect(
+      screen.getByText('Grading failed: unknown reason')
+    ).toBeInTheDocument()
+  })
 })

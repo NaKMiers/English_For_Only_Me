@@ -1,3 +1,5 @@
+import type { Locale } from '@/i18n/config'
+
 import type {
   IeltsAttemptMode,
   IeltsAttemptStatus,
@@ -18,8 +20,23 @@ export interface IeltsWritingCorrection {
   grammarLessonTitle: string | null
 }
 
+/**
+ * Why a grading failed, as a code (the learner sees catalogue text in their
+ * language; the raw message is only logged). Older feedback may hold a raw
+ * English message instead.
+ */
+export type IeltsGradingErrorCode =
+  'missingTask' | 'emptyEssay' | 'invalidOutput' | 'providerFailed'
+
 export interface IeltsWritingTaskFeedback {
   status: 'pending' | 'grading' | 'done' | 'failed'
+  /**
+   * The language `summary` and `reason` are written in (the app locale when
+   * graded). Missing on feedback graded before it was stored: Vietnamese.
+   */
+  language?: Locale
+  /** `EXAMINER_PROMPT_VERSION` of the prompt that wrote it. */
+  promptVersion?: string
   /** Set while a grading request runs; a stale one may be retried. */
   startedAt?: string | null
   error: string

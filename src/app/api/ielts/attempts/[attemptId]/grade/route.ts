@@ -1,3 +1,4 @@
+import { getLocale } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
 import {
   parseAttemptId,
@@ -50,6 +51,7 @@ export async function POST(request: Request, context: RouteContext) {
         isGuest: actor.isGuest,
         ownerId: actor.id,
         task: parsed.data.task,
+        language: await getLocale(),
       }),
       attempt => ({ attempt })
     )
