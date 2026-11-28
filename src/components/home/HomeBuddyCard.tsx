@@ -45,7 +45,9 @@ export function HomeBuddyCard({
       className={cn(
         'border-line via-pastel-cream to-surface rounded-panel relative grid content-between gap-5 overflow-hidden border bg-linear-170 via-55% p-5 transition-colors duration-500',
         moodStyle.glow,
-        variant === 'full' ? 'min-h-[560px]' : 'min-h-[480px]'
+        // Tall only beside two other columns (xl); stacked, it is just as
+        // tall as its content.
+        variant === 'full' ? 'xl:min-h-[560px]' : 'xl:min-h-[480px]'
       )}
     >
       <div className="flex items-start justify-between gap-3">
@@ -73,7 +75,7 @@ export function HomeBuddyCard({
           className="bg-surface/70 absolute top-2 size-52 rounded-full blur-2xl"
         />
         {variant === 'full' ? (
-          <span className="border-line bg-surface/80 absolute top-0 right-0 z-10 inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium">
+          <span className="border-line bg-surface absolute top-0 right-0 z-10 inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium">
             <Trophy
               aria-hidden="true"
               className="text-accent-orange size-3.5"
@@ -85,7 +87,7 @@ export function HomeBuddyCard({
           mood={mood}
           className="relative size-44 drop-shadow-[0_20px_30px_rgba(60,50,20,0.18)]"
         />
-        <p className="bg-surface/85 relative inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm font-medium">
+        <p className="bg-surface relative inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm font-medium">
           <span
             aria-hidden="true"
             className="size-2.5 rounded-full"
@@ -124,7 +126,7 @@ export function HomeBuddyCard({
         </div>
         {variant === 'full' ? (
           <div className="grid grid-cols-2 gap-3">
-            <div className="bg-surface/80 rounded-control grid gap-1 p-3">
+            <div className="bg-surface rounded-control grid gap-1 p-3">
               <span className="text-ink-soft flex items-center justify-between text-xs">
                 {t.minutesThisMonth}
                 <Clock3
@@ -136,7 +138,7 @@ export function HomeBuddyCard({
                 {monthlyMinutes}
               </strong>
             </div>
-            <div className="bg-surface/80 rounded-control grid gap-1 p-3">
+            <div className="bg-surface rounded-control grid gap-1 p-3">
               <span className="text-ink-soft flex items-center justify-between text-xs">
                 {t.videosDone}
                 <Trophy

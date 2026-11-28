@@ -76,13 +76,17 @@ export function UserMenuPopup({
           side={side}
           sideOffset={side === 'right' ? 12 : 4}
         >
+          {/* The divider only separates Admin from Sign out: a learner's
+              menu opens on Sign out alone, no stray hairline above it. */}
           {isAdmin && (
-            <DropdownMenuItem render={<Link href="/admin" />}>
-              <Shield aria-hidden="true" />
-              {t.common.auth.admin}
-            </DropdownMenuItem>
+            <>
+              <DropdownMenuItem render={<Link href="/admin" />}>
+                <Shield aria-hidden="true" />
+                {t.common.auth.admin}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+            </>
           )}
-          <DropdownMenuSeparator />
           <DropdownMenuItem
             variant="destructive"
             onClick={() => setConfirmOpen(true)}

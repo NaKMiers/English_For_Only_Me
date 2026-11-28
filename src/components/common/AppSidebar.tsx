@@ -91,7 +91,8 @@ interface Props {
  * links (the current one sits in a lighter circle), pinned to the top while
  * the page scrolls, and the day / night and EN / VI toggles and the account
  * avatar pinned to the bottom of the rail column. Hovering a link lifts it into a wider pill that
- * unrolls the module name. Phones get the same links from the topbar menu.
+ * unrolls the module name. Phones get the module links from the bottom
+ * tab bar (`AppTabBar`); the topbar menu is the Account sheet.
  */
 export function AppSidebar({ className }: Props) {
   const t = useMessages()

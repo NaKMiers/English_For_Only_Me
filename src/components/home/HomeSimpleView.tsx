@@ -19,6 +19,7 @@ import { format } from '@/i18n/format'
 import type { Messages } from '@/i18n/messages'
 import { pickNextStop } from '@/lib/journey/nextStop'
 import { cn } from '@/lib/utils'
+import { VOCAB_RECALL_HREF } from '@/modules/vocabulary/constants'
 
 type SimpleModule = 'dictation' | 'vocabulary' | 'grammar' | 'ielts'
 
@@ -39,6 +40,8 @@ interface Props {
   dictationDue: number
   grammarDue: number
   messages: Messages
+  /** The grammar path's next step (lesson, review, checkpoint), if any. */
+  nextGrammarHref?: string | null
   nextGrammarTitle: string | null
   vocabularyDue: number
   weeklyMinutes: number
@@ -112,6 +115,7 @@ export function HomeSimpleView({
   dictationDue,
   grammarDue,
   messages,
+  nextGrammarHref = null,
   nextGrammarTitle,
   vocabularyDue,
   weeklyMinutes,
@@ -131,7 +135,8 @@ export function HomeSimpleView({
     {
       due: vocabularyDue,
       hint: messages.common.modules.vocabulary.title,
-      href: '/vocabulary',
+      // Cards due: straight into the recall session, not the landing.
+      href: vocabularyDue > 0 ? VOCAB_RECALL_HREF : '/vocabulary',
       icon: BookA,
       label: t.vocabularyRecall,
       module: 'vocabulary',
@@ -139,7 +144,8 @@ export function HomeSimpleView({
     {
       due: grammarDue,
       hint: nextGrammarTitle ?? t.grammarStart,
-      href: '/grammar',
+      // The next lesson (or review, checkpoint) itself, not the path.
+      href: nextGrammarHref ?? '/grammar',
       icon: PenLine,
       label: t.grammar,
       module: 'grammar',
@@ -177,6 +183,10 @@ export function HomeSimpleView({
     },
   ])
   const focus = picked.kind === 'done' ? null : picked.data
+  // The next stop card already offers its row: the list shows the rest.
+  const upNext = focus
+    ? rows.filter(row => row.module !== focus.row.module)
+    : rows
   const numbers = [
     {
       icon: Clock3,
@@ -224,7 +234,7 @@ export function HomeSimpleView({
           </span>
         </div>
         <ul className="grid gap-1">
-          {rows.map(row => (
+          {upNext.map(row => (
             <UpNextRow
               key={row.href}
               row={row}

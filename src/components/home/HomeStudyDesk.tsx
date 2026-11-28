@@ -1,9 +1,7 @@
 import {
-  ArrowRight,
   BookA,
   Headphones,
   PenLine,
-  Plus,
   Sparkles,
   type LucideIcon,
 } from 'lucide-react'
@@ -15,6 +13,7 @@ import { PageShell } from '@/components/common/PageShell'
 import { Sparkline } from '@/components/common/Sparkline'
 import { MODULE_ICONS } from '@/constants/modules'
 import { DUE_ICON } from '@/constants/stateIcons'
+import { MODULE_THEMES } from '@/constants/theme'
 import { DEFAULT_LOCALE, INTL_LOCALES, type Locale } from '@/i18n/config'
 import { format, plural } from '@/i18n/format'
 import type { Messages } from '@/i18n/messages'
@@ -33,6 +32,8 @@ import { DEFAULT_HOME_VIEW, type HomeView } from './homeView'
 
 /** What the grammar path wants next, for the plan. */
 export interface GrammarTodayRecord {
+  /** The path's next step page (`nextHref(PathNext)`), null when done. */
+  nextHref?: string | null
   nextTitle: string | null
   dueCount: number
 }
@@ -105,7 +106,7 @@ function ProgressTile({ stat }: { stat: ProgressStat }) {
           />
           <span className="truncate">{stat.label}</span>
         </span>
-        <span className="bg-surface/70 text-ink-soft rounded-full px-2 py-0.5 text-xs">
+        <span className="bg-surface text-ink-soft rounded-full px-2 py-0.5 text-xs">
           {stat.meta}
         </span>
       </span>
@@ -150,7 +151,7 @@ function PlanGroup({
   return (
     <div className={cn('rounded-panel grid gap-3 p-3', tint)}>
       <div className="flex items-center justify-between gap-2 text-xs">
-        <span className="bg-surface/80 rounded-full px-3 py-1 font-medium">
+        <span className="bg-surface rounded-full px-3 py-1 font-medium">
           {title}
         </span>
         <span className="text-ink-soft">{count}</span>
@@ -163,11 +164,11 @@ function PlanGroup({
             <li key={item.label}>
               <Link
                 href={item.href}
-                className="soft-press hover-pop hover:bg-surface/60 rounded-control grid justify-items-center gap-1.5 px-1 py-2 text-center"
+                className="soft-press hover-pop hover:bg-surface rounded-control grid justify-items-center gap-1.5 px-1 py-2 text-center"
               >
                 <span
                   className={cn(
-                    'bg-surface/80 grid size-12 place-items-center rounded-full',
+                    'bg-surface grid size-12 place-items-center rounded-full',
                     item.tone
                   )}
                 >
@@ -244,7 +245,7 @@ export function HomeStudyDesk({
 
   const progress: ProgressStat[] = [
     {
-      accent: 'text-accent-orange',
+      accent: MODULE_THEMES.dictation.accent,
       detail: format(t.progress.dictationDetail, {
         done: dictationStats?.completedVideoCount ?? 0,
         minutes: weeklyMinutes,
@@ -256,7 +257,7 @@ export function HomeStudyDesk({
       meta: format(t.progress.streak, {
         count: dictationStats?.activeStreakDays ?? 0,
       }),
-      tint: 'bg-pastel-peach',
+      tint: MODULE_THEMES.dictation.tint,
       trend: accuracyTrend,
       value: latestAccuracy === undefined ? '0%' : `${latestAccuracy}%`,
     },
@@ -320,6 +321,7 @@ export function HomeStudyDesk({
               dictationDue={dictationStats?.dueReviewItemCount ?? 0}
               grammarDue={grammarToday?.dueCount ?? 0}
               messages={messages}
+              nextGrammarHref={grammarToday?.nextHref ?? null}
               nextGrammarTitle={grammarToday?.nextTitle ?? null}
               vocabularyDue={vocabStats?.dueTodayCount ?? 0}
               weeklyMinutes={weeklyMinutes}
@@ -331,26 +333,17 @@ export function HomeStudyDesk({
               {/* Column 1: progress, modules, weak words */}
               <div className="grid min-w-0 content-start gap-5 md:col-span-2 xl:col-span-1">
                 <Card className="grid gap-3">
-                  <Link
-                    href="/dictation"
-                    className="soft-press hover-pop hover:bg-tint-soft rounded-control flex items-center justify-between gap-3 px-2 py-1.5"
-                  >
-                    <span className="flex items-center gap-3 text-sm font-medium">
-                      <span className="bg-pastel-sky text-accent-blue grid size-9 place-items-center rounded-full">
-                        <Sparkles
-                          aria-hidden="true"
-                          className="size-4"
-                        />
-                      </span>
-                      {t.learningProgress}
-                    </span>
-                    <span className="border-line grid size-9 place-items-center rounded-full border">
-                      <ArrowRight
+                  {/* A heading, not a link: the two tiles below already
+                      link to their modules. */}
+                  <h2 className="flex items-center gap-3 px-2 py-1.5 text-sm font-medium">
+                    <span className="bg-pastel-sky text-accent-blue grid size-9 place-items-center rounded-full">
+                      <Sparkles
                         aria-hidden="true"
                         className="size-4"
                       />
                     </span>
-                  </Link>
+                    {t.learningProgress}
+                  </h2>
                   <div className="grid gap-3 sm:grid-cols-2">
                     {progress.map(stat => (
                       <ProgressTile
@@ -366,7 +359,7 @@ export function HomeStudyDesk({
                   messages={messages}
                 />
 
-                <Card className="bg-pastel-sky/60 grid content-start gap-3 p-4">
+                <Card className="bg-pastel-sky grid content-start gap-3 p-4">
                   <span className="text-sm font-medium">{t.weakWords}</span>
                   {dictationStats?.weakWords.length ? (
                     <ul className="flex flex-wrap gap-1.5">
@@ -398,7 +391,7 @@ export function HomeStudyDesk({
                   count={format(t.plan.minutesThisWeek, {
                     count: weeklyMinutes,
                   })}
-                  tint="bg-pastel-sky/70"
+                  tint="bg-pastel-sky"
                   items={[
                     {
                       hint: format(t.plan.videos, {
@@ -418,13 +411,6 @@ export function HomeStudyDesk({
                       label: t.plan.weakWords,
                       tone: 'text-accent-orange',
                     },
-                    {
-                      hint: t.plan.addOne,
-                      href: '/dictation',
-                      icon: Plus,
-                      label: t.plan.newClip,
-                      tone: 'text-ink-soft',
-                    },
                   ]}
                 />
                 <PlanGroup
@@ -432,7 +418,8 @@ export function HomeStudyDesk({
                   count={format(t.plan.toReview, {
                     count: grammarToday?.dueCount ?? 0,
                   })}
-                  tint="bg-pastel-rose/70"
+                  // Mixed modules: a neutral fill (no module wears pink).
+                  tint="bg-tint"
                   items={[
                     {
                       hint: format(t.plan.due, {

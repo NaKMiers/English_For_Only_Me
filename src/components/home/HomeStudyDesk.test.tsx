@@ -156,4 +156,21 @@ describe('HomeStudyDesk', () => {
     expect(html).not.toContain('Schedule')
     expect(html).not.toContain('Open the review queue')
   })
+
+  test('the full view: a heading over the tiles, no admin-only clip, opaque fills', () => {
+    const { container } = render(<HomeStudyDesk view="full" />)
+
+    const heading = [...container.querySelectorAll('h2')].find(
+      element => element.textContent === en.home.learningProgress
+    )
+    expect(heading).toBeDefined()
+    expect(heading?.closest('a')).toBeNull()
+    expect(container.textContent).not.toContain(en.home.plan.newClip)
+    const classes = [...container.querySelectorAll('[class]')]
+      .map(element => element.getAttribute('class') ?? '')
+      .join(' ')
+    expect(classes).not.toMatch(/bg-pastel-rose/)
+    // Cards and chips are opaque (decorative bubbles may stay see-through).
+    expect(classes).not.toMatch(/\bbg-(surface\/(80|85)|pastel-sky\/\d+)/)
+  })
 })

@@ -29,6 +29,10 @@ describe('UserMenuPopup', () => {
     // Favorites live on the dictation page now, not in the account menu.
     expect(screen.queryByRole('menuitem', { name: 'Favorites' })).toBeNull()
     expect(screen.queryByRole('menuitem', { name: 'Admin' })).toBeNull()
+    // No stray divider above Sign out for a learner.
+    expect(
+      document.querySelector('[data-slot="dropdown-menu-separator"]')
+    ).toBeNull()
     expect(onMounted).toHaveBeenCalledTimes(1)
     expect(screen.getByRole('button', { name: 'Alan' })).toHaveClass('chip')
     // Keyboard users land in the menu, so arrow keys work right away.
@@ -41,6 +45,9 @@ describe('UserMenuPopup', () => {
     expect(
       await screen.findByRole('menuitem', { name: 'Admin' })
     ).toBeInTheDocument()
+    expect(
+      document.querySelectorAll('[data-slot="dropdown-menu-separator"]')
+    ).toHaveLength(1)
   })
 
   test('sign out asks for confirmation first', async () => {

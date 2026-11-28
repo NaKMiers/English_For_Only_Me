@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers'
 
+import { nextHref } from '@/components/grammar/path/pathNext'
 import { HomeStudyDesk } from '@/components/home/HomeStudyDesk'
 import { HOME_VIEW_COOKIE, parseHomeView } from '@/components/home/homeView'
 import { hasMongoDbUri } from '@/constants/environments'
@@ -55,6 +56,7 @@ export default async function Home() {
       dictationStats={dictationStats}
       grammarToday={{
         dueCount: grammarPath.totals.dueCount,
+        nextHref: nextHref(next),
         nextTitle: 'title' in next ? next.title : null,
       }}
       userName={user.name}
