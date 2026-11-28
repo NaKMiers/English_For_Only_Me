@@ -2,7 +2,22 @@ import { createHash } from 'node:crypto'
 
 import type { DictationVideoStatsRecord } from '@/modules/dictation/types'
 
-export const DICTATION_DEBRIEF_PROMPT_VERSION = 'dictation-debrief-v1'
+import { DICTATION_DEBRIEF_LIMITS as LIMITS } from './debriefSchema'
+
+export const DICTATION_DEBRIEF_PROMPT_VERSION = 'dictation-debrief-v2'
+
+/** The length asked for: 80% of the hard limit, so a slight overrun still fits. */
+function target(max: number) {
+  return Math.floor((max * 0.8) / 10) * 10
+}
+
+/** The JSON schema carries no `maxLength`, so the limits are spelled out. */
+export const DICTATION_DEBRIEF_LENGTH_RULES = [
+  'Length limits (characters, keep under them):',
+  `- contentSummary: at most ${target(LIMITS.contentSummary)}.`,
+  `- each weakPatterns, listeningTraps and nextActions item: one sentence, at most ${target(LIMITS.listItem)}.`,
+  `- keyVocabulary: term at most ${target(LIMITS.term)}; meaning and example at most ${target(LIMITS.termGloss)} each.`,
+].join('\n')
 
 export interface DictationDebriefInputSnapshot {
   hardestSegments: DictationVideoStatsRecord['hardestSegments']
@@ -53,6 +68,8 @@ export function buildDictationDebriefMessages(
       role: 'user' as const,
       content: [
         'Create a post-video IELTS listening debrief from this data snapshot.',
+        '',
+        DICTATION_DEBRIEF_LENGTH_RULES,
         '',
         `IELTS goal: ${snapshot.ieltsGoal}`,
         `Video title: ${snapshot.title}`,

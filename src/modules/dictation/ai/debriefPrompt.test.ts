@@ -52,4 +52,16 @@ describe('buildDictationDebriefMessages', () => {
     expect(userMessage).toContain(snapshot.transcriptExcerpt)
     expect(userMessage).toContain('<attempt_stats_data>')
   })
+
+  test('spells out the length limits under the schema maximums', () => {
+    const userMessage = buildDictationDebriefMessages(snapshot)[1]?.content
+
+    expect(userMessage).toContain('contentSummary: at most 560.')
+    expect(userMessage).toContain(
+      'each weakPatterns, listeningTraps and nextActions item: one sentence, at most 170.'
+    )
+    expect(userMessage).toContain(
+      'term at most 60; meaning and example at most 190 each.'
+    )
+  })
 })
