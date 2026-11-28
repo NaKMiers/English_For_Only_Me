@@ -31,9 +31,7 @@ describe('buildPlayerJourney', () => {
   it('a checkpoint targets its unit; weak practice has no unit', () => {
     const unitId = path.units[0]?.id ?? ''
 
-    expect(buildPlayerJourney(path, 'checkpoint', unitId).unit?.id).toBe(
-      unitId
-    )
+    expect(buildPlayerJourney(path, 'checkpoint', unitId).unit?.id).toBe(unitId)
     expect(buildPlayerJourney(path, 'weak', 'weak').unit).toBeNull()
   })
 })

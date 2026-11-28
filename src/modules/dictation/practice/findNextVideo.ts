@@ -45,4 +45,3 @@ export async function findNextVideo(
     return null
   }
 }
-
