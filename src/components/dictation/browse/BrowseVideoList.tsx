@@ -40,14 +40,12 @@ export interface BrowseVideoItem {
 
 function VideoCard({
   video,
-  canFavorite,
   isNext,
   labels,
   priority,
   className,
 }: {
   video: BrowseVideoItem
-  canFavorite: boolean
   /** The topic's next video: ringed in the "you are here" pink. */
   isNext: boolean
   labels: BrowseCardLabels
@@ -85,7 +83,6 @@ function VideoCard({
           <FavoriteButton
             videoId={video.id}
             initialFavorited={video.favorited}
-            canFavorite={canFavorite}
           />
         </span>
       </div>
@@ -116,7 +113,6 @@ function VideoCard({
 
 export function BrowseVideoList({
   videos,
-  canFavorite,
   id,
   emptyLabel,
   className,
@@ -126,7 +122,6 @@ export function BrowseVideoList({
   nextId = null,
 }: {
   videos: BrowseVideoItem[]
-  canFavorite: boolean
   id?: string
   emptyLabel?: string
   labels?: BrowseCardLabels
@@ -162,7 +157,6 @@ export function BrowseVideoList({
         <VideoCard
           key={video.id}
           video={video}
-          canFavorite={canFavorite}
           isNext={video.id === nextId}
           labels={labels}
           priority={index < priorityCount}

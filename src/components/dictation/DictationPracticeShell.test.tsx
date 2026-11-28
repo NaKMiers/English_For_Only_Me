@@ -8,7 +8,6 @@ import {
 } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 
-import { ensureGuestIdentity } from '@/lib/sync/clientOutbox'
 import { createOutbox, type Outbox } from '@/lib/sync/outbox'
 import { getDictationAnswerDraftsStorageKey } from '@/modules/dictation/preferences/dictationPreferences'
 import type {
@@ -127,15 +126,11 @@ vi.mock(
   }
 )
 
-vi.mock('@/lib/sync/clientOutbox', () => ({
-  ensureGuestIdentity: vi.fn(async () => undefined),
-}))
-
 // The shell talks to the tab-wide outbox through this hook. Tests hand it a
 // real outbox wired to a fake server, so ordering, merging and retries are the
 // production code paths.
 let testOutbox: Outbox
-let testOwnerKey: string | null = 'user-one'
+const testOwnerKey = 'user-one'
 
 vi.mock('@/components/common/OutboxOwnerProvider', () => ({
   useClientOutbox: () => testOutbox,
@@ -144,7 +139,6 @@ vi.mock('@/components/common/OutboxOwnerProvider', () => ({
 
 const startOrResumeDictationSessionMock =
   startOrResumeDictationSessionApi as ReturnType<typeof vi.fn>
-const ensureGuestIdentityMock = ensureGuestIdentity as ReturnType<typeof vi.fn>
 const getTranslationTrackMock = getDictationTranslationTrackApi as ReturnType<
   typeof vi.fn
 >
@@ -263,7 +257,6 @@ function patchRequests() {
 
 setupDom()
 beforeEach(() => {
-  testOwnerKey = 'user-one'
   server = createFakeServer()
   testOutbox = createOutbox({
     fetchImpl: server.fetchImpl,
@@ -468,27 +461,6 @@ describe('DictationPracticeShell attempts', () => {
       attemptRequests()[0].body.idempotencyKey
     )
     expect(view.getByRole('status').textContent).toContain('Incorrect')
-  })
-
-  test('a first-time visitor mints the guest identity before the session starts', async () => {
-    testOwnerKey = null
-
-    const order: string[] = []
-
-    ensureGuestIdentityMock.mockImplementationOnce(async () => {
-      order.push('guest')
-    })
-    startOrResumeDictationSessionMock.mockImplementationOnce(async () => {
-      order.push('session')
-
-      return { session }
-    })
-
-    renderPracticeShell(null)
-
-    await waitFor(() => {
-      expect(order).toEqual(['guest', 'session'])
-    })
   })
 
   test('Check gives immediate incorrect feedback for a wrong answer', async () => {

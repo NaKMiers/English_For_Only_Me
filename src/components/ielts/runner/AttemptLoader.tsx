@@ -2,10 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { useOutboxOwnerKey } from '@/components/common/OutboxOwnerProvider'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useMessages } from '@/i18n/client'
-import { ensureGuestIdentity } from '@/lib/sync/clientOutbox'
 import type { IeltsAttemptRecord } from '@/modules/ielts/attempts/attemptRecords'
 import type { IeltsSkill } from '@/modules/ielts/constants'
 import type { IeltsPublicSection } from '@/modules/ielts/publicView'
@@ -93,7 +91,6 @@ export function AttemptLoader({
 }: Props) {
   const t = useMessages()
   const openFailed = t.ielts.runner.openFailed
-  const ownerKey = useOutboxOwnerKey()
   const [attempt, setAttempt] = useState<IeltsAttemptRecord | null>(null)
   const [error, setError] = useState('')
   const startedRef = useRef(false)
@@ -103,8 +100,6 @@ export function AttemptLoader({
     setError('')
 
     try {
-      if (!ownerKey) await ensureGuestIdentity()
-
       const body = {
         mode,
         scope: { kind: 'skill' as const },
@@ -137,7 +132,7 @@ export function AttemptLoader({
     } catch (caught) {
       setError(ieltsErrorMessage(caught, openFailed))
     }
-  }, [keyName, mode, openFailed, ownerKey, skill, testSlug])
+  }, [keyName, mode, openFailed, skill, testSlug])
 
   useEffect(() => {
     if (startedRef.current) return

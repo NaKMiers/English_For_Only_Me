@@ -10,7 +10,6 @@ import { BrowseVideoList, type BrowseVideoItem } from './BrowseVideoList'
 import { pickTopicNextVideo, TopicJourney } from './TopicJourney'
 
 interface Props {
-  canFavorite: boolean
   /** Shown with a "Browse topics" action when the list is empty. */
   emptyTitle: string
   items: BrowseVideoItem[]
@@ -27,7 +26,6 @@ interface Props {
  * the next unplayed video, then the video grid or an empty state.
  */
 export function VideoListPage({
-  canFavorite,
   emptyTitle,
   items,
   messages: t,
@@ -80,7 +78,6 @@ export function VideoListPage({
             />
             <BrowseVideoList
               videos={items}
-              canFavorite={canFavorite}
               labels={labels.card}
               nextId={pickTopicNextVideo(groups)?.video.id ?? null}
             />

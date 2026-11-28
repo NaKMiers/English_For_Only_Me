@@ -49,13 +49,11 @@ Neighbours, not repeated here:
 | `session/scoring.ts`                 | `starsForAccuracy`                                                                                                               | yes              |
 | `grading/gradeCard.ts`               | Normalisation, grading, `parseCardAnswer`, tile / sentence helpers                                                               | yes              |
 | `progress/types.ts`                  | Persistence-agnostic `LessonProgress`, `UnitProgress`, `CardMiss`; `isLessonPassed`                                              | yes              |
-| `progress/planGrammarGuestMerge.ts`  | Folds guest rows into a signed-in user's rows                                                                                    | yes              |
 | `rng.ts`                             | Seedable mulberry32 `createRng`, `randomSeed`, `shuffle`, `sample`                                                               | yes              |
 | `services/grammarPageData.ts`        | `loadGrammarPageData`: progress + path for the current learner                                                                   | `server-only`    |
 | `services/grammarProgressService.ts` | The only Mongo reader/writer for progress; `recordGrammarSession` (idempotent)                                                   | `server-only`    |
-| `services/mergeGrammarGuestData.ts`  | Applies the guest merge plan on first sign-in                                                                                    | `server-only`    |
 | `testing/fixtureCourse.ts`           | A 3-unit fixture course and progress helpers for unit tests                                                                      | yes              |
-| `grammarPath.e2e.ts`                 | Playwright smoke flow: a first-time guest finishes lesson 1                                                                      | e2e              |
+| `grammarPath.e2e.ts`                 | Playwright smoke flow: a new signed-in learner finishes lesson 1                                                                 | e2e              |
 
 Consumers outside the module:
 
@@ -72,7 +70,6 @@ Consumers outside the module:
 | `src/components/grammar/path/GrammarJourneyHero.tsx`       | `levelProgress`, `currentLevel` (level staircase on the path page)                                                                        |
 | `src/app/api/grammar/sessions/route.ts`                    | `parseSessionRequest`, `recordGrammarSession`                                                                                             |
 | `src/app/page.tsx`                                         | `buildGrammarPath(...).next` for the home dashboard                                                                                       |
-| `src/lib/auth/guestMerge.ts`                               | `mergeGrammarGuestData` (best-effort, never blocks login)                                                                                 |
 | `src/modules/ielts/writing/gradeWritingService.ts`         | Lesson ids and English titles, so the IELTS examiner can link a correction to a lesson                                                    |
 
 ---
@@ -476,10 +473,10 @@ difficulty, so the `medium` scale (x1) applies.
 
 ### 9.1 `loadGrammarPageData(now?)` (`services/grammarPageData.ts`)
 
-Returns `{ progress, path, canSave }`. `canSave` is `hasMongoDbUri()`. It reads
-the actor id with `getPracticeActorId()` and never mints a guest cookie: a
-first-time visitor gets empty progress and a path with lesson 1 open; their
-first save creates the guest identity.
+Returns `{ progress, path, canSave }`. `canSave` is `hasMongoDbUri()`. It
+identifies the learner with `requirePageUser()` (`src/lib/auth/currentUser.ts`;
+a signed-out visitor is redirected to the login page): a learner with no
+grammar rows yet gets empty progress and a path with lesson 1 open.
 
 ### 9.2 `recordGrammarSession` (`services/grammarProgressService.ts`)
 
@@ -495,7 +492,7 @@ flowchart TD
   B -- no --> B1["503 notConfigured"]
   B -- yes --> C["parseSessionRequest<br/>zod shape check"]
   C -- invalid --> C1["400 invalidResult"]
-  C -- ok --> D["requirePracticeActor<br/>connectDatabase"]
+  C -- ok --> D["requireUser<br/>connectDatabase"]
   D --> E["claim: GrammarSessionModel.create<br/>userId + idempotencyKey, response null"]
   E -- duplicate key --> F{"prior.response set?"}
   F -- yes --> F1["replay stored result<br/>replayed: true"]
@@ -522,22 +519,6 @@ expires after `STALE_CLAIM_MS` (60 s). Upserts are keyed on
 (`{ cardId, correct, expected }`), `unlocked`
 (`{ kind: 'lesson' | 'checkpoint' | 'unit', ... }` or null), `testOut`.
 
-### 9.3 Guest merge (`progress/planGrammarGuestMerge.ts`, `services/mergeGrammarGuestData.ts`)
-
-On first sign-in `src/lib/auth/guestMerge.ts` calls
-`mergeGrammarGuestData(guestId, userId)` inside a best-effort try/catch. Rows
-are unique per user and id, so instead of re-owning rows the pure planner
-combines each guest row with the user's matching row, the service upserts the
-result, then deletes all four guest collections' rows (including sessions).
-
-| Row    | Merge rule                                                                                                                                                    |
-| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Lesson | Max stars and accuracy, attempts summed, earliest completion, `'lesson'` beats `'test'`, ladder fields from the user if the user has a ladder, else the guest |
-| Unit   | Earliest completion; `'checkpoint'` beats `'test'`                                                                                                            |
-| Miss   | Higher `missCount`, latest `lastMissedAt`, open if either side is open                                                                                        |
-
-Guest rows with no user counterpart are copied as is.
-
 ---
 
 ## 10. Testing
@@ -559,12 +540,12 @@ index 0, plus the alias `old-u01-l01 -> u01-l01`. Helpers: `NOW`
 | `path/playerJourney.test.ts`              | `buildPlayerJourney` unit lookup per mode, `next`, next unit start         |
 | `session/parseSessionRequest.test.ts`     | Request shape bounds                                                       |
 | `session/planGrammarSessionWrite.test.ts` | Mode rules, rejections, test-out, ladder and miss writes                   |
-| `progress/planGrammarGuestMerge.test.ts`  | Guest merge rules                                                          |
 | `rng.test.ts`                             | Seeded determinism of `createRng` / `shuffle` / `sample`                   |
 
 `grammarPath.e2e.ts` is a Playwright smoke flow (`playwright.config.ts`
 matches `**/*.e2e.ts`), skipped unless `PLAYWRIGHT_BASE_URL` and `MONGODB_URI`
-are set. In a fresh browser context (a first-time guest) it opens `/grammar`,
+are set. As the seeded e2e learner (signed in by the global setup, which also
+resets their grammar progress; `src/e2e/globalSetup.ts`) it opens `/grammar`,
 follows "Continue: am, is, are" to `/grammar/lessons/u01-l01`, answers every
 card blindly (first option or token, types "is", or taps every order tile),
 expects the "Lesson done!" result with a star rating and the lesson 2 unlock,

@@ -19,7 +19,8 @@ import { filterHintsToSentence } from '@/modules/dictation/correction/hintWords'
 import type { EditableSegment } from '@/modules/dictation/segmenting/types'
 import { normalizeTranslationLanguage } from '@/modules/dictation/translations/languages'
 import { toDictationSegmentRecord } from '@/modules/dictation/services/dictationSegmentRecords'
-import { requireAdmin } from '@/modules/dictation/services/getCurrentUser'
+import { requireAdmin } from '@/lib/auth/currentUser'
+import { InvalidOwnerKeyError } from '@/lib/auth/ownerKey'
 import {
   getSegmentBuildGuardDecision,
   getSegmentEditGuardDecision,
@@ -46,6 +47,15 @@ function jsonError(decision: ApiErrorDecision) {
 }
 
 function toSegmentError(error: unknown, t: Messages): ApiErrorDecision {
+  // A session whose id is not an ObjectId (see ownerKey.ts).
+  if (error instanceof InvalidOwnerKeyError)
+    return {
+      status: 400,
+      body: {
+        message: t.common.errors.invalidRequest,
+      },
+    }
+
   if (
     typeof error === 'object' &&
     error !== null &&

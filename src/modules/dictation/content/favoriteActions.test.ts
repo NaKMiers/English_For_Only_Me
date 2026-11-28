@@ -11,7 +11,7 @@ vi.mock('@/lib/db/connectDatabase', () => ({
   connectDatabase: vi.fn(async () => undefined),
 }))
 
-vi.mock('@/modules/dictation/services/getCurrentUser', () => ({
+vi.mock('@/lib/auth/currentUser', () => ({
   getOptionalUser: mocks.getOptionalUser,
 }))
 

@@ -2,15 +2,15 @@ import 'server-only'
 
 import { createHash } from 'node:crypto'
 
-import { ANONYMOUS_OUTBOX_OWNER, OUTBOX_OWNER_HEADER } from '@/lib/sync/outbox'
+import { OUTBOX_OWNER_HEADER } from '@/lib/sync/outbox'
 
 export { OUTBOX_OWNER_HEADER }
 
 /**
- * The owner key the browser sees: a one-way hash of the user or guest id. The
- * raw guest id is a bearer credential (it lives in an httpOnly cookie), so it
- * must never be rendered into HTML. The hash still namespaces localStorage per
- * learner and lets the server check which learner a queued write was for.
+ * The owner key the browser sees: a one-way hash of the user id. It
+ * namespaces localStorage per learner and lets the server check which learner
+ * a queued write was for, without rendering the raw id into HTML. The format
+ * stays as it is: queues already stored in browsers are keyed by it.
  */
 export function toClientOwnerKey(id: string) {
   return createHash('sha256').update(id).digest('hex').slice(0, 24)
@@ -18,8 +18,9 @@ export function toClientOwnerKey(id: string) {
 
 /**
  * Thrown when a queued write was made for a different learner than the one the
- * request is authenticated as (a tab left open across a sign-in or sign-out).
- * 409 tells the outbox to settle the item as failed so the UI rolls it back.
+ * request is authenticated as (a tab left open across a sign-out and a sign-in
+ * as someone else). 409 tells the outbox to settle the item as failed so the
+ * UI rolls it back.
  */
 export class OutboxOwnerMismatchError extends Error {
   readonly status = 409
@@ -30,32 +31,25 @@ export class OutboxOwnerMismatchError extends Error {
   }
 }
 
-interface OwnerActor {
-  id: string
-  isGuest: boolean
-}
-
 /**
- * Whether the `x-outbox-owner` header agrees with the current actor. No header
- * means the request did not come from the outbox (server actions, older tabs),
- * so there is nothing to check. 'anonymous' was queued before the guest cookie
- * existed, so it only matches a guest.
+ * Whether the `x-outbox-owner` header agrees with the signed-in user. No header
+ * means the request did not come from the outbox (server actions, plain
+ * fetches), so there is nothing to check. Any value that was sent, even an
+ * empty one (an outbox with no learner), must be this user's client key.
  */
-export function outboxOwnerMatchesActor(
+export function outboxOwnerMatchesUser(
   headerValue: string | null | undefined,
-  actor: OwnerActor
+  userId: string
 ) {
-  if (!headerValue) return true
+  if (headerValue === null || headerValue === undefined) return true
 
-  if (headerValue === ANONYMOUS_OUTBOX_OWNER) return actor.isGuest
-
-  return headerValue === toClientOwnerKey(actor.id)
+  return headerValue === toClientOwnerKey(userId)
 }
 
-export function assertOutboxOwnerMatchesActor(
+export function assertOutboxOwnerMatchesUser(
   headerValue: string | null | undefined,
-  actor: OwnerActor
+  userId: string
 ) {
-  if (!outboxOwnerMatchesActor(headerValue, actor))
+  if (!outboxOwnerMatchesUser(headerValue, userId))
     throw new OutboxOwnerMismatchError()
 }

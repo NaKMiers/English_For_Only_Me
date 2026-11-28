@@ -42,7 +42,7 @@ Neighbouring docs (not repeated here):
 | `markdown/parse.ts`               | pure                 | Small Markdown subset AST with `{{qN}}` slots, never emits HTML.                              |
 | `tests/`                          | pure + `server-only` | Lean doc mappers, cached readers, admin CRUD, publish/archive/unarchive/delete.               |
 | `vocab/`                          | pure + `server-only` | Ordered word list per test slug, learner state overlay.                                       |
-| `services/`                       | `server-only`        | Page loaders (home, runner, result) and the guest-to-user merge.                              |
+| `services/`                       | `server-only`        | Page loaders (home, runner, result) for the signed-in learner.                                |
 | Paper-layout helpers (section 13) | pure                 | `instructionText`, `judgementInstruction`, `listeningContext`, `passageIntro`, and five more. |
 | `http.ts`                         | route plumbing       | `IeltsDecision` -> `NextResponse`, localized messages, JSON body, auth failures.              |
 | `fixtures/sampleTest.ts`          | fixture              | `IELTS_SAMPLE_TEST`, an original Academic test that passes `checkTest` with no errors.        |
@@ -410,9 +410,7 @@ weakest first, and returns the top 3 with enough data as `weakest`.
 
 ```mermaid
 flowchart TD
-  A["POST grade (task)"] --> B{"guest?"}
-  B -- yes --> X1["401 signInToGrade"]
-  B -- no --> C{"attempt is writing,<br/>submitted or scored,<br/>task in feedback?"}
+  A["POST grade (task),<br/>signed in (else 401)"] --> C{"attempt is writing,<br/>submitted or scored,<br/>task in feedback?"}
   C -- no --> X2["400 / 404 / 409"]
   C -- yes --> D{"Qwen key set?"}
   D -- no --> X3["503"]
@@ -647,14 +645,13 @@ the learner's own `UserVocabItem` state when signed in;
 
 ---
 
-## 16. Page data and merge (`services/**`)
+## 16. Page data (`services/**`)
 
-| Loader                | Returns                                                                                                                                                                                                                                                                                                       |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `loadIeltsHomeData`   | Catalogue, attempt summaries, overall estimate, best bands per test, weakness stats (learner rows only when a practice actor exists), `isAdmin`, and `error` (`notConfigured` without `MONGODB_URI`, `loadFailed` on exceptions).                                                                             |
-| `loadRunnerPageData`  | Public sections of one skill (all parts; `?part=` only picks the starting part), `prevSkill` / `nextSkill` in L, R, W order present in the test; null for a bad slug, skill or part. Mock omits the transcript.                                                                                               |
-| `loadResultPageData`  | The owner's attempt (via `readAttemptForOwner`, which may expire and finalize it), public sections, and when finished: review rows (given, accepted, outcome, `overLimit`, explanation, evidence, section key) and Writing tasks (prompt, visual, sample answer, essay). In progress: sections only, no keys. |
-| `mergeIeltsGuestData` | On sign-in, moves a guest's attempts to the user; on a duplicate idempotency key it falls back to one-by-one so only the clashing attempt stays with the guest. See [07](./07-auth-infra-testing.md).                                                                                                         |
+| Loader               | Returns                                                                                                                                                                                                                                                                                                       |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `loadIeltsHomeData`  | Catalogue, attempt summaries, overall estimate, best bands per test, weakness stats for the signed-in learner (`requirePageUser`), `isAdmin`, and `error` (`notConfigured` without `MONGODB_URI`, `loadFailed` on exceptions).                                                                                |
+| `loadRunnerPageData` | Public sections of one skill (all parts; `?part=` only picks the starting part), `prevSkill` / `nextSkill` in L, R, W order present in the test; null for a bad slug, skill or part. Mock omits the transcript.                                                                                               |
+| `loadResultPageData` | The owner's attempt (via `readAttemptForOwner`, which may expire and finalize it), public sections, and when finished: review rows (given, accepted, outcome, `overLimit`, explanation, evidence, section key) and Writing tasks (prompt, visual, sample answer, essay). In progress: sections only, no keys. |
 
 ---
 

@@ -23,7 +23,7 @@ import { loadSegmentProgressRows } from '@/modules/dictation/practice/segmentPro
 import { PRACTICE_SEGMENT_FIELDS } from '@/modules/dictation/services/dictationSegmentRecords'
 import { toDictationSessionRecord } from '@/modules/dictation/services/dictationSessionRecords'
 import { toDictationVideoRecord } from '@/modules/dictation/services/dictationVideoRecords'
-import { getPracticeActorId } from '@/modules/dictation/services/getCurrentUser'
+import { requirePageUser } from '@/lib/auth/currentUser'
 import { hasDictationTranscript } from '@/modules/dictation/videoReadiness'
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -97,10 +97,9 @@ export default async function Page({ params }: Props) {
       />
     )
 
-  // Practice is open to everyone - a signed-in user resumes their own session,
-  // an anonymous guest resumes the one tied to their guest cookie (null until
-  // they start practicing, in which case the shell creates one).
-  const [actorId] = await Promise.all([getPracticeActorId(), connectDatabase()])
+  // The learner resumes their own active session (none until they start
+  // practicing, in which case the shell creates one).
+  const [user] = await Promise.all([requirePageUser(), connectDatabase()])
 
   // Everything keyed only by the URL's video id and the learner starts with
   // the video lookup instead of waiting for it.
@@ -111,19 +110,17 @@ export default async function Page({ params }: Props) {
         $ne: 'archived',
       },
     }).lean(),
-    actorId
-      ? DictationSessionModel.findOne({
-          userId: actorId,
-          status: 'active',
-          videoId,
-        })
-          .sort({ lastActiveAt: -1 })
-          .lean()
-      : null,
-    actorId ? getCompletionCountForVideo(actorId, videoId) : 0,
+    DictationSessionModel.findOne({
+      userId: user.id,
+      status: 'active',
+      videoId,
+    })
+      .sort({ lastActiveAt: -1 })
+      .lean(),
+    getCompletionCountForVideo(user.id, videoId),
     // Per-learner progress, never the shared segment's fields (see
     // segmentProgress.ts).
-    loadSegmentProgressRows({ userId: actorId, videoId }),
+    loadSegmentProgressRows({ userId: user.id, videoId }),
   ])
 
   if (!video) notFound()

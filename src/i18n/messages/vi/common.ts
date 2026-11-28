@@ -95,7 +95,17 @@ export const common: Messages['common'] = {
     },
   },
   auth: {
-    signIn: 'Đăng nhập',
+    loginMetaTitle: 'Đăng nhập',
+    loginTitle: 'English For Only Me',
+    loginTagline:
+      'Góc học tiếng Anh riêng của bạn. Đăng nhập để học tiếp từ chỗ đã dừng.',
+    continueWithGoogle: 'Tiếp tục với Google',
+    openingGoogle: 'Đang mở Google...',
+    notConfigured:
+      'Trang này chưa được cấu hình đăng nhập, nên hiện chưa ai đăng nhập được.',
+    errorAccessDenied:
+      'Đăng nhập Google đã bị huỷ hoặc không được cho phép. Hãy thử lại.',
+    errorGeneric: 'Đăng nhập chưa thành công. Vui lòng thử lại.',
     signOut: 'Đăng xuất',
     signOutTitle: 'Đăng xuất?',
     signOutDescription: 'Bạn sẽ đăng xuất khỏi English For Only Me.',
@@ -168,7 +178,6 @@ export const common: Messages['common'] = {
     invalidRequest: 'Yêu cầu không hợp lệ.',
     serverError: 'Lỗi máy chủ. Vui lòng thử lại.',
     requestFailed: 'Yêu cầu thất bại ({status}).',
-    guestSession: 'Không tạo được phiên khách.',
     ownerMismatch:
       'Thay đổi này thuộc về một tài khoản khác. Hãy tải lại trang.',
     writeKept: 'Chưa gửi: người học đã đổi. Dữ liệu được giữ lại để gửi sau.',

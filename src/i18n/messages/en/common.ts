@@ -97,7 +97,17 @@ export const common = {
     },
   },
   auth: {
-    signIn: 'Sign in',
+    loginMetaTitle: 'Sign in',
+    loginTitle: 'English For Only Me',
+    loginTagline:
+      'Your private English study board. Sign in to pick up where you left off.',
+    continueWithGoogle: 'Continue with Google',
+    openingGoogle: 'Opening Google...',
+    notConfigured:
+      'Sign-in is not configured on this site yet, so nobody can sign in.',
+    errorAccessDenied:
+      'Google sign-in was cancelled or not allowed. Try again.',
+    errorGeneric: 'Sign-in did not work. Please try again.',
     signOut: 'Sign out',
     signOutTitle: 'Sign out?',
     signOutDescription: 'You will be signed out of English For Only Me.',
@@ -170,7 +180,6 @@ export const common = {
     invalidRequest: 'The request was not valid.',
     serverError: 'Server error. Please try again.',
     requestFailed: 'Request failed ({status}).',
-    guestSession: 'Could not start a guest session.',
     ownerMismatch:
       'This change was made for a different account. Reload the page.',
     writeKept: 'Not sent: the learner changed. It is kept for later.',

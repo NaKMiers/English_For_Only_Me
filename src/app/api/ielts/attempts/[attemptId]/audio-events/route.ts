@@ -11,7 +11,7 @@ import {
   ieltsRouteFailure,
   readJsonBody,
 } from '@/modules/ielts/http'
-import { requirePracticeActor } from '@/modules/dictation/services/getCurrentUser'
+import { requireUser } from '@/lib/auth/currentUser'
 
 export const runtime = 'nodejs'
 
@@ -38,7 +38,7 @@ export async function POST(request: Request, context: RouteContext) {
   if (!parsed.ok) return ieltsDecisionError(parsed)
 
   try {
-    const actor = await requirePracticeActor()
+    const user = await requireUser()
 
     await connectDatabase()
 
@@ -46,7 +46,7 @@ export async function POST(request: Request, context: RouteContext) {
       await recordAudioEvent({
         attemptId: id.data,
         event: parsed.data,
-        ownerId: actor.id,
+        ownerId: user.id,
       }),
       attempt => ({ attempt })
     )

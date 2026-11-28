@@ -76,17 +76,3 @@ export async function connectDatabase() {
     throw error
   }
 }
-
-/**
- * Resolve `value`, then connect only when it is truthy (a practice actor id,
- * say). Pages whose shared content comes from the catalog cache use this so an
- * anonymous visitor on a cache hit never waits on a connection handshake,
- * while a known learner's connect still overlaps with the cached reads.
- */
-export async function connectDatabaseWhen<T>(value: Promise<T> | T) {
-  const resolved = await value
-
-  if (resolved) await connectDatabase()
-
-  return resolved
-}

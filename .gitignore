@@ -48,3 +48,8 @@ next-env.d.ts
 
 # IELTS parity dumps
 /docs/ielts-parity/dumps/
+
+# Playwright: the minted e2e session (a signed cookie) and reports
+/playwright/.auth/
+/playwright-report/
+/test-results/

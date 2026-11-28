@@ -133,7 +133,6 @@ describe('DictationSide', () => {
             youtubeVideoId: null,
           },
         ]}
-        showFavorites
       />
     )
 

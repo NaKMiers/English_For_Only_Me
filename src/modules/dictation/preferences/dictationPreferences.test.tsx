@@ -39,10 +39,14 @@ describe('dictation answer drafts', () => {
   })
 
   it('stores drafts per video and ignores invalid draft values', () => {
-    writeDictationAnswerDrafts('video-1', {
-      segmentA: 'typed words',
-      segmentB: 'second draft',
-    })
+    writeDictationAnswerDrafts(
+      'video-1',
+      {
+        segmentA: 'typed words',
+        segmentB: 'second draft',
+      },
+      'alice'
+    )
     window.localStorage.setItem(
       `${DICTATION_ANSWER_DRAFTS_STORAGE_KEY}:video-2`,
       JSON.stringify({
@@ -51,24 +55,22 @@ describe('dictation answer drafts', () => {
       })
     )
 
-    expect(readDictationAnswerDrafts('video-1')).toEqual({
+    expect(readDictationAnswerDrafts('video-1', 'alice')).toEqual({
       segmentA: 'typed words',
       segmentB: 'second draft',
     })
-    expect(readDictationAnswerDrafts('video-2')).toEqual({
+    expect(readDictationAnswerDrafts('video-2', 'alice')).toEqual({
       segmentC: 'other video',
     })
   })
 
   it('removes the storage entry when no drafts remain', () => {
-    writeDictationAnswerDrafts('video-1', {
-      segmentA: 'typed words',
-    })
-    writeDictationAnswerDrafts('video-1', {})
+    writeDictationAnswerDrafts('video-1', { segmentA: 'typed words' }, 'alice')
+    writeDictationAnswerDrafts('video-1', {}, 'alice')
 
     expect(
       window.localStorage.getItem(
-        `${DICTATION_ANSWER_DRAFTS_STORAGE_KEY}:video-1`
+        getDictationAnswerDraftsStorageKey('video-1', 'alice')
       )
     ).toBeNull()
   })
@@ -125,29 +127,6 @@ describe('owner-namespaced drafts', () => {
     expect(readDictationAnswerDrafts('video-1', 'alice')).toEqual({
       segmentA: 'mine',
     })
-  })
-
-  it('moves anonymous drafts to the owner once, the owner drafts winning', () => {
-    writeDictationAnswerDrafts('video-1', {
-      segmentA: 'typed before the cookie',
-      segmentB: 'only anonymous',
-    })
-    writeDictationAnswerDrafts('video-1', { segmentA: 'newer' }, 'guest-hash')
-
-    expect(readDictationAnswerDrafts('video-1', 'guest-hash')).toEqual({
-      segmentA: 'newer',
-      segmentB: 'only anonymous',
-    })
-    expect(
-      window.localStorage.getItem(
-        getDictationAnswerDraftsStorageKey('video-1', null)
-      )
-    ).toBeNull()
-    expect(readDictationAnswerDrafts('video-1', 'guest-hash')).toEqual({
-      segmentA: 'newer',
-      segmentB: 'only anonymous',
-    })
-    expect(readDictationAnswerDrafts('video-1', 'someone-else')).toEqual({})
   })
 })
 

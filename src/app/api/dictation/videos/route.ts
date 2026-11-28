@@ -7,7 +7,8 @@ import { connectDatabase } from '@/lib/db/connectDatabase'
 import { revalidateDictationCatalog } from '@/lib/db/revalidateCatalog'
 import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
 import { toDictationVideoRecord } from '@/modules/dictation/services/dictationVideoRecords'
-import { requireAdmin } from '@/modules/dictation/services/getCurrentUser'
+import { requireAdmin } from '@/lib/auth/currentUser'
+import { InvalidOwnerKeyError } from '@/lib/auth/ownerKey'
 import {
   getAccessErrorMessage,
   type ApiErrorDecision,
@@ -27,6 +28,15 @@ function authErrorDecision(
   error: unknown,
   t: Messages
 ): ApiErrorDecision | null {
+  // A session whose id is not an ObjectId (see ownerKey.ts).
+  if (error instanceof InvalidOwnerKeyError)
+    return {
+      status: 400,
+      body: {
+        message: t.common.errors.invalidRequest,
+      },
+    }
+
   if (
     typeof error === 'object' &&
     error !== null &&

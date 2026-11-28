@@ -9,7 +9,8 @@ import { DictationSessionModel } from '@/models/dictation/DictationSessionModel'
 import { DictationVideoModel } from '@/models/dictation/DictationVideoModel'
 import { isDuplicateKeyError } from '@/modules/dictation/practice/duplicateKeyError'
 import { toDictationSessionRecord } from '@/modules/dictation/services/dictationSessionRecords'
-import { requirePracticeActor } from '@/modules/dictation/services/getCurrentUser'
+import { requireUser } from '@/lib/auth/currentUser'
+import { InvalidOwnerKeyError } from '@/lib/auth/ownerKey'
 import {
   getSessionStartGuardDecision,
   parseSessionStartRequest,
@@ -29,6 +30,15 @@ function jsonError(decision: ApiErrorDecision) {
 }
 
 function toSessionError(error: unknown, t: Messages): ApiErrorDecision {
+  // A session whose id is not an ObjectId (see ownerKey.ts).
+  if (error instanceof InvalidOwnerKeyError)
+    return {
+      status: 400,
+      body: {
+        message: t.common.errors.invalidRequest,
+      },
+    }
+
   if (
     typeof error === 'object' &&
     error !== null &&
@@ -72,7 +82,7 @@ export async function POST(request: Request) {
 
     if (!parsed.ok) return jsonError(parsed)
 
-    const actor = await requirePracticeActor()
+    const user = await requireUser()
 
     await connectDatabase()
 
@@ -106,7 +116,7 @@ export async function POST(request: Request) {
       })
 
     const existingSession = await DictationSessionModel.findOne({
-      userId: actor.id,
+      userId: user.id,
       status: 'active',
       videoId: video._id,
     }).sort({ lastActiveAt: -1 })
@@ -117,7 +127,7 @@ export async function POST(request: Request) {
     if (existingSession)
       await DictationSessionModel.updateMany(
         {
-          userId: actor.id,
+          userId: user.id,
           videoId: video._id,
           status: 'active',
           _id: { $ne: existingSession._id },
@@ -146,7 +156,7 @@ export async function POST(request: Request) {
     let session
     try {
       session = await DictationSessionModel.create({
-        userId: actor.id,
+        userId: user.id,
         videoId: video._id,
         transcriptId: activeTranscriptId,
         status: 'active',
@@ -163,7 +173,7 @@ export async function POST(request: Request) {
       // (user, video). Lost the race - reuse the session the winner created.
       if (isDuplicateKeyError(error)) {
         const raced = await DictationSessionModel.findOne({
-          userId: actor.id,
+          userId: user.id,
           status: 'active',
           videoId: video._id,
         }).sort({ lastActiveAt: -1 })

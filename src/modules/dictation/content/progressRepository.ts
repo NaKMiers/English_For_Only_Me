@@ -58,7 +58,7 @@ async function listStartedActiveSessions(
  * How many times each video has been completed, keyed by video id. A
  * completion is one session with status 'completed' - starting practice again
  * after finishing opens a new session, so counting sessions counts replays.
- * Per-user data is keyed by the authenticated user's id (or guest id).
+ * Per-user data is keyed by the authenticated user's id.
  */
 export async function getCompletionCountsForUser(
   userId: string

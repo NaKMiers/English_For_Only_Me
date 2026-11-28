@@ -2,8 +2,8 @@
 
 This document is the contract-level reference for the HTTP API of "English For
 Only Me", an IELTS practice app built on Next.js 16 App Router. Route Handlers
-live under `src/app/api/**/route.ts` and are grouped by module: auth and guest
-identity (`/api/auth`, `/api/guest`), dictation (`/api/dictation`), vocabulary
+live under `src/app/api/**/route.ts` and are grouped by module: Google
+sign-in (`/api/auth`), dictation (`/api/dictation`), vocabulary
 (`/api/vocab`), grammar (`/api/grammar`), IELTS practice (`/api/ielts`), and
 admin tooling (`/api/admin/**`). Handlers delegate parsing and gating to pure
 decision helpers (`src/modules/dictation/services/*RouteDecisions.ts`,
@@ -11,9 +11,10 @@ decision helpers (`src/modules/dictation/services/*RouteDecisions.ts`,
 `src/modules/grammar/session/parseSessionRequest.ts`,
 `src/modules/ielts/attempts/attemptRouteDecisions.ts`,
 `src/modules/ielts/tests/testRouteDecisions.ts`) and return learner-facing
-error text from the EN/VI message catalogue (`src/i18n/**`). Per-user writes
-from the browser go through a client outbox (`src/lib/sync/outbox.ts`) with
-ordered lanes and idempotency keys, so several routes are built to be replayed
+error text from the EN/VI message catalogue (`src/i18n/**`). Google sign-in is
+required: every per-user route needs a session and answers `401` without one
+(there is no guest mode). Per-user writes from the browser go through a client
+outbox (`src/lib/sync/outbox.ts`) with ordered lanes and idempotency keys, so several routes are built to be replayed
 safely. Status codes and shapes below are taken from the route and helper code,
 not assumed.
 
@@ -91,9 +92,9 @@ Common statuses across modules:
 | Status | Meaning                                                                                                                                             |
 | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `400`  | invalid JSON (`SyntaxError`), zod failure, invalid id param (dictation), out-of-range query                                                         |
-| `401`  | `UnauthenticatedError` from `requireUser`/`requireAdmin` -> `common.errors.unauthorized`; IELTS AI calls by a guest                                 |
+| `401`  | `UnauthenticatedError` from `requireUser`/`requireAdmin` (no session) -> `common.errors.unauthorized`, "Please sign in to continue."                |
 | `403`  | `ForbiddenError` from `requireAdmin` -> `common.errors.forbidden`; IELTS practice-only features on a mock attempt                                   |
-| `404`  | resource missing or not owned by the actor; IELTS invalid ObjectId params also map to `404`                                                         |
+| `404`  | resource missing or not owned by the user; IELTS invalid ObjectId params also map to `404`                                                          |
 | `409`  | duplicate key (`code 11000`), stale revision/guard, `OutboxOwnerMismatchError` (queued for another learner), invalid state transition               |
 | `410`  | retired endpoint                                                                                                                                    |
 | `422`  | IELTS publish blocked by the consistency report                                                                                                     |
@@ -105,53 +106,50 @@ Dictation routes map any thrown error with numeric `status` 401/403/409 through
 `getAccessErrorMessage` (`401 -> common.errors.unauthorized`,
 `409 -> dictation.api.ownerMismatch`, else `common.errors.forbidden`). Grammar,
 IELTS and YouTube import use `authErrorResponse`
-(`src/lib/auth/authErrorMessage.ts`), which matches the three error classes
-exactly (`UnauthenticatedError`, `ForbiddenError`, `OutboxOwnerMismatchError`).
-`toVocabApiError` maps 401/403 to `common.errors.*`, a
+(`src/lib/auth/authErrorMessage.ts`), which matches the four auth error classes
+exactly and maps them to `400` (`InvalidOwnerKeyError`, `common.errors.invalidRequest`),
+`401` (`UnauthenticatedError`), `403` (`ForbiddenError`) and `409`
+(`OutboxOwnerMismatchError`). Dictation route error mappers and
+`toVocabApiError` check `InvalidOwnerKeyError` first and answer `400`
+(`common.errors.invalidRequest`). `toVocabApiError` maps 401/403 to `common.errors.*`, a
 `MissingVietnameseMeaningError` to `vocabulary.api.needsMeaning`, and any other
 409 to the error's own (English) message.
 
 ### Auth and current-user resolution
 
-Helpers live in `src/modules/dictation/services/getCurrentUser.ts`. Roles come
-from the `ADMIN_EMAILS` allowlist (`resolveRole` in `src/lib/auth/roles.ts`),
-recomputed in the Auth.js `jwt` callback (`src/lib/auth/auth.ts`).
+Helpers live in `src/lib/auth/currentUser.ts` (shared by every module). Roles come from the
+`ADMIN_EMAILS` allowlist (`resolveRole` in `src/lib/auth/roles.ts`), recomputed
+in the Auth.js `jwt` callback (`src/lib/auth/auth.ts`). `/api/*` is excluded
+from the proxy matcher (`src/proxy.ts`), which only gates pages, so each route
+handler is its own gate.
 
-| Helper                   | Returns                                 | Throws                                                                          | Used by                      |
-| ------------------------ | --------------------------------------- | ------------------------------------------------------------------------------- | ---------------------------- |
-| `getOptionalUser()`      | `CurrentUser \| null` (React `cache`d)  | never                                                                           | `/api/admin/revalidate`      |
-| `requireUser()`          | `CurrentUser`                           | `UnauthenticatedError` (401)                                                    | via `requireAdmin`           |
-| `requireAdmin()`         | `CurrentUser`                           | 401, or `ForbiddenError` (403) when `role !== 'admin'`                          | every admin route            |
-| `requirePracticeActor()` | `PracticeActor { id, isGuest }`         | `OutboxOwnerMismatchError` (409); `InvalidOwnerKeyError` (400, surfaces as 500) | every learner write and read |
-| `getPracticeActorId()`   | `string \| null`, never writes a cookie | never                                                                           | Server Components only       |
+| Helper              | Returns                                | Throws                                                                                       | Used by                                          |
+| ------------------- | -------------------------------------- | -------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| `getOptionalUser()` | `CurrentUser \| null` (React `cache`d) | never                                                                                        | `/api/admin/revalidate`, `setFavoriteAction`     |
+| `requireUser()`     | `CurrentUser`                          | `UnauthenticatedError` (401); `InvalidOwnerKeyError` (400); `OutboxOwnerMismatchError` (409) | every per-user route handler, and `requireAdmin` |
+| `requireAdmin()`    | `CurrentUser`                          | the `requireUser` errors, or `ForbiddenError` (403) when `role !== 'admin'`                  | every admin route                                |
+| `requirePageUser()` | `CurrentUser`                          | redirects to `/auth/login?callbackUrl=...` instead of throwing                               | Server Components (not route handlers)           |
 
-`requirePracticeActor()` details:
+`requireUser()` details:
 
-- Signed-in user -> `{ id: user.id, isGuest: false }`; otherwise it mints or
-  reads the guest id (`getOrCreateGuestId()` in `src/lib/auth/guestUser.ts`,
-  httpOnly cookie, ids `guest_` + 32 hex). It writes a cookie, so only Route
-  Handlers and Server Functions may call it.
-- The id passes `assertOwnerKey` (`src/lib/auth/ownerKey.ts`, pattern
-  `^([a-f0-9]{24}|guest_[a-f0-9]{32})$`) before any query is scoped to it.
+- No session -> `UnauthenticatedError` (`401`, `common.errors.unauthorized`,
+  "Please sign in to continue."). There is no guest identity or guest cookie.
+- The session id must pass `assertOwnerKey` (`src/lib/auth/ownerKey.ts`,
+  pattern `^[a-f0-9]{24}$`, an ObjectId) before any query is scoped to it,
+  else `InvalidOwnerKeyError` (`400`).
 - It reads the `x-outbox-owner` request header (`OUTBOX_OWNER_HEADER`) and
-  calls `assertOutboxOwnerMatchesActor` (`src/lib/auth/clientOwnerKey.ts`):
-  no header passes; `anonymous` matches only a guest; otherwise the header
-  must equal `toClientOwnerKey(actor.id)` (first 24 hex chars of a SHA-256 of
-  the id). A mismatch throws `OutboxOwnerMismatchError` (409), so a write
-  queued in a tab before a sign-in or sign-out never lands on another learner.
+  calls `assertOutboxOwnerMatchesUser` (`src/lib/auth/clientOwnerKey.ts`): no
+  header passes (server actions and plain fetches carry none); otherwise the
+  header must equal `toClientOwnerKey(user.id)` (first 24 hex chars of a
+  SHA-256 of the id). Anything else, including the old `anonymous` value,
+  throws `OutboxOwnerMismatchError` (`409`), so a write queued in a tab before
+  a sign-out or an account switch never lands on another learner.
+- Every query is scoped to the returned `user.id`, never a client-supplied id.
 
-### Guest-to-user merge on sign-in
-
-The `jwt` callback (`src/lib/auth/auth.ts`) calls `foldGuestIntoUser(userId)`
-(`src/lib/auth/guestMerge.ts`) on every sign-in. It runs the dictation merge
-(`mergeGuestDataIntoUser` in `src/modules/dictation/services/mergeGuestData.ts`:
-sessions, attempts, review items, debriefs; colliding active review items are
-dismissed first), the grammar merge
-(`src/modules/grammar/services/mergeGrammarGuestData.ts`), and the IELTS merge
-(`src/modules/ielts/services/mergeIeltsGuestData.ts`). All succeed -> guest
-cookie cleared; any failure -> the cookie is tagged with this account so only
-its next sign-in retries; leftovers tagged for another account are abandoned.
-It never throws. Details are in `docs/07-auth-infra-testing.md`.
+Order of checks: most per-user routes parse the URL id, query or JSON body
+first and call `requireUser()` afterwards (see the per-route sections and
+section 10), so a malformed request from a signed-out caller gets `400` (or
+`404` for an invalid IELTS `attemptId`) before the `401`.
 
 ### Client outbox contract
 
@@ -171,12 +169,16 @@ change, then enqueues it on the tab's shared outbox (`getClientOutbox` in
   wins), and that caller resolves with `{ superseded: true }`.
 - `2xx` -> settled ok. Network failure -> retried forever with backoff.
   `5xx`/`429`/`408` -> retried up to `MAX_SERVER_ERROR_ATTEMPTS` (20), then
-  failed. Other `4xx` -> settled failed (the UI rolls back). Replayed items
-  expire after 7 days, or 12 hours for `mergeKey` (set-state) items.
-- A first-time visitor's owner is `anonymous`; before the first send the
-  outbox calls `POST /api/guest` once (`ensureGuestIdentity`) so parallel
-  writes share one guest cookie. The server-rendered owner key comes from
-  `toClientOwnerKey` in `src/app/(app)/layout.tsx`.
+  failed. `401` (the session ended) -> hold: the item is kept, every lane
+  pauses, and `onUnauthorized` (`handleUnauthorized` in
+  `src/lib/sync/clientOutbox.ts`) releases the stored queue and redirects the
+  tab to `/auth/login?callbackUrl=<current page>`. After the same account signs
+  back in the owner key is the same, so the queue replays; another account
+  never sees it. Other `4xx` (including `409` owner mismatch) -> settled
+  failed (the UI rolls back). Replayed items expire after 7 days, or 12 hours
+  for `mergeKey` (set-state) items.
+- The owner is the server-rendered client owner key, `toClientOwnerKey` in
+  `src/app/(app)/layout.tsx`; there is no anonymous owner.
 
 Because the outbox may resend, every outbox route is either deduped on a key or
 a "set desired state" write:
@@ -200,87 +202,86 @@ call `expireCacheTags([CACHE_TAGS.ieltsContent])`
 
 ## 2. Endpoint summary
 
-Auth column: `public` = no auth call; `actor` = `requirePracticeActor()` (user
-or guest, data scoped to `actor.id`); `admin` = `requireAdmin()`;
-`admin or secret` = admin session or `x-revalidate-secret`.
+Auth column: `public` = no auth call; `user` = `requireUser()` (a signed-in
+account, `401` without a session, data scoped to `user.id`); `admin` =
+`requireAdmin()`; `admin or secret` = admin session or `x-revalidate-secret`.
 
-| Method           | Path                                                      | Purpose                                          | Auth             | Client (`src/requests` or outbox)                                                                   |
-| ---------------- | --------------------------------------------------------- | ------------------------------------------------ | ---------------- | --------------------------------------------------------------------------------------------------- |
-| GET, POST        | `/api/auth/[...nextauth]`                                 | Auth.js Google sign-in/out, callback, session    | public           | Auth.js `signIn` / `signOut`                                                                        |
-| POST             | `/api/guest`                                              | Mint or confirm the guest identity               | actor            | `ensureGuestIdentity` (`src/lib/sync/clientOutbox.ts`)                                              |
-| GET              | `/api/dictation/videos`                                   | List non-archived catalog videos                 | public           | `listDictationVideosApi`                                                                            |
-| POST             | `/api/dictation/videos`                                   | Create a catalog video                           | admin            | `createDictationVideoApi`                                                                           |
-| GET              | `/api/dictation/videos/[videoId]`                         | Admin detail: video, tracks, active segments     | admin            | `getDictationVideoDetailApi`                                                                        |
-| PATCH            | `/api/dictation/videos/[videoId]`                         | Update video default language                    | admin            | `updateDictationVideoApi`                                                                           |
-| DELETE           | `/api/dictation/videos/[videoId]`                         | Archive (soft-delete) a video                    | admin            | `archiveDictationVideoApi`                                                                          |
-| POST             | `/api/dictation/transcripts`                              | Attach primary or translation transcript         | admin            | `attachDictationTranscriptApi`, `attachDictationTranslationTrackApi`                                |
-| DELETE           | `/api/dictation/transcripts/[transcriptId]`               | Delete a non-active transcript track             | admin            | `deleteDictationTranscriptApi`                                                                      |
-| PATCH            | `/api/dictation/segments/[segmentId]`                     | Edit/split/merge, hints, translation override    | admin            | `setDictationSegmentHintsApi`, `resetDictationSegmentHintsApi`, `setDictationSegmentTranslationApi` |
-| POST             | `/api/dictation/segments/[segmentId]/translate`           | AI translation suggestion for one segment        | admin            | `translateDictationSegmentApi`                                                                      |
-| POST             | `/api/dictation/sessions`                                 | Start or resume a practice session               | actor            | `startOrResumeDictationSessionApi`                                                                  |
-| GET              | `/api/dictation/sessions/translations`                    | One language's caption cues and overrides        | public           | `getDictationTranslationTrackApi`                                                                   |
-| GET              | `/api/dictation/sessions/[sessionId]`                     | Read one owned session                           | actor            | (none)                                                                                              |
-| PATCH            | `/api/dictation/sessions/[sessionId]`                     | Cursor, preferences, status                      | actor            | outbox lane `dictation:<sessionId>`                                                                 |
-| POST             | `/api/dictation/sessions/[sessionId]/attempts`            | Record a dictation attempt                       | actor            | outbox lane `dictation:<sessionId>`                                                                 |
-| GET, POST, PATCH | `/api/dictation/review-items`                             | List / recompute / complete-dismiss review items | actor            | (none)                                                                                              |
-| POST             | `/api/dictation/debriefs`                                 | Generate or return an AI debrief                 | actor            | `createDictationDebriefApi`                                                                         |
-| POST             | `/api/dictation/imports/youtube`                          | Import a YouTube video by URL                    | admin            | `importYouTubeVideoApi`                                                                             |
-| POST             | `/api/vocab/entries/lookup`                               | Find/create, enrich and return one entry         | actor            | `lookupVocabEntryApi`                                                                               |
-| POST             | `/api/vocab/occurrences`                                  | Record a "met this word" event                   | actor            | `recordVocabOccurrenceApi`                                                                          |
-| GET              | `/api/vocab/search`                                       | Prefix-search cached entries                     | actor            | `searchVocabApi`                                                                                    |
-| GET              | `/api/vocab/explore`                                      | Unclassified common words                        | actor            | `getExploreVocabApi`                                                                                |
-| POST             | `/api/vocab/items`                                        | Set `shouldLearn` / `alreadyKnow`                | actor            | outbox lane `vocab:items`                                                                           |
-| POST             | `/api/vocab/items/batch`                                  | Legacy batch status update                       | actor            | (none; kept for old bundles)                                                                        |
-| GET              | `/api/vocab/recall/due`                                   | Page of signed recall tasks                      | actor            | `getDueVocabRecallApi`                                                                              |
-| POST             | `/api/vocab/recall/answer`                                | Server-grade a signed recall answer              | actor            | outbox lane `vocab:recall`                                                                          |
-| GET              | `/api/vocab/stats`                                        | Vocabulary stats and daily growth                | actor            | `getVocabStatsApi`                                                                                  |
-| POST             | `/api/grammar/sessions`                                   | Record one finished grammar session              | actor            | outbox lane `grammar` (`buildGrammarSessionWrite`)                                                  |
-| POST             | `/api/ielts/attempts`                                     | Start or resume an IELTS attempt                 | actor            | `startIeltsAttemptApi`                                                                              |
-| GET, DELETE      | `/api/ielts/attempts/[attemptId]`                         | Read (finalizing if due) / delete an attempt     | actor            | `readIeltsAttemptApi`, `deleteIeltsAttemptApi`                                                      |
-| PUT              | `/api/ielts/attempts/[attemptId]/answers`                 | Autosave answers snapshot                        | actor            | outbox lane `ielts:<attemptId>` (`buildIeltsAnswersWrite`)                                          |
-| POST             | `/api/ielts/attempts/[attemptId]/submit`                  | Submit and score                                 | actor            | outbox lane `ielts:<attemptId>` (`buildIeltsSubmitWrite`)                                           |
-| POST             | `/api/ielts/attempts/[attemptId]/audio-events`            | Listening mock audio clock event                 | actor            | `postIeltsAudioEventApi`                                                                            |
-| POST             | `/api/ielts/attempts/[attemptId]/check`                   | Practice check: one part, or one writing task    | actor            | `checkIeltsPartApi`, `checkIeltsTaskApi`                                                            |
-| GET              | `/api/ielts/attempts/[attemptId]/evidence`                | Guided-mode evidence for one question            | actor            | `readIeltsEvidenceApi`                                                                              |
-| POST             | `/api/ielts/attempts/[attemptId]/grade`                   | AI grading of one writing task after submit      | actor (no guest) | `gradeIeltsWritingApi`                                                                              |
-| POST             | `/api/ielts/drills`                                       | Start a question-type drill                      | actor            | `startIeltsDrillApi`                                                                                |
-| GET, POST        | `/api/admin/vocab/enrich`                                 | Inspect / run vocab enrichment queue             | admin            | `getVocabAdminQueueApi`, `enrichVocabularyAdminApi`                                                 |
-| GET, POST        | `/api/admin/ielts/tests`                                  | List tests / create a draft                      | admin            | `listIeltsTestsApi`, `createIeltsTestApi`                                                           |
-| GET, PUT, DELETE | `/api/admin/ielts/tests/[testId]`                         | Read / save metadata / delete a test             | admin            | `readIeltsTestApi`, `saveIeltsMetaApi`, `deleteIeltsTestApi`                                        |
-| POST             | `/api/admin/ielts/tests/[testId]/publish`                 | Publish a draft                                  | admin            | `publishIeltsTestApi`                                                                               |
-| POST             | `/api/admin/ielts/tests/[testId]/archive`                 | Archive a published test                         | admin            | `archiveIeltsTestApi`                                                                               |
-| POST             | `/api/admin/ielts/tests/[testId]/unarchive`               | Re-publish an archived test                      | admin            | `unarchiveIeltsTestApi`                                                                             |
-| POST             | `/api/admin/ielts/tests/[testId]/new-version`             | Retired, always `410`                            | public           | (none)                                                                                              |
-| GET, PUT         | `/api/admin/ielts/tests/[testId]/vocab`                   | Read / replace the test's word list              | admin            | `readIeltsTestVocabApi`, `saveIeltsTestVocabApi`                                                    |
-| PUT              | `/api/admin/ielts/tests/[testId]/sections/[key]`          | Save one draft section                           | admin            | `saveIeltsSectionApi`                                                                               |
-| POST             | `/api/admin/ielts/tests/[testId]/sections/[key]/generate` | One AI generation step for a section             | admin            | `generateIeltsSectionApi`                                                                           |
-| POST             | `/api/admin/ielts/tests/[testId]/sections/[key]/audio`    | TTS audio for a listening part                   | admin            | `generateIeltsAudioApi`                                                                             |
-| POST             | `/api/admin/ielts/assist`                                 | AI proposal for a section (not saved)            | admin            | `assistIeltsSectionApi`                                                                             |
-| POST             | `/api/admin/ielts/uploads/sign`                           | Signed Cloudinary upload params                  | admin            | `uploadIeltsFileApi`                                                                                |
-| POST             | `/api/admin/revalidate`                                   | Expire shared-content cache tags                 | admin or secret  | (none; `curl` from scripts)                                                                         |
+| Method           | Path                                                      | Purpose                                          | Auth            | Client (`src/requests` or outbox)                                                                   |
+| ---------------- | --------------------------------------------------------- | ------------------------------------------------ | --------------- | --------------------------------------------------------------------------------------------------- |
+| GET, POST        | `/api/auth/[...nextauth]`                                 | Auth.js Google sign-in/out, callback, session    | public          | Auth.js `signIn` / `signOut`                                                                        |
+| GET              | `/api/dictation/videos`                                   | List non-archived catalog videos                 | public          | `listDictationVideosApi`                                                                            |
+| POST             | `/api/dictation/videos`                                   | Create a catalog video                           | admin           | `createDictationVideoApi`                                                                           |
+| GET              | `/api/dictation/videos/[videoId]`                         | Admin detail: video, tracks, active segments     | admin           | `getDictationVideoDetailApi`                                                                        |
+| PATCH            | `/api/dictation/videos/[videoId]`                         | Update video default language                    | admin           | `updateDictationVideoApi`                                                                           |
+| DELETE           | `/api/dictation/videos/[videoId]`                         | Archive (soft-delete) a video                    | admin           | `archiveDictationVideoApi`                                                                          |
+| POST             | `/api/dictation/transcripts`                              | Attach primary or translation transcript         | admin           | `attachDictationTranscriptApi`, `attachDictationTranslationTrackApi`                                |
+| DELETE           | `/api/dictation/transcripts/[transcriptId]`               | Delete a non-active transcript track             | admin           | `deleteDictationTranscriptApi`                                                                      |
+| PATCH            | `/api/dictation/segments/[segmentId]`                     | Edit/split/merge, hints, translation override    | admin           | `setDictationSegmentHintsApi`, `resetDictationSegmentHintsApi`, `setDictationSegmentTranslationApi` |
+| POST             | `/api/dictation/segments/[segmentId]/translate`           | AI translation suggestion for one segment        | admin           | `translateDictationSegmentApi`                                                                      |
+| POST             | `/api/dictation/sessions`                                 | Start or resume a practice session               | user            | `startOrResumeDictationSessionApi`                                                                  |
+| GET              | `/api/dictation/sessions/translations`                    | One language's caption cues and overrides        | public          | `getDictationTranslationTrackApi`                                                                   |
+| GET              | `/api/dictation/sessions/[sessionId]`                     | Read one owned session                           | user            | (none)                                                                                              |
+| PATCH            | `/api/dictation/sessions/[sessionId]`                     | Cursor, preferences, status                      | user            | outbox lane `dictation:<sessionId>`                                                                 |
+| POST             | `/api/dictation/sessions/[sessionId]/attempts`            | Record a dictation attempt                       | user            | outbox lane `dictation:<sessionId>`                                                                 |
+| GET, POST, PATCH | `/api/dictation/review-items`                             | List / recompute / complete-dismiss review items | user            | (none)                                                                                              |
+| POST             | `/api/dictation/debriefs`                                 | Generate or return an AI debrief                 | user            | `createDictationDebriefApi`                                                                         |
+| POST             | `/api/dictation/imports/youtube`                          | Import a YouTube video by URL                    | admin           | `importYouTubeVideoApi`                                                                             |
+| POST             | `/api/vocab/entries/lookup`                               | Find/create, enrich and return one entry         | user            | `lookupVocabEntryApi`                                                                               |
+| POST             | `/api/vocab/occurrences`                                  | Record a "met this word" event                   | user            | `recordVocabOccurrenceApi`                                                                          |
+| GET              | `/api/vocab/search`                                       | Prefix-search cached entries                     | user            | `searchVocabApi`                                                                                    |
+| GET              | `/api/vocab/explore`                                      | Unclassified common words                        | user            | `getExploreVocabApi`                                                                                |
+| POST             | `/api/vocab/items`                                        | Set `shouldLearn` / `alreadyKnow`                | user            | outbox lane `vocab:items`                                                                           |
+| POST             | `/api/vocab/items/batch`                                  | Legacy batch status update                       | user            | (none; kept for old bundles)                                                                        |
+| GET              | `/api/vocab/recall/due`                                   | Page of signed recall tasks                      | user            | `getDueVocabRecallApi`                                                                              |
+| POST             | `/api/vocab/recall/answer`                                | Server-grade a signed recall answer              | user            | outbox lane `vocab:recall`                                                                          |
+| GET              | `/api/vocab/stats`                                        | Vocabulary stats and daily growth                | user            | `getVocabStatsApi`                                                                                  |
+| POST             | `/api/grammar/sessions`                                   | Record one finished grammar session              | user            | outbox lane `grammar` (`buildGrammarSessionWrite`)                                                  |
+| POST             | `/api/ielts/attempts`                                     | Start or resume an IELTS attempt                 | user            | `startIeltsAttemptApi`                                                                              |
+| GET, DELETE      | `/api/ielts/attempts/[attemptId]`                         | Read (finalizing if due) / delete an attempt     | user            | `readIeltsAttemptApi`, `deleteIeltsAttemptApi`                                                      |
+| PUT              | `/api/ielts/attempts/[attemptId]/answers`                 | Autosave answers snapshot                        | user            | outbox lane `ielts:<attemptId>` (`buildIeltsAnswersWrite`)                                          |
+| POST             | `/api/ielts/attempts/[attemptId]/submit`                  | Submit and score                                 | user            | outbox lane `ielts:<attemptId>` (`buildIeltsSubmitWrite`)                                           |
+| POST             | `/api/ielts/attempts/[attemptId]/audio-events`            | Listening mock audio clock event                 | user            | `postIeltsAudioEventApi`                                                                            |
+| POST             | `/api/ielts/attempts/[attemptId]/check`                   | Practice check: one part, or one writing task    | user            | `checkIeltsPartApi`, `checkIeltsTaskApi`                                                            |
+| GET              | `/api/ielts/attempts/[attemptId]/evidence`                | Guided-mode evidence for one question            | user            | `readIeltsEvidenceApi`                                                                              |
+| POST             | `/api/ielts/attempts/[attemptId]/grade`                   | AI grading of one writing task after submit      | user            | `gradeIeltsWritingApi`                                                                              |
+| POST             | `/api/ielts/drills`                                       | Start a question-type drill                      | user            | `startIeltsDrillApi`                                                                                |
+| GET, POST        | `/api/admin/vocab/enrich`                                 | Inspect / run vocab enrichment queue             | admin           | `getVocabAdminQueueApi`, `enrichVocabularyAdminApi`                                                 |
+| GET, POST        | `/api/admin/ielts/tests`                                  | List tests / create a draft                      | admin           | `listIeltsTestsApi`, `createIeltsTestApi`                                                           |
+| GET, PUT, DELETE | `/api/admin/ielts/tests/[testId]`                         | Read / save metadata / delete a test             | admin           | `readIeltsTestApi`, `saveIeltsMetaApi`, `deleteIeltsTestApi`                                        |
+| POST             | `/api/admin/ielts/tests/[testId]/publish`                 | Publish a draft                                  | admin           | `publishIeltsTestApi`                                                                               |
+| POST             | `/api/admin/ielts/tests/[testId]/archive`                 | Archive a published test                         | admin           | `archiveIeltsTestApi`                                                                               |
+| POST             | `/api/admin/ielts/tests/[testId]/unarchive`               | Re-publish an archived test                      | admin           | `unarchiveIeltsTestApi`                                                                             |
+| POST             | `/api/admin/ielts/tests/[testId]/new-version`             | Retired, always `410`                            | public          | (none)                                                                                              |
+| GET, PUT         | `/api/admin/ielts/tests/[testId]/vocab`                   | Read / replace the test's word list              | admin           | `readIeltsTestVocabApi`, `saveIeltsTestVocabApi`                                                    |
+| PUT              | `/api/admin/ielts/tests/[testId]/sections/[key]`          | Save one draft section                           | admin           | `saveIeltsSectionApi`                                                                               |
+| POST             | `/api/admin/ielts/tests/[testId]/sections/[key]/generate` | One AI generation step for a section             | admin           | `generateIeltsSectionApi`                                                                           |
+| POST             | `/api/admin/ielts/tests/[testId]/sections/[key]/audio`    | TTS audio for a listening part                   | admin           | `generateIeltsAudioApi`                                                                             |
+| POST             | `/api/admin/ielts/assist`                                 | AI proposal for a section (not saved)            | admin           | `assistIeltsSectionApi`                                                                             |
+| POST             | `/api/admin/ielts/uploads/sign`                           | Signed Cloudinary upload params                  | admin           | `uploadIeltsFileApi`                                                                                |
+| POST             | `/api/admin/revalidate`                                   | Expire shared-content cache tags                 | admin or secret | (none; `curl` from scripts)                                                                         |
 
-## 3. Auth and guest
+## 3. Auth
 
 ### GET, POST /api/auth/[...nextauth]
 
 File: `src/app/api/auth/[...nextauth]/route.ts` re-exports Auth.js `handlers`
 (`export const { GET, POST } = handlers`) from `src/lib/auth/auth.ts` (JWT
-session strategy). The `jwt` callback provisions the Mongoose user
-(`provisionUserOnSignIn`), sets `token.uid`, runs `foldGuestIntoUser`, and
-stamps `token.role = resolveRole(token.email)`.
+session strategy). The `jwt` callback provisions the Mongoose user on sign-in
+(`provisionUserOnSignIn`), sets `token.uid` to its ObjectId, and stamps
+`token.role = resolveRole(token.email)`. Google is the only way in: there is no
+guest identity and no `/api/guest` route (it no longer exists and answers
+`404`). A caller without a session gets `401` from every per-user route (see
+"Auth and current-user resolution" in section 1); pages redirect to
+`/auth/login` through the proxy and `requirePageUser()`.
 
-### POST /api/guest
+### Server action setFavoriteAction
 
-File: `src/app/api/guest/route.ts`.
-
-| Item   | Contract                                                                                                               |
-| ------ | ---------------------------------------------------------------------------------------------------------------------- |
-| Auth   | actor (`requirePracticeActor()`, mints the httpOnly guest cookie when missing)                                         |
-| Body   | none                                                                                                                   |
-| `200`  | `{ isGuest: boolean }` - never returns the id (it lives only in the cookie)                                            |
-| `409`  | `OutboxOwnerMismatchError` -> `common.errors.ownerMismatch`                                                            |
-| Other  | rethrown (Next default 500). No Mongo check: this route does not touch the database.                                   |
-| Caller | `ensureGuestIdentity` in `src/lib/sync/clientOutbox.ts`, once per page, before the first write of an `anonymous` owner |
+Not an HTTP route, but it follows the same rule.
+`setFavoriteAction` (`src/modules/dictation/content/favoriteActions.ts`) uses
+`getOptionalUser()` and, when the session has ended, returns
+`{ favorited: null, needsAuth: true }` instead of throwing so the client
+(`src/components/dictation/browse/FavoriteButton.tsx`) can send the learner to
+the login page. A malformed id still throws.
 
 ## 4. Dictation
 
@@ -406,7 +407,7 @@ Files: `src/app/api/dictation/sessions/route.ts`,
 
 #### POST /api/dictation/sessions
 
-- Auth: actor; body parsed first.
+- Auth: user; the body is parsed first (`400`), then `requireUser()`.
 - Body: `sessionStartSchema` (strict): `videoId` (24-hex). Invalid -> `400`
   "Session start payload is invalid."
 - Guard (`getSessionStartGuardDecision`, localized): `404` `videoNotFound`;
@@ -426,7 +427,7 @@ session }`. A concurrent start that loses the partial-unique index
 
 #### GET /api/dictation/sessions/translations
 
-- Auth: public (no actor; translation tracks are shared content).
+- Auth: public (no session needed; translation tracks are shared catalog content).
 - Query: `parseTranslationTrackRequest`
   (`src/modules/dictation/practice/translationTrackRequest.ts`): `videoId`
   (24-hex) and `language` (valid tag, normalized). Invalid -> `400` "A video id
@@ -444,7 +445,7 @@ session }`. A concurrent start that loses the partial-unique index
 #### GET /api/dictation/sessions/[sessionId]
 
 - Id: `parseSessionIdParam` (`400` "Session id is invalid.").
-- Auth: actor; query scoped to `{ _id, userId: actor.id }`.
+- Auth: user, after the id check; query scoped to `{ _id, userId: user.id }`.
 - `200 { session }`; `404` (`sessionNotFound`); `500`.
 
 #### PATCH /api/dictation/sessions/[sessionId]
@@ -506,7 +507,7 @@ Invalid -> `400` "Attempt payload is invalid." Flow:
    non-active session keeps its cursor. Shared segment and video documents are
    never written; per-learner progress is derived from attempts
    (`src/modules/dictation/practice/segmentProgressService.ts`).
-6. `recomputeReviewItemsForSegment` runs for the actor.
+6. `recomputeReviewItemsForSegment` runs for the user.
 
 Success `201`:
 `{ attempt, mode: 'create', nextSegmentId: string | null, progress, session }`
@@ -520,7 +521,8 @@ Client: outbox `buildAttemptWrite` (`practiceSync.ts`), path
 
 File: `src/app/api/dictation/review-items/route.ts`. Decisions:
 `reviewItemRouteDecisions.ts`. Service:
-`src/modules/dictation/review/reviewItemService.ts`. Auth: actor.
+`src/modules/dictation/review/reviewItemService.ts`. Auth: user (`requireUser()`
+after the query or body is parsed).
 
 | Method  | Input                                                                                                           | Success                                                | Errors                              |
 | ------- | --------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ | ----------------------------------- |
@@ -536,7 +538,7 @@ File: `src/app/api/dictation/debriefs/route.ts`. Decisions:
 `src/modules/dictation/ai/debriefDecisions.ts`. Service:
 `src/modules/dictation/ai/debriefService.ts`.
 
-- Auth: actor. Body `debriefPayloadSchema` (strict): `videoId`, optional
+- Auth: user, after the body is parsed. Body `debriefPayloadSchema` (strict): `videoId`, optional
   `notes` (max 2000). Invalid -> `400` "Debrief payload is invalid."
 - `200 { debrief, mode: 'cache' | 'created' }`.
 - When the service returns `ok: false`, the route keeps its status but replaces
@@ -574,7 +576,9 @@ Files: `src/app/api/vocab/**/route.ts`. Schemas and parsers:
 `src/modules/vocabulary/services/vocabularyRouteDecisions.ts` (each `parseXxx`
 takes the request's catalogue `t` and returns `{ ok: true, data }` or a `400`
 with a `vocabulary.api.*` message). Limits: `src/modules/vocabulary/constants.ts`.
-Every route: `getMissingVocabMongoResponse(t)` (`500`), actor auth, `SyntaxError`
+Every route: `getMissingVocabMongoResponse(t)` (`500`), query or body parse (`400`), then
+`requireUser()` (`401` without a session; `GET /api/vocab/stats` has no input, so
+it gates first), `SyntaxError`
 -> `400` (`invalidJson`), anything else through `toVocabApiError` (`500`
 `vocabulary.api.failed`).
 
@@ -706,7 +710,7 @@ in `src/modules/grammar/session/parseSessionRequest.ts`. Service:
 
 | Item   | Contract                                                                                                                                                                                                                            |
 | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Auth   | actor                                                                                                                                                                                                                               |
+| Auth   | user (`requireUser()`, after the body is parsed)                                                                                                                                                                                    |
 | Body   | `answers` (1-20 of `{ cardId: 1-60 chars, answer: unknown }`), `idempotencyKey` (8-100), `mode` (`GRAMMAR_SESSION_MODES`: `lesson \| review \| checkpoint \| weak`), `targetId` (1-40)                                              |
 | Logic  | claims `{ userId, idempotencyKey }` in `GrammarSessionModel` before reading; re-grades the raw first answers, applies stars, unlocks, ladder and misses (`planGrammarSessionWrite`), then stores the response on the claim          |
 | `200`  | `GrammarSessionResult` (`src/modules/grammar/session/planGrammarSessionWrite.ts`): `mode, targetId, total, correctCount, accuracy, passed, stars, results, unlocked, testOut`. A replay of a finished key returns the stored result |
@@ -719,7 +723,7 @@ in `src/modules/grammar/session/parseSessionRequest.ts`. Service:
 ## 7. IELTS learner
 
 Files: `src/app/api/ielts/**/route.ts`. Plumbing: `src/modules/ielts/http.ts`
-(order: Mongo -> JSON body -> zod -> actor -> service). Schemas:
+(order: Mongo -> JSON body -> zod -> `requireUser()` -> service). Schemas:
 `src/modules/ielts/attempts/attemptRouteDecisions.ts`. Services:
 `src/modules/ielts/attempts/attemptService.ts`,
 `src/modules/ielts/writing/gradeWritingService.ts`,
@@ -729,8 +733,11 @@ Files: `src/app/api/ielts/**/route.ts`. Plumbing: `src/modules/ielts/http.ts`
 Shared rules: missing Mongo -> `503`; invalid JSON -> `400` "Request body must
 be valid JSON."; zod failure -> `400` with the first issue text; an invalid
 `attemptId` (not an ObjectId) -> `404` (`attemptNotFound`); every attempt query
-is scoped to `ownerId = actor.id`; an owner mismatch -> `409`
-(`common.errors.ownerMismatch`, via `ieltsRouteFailure`); uncaught errors ->
+is scoped to `ownerId = user.id`; no session -> `401`
+(`common.errors.unauthorized`), a session id that is not an ObjectId -> `400`,
+and an owner mismatch -> `409` (`common.errors.ownerMismatch`), all via
+`ieltsRouteFailure`. Because the user is resolved after parsing, a malformed
+body or an invalid `attemptId` from a signed-out caller gets `400`/`404` first; uncaught errors ->
 `500` (`ielts.apiErrors.generic`, or a route-specific key noted below).
 
 Answer values (`answersSchema`): a record keyed by question number
@@ -740,18 +747,18 @@ Answer values (`answersSchema`): a record keyed by question number
 `IELTS_ANSWER_MAX_LENGTH` (`400` `answerTooLong`) and requires writing keys `1`
 and `2` as text.
 
-| Endpoint                                 | Body / query                                                                                                                                                                                                                                          | Success                                                                                                                                                                          | Errors                                                                                                                                                                                                                                                                                                                                                 |
-| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `POST /api/ielts/attempts`               | `startAttemptSchema` (strict): `testSlug` (`^[a-z0-9-]{1,80}$`), `skill` (`IELTS_SKILLS`), `mode` (`practice \| mock`), `scope` (`{kind:'skill'}` or `{kind:'part', part 1-4}`), `sessionId` (8-80, nullable, default null), `idempotencyKey` (8-120) | `201 { attempt, mode: 'created' }`; `200` with `mode: 'resumed'` (open attempt for the same test version, skill, mode and scope) or `'idempotent'` (same key)                    | `400` `tooFewParts`; `404` `testUnavailable`, `noSectionForPart`; `409` `mockNeedsAudio` (listening mock without audio), `staleStart` (key from an older test version)                                                                                                                                                                                 |
-| `GET /api/ielts/attempts/[attemptId]`    | none                                                                                                                                                                                                                                                  | `200 { attempt }`; an in-progress attempt past deadline plus grace is expired and scored on read, and a half-scored submit is finalized                                          | `404` `attemptNotFound`                                                                                                                                                                                                                                                                                                                                |
-| `DELETE /api/ielts/attempts/[attemptId]` | none                                                                                                                                                                                                                                                  | `200 { deleted: true }`; today's gradings are copied to `IeltsGradingLedgerModel` first so the daily limit stays honest                                                          | `404`                                                                                                                                                                                                                                                                                                                                                  |
-| `PUT .../[attemptId]/answers`            | `saveAnswersSchema` (strict): `answers`, `seq` (1-1000000)                                                                                                                                                                                            | `200 { applied: boolean, savedSeq }`; a stale `seq` or a non-in-progress attempt is `applied: false`, not an error                                                               | `404`; `400` lengths; `409` `timeUp` (past deadline plus grace)                                                                                                                                                                                                                                                                                        |
-| `POST .../[attemptId]/submit`            | `submitAttemptSchema` (strict): `answers`, `seq`, `idempotencyKey` (8-120, used by the outbox id only)                                                                                                                                                | `200 { attempt }`; a newer in-time snapshot is written with the status flip, else the stored answers are submitted; an already submitted attempt returns its stored result       | `404`; `400` lengths; `409` `startAudioFirst` (listening mock never started); `500` `submitFailed`                                                                                                                                                                                                                                                     |
-| `POST .../[attemptId]/audio-events`      | `audioEventSchema`: `{ kind: 'part-started', part 1-4 }` or `{ kind: 'interrupted' \| 'resumed', positionSec 0-3600 }`                                                                                                                                | `200 { attempt }` with a recomputed `deadlineAt`; ignored (returns the attempt) unless a listening mock in progress, for a repeated part start, or past `IELTS_MAX_AUDIO_EVENTS` | `404`; `409` `audioEventsChanged` after 3 optimistic retries                                                                                                                                                                                                                                                                                           |
-| `POST .../[attemptId]/check`             | `checkPracticeSchema`: `{ answers, part 1-4 }` (Listening/Reading) or `{ task: 1 \| 2, essay }` (Writing)                                                                                                                                             | part: `200` `IeltsPartCheck` `{ part, raw, total, questions[] }` (nothing stored); task: `200 { feedback }` (only the grading count is stored)                                   | part: `403` `checkPracticeOnly`, `400` `writingPerTask`, `404` `partNotInAttempt`; task: `401` `signInForAi` (guest), `400` `onlyWritingAi` / `writeEssayFirst`, `403` `checkTaskPracticeOnly`, `409` `alreadySubmitted`, `404` `taskNotInAttempt`, `503` `aiNotConfigured`, `429` `gradingLimit`, `500` `couldNotGrade`; fallback `500` `checkFailed` |
-| `GET .../[attemptId]/evidence?number=N`  | `number` 1-40 (`400` `questionNumberRange`)                                                                                                                                                                                                           | `200 { number, sectionKey, notGiven, evidence: { quote, blockIndex } \| null }`                                                                                                  | `403` `guidedPracticeOnly` (mock or drill); `404` `questionNotInAttempt`                                                                                                                                                                                                                                                                               |
-| `POST .../[attemptId]/grade`             | `gradeWritingSchema` (strict): `task` (1 or 2)                                                                                                                                                                                                        | `200 { attempt }`; a failed examiner run is stored as `writingFeedback.<task>.status: 'failed'` and still returns `200`; both tasks graded -> status `scored` with `writingBand` | `401` `signInToGrade` (guest); `400` `onlyWritingGraded`; `409` `submitBeforeGrading`, `alreadyGrading`; `404` `taskNotInAttempt`, `taskContentMissing`; `503` `aiNotConfiguredCompare`; `429` `gradingLimit` (`getIeltsWritingDailyLimit()`, default 10 per UTC day); fallback `500` `gradeFailed`                                                    |
-| `POST /api/ielts/drills`                 | `startDrillSchema` (strict): `skill` (`listening \| reading`), `type` (`IELTS_QUESTION_TYPES`), `idempotencyKey`                                                                                                                                      | `200 { attempt }` (a replayed key returns the stored drill)                                                                                                                      | `404` `noDrillGroups`                                                                                                                                                                                                                                                                                                                                  |
+| Endpoint                                 | Body / query                                                                                                                                                                                                                                          | Success                                                                                                                                                                          | Errors                                                                                                                                                                                                                                                                                                                    |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `POST /api/ielts/attempts`               | `startAttemptSchema` (strict): `testSlug` (`^[a-z0-9-]{1,80}$`), `skill` (`IELTS_SKILLS`), `mode` (`practice \| mock`), `scope` (`{kind:'skill'}` or `{kind:'part', part 1-4}`), `sessionId` (8-80, nullable, default null), `idempotencyKey` (8-120) | `201 { attempt, mode: 'created' }`; `200` with `mode: 'resumed'` (open attempt for the same test version, skill, mode and scope) or `'idempotent'` (same key)                    | `400` `tooFewParts`; `404` `testUnavailable`, `noSectionForPart`; `409` `mockNeedsAudio` (listening mock without audio), `staleStart` (key from an older test version)                                                                                                                                                    |
+| `GET /api/ielts/attempts/[attemptId]`    | none                                                                                                                                                                                                                                                  | `200 { attempt }`; an in-progress attempt past deadline plus grace is expired and scored on read, and a half-scored submit is finalized                                          | `404` `attemptNotFound`                                                                                                                                                                                                                                                                                                   |
+| `DELETE /api/ielts/attempts/[attemptId]` | none                                                                                                                                                                                                                                                  | `200 { deleted: true }`; today's gradings are copied to `IeltsGradingLedgerModel` first so the daily limit stays honest                                                          | `404`                                                                                                                                                                                                                                                                                                                     |
+| `PUT .../[attemptId]/answers`            | `saveAnswersSchema` (strict): `answers`, `seq` (1-1000000)                                                                                                                                                                                            | `200 { applied: boolean, savedSeq }`; a stale `seq` or a non-in-progress attempt is `applied: false`, not an error                                                               | `404`; `400` lengths; `409` `timeUp` (past deadline plus grace)                                                                                                                                                                                                                                                           |
+| `POST .../[attemptId]/submit`            | `submitAttemptSchema` (strict): `answers`, `seq`, `idempotencyKey` (8-120, used by the outbox id only)                                                                                                                                                | `200 { attempt }`; a newer in-time snapshot is written with the status flip, else the stored answers are submitted; an already submitted attempt returns its stored result       | `404`; `400` lengths; `409` `startAudioFirst` (listening mock never started); `500` `submitFailed`                                                                                                                                                                                                                        |
+| `POST .../[attemptId]/audio-events`      | `audioEventSchema`: `{ kind: 'part-started', part 1-4 }` or `{ kind: 'interrupted' \| 'resumed', positionSec 0-3600 }`                                                                                                                                | `200 { attempt }` with a recomputed `deadlineAt`; ignored (returns the attempt) unless a listening mock in progress, for a repeated part start, or past `IELTS_MAX_AUDIO_EVENTS` | `404`; `409` `audioEventsChanged` after 3 optimistic retries                                                                                                                                                                                                                                                              |
+| `POST .../[attemptId]/check`             | `checkPracticeSchema`: `{ answers, part 1-4 }` (Listening/Reading) or `{ task: 1 \| 2, essay }` (Writing)                                                                                                                                             | part: `200` `IeltsPartCheck` `{ part, raw, total, questions[] }` (nothing stored); task: `200 { feedback }` (only the grading count is stored)                                   | part: `403` `checkPracticeOnly`, `400` `writingPerTask`, `404` `partNotInAttempt`; task: `400` `onlyWritingAi` / `writeEssayFirst`, `403` `checkTaskPracticeOnly`, `409` `alreadySubmitted`, `404` `taskNotInAttempt`, `503` `aiNotConfigured`, `429` `gradingLimit`, `500` `couldNotGrade`; fallback `500` `checkFailed` |
+| `GET .../[attemptId]/evidence?number=N`  | `number` 1-40 (`400` `questionNumberRange`)                                                                                                                                                                                                           | `200 { number, sectionKey, notGiven, evidence: { quote, blockIndex } \| null }`                                                                                                  | `403` `guidedPracticeOnly` (mock or drill); `404` `questionNotInAttempt`                                                                                                                                                                                                                                                  |
+| `POST .../[attemptId]/grade`             | `gradeWritingSchema` (strict): `task` (1 or 2)                                                                                                                                                                                                        | `200 { attempt }`; a failed examiner run is stored as `writingFeedback.<task>.status: 'failed'` and still returns `200`; both tasks graded -> status `scored` with `writingBand` | `400` `onlyWritingGraded`; `409` `submitBeforeGrading`, `alreadyGrading`; `404` `taskNotInAttempt`, `taskContentMissing`; `503` `aiNotConfiguredCompare`; `429` `gradingLimit` (`getIeltsWritingDailyLimit()`, default 10 per UTC day); fallback `500` `gradeFailed`                                                      |
+| `POST /api/ielts/drills`                 | `startDrillSchema` (strict): `skill` (`listening \| reading`), `type` (`IELTS_QUESTION_TYPES`), `idempotencyKey`                                                                                                                                      | `200 { attempt }` (a replayed key returns the stored drill)                                                                                                                      | `404` `noDrillGroups`                                                                                                                                                                                                                                                                                                     |
 
 Client: `src/requests/ieltsApi.ts`. Autosave and submit go through the outbox
 on lane `ielts:<attemptId>` (`IELTS_OUTBOX_LANE_PREFIX` in
@@ -857,23 +864,23 @@ outbox items (section 1).
 | `ieltsApi.ts`                 | `startIeltsAttemptApi`, `startIeltsDrillApi`, `readIeltsAttemptApi`, `deleteIeltsAttemptApi`, `readIeltsEvidenceApi`, `postIeltsAudioEventApi`, `checkIeltsPartApi`, `checkIeltsTaskApi`, `gradeIeltsWritingApi`, `buildIeltsAnswersWrite`, `buildIeltsSubmitWrite`, `ieltsAttemptLane`, `IeltsApiError`, `ieltsErrorMessage`                                                    | `IeltsApiError` keeps `status`; message `''` when the server sent none                                                             |
 | `ieltsAdminApi.ts`            | `listIeltsTestsApi`, `createIeltsTestApi`, `readIeltsTestApi`, `saveIeltsMetaApi`, `deleteIeltsTestApi`, `saveIeltsSectionApi`, `publishIeltsTestApi`, `archiveIeltsTestApi`, `unarchiveIeltsTestApi`, `readIeltsTestVocabApi`, `saveIeltsTestVocabApi`, `generateIeltsSectionApi`, `generateIeltsAudioApi`, `assistIeltsSectionApi`, `uploadIeltsFileApi`, `IeltsAdminApiError` | all `cache: 'no-store'`                                                                                                            |
 
-No `src/requests` module exists for auth (Auth.js `signIn`/`signOut`), the
-guest route (`ensureGuestIdentity`), review items, the session GET, the legacy
-vocab batch route, or `/api/admin/revalidate`.
+No `src/requests` module exists for auth (Auth.js `signIn`/`signOut`), review
+items, the session GET, the legacy vocab batch route, or
+`/api/admin/revalidate`.
 
 ## 10. Gating summary
 
 Enforcement is server-side only; the client role is never trusted.
 `requireAdmin` recomputes the role from the session on every call, and every
-per-user query is scoped to the server-resolved `actor.id`, never a
+per-user query is scoped to the server-resolved `user.id`, never a
 client-supplied id.
 
-| Gate               | Routes                                                                                                                                                                                                          |
-| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| public             | `GET /api/dictation/videos`, `GET /api/dictation/sessions/translations`, `/api/auth/[...nextauth]`, `POST .../new-version` (always `410`)                                                                       |
-| actor (user/guest) | `POST /api/guest`; dictation sessions, attempts, review items, debriefs, stats; all `/api/vocab/**`; `POST /api/grammar/sessions`; all `/api/ielts/**` (AI grading and writing checks refuse guests with `401`) |
-| admin              | dictation video writes and detail, transcripts, segment PATCH and translate, YouTube import; `/api/admin/vocab/enrich`; all `/api/admin/ielts/**` except `new-version`                                          |
-| admin or secret    | `POST /api/admin/revalidate`                                                                                                                                                                                    |
+| Gate            | Routes                                                                                                                                                                 |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| public          | `GET /api/dictation/videos`, `GET /api/dictation/sessions/translations`, `/api/auth/[...nextauth]`, `POST .../new-version` (always `410`)                              |
+| user            | dictation sessions, attempts, review items, debriefs; all `/api/vocab/**`; `POST /api/grammar/sessions`; all `/api/ielts/**` (`401` without a session)                 |
+| admin           | dictation video writes and detail, transcripts, segment PATCH and translate, YouTube import; `/api/admin/vocab/enrich`; all `/api/admin/ielts/**` except `new-version` |
+| admin or secret | `POST /api/admin/revalidate`                                                                                                                                           |
 
 Ordering caveat for callers: body-first routes (`POST /api/dictation/transcripts`,
 `PATCH /api/dictation/segments/[segmentId]`, `POST .../translate`,
@@ -881,3 +888,9 @@ Ordering caveat for callers: body-first routes (`POST /api/dictation/transcripts
 `400` for a malformed body before the admin check. Admin-first routes
 (`POST /api/dictation/videos`, the `[videoId]` routes,
 `POST /api/dictation/imports/youtube`) return `401`/`403` regardless of body.
+User routes are body-first as well: dictation sessions (start, GET, PATCH),
+attempts, review items and debriefs, every `/api/vocab/**` route that takes
+input, `POST /api/grammar/sessions` (JSON, then schema) and every `/api/ielts/**`
+route (Mongo, id, JSON, schema) parse first and return `400` (or `404` for an
+invalid `attemptId`) to a signed-out caller; only an input-free route such as
+`GET /api/vocab/stats`, or a request that parses cleanly, reaches the `401`.

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 
 import { getMessages } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
-import { requirePracticeActor } from '@/modules/dictation/services/getCurrentUser'
+import { requireUser } from '@/lib/auth/currentUser'
 import { searchVocabEntries } from '@/modules/vocabulary/services/vocabEntryService'
 import { toVocabApiError } from '@/modules/vocabulary/services/vocabApiErrors'
 import {
@@ -28,7 +28,7 @@ export async function GET(request: Request) {
   if (!parsed.ok) return jsonError(parsed)
 
   try {
-    const actor = await requirePracticeActor()
+    const user = await requireUser()
 
     await connectDatabase()
 
@@ -36,7 +36,7 @@ export async function GET(request: Request) {
       entries: await searchVocabEntries({
         limit: parsed.data.limit,
         query: parsed.data.q,
-        userId: actor.id,
+        userId: user.id,
       }),
     })
   } catch (error) {

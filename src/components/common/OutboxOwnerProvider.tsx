@@ -4,51 +4,41 @@ import { createContext, useContext, useMemo } from 'react'
 
 import { getClientOutbox } from '@/lib/sync/clientOutbox'
 
-interface OutboxOwner {
-  isGuest: boolean
-  ownerKey: string | null
-}
+/**
+ * Outside a provider (a component test, or a tree the (app) layout does not
+ * wrap) there is no learner; writes then queue under this placeholder, and
+ * the server refuses them (409) instead of saving them for whoever is signed
+ * in.
+ */
+const NO_OWNER = ''
 
-const OutboxOwnerContext = createContext<OutboxOwner>({
-  isGuest: false,
-  ownerKey: null,
-})
+const OutboxOwnerContext = createContext<string>(NO_OWNER)
 
 interface Props {
   children: React.ReactNode
-  /** True when `ownerKey` belongs to a guest, not a signed-in user. */
-  isGuest?: boolean
-  ownerKey: string | null
+  /** The signed-in learner's client owner key (a hash of the user id). */
+  ownerKey: string
 }
 
-export function OutboxOwnerProvider({
-  children,
-  isGuest = false,
-  ownerKey,
-}: Props) {
-  const value = useMemo(() => ({ isGuest, ownerKey }), [isGuest, ownerKey])
-
+export function OutboxOwnerProvider({ children, ownerKey }: Props) {
   return (
-    <OutboxOwnerContext.Provider value={value}>
+    <OutboxOwnerContext.Provider value={ownerKey}>
       {children}
     </OutboxOwnerContext.Provider>
   )
 }
 
 /**
- * The client owner key the server rendered for this learner (a one-way hash,
- * never the raw id), or null for a first-time visitor.
+ * The client owner key the server rendered for this learner: a one-way hash,
+ * never the raw id.
  */
 export function useOutboxOwnerKey() {
-  return useContext(OutboxOwnerContext).ownerKey
+  return useContext(OutboxOwnerContext)
 }
 
 /** The tab-wide outbox for the current learner. */
 export function useClientOutbox() {
-  const { isGuest, ownerKey } = useContext(OutboxOwnerContext)
+  const ownerKey = useContext(OutboxOwnerContext)
 
-  return useMemo(
-    () => getClientOutbox(ownerKey, { isGuest }),
-    [isGuest, ownerKey]
-  )
+  return useMemo(() => getClientOutbox(ownerKey), [ownerKey])
 }

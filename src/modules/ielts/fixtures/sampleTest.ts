@@ -345,7 +345,7 @@ const listening2: IeltsSection = {
       {
         speaker: 'Graham',
         voice: 'onyx',
-        text: "As a thank-you, volunteers get free entry for up to two guests and a ten per cent discount in the café. Sadly, we can't offer free parking, as the car park belongs to the council.",
+        text: "As a thank-you, volunteers get free entry for up to two friends and a ten per cent discount in the café. Sadly, we can't offer free parking, as the car park belongs to the council.",
       },
       {
         speaker: 'Graham',
@@ -483,7 +483,7 @@ const listening2: IeltsSection = {
           'Which benefit do volunteers receive?',
           ['B'],
           ev('a ten per cent discount in the café', 5),
-          'Volunteers get a café discount; parking is not free and guest entry is limited to two people.'
+          'Volunteers get a café discount; parking is not free and free entry covers at most two friends.'
         ),
       ],
     }),

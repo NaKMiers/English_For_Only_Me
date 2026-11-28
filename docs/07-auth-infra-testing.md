@@ -1,8 +1,9 @@
 # 07 - Authentication, Infrastructure, Configuration, and Testing
 
 This document explains how "English For Only Me" (Next.js 16, Auth.js v5 /
-next-auth 5.0.0-beta.31, Mongoose 9) handles sign-in, roles, guest identity and
-its merge into an account, the owner-key data-isolation contract, its external
+next-auth 5.0.0-beta.31, Mongoose 9) handles the required Google sign-in (every
+page is gated; there is no guest mode), roles, the owner-key data-isolation
+contract, its external
 service integrations (Google OAuth, YouTube Data API, Qwen structured outputs
 and text-to-speech on Alibaba Cloud Model Studio, Cloudinary image and audio uploads, MongoDB, and the
 vocabulary dictionary/translation providers), signed recall task tokens, the
@@ -19,40 +20,47 @@ covers only how they call Qwen and Cloudinary. Package versions: `next`
 
 ## 1. Authentication Architecture (Auth.js v5)
 
-### 1.1 The edge/Node config split
+### 1.1 The proxy / Node config split
 
-Auth is deliberately split into two files so the proxy (the Next.js 16 name for
-middleware) can run on the edge runtime, which cannot load Mongoose.
+Sign-in with Google is required for every page. Auth is split into two files
+so the proxy (the Next.js 16 name for middleware) can gate each navigation
+without loading Mongoose.
 
-- `src/lib/auth/auth.config.ts` - the edge-safe `authConfig`. It imports only
-  `@/constants/environments` and `./roles` (no Mongoose, no `server-only`
-  module). It defines the Google provider plus the `authorized`, `jwt`, and
+- `src/lib/auth/auth.config.ts` - the DB-free `authConfig`. It imports only
+  `@/constants/environments`, `./callbackUrl` and `./roles` (no Mongoose, no
+  `server-only` module). It defines the Google provider, `pages`
+  (`{ signIn: '/auth/login', error: '/auth/login' }`, so the Auth.js default
+  pages never show) and the `authorized` (`authorizePage`), `jwt` and
   `session` callbacks. It is typed `satisfies NextAuthConfig`.
 - `src/lib/auth/auth.ts` - the full Node-runtime instance. It spreads
   `authConfig`, sets `session: { strategy: 'jwt' }`, and overrides the `jwt`
   callback with a DB-touching version that provisions the Mongoose user and
-  folds guest data into it (`foldGuestIntoUser`). It exports
-  `{ handlers, auth, signIn, signOut }`.
+  stamps its id and role. It exports `{ handlers, auth, signIn, signOut }`.
 - `src/proxy.ts` builds its own NextAuth instance from `authConfig` alone
-  (`export default auth`) with `matcher: ['/admin/:path*']`, so no Mongoose
-  code is ever pulled into the edge bundle.
+  (`export default auth`). Its matcher is
+  `'/((?!api|_next/static|_next/image|.*\\.[a-zA-Z0-9]+$).*)'`: every path
+  except API routes, Next build output and public files (any last segment with
+  an extension). The proxy runs on the Node runtime but only decodes the
+  session JWT; it never touches the database, because it runs on every
+  navigation and prefetch.
 - `src/lib/auth/actions.ts` - a `'use server'` module exporting
-  `signInAction()` (`signIn('google')`) and `signOutAction()` (`signOut()`).
-  The client `src/components/common/AccountControl.tsx` imports them as
-  action references (form `action` for sign-in, passed to `UserMenu` for
-  sign-out), so the NextAuth / Mongoose chain never reaches the browser
-  bundle.
+  `signInAction(formData)` (`signIn('google', { redirectTo })`, where
+  `redirectTo` is the form's `callbackUrl` passed through `safeCallbackUrl`)
+  and `signOutAction()` (`signOut({ redirectTo: '/auth/login' })`). Client
+  components import them as action references: `src/components/auth/LoginCard.tsx`
+  for sign-in, `src/components/common/AccountControl.tsx` (via `UserMenu`) for
+  sign-out, so the NextAuth / Mongoose chain never reaches the browser bundle.
 
 ```mermaid
 graph TD
-  A[auth.config.ts<br/>edge-safe]:::edge --> B[proxy.ts<br/>NextAuth authConfig]
+  A[auth.config.ts<br/>DB-free]:::edge --> B[proxy.ts<br/>NextAuth authConfig<br/>every page gated]
   A --> C[auth.ts<br/>NextAuth full]
   C --> D[handlers<br/>api/auth/...nextauth/route.ts]
-  C --> E[auth / signIn / signOut<br/>root layout, services]
+  C --> E[auth / signIn / signOut<br/>root layout, currentUser.ts]
   C --> H[actions.ts, use server<br/>signInAction / signOutAction]
-  H --> I[AccountControl<br/>client, topbar + rail]
-  C -. provisionUserOnSignIn<br/>foldGuestIntoUser .-> F[(MongoDB via Mongoose)]
-  B -. authorized callback only .-> G[/admin guard, no DB/]
+  H --> I[LoginCard<br/>AccountControl]
+  C -. provisionUserOnSignIn .-> F[(MongoDB via Mongoose)]
+  B -. authorized callback only .-> G[/login redirect or admin check, no DB/]
   classDef edge fill:#eef,stroke:#333;
 ```
 
@@ -65,23 +73,32 @@ sign-out, etc.).
 - Provider: `Google({ clientId, clientSecret })` in `auth.config.ts`, reading
   `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` via `getOptionalServerEnv(...)`
   and defaulting to `''` when absent (so importing the config never throws when
-  Google is unconfigured).
+  Google is unconfigured; the login page then fails closed, see 1.5).
 - Session strategy: JWT (`session: { strategy: 'jwt' }` in `auth.ts`). There is
   no database session table and no Auth.js adapter. `src/models/UserModel.ts`
   explains why: a Mongo adapter would peer-require `mongodb ^6`, but the
   project ships `mongodb 7` via `mongoose 9`, so the app manages the User with
   Mongoose directly and keeps one ODM/driver.
-- `authorized` callback (edge, `auth.config.ts`): returns `true` for any path
-  not starting with `/admin`; for `/admin` it requires
-  `auth?.user?.role === 'admin'`. Everything else is public browsing by design;
-  per-user APIs enforce their own auth (see 1.6).
-- `jwt` callback (edge version, `auth.config.ts`): stamps
+- `authorized` callback (`authorizePage`, `auth.config.ts`), the gate for every
+  page the proxy matches:
+
+  | Request                                     | Result                                                                                                                                        |
+  | ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+  | `/auth/login`                               | `true` (the only public page)                                                                                                                 |
+  | No user in the token                        | `false`: Auth.js redirects to `pages.signIn` with `callbackUrl=<page>`                                                                        |
+  | `/admin` or `/admin/*`, role `admin`        | `true`                                                                                                                                        |
+  | `/admin` or `/admin/*`, signed-in non-admin | A `Response` redirect to `/dictation` (`NON_ADMIN_HOME`); returning `false` would bounce to the login page, which sends them back to `/admin` |
+  | Any other page, signed in                   | `true`                                                                                                                                        |
+
+  API routes are not matched; they check for themselves (see 1.6).
+
+- `jwt` callback (DB-free version, `auth.config.ts`): stamps
   `token.role = resolveRole(token.email)` on every pass.
 - `jwt` callback (Node override, `auth.ts`): on sign-in (`user.email` present)
-  it calls `provisionUserOnSignIn(...)` (passing `token.sub` as `googleSub`),
-  sets `token.uid` to the Mongo ObjectId, then awaits `foldGuestIntoUser(id)`
-  (see 1.5). It always ends by refreshing `token.role` from the allowlist.
-- `session` callback (edge, `auth.config.ts`): copies `token.uid` into
+  it calls `provisionUserOnSignIn(...)` (passing `token.sub` as `googleSub`)
+  and sets `token.uid` to the Mongo ObjectId. It always ends by refreshing
+  `token.role` from the allowlist. Nothing else happens at sign-in.
+- `session` callback (`auth.config.ts`): copies `token.uid` into
   `session.user.id` (falling back to the existing id) and recomputes
   `session.user.role` from `token.email`.
 
@@ -110,127 +127,88 @@ user-scoped collection; catalog content (videos, transcripts, segments) is
 global and not tied to it. `role` is intentionally NOT persisted (derived from
 `ADMIN_EMAILS` at token time).
 
-### 1.5 Guest identity and guest-data merge
+### 1.5 Sign-in gate, login page and return path
 
-`src/lib/auth/guestUser.ts` (`server-only`) implements cookie-based anonymous
-identity so practice never requires login:
+Guest mode was removed on 2026-11-28: there is no anonymous identity, no guest
+cookie and no merge at sign-in. Rows that guests left behind are dropped by
+`bun run auth:drop-guest-data` (see section 8). The plan is
+`docs/plans/google-login-required-2026-11-28.md`.
 
-| Item                                                           | Value / behavior                                                                                                               |
-| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| Cookie `dictationGuestId` (`GUEST_COOKIE_NAME`)                | 1-year max-age, `httpOnly`, `sameSite: 'lax'`, `secure` only in production, path `/`                                           |
-| Guest id format                                                | `guest_` + de-hyphenated `crypto.randomUUID()` (32 hex); `isGuestId` tests the `guest_` prefix                                 |
-| `getGuestId()`                                                 | Reads the cookie, never writes - safe in Server Components                                                                     |
-| `getOrCreateGuestId()`                                         | Mints and writes the cookie when absent - Route Handlers / Server Functions only                                               |
-| `clearGuestCookie()`                                           | Deletes both `dictationGuestId` and `dictationGuestMergeOwner`                                                                 |
-| Cookie `dictationGuestMergeOwner` (`GUEST_MERGE_OWNER_COOKIE`) | Exists only while a merge is unfinished; holds the account id that merge was for (`getGuestMergeOwner` / `setGuestMergeOwner`) |
+Gate layers, outermost first: the proxy (1.1, 1.2), then the page layouts and
+`requirePageUser()` in each Server Component (1.6), then `requireUser()` in
+every API route (1.6).
 
-Minting endpoint: `POST /api/guest` (`src/app/api/guest/route.ts`,
-`runtime = 'nodejs'`) calls `requirePracticeActor()` and returns only
-`{ isGuest }` - never the id, which lives only in the httpOnly cookie. The
-client outbox calls it once before a first-time visitor's first write so
-several queued writes all land under one guest id (see section 5). An
-`OutboxOwnerMismatchError` maps to a 409 with the localized
-`common.errors.ownerMismatch` message.
+`src/lib/auth/callbackUrl.ts` holds the return-path rules:
 
-Merge on sign-in: `foldGuestIntoUser(userId)` (`src/lib/auth/guestMerge.ts`,
-`server-only`) reads the guest cookie and the pending-merge owner, then asks
-the pure `guestMergeStep({ guestId, pendingFor, userId })`:
+- `LOGIN_PATH` is `/auth/login`; `DEFAULT_CALLBACK_URL` is `/`.
+- `safeCallbackUrl(raw, origin?)` is the open-redirect guard. It returns a
+  same-origin path (with its query and hash) or falls back to `/`. A plain
+  path is accepted; an absolute URL is accepted only when it is on `origin`
+  (Auth.js hands the proxy's redirect an absolute `callbackUrl`). Rejected:
+  another origin, protocol-relative `//host` and `/\host`, control characters
+  and backslashes, the login page itself, anything under `/api`, and garbage.
+- `loginUrlFor(path)` builds `/auth/login?callbackUrl=<encoded path>` (just
+  `/auth/login` when the path would be `/`).
 
-| Step      | When                                       | Effect                                                                                  |
-| --------- | ------------------------------------------ | --------------------------------------------------------------------------------------- |
-| `none`    | No guest cookie                            | Nothing                                                                                 |
-| `abandon` | A merge is pending for a different account | `clearGuestCookie()`; leftovers are never handed to the next person on a shared browser |
-| `merge`   | Otherwise                                  | Runs four merges in sequence, each wrapped so one failure does not skip the others      |
+The login page is `src/app/auth/login/page.tsx` (`force-dynamic`, `nodejs`
+runtime, `noindex`) with the client `src/components/auth/LoginCard.tsx` and
+`loginPageState.ts` (`noticeForError` maps Auth.js `?error=`: `AccessDenied` ->
+access denied, `Configuration` -> not configured, any other code -> a generic
+"try again"). The page reads this request's own origin from the forwarded
+host headers, sanitises `callbackUrl` with `safeCallbackUrl`, and redirects an
+already signed-in learner straight to it. It fails closed: when
+`hasGoogleAuth()` is false it shows a "not configured" notice and no button,
+and since the proxy sends everyone there, nobody can use the app until Google
+OAuth is configured. The sign-in form posts `callbackUrl` to `signInAction`,
+which sanitises it again.
 
-The four merges are `mergeGuestDataIntoUser`
-(`src/modules/dictation/services/mergeGuestData.ts`), `mergeGrammarGuestData`
-(`src/modules/grammar/services/mergeGrammarGuestData.ts`),
-`mergeIeltsGuestData` (`src/modules/ielts/services/mergeIeltsGuestData.ts`), and
-`mergeVocabGuestData` (`src/modules/vocabulary/services/mergeVocabGuestData.ts`).
-All succeed: `clearGuestCookie()`. Any fails: the guest cookie stays and
-`setGuestMergeOwner(userId)` tags it, so only this account's next sign-in
-retries (re-running a merge whose rows already moved is a no-op). The whole
-function is wrapped in a try/catch that logs: a merge failure never blocks
-login.
-
-Merge specifics (each bails out unless the source is a guest id different from
-the target):
-
-- Dictation: first dismisses guest active review items that collide with an
-  active twin the user already has (partial unique index), then
-  `updateMany({ userId: guestId }, { $set: { userId } })` in parallel across
-  `DictationSessionModel`, `DictationAttemptModel`, `DictationReviewItemModel`,
-  and `DictationDebriefModel`, and logs the moved count as an audit trail.
-  Favorites are excluded (favoriting requires login, and their
-  `{ userId, videoId }` unique index could collide).
-- Grammar: reads both progress sets and applies a pure plan
-  (`src/modules/grammar/progress/planGrammarGuestMerge.ts`).
-- IELTS: `IeltsAttemptModel.updateMany({ ownerId: guestId }, ...)`; on a
-  duplicate-key error it falls back to one-by-one moves so only the clashing
-  attempt stays with the guest.
-
-```mermaid
-sequenceDiagram
-  participant U as Browser (guest cookie)
-  participant G as Google
-  participant J as jwt callback<br/>(auth.ts, Node)
-  participant DB as MongoDB
-  U->>G: signIn('google')
-  G-->>J: profile { email, name, image }
-  J->>DB: provisionUserOnSignIn (upsert User)
-  DB-->>J: ObjectId -> token.uid
-  J->>J: guestMergeStep(guestId, pendingFor, uid)
-  alt merge
-    J->>DB: dictation, grammar, IELTS merges
-    alt all merged
-      J->>U: clearGuestCookie()
-    else a merge failed
-      J->>U: setGuestMergeOwner(uid)<br/>retry on its next sign-in
-    end
-  else abandon (pending for another account)
-    J->>U: clearGuestCookie()
-  end
-  J->>J: token.role = resolveRole(email)
-```
+`src/app/robots.ts` disallows `/` for every crawler. The sitemap route was
+deleted with guest mode (every page is behind the sign-in).
 
 ### 1.6 Identity resolvers and route protection
 
-`src/modules/dictation/services/getCurrentUser.ts` (`server-only`) is the
-shared identity seam. It defines `UnauthenticatedError` (status 401) and
-`ForbiddenError` (status 403), and these resolvers:
+`src/lib/auth/currentUser.ts` (`server-only`; moved from the
+dictation module's `getCurrentUser.ts`) is the shared identity
+seam. It defines `UnauthenticatedError` (status 401) and `ForbiddenError`
+(status 403), and these resolvers:
 
-| Resolver                 | Returns                               | Notes                                                                                                                                                                                                                                                                    |
-| ------------------------ | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `getOptionalUser()`      | `CurrentUser` or `null`               | Wrapped in React `cache()` so the JWT is decoded once per request                                                                                                                                                                                                        |
-| `requireUser()`          | `CurrentUser`                         | Throws `UnauthenticatedError`. Callers scope every per-user query to the returned id, never a client-supplied id                                                                                                                                                         |
-| `requirePracticeActor()` | `{ id, isGuest }`                     | Signed-in user or a minted guest (`getOrCreateGuestId`); writes a cookie, so Route Handlers / Server Functions only. Runs `assertOwnerKey` on the id and `assertOutboxOwnerMatchesActor` against the `x-outbox-owner` header (see 1.7); its only throws are those guards |
-| `getPracticeActorId()`   | user id, existing guest id, or `null` | Read-only, for Server Components; never writes a cookie                                                                                                                                                                                                                  |
-| `requireAdmin()`         | `CurrentUser`                         | `requireUser()` then `ForbiddenError` if `role !== 'admin'`                                                                                                                                                                                                              |
+| Resolver                     | Returns                 | Notes                                                                                                                                                                                                                                                                                                                                                                           |
+| ---------------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `getOptionalUser()`          | `CurrentUser` or `null` | Wrapped in React `cache()` so the JWT is decoded once per request. `null` only on the login page in practice                                                                                                                                                                                                                                                                    |
+| `requireUser()`              | `CurrentUser`           | For Route Handlers and server functions. Throws `UnauthenticatedError` (401) without a session, `InvalidOwnerKeyError` (400) when `session.user.id` is not a 24-hex ObjectId (`assertOwnerKey`), and `OutboxOwnerMismatchError` (409) when the `x-outbox-owner` header names another learner. Callers scope every per-user query to the returned id, never a client-supplied id |
+| `requirePageUser(returnTo?)` | `CurrentUser`           | For Server Components: without a session it `redirect`s to `loginUrlFor(returnTo ?? '/')` instead of throwing                                                                                                                                                                                                                                                                   |
+| `requireAdmin()`             | `CurrentUser`           | `requireUser()` then `ForbiddenError` if `role !== 'admin'`                                                                                                                                                                                                                                                                                                                     |
+
+`requirePracticeActor`, `PracticeActor` and `getPracticeActorId` no longer
+exist: there is one kind of caller, a signed-in user.
 
 Route protection is defense in depth, matching `.agents/rules/api-security.md`
 ("Admin APIs must verify authorization in the route handler or a shared
 server-side helper even when middleware/proxy also protects them"; "Prefer
 server-derived identity"):
 
-1. Edge proxy: `src/proxy.ts` matcher `['/admin/:path*']` runs the `authorized`
-   callback, requiring the admin role before `/admin/*` renders.
-2. Admin layout re-check: `src/app/admin/layout.tsx` (`runtime = 'nodejs'`,
-   `dynamic = 'force-dynamic'`) calls `getOptionalUser()`; redirects anonymous
-   users to `/api/auth/signin?callbackUrl=/admin` and non-admins to
-   `/dictation`.
-3. Per-route re-checks: admin route handlers and server actions call
-   `requireAdmin()` / `requireUser()` themselves (for example
-   `src/modules/dictation/content/adminActions.ts`,
+1. Proxy: `src/proxy.ts` runs `authorizePage` on every page (1.2). Signed-out
+   visitors go to `/auth/login?callbackUrl=<page>`; `/admin/*` additionally
+   needs the admin role.
+2. Layout re-checks: `src/app/(app)/layout.tsx` calls `requirePageUser()` for
+   every learner page; `src/app/admin/layout.tsx` (`runtime = 'nodejs'`,
+   `dynamic = 'force-dynamic'`) calls `requirePageUser('/admin')` and redirects
+   a non-admin to `/dictation`.
+3. Per-route checks: every per-user API route calls `requireUser()` and every
+   admin route handler or server action calls `requireAdmin()` itself (for
+   example `src/modules/dictation/content/adminActions.ts`,
    `src/app/api/admin/ielts/uploads/sign/route.ts`,
-   `src/app/api/admin/vocab/enrich/route.ts`). The `/api/admin/*` routes are
-   not under the proxy matcher, so this step is their only gate.
+   `src/app/api/admin/vocab/enrich/route.ts`). The proxy matcher excludes
+   `/api`, so this step is the only gate for API routes; they answer 401
+   rather than redirect.
 
 Localized auth errors: `authErrorResponse(error, messages)`
 (`src/lib/auth/authErrorMessage.ts`) maps `UnauthenticatedError` (401),
+`InvalidOwnerKeyError` (400, `common.errors.invalidRequest`),
 `ForbiddenError` (403), and `OutboxOwnerMismatchError` (409) to
-`common.errors.{unauthorized,forbidden,ownerMismatch}` in the request's
-language, returning `null` for any other error. The errors keep an English
-`message` for logs. Used by `src/modules/ielts/http.ts`,
+`common.errors.{unauthorized,invalidRequest,forbidden,ownerMismatch}` in the
+request's language, returning `null` for any other error. The errors keep an
+English `message` for logs. Used by `src/modules/ielts/http.ts`,
 `src/app/api/grammar/sessions/route.ts`, and
 `src/app/api/dictation/imports/youtube/route.ts`.
 
@@ -239,21 +217,20 @@ language, returning `null` for any other error. The errors keep an English
 Two modules enforce that per-user rows can never be written or read under an
 ambiguous owner.
 
-- `src/lib/auth/ownerKey.ts` - `OWNER_KEY_PATTERN` is
-  `/^([a-f0-9]{24}|guest_[a-f0-9]{32})$/`: an owner is exactly a Mongo
-  ObjectId hex string or a guest id, never null/empty/other.
-  `isValidOwnerKey`, `assertOwnerKey` (throws `InvalidOwnerKeyError`, status
-  400). `requirePracticeActor` applies it at the write boundary.
+- `src/lib/auth/ownerKey.ts` - `OWNER_KEY_PATTERN` is `/^[a-f0-9]{24}$/`: an
+  owner is exactly a Mongo ObjectId hex string, never null, empty or any other
+  shape. `isValidOwnerKey`, `assertOwnerKey` (throws `InvalidOwnerKeyError`,
+  status 400). `requireUser` applies it to the session's id at the boundary.
 - `src/lib/auth/clientOwnerKey.ts` (`server-only`) - `toClientOwnerKey(id)` is
-  the first 24 hex chars of `sha256(id)`. The raw guest id is a bearer
-  credential, so only this hash is rendered into HTML:
-  `src/app/(app)/layout.tsx` passes it (and `isGuest`) to
-  `OutboxOwnerProvider`. `outboxOwnerMatchesActor(header, actor)` is `true`
-  when the `x-outbox-owner` header is absent (server actions, older tabs),
-  matches only a guest when it is `anonymous`, and otherwise must equal the
-  actor's hash. A mismatch (a tab left open across a sign-in or sign-out)
-  throws `OutboxOwnerMismatchError` (409), which the outbox settles as failed
-  so the UI rolls back.
+  the first 24 hex chars of `sha256(id)`, so only a hash of the user id is
+  rendered into HTML: `src/app/(app)/layout.tsx` passes it to
+  `OutboxOwnerProvider`. `outboxOwnerMatchesUser(header, userId)` is `true`
+  when the `x-outbox-owner` header is absent (server actions, plain fetches)
+  and otherwise must equal `toClientOwnerKey(userId)`. The old `anonymous`
+  header value is now a mismatch like any other. A mismatch (a tab left open
+  across a sign-out and a sign-in as someone else) makes
+  `assertOutboxOwnerMatchesUser` throw `OutboxOwnerMismatchError` (409), which
+  the outbox settles as failed so the UI rolls back.
 
 ### 1.8 Signed recall task tokens
 
@@ -290,16 +267,15 @@ comma-separated list into a lower-cased `Set<string>` (empty when unset).
 Because role is recomputed on every token/session pass and never stored, an
 allowlist change takes effect on the next token refresh without a migration.
 The UI reads the session once per root render: `readAccount()` in
-`src/app/layout.tsx` returns `{ account: null, enabled: false }` when
-`!hasGoogleAuth()`, otherwise calls `auth()` and hands
-`{ account, enabled: true }` (first name, image, initial,
-`isAdmin = user.role === 'admin'`) to `AccountProvider`
+`src/app/layout.tsx` calls `auth()` and hands `{ account }` (first name,
+image, initial, `isAdmin = user.role === 'admin'`, or `null` without a
+session, which only happens on the login page) to `AccountProvider`
 (`src/components/common/AccountProvider.tsx`). `AccountControl`
 (`src/components/common/AccountControl.tsx`, rendered by `AppTopbar` and at the
-rail foot by `AppSidebar`) reads it with `useAccount()`: nothing when not
-enabled, a Google sign-in form when signed out, and `UserMenu` when signed in.
-`isAdmin` only shapes the menu; admin access is still enforced server-side
-(section 1.6).
+rail foot by `AppSidebar`) reads it with `useAccount()`: `UserMenu` (with
+sign-out) when signed in, nothing otherwise. There is no sign-in button in the
+app chrome; sign-in lives only on the login page (1.5). `isAdmin` only shapes
+the menu; admin access is still enforced server-side (section 1.6).
 
 ---
 
@@ -315,8 +291,10 @@ network, so it is unit-testable without one.
 - Env: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `AUTH_SECRET` (JWT signing),
   plus `ADMIN_EMAILS`. Callback path: `/api/auth/callback/google` (Auth.js
   convention under `src/app/api/auth/[...nextauth]/route.ts`).
-- `hasGoogleAuth()` is true only when both client id and secret are set.
-  Provider construction falls back to `''` credentials rather than throwing.
+- `hasGoogleAuth()` is true only when both client id and secret are set. It is
+  read by the login page only: without it the page shows a "not configured"
+  notice and no sign-in button (fail closed, see 1.5). Provider construction
+  falls back to `''` credentials rather than throwing.
 
 ### 3.2 YouTube Data API
 
@@ -383,7 +361,7 @@ Callers:
 | ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
 | Dictation debrief                        | `src/lib/ai/qwenDebriefClient.ts` -> `src/modules/dictation/ai/debriefService.ts`                                          | `getQwenDebriefModel()` (`qwen3.8-flash`)                         | default 1400 tokens, thinking off                                                                                                                                                                   | On failure stores a failed debrief (`failureReason`, retry caveats) |
 | Segment translation                      | `src/lib/ai/qwenTranslate.ts` (`translateSegmentText`) via `src/app/api/dictation/segments/[segmentId]/translate/route.ts` | `getQwenTranslationModel()` (falls back to the debrief model)     | default 1400 tokens, thinking off; system prompt treats the sentence as data only                                                                                                                   | `requireAdmin()`; provider failure -> 503                           |
-| IELTS writing grading and practice check | `src/modules/ielts/writing/runExaminer.ts`, `gradeWritingService.ts`                                                       | `getQwenIeltsGradingModel()` (falls back to the generation model) | 6000 tokens, `reasoningEffort: 'low'`, 240 s abort (`withTimeout`)                                                                                                                                  | Signed-in only (guests 401), 503 without key, daily cap 429         |
+| IELTS writing grading and practice check | `src/modules/ielts/writing/runExaminer.ts`, `gradeWritingService.ts`                                                       | `getQwenIeltsGradingModel()` (falls back to the generation model) | 6000 tokens, `reasoningEffort: 'low'`, 240 s abort (`withTimeout`)                                                                                                                                  | Signed-in only (401), 503 without key, daily cap 429                |
 | IELTS section generation and assist      | `src/modules/ielts/generation/generationService.ts` (`qwenRequester`), `assistService.ts`                                  | `getQwenIeltsGenerationModel()` (`qwen3.8-max`)                   | `IELTS_JOB_MAX_TOKENS` in `aiSchemas.ts` (reading 16000, listening script 8000, listening questions 8000, writing task 6000, assist 8000; x1.25 on a repair), `reasoningEffort: 'low'`, 240 s abort | Admin routes                                                        |
 | IELTS listening audio (TTS)              | `src/lib/ai/qwenSpeech.ts` via `src/modules/ielts/audio/audioService.ts`                                                   | `getQwenTtsModel()` (`qwen-audio-3.1-tts-flash`)                  | 2 lines in parallel (each line is two requests; Qwen TTS allows 180 RPM, enforced per second), rate-limited requests retried after 1 s, 2 s, 4 s, one 240 s budget for the whole part               | Admin route; 503 without key                                        |
 
@@ -466,9 +444,6 @@ stale-grading logic) are in `docs/09-ielts.md`.
 - `getManualSchemaConnectOptions()` - the same options with
   `autoCreate`/`autoIndex` off in every environment, for scripts that must
   write no schema side effects (`db:sync-indexes`).
-- `connectDatabaseWhen(value)` - awaits `value` and connects only when it is
-  truthy (for example a practice actor id), so an anonymous visitor served
-  from the catalog cache never waits on a connection handshake.
 
 ### 3.6 Vocabulary dictionary and translation providers
 
@@ -568,14 +543,16 @@ graph LR
   API -->|2xx| OK[drop, resolve ok]
   API -->|network| R[keep, backoff, retry]
   API -->|5xx / 429 / 408| R2[retry up to 20,<br/>then failed]
+  API -->|401| U[keep, pause every lane,<br/>onUnauthorized once]
+  U --> LG[release queue,<br/>go to /auth/login]
   API -->|other 4xx| F[drop, resolve failed<br/>caller rolls back]
 ```
 
 Core behavior (`outbox.ts`):
 
-- `createOutbox({ owner, storage, tabId, fetchImpl, adoptOwners, adoptItems, ... })`
+- `createOutbox({ owner, storage, tabId, fetchImpl, onSettled, onUnauthorized, ... })`
   returns `enqueue`, `pendingCount`, `pendingItems`, `subscribe`, `whenIdle`,
-  `flushWithKeepalive`, `markReleased`, `resume`, `release`, `dispose`.
+  `flushWithKeepalive`, `markReleased`, `resume`, `dispose`.
 - Lanes run in parallel; items in one lane are ordered with one in flight. A
   `mergeKey` replaces the newest queued (not in-flight) item in the same lane
   (last write wins).
@@ -583,28 +560,34 @@ Core behavior (`outbox.ts`):
   `x-outbox-owner: <owner>` (`OUTBOX_OWNER_HEADER`). Multi-tab safety comes
   from the server: attempt routes dedupe on the idempotency key; other writes
   set a desired state rather than toggle.
+- A 401 (the session ended: expired, or signed out in another tab) is treated
+  like a network failure for the item: it stays queued and stored, every lane
+  pauses, and `onUnauthorized` fires once. The caller keeps waiting; nothing is
+  sent until a new page load.
 - Limits: retry backoff 1 s base to 30 s max; `MAX_SERVER_ERROR_ATTEMPTS = 20`
   for 5xx/429/408 (network failures retry forever); replayed items older than
   7 days are dropped, and set-state items (with a `mergeKey`) older than 12
   hours; keepalive flush budget 60000 bytes; tab lease 150 s.
 - Each tab writes only its own storage key with a heartbeat. A starting tab
   adopts queues other tabs of the same owner left behind (released on
-  `pagehide`, or heartbeat older than the lease).
+  `pagehide`, or heartbeat older than the lease). Adoption is only between tabs
+  of one owner; there is no hand-off between owners.
 
 Browser wiring (`clientOutbox.ts`):
 
-- `getClientOutbox(ownerKey, { isGuest })` keeps one shared outbox per tab.
-  `ownerKey` is the server-rendered hash from `toClientOwnerKey` (see 1.7), or
-  `null` -> owner `anonymous` (`ANONYMOUS_OUTBOX_OWNER`). On the server it
-  never caches (a module cache would be shared across learners).
-- For the `anonymous` owner, every send first awaits
-  `ensureGuestIdentity()`, a single shared `POST /api/guest`
-  (`GUEST_IDENTITY_PATH`) so parallel first writes cannot mint two guest ids;
-  a failed mint is not cached.
-- When the owner changes without a reload, the previous outbox is retired. A
-  first-time visitor who just became a guest is the same learner, so the
-  anonymous queue (in memory and in storage) is adopted; any other previous
-  owner keeps its stored queue for later.
+- `getClientOutbox(ownerKey)` keeps one shared outbox per tab. `ownerKey` is
+  the server-rendered hash from `toClientOwnerKey` (see 1.7); there is always
+  one, because every `(app)` page has a session. On the server it never caches
+  (a module cache would be shared across learners).
+- When the owner changes without a reload (a sign-out and a sign-in as someone
+  else), the previous outbox is disposed and keeps its stored queue for when
+  that learner is back; it is never sent as the new one.
+- On `onUnauthorized` (`handleUnauthorized`, once per outbox) the tab removes
+  its `pagehide` listeners (a keepalive resend would only meet another 401),
+  calls `markReleased()` so the stored queue is taken over at once by the next
+  load, and `window.location.assign`s `loginUrlFor(<current path and query>)`.
+  Signing back in as the same account gives the same owner key, so the queue
+  replays; another account never sees it.
 - Tab ids live in `sessionStorage` (`efom.outbox.tab`) so a reload keeps its
   queue; a duplicated tab whose id another live page still claims
   (`efom.outbox.tab-claim.<id>`, TTL 2 min, refreshed every 20 s) mints a new
@@ -627,9 +610,9 @@ Central access is `src/constants/environments.ts` via `ENV_KEYS`,
 | Key                           | Required?                | Purpose                                                                         | Default when unset                                                           |
 | ----------------------------- | ------------------------ | ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
 | `MONGODB_URI`                 | Required for DB features | Mongoose connection string                                                      | none (`getMongoDbUri` throws)                                                |
-| `AUTH_SECRET`                 | Required for sign-in     | Auth.js JWT secret; also signs recall tokens                                    | recall token falls back to `NEXTAUTH_SECRET`, then a dev literal             |
-| `GOOGLE_CLIENT_ID`            | Required for Google auth | OAuth client id                                                                 | `''` in provider; sign-in UI hidden                                          |
-| `GOOGLE_CLIENT_SECRET`        | Required for Google auth | OAuth client secret                                                             | `''` in provider; sign-in UI hidden                                          |
+| `AUTH_SECRET`                 | Required for sign-in     | Auth.js JWT secret; also signs recall tokens and the e2e session cookie         | recall token falls back to `NEXTAUTH_SECRET`, then a dev literal             |
+| `GOOGLE_CLIENT_ID`            | Required for Google auth | OAuth client id                                                                 | `''` in provider; login page shows a notice, no button                       |
+| `GOOGLE_CLIENT_SECRET`        | Required for Google auth | OAuth client secret                                                             | `''` in provider; login page shows a notice, no button                       |
 | `ADMIN_EMAILS`                | Optional                 | Comma-separated admin allowlist                                                 | empty set (no admins)                                                        |
 | `YOUTUBE_API_KEY`             | Optional                 | YouTube Data API metadata import                                                | URL-only drafts                                                              |
 | `DASHSCOPE_API_KEY`           | Optional                 | Qwen key for every AI call (debrief, translation, IELTS grading/generation/TTS) | features report "not configured" (IELTS grading, check and audio return 503) |
@@ -644,12 +627,12 @@ Central access is `src/constants/environments.ts` via `ENV_KEYS`,
 | `CLOUDINARY_URL`              | Required for uploads     | `cloudinary://` credentials (thumbnails, IELTS audio/images)                    | none (`getCloudinaryUrl` throws)                                             |
 | `MYMEMORY_EMAIL`              | Optional                 | Raises the MyMemory free translation quota                                      | anonymous per-IP quota                                                       |
 | `REVALIDATE_SECRET`           | Optional                 | Secret for `POST /api/admin/revalidate` from scripts                            | secret path disabled (admins only)                                           |
-| `SITE_URL`                    | Optional                 | Canonical origin for SEO and the script revalidation target                     | `AUTH_URL`, then `http://localhost:3000`                                     |
+| `SITE_URL`                    | Optional                 | Canonical origin (dictation topic page URL, script revalidation target)         | `AUTH_URL`, then `http://localhost:3000`                                     |
 
 Keys read outside `ENV_KEYS`: `NEXTAUTH_SECRET` (recall token fallback),
 `AUTH_URL` (`getSiteUrl` fallback), `PLAYWRIGHT_BASE_URL` and `CI`
-(`playwright.config.ts` and e2e skips), and `NODE_ENV` (cookie `secure` flag,
-connection options). Operational scripts load `.env` through
+(`playwright.config.ts`, `src/e2e/globalSetup.ts` and e2e skips), and
+`NODE_ENV` (connection options). Operational scripts load `.env` through
 `node --env-file-if-exists=.env` (`package.json`).
 
 ---
@@ -664,10 +647,12 @@ connection options). Operational scripts load `.env` through
 - E2E: Playwright (`playwright.config.ts`). The dependency is the `playwright`
   package, so tests import from `playwright/test`. Config: `testDir: './src'`,
   `testMatch: '**/*.e2e.ts'`, `fullyParallel: true`, `reporter: 'html'`,
-  `trace: 'on-first-retry'`, one `chromium` project (Desktop Chrome), base URL
-  `PLAYWRIGHT_BASE_URL` or `http://127.0.0.1:3000`; on CI `forbidOnly`,
-  `retries: 2`, one worker. The config has no `webServer`, so start the app
-  first.
+  `trace: 'on-first-retry'`, base URL `PLAYWRIGHT_BASE_URL` or
+  `http://127.0.0.1:3000`; on CI `forbidOnly`, `retries: 2`, one worker. The
+  config has no `webServer`, so start the app first. Because every page needs a
+  session, it has a `globalSetup` and two Desktop Chrome projects (7.2):
+  `signed-out` runs only `auth.e2e.ts` with no cookies, and `chromium` runs
+  every other `*.e2e.ts` with `storageState: playwright/.auth/learner.json`.
 
 ### 7.2 Vitest setup and the server-only stub
 
@@ -682,8 +667,9 @@ jsdom without the guard aborting the import.
   `cleanup()` after each test, and globally mocks `@/lib/auth/actions`
   (`signInAction` / `signOutAction` resolve to `undefined`): the real module
   imports the NextAuth / Mongoose chain, which the test runtime does not turn
-  into action references, so any component embedding `AppTopbar` (and its
-  `AccountControl`) can render.
+  into action references, so any component embedding `AppTopbar` (its
+  `AccountControl`) or the login card can render. `src/lib/auth/actions.test.ts`
+  unmocks it to test the real module.
 - `src/test/landingBudget.ts` - `expectLandingBudget(container)`, the shared
   assertion for a module landing or session end: exactly one
   `[data-next-stop]` and one `bg-cta` element, at most 4 `dt` per
@@ -695,21 +681,47 @@ jsdom without the guard aborting the import.
 - `src/test/jsdom.d.ts` - minimal ambient types for `jsdom`.
 
 The config has no `include`/`exclude`, so Vitest's defaults apply and
-`.claude/` is not excluded: a run at the repo root also collects the copies in
-`.claude/worktrees/**` (verified: `bunx vitest list --filesOnly` lists 803
-files, 574 of them under `.claude/`; `bunx vitest list --filesOnly --dir src`
-lists the 229 under `src/`). Always scope the run with `--dir src` (or
+`.claude/` is not excluded: a run at the repo root also collects any copies
+under `.claude/worktrees/**` (a repo-root `bunx vitest list --filesOnly` lists
+233 files here, `--dir src` lists the 232 under `src/`, but a checkout with
+worktrees lists hundreds more). Always scope the run with `--dir src` (or
 `--exclude '.claude/**'`).
+
+#### E2E sign-in without Google
+
+`playwright.config.ts` points `globalSetup` at `src/e2e/globalSetup.ts`, which
+signs the browser in without Google and ships no test-only route in the app:
+
+1. It loads `.env` (values already exported win) and refuses any base URL whose
+   host is not `localhost`, `127.0.0.1` or `[::1]`.
+2. Without `PLAYWRIGHT_BASE_URL` it writes an empty storage state and returns
+   (every e2e test skips itself anyway).
+3. It requires `AUTH_SECRET`, then provisions the learner
+   `e2e-learner@example.test` (`src/e2e/e2eLearner.ts`) by running
+   `src/e2e/provisionE2eUser.ts` in a child process with
+   `--conditions=react-server --import tsx`. That script calls the real
+   `provisionUserOnSignIn`, resets only that learner's grammar progress rows
+   (so "a new learner" flows stay new every run) and prints just the user id.
+   Without `MONGODB_URI` it uses a fixed offline id instead.
+4. It mints the Auth.js session JWT with `encode` from `next-auth/jwt`, signed
+   with `AUTH_SECRET`, using the cookie name as the salt:
+   `authjs.session-token`, or `__Secure-authjs.session-token` on https. The
+   token carries `email`, `name`, `role: 'user'`, `sub` and `uid`, with a
+   30-day lifetime.
+5. It writes the cookie to `playwright/.auth/learner.json`
+   (`E2E_STORAGE_STATE`, git-ignored with `playwright-report/`).
+
+It never prints the secret or the token.
 
 ### 7.3 Commands
 
-| Task                           | Command                                                                              |
-| ------------------------------ | ------------------------------------------------------------------------------------ |
-| Unit tests, this checkout only | `bun run test -- --dir src` (or `bun run test -- --exclude '.claude/**'`)            |
-| All collected unit tests       | `bun run test` (`vitest run`)                                                        |
-| Watch                          | `bun run test:watch` (`vitest`)                                                      |
-| One file                       | `bun run test -- src/lib/db/revalidateRequest.test.ts`                               |
-| E2E                            | `bun run dev`, then `PLAYWRIGHT_BASE_URL=http://127.0.0.1:3000 bunx playwright test` |
+| Task                           | Command                                                                                                                                |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Unit tests, this checkout only | `bun run test -- --dir src` (or `bun run test -- --exclude '.claude/**'`)                                                              |
+| All collected unit tests       | `bun run test` (`vitest run`)                                                                                                          |
+| Watch                          | `bun run test:watch` (`vitest`)                                                                                                        |
+| One file                       | `bun run test -- src/lib/db/revalidateRequest.test.ts`                                                                                 |
+| E2E                            | `bun run dev`, then `PLAYWRIGHT_BASE_URL=http://127.0.0.1:3000 bunx playwright test` (needs `AUTH_SECRET` and `MONGODB_URI` in `.env`) |
 
 Use `bun run test`, not `bun test`: the bare form starts Bun's built-in test
 runner, which ignores `vitest.config.mts` (no jsdom, no `server-only` alias).
@@ -717,17 +729,29 @@ There is no `package.json` script for Playwright.
 
 ### 7.4 Test inventory and style
 
-- `find src -name '*.test.ts' -o -name '*.test.tsx' | wc -l` => 229 co-located
+- `find src -name '*.test.ts' -o -name '*.test.tsx' | wc -l` => 232 co-located
   unit test files.
-- E2E files (each `test.skip`s itself unless its env is set):
+- E2E files (each `test.skip`s itself unless its env is set; the signed-in ones
+  run as the seeded learner from 7.2):
 
-| File                                           | Needs                                | Flow                                                                                                                             |
-| ---------------------------------------------- | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
-| `src/app/cornerRoles.e2e.ts`                   | `PLAYWRIGHT_BASE_URL`                | Computed styles jsdom cannot check: desktop board radius and shadow, phone full-screen board with hidden rail, night rail colors |
-| `src/modules/grammar/grammarPath.e2e.ts`       | `PLAYWRIGHT_BASE_URL`, `MONGODB_URI` | A first-time guest finishes lesson 1 and unlocks lesson 2                                                                        |
-| `src/modules/vocabulary/vocabularyCore.e2e.ts` | `PLAYWRIGHT_BASE_URL`, `MONGODB_URI` | Search a term, add it to learning, answer a recall task, see stats update                                                        |
+| File                                           | Needs                                | Flow                                                                                                                                                                                                                    |
+| ---------------------------------------------- | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/app/cornerRoles.e2e.ts`                   | `PLAYWRIGHT_BASE_URL`                | Computed styles jsdom cannot check: desktop board radius and shadow, phone full-screen board with hidden rail, night rail colors                                                                                        |
+| `src/app/auth.e2e.ts`                          | `PLAYWRIGHT_BASE_URL`                | `signed-out` project: every page answers 307 to `/auth/login` with its `callbackUrl`; deep link keeps the callback; an unsafe callback is dropped; per-user APIs answer 401 and `/api/guest` is gone; public files load |
+| `src/app/authSignedIn.e2e.ts`                  | `PLAYWRIGHT_BASE_URL`                | Signed in: the login page redirects to a safe `callbackUrl` (an external one falls back to `/`); no sign-in control in the app                                                                                          |
+| `src/modules/grammar/grammarPath.e2e.ts`       | `PLAYWRIGHT_BASE_URL`, `MONGODB_URI` | A new learner (progress reset by the global setup) finishes lesson 1 and unlocks lesson 2                                                                                                                               |
+| `src/modules/vocabulary/vocabularyCore.e2e.ts` | `PLAYWRIGHT_BASE_URL`, `MONGODB_URI` | Search a term, add it to learning, answer a recall task, see stats update                                                                                                                                               |
 
-- Unit tests in this doc's scope include `src/lib/auth/{roles,guestMerge,ownerKey,clientOwnerKey,userProvisioning}.test.ts`,
+- Unit tests in this doc's scope include
+  `src/lib/auth/{roles,callbackUrl,auth.config,actions,currentUser,ownerKey,clientOwnerKey,userProvisioning}.test.ts`,
+  `src/proxy.test.ts` (checks the matcher with `unstable_doesMiddlewareMatch`),
+  `src/app/auth/login/page.test.tsx`, `src/components/auth/LoginCard.test.tsx`,
+  route tests that expect 401 without a session
+  (`src/app/api/grammar/sessions/route.test.ts`,
+  `src/app/api/vocab/items/route.test.ts`,
+  `src/app/api/ielts/attempts/[attemptId]/route.test.ts`,
+  `src/app/api/dictation/sessions/[sessionId]/attempts/route.test.ts`),
+  `scripts/lib/guestCleanup.test.ts`,
   `src/lib/ai/{qwenClientCore,strictJsonSchema,qwenTranslate,qwenSpeech,wavToPcm}.test.ts`,
   `src/lib/db/{catalogCache,connectDatabase,jsonRecords,revalidateCatalog,revalidateRequest}.test.ts`,
   `src/lib/sync/{outbox,clientOutbox}.test.ts`, and
@@ -748,8 +772,9 @@ There is no `package.json` script for Playwright.
 - Naming (`.agents/rules/testing-quality.md`): unit tests sit next to source as
   `*.test.ts` / `*.test.tsx`; Playwright as `*.e2e.ts`.
 - Pure decision functions are extracted from route handlers so they test
-  "without a full database/auth environment" (for example `guestMergeStep`,
-  `decideRevalidateRequest`, `outboxOwnerMatchesActor`, `extractYouTubeId`),
+  "without a full database/auth environment" (for example `authorizePage`,
+  `safeCallbackUrl`, `decideRevalidateRequest`, `outboxOwnerMatchesUser`,
+  `extractYouTubeId`),
   and network helpers take an injectable `fetcher`.
 
 ### 7.5 Quality gates
@@ -766,8 +791,8 @@ because the repo has `bun.lock`):
 
 API/security changes verify both success and unhappy paths; broaden
 verification when changes affect auth, data, routing, or AI; never weaken
-lint/type rules to land code; do not hide errors with empty catches (the guest
-merge catches in `guestMerge.ts` log before swallowing, by design).
+lint/type rules to land code; do not hide errors with empty catches (log
+before swallowing).
 
 ---
 
@@ -786,4 +811,13 @@ env file.
 | `vocab:seed`, `vocab:seed-family`, `vocab:enrich` | `scripts/seedVocabulary.ts`, `seedVocabularyFamily.ts`, `enrichVocabularyBatch.ts`                                 | Seed and enrich vocabulary                                                                            |
 | `resegment`, `dictation:reset-segment-progress`   | `scripts/resegmentAllTranscripts.ts`, `resetSharedSegmentProgress.ts`                                              | Dictation maintenance                                                                                 |
 | `grammar:check`, `grammar:drop-legacy`            | `scripts/checkGrammarUnits.ts`, `dropLegacyGrammar.ts`                                                             | Grammar content checks and cleanup                                                                    |
+| `auth:drop-guest-data`                            | `scripts/dropGuestData.ts`, `scripts/lib/guestCleanup.ts`                                                          | Delete the rows anonymous guests left behind (see below)                                              |
 | `ielts:*`                                         | `scripts/seedIeltsSample.ts`, `attachIeltsGroupImage.ts`, `evalIeltsGeneration.ts`, and other `scripts/*Ielts*.ts` | IELTS content edits; content writers end with `requestContentRevalidation([CACHE_TAGS.ieltsContent])` |
+
+`auth:drop-guest-data` is the one-off cleanup for guest mode, removed on
+2026-11-28. It is a dry run by default: it prints the database name and, per
+collection, how many rows have an owner id matching `^guest_` (the dictation,
+grammar, vocabulary and IELTS per-user collections, named from their models).
+`--apply --i-am-sure` deletes them and cannot be undone. The pure argument
+parsing and plan live in `scripts/lib/guestCleanup.ts`. It has not been run in
+production yet.

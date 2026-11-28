@@ -1,15 +1,15 @@
 import NextAuth from 'next-auth'
 
-import { foldGuestIntoUser } from './guestMerge'
 import { resolveRole } from './roles'
 import { authConfig } from './auth.config'
 import { provisionUserOnSignIn } from './userProvisioning'
 
 /**
- * Full Auth.js instance (Node runtime). Extends the edge-safe authConfig with a
- * jwt callback that provisions the Mongoose user on first sign-in and stamps its
- * ObjectId into the token. Imported by server components, route handlers, and
- * the /api/auth handler - never by middleware.
+ * Full Auth.js instance. Extends the DB-free authConfig with a jwt callback
+ * that provisions the Mongoose user on sign-in and stamps its ObjectId into
+ * the token. Imported by server components, route handlers, server actions
+ * and the /api/auth handler, never by the proxy (which must not touch the
+ * database on every navigation).
  */
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
@@ -28,10 +28,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         })
 
         token.uid = id
-
-        // Every sign-in: fold the browser's anonymous practice into this
-        // account (see guestMerge.ts for who may claim it).
-        await foldGuestIntoUser(id)
       }
 
       token.role = resolveRole(token.email)

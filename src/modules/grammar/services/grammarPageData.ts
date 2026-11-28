@@ -1,8 +1,8 @@
 import 'server-only'
 
 import { hasMongoDbUri } from '@/constants/environments'
+import { requirePageUser } from '@/lib/auth/currentUser'
 import { connectDatabase } from '@/lib/db/connectDatabase'
-import { getPracticeActorId } from '@/modules/dictation/services/getCurrentUser'
 import { grammarCourse } from '@/modules/grammar/course'
 import {
   buildGrammarPath,
@@ -26,20 +26,19 @@ export interface GrammarPageData {
 }
 
 /**
- * Progress + path for the current learner, read-only (never mints a guest
- * cookie). A first-time visitor has no id yet and simply gets an empty path
- * with lesson 1 open; their first save creates the guest identity.
+ * Progress + path for the signed-in learner, read-only. A learner with no
+ * grammar rows yet gets an empty path with lesson 1 open.
  */
 export async function loadGrammarPageData(
   now = new Date()
 ): Promise<GrammarPageData> {
   const canSave = hasMongoDbUri()
-  const actorId = canSave ? await getPracticeActorId() : null
+  const user = await requirePageUser()
   let progress = EMPTY_PROGRESS
 
-  if (actorId) {
+  if (canSave) {
     await connectDatabase()
-    progress = await getGrammarProgressForActor(actorId)
+    progress = await getGrammarProgressForActor(user.id)
   }
 
   return {

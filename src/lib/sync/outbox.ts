@@ -11,7 +11,9 @@
  *   send --> 2xx           : drop item, resolve(ok)       -> caller reconciles
  *        --> network       : keep item, backoff, retry    -> caller waits
  *        --> 5xx / 429     : same, until MAX_SERVER_ERROR_ATTEMPTS, then failed
- *        --> 4xx           : drop item, resolve(failed)   -> caller rolls back
+ *        --> 401           : keep item, pause every lane, onUnauthorized()
+ *                            (the session ended: sign in again, then replay)
+ *        --> other 4xx     : drop item, resolve(failed)   -> caller rolls back
  *
  * Every tab writes only its own storage key, with a heartbeat while it has
  * items. A tab that starts up adopts the queues other tabs of the same owner
@@ -66,12 +68,6 @@ export type OutboxResult =
   | { data: unknown; ok: true; status: number }
   | { error: string; ok: false; status: number }
 
-/** A queued item handed from one outbox to another, with its waiting caller. */
-export interface OutboxHandOffEntry {
-  item: OutboxItem
-  resolve?: (result: OutboxResult) => void
-}
-
 export interface OutboxStorage {
   getItem(key: string): string | null
   /** Enumeration (as on localStorage) lets a tab find queues others left. */
@@ -82,14 +78,6 @@ export interface OutboxStorage {
 }
 
 export interface OutboxOptions {
-  /**
-   * Other owners whose stored queues this outbox takes over at startup (the
-   * same learner under an earlier key). Their items are re-owned and their
-   * storage keys removed.
-   */
-  adoptOwners?: string[]
-  /** Items released by another outbox in this tab, delivered first. */
-  adoptItems?: OutboxHandOffEntry[]
   fetchImpl?: typeof fetch
   /** Inclusive cap for one keepalive request body (browsers allow 64 KB). */
   keepaliveBudgetBytes?: number
@@ -98,6 +86,12 @@ export interface OutboxOptions {
   maxRetryDelayMs?: number
   /** Called for every settled item, including ones replayed after a reload. */
   onSettled?: (item: OutboxItem, result: OutboxResult) => void
+  /**
+   * Called once, the first time the server answers 401 (the session ended).
+   * Every lane is paused by then and the item that got the 401 is still
+   * queued and stored, so it replays once the learner has signed back in.
+   */
+  onUnauthorized?: () => void
   owner: string
   retryBaseDelayMs?: number
   storage?: OutboxStorage | null
@@ -127,11 +121,6 @@ export interface Outbox {
   pendingCount(): number
   /** Copies of every queued item, oldest first per lane. */
   pendingItems(): OutboxItem[]
-  /**
-   * Stop this outbox and hand every queued item, with its waiting caller, to
-   * another outbox. Clears this outbox's storage key.
-   */
-  release(): OutboxHandOffEntry[]
   /** For pageshow from the back-forward cache: undo `markReleased`. */
   resume(): void
   subscribe(listener: () => void): () => void
@@ -145,11 +134,6 @@ export interface Outbox {
 export const OUTBOX_STORAGE_PREFIX = 'efom.outbox.v1.'
 /** Request header naming the client owner key every outbox write is for. */
 export const OUTBOX_OWNER_HEADER = 'x-outbox-owner'
-/**
- * The owner used before a first-time visitor has a guest cookie. Only a guest
- * actor matches it on the server.
- */
-export const ANONYMOUS_OUTBOX_OWNER = 'anonymous'
 
 const DEFAULT_KEEPALIVE_BUDGET_BYTES = 60_000
 // Longer than the once-a-minute timer throttling of a long-hidden tab (its
@@ -286,13 +270,12 @@ function listTabStorageKeys(storage: OutboxStorage, owner: string) {
 }
 
 export function createOutbox({
-  adoptItems = [],
-  adoptOwners = [],
   fetchImpl,
   keepaliveBudgetBytes = DEFAULT_KEEPALIVE_BUDGET_BYTES,
   leaseMs = DEFAULT_LEASE_MS,
   maxRetryDelayMs = DEFAULT_MAX_RETRY_DELAY_MS,
   onSettled,
+  onUnauthorized,
   owner,
   retryBaseDelayMs = DEFAULT_RETRY_BASE_DELAY_MS,
   storage = null,
@@ -313,6 +296,9 @@ export function createOutbox({
   let rescanTimer: ReturnType<typeof setTimeout> | null = null
   let disposed = false
   let released = false
+  // The server said the session ended: nothing is sent until a new page load
+  // (after signing back in) picks the stored queue up again.
+  let unauthorized = false
   // Whether this tab's key currently holds items it wrote.
   let hasStoredItems = false
 
@@ -495,7 +481,8 @@ export function createOutbox({
   }
 
   function pump(lane: string) {
-    if (disposed || inFlight.has(lane) || retryTimers.has(lane)) return
+    if (disposed || unauthorized || inFlight.has(lane) || retryTimers.has(lane))
+      return
 
     const head = lanes.get(lane)?.[0]
 
@@ -509,6 +496,21 @@ export function createOutbox({
       inFlight.delete(lane)
 
       if (disposed) return
+
+      // Signed out (an expired session, or signed out in another tab): keep
+      // the write, like a network failure, and stop every lane. The caller
+      // keeps waiting; the page is about to go to the login page.
+      if (result.status === 401) {
+        persist()
+
+        if (!unauthorized) {
+          unauthorized = true
+          notify()
+          onUnauthorized?.()
+        }
+
+        return
+      }
 
       if (!result.ok && result.status !== 0)
         head.serverErrors = (head.serverErrors ?? 0) + 1
@@ -546,11 +548,11 @@ export function createOutbox({
    * Put adopted items ahead of this tab's own queued items (they are older),
    * but never ahead of a head that is already in flight.
    */
-  function adoptEntries(entries: OutboxHandOffEntry[]) {
+  function adoptEntries(items: OutboxItem[]) {
     const known = new Set(allItems().map(item => item.id))
     const byLane = new Map<string, OutboxItem[]>()
 
-    for (const { item, resolve } of entries) {
+    for (const item of items) {
       if (known.has(item.id)) continue
 
       // This page already set that state itself, after the adopted write was
@@ -558,13 +560,10 @@ export function createOutbox({
       if (
         item.mergeKey &&
         localMergeSlots.has(getMergeSlot(item.lane, item.mergeKey))
-      ) {
-        resolve?.({ data: { superseded: true }, ok: true, status: 200 })
+      )
         continue
-      }
 
       known.add(item.id)
-      if (resolve) waiters.set(item.id, resolve)
 
       const adopted = byLane.get(item.lane) ?? []
 
@@ -592,38 +591,33 @@ export function createOutbox({
    * safely written under this tab's own key.
    */
   function collectOrphanedQueues(now: number) {
-    const entries: OutboxHandOffEntry[] = []
+    const entries: OutboxItem[] = []
     const keysToRemove: string[] = []
     let sawLiveTab = false
 
     if (!storage) return { entries, keysToRemove, sawLiveTab }
 
-    for (const candidate of [owner, ...adoptOwners]) {
-      const legacyKey = getOutboxStorageKey(candidate)
-      const legacy = readStoredQueue(storage, legacyKey, now)
+    const legacyKey = getOutboxStorageKey(owner)
+    const legacy = readStoredQueue(storage, legacyKey, now)
 
-      if (legacy) {
-        entries.push(...legacy.items.map(item => ({ item })))
-        keysToRemove.push(legacyKey)
+    if (legacy) {
+      entries.push(...legacy.items)
+      keysToRemove.push(legacyKey)
+    }
+
+    for (const key of listTabStorageKeys(storage, owner)) {
+      if (key === storageKey) continue
+
+      const queue = readStoredQueue(storage, key, now)
+      const isStale = !queue || now - queue.heartbeatAt > leaseMs
+
+      if (!isStale) {
+        sawLiveTab = true
+        continue
       }
 
-      for (const key of listTabStorageKeys(storage, candidate)) {
-        if (key === storageKey) continue
-
-        const queue = readStoredQueue(storage, key, now)
-        // This tab's own queue under an earlier owner key is never live: the
-        // tab now runs this outbox instead.
-        const isThisTab = key === getOutboxTabStorageKey(candidate, tabId)
-        const isStale = !queue || now - queue.heartbeatAt > leaseMs
-
-        if (!isThisTab && !isStale) {
-          if (candidate === owner) sawLiveTab = true
-          continue
-        }
-
-        if (queue) entries.push(...queue.items.map(item => ({ item })))
-        keysToRemove.push(key)
-      }
+      if (queue) entries.push(...queue.items)
+      keysToRemove.push(key)
     }
 
     return { entries, keysToRemove, sawLiveTab }
@@ -783,21 +777,6 @@ export function createOutbox({
     persist()
   }
 
-  function release() {
-    const entries = allItems().map(item => ({
-      item,
-      resolve: waiters.get(item.id),
-    }))
-
-    stop()
-    lanes.clear()
-    waiters.clear()
-
-    removeStorageKey(storageKey)
-
-    return entries
-  }
-
   // MARK: Startup
 
   for (const item of storage
@@ -808,8 +787,6 @@ export function createOutbox({
     queue.push(item)
     lanes.set(item.lane, queue)
   }
-
-  adoptEntries(adoptItems)
 
   const { sawLiveTab } = adoptOrphanedQueues()
 
@@ -835,7 +812,6 @@ export function createOutbox({
     markReleased,
     pendingCount: () => allItems().length,
     pendingItems: () => allItems().map(item => ({ ...item })),
-    release,
     resume,
     subscribe,
     whenIdle,

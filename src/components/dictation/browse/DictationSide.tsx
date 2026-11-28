@@ -14,8 +14,6 @@ interface Props {
   latestResultsHref: string | null
   /** Videos with an unfinished session, most recent first. */
   recent: BrowseVideoItem[]
-  /** Signed-in learners keep favorites; guests do not see the link. */
-  showFavorites: boolean
 }
 
 function SideRow({
@@ -57,7 +55,6 @@ export function DictationSide({
   labels,
   latestResultsHref,
   recent,
-  showFavorites,
 }: Props) {
   const resumable = recent.filter(video => video.practiceHref)
 
@@ -98,19 +95,15 @@ export function DictationSide({
       ) : (
         <p className="text-ink-soft px-2 text-sm">{labels.recentEmpty}</p>
       )}
-      {showFavorites ? (
-        <>
-          <h3 className="text-ink-soft px-2 text-sm font-medium">
-            {labels.favorites}
-          </h3>
-          <SideRow
-            href="/dictation/favorites"
-            icon={<Star />}
-          >
-            {labels.favoritesHint}
-          </SideRow>
-        </>
-      ) : null}
+      <h3 className="text-ink-soft px-2 text-sm font-medium">
+        {labels.favorites}
+      </h3>
+      <SideRow
+        href="/dictation/favorites"
+        icon={<Star />}
+      >
+        {labels.favoritesHint}
+      </SideRow>
     </section>
   )
 }

@@ -148,16 +148,16 @@ catalogue. English is the default and the source of truth for keys; a missing
 Vietnamese key is a type error. Lesson and test data (grammar course content,
 IELTS passages, transcripts, word meanings) is never translated.
 
-| Piece         | File                                                     | Role                                                                                                                                                                                                                                                       |
-| ------------- | -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Config        | `src/i18n/config.ts`                                     | `LOCALES = ['en', 'vi']`, `DEFAULT_LOCALE`, cookie `efom-locale` (one year), `INTL_LOCALES` (`en-GB`, `vi-VN`), `resolveLocale`. Routes are the same in both languages.                                                                                    |
-| Catalogues    | `src/i18n/messages/en/*.ts`, `src/i18n/messages/vi/*.ts` | One file per namespace: `common`, `home`, `dictation`, `vocabulary`, `grammar`, `ielts`, `ieltsEditor`, `admin`. `src/i18n/messages/index.ts` exports `MESSAGES` and the `Messages` type. `src/i18n/messages.test.ts` checks key parity.                   |
-| Server        | `src/i18n/server.ts`                                     | `getLocale()` (cookie, cached per request) and `getMessages()` for server components, `generateMetadata`, route handlers and server actions.                                                                                                               |
-| Client        | `src/i18n/client.tsx`                                    | `I18nProvider` (mounted in `src/app/layout.tsx`; English is bundled, so only the Vietnamese catalogue is passed down), `useMessages()`, `useLocale()`.                                                                                                     |
-| Switching     | `src/i18n/actions.ts`                                    | `setLocaleAction(locale)` server action: sets the cookie and calls `refresh()` so server text re-renders without a reload.                                                                                                                                 |
-| Formatting    | `src/i18n/format.ts`, `src/i18n/formatNodes.tsx`         | `format(template, values)` for `{name}` placeholders, `plural(forms, count)` for one / other (`PluralForms`; every journey headline unit is a one / other pair, so a count of 1 reads "1 step taken"), `formatNodes` for templates that embed React nodes. |
-| Outside React | `src/i18n/active.ts`                                     | `getActiveMessages()` for plain client modules (the sync outbox) that need a fallback message.                                                                                                                                                             |
-| Toggle        | `src/components/common/LocaleToggle.tsx`                 | `variant="round"`: one round button in the rail showing the current language with the other below, a click flips it. `variant="segmented"` (default): EN / VI pill in the phone menu. Optimistic via `useOptimistic`.                                      |
+| Piece         | File                                                     | Role                                                                                                                                                                                                                                                                           |
+| ------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Config        | `src/i18n/config.ts`                                     | `LOCALES = ['en', 'vi']`, `DEFAULT_LOCALE`, cookie `efom-locale` (one year), `INTL_LOCALES` (`en-GB`, `vi-VN`), `resolveLocale`. Routes are the same in both languages.                                                                                                        |
+| Catalogues    | `src/i18n/messages/en/*.ts`, `src/i18n/messages/vi/*.ts` | One file per namespace: `common`, `home`, `dictation`, `vocabulary`, `grammar`, `ielts`, `ieltsEditor`, `admin`. `src/i18n/messages/index.ts` exports `MESSAGES` and the `Messages` type. `src/i18n/messages.test.ts` checks key parity.                                       |
+| Server        | `src/i18n/server.ts`                                     | `getLocale()` (cookie, cached per request) and `getMessages()` for server components, `generateMetadata`, route handlers and server actions.                                                                                                                                   |
+| Client        | `src/i18n/client.tsx`                                    | `I18nProvider` (mounted in `src/app/layout.tsx`; English is bundled, so only the Vietnamese catalogue is passed down), `useMessages()`, `useLocale()`.                                                                                                                         |
+| Switching     | `src/i18n/actions.ts`                                    | `setLocaleAction(locale)` server action: sets the cookie and calls `refresh()` so server text re-renders without a reload.                                                                                                                                                     |
+| Formatting    | `src/i18n/format.ts`, `src/i18n/formatNodes.tsx`         | `format(template, values)` for `{name}` placeholders, `plural(forms, count)` for one / other (`PluralForms`; every journey headline unit is a one / other pair, so a count of 1 reads "1 step taken"), `formatNodes` for templates that embed React nodes.                     |
+| Outside React | `src/i18n/active.ts`                                     | `getActiveMessages()` for plain client modules (the sync outbox) that need a fallback message.                                                                                                                                                                                 |
+| Toggle        | `src/components/common/LocaleToggle.tsx`                 | `variant="round"`: one round button in the rail showing the current language with the other below, a click flips it. `variant="segmented"` (default): EN / VI pill in the phone menu. Optimistic via `useOptimistic`. The round variant also sits top right of the login page. |
 
 Server components that render inside client trees receive their text as props
 (`labels={t.dictation.browse}` and similar) instead of calling the hook, so they
@@ -192,22 +192,24 @@ CSS variables and the lucide icon set. The primitives wrap `@base-ui/react/*`
 
 ## 4. Shared layout chrome
 
-Every route renders its own `PageShell` and passes an `AppTopbar` into the
-`topbar` slot. The account comes from the root layout's `AccountProvider`
+Every signed-in route renders its own `PageShell` and passes an `AppTopbar` into the
+`topbar` slot (the login page is the one exception, section 4.2). The account comes from the root layout's `AccountProvider`
 (`src/components/common/AccountProvider.tsx`), so the avatar never blinks
 between routes. `src/app/(app)/layout.tsx` wraps all learner routes in
 `OutboxOwnerProvider`, which hands the client outbox a hashed owner key for the
-current user or guest so queued writes are stored per learner.
+signed-in learner so queued writes are stored per learner. The layout calls
+`requirePageUser()` (`src/lib/auth/currentUser.ts`), so a request without a session
+redirects to the login page instead of rendering.
 
-| Component                                          | File                                                                            | Client? | Role                                                                                                                                                                                                                                                                                                                                                                                                       |
-| -------------------------------------------------- | ------------------------------------------------------------------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `AppTopbar`                                        | `common/AppTopbar.tsx`                                                          | client  | Logo, app name and a subtitle; with `page={{ module, title, subtitle?, breadcrumb? }}` it draws the page title block (module icon and tint resolved from `MODULE_ICONS` / `MODULE_THEMES`) on the right from md, and hides its own subtitle on phones so only the page's `PageHeader inTopbar` shows one. Home adds the account chip (`showAccount`). Below md: `ThemeToggle` and the `TopbarMenu` button. |
-| `AppSidebar`                                       | `common/AppSidebar.tsx`                                                         | client  | The dark icon rail (md and up): module links from `PRIMARY_NAV_ITEMS` with a sliding highlight, labels unrolling on hover, then theme and language toggles and the squircle account avatar. `isActiveHref` matches `/` exactly and modules by subtree.                                                                                                                                                     |
-| `AppTabBar`                                        | `common/AppTabBar.tsx`                                                          | client  | Below md: the same links as a floating dark pill (`shadow-tabbar`). Left out on full-height work screens.                                                                                                                                                                                                                                                                                                  |
-| `TopbarMenu` / `TopbarMenuSheet`                   | `common/TopbarMenu.tsx`, `common/TopbarMenuSheet.tsx`                           | client  | Phone menu button; lazy-loads the Account sheet: the account control and the segmented `LocaleToggle`. It lists no modules (the tab bar has them).                                                                                                                                                                                                                                                         |
-| `AccountControl`, `UserMenu`, `UserMenuPopup`      | `common/AccountControl.tsx`, `common/UserMenu.tsx`, `common/UserMenuPopup.tsx`  | client  | Sign in, or the identity menu (admin for admins, sign out behind a confirm; favorites moved to the dictation page). `variant="rail"` is the avatar alone at the rail foot (every page from md), `chip` the home topbar chip; nothing renders when auth is not configured. Server actions in `src/lib/auth/actions.ts`.                                                                                     |
-| `AppCredits`                                       | `common/AppCredits.tsx`                                                         | client  | Last row of the board. Hidden on work screens.                                                                                                                                                                                                                                                                                                                                                             |
-| `ThemeProvider`, `I18nProvider`, `AccountProvider` | `common/ThemeProvider.tsx`, `src/i18n/client.tsx`, `common/AccountProvider.tsx` | client  | Mounted once in `src/app/layout.tsx` (`I18nProvider` > `AccountProvider` > `ThemeProvider`); the layout reads the session once (`readAccount`) and `useAccount()` serves it.                                                                                                                                                                                                                               |
+| Component                                          | File                                                                            | Client? | Role                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| -------------------------------------------------- | ------------------------------------------------------------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `AppTopbar`                                        | `common/AppTopbar.tsx`                                                          | client  | Logo, app name and a subtitle; with `page={{ module, title, subtitle?, breadcrumb? }}` it draws the page title block (module icon and tint resolved from `MODULE_ICONS` / `MODULE_THEMES`) on the right from md, and hides its own subtitle on phones so only the page's `PageHeader inTopbar` shows one. Home adds the account chip (`showAccount`). Below md: `ThemeToggle` and the `TopbarMenu` button.                                         |
+| `AppSidebar`                                       | `common/AppSidebar.tsx`                                                         | client  | The dark icon rail (md and up): module links from `PRIMARY_NAV_ITEMS` with a sliding highlight, labels unrolling on hover, then theme and language toggles and the squircle account avatar. `isActiveHref` matches `/` exactly and modules by subtree.                                                                                                                                                                                             |
+| `AppTabBar`                                        | `common/AppTabBar.tsx`                                                          | client  | Below md: the same links as a floating dark pill (`shadow-tabbar`). Left out on full-height work screens.                                                                                                                                                                                                                                                                                                                                          |
+| `TopbarMenu` / `TopbarMenuSheet`                   | `common/TopbarMenu.tsx`, `common/TopbarMenuSheet.tsx`                           | client  | Phone menu button; lazy-loads the Account sheet: the account control and the segmented `LocaleToggle`. It lists no modules (the tab bar has them).                                                                                                                                                                                                                                                                                                 |
+| `AccountControl`, `UserMenu`, `UserMenuPopup`      | `common/AccountControl.tsx`, `common/UserMenu.tsx`, `common/UserMenuPopup.tsx`  | client  | Only the signed-in identity menu (admin for admins, sign out behind a confirm; favorites moved to the dictation page); there is no sign-in control anywhere, and with no account (only on the login page) it renders nothing. `variant="rail"` is the avatar alone at the rail foot (every page from md), `chip` the home topbar chip. Sign-out is the server action `signOutAction` in `src/lib/auth/actions.ts`, which returns to `/auth/login`. |
+| `AppCredits`                                       | `common/AppCredits.tsx`                                                         | client  | Last row of the board. Hidden on work screens.                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `ThemeProvider`, `I18nProvider`, `AccountProvider` | `common/ThemeProvider.tsx`, `src/i18n/client.tsx`, `common/AccountProvider.tsx` | client  | Mounted once in `src/app/layout.tsx` (`I18nProvider` > `AccountProvider` > `ThemeProvider`); the layout reads the session once (`readAccount`, giving `{ account }`) and `useAccount()` serves it.                                                                                                                                                                                                                                                 |
 
 Page titles: a module page passes `page={{ module, title, subtitle?, breadcrumb? }}`
 to `AppTopbar` and renders its own `PageHeader inTopbar` with the same title
@@ -266,29 +268,57 @@ roles, no `bg-ink` control, no raw palette, no heavy weights in learner
 components, no `hover-lift`, no em dash, 44px touch targets; baselines only
 shrink.
 
+### 4.2 The login page
+
+`/auth/login` (`src/app/auth/login/page.tsx`, a server page with
+`dynamic = 'force-dynamic'`) is the only page a visitor can see without a session. It sits
+outside the `(app)` group and renders no `PageShell`: no rail, no tab bar, no topbar and no
+`OutboxOwnerProvider`. It is a `bg-canvas` page with `LocaleToggle variant="round"` and
+`ThemeToggle` top right, a centred `LoginCard`, and `AppCredits` at the foot. The page
+logic (redirect of a signed-in visitor, `callbackUrl` and `?error=` handling) is in
+[02](./02-architecture.md) section 6; `loginPageState.ts` maps the error code to a notice.
+
+`src/components/auth/LoginCard.tsx` (client, because the button needs `useFormStatus`) is
+one `bg-surface` panel, in order:
+
+| Part           | What it is                                                                                                                                                                                                                                                                                                           |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Buddy          | `HomeBuddyMascot mood="ready"`, decorative.                                                                                                                                                                                                                                                                          |
+| Title, tagline | App name as the h1 (`common.auth.loginTitle`) and one `text-ink-soft` line (`loginTagline`).                                                                                                                                                                                                                         |
+| Module chips   | The four modules as static pills tinted from `MODULE_THEMES` (tint and accent) with `MODULE_ICONS` and `common.modules[key].shortTitle`; not links and no hover pop.                                                                                                                                                 |
+| Button         | The page's one `cta`: `ActionButton tone="ink"` "Continue with Google" with an inline Google "G" mark, in a `<form action={signInAction}>` with a hidden, already sanitised `callbackUrl`. While the form posts it is disabled and reads "Opening Google..." (`aria-busy`), so a double click starts one round trip. |
+| Notice         | `InlineNotice` for `?error=` (`AccessDenied`, `Configuration`, any other code) or when Google OAuth is not configured; in that case there is no button (fail closed).                                                                                                                                                |
+
+All text is the `common.auth.*` catalogue (`loginMetaTitle`, `loginTitle`, `loginTagline`,
+`continueWithGoogle`, `openingGoogle`, `notConfigured`, `errorAccessDenied`,
+`errorGeneric`). The page title uses `loginMetaTitle` and `robots: { index: false }`.
+
 ---
 
 ## 5. Route map
 
 All pages set `runtime = 'nodejs'`; data pages set `dynamic = 'force-dynamic'`.
 Most guard on `hasMongoDbUri()` (`src/constants/environments.ts`) and render a
-"database not configured" state instead of crashing. Learner data is scoped by
-`getPracticeActorId()` (signed-in user, else a guest cookie); see
-`docs/07-auth-infra-testing.md`.
+"database not configured" state instead of crashing. Every page except `/auth/login`
+needs a Google session: `src/proxy.ts` sends a visitor without one to
+`/auth/login?callbackUrl=<page>`, and the pages and layouts call `requirePageUser()`
+(`src/lib/auth/currentUser.ts`) as a second check. Learner data is scoped by `user.id`;
+see `docs/07-auth-infra-testing.md`.
 
-| URL                                           | File                                                    | Purpose                                                                                                                                             | Auth  |
-| --------------------------------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ----- |
-| `/`                                           | `src/app/page.tsx`                                      | Home (`HomeStudyDesk`): simple view (up next, next stop, numbers, buddy) or the full view.                                                          | Open  |
-| `/dictation`                                  | `src/app/(app)/dictation/page.tsx`                      | Dictation landing: listening journey card, side drawer (recent, favorites), record shelves.                                                         | Open  |
-| `/dictation/[topicSlug]`                      | `src/app/(app)/dictation/[topicSlug]/page.tsx`          | Topic record card, then sections (accordion) or filtered flat results.                                                                              | Open  |
-| `/dictation/favorites`, `/dictation/no-topic` | `src/app/(app)/dictation/{favorites,no-topic}/page.tsx` | Favourites (sign-in required) and uncategorised lessons.                                                                                            | Mixed |
-| `/dictation/videos/[videoId]/practice`        | `.../practice/page.tsx`                                 | Practice (`DictationPracticeShell`, full height).                                                                                                   | Open  |
-| `/dictation/videos/[videoId]/results`         | `.../results/page.tsx`                                  | Per-video results, AI debrief, weak segments.                                                                                                       | Open  |
-| `/dictation/review`                           | `src/app/(app)/dictation/review/page.tsx`               | Due review queue with one Start review.                                                                                                             | Open  |
-| `/vocabulary`, `/vocabulary/words`            | `src/app/(app)/vocabulary/**`                           | Word garden landing; word list with search.                                                                                                         | Open  |
-| `/grammar` and children                       | `src/app/(app)/grammar/**`                              | Grammar path, lesson player, notes, review, weak-spot practice, unit checkpoint.                                                                    | Open  |
-| `/ielts` and children                         | `src/app/(app)/ielts/**`                                | IELTS catalogue, test page, runners (practice, mock, drill), attempt review.                                                                        | Open  |
-| `/admin/**`                                   | `src/app/admin/**`                                      | Admin: dictation content, IELTS editor, vocabulary enrichment. `src/app/admin/layout.tsx` redirects anonymous users to sign-in and non-admins away. | Admin |
+| URL                                           | File                                                    | Purpose                                                                                                                                                                              | Auth      |
+| --------------------------------------------- | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------- |
+| `/auth/login`                                 | `src/app/auth/login/page.tsx`                           | The login card: Continue with Google, or a redirect to `callbackUrl` when already signed in (section 4.2).                                                                           | Public    |
+| `/`                                           | `src/app/page.tsx`                                      | Home (`HomeStudyDesk`): simple view (up next, next stop, numbers, buddy) or the full view.                                                                                           | Signed in |
+| `/dictation`                                  | `src/app/(app)/dictation/page.tsx`                      | Dictation landing: listening journey card, side drawer (recent, favorites), record shelves.                                                                                          | Signed in |
+| `/dictation/[topicSlug]`                      | `src/app/(app)/dictation/[topicSlug]/page.tsx`          | Topic record card, then sections (accordion) or filtered flat results.                                                                                                               | Signed in |
+| `/dictation/favorites`, `/dictation/no-topic` | `src/app/(app)/dictation/{favorites,no-topic}/page.tsx` | Favourites and uncategorised lessons.                                                                                                                                                | Signed in |
+| `/dictation/videos/[videoId]/practice`        | `.../practice/page.tsx`                                 | Practice (`DictationPracticeShell`, full height).                                                                                                                                    | Signed in |
+| `/dictation/videos/[videoId]/results`         | `.../results/page.tsx`                                  | Per-video results, AI debrief, weak segments.                                                                                                                                        | Signed in |
+| `/dictation/review`                           | `src/app/(app)/dictation/review/page.tsx`               | Due review queue with one Start review.                                                                                                                                              | Signed in |
+| `/vocabulary`, `/vocabulary/words`            | `src/app/(app)/vocabulary/**`                           | Word garden landing; word list with search.                                                                                                                                          | Signed in |
+| `/grammar` and children                       | `src/app/(app)/grammar/**`                              | Grammar path, lesson player, notes, review, weak-spot practice, unit checkpoint.                                                                                                     | Signed in |
+| `/ielts` and children                         | `src/app/(app)/ielts/**`                                | IELTS catalogue, test page, runners (practice, mock, drill), attempt review.                                                                                                         | Signed in |
+| `/admin/**`                                   | `src/app/admin/**`                                      | Admin: dictation content, IELTS editor, vocabulary enrichment. The proxy and `src/app/admin/layout.tsx` send a signed-out visitor to the login page and a non-admin to `/dictation`. | Admin     |
 
 Module sections below list each module's routes in detail.
 
@@ -296,7 +326,7 @@ Module sections below list each module's routes in detail.
 
 ## 6. The home dashboard
 
-`src/app/page.tsx` (server) loads, for a signed-in user, dictation global stats,
+`src/app/page.tsx` (server; it sits outside the `(app)` group, so it calls `requirePageUser()` itself) loads dictation global stats,
 vocabulary stats and grammar progress and passes them to `HomeStudyDesk`
 (`src/components/home/HomeStudyDesk.tsx`). `HomeViewSwitch` flips between the
 simple view (default, cookie-backed, `homeView.ts`) and the full view.
@@ -324,7 +354,7 @@ from
 `pickNextStop`: resume a half-done video, else due review
 sentences, else the topic nearest gold) with `DictationSide` folded beside it
 (recent unfinished videos, latest results, favorites). Below, the Topics
-heading with a Favorites button beside it (signed-in learners only), then `RecordShelves`
+heading with a Favorites button beside it, then `RecordShelves`
 shows topics as records (playing, new, gold).
 
 `/dictation/[topicSlug]` passes the topic description to the topbar as the
@@ -335,21 +365,21 @@ opens its section if folded (`openBrowseDisclosure`), scrolls to the card
 (`videoCardId`), focuses it and bounces it (`nudge="li"`)), then
 `BrowseToolbar` (debounced search; the level filter folds behind a filter
 button; no sort, course order only), then `SectionAccordion` (the section
-holding the next video starts open; counts show to guests too) or, while
+holding the next video starts open) or, while
 searching, `FlatResults` with `BrowseVideoList`, an `EmptyState` and
 `BrowsePagination` (`buildBrowseHref` keeps a non-default sort).
 `/dictation/no-topic` and `/dictation/favorites` share `VideoListPage`.
 
-| Component                                                          | File                              | Client?         | Role                                                                                          |
-| ------------------------------------------------------------------ | --------------------------------- | --------------- | --------------------------------------------------------------------------------------------- |
-| `ListeningJourneyHero`                                             | `browse/ListeningJourneyHero.tsx` | server          | Listening journey card; playhead in the you-are-here pink.                                    |
-| `DictationSide`                                                    | `browse/DictationSide.tsx`        | server          | The drawer's recent and favorites lists.                                                      |
-| `RecordShelves`, `RecordDisc`                                      | `browse/RecordShelves.tsx`        | server          | Topic records whose ring fills with progress.                                                 |
-| `TopicJourney`                                                     | `browse/TopicJourney.tsx`         | server          | Small stacked journey card for one topic or list; renders `TopicContinueFloat`.               |
-| `VideoListPage`                                                    | `browse/VideoListPage.tsx`        | server          | Shared shell of the uncategorized and favorites lists.                                        |
-| `BrowseVideoList` / `BrowseVideoListClient`                        | `browse/BrowseVideoList*.tsx`     | server / client | Video cards (whole card links to practice, a tick once done, no action pill).                 |
-| `SectionAccordion`, `BrowseDisclosure`                             | `browse/*.tsx`                    | server / client | Folding sections whose closed bodies ship only records; a window event opens one by panel id. |
-| `BrowseToolbar`, `BrowsePagination`, `FavoriteButton`, `TopicGrid` | `browse/*.tsx`                    | mixed           | Search and level, pager (44px), favorite star (44px), fallback topic grid.                    |
+| Component                                                          | File                              | Client?         | Role                                                                                                                                                             |
+| ------------------------------------------------------------------ | --------------------------------- | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ListeningJourneyHero`                                             | `browse/ListeningJourneyHero.tsx` | server          | Listening journey card; playhead in the you-are-here pink.                                                                                                       |
+| `DictationSide`                                                    | `browse/DictationSide.tsx`        | server          | The drawer's recent and favorites lists.                                                                                                                         |
+| `RecordShelves`, `RecordDisc`                                      | `browse/RecordShelves.tsx`        | server          | Topic records whose ring fills with progress.                                                                                                                    |
+| `TopicJourney`                                                     | `browse/TopicJourney.tsx`         | server          | Small stacked journey card for one topic or list; renders `TopicContinueFloat`.                                                                                  |
+| `VideoListPage`                                                    | `browse/VideoListPage.tsx`        | server          | Shared shell of the uncategorized and favorites lists.                                                                                                           |
+| `BrowseVideoList` / `BrowseVideoListClient`                        | `browse/BrowseVideoList*.tsx`     | server / client | Video cards (whole card links to practice, a tick once done, no action pill).                                                                                    |
+| `SectionAccordion`, `BrowseDisclosure`                             | `browse/*.tsx`                    | server / client | Folding sections whose closed bodies ship only records; a window event opens one by panel id.                                                                    |
+| `BrowseToolbar`, `BrowsePagination`, `FavoriteButton`, `TopicGrid` | `browse/*.tsx`                    | mixed           | Search and level, pager (44px), favorite star (44px; an expired session sends the learner to `/auth/login` with this page as the way back), fallback topic grid. |
 
 ### 7.2 Practice
 
@@ -448,11 +478,11 @@ calls `importYouTubeVideoApi` (`src/requests/dictationImportsApi.ts`).
 
 ### 8.1 Routes
 
-| URL                 | File                                      | Type                   | Purpose                                                                                                                                                                                                                                                                                                                 |
-| ------------------- | ----------------------------------------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/vocabulary`       | `src/app/(app)/vocabulary/page.tsx`       | Server + client island | Loads `getVocabularyDashboardData({ actorId })` (`src/modules/vocabulary/services/vocabDashboardService.ts`: stats, due recall tasks, Explore deck) when the database is configured, and renders `VocabularyDashboard initialData mongoConfigured`. A load failure is logged and the client then loads the data itself. |
-| `/vocabulary/words` | `src/app/(app)/vocabulary/words/page.tsx` | Server                 | `parseVocabWordListQuery(searchParams)` (views `learning`, `dueToday`, `alreadyKnow`, `mastered`, `knownTotal`; invalid values fall back to `learning`) then `listVocabWordsForUser`, rendered by `VocabularyWordList`.                                                                                                 |
-| `/admin/vocab`      | `src/app/admin/vocab/page.tsx`            | Server + client island | `getVocabAdminQueueSummary()` into `AdminVocabPanel`.                                                                                                                                                                                                                                                                   |
+| URL                 | File                                      | Type                   | Purpose                                                                                                                                                                                                                                                                                                                |
+| ------------------- | ----------------------------------------- | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/vocabulary`       | `src/app/(app)/vocabulary/page.tsx`       | Server + client island | Loads `getVocabularyDashboardData({ userId })` (`src/modules/vocabulary/services/vocabDashboardService.ts`: stats, due recall tasks, Explore deck) when the database is configured, and renders `VocabularyDashboard initialData mongoConfigured`. A load failure is logged and the client then loads the data itself. |
+| `/vocabulary/words` | `src/app/(app)/vocabulary/words/page.tsx` | Server                 | `parseVocabWordListQuery(searchParams)` (views `learning`, `dueToday`, `alreadyKnow`, `mastered`, `knownTotal`; invalid values fall back to `learning`) then `listVocabWordsForUser`, rendered by `VocabularyWordList`.                                                                                                |
+| `/admin/vocab`      | `src/app/admin/vocab/page.tsx`            | Server + client island | `getVocabAdminQueueSummary()` into `AdminVocabPanel`.                                                                                                                                                                                                                                                                  |
 
 Each route has a `loading.tsx` skeleton shaped like its page.
 
@@ -592,8 +622,9 @@ column.
 
 ### 10.1 Routes
 
-No learner IELTS route requires sign-in: `AttemptLoader` mints a guest identity
-when needed, and attempt pages only load attempts the current actor owns.
+Like every page, the IELTS routes need a signed-in learner (proxy gate plus the `(app)`
+layout); `AttemptLoader` starts or resumes the attempt through the API without any
+identity bootstrap, and attempt pages only load attempts the current user owns.
 
 | URL                                     | File                                             | Renders                                                                                                                                                                    | Notes                                                         |
 | --------------------------------------- | ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
@@ -698,7 +729,8 @@ events, checks, grading, outbox writes) and `src/requests/ieltsAdminApi.ts`
   via `unstable_retry()` (optional) and the way back to the module.
   `src/app/(app)/ielts/not-found.tsx` uses it without a retry.
 - Configuration-absent states: data pages render a "database not configured"
-  panel when `hasMongoDbUri()` is false.
+  panel when `hasMongoDbUri()` is false; the login page shows a notice and no button when
+  Google OAuth is not configured.
 - Pending UI: favourites, debrief generation, admin forms, grammar saves and
   vocabulary decisions use `useTransition` or local state with disabled buttons and
   inline errors; queued writes replay from the client outbox

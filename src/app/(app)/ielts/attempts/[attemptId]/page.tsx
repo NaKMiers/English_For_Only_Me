@@ -10,7 +10,7 @@ import { ObjectiveResult } from '@/components/ielts/review/ObjectiveResult'
 import { WritingResult } from '@/components/ielts/review/WritingResult'
 import { format } from '@/i18n/format'
 import { getMessages } from '@/i18n/server'
-import { getPracticeActorId } from '@/modules/dictation/services/getCurrentUser'
+import { requirePageUser } from '@/lib/auth/currentUser'
 import { listIeltsAttempts } from '@/modules/ielts/attempts/attemptQueries'
 import { IELTS_SKILLS } from '@/modules/ielts/constants'
 import { readPublishedIeltsTest } from '@/modules/ielts/tests/testReaders'
@@ -58,13 +58,13 @@ export default async function IeltsResultPage({ params }: Props) {
   const skillLabel = t.ielts.skills[attempt.skill]
   // Fresh journey data for the head, read with the queries the test page
   // already uses: the published test (cached) and this test's attempts.
-  const actorId = await getPracticeActorId()
+  const user = await requirePageUser()
   const [test, history] = await Promise.all([
     attempt.testSlug
       ? readPublishedIeltsTest(attempt.testSlug).catch(() => null)
       : Promise.resolve(null),
-    actorId && attempt.testSlug
-      ? listIeltsAttempts(actorId, {
+    attempt.testSlug
+      ? listIeltsAttempts(user.id, {
           limit: 20,
           testSlug: attempt.testSlug,
         }).catch(() => [])

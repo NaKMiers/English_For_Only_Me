@@ -1,8 +1,8 @@
 import 'server-only'
 
 import { hasMongoDbUri } from '@/constants/environments'
-import { connectDatabaseWhen } from '@/lib/db/connectDatabase'
-import { getPracticeActorId } from '@/modules/dictation/services/getCurrentUser'
+import { requirePageUser } from '@/lib/auth/currentUser'
+import { connectDatabase } from '@/lib/db/connectDatabase'
 
 import type { IeltsAttemptRecord } from '../attempts/attemptRecords'
 import { parseAttemptId } from '../attempts/attemptRouteDecisions'
@@ -58,11 +58,8 @@ export async function loadResultPageData(
 
   if (!id.ok) return null
 
-  const ownerId = await connectDatabaseWhen(getPracticeActorId())
-
-  if (!ownerId) return null
-
-  const attempt = await readAttemptForOwner(ownerId, id.data)
+  const [user] = await Promise.all([requirePageUser(), connectDatabase()])
+  const attempt = await readAttemptForOwner(user.id, id.data)
 
   if (!attempt) return null
 

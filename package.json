@@ -19,6 +19,7 @@
     "resegment": "node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/resegmentAllTranscripts.ts",
     "grammar:check": "node --conditions=react-server --import tsx scripts/checkGrammarUnits.ts",
     "grammar:drop-legacy": "node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/dropLegacyGrammar.ts",
+    "auth:drop-guest-data": "node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/dropGuestData.ts",
     "vocab:seed": "node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/seedVocabulary.ts",
     "vocab:seed-family": "node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/seedVocabularyFamily.ts",
     "vocab:enrich": "node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/enrichVocabularyBatch.ts",

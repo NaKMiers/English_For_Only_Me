@@ -9,7 +9,8 @@ import {
   markReviewItemForUser,
   recomputeReviewItemsForVideo,
 } from '@/modules/dictation/review/reviewItemService'
-import { requirePracticeActor } from '@/modules/dictation/services/getCurrentUser'
+import { requireUser } from '@/lib/auth/currentUser'
+import { InvalidOwnerKeyError } from '@/lib/auth/ownerKey'
 import {
   parseListReviewItemsRequest,
   parseRecomputeReviewItemsRequest,
@@ -29,6 +30,15 @@ function jsonError(decision: ApiErrorDecision) {
 }
 
 function toReviewItemError(error: unknown, t: Messages): ApiErrorDecision {
+  // A session whose id is not an ObjectId (see ownerKey.ts).
+  if (error instanceof InvalidOwnerKeyError)
+    return {
+      status: 400,
+      body: {
+        message: t.common.errors.invalidRequest,
+      },
+    }
+
   if (
     typeof error === 'object' &&
     error !== null &&
@@ -71,14 +81,14 @@ export async function GET(request: Request) {
   if (!parsed.ok) return jsonError(parsed)
 
   try {
-    const actor = await requirePracticeActor()
+    const user = await requireUser()
 
     await connectDatabase()
 
     return NextResponse.json({
       reviewItems: await listDueReviewItemsForUser({
         limit: parsed.data.limit,
-        userId: actor.id,
+        userId: user.id,
         videoId: parsed.data.videoId,
       }),
     })
@@ -99,13 +109,13 @@ export async function POST(request: Request) {
 
     if (!parsed.ok) return jsonError(parsed)
 
-    const actor = await requirePracticeActor()
+    const user = await requireUser()
 
     await connectDatabase()
 
     return NextResponse.json({
       reviewItems: await recomputeReviewItemsForVideo({
-        userId: actor.id,
+        userId: user.id,
         videoId: parsed.data.videoId,
       }),
     })
@@ -134,13 +144,13 @@ export async function PATCH(request: Request) {
 
     if (!parsed.ok) return jsonError(parsed)
 
-    const actor = await requirePracticeActor()
+    const user = await requireUser()
 
     await connectDatabase()
 
     const reviewItem = await markReviewItemForUser({
       action: parsed.data.action,
-      userId: actor.id,
+      userId: user.id,
       reviewItemId: parsed.data.reviewItemId,
     })
 

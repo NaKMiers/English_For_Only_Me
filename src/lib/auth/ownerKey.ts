@@ -1,16 +1,15 @@
 /**
- * The single owner identity for every per-user practice row (sessions,
- * attempts, review items, debriefs). It is exactly one of:
- * - a signed-in user's Mongo ObjectId, as a 24-char lowercase hex string, or
- * - an anonymous guest id: `guest_` + 32 hex chars (see guestUser.ts).
+ * The single owner identity for every per-user row (sessions, attempts,
+ * review items, debriefs, progress, vocabulary): the signed-in user's Mongo
+ * ObjectId, as a 24-char lowercase hex string.
  *
  * It is NEVER null, empty, or any other shape. This is the data-isolation
  * contract: a row owned by an ambiguous key can leak across users, so we reject
  * such keys before they ever reach a query or a write.
  */
-export const OWNER_KEY_PATTERN = /^([a-f0-9]{24}|guest_[a-f0-9]{32})$/
+export const OWNER_KEY_PATTERN = /^[a-f0-9]{24}$/
 
-/** True when `value` is a well-formed owner key (real user or guest). */
+/** True when `value` is a well-formed owner key (a user ObjectId). */
 export function isValidOwnerKey(value: unknown): value is string {
   return typeof value === 'string' && OWNER_KEY_PATTERN.test(value)
 }

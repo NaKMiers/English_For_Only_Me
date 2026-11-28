@@ -12,7 +12,7 @@ import {
   countDueReviewItemsForUser,
   listDueReviewItemsForUser,
 } from '@/modules/dictation/review/reviewItemService'
-import { getPracticeActorId } from '@/modules/dictation/services/getCurrentUser'
+import { requirePageUser } from '@/lib/auth/currentUser'
 import type { DictationReviewItemApiRecord } from '@/modules/dictation/types'
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -33,23 +33,17 @@ export default async function Page() {
   let dueCount = 0
 
   if (hasMongoDbUri()) {
-    const [actorId] = await Promise.all([
-      getPracticeActorId(),
-      connectDatabase(),
+    const [user] = await Promise.all([requirePageUser(), connectDatabase()])
+    const [items, count] = await Promise.all([
+      listDueReviewItemsForUser({
+        limit: 30,
+        userId: user.id,
+      }),
+      countDueReviewItemsForUser(user.id),
     ])
 
-    if (actorId) {
-      const [items, count] = await Promise.all([
-        listDueReviewItemsForUser({
-          limit: 30,
-          userId: actorId,
-        }),
-        countDueReviewItemsForUser(actorId),
-      ])
-
-      reviewItems.push(...items)
-      dueCount = count
-    }
+    reviewItems.push(...items)
+    dueCount = count
   }
 
   return (

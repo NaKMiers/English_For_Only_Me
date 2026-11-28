@@ -24,9 +24,8 @@ import { getVideoProgressForUser } from '@/modules/dictation/content/progressRep
 import { findNextVideo } from '@/modules/dictation/practice/findNextVideo'
 import { toDictationDebriefRecord } from '@/modules/dictation/services/dictationDebriefRecords'
 import { toDictationVideoRecord } from '@/modules/dictation/services/dictationVideoRecords'
-import { getPracticeActorId } from '@/modules/dictation/services/getCurrentUser'
+import { requirePageUser } from '@/lib/auth/currentUser'
 import { getVideoStatsForUser } from '@/modules/dictation/stats/videoStatsService'
-import type { DictationVideoProgress } from '@/modules/dictation/types'
 import { hasDictationTranscript } from '@/modules/dictation/videoReadiness'
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -99,10 +98,9 @@ export default async function Page({ params }: Props) {
       />
     )
 
-  // Results are open to everyone. A null actor id (a visitor with no practice
-  // history) owns no rows, so the reads below short-circuit to empty and the
-  // page renders the "Practice first" state - never a query on an empty owner.
-  const [actorId] = await Promise.all([getPracticeActorId(), connectDatabase()])
+  // A learner with no practice on this video owns no rows, so the reads below
+  // come back empty and the page renders the "Practice first" state.
+  const [user] = await Promise.all([requirePageUser(), connectDatabase()])
 
   // The reads below are keyed by the URL's video id and the learner, so they
   // start together with the video lookup instead of waiting for it.
@@ -114,21 +112,17 @@ export default async function Page({ params }: Props) {
       },
     }).lean(),
     getVideoStatsForUser({
-      userId: actorId,
+      userId: user.id,
       videoId,
     }),
-    actorId
-      ? DictationDebriefModel.findOne({
-          userId: actorId,
-          status: 'ready',
-          videoId,
-        })
-          .sort({ createdAt: -1 })
-          .lean()
-      : Promise.resolve(null),
-    actorId
-      ? getVideoProgressForUser({ userId: actorId, videoId })
-      : Promise.resolve<DictationVideoProgress>('notStarted'),
+    DictationDebriefModel.findOne({
+      userId: user.id,
+      status: 'ready',
+      videoId,
+    })
+      .sort({ createdAt: -1 })
+      .lean(),
+    getVideoProgressForUser({ userId: user.id, videoId }),
   ])
 
   if (!video) notFound()

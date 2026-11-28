@@ -226,6 +226,119 @@ describe('createOutbox', () => {
     expect(calls).toHaveLength(1)
   })
 
+  it('keeps a write the server answers 401 to and pauses every lane', async () => {
+    const storage = createMemoryStorage()
+    const { calls, fetchImpl } = createControlledFetch()
+    const onSettled = vi.fn()
+    const onUnauthorized = vi.fn()
+    const outbox = createOutbox({
+      fetchImpl,
+      onSettled,
+      onUnauthorized,
+      owner: 'user-a',
+      storage,
+      tabId: 'tab-1',
+    })
+    const first = outbox.enqueue({ body: {}, id: 'a1', lane: 'a', url: '/a1' })
+    let settled = false
+
+    void first.then(() => {
+      settled = true
+    })
+    outbox.enqueue({ body: {}, id: 'a2', lane: 'a', url: '/a2' })
+    outbox.enqueue({ body: {}, id: 'b1', lane: 'b', url: '/b1' })
+    await flushMicrotasks()
+    expect(calls.map(call => call.url)).toEqual(['/a1', '/b1'])
+
+    calls[0].resolve(401, { message: 'Please sign in to continue.' })
+    await flushMicrotasks()
+    calls[1].resolve(401)
+    await flushMicrotasks()
+    await vi.advanceTimersByTimeAsync(120_000)
+
+    // Nothing more is sent, nothing is settled or rolled back, and the
+    // learner is sent to sign in exactly once.
+    expect(calls).toHaveLength(2)
+    expect(settled).toBe(false)
+    expect(onSettled).not.toHaveBeenCalled()
+    expect(onUnauthorized).toHaveBeenCalledTimes(1)
+    expect(outbox.pendingCount()).toBe(3)
+    expect(
+      readItemIds(storage, getOutboxTabStorageKey('user-a', 'tab-1'))
+    ).toEqual(['a1', 'a2', 'b1'])
+
+    // A write made after the 401 waits too.
+    outbox.enqueue({ body: {}, id: 'a3', lane: 'a', url: '/a3' })
+    await flushMicrotasks()
+    expect(calls).toHaveLength(2)
+  })
+
+  it('replays the held queue on the next load once signed back in', async () => {
+    const storage = createMemoryStorage()
+    const before = createControlledFetch()
+    const expired = createOutbox({
+      fetchImpl: before.fetchImpl,
+      onUnauthorized: () => expired.markReleased(),
+      owner: 'user-a',
+      storage,
+      tabId: 'tab-1',
+    })
+
+    void expired.enqueue({ body: { n: 1 }, id: 'a1', lane: 'l', url: '/a1' })
+    await flushMicrotasks()
+    before.calls[0].resolve(401)
+    await flushMicrotasks()
+
+    // Back from the login page as the same learner: same owner key.
+    const after = createControlledFetch()
+
+    createOutbox({
+      fetchImpl: after.fetchImpl,
+      owner: 'user-a',
+      storage,
+      tabId: 'tab-1',
+    })
+    await flushMicrotasks()
+
+    expect(after.calls.map(call => call.url)).toEqual(['/a1'])
+    expect(after.calls[0].body).toEqual({ n: 1 })
+    expect(
+      new Headers(after.calls[0].init.headers).get('idempotency-key')
+    ).toBe('a1')
+  })
+
+  it('never sends a held queue for a different learner', async () => {
+    const storage = createMemoryStorage()
+    const before = createControlledFetch()
+    const expired = createOutbox({
+      fetchImpl: before.fetchImpl,
+      onUnauthorized: () => expired.markReleased(),
+      owner: 'user-a',
+      storage,
+      tabId: 'tab-1',
+    })
+
+    void expired.enqueue({ body: {}, id: 'a1', lane: 'l', url: '/a1' })
+    await flushMicrotasks()
+    before.calls[0].resolve(401)
+    await flushMicrotasks()
+
+    const other = createControlledFetch()
+
+    createOutbox({
+      fetchImpl: other.fetchImpl,
+      owner: 'user-b',
+      storage,
+      tabId: 'tab-1',
+    })
+    await flushMicrotasks()
+
+    expect(other.calls).toHaveLength(0)
+    expect(
+      readItemIds(storage, getOutboxTabStorageKey('user-a', 'tab-1'))
+    ).toEqual(['a1'])
+  })
+
   it('persists queued items per owner and replays them on the next load', async () => {
     const storage = createMemoryStorage()
     const first = createControlledFetch()
@@ -635,113 +748,6 @@ describe('createOutbox', () => {
     expect(
       readItemIds(storage, getOutboxTabStorageKey('user-a', 'tab-1'))
     ).toEqual(['legacy'])
-  })
-
-  it('adopts another owner queue it is told to, re-owned and ahead of its own', async () => {
-    const storage = createMemoryStorage()
-
-    storage.setItem(
-      getOutboxTabStorageKey('anonymous', 'tab-1'),
-      JSON.stringify({
-        heartbeatAt: Date.now(),
-        items: [
-          createStoredItem({ id: 'anon', owner: 'anonymous', url: '/anon' }),
-        ],
-      })
-    )
-    storage.setItem(
-      getOutboxTabStorageKey('anonymous', 'tab-other'),
-      JSON.stringify({
-        heartbeatAt: Date.now(),
-        items: [createStoredItem({ id: 'other', owner: 'anonymous' })],
-      })
-    )
-
-    const { calls, fetchImpl } = createControlledFetch()
-
-    createOutbox({
-      adoptOwners: ['anonymous'],
-      fetchImpl,
-      owner: 'guest-hash',
-      storage,
-      tabId: 'tab-1',
-    })
-    await flushMicrotasks()
-
-    expect(calls.map(call => call.url)).toEqual(['/anon'])
-    expect(new Headers(calls[0].init.headers).get('x-outbox-owner')).toBe(
-      'guest-hash'
-    )
-    expect(storage.data.has(getOutboxTabStorageKey('anonymous', 'tab-1'))).toBe(
-      false
-    )
-    // Another tab that is still anonymous and alive keeps its own queue.
-    expect(
-      storage.data.has(getOutboxTabStorageKey('anonymous', 'tab-other'))
-    ).toBe(true)
-
-    const stored = JSON.parse(
-      storage.getItem(getOutboxTabStorageKey('guest-hash', 'tab-1')) ?? '{}'
-    ) as { items: OutboxItem[] }
-
-    expect(stored.items.map(item => item.owner)).toEqual(['guest-hash'])
-  })
-
-  it('hands queued items and their callers to another outbox on release', async () => {
-    const storage = createMemoryStorage()
-    const first = createControlledFetch()
-    const anonymous = createOutbox({
-      fetchImpl: first.fetchImpl,
-      owner: 'anonymous',
-      storage,
-      tabId: 'tab-1',
-    })
-    const inFlight = anonymous.enqueue({
-      body: {},
-      id: 'a1',
-      lane: 'l',
-      url: '/a1',
-    })
-    const queued = anonymous.enqueue({
-      body: {},
-      id: 'a2',
-      lane: 'l',
-      url: '/a2',
-    })
-
-    await flushMicrotasks()
-
-    const released = anonymous.release()
-
-    expect(released.map(entry => entry.item.id)).toEqual(['a1', 'a2'])
-    expect(storage.data.has(getOutboxTabStorageKey('anonymous', 'tab-1'))).toBe(
-      false
-    )
-
-    const second = createControlledFetch()
-    const guest = createOutbox({
-      adoptItems: released,
-      fetchImpl: second.fetchImpl,
-      owner: 'guest-hash',
-      storage,
-      tabId: 'tab-1',
-    })
-
-    guest.enqueue({ body: {}, id: 'g1', lane: 'l', url: '/g1' })
-    await flushMicrotasks()
-    expect(second.calls.map(call => call.url)).toEqual(['/a1'])
-
-    second.calls[0].resolve(200, { n: 1 })
-    await expect(inFlight).resolves.toMatchObject({ data: { n: 1 }, ok: true })
-    await flushMicrotasks()
-    second.calls[1].resolve(200, { n: 2 })
-    await expect(queued).resolves.toMatchObject({ data: { n: 2 }, ok: true })
-    await flushMicrotasks()
-    expect(second.calls.map(call => call.url)).toEqual(['/a1', '/a2', '/g1'])
-    // The old request finishing late changes nothing.
-    first.calls[0].resolve(200)
-    await flushMicrotasks()
-    expect(guest.pendingCount()).toBe(1)
   })
 
   it('lets a new tab take a released queue at once', async () => {

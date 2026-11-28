@@ -3,13 +3,49 @@ import Google from 'next-auth/providers/google'
 
 import { ENV_KEYS, getOptionalServerEnv } from '@/constants/environments'
 
+import { LOGIN_PATH } from './callbackUrl'
 import { resolveRole } from './roles'
 
+/** Where a signed-in learner who is not an admin goes from /admin. */
+export const NON_ADMIN_HOME = '/dictation'
+
+interface AuthorizedInput {
+  auth: { user?: { role?: string } | null } | null
+  request: { nextUrl: { href: string; pathname: string } }
+}
+
 /**
- * Edge-safe Auth.js config: providers + token/session shaping + the /admin
- * authorization guard. Imports ONLY environments + roles (no Mongoose), so it
- * can run in `middleware.ts` on the edge runtime. The DB-touching user
- * provisioning lives in `auth.ts` (Node only) - see system-update-plan §2.2.
+ * The proxy's gate for every page (the API routes check for themselves). The
+ * login page is the only public page; /admin needs the admin role; every other
+ * page needs a session. `false` sends the visitor to `pages.signIn` with the
+ * page as `callbackUrl`. A signed-in learner without the admin role is sent
+ * home instead: back to the login page they would bounce straight to /admin.
+ */
+export function authorizePage({
+  auth,
+  request: { nextUrl },
+}: AuthorizedInput): boolean | Response {
+  if (nextUrl.pathname === LOGIN_PATH) return true
+
+  const user = auth?.user
+
+  if (!user) return false
+
+  if (nextUrl.pathname === '/admin' || nextUrl.pathname.startsWith('/admin/'))
+    return user.role === 'admin'
+      ? true
+      : Response.redirect(new URL(NON_ADMIN_HOME, nextUrl.href))
+
+  return true
+}
+
+/**
+ * The DB-free half of the Auth.js config: providers, pages, the proxy gate
+ * and token / session shaping. The proxy (`src/proxy.ts`) builds its Auth.js
+ * instance from this alone because it runs on every navigation and prefetch,
+ * so it may only decode the session JWT, never touch the database (Next
+ * authentication guide, "Optimistic checks with Proxy"). The user provisioning
+ * that needs Mongoose lives in `auth.ts`.
  */
 export const authConfig = {
   providers: [
@@ -18,17 +54,13 @@ export const authConfig = {
       clientSecret: getOptionalServerEnv(ENV_KEYS.googleClientSecret) ?? '',
     }),
   ],
+  // The Auth.js default sign-in and error pages never show: both land on our
+  // one login page, which reads `?error=` itself.
+  pages: { signIn: LOGIN_PATH, error: LOGIN_PATH },
   callbacks: {
-    // Runs in middleware to protect /admin. Everything else is public
-    // (public browsing per plan D4). Per-user API/data enforce auth
-    // themselves via requireUser (R3), not here.
-    authorized({ auth, request: { nextUrl } }) {
-      if (!nextUrl.pathname.startsWith('/admin')) return true
-
-      return auth?.user?.role === 'admin'
-    },
-    // Keep role in sync from the allowlist on every token pass (edge-safe).
-    // The Node jwt callback in auth.ts additionally stamps the user id.
+    authorized: authorizePage,
+    // Keep role in sync from the allowlist on every token pass (DB-free).
+    // The jwt callback in auth.ts additionally stamps the user id.
     jwt({ token }) {
       token.role = resolveRole(token.email)
 

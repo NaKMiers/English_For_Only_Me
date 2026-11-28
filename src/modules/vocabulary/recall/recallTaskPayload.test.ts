@@ -19,7 +19,7 @@ const PAYLOAD = {
   taskId: 'task-1',
   type: 'wordChooseDefinition' as const,
 }
-const USER_ID = 'guest_secret-cookie-value'
+const USER_ID = '6a5074f66c2397cc339c6e78'
 
 describe('decodeVocabRecallTaskPayload (browser side)', () => {
   it('reads exactly what the server signed, including non-ASCII text', () => {
@@ -59,7 +59,11 @@ describe('verifyVocabRecallTaskToken', () => {
       verifyVocabRecallTaskToken({ now, token, userId: USER_ID })
     ).toMatchObject({ taskId: 'task-1' })
     expect(
-      verifyVocabRecallTaskToken({ now, token, userId: 'guest_someone-else' })
+      verifyVocabRecallTaskToken({
+        now,
+        token,
+        userId: '6a5074f66c2397cc339c6e79',
+      })
     ).toBeNull()
   })
 

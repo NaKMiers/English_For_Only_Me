@@ -1,11 +1,11 @@
 'use client'
 
 import { Star } from 'lucide-react'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useRef, useState } from 'react'
 
 import { useMessages } from '@/i18n/client'
+import { loginUrlFor } from '@/lib/auth/callbackUrl'
 import { cn } from '@/lib/utils'
 import { setFavoriteAction } from '@/modules/dictation/content/favoriteActions'
 
@@ -13,16 +13,12 @@ import { setFavoriteAction } from '@/modules/dictation/content/favoriteActions'
 const base =
   'grid size-11 shrink-0 place-items-center rounded-full border border-line bg-surface/90'
 
-const SIGN_IN_HREF = '/api/auth/signin?callbackUrl=/dictation'
-
 export function FavoriteButton({
   videoId,
   initialFavorited,
-  canFavorite,
 }: {
   videoId: string
   initialFavorited: boolean
-  canFavorite: boolean
 }) {
   const text = useMessages().dictation.browse
   const router = useRouter()
@@ -34,29 +30,18 @@ export function FavoriteButton({
   const latestSeqRef = useRef(0)
   const confirmedRef = useRef({ seq: 0, favorited: initialFavorited })
 
-  // Anonymous: the star links to sign-in (R4 gentle prompt, no dead end).
-  if (!canFavorite)
-    return (
-      <Link
-        href={SIGN_IN_HREF}
-        aria-label={text.signInToFavorite}
-        className={cn(base, 'soft-press hover-pop hover:bg-tint-soft')}
-      >
-        <Star
-          aria-hidden="true"
-          className="text-ink-soft size-4"
-        />
-      </Link>
-    )
-
   async function sendFavorite(seq: number, desired: boolean) {
     try {
       const result = await setFavoriteAction(videoId, desired)
 
+      // The session ended since the page loaded: roll back and sign in
+      // again, coming back to this very page.
       if (result.needsAuth) {
         if (seq !== latestSeqRef.current) return
-        setFavorited(false)
-        router.push(SIGN_IN_HREF)
+        setFavorited(confirmedRef.current.favorited)
+        router.push(
+          loginUrlFor(`${window.location.pathname}${window.location.search}`)
+        )
         return
       }
 

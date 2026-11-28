@@ -1,5 +1,6 @@
 import { MissingEnvironmentError } from '@/constants/environments'
 import { en, type Messages } from '@/i18n/messages/en'
+import { InvalidOwnerKeyError } from '@/lib/auth/ownerKey'
 
 import { MissingVietnameseMeaningError } from './userVocabItemService'
 import type { VocabApiErrorDecision } from './vocabularyRouteDecisions'
@@ -20,6 +21,10 @@ export function toVocabApiError(
   error: unknown,
   t: Messages = en
 ): VocabApiErrorDecision {
+  // A session whose id is not an ObjectId (see ownerKey.ts).
+  if (error instanceof InvalidOwnerKeyError)
+    return { status: 400, body: { message: t.common.errors.invalidRequest } }
+
   if (
     typeof error === 'object' &&
     error !== null &&

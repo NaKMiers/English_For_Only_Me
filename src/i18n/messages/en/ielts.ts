@@ -503,9 +503,6 @@ export const ielts = {
     checkPracticeOnly: 'Checking a part is only available in practice.',
     writingPerTask: 'Writing is graded per task, not per part.',
     partNotInAttempt: 'That part is not in this attempt.',
-    signInToGrade:
-      'Sign in to get AI grading. Compare with the model answer yourself.',
-    signInForAi: 'Sign in to get AI grading.',
     onlyWritingGraded: 'Only writing attempts are graded.',
     onlyWritingAi: 'Only writing tasks are graded with AI.',
     submitBeforeGrading: 'Submit the attempt before grading.',

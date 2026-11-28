@@ -7,7 +7,7 @@ import {
   REVALIDATE_SECRET_HEADER,
   type RevalidateViewer,
 } from '@/lib/db/revalidateRequest'
-import { getOptionalUser } from '@/modules/dictation/services/getCurrentUser'
+import { getOptionalUser } from '@/lib/auth/currentUser'
 
 export const runtime = 'nodejs'
 

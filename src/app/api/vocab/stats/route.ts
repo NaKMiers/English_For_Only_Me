@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 
 import { getMessages } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
-import { requirePracticeActor } from '@/modules/dictation/services/getCurrentUser'
+import { requireUser } from '@/lib/auth/currentUser'
 import { toVocabApiError } from '@/modules/vocabulary/services/vocabApiErrors'
 import { getVocabStatsForUser } from '@/modules/vocabulary/stats/vocabStatsService'
 import {
@@ -23,12 +23,12 @@ export async function GET() {
   if (missingMongo) return jsonError(missingMongo)
 
   try {
-    const actor = await requirePracticeActor()
+    const user = await requireUser()
 
     await connectDatabase()
 
     return NextResponse.json({
-      stats: await getVocabStatsForUser({ userId: actor.id }),
+      stats: await getVocabStatsForUser({ userId: user.id }),
     })
   } catch (error) {
     return jsonError(toVocabApiError(error, t))

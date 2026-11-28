@@ -91,3 +91,16 @@ here; this is the single canonical copy (no Claude-side duplicate).
   its request helpers have no UI caller after `/dictation/stats` was removed;
   `src/components/common/SketchChart.tsx` is unused; the `page-hero` class is
   used but not defined in `globals.css`.
+- 2026-11-28: Google sign-in became required and guest mode was removed (plan
+  `docs/plans/google-login-required-2026-11-28.md`). A sync touched every doc
+  (01 to 09 and README). New mappings: `src/lib/auth/currentUser.ts` (moved
+  from `src/modules/dictation/services/getCurrentUser.ts`; `requireUser`,
+  `requirePageUser`), `src/lib/auth/callbackUrl.ts`, `src/app/auth/login/**`
+  and `src/components/auth/**` -> 06, 07 and 02; `src/e2e/**` (Playwright
+  minted-session global setup) and `playwright.config.ts` projects -> 07 and
+  02; `scripts/dropGuestData.ts` + `scripts/lib/guestCleanup.ts` -> 07, 02,
+  03. After it, "guest" may appear in docs only as history (removed on
+  2026-11-28, legacy `guest_` rows, the cleanup script); grep for it. Four
+  parallel writers (07; 02+06; 03+05+08; 04) took 1 to 3 minutes; the driver
+  did 01, 09 and README. Gap a writer found and the session fixed: dictation
+  and vocabulary error mappers turned `InvalidOwnerKeyError` into 500.

@@ -5,7 +5,7 @@ const mocks = vi.hoisted(() => ({
   attemptSave: vi.fn(),
   loadSegmentProgressRows: vi.fn(),
   recomputeReviewItemsForSegment: vi.fn(),
-  requirePracticeActor: vi.fn(),
+  requireUser: vi.fn(),
   segmentFindOne: vi.fn(),
   sessionFindOne: vi.fn(),
 }))
@@ -25,8 +25,8 @@ vi.mock('@/lib/db/connectDatabase', () => ({
   connectDatabase: vi.fn(async () => undefined),
 }))
 
-vi.mock('@/modules/dictation/services/getCurrentUser', () => ({
-  requirePracticeActor: mocks.requirePracticeActor,
+vi.mock('@/lib/auth/currentUser', () => ({
+  requireUser: mocks.requireUser,
 }))
 
 vi.mock('@/modules/dictation/services/videoRouteDecisions', async () => ({
@@ -148,7 +148,7 @@ function mockNewAttemptFlow({ sessionSave }: { sessionSave: () => unknown }) {
 }
 
 beforeEach(() => {
-  mocks.requirePracticeActor.mockResolvedValue({ id: 'user-1' })
+  mocks.requireUser.mockResolvedValue({ id: 'user-1' })
   mocks.loadSegmentProgressRows.mockResolvedValue([])
   mocks.recomputeReviewItemsForSegment.mockResolvedValue(undefined)
 })
@@ -305,8 +305,41 @@ describe('POST /api/dictation/sessions/[sessionId]/attempts', () => {
     expect(response.status).toBe(500)
   })
 
+  // Before sign-in was required this saved the attempt anonymously.
+  it('answers a signed-out learner with a 401 and saves nothing', async () => {
+    const { UnauthenticatedError } = await vi.importActual<
+      typeof import('@/lib/auth/currentUser')
+    >('@/lib/auth/currentUser')
+
+    mocks.requireUser.mockRejectedValueOnce(new UnauthenticatedError())
+
+    const response = await postAttempt()
+
+    expect(response.status).toBe(401)
+    await expect(response.json()).resolves.toEqual({
+      message: 'Please sign in to continue.',
+    })
+    expect(mocks.attemptSave).not.toHaveBeenCalled()
+  })
+
+  it('answers a session without a valid owner id with a 400', async () => {
+    const { InvalidOwnerKeyError } = await vi.importActual<
+      typeof import('@/lib/auth/ownerKey')
+    >('@/lib/auth/ownerKey')
+
+    mocks.requireUser.mockRejectedValueOnce(new InvalidOwnerKeyError('bad'))
+
+    const response = await postAttempt()
+
+    expect(response.status).toBe(400)
+    await expect(response.json()).resolves.toEqual({
+      message: 'The request was not valid.',
+    })
+    expect(mocks.attemptSave).not.toHaveBeenCalled()
+  })
+
   it('answers an owner mismatch as a 409 in the learner language', async () => {
-    mocks.requirePracticeActor.mockRejectedValueOnce(
+    mocks.requireUser.mockRejectedValueOnce(
       Object.assign(new Error('Signed in as someone else.'), { status: 409 })
     )
 

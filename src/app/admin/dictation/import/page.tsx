@@ -7,7 +7,8 @@ import { PageShell } from '@/components/common/PageShell'
 import { DictationImportForm } from '@/components/dictation/DictationImportForm'
 import { PageHeader } from '@/components/common/PageHeader'
 import { getMessages } from '@/i18n/server'
-import { getOptionalUser } from '@/modules/dictation/services/getCurrentUser'
+import { NON_ADMIN_HOME } from '@/lib/auth/auth.config'
+import { requirePageUser } from '@/lib/auth/currentUser'
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getMessages()
@@ -24,9 +25,8 @@ export const runtime = 'nodejs'
 export default async function DictationImportPage() {
   // Admin-only: importing creates shared catalog content. The proxy gates
   // /admin too; this guard keeps the redirect target exact.
-  const user = await getOptionalUser()
-  if (!user) redirect('/api/auth/signin?callbackUrl=/admin/dictation/import')
-  if (user.role !== 'admin') redirect('/dictation')
+  const user = await requirePageUser('/admin/dictation/import')
+  if (user.role !== 'admin') redirect(NON_ADMIN_HOME)
 
   const t = await getMessages()
 

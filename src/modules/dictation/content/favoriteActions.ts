@@ -1,7 +1,7 @@
 'use server'
 
+import { getOptionalUser } from '@/lib/auth/currentUser'
 import { connectDatabase } from '@/lib/db/connectDatabase'
-import { getOptionalUser } from '@/modules/dictation/services/getCurrentUser'
 
 import {
   addFavorite,
@@ -16,7 +16,8 @@ const OBJECT_ID_PATTERN = /^[a-f\d]{24}$/i
  * upsert when true, a delete when false, so replays and rapid clicks always
  * land on the last desired state (never a toggle). Requires a signed-in user
  * (favorites are per-user); returns `{ favorited }` or `{ favorited: null,
- * needsAuth: true }` when anonymous so the client can prompt sign-in. Throws
+ * needsAuth: true }` when the session has ended, so the client can send the
+ * learner back to the login page. Throws
  * (so the client rolls back) for a malformed id, or when adding a video that
  * does not exist or is archived. Removing stays allowed for archived videos.
  */
