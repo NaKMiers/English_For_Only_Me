@@ -40,13 +40,20 @@ const STAGE_ICONS: Record<WordStageKey, LucideIcon> = {
   forest: Trees,
 }
 
-/** What the next stop offers: due recall cards, or new words to plant. */
-export type GardenNextStop =
-  | { kind: 'due'; due: number; nextTerm: string; onStart: () => void }
-  | { kind: 'plant'; href: string }
+/** The next stop: the due recall cards (it opens the session on this page). */
+export interface GardenNextStop {
+  due: number
+  nextTerm: string
+  onStart: () => void
+}
 
 interface Props {
-  next: GardenNextStop
+  /**
+   * Null with nothing due: no next stop card (a card that only scrolled to
+   * the explore deck was a dead step); the page's Continue float points at
+   * the deck instead.
+   */
+  next: GardenNextStop | null
   stats: VocabStatsRecord
   /** Adds the side drawer handle ("How a word grows"). */
   withDrawer?: boolean
@@ -58,8 +65,8 @@ interface Props {
  * vine, each tied to a rough CEFR vocabulary size. Above the vine, between
  * each pair of stages still ahead, the words to go (plain text, no lines);
  * the chips sit top right. The next stop, a small card in a narrow right
- * column, is the recall session when words are due, else planting new
- * words. How a word grows (the word-list views) sits in the side drawer.
+ * column, is the recall session when words are due; with nothing due
+ * there is none (the Continue float leads to the explore deck). How a word grows (the word-list views) sits in the side drawer.
  */
 export function WordGardenHero({ next, stats, withDrawer = false }: Props) {
   const messages = useMessages()
@@ -236,7 +243,7 @@ export function WordGardenHero({ next, stats, withDrawer = false }: Props) {
       module="vocabulary"
       nextStopHidesWithDrawer
       nextStop={
-        next.kind === 'due' ? (
+        next ? (
           <NextStopCard
             actionIcon={<BookOpen aria-hidden="true" />}
             actionLabel={launcher.start}
@@ -247,17 +254,7 @@ export function WordGardenHero({ next, stats, withDrawer = false }: Props) {
             size="sm"
             title={plural(t.dueTitle, next.due)}
           />
-        ) : (
-          <NextStopCard
-            actionIcon={<Sprout aria-hidden="true" />}
-            actionLabel={t.plantAction}
-            detail={t.plantDetail}
-            href={next.href}
-            pinLabel={messages.common.journey.nextStop}
-            size="sm"
-            title={t.plantTitle}
-          />
-        )
+        ) : undefined
       }
       stats={
         <StatStrip className="sm:justify-end">

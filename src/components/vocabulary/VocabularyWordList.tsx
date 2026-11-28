@@ -26,6 +26,7 @@ import { INTL_LOCALES, type Locale } from '@/i18n/config'
 import { format, plural } from '@/i18n/format'
 import type { Messages } from '@/i18n/messages/en'
 import { cn } from '@/lib/utils'
+import { VOCAB_RECALL_HREF } from '@/modules/vocabulary/constants'
 import type {
   VocabWordListRecord,
   VocabWordListView,
@@ -175,8 +176,9 @@ export function VocabularyWordList({
   // (same page, rows already shifted up), which replaces the local one.
   const [serverWords, setServerWords] = useState(words)
   const [search, setSearch] = useState(q)
-  const [message, setMessage] = useState<string | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  // A failed move shows on its own row (put back where it was), not above
+  // the list.
+  const [rowErrors, setRowErrors] = useState<Record<string, string>>({})
   const trackerRef = useRef(createEntryWriteTracker<PendingRow>())
   const refillScheduledRef = useRef(false)
 
@@ -257,14 +259,10 @@ export function VocabularyWordList({
     const index = wordItems.findIndex(row => row.entry.id === entryId)
     const ticket = trackerRef.current.begin(entryId, { index, word })
 
-    setError(null)
+    setRowErrors(({ [entryId]: _cleared, ...rest }) => rest)
+    // The row leaving (or changing in) the view says it worked.
     setWordItems(rows =>
       replaceWordListRow({ next: optimisticWord, rows, view: activeView })
-    )
-    setMessage(
-      status === 'shouldLearn'
-        ? format(t.wordList.movedToLearning, { term: word.entry.term })
-        : format(t.wordList.markedKnown, { term: word.entry.term })
     )
 
     const outcome = await enqueueVocabItemStatus(outbox, {
@@ -309,8 +307,7 @@ export function VocabularyWordList({
           word: previousWord,
         })
       )
-      setMessage(null)
-      setError(outcome.error)
+      setRowErrors(errors => ({ ...errors, [entryId]: outcome.error }))
     }
   }
 
@@ -370,7 +367,7 @@ export function VocabularyWordList({
         />
         {activeView === 'dueToday' && visibleTotal > 0 ? (
           <ActionButton
-            href="/vocabulary"
+            href={VOCAB_RECALL_HREF}
             icon={<BookOpen aria-hidden="true" />}
             tone="ink"
           >
@@ -378,13 +375,6 @@ export function VocabularyWordList({
           </ActionButton>
         ) : null}
       </div>
-
-      {message ? (
-        <div aria-live="polite">
-          <InlineNotice>{message}</InlineNotice>
-        </div>
-      ) : null}
-      {error ? <InlineNotice tone="error">{error}</InlineNotice> : null}
 
       {wordItems.length > 0 ? (
         <ul className="border-line bg-surface rounded-panel motion-stagger divide-line grid divide-y border">
@@ -476,6 +466,14 @@ export function VocabularyWordList({
                   </ActionButton>
                 )}
               </div>
+              {rowErrors[word.entry.id] ? (
+                <InlineNotice
+                  className="md:col-span-3"
+                  tone="error"
+                >
+                  {rowErrors[word.entry.id]}
+                </InlineNotice>
+              ) : null}
             </li>
           ))}
         </ul>
@@ -505,23 +503,37 @@ export function VocabularyWordList({
           aria-label={t.wordList.pagerNav}
           className="flex items-center justify-between gap-2"
         >
-          <ActionButton
-            disabled={page <= 1}
-            onClick={() => goTo(page - 1)}
-            tone="paper"
-          >
-            {t.wordList.prev}
-          </ActionButton>
+          {/* The ends of the list: a spacer, not a button that cannot be
+              pressed. */}
+          {page > 1 ? (
+            <ActionButton
+              onClick={() => goTo(page - 1)}
+              tone="paper"
+            >
+              {t.wordList.prev}
+            </ActionButton>
+          ) : (
+            <span
+              aria-hidden="true"
+              className="min-w-20"
+            />
+          )}
           <span className="text-sm tabular-nums">
             {firstItem}-{lastItem} / {visibleTotal}
           </span>
-          <ActionButton
-            disabled={page >= pageCount}
-            onClick={() => goTo(page + 1)}
-            tone="paper"
-          >
-            {messages.common.actions.next}
-          </ActionButton>
+          {page < pageCount ? (
+            <ActionButton
+              onClick={() => goTo(page + 1)}
+              tone="paper"
+            >
+              {messages.common.actions.next}
+            </ActionButton>
+          ) : (
+            <span
+              aria-hidden="true"
+              className="min-w-20"
+            />
+          )}
         </nav>
       ) : null}
     </div>

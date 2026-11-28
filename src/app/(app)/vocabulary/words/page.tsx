@@ -1,9 +1,9 @@
+import { BookA } from 'lucide-react'
 import type { Metadata } from 'next'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { PageShell } from '@/components/common/PageShell'
-import { ContentPanel } from '@/components/common/ContentPanel'
-import { ActionButton } from '@/components/ui/ActionButton'
+import { EmptyState } from '@/components/journey/EmptyState'
 import { VocabularyWordList } from '@/components/vocabulary/VocabularyWordList'
 import { hasMongoDbUri } from '@/constants/environments'
 import { plural } from '@/i18n/format'
@@ -49,17 +49,16 @@ export default async function VocabularyWordsPage({
         }
       >
         <section className="px-4 pb-6 md:pr-6 md:pl-0">
-          <ContentPanel
-            eyebrow={t.vocabulary.page.eyebrow}
+          <EmptyState
+            action={{
+              href: '/vocabulary',
+              label: t.vocabulary.page.backToVocab,
+              tone: 'ink',
+            }}
+            body={t.vocabulary.page.dbNeededWords}
+            icon={<BookA />}
             title={t.vocabulary.page.dbNeededTitle}
-          >
-            <p className="text-ink-soft text-base leading-7 font-normal">
-              {t.vocabulary.page.dbNeededWords}
-            </p>
-            <ActionButton href="/vocabulary">
-              {t.vocabulary.page.backToVocab}
-            </ActionButton>
-          </ContentPanel>
+          />
         </section>
       </PageShell>
     )

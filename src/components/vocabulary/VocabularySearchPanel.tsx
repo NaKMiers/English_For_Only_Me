@@ -25,6 +25,10 @@ interface Props {
   isLoading: boolean
   /** Why the last lookup failed (no entry found), shown under the input. */
   lookupError: string | null
+  /** The last pick of the shown word failed: said under its buttons. */
+  markError?: string | null
+  /** The last pick of the shown word, e.g. "Queued harbour". */
+  markStatus?: string | null
   markEntry: (input: {
     entry: VocabEntryWithUserStateRecord
     source: 'dictionary'
@@ -42,6 +46,8 @@ export function VocabularySearchPanel({
   isLoading,
   lookupError,
   markEntry,
+  markError = null,
+  markStatus = null,
   onQueryChange,
   query,
   runLookup,
@@ -185,9 +191,11 @@ export function VocabularySearchPanel({
             busy={isLoading}
             decision={decision}
             disabled={!hasVietnameseMeaning(selectedEntry.entry)}
+            error={markError}
             onDecide={status =>
               markEntry({ entry: selectedEntry, source: 'dictionary', status })
             }
+            status={markStatus}
           />
           {!hasVietnameseMeaning(selectedEntry.entry) ? (
             <p className="text-brand-ink text-sm font-medium">

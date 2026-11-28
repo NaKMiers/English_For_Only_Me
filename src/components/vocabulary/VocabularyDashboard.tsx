@@ -13,6 +13,7 @@ import {
   VOCAB_EXPLORE_MAX_LIMIT,
   VOCAB_RECALL_DEFAULT_LIMIT,
   VOCAB_RECALL_LISTENING_TASK_TYPES,
+  VOCAB_RECALL_PARAM,
 } from '@/modules/vocabulary/constants'
 import type {
   UserVocabItemApiRecord,
@@ -94,6 +95,13 @@ const PROGRESS_REFRESH_DELAY_MS = 1500
 // Offline, or while a lane keeps retrying, the outbox never drains. Refreshes
 // that wait on it go ahead after this long so the dashboard never wedges.
 export const OUTBOX_IDLE_TIMEOUT_MS = 8000
+
+interface MarkFeedback {
+  entryId: string
+  error: string | null
+  source: VocabLearningSource
+  status: string | null
+}
 
 interface EntrySnapshot {
   decision: ExploreDecision | undefined
@@ -180,6 +188,9 @@ export function VocabularyDashboard({
     mongoConfigured && !initialData
   )
   const [statusMessage, setStatusMessage] = useState<string | null>(null)
+  // A mark's result, shown under the buttons that made it (search card or
+  // explore deck), not at the top of the page.
+  const [markFeedback, setMarkFeedback] = useState<MarkFeedback | null>(null)
   // A failed lookup is the search card's own news: shown under its input,
   // not in the page-level notice at the top.
   const [lookupError, setLookupError] = useState<string | null>(null)
@@ -484,6 +495,32 @@ export function VocabularyDashboard({
     return () => window.clearTimeout(timeoutId)
   }, [errorText, initialData, refreshRecallWithoutListening, reportError])
 
+  // `?recall=1` (the word list's Start review, the home vocabulary row) opens
+  // the session once on arrival, then leaves the URL clean so a reload or a
+  // back navigation does not open it again. With nothing due, the modal
+  // shows its own end screen.
+  const recallParamHandledRef = useRef(false)
+
+  useEffect(() => {
+    if (recallParamHandledRef.current) return
+
+    const params = new URLSearchParams(window.location.search)
+
+    if (params.get(VOCAB_RECALL_PARAM) !== '1') return
+
+    recallParamHandledRef.current = true
+    params.delete(VOCAB_RECALL_PARAM)
+
+    const search = params.toString()
+
+    window.history.replaceState(
+      window.history.state,
+      '',
+      `${window.location.pathname}${search ? `?${search}` : ''}${window.location.hash}`
+    )
+    window.setTimeout(() => openRecallModal(), 0)
+  }, [openRecallModal])
+
   useEffect(() => {
     if (recallTasks.length === 0 || recallModalOpen) return
 
@@ -574,7 +611,6 @@ export function VocabularyDashboard({
 
     setIsLoading(true)
     setLookupError(null)
-    setStatusMessage(null)
 
     try {
       const [entry, results] = await Promise.all([
@@ -582,11 +618,9 @@ export function VocabularyDashboard({
         searchVocabApi({ query: cleanTerm }),
       ])
 
+      // The result card itself says what loaded.
       setSelectedEntry(entry)
       setSearchResults(results.entries)
-      setStatusMessage(
-        format(vocab.dashboard.loaded, { term: entry.entry.term })
-      )
     } catch (error) {
       // Drop the previous word so the error is not read as its result.
       setSelectedEntry(null)
@@ -612,12 +646,15 @@ export function VocabularyDashboard({
       userItem: entry.userItem,
     })
 
-    setErrorMessage(null)
-    setStatusMessage(
-      status === 'shouldLearn'
-        ? format(vocab.dashboard.queued, { term: entry.entry.term })
-        : format(vocab.dashboard.markedKnown, { term: entry.entry.term })
-    )
+    setMarkFeedback({
+      entryId,
+      error: null,
+      source,
+      status:
+        status === 'shouldLearn'
+          ? format(vocab.dashboard.queued, { term: entry.entry.term })
+          : format(vocab.dashboard.markedKnown, { term: entry.entry.term }),
+    })
     setEntryUserItem(
       entryId,
       buildOptimisticUserItem({ entry, source, status })
@@ -647,8 +684,7 @@ export function VocabularyDashboard({
     applyEntrySnapshot(entryId, settled.state)
 
     if (settled.kind === 'rollback' && outcome.kind === 'failed') {
-      setStatusMessage(null)
-      setErrorMessage(outcome.error)
+      setMarkFeedback({ entryId, error: outcome.error, source, status: null })
       return
     }
 
@@ -729,6 +765,11 @@ export function VocabularyDashboard({
       </div>
     )
 
+  const searchFeedback =
+    markFeedback?.source === 'dictionary' &&
+    markFeedback.entryId === selectedEntry?.entry.id
+      ? markFeedback
+      : null
   const activeRecall = recallTasks[0] ?? null
   const heldRecallTotal = recallAnsweredCount + recallTasks.length
   // With pages still to fetch, the session size comes from the due count.
@@ -757,6 +798,8 @@ export function VocabularyDashboard({
             isLoading={isLoading}
             markEntry={markEntry}
             lookupError={lookupError}
+            markError={searchFeedback?.error ?? null}
+            markStatus={searchFeedback?.status ?? null}
             onQueryChange={value => {
               setQuery(value)
               setLookupError(null)
@@ -776,6 +819,11 @@ export function VocabularyDashboard({
               activeIndex={activeExploreIndex}
               decisions={exploreDecisions}
               entries={exploreEntries}
+              markError={
+                markFeedback && markFeedback.source !== 'dictionary'
+                  ? markFeedback.error
+                  : null
+              }
               markEntry={markEntry}
               moveExplore={moveExplore}
               showExploreIndex={showExploreIndex}

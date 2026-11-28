@@ -10,6 +10,9 @@ import type {
 } from './types'
 
 export const VOCAB_DEFAULT_LANGUAGE = 'en'
+/** `/vocabulary?recall=1` opens the recall session on arrival. */
+export const VOCAB_RECALL_PARAM = 'recall'
+export const VOCAB_RECALL_HREF = `/vocabulary?${VOCAB_RECALL_PARAM}=1`
 export const VOCAB_DEFAULT_LOCALIZED_LANGUAGE = 'vi'
 export const VOCAB_MAX_TERM_LENGTH = 80
 export const VOCAB_LOOKUP_TIMEOUT_MS = 8000

@@ -1,11 +1,10 @@
 'use client'
 
-import { BookOpen, Check, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useEffect, useEffectEvent, useRef } from 'react'
 
 import { ContentPanel } from '@/components/common/ContentPanel'
 import { Button } from '@/components/ui/button'
-import { ActionButton } from '@/components/ui/ActionButton'
 import { Progress } from '@/components/ui/progress'
 import { PageTag } from '@/components/ui/PageTag'
 import { useMessages } from '@/i18n/client'
@@ -22,7 +21,9 @@ import {
   getRequiredVietnameseMeaning,
 } from '@/modules/vocabulary/vietnameseMeaning'
 
+import { VocabDecisionButtons } from './VocabDecisionButtons'
 import { VocabTermHeader } from './VocabTermHeader'
+import { VOCAB_EXPLORE_ACTIVE_ID } from './vocabExploreIds'
 
 export type ExploreDecision = 'shouldLearn' | 'alreadyKnow'
 
@@ -33,6 +34,8 @@ interface Props {
   emptyMessage?: string
   entries: VocabEntryWithUserStateRecord[]
   eyebrow?: string
+  /** The last pick from the deck failed: said under the deck's buttons. */
+  markError?: string | null
   markEntry: (input: {
     entry: VocabEntryWithUserStateRecord
     source: VocabLearningSource
@@ -79,12 +82,12 @@ function getExploreStackCardClassName({
 }) {
   return cn(
     'border-line rounded-panel absolute top-0 left-1/2 flex h-full min-h-96 w-[min(84%,760px)] flex-col gap-4 border p-4 shadow-card transition-[opacity,transform] duration-300 ease-out',
-    decision === 'shouldLearn' && 'bg-brand-soft',
-    // Solid tints only: the deck stacks cards, a see-through one shows the
-    // card behind it.
-    decision === 'alreadyKnow' && 'bg-pastel-mint',
-    !decision && 'bg-surface',
-    !active && 'cursor-pointer hover:opacity-80',
+    // Solid fills only: the deck stacks cards, a see-through one shows the
+    // card behind it. Neighbours are dimmed with a tint, never opacity.
+    active && decision === 'shouldLearn' && 'bg-brand-soft',
+    active && decision === 'alreadyKnow' && 'bg-pastel-mint',
+    active && !decision && 'bg-surface',
+    !active && 'bg-tint text-ink-soft hover-pop cursor-pointer',
     !visible && 'pointer-events-none opacity-0'
   )
 }
@@ -163,6 +166,7 @@ export function VocabularyExplorePanel({
   entries,
   eyebrow,
   markEntry,
+  markError = null,
   moveExplore,
   numbering = 'frequency',
   showExploreIndex,
@@ -229,19 +233,22 @@ export function VocabularyExplorePanel({
             </Button>
           </div>
 
-          <div className="relative min-h-96 overflow-hidden px-2 py-2">
+          <div
+            className="relative min-h-96 overflow-hidden px-2 py-2"
+            data-explore-deck=""
+          >
             {entries.map((entry, index) => {
               const decision = decisions[entry.entry.id]
               const distance = index - activeIndex
               const visible = Math.abs(distance) <= 2
               const active = distance === 0
               const scale = Math.max(0.78, 1 - Math.abs(distance) * 0.08)
-              const opacity = active ? 1 : 0.5
               const translateX = `calc(-50% + ${distance * 104}px)`
 
               return (
                 <article
                   key={entry.entry.id}
+                  id={active ? VOCAB_EXPLORE_ACTIVE_ID : undefined}
                   aria-label={
                     active
                       ? undefined
@@ -272,7 +279,7 @@ export function VocabularyExplorePanel({
                   }
                   role={active ? undefined : 'button'}
                   style={{
-                    opacity: visible ? opacity : 0,
+                    opacity: visible ? 1 : 0,
                     transform: `translateX(${translateX}) scale(${scale})`,
                     zIndex: 20 - Math.abs(distance),
                   }}
@@ -307,37 +314,13 @@ export function VocabularyExplorePanel({
                     </p>
                   </div>
                   {distance === 0 ? (
-                    <div className="grid shrink-0 grid-cols-2 gap-2">
-                      <ActionButton
-                        className="min-w-0 px-2 text-xs sm:px-4 sm:text-sm [&>span:last-child]:whitespace-nowrap"
-                        disabled={decision === 'shouldLearn'}
-                        icon={<BookOpen className="size-4" />}
-                        onClick={() =>
-                          markEntry({
-                            entry,
-                            source,
-                            status: 'shouldLearn',
-                          })
-                        }
-                      >
-                        {vocab.marks.shouldLearn}
-                      </ActionButton>
-                      <ActionButton
-                        className="min-w-0 px-2 text-xs sm:px-4 sm:text-sm [&>span:last-child]:whitespace-nowrap"
-                        disabled={decision === 'alreadyKnow'}
-                        icon={<Check className="size-4" />}
-                        onClick={() =>
-                          markEntry({
-                            entry,
-                            source,
-                            status: 'alreadyKnow',
-                          })
-                        }
-                        tone="paper"
-                      >
-                        {vocab.marks.alreadyKnow}
-                      </ActionButton>
-                    </div>
+                    <VocabDecisionButtons
+                      buttonClassName="min-w-0 px-2 text-xs sm:px-4 sm:text-sm"
+                      className="shrink-0"
+                      decision={decision ?? null}
+                      error={markError}
+                      onDecide={status => markEntry({ entry, source, status })}
+                    />
                   ) : null}
                 </article>
               )

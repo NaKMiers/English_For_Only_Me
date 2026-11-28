@@ -425,13 +425,15 @@ export function VocabRecallModal({
                       <li key={option.id}>
                         <button
                           className={cn(
-                            'soft-press group rounded-control flex min-h-16 w-full items-center gap-3 border p-3 text-left text-sm leading-6 font-medium transition-[background-color,border-color,opacity] duration-200 sm:min-h-20 sm:text-base',
+                            'soft-press group rounded-control flex min-h-16 w-full items-center gap-3 border p-3 text-left text-sm leading-6 font-medium transition-[background-color,border-color,color] duration-200 sm:min-h-20 sm:text-base',
                             state === 'idle' &&
                               'border-line bg-surface hover:border-brand/40 hover:bg-brand-soft/40',
                             state === 'correct' &&
                               'border-lesson-correct bg-lesson-correct/10',
                             state === 'wrong' && 'border-danger bg-danger-soft',
-                            state === 'muted' && 'border-line opacity-55'
+                            // Not picked: quiet text on a solid card, never a faded one.
+                            state === 'muted' &&
+                              'border-line bg-surface text-ink-soft font-normal'
                           )}
                           disabled={answered}
                           onClick={() => chooseOption(option.id)}

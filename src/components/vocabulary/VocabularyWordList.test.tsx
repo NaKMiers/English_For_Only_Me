@@ -84,9 +84,12 @@ describe('VocabularyWordList', () => {
       })
     )
 
-    expect(await screen.findByText('Could not save.')).toBeInTheDocument()
+    const error = await screen.findByText('Could not save.')
+    expect(error).toBeInTheDocument()
     expect(screen.getByText('expect')).toBeInTheDocument()
     expect(screen.getByText('2 words in this view.')).toBeInTheDocument()
+    // On the row that failed, not above the list.
+    expect(error.closest('li')?.textContent).toContain('expect')
   })
 
   test('a failed move puts the row back where it was', async () => {
@@ -208,10 +211,30 @@ describe('VocabularyWordList', () => {
       />
     )
 
+    // The first page has no Prev at all (not a disabled one).
+    expect(screen.queryByRole('button', { name: 'Prev' })).toBeNull()
     fireEvent.click(screen.getByRole('button', { name: 'Next' }))
 
     expect(mocks.push).toHaveBeenCalledWith(
       '/vocabulary/words?view=learning&page=2'
     )
+  })
+
+  test('Start review opens the recall session straight away', () => {
+    const due = makeWord('a', 'expect')
+
+    render(
+      <VocabularyWordList
+        activeView="dueToday"
+        page={1}
+        perPage={50}
+        total={1}
+        words={[due]}
+      />
+    )
+
+    expect(
+      screen.getByRole('link', { name: /Start Recall/ }).getAttribute('href')
+    ).toBe('/vocabulary?recall=1')
   })
 })

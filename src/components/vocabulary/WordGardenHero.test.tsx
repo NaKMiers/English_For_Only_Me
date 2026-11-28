@@ -24,7 +24,7 @@ const stats: VocabStatsRecord = {
   totalStartedCount: 3300,
 }
 
-const plant = { href: '#vocab-explore', kind: 'plant' as const }
+const plant = null
 
 describe('WordGardenHero', () => {
   test('grows the garden to the stage the known words reach', () => {
@@ -86,7 +86,7 @@ describe('WordGardenHero', () => {
     const onStart = vi.fn()
     const { container } = render(
       <WordGardenHero
-        next={{ due: 12, kind: 'due', nextTerm: 'ubiquitous', onStart }}
+        next={{ due: 12, nextTerm: 'ubiquitous', onStart }}
         stats={stats}
         withDrawer
       />
@@ -99,17 +99,15 @@ describe('WordGardenHero', () => {
     expect(onStart).toHaveBeenCalledTimes(1)
   })
 
-  test('with nothing due the next stop plants new words', () => {
-    render(
+  test('with nothing due there is no next stop that only scrolls', () => {
+    const { container } = render(
       <WordGardenHero
         next={plant}
         stats={stats}
       />
     )
 
-    expect(screen.getByRole('link', { name: 'Explore words' })).toHaveAttribute(
-      'href',
-      '#vocab-explore'
-    )
+    expect(screen.queryByRole('link', { name: 'Explore words' })).toBeNull()
+    expectLandingBudget(container, { ctas: 0, nextStops: 0 })
   })
 })

@@ -334,12 +334,44 @@ describe('VocabularyDashboard', () => {
     await waitFor(() => expect(controlled.calls).toHaveLength(1))
     controlled.calls[0].resolve(409, { message: 'Needs a Vietnamese meaning.' })
 
-    expect(
-      await screen.findByText('Needs a Vietnamese meaning.')
-    ).toBeInTheDocument()
+    const error = await screen.findByText('Needs a Vietnamese meaning.')
+    expect(error).toBeInTheDocument()
     expect(
       screen.getByRole('button', { name: 'Open expect: Unpicked' })
     ).toBeInTheDocument()
+    // Inside the deck, under its buttons, not at the top of the page.
+    expect(error.closest('[data-vocab-decision]')).not.toBeNull()
+    expect(error.closest('[data-explore-deck]')).not.toBeNull()
+  })
+
+  test('?recall=1 opens the recall session once and cleans the URL', async () => {
+    window.history.replaceState(null, '', '/vocabulary?recall=1')
+
+    render(
+      <VocabularyDashboard
+        initialData={makeInitialData({ taskCount: 1 })}
+        mongoConfigured
+      />
+    )
+
+    expect(await screen.findByRole('dialog')).toBeInTheDocument()
+    expect(window.location.search).toBe('')
+  })
+
+  test('?recall=1 with nothing due shows the session end, not an error', async () => {
+    window.history.replaceState(null, '', '/vocabulary?recall=1')
+
+    render(
+      <VocabularyDashboard
+        initialData={makeInitialData()}
+        mongoConfigured
+      />
+    )
+
+    const dialog = await screen.findByRole('dialog')
+    expect(dialog.textContent).toContain('Session done')
+    expect(screen.queryByRole('alert')).toBeNull()
+    window.history.replaceState(null, '', '/')
   })
 
   test('grades recall instantly and lets the server verdict win', async () => {
@@ -357,6 +389,12 @@ describe('VocabularyDashboard', () => {
     expect(
       screen.getByText('Not quite. Check the correct answer, then continue.')
     ).toBeInTheDocument()
+    // The options not picked stay solid (no faded card).
+    expect(
+      [...document.querySelectorAll('[class]')].filter(element =>
+        /(^|\s)opacity-55(\s|$)/.test(element.getAttribute('class') ?? '')
+      )
+    ).toEqual([])
 
     await waitFor(() => expect(controlled.calls).toHaveLength(1))
     controlled.calls[0].resolve(200, {
@@ -793,6 +831,10 @@ describe('VocabularyDashboard', () => {
       lookup.resolve(makeEntry('9', 'gleam'))
     })
 
-    expect(await screen.findByText('Loaded "gleam".')).toBeInTheDocument()
+    // The result card says what loaded; no "loaded" notice at the top.
+    expect(
+      await screen.findByRole('heading', { name: 'gleam' })
+    ).toBeInTheDocument()
+    expect(screen.queryByText('Loaded "gleam".')).toBeNull()
   })
 })

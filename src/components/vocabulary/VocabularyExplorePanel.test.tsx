@@ -160,3 +160,30 @@ describe('VocabularyExplorePanel progress', () => {
     ).toBeInTheDocument()
   })
 })
+
+describe('VocabularyExplorePanel deck', () => {
+  it('keeps every visible card solid and shows the pick as pressed', () => {
+    render(
+      <VocabularyExplorePanel
+        activeIndex={1}
+        decisions={{ '2': 'alreadyKnow' }}
+        entries={entries}
+        markEntry={() => {}}
+        moveExplore={() => {}}
+        showExploreIndex={() => {}}
+      />
+    )
+
+    const cards = [...document.querySelectorAll('article')]
+    for (const card of cards.filter(
+      item => item.getAttribute('aria-hidden') !== 'true'
+    ))
+      expect(card.style.opacity).toBe('1')
+    // Neighbours are dimmed with a tint, and they pop as the click target.
+    expect(cards[0].className).toMatch(/bg-tint/)
+    expect(cards[0].className).toMatch(/hover-pop/)
+    expect(
+      document.querySelector('button[aria-pressed="true"]')?.textContent
+    ).toContain('Already Know')
+  })
+})
