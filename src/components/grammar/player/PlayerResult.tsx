@@ -304,8 +304,17 @@ export function PlayerResult({
       }
   }
 
-  // Every lesson of the course is done: the all-clear instead of a stop.
-  const allClear = !next && journey?.next.kind === 'done'
+  // Every lesson of the course is done: the all-clear instead of a stop. The
+  // last unit's checkpoint, passed the regular way, finishes the course even
+  // though the path loaded before it still pointed at that checkpoint.
+  const finishedCourse =
+    mode === 'checkpoint' &&
+    passed &&
+    // Saved, and not a test-out (whose lessons are not passed yet).
+    result?.testOut === false &&
+    Boolean(journey?.unit) &&
+    !journey?.nextUnitFirstLessonId
+  const allClear = !next && (journey?.next.kind === 'done' || finishedCourse)
 
   // The journey line: the unit after this session (a replay adds nothing).
   const unitAfter =
@@ -418,7 +427,8 @@ export function PlayerResult({
             }
             href={next?.href ?? exitHref}
             pinLabel={messages.common.journey.nextStop}
-            title={next?.title ?? t.backToPath}
+            // No next step: the card names the path, its button goes back.
+            title={next?.title ?? messages.grammar.path.title}
             variant="compact"
           />
         }
