@@ -611,6 +611,9 @@ export function VocabularyDashboard({
 
     setIsLoading(true)
     setLookupError(null)
+    // A new action retires the page-level notices of earlier ones.
+    setErrorMessage(null)
+    setStatusMessage(null)
 
     try {
       const [entry, results] = await Promise.all([
@@ -645,6 +648,9 @@ export function VocabularyDashboard({
       decision: exploreDecisions[entryId],
       userItem: entry.userItem,
     })
+
+    setErrorMessage(null)
+    setStatusMessage(null)
 
     setMarkFeedback({
       entryId,
@@ -685,6 +691,17 @@ export function VocabularyDashboard({
 
     if (settled.kind === 'rollback' && outcome.kind === 'failed') {
       setMarkFeedback({ entryId, error: outcome.error, source, status: null })
+
+      // The deck moved on when the word was marked: bring the learner back
+      // to it, so the error sits under its own, still unpicked, buttons.
+      if (source === 'explore') {
+        const failedIndex = exploreEntries.findIndex(
+          item => item.entry.id === entryId
+        )
+
+        if (failedIndex >= 0) setActiveExploreIndex(failedIndex)
+      }
+
       return
     }
 
@@ -819,8 +836,12 @@ export function VocabularyDashboard({
               activeIndex={activeExploreIndex}
               decisions={exploreDecisions}
               entries={exploreEntries}
+              // Only under the word whose save failed.
               markError={
-                markFeedback && markFeedback.source !== 'dictionary'
+                markFeedback &&
+                markFeedback.source !== 'dictionary' &&
+                markFeedback.entryId ===
+                  exploreEntries[activeExploreIndex]?.entry.id
                   ? markFeedback.error
                   : null
               }

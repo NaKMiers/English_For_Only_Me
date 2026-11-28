@@ -87,7 +87,10 @@ function getExploreStackCardClassName({
     active && decision === 'shouldLearn' && 'bg-brand-soft',
     active && decision === 'alreadyKnow' && 'bg-pastel-mint',
     active && !decision && 'bg-surface',
-    !active && 'bg-tint text-ink-soft hover-pop cursor-pointer',
+    // `hover-pop`'s own (unlayered) transition would win over the card's:
+    // keep the deck's 300ms slide and fade on the neighbours too.
+    !active &&
+      'bg-tint text-ink-soft hover-pop cursor-pointer transition-[opacity,transform,translate,box-shadow]! duration-300! ease-out!',
     !visible && 'pointer-events-none opacity-0'
   )
 }

@@ -336,9 +336,12 @@ describe('VocabularyDashboard', () => {
 
     const error = await screen.findByText('Needs a Vietnamese meaning.')
     expect(error).toBeInTheDocument()
+    // The deck comes back to the word that failed, unpicked again, and the
+    // error sits under its own buttons, not the next card's.
+    expect(screen.getByText('1/2')).toBeInTheDocument()
     expect(
-      screen.getByRole('button', { name: 'Open expect: Unpicked' })
-    ).toBeInTheDocument()
+      screen.queryByRole('button', { name: 'Open expect: Should learn' })
+    ).toBeNull()
     // Inside the deck, under its buttons, not at the top of the page.
     expect(error.closest('[data-vocab-decision]')).not.toBeNull()
     expect(error.closest('[data-explore-deck]')).not.toBeNull()
