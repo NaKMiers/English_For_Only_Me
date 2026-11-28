@@ -20,6 +20,8 @@ interface Props {
   correct: number | null
   /** The end replaced the run in place: move focus to its heading. */
   focusTitle?: boolean
+  /** False for a video outside any topic: no "topic is done" line. */
+  hasTopic?: boolean
   /** The next video of the topic, or null (topic done, no topic). */
   next: PracticeNextVideo | null
   /** Quiet secondary actions: see results, repeat. */
@@ -35,6 +37,7 @@ interface Props {
 export function PracticeFinish({
   correct,
   focusTitle = false,
+  hasTopic = true,
   next,
   secondary,
   total,
@@ -58,7 +61,9 @@ export function PracticeFinish({
           detail={
             next
               ? format(text.nextInTopic, { topic: next.topicTitle })
-              : text.topicDone
+              : hasTopic
+                ? text.topicDone
+                : text.noTopicNext
           }
           href={next?.href ?? '/dictation'}
           pinLabel={t.common.journey.nextStop}

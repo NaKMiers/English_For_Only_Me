@@ -269,6 +269,7 @@ export const dictation = {
     finishWins: '{correct} of {total} written right',
     nextInTopic: 'Next video in {topic}',
     topicDone: 'This topic is done: pick the next record',
+    noTopicNext: 'Pick your next video from the topics',
     nextVideo: 'Next video',
     allTopicsAction: 'All topics',
     showAnswerWords: 'Show answer words',

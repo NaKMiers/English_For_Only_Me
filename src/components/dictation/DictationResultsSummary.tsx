@@ -25,6 +25,8 @@ export interface ResultsNextStop {
 }
 
 interface Props {
+  /** False for a video outside any topic: no "topic is done" line. */
+  hasTopic?: boolean
   isEmpty: boolean
   /** Null: the next stop falls back to the dictation landing. */
   next?: ResultsNextStop | null
@@ -37,6 +39,7 @@ interface Props {
 }
 
 export function DictationResultsSummary({
+  hasTopic = true,
   isEmpty,
   next = null,
   progress,
@@ -65,7 +68,12 @@ export function DictationResultsSummary({
             actionLabel={
               next?.actionLabel ?? t.dictation.practice.allTopicsAction
             }
-            detail={next?.detail ?? t.dictation.practice.topicDone}
+            detail={
+              next?.detail ??
+              (hasTopic
+                ? t.dictation.practice.topicDone
+                : t.dictation.practice.noTopicNext)
+            }
             href={next?.href ?? '/dictation'}
             pinLabel={t.common.journey.nextStop}
             title={next?.title ?? t.dictation.landing.title}

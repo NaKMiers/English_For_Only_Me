@@ -207,6 +207,7 @@ export default async function Page({ params }: Props) {
           title={t.dictation.meta.resultsTitle}
         />
         <DictationResultsSummary
+          hasTopic={Boolean(video.topicId)}
           isEmpty={isEmpty}
           next={picked.kind === 'done' ? null : picked.data}
           progress={progress}

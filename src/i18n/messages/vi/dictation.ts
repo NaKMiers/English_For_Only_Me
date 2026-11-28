@@ -270,6 +270,7 @@ export const dictation: Messages['dictation'] = {
     finishWins: 'Chép đúng {correct}/{total} câu',
     nextInTopic: 'Video tiếp theo trong {topic}',
     topicDone: 'Đã xong chủ đề này: chọn đĩa tiếp theo',
+    noTopicNext: 'Chọn video tiếp theo trong các chủ đề',
     nextVideo: 'Video tiếp theo',
     allTopicsAction: 'Tất cả chủ đề',
     showAnswerWords: 'Hiện các từ đáp án',

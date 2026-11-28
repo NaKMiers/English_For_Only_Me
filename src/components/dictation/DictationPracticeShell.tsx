@@ -104,7 +104,7 @@ interface PlayerController {
 type PracticeVideo = Pick<
   DictationVideoApiRecord,
   'id' | 'level' | 'title' | 'youtubeVideoId'
->
+> & { topicId?: string | null }
 
 interface Props {
   completions: number
@@ -1741,6 +1741,7 @@ export function DictationPracticeShell({
                   <PracticeFinish
                     correct={runFromStart ? correctSegmentIds.size : null}
                     focusTitle={!completedOnLoad}
+                    hasTopic={Boolean(video.topicId)}
                     next={nextVideo}
                     secondary={
                       <>

@@ -185,6 +185,7 @@ export default async function Page({ params }: Props) {
             id: videoRecord.id,
             level: videoRecord.level,
             title: videoRecord.title,
+            topicId: videoRecord.topicId,
             youtubeVideoId: videoRecord.youtubeVideoId,
           }}
         />
