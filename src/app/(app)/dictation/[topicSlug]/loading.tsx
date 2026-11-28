@@ -1,9 +1,9 @@
 import {
-  SkeletonBlock,
-  SkeletonHero,
+  SkeletonJourney,
   SkeletonPageShell,
   SkeletonRows,
 } from '@/components/common/PageSkeletons'
+import { Skeleton } from '@/components/ui/skeleton'
 import { getMessages } from '@/i18n/server'
 
 export default async function Loading() {
@@ -14,11 +14,16 @@ export default async function Loading() {
       activeHref="/dictation"
       subtitle={t.dictation.meta.browseSubtitle}
     >
-      <SkeletonHero />
-      <SkeletonBlock className="rounded-control h-14" />
+      {/* Same order as the topic page: record card, search, sections. */}
+      <SkeletonJourney
+        chips={0}
+        layout="stacked"
+        metaphorClassName="h-2"
+      />
+      <Skeleton className="rounded-control h-11 w-full" />
       <SkeletonRows
         count={4}
-        rowClassName="h-14"
+        rowClassName="h-12"
       />
     </SkeletonPageShell>
   )

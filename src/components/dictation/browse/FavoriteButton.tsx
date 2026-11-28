@@ -9,8 +9,9 @@ import { useMessages } from '@/i18n/client'
 import { cn } from '@/lib/utils'
 import { setFavoriteAction } from '@/modules/dictation/content/favoriteActions'
 
+// 44px hit area for the thumb; the visible chip stays small inside it.
 const base =
-  'grid size-9 shrink-0 place-items-center rounded-control border border-line bg-surface'
+  'grid size-11 shrink-0 place-items-center rounded-full border border-line bg-surface/90'
 
 const SIGN_IN_HREF = '/api/auth/signin?callbackUrl=/dictation'
 
@@ -39,7 +40,7 @@ export function FavoriteButton({
       <Link
         href={SIGN_IN_HREF}
         aria-label={text.signInToFavorite}
-        className={cn(base, 'hover:bg-tint-soft')}
+        className={cn(base, 'soft-press hover-pop hover:bg-tint-soft')}
       >
         <Star
           aria-hidden="true"
@@ -83,7 +84,7 @@ export function FavoriteButton({
       onClick={onClick}
       aria-pressed={favorited}
       aria-label={favorited ? text.removeFavorite : text.addFavorite}
-      className={cn(base, 'hover:bg-tint-soft')}
+      className={cn(base, 'soft-press hover-pop hover:bg-tint-soft')}
     >
       <Star
         aria-hidden="true"

@@ -11,7 +11,7 @@ import {
 } from '@/modules/dictation/content/browseQuery'
 
 const linkClass =
-  'border-line bg-surface inline-flex min-h-9 items-center rounded-control border px-3 font-sans text-sm font-semibold'
+  'border-line bg-surface inline-flex min-h-11 items-center rounded-full border px-5 font-sans text-sm font-medium'
 
 /** Prev/next pager (Link-based, URL-driven) preserving the active query. */
 export function BrowsePagination({
@@ -40,7 +40,7 @@ export function BrowsePagination({
       {pagination.hasPrev ? (
         <Link
           href={href(pagination.page - 1)}
-          className={linkClass}
+          className={cn(linkClass, 'soft-press hover-pop hover:bg-tint-soft')}
         >
           {labels.prev}
         </Link>
@@ -61,7 +61,7 @@ export function BrowsePagination({
       {pagination.hasNext ? (
         <Link
           href={href(pagination.page + 1)}
-          className={linkClass}
+          className={cn(linkClass, 'soft-press hover-pop hover:bg-tint-soft')}
         >
           {labels.next}
         </Link>

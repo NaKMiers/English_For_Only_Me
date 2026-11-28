@@ -37,6 +37,85 @@ const GROOVES =
 const GOLD_GROOVES =
   'repeating-radial-gradient(circle at center, #f2c14e 0 1.5px, #d49a12 1.5px 3.5px)'
 
+/**
+ * One topic as a vinyl record: the ring around it fills with the topic's
+ * progress, gold once every video is done. Static: the caller wraps it in a
+ * link when it should be clickable.
+ */
+export function RecordDisc({
+  className,
+  done,
+  gold,
+  image,
+  initial,
+  muted = false,
+  total,
+  turning = false,
+}: {
+  className?: string
+  done: number
+  gold: boolean
+  image: string | null
+  initial: string
+  muted?: boolean
+  total: number
+  turning?: boolean
+}) {
+  const percent = total > 0 ? Math.round((done / total) * 100) : 0
+
+  return (
+    <span
+      aria-hidden="true"
+      className={cn(
+        'grid size-28 place-items-center rounded-full p-[5px] shadow-sm transition-shadow group-hover:shadow-md sm:size-32',
+        gold && 'ring-accent-orange/30 ring-4',
+        className
+      )}
+      style={{
+        background: `conic-gradient(${
+          gold ? 'var(--accent-orange)' : 'var(--accent-blue)'
+        } ${percent}%, var(--line) 0)`,
+      }}
+    >
+      <span
+        className={cn(
+          'record-disc grid size-full place-items-center rounded-full',
+          turning && 'record-turning'
+        )}
+        style={{ background: gold ? GOLD_GROOVES : GROOVES }}
+      >
+        <span
+          className={cn(
+            'grid size-12 place-items-center overflow-hidden rounded-full border-2 font-sans text-lg font-medium sm:size-14',
+            gold
+              ? 'border-pastel-lemon bg-pastel-lemon text-accent-orange'
+              : 'border-pastel-sky bg-pastel-sky text-accent-blue'
+          )}
+        >
+          {image ? (
+            // A plain lazy img, like the topic tiles: res.cloudinary.com
+            // is not in images.remotePatterns.
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              alt=""
+              className="size-full object-cover"
+              decoding="async"
+              height={64}
+              loading="lazy"
+              src={image}
+              width={64}
+            />
+          ) : muted ? (
+            <Music className="size-5" />
+          ) : (
+            initial
+          )}
+        </span>
+      </span>
+    </span>
+  )
+}
+
 function Record({
   item,
   labels,
@@ -46,7 +125,6 @@ function Record({
 }) {
   const t = labels.journey
   const { done, shelf, topic, total } = item
-  const percent = total > 0 ? Math.round((done / total) * 100) : 0
   const gold = shelf === 'gold'
   const image = topic.muted ? null : getTopicTileImageUrl(topic.thumbnailUrl)
   const initial = topic.title.trim().charAt(0).toUpperCase() || '?'
@@ -58,55 +136,15 @@ function Record({
         className="record-link soft-press hover-pop group hover:bg-surface/80 rounded-panel grid justify-items-center gap-2.5 p-2 text-center"
         href={topic.href}
       >
-        {/* The ring around the record fills with the topic's progress. */}
-        <span
-          aria-hidden="true"
-          className={cn(
-            'grid size-28 place-items-center rounded-full p-[5px] shadow-sm transition-shadow group-hover:shadow-md sm:size-32',
-            gold && 'ring-accent-orange/30 ring-4'
-          )}
-          style={{
-            background: `conic-gradient(${
-              gold ? 'var(--accent-orange)' : 'var(--accent-blue)'
-            } ${percent}%, var(--line) 0)`,
-          }}
-        >
-          <span
-            className={cn(
-              'record-disc grid size-full place-items-center rounded-full',
-              shelf === 'playing' && 'record-turning'
-            )}
-            style={{ background: gold ? GOLD_GROOVES : GROOVES }}
-          >
-            <span
-              className={cn(
-                'grid size-12 place-items-center overflow-hidden rounded-full border-2 font-sans text-lg font-semibold sm:size-14',
-                gold
-                  ? 'border-pastel-lemon bg-pastel-lemon text-accent-orange'
-                  : 'border-pastel-sky bg-pastel-sky text-accent-blue'
-              )}
-            >
-              {image ? (
-                // A plain lazy img, like the topic tiles: res.cloudinary.com
-                // is not in images.remotePatterns.
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  alt=""
-                  className="size-full object-cover"
-                  decoding="async"
-                  height={64}
-                  loading="lazy"
-                  src={image}
-                  width={64}
-                />
-              ) : topic.muted ? (
-                <Music className="size-5" />
-              ) : (
-                initial
-              )}
-            </span>
-          </span>
-        </span>
+        <RecordDisc
+          done={done}
+          gold={gold}
+          image={image}
+          initial={initial}
+          muted={topic.muted}
+          total={total}
+          turning={shelf === 'playing'}
+        />
         <span className="grid w-full gap-0.5">
           <span className="line-clamp-2 font-sans text-sm leading-snug font-medium">
             {topic.title}

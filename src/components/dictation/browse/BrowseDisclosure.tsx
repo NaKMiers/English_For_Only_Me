@@ -34,12 +34,13 @@ export function BrowseDisclosure({
 
   return (
     <div className="border-line bg-surface rounded-panel border">
+      {/* Raw button: a disclosure trigger relying on aria-expanded. */}
       <button
         type="button"
         aria-expanded={open}
         aria-controls={panelId}
         onClick={() => setOpen(value => !value)}
-        className="flex min-h-12 w-full items-center justify-between gap-3 px-4 py-3 text-left"
+        className="soft-press hover-pop rounded-panel flex min-h-12 w-full items-center justify-between gap-3 px-4 py-3 text-left"
       >
         <span className="flex items-center gap-2">{header}</span>
         <ChevronDown

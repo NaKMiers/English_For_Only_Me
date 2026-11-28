@@ -1,18 +1,21 @@
-import { Headphones } from 'lucide-react'
+import { Headphones, SearchX } from 'lucide-react'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { AppTopbar } from '@/components/common/AppTopbar'
 import { PageShell } from '@/components/common/PageShell'
 import { PageHeader } from '@/components/common/PageHeader'
-import { ActionButton } from '@/components/ui/ActionButton'
-import { BrowseBreadcrumb } from '@/components/dictation/browse/BrowseBreadcrumb'
 import { BrowsePagination } from '@/components/dictation/browse/BrowsePagination'
 import { BrowseToolbar } from '@/components/dictation/browse/BrowseToolbar'
 import {
   BrowseVideoList,
   SectionAccordion,
 } from '@/components/dictation/browse/SectionAccordion'
+import {
+  pickTopicNextVideo,
+  TopicJourney,
+} from '@/components/dictation/browse/TopicJourney'
+import { EmptyState } from '@/components/journey/EmptyState'
 import { getSiteUrl, hasMongoDbUri } from '@/constants/environments'
 import { format, plural } from '@/i18n/format'
 import type { Messages } from '@/i18n/messages'
@@ -23,10 +26,7 @@ import {
   isBrowseQueryActive,
   parseBrowseQuery,
 } from '@/modules/dictation/content/browseQuery'
-import {
-  getCachedTopicCatalog,
-  type TopicCatalog,
-} from '@/modules/dictation/content/catalogReaders'
+import { getCachedTopicCatalog } from '@/modules/dictation/content/catalogReaders'
 import { searchVideosInTopic } from '@/modules/dictation/content/contentRepository'
 import { listFavoriteVideoIds } from '@/modules/dictation/content/favoriteRepository'
 import {
@@ -117,39 +117,51 @@ export default async function TopicPage({ params, searchParams }: PageProps) {
   const favoritedSet = new Set(favoritedIds)
   const t = await getMessages()
   const labels = t.dictation.browse
+  const groups = buildSectionGroups(
+    catalog.sections.map(section => ({ id: section.id, title: section.title })),
+    catalog.videos.map(video => ({
+      ...toBrowseItem(video, { completionCounts, favoritedSet, inProgressSet }),
+      sectionId: video.sectionId,
+    }))
+  )
+  const next = pickTopicNextVideo(groups)
+  const breadcrumb = [
+    { href: '/dictation', label: labels.allTopics },
+    { label: topic.title },
+  ]
 
   return (
     <PageShell
       topbar={
         <AppTopbar
           activeHref="/dictation"
+          page={{ breadcrumb, module: 'dictation', title: topic.title }}
           subtitle={t.dictation.meta.browseSubtitle}
         />
       }
     >
       <section className="grid gap-5 px-4 pb-6 md:pr-6 md:pl-0">
         <PageHeader
-          actions={
-            <ActionButton href="/dictation/favorites">
-              {t.dictation.landing.favoritesLink}
-            </ActionButton>
-          }
-          eyebrow={
-            <BrowseBreadcrumb
-              current={topic.title}
-              labels={labels}
-            />
-          }
+          breadcrumb={{ items: breadcrumb, label: t.common.journey.breadcrumb }}
           icon={<Headphones />}
           iconClassName="bg-pastel-sky text-accent-blue"
+          inTopbar
           subtitle={topic.description || undefined}
+          title={topic.title}
+        />
+
+        <TopicJourney
+          groups={groups}
+          journey={t.common.journey}
+          labels={t.dictation.topicJourney}
+          next={next}
+          thumbnailUrl={topic.thumbnailUrl ?? null}
           title={topic.title}
         />
 
         <BrowseToolbar
           search={query.search}
           level={query.level}
-          sort={query.sort}
         />
 
         {searchResult ? (
@@ -164,53 +176,15 @@ export default async function TopicPage({ params, searchParams }: PageProps) {
             labels={labels}
           />
         ) : (
-          <TopicAccordion
-            catalog={catalog}
+          <SectionAccordion
+            groups={groups}
             canFavorite={canFavorite}
-            favoritedSet={favoritedSet}
-            completionCounts={completionCounts}
-            inProgressSet={inProgressSet}
             labels={labels}
+            openKey={next?.groupKey ?? null}
           />
         )}
       </section>
     </PageShell>
-  )
-}
-
-function TopicAccordion({
-  catalog: { sections, videos },
-  canFavorite,
-  favoritedSet,
-  completionCounts,
-  inProgressSet,
-  labels,
-}: {
-  catalog: TopicCatalog
-  canFavorite: boolean
-  favoritedSet: Set<string>
-  completionCounts: Map<string, number>
-  inProgressSet: Set<string>
-  labels: Messages['dictation']['browse']
-}) {
-  const groups = buildSectionGroups(
-    sections.map(section => ({ id: section.id, title: section.title })),
-    videos.map(video => ({
-      ...toBrowseItem(video, {
-        completionCounts,
-        favoritedSet,
-        inProgressSet,
-      }),
-      sectionId: video.sectionId,
-    }))
-  )
-
-  return (
-    <SectionAccordion
-      groups={groups}
-      canFavorite={canFavorite}
-      labels={labels}
-    />
   )
 }
 
@@ -239,15 +213,22 @@ function FlatResults({
 
   return (
     <div className="grid gap-4">
-      <p className="text-sm font-semibold opacity-80">
+      <p className="text-ink-soft text-sm font-medium">
         {plural(labels.lessons, pagination.total)}
       </p>
-      <BrowseVideoList
-        videos={items}
-        canFavorite={canFavorite}
-        emptyLabel={labels.noMatches}
-        labels={labels.card}
-      />
+      {items.length === 0 ? (
+        <EmptyState
+          action={{ href: basePath, label: labels.clearFilters }}
+          icon={<SearchX />}
+          title={labels.noMatches}
+        />
+      ) : (
+        <BrowseVideoList
+          videos={items}
+          canFavorite={canFavorite}
+          labels={labels.card}
+        />
+      )}
       <BrowsePagination
         pagination={pagination}
         query={query}

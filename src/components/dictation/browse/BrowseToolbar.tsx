@@ -1,8 +1,10 @@
 'use client'
 
+import { SlidersHorizontal } from 'lucide-react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
+import { IconButton } from '@/components/ui/IconButton'
 import { Input } from '@/components/ui/input'
 import {
   Select,
@@ -15,27 +17,28 @@ import { useMessages } from '@/i18n/client'
 import { DICTATION_LEVELS } from '@/modules/dictation/levels'
 
 const controlClass =
-  'border-line min-h-11 rounded-control border bg-surface px-3 py-2 font-sans text-sm font-semibold'
+  'border-line min-h-11 rounded-control border bg-surface px-3 py-2 font-sans text-sm'
 
 /**
- * URL-driven browse toolbar: debounced live search (no OK button, per design
- * review) + level filter + sort. Writes to the query string so back/forward and
- * shareable links work; any change resets to page 1.
+ * URL-driven browse toolbar: debounced live search (no OK button). The level
+ * filter folds behind a small filter button next to the field and stays
+ * open while a level is set. Writes to the query string so back/forward and
+ * shareable links work; any change resets to page 1. The list always keeps
+ * the course order, so there is no sort control.
  */
 export function BrowseToolbar({
   search: initialSearch,
   level,
-  sort,
 }: {
   search: string
   level: string | null
-  sort: string
 }) {
   const text = useMessages().dictation.browse
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const [search, setSearch] = useState(initialSearch)
+  const [showLevel, setShowLevel] = useState(Boolean(level))
 
   function commit(changes: Record<string, string>) {
     const params = new URLSearchParams(searchParams.toString())
@@ -44,6 +47,7 @@ export function BrowseToolbar({
       else params.delete(key)
 
     params.delete('page') // any filter change returns to page 1
+    params.delete('sort') // the course order is the only order
     router.replace(`${pathname}?${params.toString()}`, { scroll: false })
   }
 
@@ -67,39 +71,37 @@ export function BrowseToolbar({
         onChange={event => setSearch(event.target.value)}
         className={`${controlClass} min-w-40 flex-1`}
       />
-      <Select
-        value={level ?? ''}
-        onValueChange={value => commit({ level: value ?? '' })}
-      >
-        <SelectTrigger aria-label={text.level}>
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="">{text.allLevels}</SelectItem>
-          {DICTATION_LEVELS.map(l => (
-            <SelectItem
-              key={l}
-              value={l}
-            >
-              {l}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      <Select
-        value={sort}
-        onValueChange={value => commit({ sort: value ?? '' })}
-      >
-        <SelectTrigger aria-label={text.sort}>
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="order">{text.sortOrder}</SelectItem>
-          <SelectItem value="newest">{text.sortNewest}</SelectItem>
-          <SelectItem value="oldest">{text.sortOldest}</SelectItem>
-          <SelectItem value="title">{text.sortTitle}</SelectItem>
-        </SelectContent>
-      </Select>
+      {showLevel || level ? (
+        <Select
+          value={level ?? ''}
+          onValueChange={value => commit({ level: value ?? '' })}
+        >
+          <SelectTrigger aria-label={text.level}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">{text.allLevels}</SelectItem>
+            {DICTATION_LEVELS.map(l => (
+              <SelectItem
+                key={l}
+                value={l}
+              >
+                {l}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      ) : (
+        <IconButton
+          label={text.level}
+          onClick={() => setShowLevel(true)}
+        >
+          <SlidersHorizontal
+            aria-hidden="true"
+            className="size-4"
+          />
+        </IconButton>
+      )}
     </div>
   )
 }

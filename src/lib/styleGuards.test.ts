@@ -170,7 +170,6 @@ const HOVER_LIFT: Guard = {
   baseline: [
     'src/app/admin/page.tsx',
     'src/components/common/MetricTile.tsx',
-    'src/components/dictation/browse/BrowseVideoList.tsx',
   ],
   pattern: /\bhover-lift\b/,
   roots: COMPONENTS_AND_APP,

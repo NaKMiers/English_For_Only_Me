@@ -46,18 +46,12 @@ function VideoCard({
   priority: boolean
   className?: string
 }) {
-  const action = video.inProgress
-    ? labels.continue
-    : video.completions > 0
-      ? labels.practiceAgain
-      : labels.practice
-
   return (
     <li
       className={cn(
         'border-line bg-surface rounded-panel relative grid min-w-0 content-start gap-1.5 border p-1.5',
         video.practiceHref &&
-          'hover:bg-tint-soft focus-within:bg-tint-soft hover-lift cursor-pointer',
+          'hover:bg-tint-soft focus-within:bg-tint-soft hover-pop cursor-pointer',
         className
       )}
     >
@@ -92,25 +86,14 @@ function VideoCard({
         {video.level && <PageTag tone="sky">{video.level}</PageTag>}
         <CompletionBadge completions={video.completions} />
         {video.practiceHref ? (
-          <span
-            aria-hidden="true"
-            className={cn(
-              'ml-auto inline-flex min-h-7 items-center gap-1 rounded-full px-2.5 text-xs font-medium',
-              video.inProgress
-                ? 'bg-brand-soft text-brand-ink'
-                : video.completions > 0
-                  ? 'bg-lesson-correct/10 text-lesson-correct'
-                  : 'bg-tint text-ink'
-            )}
-          >
-            {video.completions > 0 && !video.inProgress ? (
-              <Check
-                aria-label={labels.completed}
-                className="size-3.5"
-              />
-            ) : null}
-            {action}
-          </span>
+          // The card is the link; only the state shows here: a tick once
+          // done (the medal above counts repeats).
+          video.completions > 0 && !video.inProgress ? (
+            <Check
+              aria-label={labels.completed}
+              className="text-lesson-correct ml-auto size-4"
+            />
+          ) : null
         ) : (
           <span className="text-ink-soft ml-auto text-xs">
             {labels.noTranscript}

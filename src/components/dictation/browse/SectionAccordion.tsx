@@ -1,3 +1,6 @@
+import { Headphones } from 'lucide-react'
+
+import { EmptyState } from '@/components/journey/EmptyState'
 import { PageTag } from '@/components/ui/PageTag'
 import type { Messages } from '@/i18n/messages'
 import { en } from '@/i18n/messages/en'
@@ -25,25 +28,28 @@ type BrowseLabels = Messages['dictation']['browse']
 function SectionPanel({
   group,
   canFavorite,
+  defaultOpen,
   labels,
 }: {
   group: BrowseSectionGroup
   canFavorite: boolean
+  defaultOpen: boolean
   labels: BrowseLabels
 }) {
   const panelId = `section-${group.key}`
   const doneCount = group.videos.filter(video => video.completions > 0).length
+  const finished = group.videos.length > 0 && doneCount >= group.videos.length
 
   return (
     <BrowseDisclosure
+      defaultOpen={defaultOpen}
       panelId={panelId}
       header={
         <>
-          <span className="font-sans text-base font-semibold">
-            {group.title}
-          </span>
-          <PageTag tone={doneCount > 0 ? 'red' : 'pale'}>
-            {canFavorite && group.videos.length > 0
+          <span className="font-sans text-base font-medium">{group.title}</span>
+          {/* Progress shows to guests too: their practice is saved. */}
+          <PageTag tone={finished ? 'gold' : doneCount > 0 ? 'sky' : 'pale'}>
+            {group.videos.length > 0
               ? `${doneCount}/${group.videos.length}`
               : group.videos.length}
           </PageTag>
@@ -67,18 +73,23 @@ export function SectionAccordion({
   groups,
   canFavorite,
   labels = en.dictation.browse,
+  openKey = null,
 }: {
   groups: BrowseSectionGroup[]
   canFavorite: boolean
+  /** The section holding the next video starts open; the rest fold. */
+  openKey?: string | null
   /** From the page's `getMessages()`: this stays a server component. */
   labels?: BrowseLabels
 }) {
   if (groups.length === 0)
     return (
-      <div className="border-line bg-surface rounded-panel border p-6 text-center">
-        <p className="font-sans text-lg font-semibold">{labels.nothingHere}</p>
-        <p className="text-ink-soft mt-1 text-sm">{labels.topicEmpty}</p>
-      </div>
+      <EmptyState
+        action={{ href: '/dictation', label: labels.allTopics }}
+        body={labels.topicEmpty}
+        icon={<Headphones />}
+        title={labels.nothingHere}
+      />
     )
 
   return (
@@ -88,6 +99,7 @@ export function SectionAccordion({
           key={group.key}
           group={group}
           canFavorite={canFavorite}
+          defaultOpen={group.key === openKey}
           labels={labels}
         />
       ))}
