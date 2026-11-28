@@ -5,8 +5,9 @@ interface Props {
   body: string
   homeHref: string
   homeLabel: string
-  onRetry: () => void
-  retryLabel: string
+  /** Omit both for a not-found page: the way home is the one action. */
+  onRetry?: () => void
+  retryLabel?: string
   tag: string
   title: string
 }
@@ -33,7 +34,7 @@ export function RouteError({
       >
         <Image
           alt=""
-          className="size-20 rounded-3xl object-contain"
+          className="rounded-panel size-20 object-contain"
           height={80}
           src="/logo.png"
           width={80}
@@ -46,15 +47,23 @@ export function RouteError({
         </h1>
         <p className="text-ink-soft text-base leading-7">{body}</p>
         <div className="flex flex-wrap justify-center gap-2">
-          <button
-            className="bg-cta text-cta-fg hover:bg-cta/85 soft-press inline-flex min-h-11 items-center justify-center rounded-full px-5 py-2 font-sans text-sm leading-tight font-medium"
-            onClick={onRetry}
-            type="button"
-          >
-            {retryLabel}
-          </button>
+          {/* Raw button and link: this bundle stays free of the page chrome,
+              but both pop like ActionButton. */}
+          {onRetry ? (
+            <button
+              className="bg-cta text-cta-fg hover:bg-cta/85 soft-press hover-pop inline-flex min-h-11 items-center justify-center rounded-full px-5 py-2 font-sans text-sm leading-tight font-medium"
+              onClick={onRetry}
+              type="button"
+            >
+              {retryLabel}
+            </button>
+          ) : null}
           <Link
-            className="border-line bg-surface hover:bg-tint-soft soft-press inline-flex min-h-11 items-center justify-center rounded-full border px-5 py-2 font-sans text-sm leading-tight font-medium"
+            className={
+              onRetry
+                ? 'border-line bg-surface hover:bg-tint-soft soft-press hover-pop inline-flex min-h-11 items-center justify-center rounded-full border px-5 py-2 font-sans text-sm leading-tight font-medium'
+                : 'bg-cta text-cta-fg hover:bg-cta/85 soft-press hover-pop inline-flex min-h-11 items-center justify-center rounded-full px-5 py-2 font-sans text-sm leading-tight font-medium'
+            }
             href={homeHref}
           >
             {homeLabel}

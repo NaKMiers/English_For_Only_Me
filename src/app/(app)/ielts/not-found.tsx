@@ -1,23 +1,17 @@
-import { PageShell } from '@/components/common/PageShell'
-import { ExamButton, ExamCard } from '@/components/ielts/ui'
+import { RouteError } from '@/components/common/RouteError'
 import { getMessages } from '@/i18n/server'
 
+/** A missing test: the shared RouteError look, with the way back. */
 export default async function IeltsNotFound() {
   const t = await getMessages()
 
   return (
-    <PageShell>
-      <div className="grid place-items-center p-6">
-        <ExamCard title={t.ielts.boundary.notFoundTitle}>
-          <p>{t.ielts.boundary.notFoundBody}</p>
-          <ExamButton
-            href="/ielts"
-            tone="ink"
-          >
-            {t.ielts.boundary.backToIelts}
-          </ExamButton>
-        </ExamCard>
-      </div>
-    </PageShell>
+    <RouteError
+      body={t.ielts.boundary.notFoundBody}
+      homeHref="/ielts"
+      homeLabel={t.ielts.boundary.backToIelts}
+      tag={t.common.modules.ielts.title}
+      title={t.ielts.boundary.notFoundTitle}
+    />
   )
 }

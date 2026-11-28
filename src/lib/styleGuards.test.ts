@@ -86,7 +86,6 @@ const CORNERS: Guard = {
     'src/components/common/UserMenu.tsx',
   ],
   baseline: [
-    'src/components/common/RouteError.tsx',
     'src/components/ielts/catalogue/ProgressTabs.tsx',
     'src/components/ielts/catalogue/TestPath.tsx',
     'src/components/ui/tooltip.tsx',
