@@ -186,7 +186,7 @@ export function SkeletonTileRow({
   )
 }
 
-/** Single browse video card (thumbnail + tags + title + action). */
+/** Single browse video card (thumbnail, tags, title). */
 export function SkeletonVideoCard() {
   return (
     <div className="border-line bg-surface rounded-panel grid gap-2 border p-2">
@@ -197,7 +197,6 @@ export function SkeletonVideoCard() {
       </div>
       <Skeleton className="rounded-tag h-5 w-full" />
       <Skeleton className="rounded-tag h-5 w-2/3" />
-      <Skeleton className="border-line rounded-control h-9 w-full border" />
     </div>
   )
 }
@@ -213,7 +212,8 @@ export function SkeletonVideoGrid({
   return (
     <ul
       className={cn(
-        'grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4',
+        // Same columns as BrowseVideoList, so the cards land in place.
+        'grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5',
         className
       )}
     >

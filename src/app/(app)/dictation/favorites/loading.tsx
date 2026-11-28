@@ -1,5 +1,5 @@
 import {
-  SkeletonHero,
+  SkeletonJourney,
   SkeletonPageShell,
   SkeletonVideoGrid,
 } from '@/components/common/PageSkeletons'
@@ -13,7 +13,11 @@ export default async function Loading() {
       activeHref="/dictation"
       subtitle={t.dictation.meta.favoritesSubtitle}
     >
-      <SkeletonHero />
+      <SkeletonJourney
+        chips={0}
+        layout="stacked"
+        metaphorClassName="h-2"
+      />
       <SkeletonVideoGrid count={8} />
     </SkeletonPageShell>
   )

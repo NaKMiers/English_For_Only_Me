@@ -1,15 +1,8 @@
-import { Star } from 'lucide-react'
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 
-import { AppTopbar } from '@/components/common/AppTopbar'
-import { PageShell } from '@/components/common/PageShell'
-import { PageHeader } from '@/components/common/PageHeader'
-import { BrowseBreadcrumb } from '@/components/dictation/browse/BrowseBreadcrumb'
-import {
-  BrowseVideoList,
-  type BrowseVideoItem,
-} from '@/components/dictation/browse/SectionAccordion'
+import type { BrowseVideoItem } from '@/components/dictation/browse/SectionAccordion'
+import { VideoListPage } from '@/components/dictation/browse/VideoListPage'
 import { hasMongoDbUri } from '@/constants/environments'
 import { getMessages } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
@@ -56,33 +49,13 @@ export default async function FavoritesPage() {
   }
 
   return (
-    <PageShell
-      topbar={
-        <AppTopbar
-          activeHref="/dictation"
-          subtitle={t.dictation.meta.favoritesSubtitle}
-        />
-      }
-    >
-      <section className="grid gap-5 px-4 pb-6 md:pr-6 md:pl-0">
-        <PageHeader
-          eyebrow={
-            <BrowseBreadcrumb
-              current={t.dictation.favorites.title}
-              labels={t.dictation.browse}
-            />
-          }
-          icon={<Star />}
-          iconClassName="bg-pastel-lemon text-accent-orange"
-          title={t.dictation.favorites.title}
-        />
-        <BrowseVideoList
-          videos={items}
-          canFavorite
-          emptyLabel={t.dictation.favorites.empty}
-          labels={t.dictation.browse.card}
-        />
-      </section>
-    </PageShell>
+    <VideoListPage
+      canFavorite
+      emptyTitle={t.dictation.favorites.empty}
+      items={items}
+      messages={t}
+      title={t.dictation.favorites.title}
+      topbarSubtitle={t.dictation.meta.favoritesSubtitle}
+    />
   )
 }

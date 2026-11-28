@@ -1,14 +1,7 @@
-import { Headphones } from 'lucide-react'
 import type { Metadata } from 'next'
 
-import { AppTopbar } from '@/components/common/AppTopbar'
-import { PageShell } from '@/components/common/PageShell'
-import { PageHeader } from '@/components/common/PageHeader'
-import { BrowseBreadcrumb } from '@/components/dictation/browse/BrowseBreadcrumb'
-import {
-  BrowseVideoList,
-  type BrowseVideoItem,
-} from '@/components/dictation/browse/SectionAccordion'
+import type { BrowseVideoItem } from '@/components/dictation/browse/SectionAccordion'
+import { VideoListPage } from '@/components/dictation/browse/VideoListPage'
 import { hasMongoDbUri } from '@/constants/environments'
 import { getMessages } from '@/i18n/server'
 import { connectDatabaseWhen } from '@/lib/db/connectDatabase'
@@ -69,34 +62,14 @@ export default async function NoTopicPage() {
   }
 
   return (
-    <PageShell
-      topbar={
-        <AppTopbar
-          activeHref="/dictation"
-          subtitle={t.dictation.meta.browseSubtitle}
-        />
-      }
-    >
-      <section className="grid gap-5 px-4 pb-6 md:pr-6 md:pl-0">
-        <PageHeader
-          eyebrow={
-            <BrowseBreadcrumb
-              current={t.dictation.browse.uncategorized}
-              labels={t.dictation.browse}
-            />
-          }
-          icon={<Headphones />}
-          iconClassName="bg-pastel-sky text-accent-blue"
-          subtitle={t.dictation.noTopic.description}
-          title={t.dictation.browse.uncategorized}
-        />
-        <BrowseVideoList
-          videos={items}
-          canFavorite={canFavorite}
-          emptyLabel={t.dictation.noTopic.empty}
-          labels={t.dictation.browse.card}
-        />
-      </section>
-    </PageShell>
+    <VideoListPage
+      canFavorite={canFavorite}
+      emptyTitle={t.dictation.noTopic.empty}
+      items={items}
+      messages={t}
+      subtitle={t.dictation.noTopic.description}
+      title={t.dictation.browse.uncategorized}
+      topbarSubtitle={t.dictation.meta.browseSubtitle}
+    />
   )
 }
