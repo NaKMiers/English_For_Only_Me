@@ -1,17 +1,17 @@
 'use client'
 
-import { EllipsisVertical, GripVertical, Pencil, Trash2 } from 'lucide-react'
+import { GripVertical, Pencil, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import type { DragEvent, ReactNode } from 'react'
 import { useTransition } from 'react'
 
+import { AdminMenuTrigger } from '@/components/admin/AdminMenuTrigger'
 import { DictationVideoThumbnail } from '@/components/dictation/DictationVideoThumbnail'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { PageTag } from '@/components/ui/PageTag'
 import { format } from '@/i18n/format'
@@ -112,18 +112,12 @@ function AdminVideoActionsMenu({
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger
-        aria-label={format(t.admin.menu.triggerFor, { title: video.title })}
+      <AdminMenuTrigger
+        label={format(t.admin.menu.triggerFor, { title: video.title })}
         title={t.admin.menu.trigger}
         onClick={event => event.stopPropagation()}
         onKeyDown={event => event.stopPropagation()}
-        className="border-line bg-surface hover:bg-tint rounded-control grid size-9 shrink-0 place-items-center border transition-colors"
-      >
-        <EllipsisVertical
-          aria-hidden="true"
-          className="size-4"
-        />
-      </DropdownMenuTrigger>
+      />
       <DropdownMenuContent
         align="end"
         onClick={event => event.stopPropagation()}

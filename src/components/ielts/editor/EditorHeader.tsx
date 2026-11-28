@@ -6,7 +6,6 @@ import {
   BookOpen,
   CircleAlert,
   CircleCheck,
-  EllipsisVertical,
   Eye,
   Pencil,
   ScrollText,
@@ -19,13 +18,13 @@ import {
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 
+import { AdminMenuTrigger } from '@/components/admin/AdminMenuTrigger'
 import { ExamButton } from '@/components/ielts/ui'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useMessages } from '@/i18n/client'
 import { format, plural } from '@/i18n/format'
@@ -269,17 +268,11 @@ export function EditorHeader({
           </ExamButton>
         ) : null}
         <DropdownMenu>
-          <DropdownMenuTrigger
-            aria-label={copy.moreActions}
-            className="border-line bg-surface hover:bg-tint rounded-control soft-press grid size-9 shrink-0 place-items-center border disabled:opacity-50"
+          <AdminMenuTrigger
             disabled={busy !== null && !generating}
+            label={copy.moreActions}
             title={copy.more}
-          >
-            <EllipsisVertical
-              aria-hidden="true"
-              className="size-4"
-            />
-          </DropdownMenuTrigger>
+          />
           <DropdownMenuContent
             align="end"
             className="w-56"

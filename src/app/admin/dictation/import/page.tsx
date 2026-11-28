@@ -47,12 +47,11 @@ export default async function DictationImportPage() {
           }}
           icon={<Upload />}
           iconClassName="bg-pastel-sky text-accent-blue"
-          subtitle={t.admin.importPage.intro}
           title={t.admin.importPage.title}
         />
-        <div className="border-line bg-surface rounded-panel border p-4 sm:p-5">
-          <DictationImportForm />
-        </div>
+        {/* The form is made of its own cards: no card around them, and its
+            intro line is the page's one explanation. */}
+        <DictationImportForm />
       </section>
     </PageShell>
   )

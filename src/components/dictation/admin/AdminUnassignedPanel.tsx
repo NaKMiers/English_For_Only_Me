@@ -41,7 +41,7 @@ export function AdminUnassignedPanel({
         type="button"
         aria-expanded={open}
         onClick={() => setOpen(v => !v)}
-        className="flex items-center gap-2 text-left"
+        className="soft-press hover-pop rounded-control flex items-center gap-2 text-left"
       >
         <ChevronDown
           aria-hidden="true"

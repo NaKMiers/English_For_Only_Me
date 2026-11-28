@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react'
 
+import { ActionButton } from '@/components/ui/ActionButton'
 import { useMessages } from '@/i18n/client'
 import { cn } from '@/lib/utils'
 
@@ -64,25 +65,23 @@ export function ConfirmSubmitButton({
             <h2 className="font-sans text-lg font-semibold">{confirmTitle}</h2>
             <p className="text-ink-soft text-sm leading-6">{confirmMessage}</p>
             <div className="flex justify-end gap-2">
-              <button
-                type="button"
+              <ActionButton
                 onClick={() => setOpen(false)}
-                className="border-line bg-surface hover:bg-tint rounded-control inline-flex min-h-11 items-center border px-4 font-sans text-sm font-semibold"
+                tone="paper"
+                type="button"
               >
                 {t.common.actions.cancel}
-              </button>
-              <button
-                type="button"
+              </ActionButton>
+              <ActionButton
+                className="bg-brand text-surface hover:bg-brand/90 hover:text-surface border-transparent"
                 onClick={() => {
                   setOpen(false)
                   ref.current?.form?.requestSubmit()
                 }}
-                className={cn(
-                  'border-line bg-brand text-surface hover:bg-tint-soft hover:text-ink rounded-control inline-flex min-h-11 items-center border px-4 font-sans text-sm font-semibold'
-                )}
+                type="button"
               >
                 {confirmLabel}
-              </button>
+              </ActionButton>
             </div>
           </div>
         </div>

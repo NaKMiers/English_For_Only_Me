@@ -31,7 +31,7 @@ export async function AdminTrashPanel({
 
   return (
     <details className="group border-line bg-surface rounded-panel border p-4">
-      <summary className="flex cursor-pointer list-none items-center gap-2 [&::-webkit-details-marker]:hidden">
+      <summary className="soft-press hover-pop rounded-control flex w-fit cursor-pointer list-none items-center gap-2 [&::-webkit-details-marker]:hidden">
         <ChevronDown
           aria-hidden="true"
           className="size-5 transition-transform group-open:rotate-180"

@@ -46,7 +46,7 @@ function IssueRow({
     <li>
       {/* Row link to a section in this client view: plain button row. */}
       <button
-        className="hover:bg-tint-soft rounded-tag group grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-2 py-1.5 text-left"
+        className="soft-press hover-pop hover:bg-tint-soft rounded-tag group grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-2 py-1.5 text-left"
         onClick={() => onJump(issue.sectionKey)}
         type="button"
       >

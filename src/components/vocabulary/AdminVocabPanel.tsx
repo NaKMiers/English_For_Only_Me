@@ -13,10 +13,12 @@ import {
 import { useCallback, useEffect, useState } from 'react'
 
 import { ContentPanel } from '@/components/common/ContentPanel'
+import { InlineNotice } from '@/components/common/InlineNotice'
 import { PageHeader } from '@/components/common/PageHeader'
 import { StatChip, StatStrip } from '@/components/journey/StatChip'
 import { Input } from '@/components/ui/input'
 import { ActionButton } from '@/components/ui/ActionButton'
+import { IconButton } from '@/components/ui/IconButton'
 import { format } from '@/i18n/format'
 import { useMessages } from '@/i18n/client'
 import {
@@ -45,26 +47,30 @@ export function AdminVocabPanel({ initialQueue, mongoConfigured }: Props) {
   const [limit, setLimit] = useState(5)
   const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  // A failed queue refresh, shown under the header's refresh button.
+  const [refreshError, setRefreshError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
   const refreshQueue = useCallback(async () => {
-    const response = await getVocabAdminQueueApi()
-    setQueue(response.queue)
-  }, [])
+    setRefreshError(null)
+
+    try {
+      const response = await getVocabAdminQueueApi()
+      setQueue(response.queue)
+    } catch (currentError) {
+      setRefreshError(
+        currentError instanceof Error ? currentError.message : v.loadFailed
+      )
+    }
+  }, [v.loadFailed])
 
   useEffect(() => {
     if (!mongoConfigured || initialQueue) return
 
-    const timeoutId = window.setTimeout(() => {
-      refreshQueue().catch(currentError => {
-        setError(
-          currentError instanceof Error ? currentError.message : v.loadFailed
-        )
-      })
-    }, 0)
+    const timeoutId = window.setTimeout(() => void refreshQueue(), 0)
 
     return () => window.clearTimeout(timeoutId)
-  }, [initialQueue, mongoConfigured, refreshQueue, v.loadFailed])
+  }, [initialQueue, mongoConfigured, refreshQueue])
 
   async function enrich() {
     setIsLoading(true)
@@ -107,21 +113,49 @@ export function AdminVocabPanel({ initialQueue, mongoConfigured }: Props) {
 
   return (
     <div className="grid gap-5">
+      {/* The queue numbers and the refresh share the header: no row of
+          chips of their own. */}
       <PageHeader
         actions={
-          <button
-            aria-label={v.refresh}
-            className="border-line bg-surface hover:bg-tint soft-press inline-grid size-11 shrink-0 place-items-center rounded-full border disabled:opacity-55"
-            disabled={isLoading}
-            onClick={() => refreshQueue()}
-            title={v.refresh}
-            type="button"
-          >
-            <RefreshCcw
-              aria-hidden="true"
-              className="size-5"
-            />
-          </button>
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <StatStrip label={v.title}>
+              <StatChip
+                icon={Sprout}
+                label={v.metrics.enrichable}
+                value={String(queue.seededCount)}
+              />
+              <StatChip
+                icon={CircleCheck}
+                label={v.metrics.ready}
+                value={String(queue.readyCount)}
+              />
+              <StatChip
+                icon={CircleX}
+                label={v.metrics.failed}
+                value={String(queue.failedCount)}
+              />
+              <StatChip
+                icon={SearchX}
+                label={v.metrics.notFound}
+                value={String(queue.notFoundCount)}
+              />
+              <StatChip
+                icon={Lock}
+                label={v.metrics.staleLocks}
+                value={String(queue.staleLeaseCount)}
+              />
+            </StatStrip>
+            <IconButton
+              disabled={isLoading}
+              label={v.refresh}
+              onClick={() => refreshQueue()}
+            >
+              <RefreshCcw
+                aria-hidden="true"
+                className="size-5"
+              />
+            </IconButton>
+          </div>
         }
         eyebrow={v.tag}
         icon={<BookA />}
@@ -130,34 +164,9 @@ export function AdminVocabPanel({ initialQueue, mongoConfigured }: Props) {
         title={v.title}
         titleClassName="wrap-break-word"
       />
-
-      <StatStrip label={v.title}>
-        <StatChip
-          icon={Sprout}
-          label={v.metrics.enrichable}
-          value={String(queue.seededCount)}
-        />
-        <StatChip
-          icon={CircleCheck}
-          label={v.metrics.ready}
-          value={String(queue.readyCount)}
-        />
-        <StatChip
-          icon={CircleX}
-          label={v.metrics.failed}
-          value={String(queue.failedCount)}
-        />
-        <StatChip
-          icon={SearchX}
-          label={v.metrics.notFound}
-          value={String(queue.notFoundCount)}
-        />
-        <StatChip
-          icon={Lock}
-          label={v.metrics.staleLocks}
-          value={String(queue.staleLeaseCount)}
-        />
-      </StatStrip>
+      {refreshError ? (
+        <InlineNotice tone="error">{refreshError}</InlineNotice>
+      ) : null}
 
       <ContentPanel
         eyebrow={v.panelEyebrow}
@@ -186,16 +195,8 @@ export function AdminVocabPanel({ initialQueue, mongoConfigured }: Props) {
           {format(v.note, { command: '`bun run vocab:seed`' })}
         </p>
 
-        {message ? (
-          <div className="border-line bg-tint rounded-control border p-3 text-sm font-semibold">
-            {message}
-          </div>
-        ) : null}
-        {error ? (
-          <div className="border-line bg-tint-soft rounded-control border p-3 text-sm font-semibold">
-            {error}
-          </div>
-        ) : null}
+        {message ? <InlineNotice>{message}</InlineNotice> : null}
+        {error ? <InlineNotice tone="error">{error}</InlineNotice> : null}
       </ContentPanel>
     </div>
   )

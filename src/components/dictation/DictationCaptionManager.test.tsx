@@ -152,4 +152,24 @@ describe('DictationCaptionManager', () => {
       expect(view.queryByText('28 timed cues')).toBeNull()
     })
   })
+
+  test('a failed remove shows its error on that track row', async () => {
+    mockedDelete.mockRejectedValueOnce(new Error('Could not remove.'))
+    const view = renderManager(
+      [
+        track('t-en', 'en', 30, 12),
+        track('t-vi', 'vi', 28, 0),
+        track('t-fr', 'fr', 20, 0),
+      ],
+      't-en'
+    )
+
+    fireEvent.click(view.getByLabelText('Remove Vietnamese captions'))
+
+    const alert = await view.findByRole('alert')
+    expect(alert).toHaveTextContent('Could not remove.')
+    // Beside the Vietnamese row, not the French one or the form at the end.
+    expect(alert.parentElement?.textContent).toContain('28 timed cues')
+    expect(alert.parentElement?.textContent).not.toContain('20 timed cues')
+  })
 })

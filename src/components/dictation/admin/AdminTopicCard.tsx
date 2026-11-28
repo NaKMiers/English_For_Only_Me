@@ -1,16 +1,16 @@
 'use client'
 
-import { ChevronDown, EllipsisVertical, Pencil, Trash2, X } from 'lucide-react'
+import { ChevronDown, Pencil, Trash2, X } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useState, useTransition } from 'react'
 
+import { AdminMenuTrigger } from '@/components/admin/AdminMenuTrigger'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -83,16 +83,10 @@ function AdminCardActionsMenu({
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger
-        aria-label={label}
+      <AdminMenuTrigger
+        label={label}
         title={t.admin.menu.trigger}
-        className="border-line bg-surface hover:bg-tint rounded-control grid size-9 shrink-0 place-items-center border transition-colors"
-      >
-        <EllipsisVertical
-          aria-hidden="true"
-          className="size-4"
-        />
-      </DropdownMenuTrigger>
+      />
       <DropdownMenuContent
         align="end"
         className="w-44"
@@ -241,7 +235,7 @@ function SectionBlock({
                 type="button"
                 aria-expanded={open}
                 onClick={() => setOpen(v => !v)}
-                className="flex min-w-0 flex-1 items-center gap-2 text-left"
+                className="soft-press hover-pop rounded-control flex min-w-0 flex-1 items-center gap-2 text-left"
               >
                 <ChevronDown
                   aria-hidden="true"
@@ -270,30 +264,34 @@ function SectionBlock({
                 <Pencil aria-hidden="true" />
                 {t.common.actions.edit}
               </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <form action={deleteSectionAction}>
-                <input
-                  type="hidden"
-                  name="id"
-                  value={section.id}
-                />
-                <ConfirmSubmitButton
-                  confirmTitle={t.admin.section.removeTitle}
-                  confirmMessage={format(t.admin.section.removeMessage, {
-                    title: section.title,
-                  })}
-                  confirmLabel={t.admin.section.removeConfirm}
-                  disabled={section.videos.length > 0}
-                  disabledReason={t.admin.section.removeDisabled}
-                  className={menuDangerButton}
-                >
-                  <X
-                    aria-hidden="true"
-                    className="size-4"
-                  />
-                  {t.admin.section.remove}
-                </ConfirmSubmitButton>
-              </form>
+              {/* Remove only shows when it can run (an empty section): no
+                  disabled item with a tooltip-only reason. */}
+              {section.videos.length === 0 ? (
+                <>
+                  <DropdownMenuSeparator />
+                  <form action={deleteSectionAction}>
+                    <input
+                      type="hidden"
+                      name="id"
+                      value={section.id}
+                    />
+                    <ConfirmSubmitButton
+                      confirmTitle={t.admin.section.removeTitle}
+                      confirmMessage={format(t.admin.section.removeMessage, {
+                        title: section.title,
+                      })}
+                      confirmLabel={t.admin.section.removeConfirm}
+                      className={menuDangerButton}
+                    >
+                      <X
+                        aria-hidden="true"
+                        className="size-4"
+                      />
+                      {t.admin.section.remove}
+                    </ConfirmSubmitButton>
+                  </form>
+                </>
+              ) : null}
             </AdminCardActionsMenu>
           )}
         </div>
@@ -497,7 +495,7 @@ export function AdminTopicCard({ topic }: { topic: AdminTopicData }) {
               expanded ? t.admin.topicCard.collapse : t.admin.topicCard.expand
             }
             onClick={() => setExpanded(v => !v)}
-            className="flex min-w-0 flex-1 flex-wrap items-center gap-2 self-stretch text-left"
+            className="soft-press hover-pop rounded-control flex min-w-0 flex-1 flex-wrap items-center gap-2 self-stretch text-left"
           >
             <span className="border-line bg-surface rounded-tag grid size-8 shrink-0 place-items-center border">
               <ChevronDown
@@ -527,30 +525,33 @@ export function AdminTopicCard({ topic }: { topic: AdminTopicData }) {
             {editing ? <X aria-hidden="true" /> : <Pencil aria-hidden="true" />}
             {editing ? t.common.actions.close : t.common.actions.edit}
           </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <form action={deleteTopicAction}>
-            <input
-              type="hidden"
-              name="id"
-              value={topic.id}
-            />
-            <ConfirmSubmitButton
-              confirmTitle={t.admin.topicCard.deleteTitle}
-              confirmMessage={format(t.admin.topicCard.deleteMessage, {
-                title: topic.title,
-              })}
-              confirmLabel={t.admin.topicCard.deleteConfirm}
-              disabled={topic.videoCount > 0}
-              disabledReason={t.admin.topicCard.deleteDisabled}
-              className={menuDangerButton}
-            >
-              <Trash2
-                aria-hidden="true"
-                className="size-4"
-              />
-              {t.common.actions.delete}
-            </ConfirmSubmitButton>
-          </form>
+          {/* Delete only shows for an empty topic. */}
+          {topic.videoCount === 0 ? (
+            <>
+              <DropdownMenuSeparator />
+              <form action={deleteTopicAction}>
+                <input
+                  type="hidden"
+                  name="id"
+                  value={topic.id}
+                />
+                <ConfirmSubmitButton
+                  confirmTitle={t.admin.topicCard.deleteTitle}
+                  confirmMessage={format(t.admin.topicCard.deleteMessage, {
+                    title: topic.title,
+                  })}
+                  confirmLabel={t.admin.topicCard.deleteConfirm}
+                  className={menuDangerButton}
+                >
+                  <Trash2
+                    aria-hidden="true"
+                    className="size-4"
+                  />
+                  {t.common.actions.delete}
+                </ConfirmSubmitButton>
+              </form>
+            </>
+          ) : null}
         </AdminCardActionsMenu>
       </div>
 

@@ -155,22 +155,17 @@ export default async function Page({ params }: Props) {
           subtitle={t.admin.editPage.intro}
           title={t.admin.editPage.title}
         />
-        <div className="border-line bg-surface rounded-panel border">
-          <div className="p-4 sm:p-5">
-            <DictationImportForm
-              initialActiveTranscriptId={
-                video.activeTranscriptId
-                  ? String(video.activeTranscriptId)
-                  : null
-              }
-              initialSegments={segments}
-              initialTracks={tracks}
-              initialTranslationTracks={translationTracks}
-              initialVideo={toDictationVideoRecord(video)}
-              mode="edit"
-            />
-          </div>
-        </div>
+        {/* The form is made of its own cards: no card around them. */}
+        <DictationImportForm
+          initialActiveTranscriptId={
+            video.activeTranscriptId ? String(video.activeTranscriptId) : null
+          }
+          initialSegments={segments}
+          initialTracks={tracks}
+          initialTranslationTracks={translationTracks}
+          initialVideo={toDictationVideoRecord(video)}
+          mode="edit"
+        />
       </section>
     </PageShell>
   )

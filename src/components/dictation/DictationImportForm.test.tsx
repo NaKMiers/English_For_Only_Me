@@ -139,12 +139,14 @@ function videoRecord(): DictationVideoApiRecord {
 }
 
 describe('DictationImportForm', () => {
-  test('prompts to save a video before captions can be added', () => {
+  test('starts on the URL form alone: one intro, no caption manager yet', () => {
     const view = render(<DictationImportForm />)
 
+    expect(view.getByLabelText('YouTube URL')).not.toBeNull()
+    // The intro line is the one explanation (no second "save first" hint).
     expect(
-      view.getByText('Save a YouTube URL first, then upload captions.')
-    ).not.toBeNull()
+      view.queryByText('Save a YouTube URL first, then upload captions.')
+    ).toBeNull()
     expect(view.queryByText('Language captions')).toBeNull()
   })
 

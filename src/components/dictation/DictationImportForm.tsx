@@ -1,6 +1,6 @@
 'use client'
 
-import { CheckCircle2, LinkIcon, Save } from 'lucide-react'
+import { CheckCircle2, Save } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useState, type FormEvent } from 'react'
 
@@ -271,8 +271,9 @@ export function DictationImportForm({
               {t.admin.importForm.intro}
             </p>
 
+            {/* The URL and its Save button share a row from sm. */}
             <form
-              className="grid gap-4"
+              className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end"
               onSubmit={handleVideoSubmit}
             >
               <div className="grid gap-2">
@@ -316,15 +317,6 @@ export function DictationImportForm({
           />
         ) : null}
         {message ? <StatusMessage message={message} /> : null}
-        {!video ? (
-          <div className="text-ink-soft flex items-center gap-2 text-sm font-normal">
-            <LinkIcon
-              aria-hidden="true"
-              className="size-5"
-            />
-            {t.admin.importForm.saveUrlFirst}
-          </div>
-        ) : null}
       </ContentPanel>
 
       {video ? (

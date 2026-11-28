@@ -20,6 +20,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { InlineNotice } from '@/components/common/InlineNotice'
 import { useMessages } from '@/i18n/client'
 import { format, plural } from '@/i18n/format'
 import { cn } from '@/lib/utils'
@@ -122,6 +123,12 @@ export function TestEditor({
   const [meta, setMeta] = useState(() => metaOf(initial))
   const [busy, setBusy] = useState<string | null>(null)
   const [message, setMessage] = useState('')
+  // Errors are kept apart from success notes: a section's save, generate or
+  // audio error shows in that section's card, the rest at the top.
+  const [error, setError] = useState<{
+    sectionKey: string | null
+    text: string
+  } | null>(null)
   const [publishReport, setPublishReport] =
     useState<IeltsConsistencyReport | null>(null)
   const [confirmWarnings, setConfirmWarnings] = useState(false)
@@ -155,8 +162,8 @@ export function TestEditor({
       .catch(() => undefined)
   }
 
-  const fail = (caught: unknown) => {
-    setMessage(apiErrorText(caught, t))
+  const fail = (caught: unknown, sectionKey: string | null = null) => {
+    setError({ sectionKey, text: apiErrorText(caught, t) })
 
     if (caught instanceof IeltsAdminApiError && caught.report)
       setPublishReport(caught.report)
@@ -180,6 +187,7 @@ export function TestEditor({
 
     setBusy('save')
     setMessage('')
+    setError(null)
 
     try {
       const { test: next } = await saveIeltsSectionApi(
@@ -192,7 +200,7 @@ export function TestEditor({
       adopt(next, [section.key])
       setMessage(copy.savedMessage)
     } catch (caught) {
-      fail(caught)
+      fail(caught, section.key)
     } finally {
       setBusy(null)
     }
@@ -201,6 +209,7 @@ export function TestEditor({
   const saveMeta = async () => {
     setBusy('meta')
     setMessage('')
+    setError(null)
 
     try {
       const { test: next } = await saveIeltsMetaApi(
@@ -243,11 +252,12 @@ export function TestEditor({
   const generateOne = async (key: string, step: IeltsGenerateStep) => {
     setBusy(`gen:${key}`)
     setMessage('')
+    setError(null)
 
     try {
       await runStep(key, step)
     } catch (caught) {
-      fail(caught)
+      fail(caught, key)
     } finally {
       setBusy(null)
     }
@@ -261,6 +271,7 @@ export function TestEditor({
   const generateMissing = async () => {
     stopLoopRef.current = false
     setMessage('')
+    setError(null)
 
     let current = test
 
@@ -346,7 +357,7 @@ export function TestEditor({
           adopt(current, [key])
         }
       } catch (caught) {
-        fail(caught)
+        fail(caught, key)
         break
       }
     }
@@ -359,6 +370,7 @@ export function TestEditor({
 
     setBusy(`audio:${section.key}`)
     setMessage('')
+    setError(null)
 
     try {
       const { test: next } = await generateIeltsAudioApi(
@@ -370,7 +382,7 @@ export function TestEditor({
       adopt(next, [section.key])
       setMessage(copy.audioGenerated)
     } catch (caught) {
-      fail(caught)
+      fail(caught, section.key)
     } finally {
       setBusy(null)
     }
@@ -379,6 +391,7 @@ export function TestEditor({
   const publish = async (confirm = false) => {
     setBusy('publish')
     setMessage('')
+    setError(null)
     setPublishReport(null)
 
     try {
@@ -564,6 +577,29 @@ export function TestEditor({
           test={test}
         />
 
+        {/* At the top: test-wide errors, and a section's error while another
+            section is open. */}
+        {error && error.sectionKey !== (section?.key ?? null) ? (
+          <InlineNotice
+            action={
+              <ExamIconButton
+                className="size-8 border shadow-none"
+                label={copy.dismiss}
+                onClick={() => setError(null)}
+                type="button"
+              >
+                <X
+                  aria-hidden="true"
+                  className="size-4"
+                />
+              </ExamIconButton>
+            }
+            className="shrink-0"
+            tone="error"
+          >
+            {error.text}
+          </InlineNotice>
+        ) : null}
         {message ? (
           <div
             className="border-line bg-tint-soft rounded-control flex shrink-0 items-center gap-2 border py-1 pr-1 pl-3"
@@ -703,13 +739,11 @@ export function TestEditor({
               </div>
 
               <div className="grid min-w-0 content-start gap-3 p-3 sm:p-4">
+                {error && error.sectionKey === section.key ? (
+                  <InlineNotice tone="error">{error.text}</InlineNotice>
+                ) : null}
                 {section.genError ? (
-                  <p
-                    className="border-brand text-brand rounded-control border px-3 py-2 text-sm font-semibold"
-                    role="alert"
-                  >
-                    {section.genError}
-                  </p>
+                  <InlineNotice tone="error">{section.genError}</InlineNotice>
                 ) : null}
                 {test.status === 'published' ? (
                   <p

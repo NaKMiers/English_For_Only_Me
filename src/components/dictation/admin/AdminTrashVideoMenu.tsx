@@ -1,14 +1,14 @@
 'use client'
 
-import { EllipsisVertical, RotateCcw, Trash2 } from 'lucide-react'
+import { RotateCcw, Trash2 } from 'lucide-react'
 
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { AdminMenuTrigger } from '@/components/admin/AdminMenuTrigger'
 import { format } from '@/i18n/format'
 import { useMessages } from '@/i18n/client'
 import {
@@ -30,16 +30,10 @@ export function AdminTrashVideoMenu({
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger
-        aria-label={format(t.admin.menu.triggerFor, { title })}
+      <AdminMenuTrigger
+        label={format(t.admin.menu.triggerFor, { title })}
         title={t.admin.menu.trigger}
-        className="border-line bg-surface hover:bg-tint rounded-control grid size-9 shrink-0 place-items-center border transition-colors"
-      >
-        <EllipsisVertical
-          aria-hidden="true"
-          className="size-4"
-        />
-      </DropdownMenuTrigger>
+      />
       <DropdownMenuContent
         align="end"
         className="w-52"

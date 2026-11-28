@@ -186,6 +186,15 @@ export default async function AdminDictationPage({ searchParams }: Props) {
       <section className="grid gap-5 px-4 pb-6 md:pr-6 md:pl-0">
         <header className="grid gap-4">
           <PageHeader
+            actions={
+              <ActionButton
+                href="/admin/dictation/import"
+                tone="ink"
+                icon={<Upload aria-hidden="true" />}
+              >
+                {t.admin.dictationPage.importVideo}
+              </ActionButton>
+            }
             breadcrumb={{
               items: [
                 { href: '/admin', label: t.admin.dashboard.title },
@@ -226,13 +235,6 @@ export default async function AdminDictationPage({ searchParams }: Props) {
                 </Link>
               ))}
             </nav>
-            <ActionButton
-              href="/admin/dictation/import"
-              tone="ink"
-              icon={<Upload aria-hidden="true" />}
-            >
-              {t.admin.dictationPage.importVideo}
-            </ActionButton>
           </div>
         </header>
 

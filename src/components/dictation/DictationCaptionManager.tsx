@@ -4,6 +4,7 @@ import { Captions, CheckCircle2, Plus, Trash2, Upload } from 'lucide-react'
 import { useCallback, useMemo, useRef, useState, type ChangeEvent } from 'react'
 
 import { ContentPanel } from '@/components/common/ContentPanel'
+import { InlineNotice } from '@/components/common/InlineNotice'
 import { QueueRow } from '@/components/common/QueueRow'
 import { Badge } from '@/components/ui/badge'
 import { IconButton } from '@/components/ui/IconButton'
@@ -81,6 +82,8 @@ export function DictationCaptionManager({
   const [isSaving, setIsSaving] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  // A failed remove shows on that track's row, not at the bottom.
+  const [trackErrors, setTrackErrors] = useState<Record<string, string>>({})
 
   const primaryTrack = useMemo(
     () => tracks.find(track => track.id === activeId) ?? null,
@@ -285,6 +288,7 @@ export function DictationCaptionManager({
   async function handleRemove(track: DictationTranscriptApiRecord) {
     setErrorMessage(null)
     setMessage(null)
+    setTrackErrors(({ [track.id]: _cleared, ...rest }) => rest)
 
     try {
       await deleteDictationTranscriptApi(track.id)
@@ -292,7 +296,10 @@ export function DictationCaptionManager({
       setMessage(format(c.removed, { language: languageLabel(track.language) }))
       onTracksChanged?.()
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : c.removeFailed)
+      setTrackErrors(current => ({
+        ...current,
+        [track.id]: error instanceof Error ? error.message : c.removeFailed,
+      }))
     }
   }
 
@@ -349,33 +356,42 @@ export function DictationCaptionManager({
             />
           ) : null}
           {translationTracks.map(track => (
-            <QueueRow
+            <div
+              className="grid gap-2"
               key={track.id}
-              title={languageLabel(track.language)}
-              meta={
-                track.cueCount > 0
-                  ? plural(c.timedCues, track.cueCount)
-                  : c.noTimings
-              }
-              status={track.language}
-              onClick={() => selectLanguage(track.language)}
-              action={
-                <IconButton
-                  label={format(c.removeTrack, {
-                    language: languageLabel(track.language),
-                  })}
-                  onClick={event => {
-                    event.stopPropagation()
-                    handleRemove(track)
-                  }}
-                >
-                  <Trash2
-                    aria-hidden="true"
-                    className="size-5"
-                  />
-                </IconButton>
-              }
-            />
+            >
+              <QueueRow
+                title={languageLabel(track.language)}
+                meta={
+                  track.cueCount > 0
+                    ? plural(c.timedCues, track.cueCount)
+                    : c.noTimings
+                }
+                status={track.language}
+                onClick={() => selectLanguage(track.language)}
+                action={
+                  <IconButton
+                    label={format(c.removeTrack, {
+                      language: languageLabel(track.language),
+                    })}
+                    onClick={event => {
+                      event.stopPropagation()
+                      handleRemove(track)
+                    }}
+                  >
+                    <Trash2
+                      aria-hidden="true"
+                      className="size-5"
+                    />
+                  </IconButton>
+                }
+              />
+              {trackErrors[track.id] ? (
+                <InlineNotice tone="error">
+                  {trackErrors[track.id]}
+                </InlineNotice>
+              ) : null}
+            </div>
           ))}
         </div>
       ) : null}
@@ -514,22 +530,11 @@ export function DictationCaptionManager({
         </ActionButton>
       </div>
 
+      {/* Right under the Add / Save button that caused them. */}
       {errorMessage ? (
-        <div
-          role="status"
-          className="border-line bg-tint-soft rounded-control border p-3 text-sm leading-6 font-semibold"
-        >
-          {errorMessage}
-        </div>
+        <InlineNotice tone="error">{errorMessage}</InlineNotice>
       ) : null}
-      {message ? (
-        <div
-          role="status"
-          className="border-line bg-surface rounded-control border p-3 text-sm leading-6 font-semibold"
-        >
-          {message}
-        </div>
-      ) : null}
+      {message ? <InlineNotice>{message}</InlineNotice> : null}
 
       {isReady ? (
         <ActionButton

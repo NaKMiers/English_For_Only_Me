@@ -175,8 +175,8 @@ export function AssistMenu({
                 aria-pressed={action === item.action}
                 className={
                   action === item.action
-                    ? 'border-line bg-brand rounded-control text-surface border p-2 text-left'
-                    : 'border-line hover:bg-tint-soft rounded-control bg-surface border p-2 text-left'
+                    ? 'border-line bg-brand rounded-control text-surface soft-press border p-2 text-left'
+                    : 'border-line hover:bg-tint-soft rounded-control bg-surface soft-press hover-pop border p-2 text-left'
                 }
                 key={item.action}
                 onClick={() => setAction(item.action)}

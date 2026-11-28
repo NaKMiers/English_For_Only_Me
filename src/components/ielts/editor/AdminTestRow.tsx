@@ -4,7 +4,6 @@ import {
   Archive,
   ArchiveRestore,
   Eye,
-  EllipsisVertical,
   Pencil,
   Send,
   Trash2,
@@ -18,8 +17,8 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { AdminMenuTrigger } from '@/components/admin/AdminMenuTrigger'
 import { useMessages } from '@/i18n/client'
 import { format, plural } from '@/i18n/format'
 import { cn } from '@/lib/utils'
@@ -141,7 +140,7 @@ export function AdminTestRow({ row }: { row: AdminTestRowItem }) {
     <li className="grid min-w-0 gap-1">
       <div className="border-line rounded-control bg-surface flex min-w-0 items-start gap-1 border p-1">
         <Link
-          className="hover:bg-tint-soft rounded-tag grid min-w-0 flex-1 gap-1.5 px-2 py-1.5"
+          className="soft-press hover-pop hover:bg-tint-soft rounded-tag grid min-w-0 flex-1 gap-1.5 px-2 py-1.5"
           href={editHref}
           title={`${row.title} · ${row.detail}`}
         >
@@ -173,17 +172,11 @@ export function AdminTestRow({ row }: { row: AdminTestRowItem }) {
           </span>
         </Link>
         <DropdownMenu>
-          <DropdownMenuTrigger
-            aria-label={format(copy.actionsFor, { title: row.title })}
-            className="border-line bg-surface hover:bg-tint rounded-control grid size-8 shrink-0 place-items-center border transition-colors disabled:opacity-50"
+          <AdminMenuTrigger
             disabled={busy}
+            label={format(copy.actionsFor, { title: row.title })}
             title={copy.actions}
-          >
-            <EllipsisVertical
-              aria-hidden="true"
-              className="size-4"
-            />
-          </DropdownMenuTrigger>
+          />
           <DropdownMenuContent
             align="end"
             className="w-52"
