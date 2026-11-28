@@ -36,13 +36,21 @@ middleware) can run on the edge runtime, which cannot load Mongoose.
 - `src/proxy.ts` builds its own NextAuth instance from `authConfig` alone
   (`export default auth`) with `matcher: ['/admin/:path*']`, so no Mongoose
   code is ever pulled into the edge bundle.
+- `src/lib/auth/actions.ts` - a `'use server'` module exporting
+  `signInAction()` (`signIn('google')`) and `signOutAction()` (`signOut()`).
+  The client `src/components/common/AccountControl.tsx` imports them as
+  action references (form `action` for sign-in, passed to `UserMenu` for
+  sign-out), so the NextAuth / Mongoose chain never reaches the browser
+  bundle.
 
 ```mermaid
 graph TD
   A[auth.config.ts<br/>edge-safe]:::edge --> B[proxy.ts<br/>NextAuth authConfig]
   A --> C[auth.ts<br/>NextAuth full]
   C --> D[handlers<br/>api/auth/...nextauth/route.ts]
-  C --> E[auth / signIn / signOut<br/>server components + services]
+  C --> E[auth / signIn / signOut<br/>root layout, services]
+  C --> H[actions.ts, use server<br/>signInAction / signOutAction]
+  H --> I[AccountControl<br/>client, topbar + rail]
   C -. provisionUserOnSignIn<br/>foldGuestIntoUser .-> F[(MongoDB via Mongoose)]
   B -. authorized callback only .-> G[/admin guard, no DB/]
   classDef edge fill:#eef,stroke:#333;
@@ -281,7 +289,17 @@ from the `ADMIN_EMAILS` allowlist - it is never trusted from the client:
 comma-separated list into a lower-cased `Set<string>` (empty when unset).
 Because role is recomputed on every token/session pass and never stored, an
 allowlist change takes effect on the next token refresh without a migration.
-`src/components/common/AuthControl.tsx` renders nothing when `!hasGoogleAuth()`.
+The UI reads the session once per root render: `readAccount()` in
+`src/app/layout.tsx` returns `{ account: null, enabled: false }` when
+`!hasGoogleAuth()`, otherwise calls `auth()` and hands
+`{ account, enabled: true }` (first name, image, initial,
+`isAdmin = user.role === 'admin'`) to `AccountProvider`
+(`src/components/common/AccountProvider.tsx`). `AccountControl`
+(`src/components/common/AccountControl.tsx`, rendered by `AppTopbar` and at the
+rail foot by `AppSidebar`) reads it with `useAccount()`: nothing when not
+enabled, a Google sign-in form when signed out, and `UserMenu` when signed in.
+`isAdmin` only shapes the menu; admin access is still enforced server-side
+(section 1.6).
 
 ---
 
@@ -661,9 +679,16 @@ modules (auth, DB, integration helpers, services) can be unit-tested under
 jsdom without the guard aborting the import.
 
 - `src/test/setup.ts` - imports `@testing-library/jest-dom/vitest`, runs
-  `cleanup()` after each test, and globally mocks
-  `@/components/common/AuthControl` to render `null` (an async server
-  component that cannot render under the synchronous test renderer).
+  `cleanup()` after each test, and globally mocks `@/lib/auth/actions`
+  (`signInAction` / `signOutAction` resolve to `undefined`): the real module
+  imports the NextAuth / Mongoose chain, which the test runtime does not turn
+  into action references, so any component embedding `AppTopbar` (and its
+  `AccountControl`) can render.
+- `src/test/landingBudget.ts` - `expectLandingBudget(container)`, the shared
+  assertion for a module landing or session end: exactly one
+  `[data-next-stop]` and one `bg-cta` element, at most 4 `dt` per
+  `[data-stat-strip]`, every link or button inside `[data-journey-card]`
+  carries `hover-pop`, and no `[data-stat-chip="static"]` does.
 - `src/test/setupDom.ts` - `setupDom()` installs a fresh JSDOM `window`,
   `document`, `navigator`, and common DOM globals, with a one-time `afterEach`
   cleanup, for component tests that need an explicit DOM.
@@ -671,15 +696,16 @@ jsdom without the guard aborting the import.
 
 The config has no `include`/`exclude`, so Vitest's defaults apply and
 `.claude/` is not excluded: a run at the repo root also collects the copies in
-`.claude/worktrees/**` (verified: `bunx vitest list --filesOnly` lists 764
-files, 569 of them under `.claude/`, 195 under `src/`). Exclude them
-explicitly.
+`.claude/worktrees/**` (verified: `bunx vitest list --filesOnly` lists 803
+files, 574 of them under `.claude/`; `bunx vitest list --filesOnly --dir src`
+lists the 229 under `src/`). Always scope the run with `--dir src` (or
+`--exclude '.claude/**'`).
 
 ### 7.3 Commands
 
 | Task                           | Command                                                                              |
 | ------------------------------ | ------------------------------------------------------------------------------------ |
-| Unit tests, this checkout only | `bun run test -- --exclude '.claude/**'`                                             |
+| Unit tests, this checkout only | `bun run test -- --dir src` (or `bun run test -- --exclude '.claude/**'`)            |
 | All collected unit tests       | `bun run test` (`vitest run`)                                                        |
 | Watch                          | `bun run test:watch` (`vitest`)                                                      |
 | One file                       | `bun run test -- src/lib/db/revalidateRequest.test.ts`                               |
@@ -691,7 +717,8 @@ There is no `package.json` script for Playwright.
 
 ### 7.4 Test inventory and style
 
-- `find src -name '*.test.ts*' | wc -l` => 199 co-located unit test files.
+- `find src -name '*.test.ts' -o -name '*.test.tsx' | wc -l` => 229 co-located
+  unit test files.
 - E2E files (each `test.skip`s itself unless its env is set):
 
 | File                                           | Needs                                | Flow                                                                                                                             |
@@ -706,6 +733,18 @@ There is no `package.json` script for Playwright.
   `src/lib/sync/{outbox,clientOutbox}.test.ts`, and
   `src/lib/youtube/{extractYouTubeId,getYouTubeVideoMetadata}.test.ts`. There
   are no unit tests for `src/lib/cloudinary/*`.
+- UI guard tests: `src/lib/styleGuards.test.ts` scans `src/components` and
+  `src/app` (and `src` plus `docs` for the em dash) for corner roles, `bg-ink`
+  on controls, raw Tailwind palette / `text-white` / `text-muted-foreground`,
+  `font-bold` / `font-black` in learner components, `hover-lift`, and small
+  touch targets (`SMALL_TOUCH`), plus `rounded-none` anywhere in `src`. The
+  corner, ink, palette, weight and `hover-lift` guards keep a shrink-only
+  baseline: a second test fails when a listed file is already clean. Landing
+  and session-end component tests (for example
+  `src/components/journey/JourneyCard.test.tsx`,
+  `src/components/grammar/path/GrammarPath.test.tsx`) use
+  `expectLandingBudget`; error boundaries are covered by
+  `src/app/error.test.tsx` and `src/app/(app)/grammar/error.test.tsx`.
 - Naming (`.agents/rules/testing-quality.md`): unit tests sit next to source as
   `*.test.ts` / `*.test.tsx`; Playwright as `*.e2e.ts`.
 - Pure decision functions are extracted from route handlers so they test
@@ -723,7 +762,7 @@ because the repo has `bun.lock`):
 | Lint   | `bun run lint` (`eslint`)                     | TS/React changes must pass                      |
 | Format | `bun run format:check` (`prettier . --check`) | Prettier house style                            |
 | Build  | `bun run build` (`next build`)                | App Router / metadata / build-sensitive changes |
-| Test   | `bun run test -- --exclude '.claude/**'`      | See 7.3                                         |
+| Test   | `bun run test -- --dir src`                   | See 7.3                                         |
 
 API/security changes verify both success and unhappy paths; broaden
 verification when changes affect auth, data, routing, or AI; never weaken

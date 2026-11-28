@@ -40,7 +40,7 @@ Dictation subdirectories:
 | `segmenting/`   | `buildSegments`, `editSegments`, `resegmentAll`, `text`                                                  | Transcript -> practice segments, manual edits, bulk rebuild        |
 | `transcripts/`  | `normalizeTranscriptSource`, `formatCuesAsCaptionText`, `sourceHash`                                     | Caption/plain-text ingestion, hashing, SRT reconstruction          |
 | `translations/` | `captionOverlap`, `segmentTranslation`, `languages`                                                      | Time-overlap captions, manual overrides, language codes and labels |
-| `practice/`     | `segmentProgress`, `attemptCursor`, `practiceSync`, `practicePageData`, `practiceTranslations`, ...      | Per-learner progress overlay, attempt cursor, outbox writes        |
+| `practice/`     | `segmentProgress`, `attemptCursor`, `practiceSync`, `practicePageData`, `nextVideo`, ...                 | Per-learner progress overlay, attempt cursor, outbox, next video   |
 | `review/`       | `reviewScheduler`, `reviewItemService`                                                                   | Review candidates and idempotent insertion                         |
 | `stats/`        | `globalStats`, `globalStatsService`, `videoStats`, `videoStatsService`                                   | Global (facet pipeline) and per-video analytics                    |
 | `ai/`           | `debriefDecisions`, `debriefPrompt`, `debriefSchema`, `debriefService`                                   | LLM post-video debrief                                             |
@@ -501,7 +501,7 @@ prompt relies on), and `getCuratedLanguageOptions` (maps curated codes to
 
 ## practice/ - per-learner progress and the practice write contract
 
-Files: `src/modules/dictation/practice/{types,segmentProgress,segmentProgressService,attemptCursor,practiceSync,practicePageData,practiceTranslations,translationTrackRequest,sessionCompletion,sessionStartRetry,duplicateKeyError}.ts`.
+Files: `src/modules/dictation/practice/{types,segmentProgress,segmentProgressService,attemptCursor,practiceSync,practicePageData,practiceTranslations,translationTrackRequest,sessionCompletion,sessionStartRetry,duplicateKeyError,nextVideo,findNextVideo}.ts`.
 
 Responsibility: everything the practice page and the session/attempt routes share that
 is not grading. The core invariant: `DictationSegment` is shared content, so a learner's
@@ -521,6 +521,23 @@ progress is never read from or written to it. Progress is derived from the learn
 | `sessionCompletion.ts`       | pure        | `resolveSessionCompletedAt`                                                                                                                                         | `src/app/api/dictation/sessions/[sessionId]/route.ts`                                |
 | `sessionStartRetry.ts`       | pure        | `isRetryableSessionStartError`, `getSessionStartRetryDelayMs`                                                                                                       | `DictationPracticeShell.tsx`                                                         |
 | `duplicateKeyError.ts`       | pure        | `isDuplicateKeyError` (Mongo code 11000)                                                                                                                            | sessions and attempts routes, `reviewItemService.ts`, several `src/modules/ielts/**` |
+| `nextVideo.ts`               | pure        | `nextVideoInTopic`                                                                                                                                                  | `findNextVideo.ts`                                                                   |
+| `findNextVideo.ts`           | server-only | `findNextVideo`, `PracticeNextVideo`                                                                                                                                | practice and results pages, `PracticeFinish.tsx` (type)                              |
+
+### Next video after a finished one (`nextVideo.ts`, `findNextVideo.ts`)
+
+- `nextVideoInTopic(catalog, currentId)` (pure) orders the topic's videos in course
+  order: by their section's index in `catalog.sections`, videos with no (or an unknown)
+  section last, input order within a group. It returns the first later video that
+  passes `hasDictationTranscript`, or null when `currentId` is the last or not found.
+- `findNextVideo(video)` returns `PracticeNextVideo { href, title, topicTitle }` with
+  `href = /dictation/videos/<id>/practice`. It reads only the cached catalog
+  (`getCachedTopics` to resolve the topic, then `getCachedTopicCatalog(slug)`), so it
+  costs no per-request query. Null for a video without a topic, the last video, or any
+  read error (logged, never thrown). Callers:
+  `src/app/(app)/dictation/videos/[videoId]/practice/page.tsx` and
+  `src/app/(app)/dictation/videos/[videoId]/results/page.tsx` (skipped when the results
+  are empty); `src/components/dictation/practice/PracticeFinish.tsx` renders it.
 
 ### Deep dive: progress overlay (`segmentProgress.ts`, `segmentProgressService.ts`)
 
@@ -666,6 +683,10 @@ production caller; the service dedupes with `selectNewReviewCandidates` instead.
   inserted. Correctness does not depend on the index existing.
 - `listDueReviewItemsForUser({ userId, videoId?, limit = 20 })` returns `[]` for a null
   owner; otherwise active items sorted `dueAt: 1, priority: -1, updatedAt: -1`.
+- `countDueReviewItemsForUser(userId | null)` counts every active (`due`/`scheduled`)
+  item, uncapped (0 for a null owner). `/dictation/review`
+  (`src/app/(app)/dictation/review/page.tsx`) runs it beside a `limit: 30` list so the
+  due total is right even when the list is capped.
 - `markReviewItemForUser` sets `lastReviewedAt` and the completed/dismissed status via
   `findOneAndUpdate` scoped to the user's id.
 
@@ -721,14 +742,16 @@ flowchart TD
     lately", not all-time.
 - `getGlobalStatsForUser(userId | null, { completionCounts? })` accepts an
   already-started completion-count promise so `/dictation` does not run that
-  aggregation twice.
+  aggregation twice. Callers: `src/app/page.tsx` and `src/app/(app)/dictation/page.tsx`
+  (there is no stats page or stats route; the landings show the numbers).
 
 ### Per-video stats (`videoStats.ts` + `videoStatsService.ts`)
 
 `getVideoStatsForUser({ userId | null, videoId })` fetches attempts (ascending by
 `createdAt`, which matters for first-check logic; skipped entirely for a null owner) and
 segments, then calls the pure `aggregateVideoStats`, returning
-`DictationVideoStatsRecord`:
+`DictationVideoStatsRecord`. Callers: `src/app/(app)/dictation/videos/[videoId]/results/page.tsx`,
+and `src/modules/dictation/ai/debriefService.ts`.
 
 - `commonMissedWords` - same rule as weak words but top 8.
 - `completedSegmentCount` / `completionPercentage` - distinct completed segments over
@@ -840,7 +863,8 @@ flowchart LR
 - `contentRepository.ts` (read side, `server-only`, uncached): `listTopics`,
   `getTopicBySlug` (wrapped in React `cache`), `listSectionsForTopic`,
   `listVideosForTopic`, `listFiledVideos` (every non-archived video with a topic, for the
-  admin board), `listNoTopicVideos`/`countNoTopicVideos` (the `{ topicId: null }` filter
+  admin board), `listVideoTopicIds` (every visible video as a slim `{ id, topicId | null }`
+  row, so `/dictation` can count each topic's finished videos without full records), `listNoTopicVideos`/`countNoTopicVideos` (the `{ topicId: null }` filter
   matches both explicit null and absent field), `countAllVideos` (archived included, the
   stats total), `searchVideosInTopic` (flat-list mode), `listManageableVideos`,
   `listArchivedVideos` (the admin trash), `listAllSections`, and `listTopicSummaries`
@@ -852,7 +876,8 @@ flowchart LR
   keyed by reader key plus `CATALOG_CACHE_VERSION`, JSON round-tripped, then React
   `cache` for per-request dedupe). Readers: `getCachedTopics`,
   `getCachedTopicSummaries`, `getCachedNoTopicCount`, `getCachedVideoCount`,
-  `getCachedNoTopicVideos`, and `getCachedTopicCatalog(slug)` (one entry holding the
+  `getCachedNoTopicVideos`, `getCachedVideoTopicIds` (`listVideoTopicIds`, read by
+  `src/app/(app)/dictation/page.tsx`), and `getCachedTopicCatalog(slug)` (one entry holding the
   topic, its sections and visible videos; slug lowercased). Dates are revived with
   `reviveDates`/`reviveDatesInList`. All share `CACHE_TAGS.dictationCatalog`. Invariant:
   every catalog write must invalidate that tag (admin actions do; so does
@@ -918,7 +943,11 @@ each id.
 `browseQuery.ts` (pure): `parseBrowseQuery` coerces raw params into
 `BrowseQuery { search, level, sort, page }` (search trimmed and capped at 100 chars, level
 validated via `isDictationLevel`, sort restricted to `order|newest|oldest|title` defaulting
-to `order`, page a positive integer defaulting to 1). `isBrowseQueryActive` distinguishes
+to `DEFAULT_BROWSE_SORT = 'order'`, page a positive integer defaulting to 1).
+`buildBrowseHref(basePath, query, page)` is the inverse for pagination links
+(`src/components/dictation/browse/BrowsePagination.tsx`): it keeps `search`, `level`, and a
+non-default `sort`, adds `page` only above 1, and returns the bare `basePath` when nothing
+is left, so page 2 of a `newest` search stays sorted by newest. `isBrowseQueryActive` distinguishes
 flat-list mode (a search or level filter is set) from the section accordion.
 `buildVideoMongoFilter` builds a case-insensitive `title` regex (metacharacters escaped) and
 an optional `level` equality; `buildVideoMongoSort` maps the sort to a Mongo sort spec
@@ -1049,7 +1078,7 @@ Directory: `src/modules/dictation/services/`. Endpoint contracts are documented 
 
 Files: `attemptRouteDecisions`, `sessionRouteDecisions`, `segmentRouteDecisions`,
 `transcriptRouteDecisions`, `videoRouteDecisions`, `reviewItemRouteDecisions`,
-`statsRouteDecisions`, `youtubeImportDecisions`. Each contains pure functions that take a
+`youtubeImportDecisions`. Each contains pure functions that take a
 parsed request body, query params, or already-fetched plain documents, and return a plain
 decision object. They perform no I/O. The shared return contract is a discriminated union
 on `ok`, built on the canonical error shape in `videoRouteDecisions.ts`:
@@ -1460,15 +1489,20 @@ null, error }`) so the client can roll back exactly those. Used by
 - `vocabWordListService.ts` (`server-only`):
   - `parseVocabWordListView` coerces a `view` param (default `learning`);
     `VOCAB_WORD_LIST_VIEW_LABELS` supplies display names. Full page query parsing
-    (`page`, `perPage`, `view`, never failing) is `parseVocabWordListQuery` in
+    (`page`, `perPage`, `q`, `view`, never failing) is `parseVocabWordListQuery` in
     `vocabularyRouteDecisions.ts`.
   - `buildVocabWordListPipeline` (exported, pure) = `$match` (status filter per view) ->
     `$sort` (per view, then `_id`) -> `$lookup` into `VocabEntry` with the VI-meaning
-    filter and a slim projection (first definition only) -> `$unwind` (drops items whose
+    filter, an optional search `$match`, and a slim projection (first definition only) ->
+    `$unwind` (drops items whose
     entry is missing or meaning-less) -> `$facet { total, rows: skip/limit }`. Joining and
     filtering BEFORE paging is the invariant: totals never count hidden words and pages
     have no holes. `getVocabWordListSkip` computes `(max(page, 1) - 1) * perPage`.
-  - `listVocabWordsForUser({ userId, view, page, perPage })` runs it and resolves each
+  - Search: `search` is trimmed and lowercased, regex-escaped (`escapeRegex`, so no user
+    regex syntax), and matched as an anchored prefix on `VocabEntry.normalizedTerm`
+    inside the `$lookup`. Non-matching words drop at `$unwind`, before the facet, so the
+    total and the pages only hold matches. An empty search adds no stage.
+  - `listVocabWordsForUser({ userId, view, page, perPage, search = '' })` runs it and resolves each
     word's `sourceVideo` from the user's most recent `VocabOccurrence` with a `videoId`
     (grouped in Mongo, then one `DictationVideo` read for `title`/`youtubeUrl`). Views:
     `learning` and `dueToday` (sorted `dueAt`), `alreadyKnow` and `knownTotal` (sorted

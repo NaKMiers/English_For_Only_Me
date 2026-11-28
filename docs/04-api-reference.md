@@ -224,7 +224,6 @@ or guest, data scoped to `actor.id`); `admin` = `requireAdmin()`;
 | POST             | `/api/dictation/sessions/[sessionId]/attempts`            | Record a dictation attempt                       | actor            | outbox lane `dictation:<sessionId>`                                                                 |
 | GET, POST, PATCH | `/api/dictation/review-items`                             | List / recompute / complete-dismiss review items | actor            | (none)                                                                                              |
 | POST             | `/api/dictation/debriefs`                                 | Generate or return an AI debrief                 | actor            | `createDictationDebriefApi`                                                                         |
-| GET              | `/api/dictation/stats`                                    | Global or per-video stats                        | actor            | `getDictationGlobalStatsApi`, `getDictationVideoStatsApi`                                           |
 | POST             | `/api/dictation/imports/youtube`                          | Import a YouTube video by URL                    | admin            | `importYouTubeVideoApi`                                                                             |
 | POST             | `/api/vocab/entries/lookup`                               | Find/create, enrich and return one entry         | actor            | `lookupVocabEntryApi`                                                                               |
 | POST             | `/api/vocab/occurrences`                                  | Record a "met this word" event                   | actor            | `recordVocabOccurrenceApi`                                                                          |
@@ -545,17 +544,6 @@ File: `src/app/api/dictation/debriefs/route.ts`. Decisions:
   `503` -> `debriefUnavailable`. `500` (`debriefFailed`).
 - Client: `createDictationDebriefApi`.
 
-### Stats
-
-File: `src/app/api/dictation/stats/route.ts`. Decisions:
-`statsRouteDecisions.ts`.
-
-- Auth: actor. Query: no `videoId` -> global; a `videoId` must be 24-hex (`400`
-  "A valid videoId query parameter is required.").
-- `200 { stats }` from `getGlobalStatsForUser` or `getVideoStatsForUser`.
-  `500` (`statsLoadFailed`).
-- Client: `getDictationGlobalStatsApi`, `getDictationVideoStatsApi`.
-
 ### YouTube import
 
 File: `src/app/api/dictation/imports/youtube/route.ts`. Decisions:
@@ -686,6 +674,24 @@ Legacy route "kept for tabs still on the previous bundle".
 ### GET /api/vocab/stats
 
 - No params. `200 { stats }` from `getVocabStatsForUser`.
+
+### Word list query (page, not a route)
+
+The word list has no API route: the Server Component
+`src/app/(app)/vocabulary/words/page.tsx` reads its search params through
+`parseVocabWordListQuery` (`vocabularyRouteDecisions.ts`) and calls
+`listVocabWordsForUser` directly. The parse never fails; each bad value falls
+back on its own:
+
+| Param     | Rule                                                                               | Fallback   |
+| --------- | ---------------------------------------------------------------------------------- | ---------- |
+| `page`    | integer 1-100000                                                                   | `1`        |
+| `perPage` | integer 1-`VOCAB_WORD_LIST_MAX_PAGE_SIZE` (200)                                    | `50`       |
+| `q`       | trimmed string, max 60 chars (longer falls back); passed as `search` (term prefix) | `''`       |
+| `view`    | `learning \| dueToday \| alreadyKnow \| mastered \| knownTotal`                    | `learning` |
+
+Array values use the first entry. Search semantics: `docs/05-modules.md`
+(vocabulary, `vocabWordListService.ts`).
 
 ## 6. Grammar
 
@@ -845,7 +851,6 @@ outbox items (section 1).
 | `dictationSessionsApi.ts`     | `startOrResumeDictationSessionApi`, `getDictationTranslationTrackApi`, `getDictationSessionApiPath`, `DICTATION_SESSIONS_API_PATH`, `DICTATION_TRANSLATIONS_API_PATH`, type `DictationSessionPatchPayload`                                                                                                                                                                       | start error carries `status`; session PATCH goes through the outbox                                                                |
 | `dictationAttemptsApi.ts`     | `getDictationAttemptsApiPath`, type `DictationAttemptPayload`                                                                                                                                                                                                                                                                                                                    | no fetch helper; attempts go through `buildAttemptWrite`                                                                           |
 | `dictationDebriefsApi.ts`     | `createDictationDebriefApi`, `DICTATION_DEBRIEFS_API_PATH`                                                                                                                                                                                                                                                                                                                       | empty message -> caller fallback                                                                                                   |
-| `dictationStatsApi.ts`        | `getDictationGlobalStatsApi`, `getDictationVideoStatsApi`, `DICTATION_STATS_API_PATH`                                                                                                                                                                                                                                                                                            | tests in `dictationStatsApi.test.ts`                                                                                               |
 | `dictationImportsApi.ts`      | `importYouTubeVideoApi`, `DICTATION_YOUTUBE_IMPORT_API_PATH`                                                                                                                                                                                                                                                                                                                     | response includes `alreadyExists`                                                                                                  |
 | `vocabularyApi.ts`            | `lookupVocabEntryApi`, `recordVocabOccurrenceApi`, `searchVocabApi`, `getExploreVocabApi`, `getDueVocabRecallApi`, `getVocabStatsApi`, `getVocabAdminQueueApi`, `enrichVocabularyAdminApi`, `VocabRequestError`, `getVocabRequestErrorMessage`                                                                                                                                   | paths from `VOCAB_API_PATHS`; item status and recall answers go through the outbox; tests in `vocabularyApi.test.ts`               |
 | `grammarSessionsApi.ts`       | `buildGrammarSessionWrite`, `hasPendingGrammarSessions`, `GRAMMAR_OUTBOX_LANE`, type `GrammarSessionRequestBody`                                                                                                                                                                                                                                                                 | outbox only, no fetch                                                                                                              |

@@ -31,46 +31,49 @@ Neighbours, not repeated here:
 
 ## 1. File map
 
-| Path                                 | Role                                                                                     | Pure?            |
-| ------------------------------------ | ---------------------------------------------------------------------------------------- | ---------------- |
-| `constants.ts`                       | Thresholds, sizes, session modes, `GRAMMAR_SESSIONS_URL`                                 | yes              |
-| `course/types.ts`                    | Course, unit, lesson and card types; `CardAnswer`; `isPracticeCard`                      | yes              |
-| `course/units/u01.ts` .. `u12.ts`    | The lesson data (`UNIT_01` .. `UNIT_12`)                                                 | yes              |
-| `course/index.ts`                    | `GRAMMAR_COURSE`, `COURSE_ID_ALIASES`, the app-wide `grammarCourse` lookup               | `server-only`    |
-| `course/courseLookup.ts`             | `buildCourseLookup`: O(1) unit / lesson / card index with alias resolution               | yes              |
-| `course/validateCourse.ts`           | Structural checks for hand-written content                                               | yes              |
-| `path/buildGrammarPath.ts`           | The whole path page view model; `isLessonUnlocked`, `isUnitOpen`, `countOpenMisses`      | yes              |
-| `path/unitSummary.ts`                | Small derived views on top of the path (unit rows, open units, first due lesson, levels) | yes              |
-| `session/parseSessionRequest.ts`     | Zod shape check of the POST body                                                         | yes              |
-| `session/planGrammarSessionWrite.ts` | Re-grade + mode rules -> rows to write + response                                        | yes              |
-| `session/buildPracticeSet.ts`        | Card selection for review, checkpoint and weak-spot sessions                             | yes (seeded rng) |
-| `session/preparePlayCards.ts`        | Shuffles option / tile display order for the player                                      | yes (seeded rng) |
-| `session/scoring.ts`                 | `starsForAccuracy`                                                                       | yes              |
-| `grading/gradeCard.ts`               | Normalisation, grading, `parseCardAnswer`, tile / sentence helpers                       | yes              |
-| `progress/types.ts`                  | Persistence-agnostic `LessonProgress`, `UnitProgress`, `CardMiss`; `isLessonPassed`      | yes              |
-| `progress/planGrammarGuestMerge.ts`  | Folds guest rows into a signed-in user's rows                                            | yes              |
-| `rng.ts`                             | Seedable mulberry32 `createRng`, `randomSeed`, `shuffle`, `sample`                       | yes              |
-| `services/grammarPageData.ts`        | `loadGrammarPageData`: progress + path for the current learner                           | `server-only`    |
-| `services/grammarProgressService.ts` | The only Mongo reader/writer for progress; `recordGrammarSession` (idempotent)           | `server-only`    |
-| `services/mergeGrammarGuestData.ts`  | Applies the guest merge plan on first sign-in                                            | `server-only`    |
-| `testing/fixtureCourse.ts`           | A 3-unit fixture course and progress helpers for unit tests                              | yes              |
-| `grammarPath.e2e.ts`                 | Playwright smoke flow: a first-time guest finishes lesson 1                              | e2e              |
+| Path                                 | Role                                                                                                                             | Pure?            |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- | ---------------- |
+| `constants.ts`                       | Thresholds, sizes, session modes, `GRAMMAR_SESSIONS_URL`                                                                         | yes              |
+| `course/types.ts`                    | Course, unit, lesson and card types; `CardAnswer`; `isPracticeCard`                                                              | yes              |
+| `course/units/u01.ts` .. `u12.ts`    | The lesson data (`UNIT_01` .. `UNIT_12`)                                                                                         | yes              |
+| `course/index.ts`                    | `GRAMMAR_COURSE`, `COURSE_ID_ALIASES`, the app-wide `grammarCourse` lookup                                                       | `server-only`    |
+| `course/courseLookup.ts`             | `buildCourseLookup`: O(1) unit / lesson / card index with alias resolution                                                       | yes              |
+| `course/validateCourse.ts`           | Structural checks for hand-written content                                                                                       | yes              |
+| `path/buildGrammarPath.ts`           | The whole path page view model; `isLessonUnlocked`, `isUnitOpen`, `countOpenMisses`                                              | yes              |
+| `path/unitSummary.ts`                | Small derived views on top of the path (unit rows, open units, first due lesson, levels, level progress, post-session unit step) | yes              |
+| `path/playerJourney.ts`              | `buildPlayerJourney`: the path data a session end needs (unit, path `next`, next unit's first lesson)                            | yes              |
+| `session/parseSessionRequest.ts`     | Zod shape check of the POST body                                                                                                 | yes              |
+| `session/planGrammarSessionWrite.ts` | Re-grade + mode rules -> rows to write + response                                                                                | yes              |
+| `session/buildPracticeSet.ts`        | Card selection for review, checkpoint and weak-spot sessions                                                                     | yes (seeded rng) |
+| `session/preparePlayCards.ts`        | Shuffles option / tile display order for the player                                                                              | yes (seeded rng) |
+| `session/scoring.ts`                 | `starsForAccuracy`                                                                                                               | yes              |
+| `grading/gradeCard.ts`               | Normalisation, grading, `parseCardAnswer`, tile / sentence helpers                                                               | yes              |
+| `progress/types.ts`                  | Persistence-agnostic `LessonProgress`, `UnitProgress`, `CardMiss`; `isLessonPassed`                                              | yes              |
+| `progress/planGrammarGuestMerge.ts`  | Folds guest rows into a signed-in user's rows                                                                                    | yes              |
+| `rng.ts`                             | Seedable mulberry32 `createRng`, `randomSeed`, `shuffle`, `sample`                                                               | yes              |
+| `services/grammarPageData.ts`        | `loadGrammarPageData`: progress + path for the current learner                                                                   | `server-only`    |
+| `services/grammarProgressService.ts` | The only Mongo reader/writer for progress; `recordGrammarSession` (idempotent)                                                   | `server-only`    |
+| `services/mergeGrammarGuestData.ts`  | Applies the guest merge plan on first sign-in                                                                                    | `server-only`    |
+| `testing/fixtureCourse.ts`           | A 3-unit fixture course and progress helpers for unit tests                                                                      | yes              |
+| `grammarPath.e2e.ts`                 | Playwright smoke flow: a first-time guest finishes lesson 1                                                                      | e2e              |
 
 Consumers outside the module:
 
-| Consumer                                                   | Uses                                                                                         |
-| ---------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| `src/app/(app)/grammar/page.tsx`                           | `loadGrammarPageData` (path page)                                                            |
-| `src/app/(app)/grammar/lessons/[lessonId]/page.tsx`        | `isLessonUnlocked`; redirects an aliased id to the current id, a locked lesson to `/grammar` |
-| `src/app/(app)/grammar/lessons/[lessonId]/review/page.tsx` | `buildReviewSet`; redirects unless the lesson node is `due`                                  |
-| `src/app/(app)/grammar/lessons/[lessonId]/notes/page.tsx`  | `loadGrammarPageData`; shows a done lesson's explain cards, redirects if `locked` / `open`   |
-| `src/app/(app)/grammar/units/[unitId]/checkpoint/page.tsx` | `buildCheckpointSet`; redirects only when the unit is already `complete`                     |
-| `src/app/(app)/grammar/practice/page.tsx`                  | `buildWeakSet`; redirects when there are no open misses                                      |
-| `src/components/grammar/player/GrammarPlayerPage.tsx`      | `preparePlayCards` (server wrapper of every player route)                                    |
-| `src/app/api/grammar/sessions/route.ts`                    | `parseSessionRequest`, `recordGrammarSession`                                                |
-| `src/app/page.tsx`                                         | `buildGrammarPath(...).next` for the home dashboard                                          |
-| `src/lib/auth/guestMerge.ts`                               | `mergeGrammarGuestData` (best-effort, never blocks login)                                    |
-| `src/modules/ielts/writing/gradeWritingService.ts`         | Lesson ids and English titles, so the IELTS examiner can link a correction to a lesson       |
+| Consumer                                                   | Uses                                                                                                                                      |
+| ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/app/(app)/grammar/page.tsx`                           | `loadGrammarPageData` (path page)                                                                                                         |
+| `src/app/(app)/grammar/lessons/[lessonId]/page.tsx`        | `loadGrammarPageData`, `isLessonUnlocked`, `buildPlayerJourney`; redirects an aliased id to the current id, a locked lesson to `/grammar` |
+| `src/app/(app)/grammar/lessons/[lessonId]/review/page.tsx` | `buildReviewSet`, `buildPlayerJourney`; redirects unless the lesson node is `due`                                                         |
+| `src/app/(app)/grammar/lessons/[lessonId]/notes/page.tsx`  | `loadGrammarPageData`; shows a done lesson's explain cards, redirects if `locked` / `open`                                                |
+| `src/app/(app)/grammar/units/[unitId]/checkpoint/page.tsx` | `buildCheckpointSet`, `buildPlayerJourney`; redirects only when the unit is already `complete`                                            |
+| `src/app/(app)/grammar/practice/page.tsx`                  | `buildWeakSet`, `buildPlayerJourney`; redirects when there are no open misses                                                             |
+| `src/components/grammar/player/GrammarPlayerPage.tsx`      | `preparePlayCards` (server wrapper of every player route)                                                                                 |
+| `src/components/grammar/player/PlayerResult.tsx`           | `PlayerJourney`, `advanceUnitSummary` (session end journey line and next step)                                                            |
+| `src/components/grammar/path/GrammarJourneyHero.tsx`       | `levelProgress`, `currentLevel` (level staircase on the path page)                                                                        |
+| `src/app/api/grammar/sessions/route.ts`                    | `parseSessionRequest`, `recordGrammarSession`                                                                                             |
+| `src/app/page.tsx`                                         | `buildGrammarPath(...).next` for the home dashboard                                                                                       |
+| `src/lib/auth/guestMerge.ts`                               | `mergeGrammarGuestData` (best-effort, never blocks login)                                                                                 |
+| `src/modules/ielts/writing/gradeWritingService.ts`         | Lesson ids and English titles, so the IELTS examiner can link a correction to a lesson                                                    |
 
 ---
 
@@ -286,14 +289,37 @@ last non-locked unit, else `null`.
 
 ### 5.5 Derived views (`path/unitSummary.ts`)
 
-| Function                   | Returns                                                                                                                        |
-| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `isLessonDone(lesson)`     | State is not `open` or `locked`                                                                                                |
-| `summarizeUnit(unit)`      | `UnitSummary`: `done`, `total`, `percent` (rounded), `stars`, `maxStars`, `dueCount`, plus unit id, order, level, title, state |
-| `initialOpenUnitIds(path)` | `[currentUnitId]`, or the first unit when there is no current unit                                                             |
-| `firstDueLesson(units)`    | The first `due` lesson in path order (the "Review due" entry point)                                                            |
-| `pathLevels(units)`        | Distinct CEFR levels in path order (level filter chips)                                                                        |
-| `unitOfNext(path, next?)`  | The unit `next` lives in; for `weak` / `done` the current unit                                                                 |
+| Function                                     | Returns                                                                                                                                     |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `isLessonDone(lesson)`                       | State is not `open` or `locked`                                                                                                             |
+| `summarizeUnit(unit)`                        | `UnitSummary`: `done`, `total`, `percent` (rounded), `stars`, `maxStars`, `dueCount`, plus unit id, order, level, title, state              |
+| `initialOpenUnitIds(path)`                   | `[currentUnitId]`, or the first unit when there is no current unit                                                                          |
+| `firstDueLesson(units)`                      | The first `due` lesson in path order (the "Review due" entry point)                                                                         |
+| `pathLevels(units)`                          | Distinct CEFR levels in path order (level filter chips)                                                                                     |
+| `unitOfNext(path, next?)`                    | The unit `next` lives in; for `weak` / `done` the current unit                                                                              |
+| `levelProgress(units)`                       | `LevelProgress[]` (`level`, `done`, `total`): lessons done (same rule as `isLessonDone`) and lessons in total per CEFR level, in path order |
+| `currentLevel(levels)`                       | The first level with `done < total` (the level being climbed), or `null` when every level is finished                                       |
+| `advanceUnitSummary(unit, lessonId, passed)` | `summarizeUnit(unit)` after one finished session, plus `gained` and `left` (lessons not done)                                               |
+
+`advanceUnitSummary` is an optimistic client-side step, not stored state:
+`gained` is 1 only when `passed` is true and the lesson was not yet done
+(`open` / `locked`); a replay of a done lesson, a review or a failed session
+gains 0. `done` is capped at `total` and `percent` is recomputed. The next
+server render reconciles with the stored progress.
+
+### 5.6 Player journey (`path/playerJourney.ts`)
+
+`buildPlayerJourney(path, mode, targetId)` runs on the server in each player
+page and returns plain `PlayerJourney` data for the session end screen:
+
+| Field                   | Value                                                                                                                                  |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `unit`                  | The unit containing the target (the unit itself for `checkpoint`, the lesson's unit otherwise); `null` for `weak` or an unknown target |
+| `next`                  | `path.next` as loaded before the session (the fallback next step when a session unlocks nothing)                                       |
+| `nextUnitFirstLessonId` | The first lesson of the unit after the target's unit (opened after a passed checkpoint), else `null`                                   |
+
+The session end only calls `advanceUnitSummary` on `journey.unit` for
+`lesson` mode.
 
 ---
 
@@ -524,16 +550,17 @@ index 0, plus the alias `old-u01-l01 -> u01-l01`. Helpers: `NOW`
 `passedLesson(lessonId, overrides)` (3 stars, stage 2, due in 2 days) and
 `lessonAnswers(lessonId, wrongIds)` (answer 0 for right, 1 for wrong).
 
-| Test file                                 | Covers                                                                |
-| ----------------------------------------- | --------------------------------------------------------------------- |
-| `course/validateCourse.test.ts`           | The shipped course passes validation; canonical answers grade correct |
-| `grading/gradeCard.test.ts`               | Normalisation and per-kind grading                                    |
-| `path/buildGrammarPath.test.ts`           | Lesson / unit / checkpoint states, `next`, aliases                    |
-| `path/unitSummary.test.ts`                | Derived unit views                                                    |
-| `session/parseSessionRequest.test.ts`     | Request shape bounds                                                  |
-| `session/planGrammarSessionWrite.test.ts` | Mode rules, rejections, test-out, ladder and miss writes              |
-| `progress/planGrammarGuestMerge.test.ts`  | Guest merge rules                                                     |
-| `rng.test.ts`                             | Seeded determinism of `createRng` / `shuffle` / `sample`              |
+| Test file                                 | Covers                                                                     |
+| ----------------------------------------- | -------------------------------------------------------------------------- |
+| `course/validateCourse.test.ts`           | The shipped course passes validation; canonical answers grade correct      |
+| `grading/gradeCard.test.ts`               | Normalisation and per-kind grading                                         |
+| `path/buildGrammarPath.test.ts`           | Lesson / unit / checkpoint states, `next`, aliases                         |
+| `path/unitSummary.test.ts`                | Derived unit views, `levelProgress` / `currentLevel`, `advanceUnitSummary` |
+| `path/playerJourney.test.ts`              | `buildPlayerJourney` unit lookup per mode, `next`, next unit start         |
+| `session/parseSessionRequest.test.ts`     | Request shape bounds                                                       |
+| `session/planGrammarSessionWrite.test.ts` | Mode rules, rejections, test-out, ladder and miss writes                   |
+| `progress/planGrammarGuestMerge.test.ts`  | Guest merge rules                                                          |
+| `rng.test.ts`                             | Seeded determinism of `createRng` / `shuffle` / `sample`                   |
 
 `grammarPath.e2e.ts` is a Playwright smoke flow (`playwright.config.ts`
 matches `**/*.e2e.ts`), skipped unless `PLAYWRIGHT_BASE_URL` and `MONGODB_URI`

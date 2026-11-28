@@ -45,37 +45,38 @@ versions below are read from `package.json`.
 
 ## 2. Top-level directory map
 
-| Directory                   | Purpose (one line)                                                                                                                                                                     |
-| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/app`                   | App Router tree: pages, layouts, `loading`/`error`, route handlers under `api/**/route.ts`, plus root `layout.tsx`, `page.tsx`, `loading.tsx`, `sitemap.ts`, `globals.css`.            |
-| `src/components`            | Shared React UI: `ui` (themed primitives), `common` (shell, nav, providers), and domain folders `dictation`, `vocabulary`, `grammar`, `ielts`, `home`. See [06](./06-frontend.md).     |
-| `src/constants`             | Reusable settings and env wrappers: `environments.ts`, `modules.ts` (module list and nav), `theme.ts`.                                                                                 |
-| `src/i18n`                  | EN/VI UI text: `config.ts` (locales, cookie), `server.ts` (`getLocale`, `getMessages`), `client.tsx` (`I18nProvider`, `useMessages`), `actions.ts`, `format*.ts*`, `messages/{en,vi}`. |
-| `src/lib`                   | Framework-level infrastructure shared by all modules (table below).                                                                                                                    |
-| `src/models`                | Mongoose schemas and models: `UserModel.ts` plus `dictation/`, `vocabulary/`, `grammar/`, `ielts/`. See [03](./03-data-model.md).                                                      |
-| `src/modules`               | Business logic per learning domain: `dictation`, `vocabulary`, `grammar`, `ielts`, plus shared `learning/recall`.                                                                      |
-| `src/requests`              | Client-side fetch wrappers and outbox write builders around the internal API; fetch helpers end in `Api`.                                                                              |
-| `src/types`                 | Ambient type declarations (`next-auth.d.ts` augments the session `user` with `id` and `role`).                                                                                         |
-| `src/test`                  | Vitest setup and stubs (`setup.ts`, `setupDom.ts`, `serverOnlyStub.ts`, `jsdom.d.ts`).                                                                                                 |
-| `src/proxy.ts`              | Next 16 proxy (renamed middleware) guarding `/admin` (section 6).                                                                                                                      |
-| `scripts` (repo root)       | Maintenance scripts (seed, resegment, IELTS patches, index sync, cache revalidation); `scripts/lib/requestContentRevalidation.ts`, `scripts/data/`. See section 9.                     |
-| `public` (repo root)        | Static assets: favicons, `logo.png`, `site.webmanifest`, icons referenced by `src/app/layout.tsx`.                                                                                     |
-| `.agents/rules` (repo root) | The six rule files defining the intended layering and conventions (style, App Router, API security, data/state, frontend UI incl. i18n, testing).                                      |
+| Directory                   | Purpose (one line)                                                                                                                                                                                                                                                                                                |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/app`                   | App Router tree: pages, layouts, `loading`/`error` boundaries, route handlers under `api/**/route.ts`, plus root `layout.tsx`, `page.tsx`, `loading.tsx`, `error.tsx`, `sitemap.ts`, `globals.css`.                                                                                                               |
+| `src/components`            | Shared React UI: `ui` (themed primitives), `common` (shell, nav, providers, account control), `journey` (landing and session-end primitives: `JourneyCard`, `NextStopCard`, `StatChip`, `SessionEnd`, ...), and domain folders `dictation`, `vocabulary`, `grammar`, `ielts`, `home`. See [06](./06-frontend.md). |
+| `src/constants`             | Reusable settings and env wrappers: `environments.ts`, `modules.ts` (module list, nav, `MODULE_ICONS`), `theme.ts`.                                                                                                                                                                                               |
+| `src/i18n`                  | EN/VI UI text: `config.ts` (locales, cookie), `server.ts` (`getLocale`, `getMessages`), `client.tsx` (`I18nProvider`, `useMessages`), `actions.ts`, `format*.ts*`, `messages/{en,vi}`.                                                                                                                            |
+| `src/lib`                   | Framework-level infrastructure shared by all modules (table below).                                                                                                                                                                                                                                               |
+| `src/models`                | Mongoose schemas and models: `UserModel.ts` plus `dictation/`, `vocabulary/`, `grammar/`, `ielts/`. See [03](./03-data-model.md).                                                                                                                                                                                 |
+| `src/modules`               | Business logic per learning domain: `dictation`, `vocabulary`, `grammar`, `ielts`, plus shared `learning/recall`.                                                                                                                                                                                                 |
+| `src/requests`              | Client-side fetch wrappers and outbox write builders around the internal API; fetch helpers end in `Api`.                                                                                                                                                                                                         |
+| `src/types`                 | Ambient type declarations (`next-auth.d.ts` augments the session `user` with `id` and `role`).                                                                                                                                                                                                                    |
+| `src/test`                  | Vitest setup and helpers (`setup.ts`, `setupDom.ts`, `serverOnlyStub.ts`, `jsdom.d.ts`, `landingBudget.ts`).                                                                                                                                                                                                      |
+| `src/proxy.ts`              | Next 16 proxy (renamed middleware) guarding `/admin` (section 6).                                                                                                                                                                                                                                                 |
+| `scripts` (repo root)       | Maintenance scripts (seed, resegment, IELTS patches, index sync, cache revalidation); `scripts/lib/requestContentRevalidation.ts`, `scripts/data/`. See section 9.                                                                                                                                                |
+| `public` (repo root)        | Static assets: favicons, `logo.png`, `site.webmanifest`, icons referenced by `src/app/layout.tsx`.                                                                                                                                                                                                                |
+| `.agents/rules` (repo root) | The six rule files defining the intended layering and conventions (style, App Router, API security, data/state, frontend UI incl. i18n, testing).                                                                                                                                                                 |
 
 `src/lib` subfolders:
 
-| Folder               | Contents                                                                                                                                                                                                             |
-| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/lib/db`         | `connectDatabase.ts` (cached Mongoose connection), catalog cache (`catalogCache.ts`, `cacheTags.ts`, `jsonRecords.ts`), invalidation (`revalidateCatalog.ts`, `revalidateRequest.ts`).                               |
-| `src/lib/auth`       | `auth.ts` (Node Auth.js), `auth.config.ts` (edge-safe), `roles.ts`, `authErrorMessage.ts`, guest identity (`guestUser.ts`, `guestMerge.ts`), owner keys (`ownerKey.ts`, `clientOwnerKey.ts`), `userProvisioning.ts`. |
-| `src/lib/sync`       | `outbox.ts` (framework-free write queue) and `clientOutbox.ts` (`'use client'` tab-wide singleton, guest bootstrap).                                                                                                 |
-| `src/lib/ai`         | Qwen client (`qwenClientCore.ts`, `qwenDebriefClient.ts`), strict schemas (`strictJsonSchema.ts`), translation (`qwenTranslate.ts`), TTS (`qwenSpeech.ts`, `wavToPcm.ts`).                                           |
-| `src/lib/cloudinary` | `cloudinaryConfig.ts`, `uploadImage.ts`, `uploadAudio.ts` (WAV upload with an eager mp3).                                                                                                                            |
-| `src/lib/youtube`    | `extractYouTubeId.ts`, `getYouTubeVideoMetadata.ts`.                                                                                                                                                                 |
-| `src/lib/audio`      | `lessonSfx.ts` (four stings), `useLessonSfx.ts` (`'use client'` hook, preference in localStorage), `zzfx.ts`.                                                                                                        |
-| `src/lib/motion`     | `useReducedMotion.ts` (`'use client'`; OS media query plus `efom-reduce-motion` override).                                                                                                                           |
-| `src/lib/theme`      | `theme.ts`: pure light / light-up resolver shared with the inline no-FOUC script in `src/app/layout.tsx`.                                                                                                            |
-| `src/lib/utils.ts`   | `cn()` helper. `src/lib/styleGuards.test.ts` enforces style rules repo-wide.                                                                                                                                         |
+| Folder               | Contents                                                                                                                                                                                                                                                                             |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `src/lib/db`         | `connectDatabase.ts` (cached Mongoose connection), catalog cache (`catalogCache.ts`, `cacheTags.ts`, `jsonRecords.ts`), invalidation (`revalidateCatalog.ts`, `revalidateRequest.ts`).                                                                                               |
+| `src/lib/auth`       | `auth.ts` (Node Auth.js), `auth.config.ts` (edge-safe), `actions.ts` (`'use server'` `signInAction` / `signOutAction`), `roles.ts`, `authErrorMessage.ts`, guest identity (`guestUser.ts`, `guestMerge.ts`), owner keys (`ownerKey.ts`, `clientOwnerKey.ts`), `userProvisioning.ts`. |
+| `src/lib/sync`       | `outbox.ts` (framework-free write queue) and `clientOutbox.ts` (`'use client'` tab-wide singleton, guest bootstrap).                                                                                                                                                                 |
+| `src/lib/ai`         | Qwen client (`qwenClientCore.ts`, `qwenDebriefClient.ts`), strict schemas (`strictJsonSchema.ts`), translation (`qwenTranslate.ts`), TTS (`qwenSpeech.ts`, `wavToPcm.ts`).                                                                                                           |
+| `src/lib/cloudinary` | `cloudinaryConfig.ts`, `uploadImage.ts`, `uploadAudio.ts` (WAV upload with an eager mp3).                                                                                                                                                                                            |
+| `src/lib/youtube`    | `extractYouTubeId.ts`, `getYouTubeVideoMetadata.ts`.                                                                                                                                                                                                                                 |
+| `src/lib/audio`      | `lessonSfx.ts` (four stings), `useLessonSfx.ts` (`'use client'` hook, preference in localStorage), `zzfx.ts`.                                                                                                                                                                        |
+| `src/lib/motion`     | `useReducedMotion.ts` (`'use client'`; OS media query plus `efom-reduce-motion` override).                                                                                                                                                                                           |
+| `src/lib/journey`    | `nextStop.ts`: `pickNextStop`, the one next-stop rule (resume, then due, then next, else `done`) shared by module landings, home and session ends.                                                                                                                                   |
+| `src/lib/theme`      | `theme.ts`: pure light / light-up resolver shared with the inline no-FOUC script in `src/app/layout.tsx`.                                                                                                                                                                            |
+| `src/lib/utils.ts`   | `cn()` helper. `src/lib/styleGuards.test.ts` enforces style rules repo-wide (corner roles, palette, weights, `hover-pop`, touch targets, no em dash in `src` and `docs`) with shrink-only baselines.                                                                                 |
 
 ## 3. Layered architecture and dependency direction
 
@@ -101,7 +102,7 @@ mappers, and page-data loaders that pages call directly.
 
 `src/requests` is the client-side network layer. Fetch helpers set `cache: 'no-store'` and
 rethrow the API `{ message }`: dictation (`dictationAttemptsApi.ts`,
-`dictationSessionsApi.ts`, `dictationStatsApi.ts`, `dictationVideosApi.ts`,
+`dictationSessionsApi.ts`, `dictationVideosApi.ts`,
 `dictationTranscriptsApi.ts`, `dictationTranslationsApi.ts`, `dictationHintsApi.ts`,
 `dictationImportsApi.ts`, `dictationDebriefsApi.ts`), vocabulary (`vocabularyApi.ts`),
 IELTS (`ieltsApi.ts`, `ieltsAdminApi.ts`), and grammar (`grammarSessionsApi.ts`). Writes that
@@ -122,7 +123,7 @@ flowchart TD
   end
   subgraph server["Server (Node runtime)"]
     PAGE["Server Components / pages<br/>src/app/**/page.tsx, layout.tsx"]
-    ACT["Server actions<br/>src/i18n/actions.ts<br/>modules/dictation/content/*Actions.ts"]
+    ACT["Server actions<br/>src/i18n/actions.ts<br/>src/lib/auth/actions.ts<br/>modules/dictation/content/*Actions.ts"]
     ROUTE["Route handlers<br/>src/app/api/**/route.ts"]
     I18S["getLocale / getMessages<br/>src/i18n/server.ts"]
     DEC["Pure decision logic<br/>modules/{dictation,vocabulary,<br/>grammar,ielts,learning}/**"]
@@ -170,10 +171,21 @@ resolves identity through `src/modules/dictation/services/getCurrentUser.ts`
 
 - Server Components are the default. Every `page.tsx` and `layout.tsx` under `src/app`
   is a Server Component. Pages call module services or page-data loaders directly (e.g.
-  `src/app/page.tsx` calls `getOptionalUser`, `getGlobalStatsForUser`,
-  `getVocabStatsForUser`, `getGrammarProgressForActor` and `buildGrammarPath`;
-  `src/app/(app)/grammar/page.tsx` calls `loadGrammarPageData`), then pass plain data down
-  as props.
+  `src/app/page.tsx` reads the home view cookie (`HOME_VIEW_COOKIE`, parsed by
+  `parseHomeView` in `src/components/home/homeView.ts`) and calls `getOptionalUser`,
+  `getGlobalStatsForUser`, `getVocabStatsForUser`, `getGrammarProgressForActor` and
+  `buildGrammarPath`; `src/app/(app)/grammar/page.tsx` calls `loadGrammarPageData`), then
+  pass plain data down as props.
+- Only serializable props cross the server-to-client boundary. A component type (such as
+  a lucide icon) cannot, so server pages pass a module key (`AppModuleKey`) and the
+  client component looks the icon up in `MODULE_ICONS` (`src/constants/modules.ts`;
+  used by `src/components/common/AppTopbar.tsx` and
+  `src/components/journey/JourneyCard.tsx`).
+- Error boundaries (`error.tsx`) are `'use client'` and render the shared
+  `src/components/common/RouteError.tsx` with `common.errorBoundary` text and the
+  `unstable_retry` prop. One sits at the app root (`src/app/error.tsx`), one per module
+  (`src/app/(app)/{dictation,vocabulary,grammar,ielts}/error.tsx`), and one for admin
+  (`src/app/admin/error.tsx`).
 - `'use client'` is added only to files that use hooks, event handlers, browser APIs, or
   local state, per `.agents/rules/nextjs-app-router.md`. Main client islands:
   `src/components/dictation/DictationPracticeShell.tsx` (typing state, shortcuts, the
@@ -184,11 +196,12 @@ resolves identity through `src/modules/dictation/services/getCurrentUser.ts`
   (`src/components/ielts/editor/*`), and `src/components/vocabulary/VocabularyDashboard.tsx`.
 - Providers mounted by layouts:
 
-  | Provider              | Mounted in                 | Hands to the client                                                                                                                       |
-  | --------------------- | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-  | `I18nProvider`        | `src/app/layout.tsx`       | Locale from the `efom-locale` cookie and the message catalogue (omitted for English, which every client bundle already carries).          |
-  | `ThemeProvider`       | `src/app/layout.tsx`       | Light / light-up theme; an inline script stamps `data-theme` before first paint (`src/lib/theme/theme.ts` logic, key `efom-theme`).       |
-  | `OutboxOwnerProvider` | `src/app/(app)/layout.tsx` | `ownerKey` = `toClientOwnerKey(actorId)` (a one-way hash, never the raw guest id) and `isGuest`, read from the JWT and guest cookie only. |
+  | Provider              | Mounted in                 | Hands to the client                                                                                                                                                                                                                                                           |
+  | --------------------- | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+  | `AccountProvider`     | `src/app/layout.tsx`       | The session read once per root render (`readAccount()`: `auth()` when `hasGoogleAuth()`), as `{ account, enabled }` with first name, image, initial and `isAdmin`. `AccountControl` reads it with `useAccount()`, so the topbar and rail never re-read the session per route. |
+  | `I18nProvider`        | `src/app/layout.tsx`       | Locale from the `efom-locale` cookie and the message catalogue (omitted for English, which every client bundle already carries).                                                                                                                                              |
+  | `ThemeProvider`       | `src/app/layout.tsx`       | Light / light-up theme; an inline script stamps `data-theme` before first paint (`src/lib/theme/theme.ts` logic, key `efom-theme`).                                                                                                                                           |
+  | `OutboxOwnerProvider` | `src/app/(app)/layout.tsx` | `ownerKey` = `toClientOwnerKey(actorId)` (a one-way hash, never the raw guest id) and `isGuest`, read from the JWT and guest cookie only.                                                                                                                                     |
 
 - i18n boundary: server code reads text with `await getMessages()` from `@/i18n/server`
   (`import 'server-only'`, cached per request); client code uses `useMessages()` /
@@ -197,8 +210,10 @@ resolves identity through `src/modules/dictation/services/getCurrentUser.ts`
   (`src/components/common/LocaleToggle.tsx`) calls the server action `setLocaleAction`
   (`src/i18n/actions.ts`), which writes the cookie and calls `refresh()`. Routes are the
   same in both languages. Rules: `.agents/rules/frontend-ui.md`.
-- Server actions (`'use server'`): `src/i18n/actions.ts`,
-  `src/modules/dictation/content/adminActions.ts`,
+- Server actions (`'use server'`): `src/i18n/actions.ts`, `src/lib/auth/actions.ts`
+  (`signInAction` / `signOutAction`, called from the client
+  `src/components/common/AccountControl.tsx` so the NextAuth / Mongoose chain stays out
+  of the browser bundle), `src/modules/dictation/content/adminActions.ts`,
   `src/modules/dictation/content/favoriteActions.ts`. Everything else writes through route
   handlers.
 - Secret isolation: server-only infra imports `server-only` so any accidental client
@@ -467,14 +482,17 @@ Details: [07](./07-auth-infra-testing.md).
 
 ```
 src/app/
-  layout.tsx            Root layout: fonts, theme script, I18nProvider, ThemeProvider
-  page.tsx              Home study desk (force-dynamic)
+  layout.tsx            Root layout: fonts, theme script, session read once,
+                        I18nProvider, AccountProvider, ThemeProvider
+  page.tsx              Home study desk (force-dynamic, home view cookie)
   loading.tsx           Root loading skeleton
+  error.tsx             App-wide error boundary (RouteError)
   sitemap.ts            Dynamic sitemap (cached topics)
   globals.css           Tailwind v4 tokens + theme
   zz-dev-ielts-editor/  Dev-only editor harness (404 outside development)
   (app)/                Route GROUP - learner-facing, no URL segment
     layout.tsx          OutboxOwnerProvider
+                        (each module folder below has its own error.tsx)
     dictation/          page, favorites/, review/, stats/, no-topic/, [topicSlug]/,
                         videos/[videoId]/practice/, videos/[videoId]/results/
     vocabulary/         page, words/
@@ -483,7 +501,7 @@ src/app/
     ielts/              page (catalogue), [slug]/, [slug]/[skill]/, [slug]/[skill]/mock/,
                         attempts/[attemptId]/, drill/[attemptId]/
   admin/                Admin (proxy + layout re-check)
-    layout.tsx, page.tsx
+    layout.tsx, page.tsx, error.tsx
     dictation/          page (topics + videos), import/, videos/[videoId]/edit/
     ielts/              page (test catalogue), [testId]/ (editor)
     vocab/              Enrichment queue
@@ -552,7 +570,7 @@ unless noted.
 | `bun run build`                            | `next build` - production build.                                                                                                                                                                                                                               |
 | `bun run start`                            | `next start` - serve the production build.                                                                                                                                                                                                                     |
 | `bun run lint` / `bun run lint:fix`        | `eslint` / `eslint . --fix`.                                                                                                                                                                                                                                   |
-| `bun run test` / `bun run test:watch`      | `vitest run` / `vitest` (jsdom).                                                                                                                                                                                                                               |
+| `bun run test` / `bun run test:watch`      | `vitest run` / `vitest` (jsdom). Pass `-- --dir src` (e.g. `bun run test -- --dir src`) so the copies under `.claude/worktrees/**` are not collected ([07](./07-auth-infra-testing.md)).                                                                       |
 | `bun run format` / `bun run format:check`  | `prettier . --write` / `--check`.                                                                                                                                                                                                                              |
 | `bun run db:sync-indexes`                  | `scripts/syncIndexes.ts` - sync Mongoose indexes.                                                                                                                                                                                                              |
 | `bun run content:revalidate`               | `scripts/revalidateContent.ts` - expire cache tags via `POST /api/admin/revalidate`.                                                                                                                                                                           |

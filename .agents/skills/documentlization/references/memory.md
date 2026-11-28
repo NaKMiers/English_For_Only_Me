@@ -4,6 +4,7 @@ Self-improving notes for keeping `docs/` in sync with the code. Append lessons
 here; this is the single canonical copy (no Claude-side duplicate).
 
 ## Doc set (do not rename or renumber)
+
 - `docs/README.md` - index.
 - `docs/01-overview.md` - product, stack, module roadmap, vocabulary.
 - `docs/02-architecture.md` - dirs, layering, boundaries, data flow, run/test.
@@ -17,11 +18,13 @@ here; this is the single canonical copy (no Claude-side duplicate).
 - Baseline tracked in `docs/.doc-state.json` (`lastDocumentedCommit`).
 
 ## Style invariants
+
 - No em dash anywhere. Use a plain hyphen. ASCII only.
 - Cite repo-relative file paths. Code wins over stale doc text.
 - Mermaid labels use `<br/>`, not `\n` (portable to GitHub/VS Code renderers).
 
 ## Lessons
+
 - Fan out one subagent per affected doc for multi-doc updates; each writes its
   own file so there are no write conflicts. Keep `README.md` + `01-overview.md`
   for the driver to assemble last so cross-references stay correct.
@@ -33,11 +36,11 @@ here; this is the single canonical copy (no Claude-side duplicate).
 - Vocabulary subsystem source -> doc mapping (a second feature area parallel to
   dictation): `src/models/vocabulary/**` -> 03; `src/app/api/vocab/**` +
   `src/app/api/admin/vocab/**` + `src/modules/vocabulary/services/{vocabularyRouteDecisions,*Records,vocabApiErrors}`
-  + `src/requests/vocabularyApi.ts` -> 04; the rest of `src/modules/vocabulary/**`
-  (providers/enrichment/explore/recall/stats/seed/normalize/vietnameseMeaning)
-  -> 05; `src/app/(app)/vocabulary/**` + `src/app/admin/vocab` +
-  `src/components/vocabulary/**` -> 06; `src/modules/vocabulary/providers/**`
-  (external APIs) + `recall/recallTaskToken.ts` + new env keys + e2e -> 07.
+  - `src/requests/vocabularyApi.ts` -> 04; the rest of `src/modules/vocabulary/**`
+    (providers/enrichment/explore/recall/stats/seed/normalize/vietnameseMeaning)
+    -> 05; `src/app/(app)/vocabulary/**` + `src/app/admin/vocab` +
+    `src/components/vocabulary/**` -> 06; `src/modules/vocabulary/providers/**`
+    (external APIs) + `recall/recallTaskToken.ts` + new env keys + e2e -> 07.
 - Recall schedule facts (from `src/modules/vocabulary/constants.ts`): stages 1-7,
   interval days {1:1,2:1,3:4,4:7,5:14,6:17} sum to 44 days (not "day 45"); token
   TTL 30 min. Segment model `text`/`normalizedText` maxlength is 3000.
@@ -76,3 +79,15 @@ here; this is the single canonical copy (no Claude-side duplicate).
 - `.env.example` is denied to Claude's Read/Edit tools (and to `git add`).
   Learn its content from the owner's terminal output instead of working
   around the permission rule.
+- 2026-11-28: after the "calm pages, progress you can feel" UI rework (plan
+  `docs/plans/ui-calm-progress-2026-11-28.md`) a sync touched 02, 04, 05, 06,
+  07, 08; 01, 03, 09 and README had no relevant change. New mappings: shared
+  journey primitives `src/components/journey/**` and `src/lib/journey/**`
+  -> 06 (and 02 for the folder map); `src/lib/auth/actions.ts` (client-callable
+  sign-in/out server actions) -> 07 and 02; page-only query parsers in
+  `src/modules/*/services/*RouteDecisions.ts` used by a page, not a route, ->
+  04 under a "(page, not a route)" heading. Four parallel writers took 1 to 3
+  minutes. Gaps they surfaced, reported not fixed: `/api/dictation/stats` and
+  its request helpers have no UI caller after `/dictation/stats` was removed;
+  `src/components/common/SketchChart.tsx` is unused; the `page-hero` class is
+  used but not defined in `globals.css`.
