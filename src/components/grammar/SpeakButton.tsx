@@ -41,11 +41,12 @@ export function SpeakButton({ className, text }: Props) {
 
   return (
     // Raw button: an inline 28px glyph inside running text, smaller than any
-    // IconButton size, and it must not carry a sticker shadow mid-sentence.
+    // IconButton size. The invisible ::before grows the hit area to 44px
+    // without moving the text around it.
     <button
       aria-label={format(t.listenTo, { text })}
       className={cn(
-        'text-ink-soft hover:text-brand focus-visible:outline-line rounded-tag inline-grid size-7 shrink-0 place-items-center align-middle focus-visible:outline-2',
+        'hover-pop text-ink-soft hover:text-brand focus-visible:outline-line rounded-tag relative inline-grid size-7 shrink-0 place-items-center align-middle before:absolute before:-inset-2 before:content-[""] focus-visible:outline-2',
         className
       )}
       onClick={speak}

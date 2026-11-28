@@ -11,6 +11,15 @@ export const grammar = {
   },
   subtitle: 'Grammar path, A1 to C1',
   loading: 'Loading the grammar path',
+  loadingLesson: 'Loading the lesson',
+  errorBoundary: {
+    eyebrow: 'Grammar',
+    title: 'The grammar path needs a retry',
+    description:
+      'This page failed to load. Try again; your saved progress is safe.',
+    retry: 'Try again',
+    home: 'Back to the grammar path',
+  },
   unitLevel: 'Unit {order} · {level}',
   stars: '{stars} of 3 stars',
   redoForStars: 'Redo for 3 stars',
@@ -80,7 +89,6 @@ export const grammar = {
     allClimbed: 'Every level climbed. Keep the stars bright with reviews.',
   },
   notes: {
-    path: 'Path',
     redo: 'Redo this lesson',
     eyebrow: 'Unit {order} · {level} · Notes',
   },

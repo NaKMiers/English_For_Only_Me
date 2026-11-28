@@ -1,4 +1,4 @@
-import { ArrowLeft, BookOpen, Play } from 'lucide-react'
+import { BookOpen, Play, Trophy } from 'lucide-react'
 import type { Metadata } from 'next'
 import { notFound, redirect } from 'next/navigation'
 
@@ -6,7 +6,9 @@ import { AppTopbar } from '@/components/common/AppTopbar'
 import { PageHeader } from '@/components/common/PageHeader'
 import { PageShell } from '@/components/common/PageShell'
 import { ContentPanel } from '@/components/common/ContentPanel'
+import { nextHref, nextLabel } from '@/components/grammar/path/pathNext'
 import { ExplainCardView } from '@/components/grammar/player/PlayerCard'
+import { NextStopCard } from '@/components/journey/NextStopCard'
 import { ActionButton } from '@/components/ui/ActionButton'
 import { format } from '@/i18n/format'
 import { getMessages } from '@/i18n/server'
@@ -51,12 +53,22 @@ export default async function GrammarNotesPage({ params }: Props) {
 
   const explains = found.lesson.cards.filter(card => card.kind === 'explain')
   const t = await getMessages()
+  const breadcrumb = [
+    { href: '/grammar', label: t.grammar.path.title },
+    {
+      label: format(t.grammar.notes.eyebrow, {
+        level: found.unit.level,
+        order: found.unit.order,
+      }),
+    },
+  ]
 
   return (
     <PageShell
       topbar={
         <AppTopbar
           activeHref="/grammar"
+          page={{ breadcrumb, module: 'grammar', title: found.lesson.title }}
           subtitle={t.grammar.subtitle}
         />
       }
@@ -64,34 +76,23 @@ export default async function GrammarNotesPage({ params }: Props) {
       <div className="mx-auto grid w-full max-w-3xl gap-5 px-4 pb-6 md:pr-6 md:pl-0">
         <PageHeader
           actions={
-            <>
-              <ActionButton
-                href="/grammar"
-                icon={<ArrowLeft aria-hidden />}
-                tone="paper"
-              >
-                {t.grammar.notes.path}
-              </ActionButton>
-              <ActionButton
-                href={`/grammar/lessons/${found.lesson.id}`}
-                icon={
-                  <Play
-                    aria-hidden
-                    className="fill-current"
-                  />
-                }
-                tone="ink"
-              >
-                {t.grammar.notes.redo}
-              </ActionButton>
-            </>
+            <ActionButton
+              href={`/grammar/lessons/${found.lesson.id}`}
+              icon={
+                <Play
+                  aria-hidden
+                  className="fill-current"
+                />
+              }
+              tone="paper"
+            >
+              {t.grammar.notes.redo}
+            </ActionButton>
           }
-          eyebrow={format(t.grammar.notes.eyebrow, {
-            level: found.unit.level,
-            order: found.unit.order,
-          })}
+          breadcrumb={{ items: breadcrumb, label: t.common.journey.breadcrumb }}
           icon={<BookOpen />}
           iconClassName="bg-pastel-lilac text-accent-purple"
+          inTopbar
           subtitle={found.lesson.summary}
           title={found.lesson.title}
         />
@@ -100,6 +101,53 @@ export default async function GrammarNotesPage({ params }: Props) {
             <ExplainCardView card={card} />
           </ContentPanel>
         ))}
+
+        {/* A station, not a dead end: one next stop after the notes. */}
+        <NextStopCard
+          actionIcon={
+            <Play
+              aria-hidden
+              className="fill-current"
+            />
+          }
+          actionLabel={
+            node.state === 'due'
+              ? t.grammar.path.review
+              : path.next.kind === 'lesson'
+                ? t.grammar.path.startLesson
+                : t.grammar.path.go
+          }
+          detail={
+            node.state === 'due'
+              ? t.grammar.path.states.due
+              : t.grammar.path.continue
+          }
+          done={
+            node.state !== 'due' && path.next.kind === 'done'
+              ? {
+                  icon: (
+                    <Trophy
+                      aria-hidden
+                      className="text-accent-purple"
+                    />
+                  ),
+                  text: t.grammar.path.next.done,
+                }
+              : undefined
+          }
+          href={
+            node.state === 'due'
+              ? `/grammar/lessons/${found.lesson.id}/review`
+              : nextHref(path.next)
+          }
+          pinLabel={t.common.journey.nextStop}
+          title={
+            node.state === 'due'
+              ? found.lesson.title
+              : nextLabel(t.grammar.path.next, path.next)
+          }
+          variant="compact"
+        />
       </div>
     </PageShell>
   )

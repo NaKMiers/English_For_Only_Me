@@ -13,6 +13,15 @@ export const grammar: Messages['grammar'] = {
   },
   subtitle: 'Lộ trình ngữ pháp, A1 đến C1',
   loading: 'Đang tải lộ trình ngữ pháp',
+  loadingLesson: 'Đang tải bài học',
+  errorBoundary: {
+    eyebrow: 'Ngữ pháp',
+    title: 'Lộ trình ngữ pháp cần tải lại',
+    description:
+      'Trang này chưa tải được. Hãy thử lại; tiến độ đã lưu của bạn vẫn an toàn.',
+    retry: 'Thử lại',
+    home: 'Về lộ trình ngữ pháp',
+  },
   unitLevel: 'Unit {order} · {level}',
   stars: '{stars}/3 sao',
   redoForStars: 'Làm lại để đạt 3 sao',
@@ -82,7 +91,6 @@ export const grammar: Messages['grammar'] = {
     allClimbed: 'Đã leo hết các bậc. Ôn đều để sao luôn sáng.',
   },
   notes: {
-    path: 'Lộ trình',
     redo: 'Học lại bài này',
     eyebrow: 'Unit {order} · {level} · Ghi chú',
   },
