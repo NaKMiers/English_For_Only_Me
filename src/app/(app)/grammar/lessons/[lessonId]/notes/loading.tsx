@@ -16,6 +16,8 @@ export default async function Loading() {
         breadcrumb: [{ href: '/grammar', label: t.grammar.path.title }],
         module: 'grammar',
         // The lesson's title lands with the data; a blank keeps the row height.
+        // The page's subtitle line too, so the topbar keeps its height.
+        subtitle: '\u00a0',
         title: '\u00a0',
       }}
       subtitle={t.grammar.subtitle}

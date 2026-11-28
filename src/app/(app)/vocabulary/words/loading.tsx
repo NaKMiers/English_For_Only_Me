@@ -16,6 +16,8 @@ export default async function Loading() {
         ],
         module: 'vocabulary',
         // The view's name comes from the URL; a blank keeps the row height.
+        // The page's subtitle line too, so the topbar keeps its height.
+        subtitle: '\u00a0',
         title: '\u00a0',
       }}
       subtitle={t.vocabulary.page.subtitle}

@@ -17,14 +17,15 @@ type Props = Omit<
 /**
  * The "more actions" button of every admin row and header: the icon
  * button look (outlined, pops on hover, presses down) on a menu trigger,
- * so the admin menus all look and behave the same.
+ * so the admin menus all look and behave the same. 44px on phones, the
+ * denser 36px from `md` up.
  */
 export function AdminMenuTrigger({ className, label, ...props }: Props) {
   return (
     <DropdownMenuTrigger
       aria-label={label}
       className={cn(
-        'border-line bg-surface text-ink hover:bg-tint-soft rounded-control soft-press hover-pop grid size-9 shrink-0 place-items-center border disabled:opacity-50',
+        'border-line bg-surface text-ink hover:bg-tint-soft rounded-control soft-press hover-pop grid size-11 shrink-0 place-items-center border disabled:opacity-50 md:size-9',
         className
       )}
       {...props}

@@ -12,7 +12,15 @@ export default async function Loading() {
     // Same topbar line and title as the page, so nothing changes on arrival.
     <SkeletonPageShell
       activeHref="/dictation"
-      page={{ module: 'dictation', title: t.dictation.review.title }}
+      page={{
+        breadcrumb: [
+          { href: '/dictation', label: t.dictation.browse.allTopics },
+          { label: t.dictation.review.title },
+        ],
+        module: 'dictation',
+        subtitle: t.dictation.review.description,
+        title: t.dictation.review.title,
+      }}
       subtitle={t.dictation.meta.labSubtitle}
     >
       <SkeletonBlock className="h-24" />
