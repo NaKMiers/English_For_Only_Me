@@ -10,7 +10,7 @@ repair step, text-to-speech audio, a consistency gate on publish), per-test
 vocabulary, the page-data loaders, and the small pure helpers that lay a group
 out the way the Cambridge paper does. The module follows the same split as the
 dictation layer: pure, unit-tested decision and shaping functions next to thin
-`server-only` services that talk to MongoDB, OpenAI and Cloudinary. Every path
+`server-only` services that talk to MongoDB, Qwen and Cloudinary. Every path
 is repo-relative.
 
 Neighbouring docs (not repeated here):
@@ -20,7 +20,7 @@ Neighbouring docs (not repeated here):
 - Route handlers `/api/ielts/**` and `/api/admin/ielts/**` and the client
   request helpers (`src/requests/ieltsApi.ts`) -> [04 - API reference](./04-api-reference.md).
 - Catalogue, runners, review pages and the admin editor -> [06 - Frontend, section 10](./06-frontend.md#10-ielts-feature-ui).
-- OpenAI client, TTS, Cloudinary upload and env keys -> [07 - Auth, infra and testing](./07-auth-infra-testing.md).
+- Qwen client, TTS, Cloudinary upload and env keys -> [07 - Auth, infra and testing](./07-auth-infra-testing.md).
 
 ---
 
@@ -162,23 +162,23 @@ only produces the chart form (`writingTaskOutput.visual` is
 
 ## 3. Constants (`constants.ts`)
 
-| Constant                                             | Value / meaning                                                                                                                             |
-| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| `IELTS_ATTEMPT_MODES`                                | `practice`, `mock`, `drill`                                                                                                                 |
-| `IELTS_ATTEMPT_STATUSES`                             | `in_progress`, `submitted`, `scored`, `expired`                                                                                             |
-| `IELTS_TIMERS`                                       | Reading 60 min (part 20); Writing 60 min (T1 20, T2 40); Listening transfer 120 s, part preview 30 s, part transfer 30 s; `graceSeconds` 60 |
-| `IELTS_MAX_AUDIO_INTERRUPTIONS` / `_EVENTS`          | 2 interruptions counted, 10 audio events stored                                                                                             |
-| `IELTS_GENERATING_STALE_SECONDS`                     | 320 (route max is 300 s)                                                                                                                    |
-| `IELTS_OBJECTIVE_TOTAL`                              | 40                                                                                                                                          |
-| `IELTS_WEAKNESS_MIN_QUESTIONS`                       | 5 (below this, accuracy is null)                                                                                                            |
-| `IELTS_DRILL_MAX_GROUPS`                             | 4                                                                                                                                           |
-| `IELTS_GENERATION_LOG_LIMIT`                         | 50 rows kept in `generationLog`                                                                                                             |
-| `IELTS_WRITING_MIN_WORDS`                            | Task 1 = 150, Task 2 = 250                                                                                                                  |
-| `IELTS_ANSWER_MAX_LENGTH` / `IELTS_ESSAY_MAX_LENGTH` | 300 chars per objective answer, 20,000 per essay                                                                                            |
-| `LISTENING_VOICES`                                   | 9 OpenAI TTS voices with a gender hint (`alloy` ... `shimmer`)                                                                              |
-| `IELTS_API_PATHS`                                    | Client paths for learner and admin routes                                                                                                   |
-| `IELTS_OUTBOX_LANE_PREFIX`                           | `ielts:` (outbox lane per attempt, used by `src/requests/ieltsApi.ts`)                                                                      |
-| `IELTS_TEST_VOCAB_MAX`                               | 150 words per test                                                                                                                          |
+| Constant                                             | Value / meaning                                                                                                                              |
+| ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `IELTS_ATTEMPT_MODES`                                | `practice`, `mock`, `drill`                                                                                                                  |
+| `IELTS_ATTEMPT_STATUSES`                             | `in_progress`, `submitted`, `scored`, `expired`                                                                                              |
+| `IELTS_TIMERS`                                       | Reading 60 min (part 20); Writing 60 min (T1 20, T2 40); Listening transfer 120 s, part preview 30 s, part transfer 30 s; `graceSeconds` 60  |
+| `IELTS_MAX_AUDIO_INTERRUPTIONS` / `_EVENTS`          | 2 interruptions counted, 10 audio events stored                                                                                              |
+| `IELTS_GENERATING_STALE_SECONDS`                     | 320 (route max is 300 s)                                                                                                                     |
+| `IELTS_OBJECTIVE_TOTAL`                              | 40                                                                                                                                           |
+| `IELTS_WEAKNESS_MIN_QUESTIONS`                       | 5 (below this, accuracy is null)                                                                                                             |
+| `IELTS_DRILL_MAX_GROUPS`                             | 4                                                                                                                                            |
+| `IELTS_GENERATION_LOG_LIMIT`                         | 50 rows kept in `generationLog`                                                                                                              |
+| `IELTS_WRITING_MIN_WORDS`                            | Task 1 = 150, Task 2 = 250                                                                                                                   |
+| `IELTS_ANSWER_MAX_LENGTH` / `IELTS_ESSAY_MAX_LENGTH` | 300 chars per objective answer, 20,000 per essay                                                                                             |
+| `LISTENING_VOICES`                                   | 9 logical voice ids (`alloy` ... `shimmer`, stored in tests and named in the prompt) with a gender hint and the `qwenVoice` that speaks them |
+| `IELTS_API_PATHS`                                    | Client paths for learner and admin routes                                                                                                    |
+| `IELTS_OUTBOX_LANE_PREFIX`                           | `ielts:` (outbox lane per attempt, used by `src/requests/ieltsApi.ts`)                                                                       |
+| `IELTS_TEST_VOCAB_MAX`                               | 150 words per test                                                                                                                           |
 
 Also: `TFNG_OPTIONS`, `YNNG_OPTIONS`, `NOT_GIVEN`, and English labels for
 types and skills.
@@ -399,14 +399,14 @@ weakest first, and returns the top 3 with enough data as `weakest`.
 
 ## 8. Writing (`writing/**`)
 
-| File                     | Role                                                                                                                                                                                       |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `promptBlocks.ts`        | `parseWritingPrompt`: lines starting with `> ` form the bordered task box; `plainWritingPrompt` strips them.                                                                               |
-| `sampleAnswer.ts`        | `splitSampleAnswer`: optional `# Title` first line, paragraphs split on blank lines.                                                                                                       |
-| `examinerPrompt.ts`      | Builds messages; the essay is wrapped as data and instructions inside it are ignored; criteria paraphrased.                                                                                |
-| `examinerSchema.ts`      | Strict output: four criteria 0-9, summary, up to 12 corrections (quote, suggestion, reason, `grammarLessonId`), `improved`.                                                                |
-| `runExaminer.ts`         | One OpenAI structured call (low reasoning, 6000 output tokens, 240 s timeout); drops corrections whose quote is not in the essay and lesson ids that do not exist; computes the task band. |
-| `gradeWritingService.ts` | `gradeWritingTask` (graded results) and `checkPracticeWriting` (practice check before submit).                                                                                             |
+| File                     | Role                                                                                                                                                                                     |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `promptBlocks.ts`        | `parseWritingPrompt`: lines starting with `> ` form the bordered task box; `plainWritingPrompt` strips them.                                                                             |
+| `sampleAnswer.ts`        | `splitSampleAnswer`: optional `# Title` first line, paragraphs split on blank lines.                                                                                                     |
+| `examinerPrompt.ts`      | Builds messages; the essay is wrapped as data and instructions inside it are ignored; criteria paraphrased.                                                                              |
+| `examinerSchema.ts`      | Strict output: four criteria 0-9, summary, up to 12 corrections (quote, suggestion, reason, `grammarLessonId`), `improved`.                                                              |
+| `runExaminer.ts`         | One Qwen structured call (low reasoning, 6000 output tokens, 240 s timeout); drops corrections whose quote is not in the essay and lesson ids that do not exist; computes the task band. |
+| `gradeWritingService.ts` | `gradeWritingTask` (graded results) and `checkPracticeWriting` (practice check before submit).                                                                                           |
 
 ```mermaid
 flowchart TD
@@ -414,7 +414,7 @@ flowchart TD
   B -- yes --> X1["401 signInToGrade"]
   B -- no --> C{"attempt is writing,<br/>submitted or scored,<br/>task in feedback?"}
   C -- no --> X2["400 / 404 / 409"]
-  C -- yes --> D{"OpenAI key set?"}
+  C -- yes --> D{"Qwen key set?"}
   D -- no --> X3["503"]
   D -- yes --> E{"gradings today<br/>(attempts + ledger)<br/>>= daily limit?"}
   E -- yes --> X4["429 gradingLimit"]
@@ -481,7 +481,7 @@ stateDiagram-v2
 
 ## 10. Generation (`generation/**`)
 
-Each route call performs exactly one step (one OpenAI request) so it fits the
+Each route call performs exactly one step (one Qwen request) so it fits the
 route time limit.
 
 | Section skill  | Steps (`IeltsGenerateStep`)             | Job kind                                      | Max output tokens |
@@ -521,7 +521,7 @@ Details:
   includes track, target band, a topic hint from the test's `plan`, and the
   titles of the other sections to avoid repeats.
 - **Schemas** (`aiSchemas.ts`). Strict (all fields required, nullable instead
-  of optional) so they convert to OpenAI strict mode; the same Zod schema
+  of optional) so they convert to strict json_schema mode (`toStrictJsonSchema`); the same Zod schema
   parses the reply.
 - **Mapping.** A new listening script clears groups and audio. Writing output
   sets `minWords` 150/250 and keeps a visual only for Task 1. TFNG/YNNG groups
@@ -538,7 +538,7 @@ Details:
   notes are requested in Vietnamese.
 - **Evals.** `scripts/evalIeltsGeneration.ts` (`bun run ielts:eval-generation
 [-- keys...]`) runs draft plus at most one repair in memory against real
-  OpenAI and reports pass rate and tokens; nothing is written. It is manual,
+  Qwen and reports pass rate and tokens; nothing is written. It is manual,
   costs money and is not in CI.
 
 ---
@@ -546,12 +546,19 @@ Details:
 ## 11. Listening audio (`audio/**`)
 
 `generateSectionAudio` (listening keys only) synthesizes each script line with
-OpenAI TTS (`synthesizeSpeechPcm`, model from `getOpenAiTtsModel()`), four
-lines in parallel, within a 240 s budget. `wav.ts` (pure) joins the 24 kHz
+Qwen TTS (`synthesizeSpeechPcm` in `src/lib/ai/qwenSpeech.ts`, model from
+`getQwenTtsModel()`), four lines in parallel, within a 240 s budget. Each line
+is spoken by `qwenVoiceFor(line.voice)` (`constants.ts`): the stored logical id
+maps to a Qwen voice (alloy Brian, ash Eric, coral Emily, echo Andy, fable
+Luca, nova Ava, onyx David, sage Luna, shimmer Abby; unknown ids get the
+first). Qwen returns a WAV URL; the client downloads it and strips the header
+(`src/lib/ai/wavToPcm.ts`). `wav.ts` (pure) joins the 24 kHz
 16-bit mono PCM with 0.15 s silence between lines of the same speaker and
 0.4 s when the speaker changes, adds a WAV header and derives exact
 `lineOffsetsSec`. The WAV is uploaded to Cloudinary folder `ielts/audio` with
-public id `<slug>-v<version>-<key>-<sha1 of voices and text>` (served as mp3),
+public id `<slug>-v<version>-<key>-<sha1 of qwen:voice:text per line>` (the
+`qwen` provider tag gives new audio new ids; old audio stays valid), served as
+mp3,
 a `HEAD` request confirms the mp3 is reachable, then
 `listening.audio` is written with the revision guard (`409
 sectionChangedDuringAudio` if the section moved). Every run logs a

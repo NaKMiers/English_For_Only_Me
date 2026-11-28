@@ -1,3 +1,4 @@
+import { getQwenIeltsGenerationModel } from '@/constants/environments'
 import { checkTest } from '@/modules/ielts/consistency/checkTest'
 import {
   IELTS_SECTION_KEYS,
@@ -6,14 +7,14 @@ import {
 import type { IeltsJobKind } from '@/modules/ielts/generation/aiSchemas'
 import {
   messagesFor,
-  openAiRequester,
+  qwenRequester,
 } from '@/modules/ielts/generation/generationService'
 import { runSectionJob } from '@/modules/ielts/generation/runSectionJob'
 import type { IeltsSection } from '@/modules/ielts/schema'
 import { emptySection } from '@/modules/ielts/tests/emptySections'
 
 /**
- * Manual generation eval (calls OpenAI for real, costs money, not in CI).
+ * Manual generation eval (calls Qwen for real, costs money, not in CI).
  * Generates the given sections in memory, one draft step plus at most one
  * repair each, and reports pass rate and tokens. Nothing is written to the
  * database. Record the result in .prompts/ielts-testing/eval-baseline.md.
@@ -41,7 +42,7 @@ async function main() {
   const keys = (
     requested.length ? requested : DEFAULT_KEYS
   ) as IeltsSectionKey[]
-  const request = openAiRequester()
+  const request = qwenRequester()
   const rows: string[] = []
   let passed = 0
   let tokens = 0
@@ -118,7 +119,7 @@ async function main() {
 
   console.info(rows.join('\n'))
   console.info(
-    `\nPassed ${passed}/${keys.length} sections. Tokens: ${tokens}. Model: ${process.env.OPENAI_IELTS_GENERATION_MODEL ?? 'default'}.`
+    `\nPassed ${passed}/${keys.length} sections. Tokens: ${tokens}. Model: ${getQwenIeltsGenerationModel()}.`
   )
 }
 

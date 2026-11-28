@@ -1,10 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { z } from 'zod'
 
-import {
-  OPENAI_STRICT_DROPPED_KEYWORDS,
-  toOpenAiStrictSchema,
-} from './openAiStrictSchema'
+import { STRICT_DROPPED_KEYWORDS, toStrictJsonSchema } from './strictJsonSchema'
 
 function keysDeep(value: unknown, into = new Set<string>()): Set<string> {
   if (Array.isArray(value)) value.forEach(item => keysDeep(item, into))
@@ -17,9 +14,9 @@ function keysDeep(value: unknown, into = new Set<string>()): Set<string> {
   return into
 }
 
-describe('toOpenAiStrictSchema', () => {
+describe('toStrictJsonSchema', () => {
   it('drops rejected keywords, keeps structure and requires every key', () => {
-    const schema = toOpenAiStrictSchema(
+    const schema = toStrictJsonSchema(
       z.object({
         name: z.string().min(1).max(20),
         score: z.number().min(0).max(9).nullable(),
@@ -32,7 +29,7 @@ describe('toOpenAiStrictSchema', () => {
     )
     const keys = keysDeep(schema)
 
-    for (const keyword of OPENAI_STRICT_DROPPED_KEYWORDS)
+    for (const keyword of STRICT_DROPPED_KEYWORDS)
       expect(keys.has(keyword)).toBe(false)
 
     expect(keys.has('oneOf')).toBe(false)
@@ -45,10 +42,10 @@ describe('toOpenAiStrictSchema', () => {
 
   it('refuses optional fields and records', () => {
     expect(() =>
-      toOpenAiStrictSchema(z.object({ note: z.string().optional() }))
+      toStrictJsonSchema(z.object({ note: z.string().optional() }))
     ).toThrow(/optional/)
     expect(() =>
-      toOpenAiStrictSchema(z.object({ map: z.record(z.string(), z.number()) }))
+      toStrictJsonSchema(z.object({ map: z.record(z.string(), z.number()) }))
     ).toThrow(/records/)
   })
 })

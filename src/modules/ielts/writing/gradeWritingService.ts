@@ -2,8 +2,8 @@ import 'server-only'
 
 import {
   getIeltsWritingDailyLimit,
-  getOpenAiApiKey,
-  getOpenAiIeltsGradingModel,
+  getQwenApiKey,
+  getQwenIeltsGradingModel,
 } from '@/constants/environments'
 import { IeltsAttemptModel } from '@/models/ielts/IeltsAttemptModel'
 import { IeltsGradingLedgerModel } from '@/models/ielts/IeltsGradingLedgerModel'
@@ -124,8 +124,7 @@ export async function gradeWritingTask({
 
   if (!feedback[key]) return ieltsMessageError(404, 'taskNotInAttempt')
 
-  if (!getOpenAiApiKey())
-    return ieltsMessageError(503, 'aiNotConfiguredCompare')
+  if (!getQwenApiKey()) return ieltsMessageError(503, 'aiNotConfiguredCompare')
 
   const limit = getIeltsWritingDailyLimit()
 
@@ -178,10 +177,10 @@ export async function gradeWritingTask({
     return ieltsMessageError(404, 'taskContentMissing')
   }
 
-  const model = getOpenAiIeltsGradingModel()
+  const model = getQwenIeltsGradingModel()
   const result = essay.trim()
     ? await runExaminer({
-        apiKey: getOpenAiApiKey(),
+        apiKey: getQwenApiKey(),
         fetcher,
         model,
         input: {
@@ -311,7 +310,7 @@ export async function checkPracticeWriting({
 
   if (!material) return ieltsMessageError(404, 'taskNotInAttempt')
 
-  if (!getOpenAiApiKey()) return ieltsMessageError(503, 'aiNotConfigured')
+  if (!getQwenApiKey()) return ieltsMessageError(503, 'aiNotConfigured')
 
   const limit = getIeltsWritingDailyLimit()
 
@@ -319,9 +318,9 @@ export async function checkPracticeWriting({
     return ieltsMessageError(429, 'gradingLimit', { limit })
 
   const result = await runExaminer({
-    apiKey: getOpenAiApiKey(),
+    apiKey: getQwenApiKey(),
     fetcher,
-    model: getOpenAiIeltsGradingModel(),
+    model: getQwenIeltsGradingModel(),
     input: {
       task,
       track: attempt.track === 'general' ? 'general' : 'academic',

@@ -61,7 +61,7 @@ export async function POST(request: Request) {
     const entry = await enrichVocabEntryIfNeeded({ entryId: shell.id })
     const resolved = entry ?? shell
 
-    // Guard 2 (free dictionary result, never OpenAI): no definitions means no
+    // Guard 2 (free dictionary result, never the AI model): no definitions means no
     // English dictionary entry exists for this term - it is not a real English
     // word (e.g. "takuetsu", "ogre-faced"). Drop the empty shell we just created
     // (unless a user already saved it) so it never surfaces in search or lists,

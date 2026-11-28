@@ -29,7 +29,7 @@ versions below are read from `package.json`.
 | Language            | `typescript`                                                      | ^5                       | `strict: true`, `moduleResolution: "bundler"` (`tsconfig.json`).                                                                                   |
 | Data / ODM          | `mongoose`                                                        | ^9.7.3                   | Models in `src/models`; shared connection in `src/lib/db/connectDatabase.ts`.                                                                      |
 | Auth                | `next-auth` (Auth.js)                                             | 5.0.0-beta.31            | Google provider, JWT sessions; edge-safe config split from Node config.                                                                            |
-| Validation          | `zod`                                                             | ^4.4.3                   | Payload/param parsing at API boundaries and in schemas; also the source for OpenAI strict JSON schemas (`src/lib/ai/openAiStrictSchema.ts`).       |
+| Validation          | `zod`                                                             | ^4.4.3                   | Payload/param parsing at API boundaries and in schemas; also the source for strict JSON schemas sent to Qwen (`src/lib/ai/strictJsonSchema.ts`).   |
 | UI primitives       | `@base-ui/react`                                                  | ^1.6.0                   | Underlying primitive layer for the shadcn components.                                                                                              |
 | Component generator | `shadcn`                                                          | ^4.13.0                  | Config in `components.json` (style `base-nova`, `rsc: true`, lucide icons). Generated primitives live in `src/components/ui`.                      |
 | Styling             | `tailwindcss` + `@tailwindcss/postcss`                            | ^4                       | Tailwind v4 via PostCSS only (`postcss.config.mjs`); no `tailwind.config`. Tokens in `src/app/globals.css`.                                        |
@@ -69,7 +69,7 @@ versions below are read from `package.json`.
 | `src/lib/db`         | `connectDatabase.ts` (cached Mongoose connection), catalog cache (`catalogCache.ts`, `cacheTags.ts`, `jsonRecords.ts`), invalidation (`revalidateCatalog.ts`, `revalidateRequest.ts`).                               |
 | `src/lib/auth`       | `auth.ts` (Node Auth.js), `auth.config.ts` (edge-safe), `roles.ts`, `authErrorMessage.ts`, guest identity (`guestUser.ts`, `guestMerge.ts`), owner keys (`ownerKey.ts`, `clientOwnerKey.ts`), `userProvisioning.ts`. |
 | `src/lib/sync`       | `outbox.ts` (framework-free write queue) and `clientOutbox.ts` (`'use client'` tab-wide singleton, guest bootstrap).                                                                                                 |
-| `src/lib/ai`         | OpenAI client (`openAiClient.ts`, `openAiClientCore.ts`), strict schemas (`openAiStrictSchema.ts`), translation (`openAiTranslate.ts`), TTS (`openAiSpeech.ts`).                                                     |
+| `src/lib/ai`         | Qwen client (`qwenClientCore.ts`, `qwenDebriefClient.ts`), strict schemas (`strictJsonSchema.ts`), translation (`qwenTranslate.ts`), TTS (`qwenSpeech.ts`, `wavToPcm.ts`).                                           |
 | `src/lib/cloudinary` | `cloudinaryConfig.ts`, `uploadImage.ts`, `uploadAudio.ts` (WAV upload with an eager mp3).                                                                                                                            |
 | `src/lib/youtube`    | `extractYouTubeId.ts`, `getYouTubeVideoMetadata.ts`.                                                                                                                                                                 |
 | `src/lib/audio`      | `lessonSfx.ts` (four stings), `useLessonSfx.ts` (`'use client'` hook, preference in localStorage), `zzfx.ts`.                                                                                                        |
@@ -132,7 +132,7 @@ flowchart TD
     MODEL["Mongoose models<br/>src/models/**"]
   end
   DB[("MongoDB")]
-  EXT["OpenAI, YouTube,<br/>Cloudinary, dictionaries"]
+  EXT["Qwen (Alibaba Cloud), YouTube,<br/>Cloudinary, dictionaries"]
 
   CC --> I18C
   CC --> REQ
@@ -387,12 +387,12 @@ hands it to components.
   final `buildIeltsSubmitWrite` (`POST .../submit`) on the attempt lane.
   `submitAttempt` (`src/modules/ielts/attempts/attemptService.ts`) flips the status and
   finalizes scoring (`scoring/*`). Writing is graded on demand via
-  `POST .../grade` -> `writing/gradeWritingService.ts` (OpenAI, daily cap from
+  `POST .../grade` -> `writing/gradeWritingService.ts` (Qwen, daily cap from
   `getIeltsWritingDailyLimit`).
 - Admin: `src/app/admin/ielts/[testId]/page.tsx` hosts the editor; it calls
   `src/requests/ieltsAdminApi.ts` -> `src/app/api/admin/ielts/**` (each handler calls
   `requireAdmin()`). Section generation goes through `generation/generationService.ts`
-  (OpenAI strict schemas, consistency checks in `consistency/checkTest.ts`); audio goes
+  (Qwen strict schemas, consistency checks in `consistency/checkTest.ts`); audio goes
   through `audio/audioService.ts` (`synthesizeSpeechPcm` -> WAV -> `uploadAudioBuffer` to
   Cloudinary); publish, archive, and new-version routes manage test status. Domain detail:
   [09](./09-ielts.md).
@@ -402,12 +402,12 @@ flowchart LR
   subgraph learner["Learner"]
     RUN["IELTS runner<br/>useAttemptAnswers"] -->|outbox lane per attempt| ANS["PUT answers / POST submit<br/>api/ielts/attempts/[id]/*"]
     ANS --> ATT["attemptService<br/>scoring/*"]
-    RUN -->|grade| GR["gradeWritingService<br/>OpenAI"]
+    RUN -->|grade| GR["gradeWritingService<br/>Qwen"]
   end
   subgraph admin["Admin"]
     ED["TestEditor<br/>components/ielts/editor"] -->|ieltsAdminApi| AR["api/admin/ielts/**<br/>requireAdmin()"]
-    AR --> GEN["generationService<br/>OpenAI + checkTest"]
-    AR --> AUD["audioService<br/>OpenAI TTS -> Cloudinary"]
+    AR --> GEN["generationService<br/>Qwen + checkTest"]
+    AR --> AUD["audioService<br/>Qwen TTS -> Cloudinary"]
     AR --> TS["testService<br/>publish / archive / version"]
   end
   ATT --> M[("IeltsAttempt / IeltsTest<br/>models")]
@@ -511,12 +511,13 @@ The `(app)` group applies the outbox owner layout without adding a URL segment; 
 
 ## 8. Graceful-degradation design
 
-The app boots and serves pages even when MongoDB, OpenAI, YouTube, or Cloudinary
+The app boots and serves pages even when MongoDB, Qwen, YouTube, or Cloudinary
 credentials are absent. The mechanism is centralized in `src/constants/environments.ts`
 (keys in `ENV_KEYS`: `MONGODB_URI`, `AUTH_SECRET`, `GOOGLE_CLIENT_ID`,
-`GOOGLE_CLIENT_SECRET`, `ADMIN_EMAILS`, `SITE_URL`, `OPENAI_API_KEY`,
-`OPENAI_DEBRIEF_MODEL`, `OPENAI_TRANSLATION_MODEL`, `OPENAI_IELTS_GENERATION_MODEL`,
-`OPENAI_IELTS_GRADING_MODEL`, `OPENAI_TTS_MODEL`, `IELTS_WRITING_DAILY_LIMIT`,
+`GOOGLE_CLIENT_SECRET`, `ADMIN_EMAILS`, `SITE_URL`, `DASHSCOPE_API_KEY`,
+`DASHSCOPE_HOST`, `QWEN_DEBRIEF_MODEL`, `QWEN_TRANSLATION_MODEL`,
+`QWEN_IELTS_GENERATION_MODEL`, `QWEN_IELTS_GRADING_MODEL`, `QWEN_TTS_MODEL`,
+`IELTS_WRITING_DAILY_LIMIT`,
 `IELTS_GOAL`, `YOUTUBE_API_KEY`, `CLOUDINARY_URL`, `MYMEMORY_EMAIL`, `REVALIDATE_SECRET`):
 
 - `hasMongoDbUri()` guards DB work. `src/app/page.tsx` renders `<HomeStudyDesk />` without
@@ -526,13 +527,15 @@ credentials are absent. The mechanism is centralized in `src/constants/environme
   `src/modules/dictation/services/videoRouteDecisions.ts`, `ieltsMissingMongo()` in
   `src/modules/ielts/http.ts`, 503 in `src/app/api/grammar/sessions/route.ts`).
 - Optional-service getters return `null` instead of throwing (`getOptionalServerEnv`:
-  `getYoutubeApiKey()`, `getOpenAiApiKey()`, `getRevalidateSecret()`), while
+  `getYoutubeApiKey()`, `getQwenApiKey()`, `getRevalidateSecret()`), while
   feature-required secrets use `getRequiredServerEnv` (throws `MissingEnvironmentError`,
   mapped to a clean error in handlers). Model getters, `getIeltsGoal()` and
   `getIeltsWritingDailyLimit()` (default 10) fall back to defaults; `hasGoogleAuth()` gates
-  OAuth; `getSiteUrl()` falls back to `AUTH_URL` then `http://localhost:3000`.
-- `synthesizeSpeechPcm` (`src/lib/ai/openAiSpeech.ts`) never throws; it returns
-  `{ ok: false }` when OpenAI is not configured.
+  OAuth; `getSiteUrl()` falls back to `AUTH_URL` then `http://localhost:3000`;
+  `getQwenHost()` falls back to `https://dashscope-intl.aliyuncs.com`.
+- `requestQwenStructuredOutput` (`src/lib/ai/qwenClientCore.ts`) and
+  `synthesizeSpeechPcm` (`src/lib/ai/qwenSpeech.ts`) never throw; they return
+  `{ ok: false }` when `DASHSCOPE_API_KEY` is not set.
 
 Net effect: no key is required just to run the app locally; features light up as their
 env vars are provided. Env details: [07](./07-auth-infra-testing.md).

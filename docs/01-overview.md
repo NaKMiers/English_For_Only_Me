@@ -11,7 +11,7 @@ full Listening, Reading and Writing tests in practice, mock and drill modes on
 an exam-paper layout, with band scores, evidence review and AI writing feedback.
 The UI is a soft pastel dashboard with a night theme and an English /
 Vietnamese switch. The app degrades gracefully when optional services
-(MongoDB, Google auth, YouTube API, OpenAI, Cloudinary) are not configured.
+(MongoDB, Google auth, YouTube API, Qwen, Cloudinary) are not configured.
 
 ## What the product does
 
@@ -54,7 +54,7 @@ cites repo-relative file paths as anchors.
 | Data            | MongoDB via Mongoose 9                                                                                                             |
 | Auth            | Auth.js v5 (`next-auth` 5 beta), Google OAuth + JWT sessions + guest cookie                                                        |
 | Validation      | Zod 4                                                                                                                              |
-| AI              | OpenAI-compatible client (dictation debrief and translation, IELTS writing grading and test generation, speech)                    |
+| AI              | Qwen on Alibaba Cloud Model Studio (dictation debrief and translation, IELTS writing grading and test generation, speech)          |
 | Media           | YouTube Data API (import), Cloudinary (thumbnails, IELTS images and audio)                                                         |
 | Package manager | Bun (`bun.lock`)                                                                                                                   |
 | Tests           | Vitest + Testing Library + jsdom (unit), Playwright (e2e)                                                                          |

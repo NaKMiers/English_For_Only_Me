@@ -18,7 +18,7 @@ import {
 } from '@/modules/ielts/tests/testRouteDecisions'
 
 export const runtime = 'nodejs'
-// One OpenAI request per call, aborted at 240 s.
+// One AI provider request per call, aborted at 240 s.
 export const maxDuration = 300
 
 const generateSchema = z

@@ -166,22 +166,31 @@ export const IELTS_ANSWER_MAX_LENGTH = 300
 export const IELTS_ESSAY_MAX_LENGTH = 20_000
 
 /**
- * OpenAI TTS voices with a rough gender hint, so a generated listening script
- * can give each speaker a distinct, fitting voice.
+ * Listening voices with a rough gender hint, so a generated listening script
+ * can give each speaker a distinct, fitting voice. The ids are logical names
+ * stored in test data and named in the generation prompt, so they never
+ * change; `qwenVoice` is the Qwen TTS voice that speaks them.
  */
 export const LISTENING_VOICES = [
-  { id: 'alloy', hint: 'neutral' },
-  { id: 'ash', hint: 'male' },
-  { id: 'coral', hint: 'female' },
-  { id: 'echo', hint: 'male' },
-  { id: 'fable', hint: 'male' },
-  { id: 'nova', hint: 'female' },
-  { id: 'onyx', hint: 'male' },
-  { id: 'sage', hint: 'female' },
-  { id: 'shimmer', hint: 'female' },
+  { id: 'alloy', hint: 'male', qwenVoice: 'Brian_v3.1' },
+  { id: 'ash', hint: 'male', qwenVoice: 'Eric_v3.1' },
+  { id: 'coral', hint: 'female', qwenVoice: 'Emily_v3.1' },
+  { id: 'echo', hint: 'male', qwenVoice: 'Andy_v3.1' },
+  { id: 'fable', hint: 'male', qwenVoice: 'Luca_v3.1' },
+  { id: 'nova', hint: 'female', qwenVoice: 'Ava_v3.1' },
+  { id: 'onyx', hint: 'male', qwenVoice: 'David_v3.1' },
+  { id: 'sage', hint: 'female', qwenVoice: 'Luna_v3.1' },
+  { id: 'shimmer', hint: 'female', qwenVoice: 'Abby_v3.1' },
 ] as const
 export type ListeningVoice = (typeof LISTENING_VOICES)[number]['id']
 export const LISTENING_VOICE_IDS = LISTENING_VOICES.map(voice => voice.id)
+
+/** Qwen TTS voice for a logical voice id; unknown ids get the first voice. */
+export function qwenVoiceFor(id: string) {
+  return (
+    LISTENING_VOICES.find(voice => voice.id === id) ?? LISTENING_VOICES[0]
+  ).qwenVoice
+}
 
 export const IELTS_API_PATHS = {
   attempts: '/api/ielts/attempts',

@@ -1,9 +1,10 @@
 export const ENV_KEYS = {
   ieltsGoal: 'IELTS_GOAL',
-  openAiDebriefModel: 'OPENAI_DEBRIEF_MODEL',
-  openAiTranslationModel: 'OPENAI_TRANSLATION_MODEL',
+  qwenDebriefModel: 'QWEN_DEBRIEF_MODEL',
+  qwenTranslationModel: 'QWEN_TRANSLATION_MODEL',
   mongoDbUri: 'MONGODB_URI',
-  openAiApiKey: 'OPENAI_API_KEY',
+  qwenApiKey: 'DASHSCOPE_API_KEY',
+  qwenHost: 'DASHSCOPE_HOST',
   cloudinaryUrl: 'CLOUDINARY_URL',
   youtubeApiKey: 'YOUTUBE_API_KEY',
   googleClientId: 'GOOGLE_CLIENT_ID',
@@ -13,9 +14,9 @@ export const ENV_KEYS = {
   siteUrl: 'SITE_URL',
   myMemoryEmail: 'MYMEMORY_EMAIL',
   revalidateSecret: 'REVALIDATE_SECRET',
-  openAiIeltsGenerationModel: 'OPENAI_IELTS_GENERATION_MODEL',
-  openAiIeltsGradingModel: 'OPENAI_IELTS_GRADING_MODEL',
-  openAiTtsModel: 'OPENAI_TTS_MODEL',
+  qwenIeltsGenerationModel: 'QWEN_IELTS_GENERATION_MODEL',
+  qwenIeltsGradingModel: 'QWEN_IELTS_GRADING_MODEL',
+  qwenTtsModel: 'QWEN_TTS_MODEL',
   ieltsWritingDailyLimit: 'IELTS_WRITING_DAILY_LIMIT',
 } as const
 
@@ -54,8 +55,26 @@ export function getYoutubeApiKey() {
   return getOptionalServerEnv(ENV_KEYS.youtubeApiKey)
 }
 
-export function getOpenAiApiKey() {
-  return getOptionalServerEnv(ENV_KEYS.openAiApiKey)
+/** Alibaba Cloud Model Studio (DashScope) key for every AI feature. */
+export function getQwenApiKey() {
+  return getOptionalServerEnv(ENV_KEYS.qwenApiKey)
+}
+
+/**
+ * DashScope origin, no trailing slash. Unset means the international host;
+ * the console's workspace API host can replace it.
+ */
+export function getQwenHost() {
+  const raw =
+    getOptionalServerEnv(ENV_KEYS.qwenHost) ??
+    'https://dashscope-intl.aliyuncs.com'
+
+  return raw.replace(/\/+$/, '')
+}
+
+/** OpenAI-compatible API root used for structured output. */
+export function getQwenCompatibleBaseUrl() {
+  return `${getQwenHost()}/compatible-mode/v1`
 }
 
 /**
@@ -71,32 +90,35 @@ export function getCloudinaryUrl() {
   return getRequiredServerEnv(ENV_KEYS.cloudinaryUrl)
 }
 
-export function getOpenAiDebriefModel() {
-  return getOptionalServerEnv(ENV_KEYS.openAiDebriefModel) ?? 'gpt-5.4-nano'
+export function getQwenDebriefModel() {
+  return getOptionalServerEnv(ENV_KEYS.qwenDebriefModel) ?? 'qwen3.8-flash'
 }
 
 /** Model for AI segment translation. Falls back to the debrief model. */
-export function getOpenAiTranslationModel() {
+export function getQwenTranslationModel() {
   return (
-    getOptionalServerEnv(ENV_KEYS.openAiTranslationModel) ??
-    getOpenAiDebriefModel()
+    getOptionalServerEnv(ENV_KEYS.qwenTranslationModel) ?? getQwenDebriefModel()
   )
 }
 
-/** IELTS test generation needs a stronger model than the nano default. */
-export function getOpenAiIeltsGenerationModel() {
-  return getOptionalServerEnv(ENV_KEYS.openAiIeltsGenerationModel) ?? 'gpt-5.4'
-}
-
-export function getOpenAiIeltsGradingModel() {
+/** IELTS test generation needs a stronger model than the flash default. */
+export function getQwenIeltsGenerationModel() {
   return (
-    getOptionalServerEnv(ENV_KEYS.openAiIeltsGradingModel) ??
-    getOpenAiIeltsGenerationModel()
+    getOptionalServerEnv(ENV_KEYS.qwenIeltsGenerationModel) ?? 'qwen3.8-max'
   )
 }
 
-export function getOpenAiTtsModel() {
-  return getOptionalServerEnv(ENV_KEYS.openAiTtsModel) ?? 'gpt-4o-mini-tts'
+export function getQwenIeltsGradingModel() {
+  return (
+    getOptionalServerEnv(ENV_KEYS.qwenIeltsGradingModel) ??
+    getQwenIeltsGenerationModel()
+  )
+}
+
+export function getQwenTtsModel() {
+  return (
+    getOptionalServerEnv(ENV_KEYS.qwenTtsModel) ?? 'qwen-audio-3.1-tts-flash'
+  )
 }
 
 /** Successful writing gradings per learner per UTC day. */

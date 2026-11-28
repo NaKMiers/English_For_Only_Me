@@ -1,11 +1,11 @@
 import 'server-only'
 
 import {
-  getOpenAiApiKey,
-  getOpenAiTranslationModel,
+  getQwenApiKey,
+  getQwenTranslationModel,
 } from '@/constants/environments'
 
-import { requestOpenAiStructuredOutput } from './openAiClientCore'
+import { requestQwenStructuredOutput } from './qwenClientCore'
 
 const TRANSLATION_SCHEMA_NAME = 'dictation_segment_translation'
 
@@ -22,7 +22,7 @@ export type SegmentTranslationResult =
   { ok: true; translation: string } | { ok: false; message: string }
 
 /**
- * Translate one segment's text into `languageLabel` with OpenAI. The sentence is
+ * Translate one segment's text into `languageLabel` with Qwen. The sentence is
  * treated purely as data (injection-hardened). `fetcher` is injectable so this
  * is testable without a network call.
  */
@@ -35,8 +35,8 @@ export async function translateSegmentText({
   languageLabel: string
   text: string
 }): Promise<SegmentTranslationResult> {
-  const result = await requestOpenAiStructuredOutput({
-    apiKey: getOpenAiApiKey(),
+  const result = await requestQwenStructuredOutput({
+    apiKey: getQwenApiKey(),
     fetcher,
     input: [
       {
@@ -52,7 +52,7 @@ export async function translateSegmentText({
         content: text,
       },
     ],
-    model: getOpenAiTranslationModel(),
+    model: getQwenTranslationModel(),
     schema: translationJsonSchema as unknown as Record<string, unknown>,
     schemaName: TRANSLATION_SCHEMA_NAME,
   })

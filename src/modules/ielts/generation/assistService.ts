@@ -1,6 +1,6 @@
 import 'server-only'
 
-import { getOpenAiApiKey } from '@/constants/environments'
+import { getQwenApiKey } from '@/constants/environments'
 import { format } from '@/i18n/format'
 import type { Messages } from '@/i18n/messages'
 import { en } from '@/i18n/messages/en'
@@ -17,7 +17,7 @@ import {
   IELTS_JOB_MAX_TOKENS,
   strictSchemaFor,
 } from './aiSchemas'
-import { openAiRequester } from './generationService'
+import { qwenRequester } from './generationService'
 import { numberRange } from './prompts'
 import {
   checkJobOutput,
@@ -75,7 +75,7 @@ export async function assistSection({
   copy = en.ieltsEditor.generation,
   instruction,
   key,
-  request = openAiRequester(),
+  request = qwenRequester(),
   section,
 }: {
   action: IeltsAssistAction
@@ -88,7 +88,7 @@ export async function assistSection({
 }): Promise<IeltsDecision<IeltsAssistProposal>> {
   if (key.startsWith('writing')) return ieltsError(400, copy.assistSkills)
 
-  if (!getOpenAiApiKey()) return ieltsError(503, copy.noApiKey)
+  if (!getQwenApiKey()) return ieltsError(503, copy.noApiKey)
 
   if (!materialText(section).trim()) return ieltsError(400, copy.materialFirst)
 

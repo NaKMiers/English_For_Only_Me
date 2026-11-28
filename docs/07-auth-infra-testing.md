@@ -3,15 +3,15 @@
 This document explains how "English For Only Me" (Next.js 16, Auth.js v5 /
 next-auth 5.0.0-beta.31, Mongoose 9) handles sign-in, roles, guest identity and
 its merge into an account, the owner-key data-isolation contract, its external
-service integrations (Google OAuth, YouTube Data API, OpenAI structured outputs
-and text-to-speech, Cloudinary image and audio uploads, MongoDB, and the
+service integrations (Google OAuth, YouTube Data API, Qwen structured outputs
+and text-to-speech on Alibaba Cloud Model Studio, Cloudinary image and audio uploads, MongoDB, and the
 vocabulary dictionary/translation providers), signed recall task tokens, the
 shared-content cache and its revalidation, the client write outbox, environment
 configuration, and the test setup. Every claim below is grounded in a specific
 file so an AI agent can reason about auth, authorization, integration fallbacks
 and limits, env keys, and the test harness without reading the whole tree.
 IELTS grading and generation domain logic lives in `docs/09-ielts.md`; this doc
-covers only how they call OpenAI and Cloudinary. Package versions: `next`
+covers only how they call Qwen and Cloudinary. Package versions: `next`
 16.2.10, `next-auth` 5.0.0-beta.31, `mongoose` ^9.7.3, `zod` ^4.4.3, `vitest`
 ^4.1.9, `playwright` ^1.61.1 (`package.json`).
 
@@ -314,59 +314,82 @@ network, so it is unit-testable without one.
   (`part=snippet,contentDetails,status`). States: `apiKeyMissing` (video saved
   as a URL-only draft), `notFound`, `failed`, and `ready` with mapped metadata.
 
-### 3.3 OpenAI
+### 3.3 Qwen (Alibaba Cloud Model Studio)
 
-Env: `OPENAI_API_KEY` (optional; without it every OpenAI feature reports
-"not configured") plus the per-feature model keys in section 6.
+Every AI feature runs on Qwen; there is no OpenAI code path. Env:
+`DASHSCOPE_API_KEY` (optional; without it every AI feature reports "not
+configured"), `DASHSCOPE_HOST` (optional origin, default
+`https://dashscope-intl.aliyuncs.com`; `getQwenHost()` trims a trailing slash)
+plus the per-feature model keys in section 6 (`src/constants/environments.ts`).
 
-Core client `src/lib/ai/openAiClientCore.ts`
-(`requestOpenAiStructuredOutput`) posts to `https://api.openai.com/v1/responses`
+Core client `src/lib/ai/qwenClientCore.ts` (`requestQwenStructuredOutput`)
+posts to `${getQwenCompatibleBaseUrl()}/responses`, i.e.
+`<host>/compatible-mode/v1/responses` (Qwen's OpenAI-compatible Responses API),
 with `text.format = { type: 'json_schema', strict: true, name, schema }`,
-`cache: 'no-store'`, an optional `reasoning.effort` (`minimal | low | medium |
-high`, omitted when unset), and `max_output_tokens` (default 1400; callers
-raise it explicitly because reasoning tokens count against it). It never
-throws; results:
+`store: false` on every call (Qwen keeps responses by default; learner text
+must not stay), `cache: 'no-store'`, and `max_output_tokens` (default 1400;
+callers raise it explicitly because reasoning tokens count against it).
+Thinking: Qwen thinks by default, so a call without `reasoningEffort` sends
+`enable_thinking: false`; a call with an effort (`low | medium | high`; Qwen
+ignores `minimal`, so the type omits it) sends `reasoning.effort` and keeps
+thinking on. `baseUrl` is injectable for tests. It never throws; results:
 
 | Outcome                  | Result                                                                                                  |
 | ------------------------ | ------------------------------------------------------------------------------------------------------- |
-| No API key               | `{ ok: false, message: 'OpenAI provider is not configured.' }`                                          |
-| Non-2xx                  | `ok: false` with the provider's `error.message`                                                         |
+| No API key               | `{ ok: false, message: 'AI provider is not configured.' }`, no request sent                             |
+| Non-2xx                  | `ok: false` with the provider's `error.message`, else "AI provider request failed."                     |
 | `status` not `completed` | `ok: false`, message names the status, `incomplete_details.reason`, and the `max_output_tokens` ceiling |
-| Empty text               | `ok: false`                                                                                             |
-| Thrown error             | `ok: false`, "OpenAI debrief provider is unavailable."                                                  |
-| Success                  | `{ ok: true, text, rawOutput, usage: { inputTokens, outputTokens } or null }`                           |
+| Empty text               | `ok: false`, "AI provider returned no text."                                                            |
+| Thrown error             | `ok: false`, "AI provider is unavailable."                                                              |
+| Success                  | `{ ok: true, text, rawOutput, usage: { inputTokens, outputTokens } or null }` (`AiUsage`)               |
 
-Strict schema adapter `src/lib/ai/openAiStrictSchema.ts`
-(`toOpenAiStrictSchema(zodSchema)`): converts a Zod schema with
+Text is read from `output_text` when present, else from the first
+`output[].content[].text` (Qwen returns only the latter).
+
+Strict schema adapter `src/lib/ai/strictJsonSchema.ts`
+(`toStrictJsonSchema(zodSchema)`): converts a Zod schema with
 `z.toJSONSchema`, drops keywords strict mode rejects (`minLength`,
 `maxLength`, `pattern`, `format`, `minimum`, `maximum`, `exclusive*`,
-`minItems`, `maxItems`, `default`, `examples`, `$schema`, `$id`), rewrites
-`oneOf` to `anyOf`, and forces every object to `required: <all keys>` plus
-`additionalProperties: false`. It throws on records (object
-`additionalProperties`) and on optional fields (use `.nullable()`). The Zod
-schema stays the authority: callers re-parse the response with it, so dropped
-limits are still enforced.
+`minItems`, `maxItems`, `default`, `examples`, `$schema`, `$id`; exported for
+tests as `STRICT_DROPPED_KEYWORDS`), rewrites `oneOf` to `anyOf`, and forces
+every object to `required: <all keys>` plus `additionalProperties: false`. It
+throws on records (object `additionalProperties`) and on optional fields (use
+`.nullable()`). The Zod schema stays the authority: callers re-parse the
+response with it, so dropped limits are still enforced. The real debrief,
+translation, examiner and writing-task generation schemas were checked live
+against Qwen on 2026-11-28.
 
 Callers:
 
-| Helper / caller                          | File                                                                                                                         | Model getter (default)                                              | Request limits                                                                                                                                                                        | Gate                                                                |
-| ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| Dictation debrief                        | `src/lib/ai/openAiClient.ts` -> `src/modules/dictation/ai/debriefService.ts`                                                 | `getOpenAiDebriefModel()` (`gpt-5.4-nano`)                          | default 1400 tokens                                                                                                                                                                   | On failure stores a failed debrief (`failureReason`, retry caveats) |
-| Segment translation                      | `src/lib/ai/openAiTranslate.ts` (`translateSegmentText`) via `src/app/api/dictation/segments/[segmentId]/translate/route.ts` | `getOpenAiTranslationModel()` (falls back to the debrief model)     | default 1400 tokens; system prompt treats the sentence as data only                                                                                                                   | `requireAdmin()`; provider failure -> 503                           |
-| IELTS writing grading and practice check | `src/modules/ielts/writing/runExaminer.ts`, `gradeWritingService.ts`                                                         | `getOpenAiIeltsGradingModel()` (falls back to the generation model) | 6000 tokens, `reasoningEffort: 'low'`, 240 s abort (`withTimeout`)                                                                                                                    | Signed-in only (guests 401), 503 without key, daily cap 429         |
-| IELTS section generation and assist      | `src/modules/ielts/generation/generationService.ts` (`openAiRequester`), `assistService.ts`                                  | `getOpenAiIeltsGenerationModel()` (`gpt-5.4`)                       | `IELTS_JOB_MAX_TOKENS` in `aiSchemas.ts` (reading 16000, listening script 8000, listening questions 8000, writing task 6000, assist 8000; x1.25 on a repair), low effort, 240 s abort | Admin routes                                                        |
-| IELTS listening audio (TTS)              | `src/lib/ai/openAiSpeech.ts` via `src/modules/ielts/audio/audioService.ts`                                                   | `getOpenAiTtsModel()` (`gpt-4o-mini-tts`)                           | 4 lines in parallel, one 240 s budget for the whole part                                                                                                                              | Admin route; 503 without key                                        |
+| Helper / caller                          | File                                                                                                                       | Model getter (default)                                            | Request limits                                                                                                                                                                                      | Gate                                                                |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| Dictation debrief                        | `src/lib/ai/qwenDebriefClient.ts` -> `src/modules/dictation/ai/debriefService.ts`                                          | `getQwenDebriefModel()` (`qwen3.8-flash`)                         | default 1400 tokens, thinking off                                                                                                                                                                   | On failure stores a failed debrief (`failureReason`, retry caveats) |
+| Segment translation                      | `src/lib/ai/qwenTranslate.ts` (`translateSegmentText`) via `src/app/api/dictation/segments/[segmentId]/translate/route.ts` | `getQwenTranslationModel()` (falls back to the debrief model)     | default 1400 tokens, thinking off; system prompt treats the sentence as data only                                                                                                                   | `requireAdmin()`; provider failure -> 503                           |
+| IELTS writing grading and practice check | `src/modules/ielts/writing/runExaminer.ts`, `gradeWritingService.ts`                                                       | `getQwenIeltsGradingModel()` (falls back to the generation model) | 6000 tokens, `reasoningEffort: 'low'`, 240 s abort (`withTimeout`)                                                                                                                                  | Signed-in only (guests 401), 503 without key, daily cap 429         |
+| IELTS section generation and assist      | `src/modules/ielts/generation/generationService.ts` (`qwenRequester`), `assistService.ts`                                  | `getQwenIeltsGenerationModel()` (`qwen3.8-max`)                   | `IELTS_JOB_MAX_TOKENS` in `aiSchemas.ts` (reading 16000, listening script 8000, listening questions 8000, writing task 6000, assist 8000; x1.25 on a repair), `reasoningEffort: 'low'`, 240 s abort | Admin routes                                                        |
+| IELTS listening audio (TTS)              | `src/lib/ai/qwenSpeech.ts` via `src/modules/ielts/audio/audioService.ts`                                                   | `getQwenTtsModel()` (`qwen-audio-3.1-tts-flash`)                  | 4 lines in parallel (each line is two requests; Qwen TTS allows 180 RPM), one 240 s budget for the whole part                                                                                       | Admin route; 503 without key                                        |
 
 The IELTS AI route handlers (`src/app/api/ielts/attempts/[attemptId]/{grade,check}/route.ts`,
 `src/app/api/admin/ielts/assist/route.ts`,
 `src/app/api/admin/ielts/tests/[testId]/sections/[key]/{generate,audio}/route.ts`)
 all export `maxDuration = 300`, above the 240 s per-request abort.
 
-Text-to-speech `synthesizeSpeechPcm` (`src/lib/ai/openAiSpeech.ts`) posts to
-`https://api.openai.com/v1/audio/speech` with `response_format: 'pcm'` (raw
-24 kHz, 16-bit, mono, little endian, so lines join without decoding), optional
-`instructions`, and an `AbortSignal`. It never throws: `{ ok: true, pcm }` or
-`{ ok: false, message }` ("Speech request timed out." on `TimeoutError`).
+Text-to-speech `synthesizeSpeechPcm` (`src/lib/ai/qwenSpeech.ts`) is two
+requests per line. It posts
+`{ model, input: { text, voice, format: 'wav', sample_rate: 24000, instruction } }`
+to `<host>/api/v1/services/audio/tts/SpeechSynthesizer` (DashScope native API,
+not the compatible one). The answer carries no audio, only
+`output.audio.url`; `normalizeAudioUrl` unescapes `&amp;`, forces `https`, and
+refuses any host not ending in `.aliyuncs.com` (no SSRF). The WAV is then
+downloaded without the API key, and `wavToPcm` (`src/lib/ai/wavToPcm.ts`, pure)
+walks the RIFF chunks, requires 16-bit mono PCM at 24 kHz, and returns the
+`data` chunk (to the end of the file if the size is a placeholder), so lines
+join without decoding. It never throws: `{ ok: true, pcm }` or
+`{ ok: false, message }` (provider `message`, "Speech provider returned no audio
+URL.", "Speech download failed (N).", a WAV format message, or "Speech request
+timed out." on `TimeoutError`). Voices are mapped from the logical ids stored in
+tests by `qwenVoiceFor` (`src/modules/ielts/constants.ts`, see
+`docs/09-ielts.md`).
 
 IELTS writing daily cap: `getIeltsWritingDailyLimit()` (`IELTS_WRITING_DAILY_LIMIT`,
 default 10, positive integers only) caps successful gradings per owner per UTC
@@ -583,26 +606,27 @@ Central access is `src/constants/environments.ts` via `ENV_KEYS`,
 (throws `MissingEnvironmentError`). All keys are server-only; none is
 `NEXT_PUBLIC_*` (per `api-security.md`). Values are never reproduced here.
 
-| Key                             | Required?                | Purpose                                                               | Default when unset                                                           |
-| ------------------------------- | ------------------------ | --------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `MONGODB_URI`                   | Required for DB features | Mongoose connection string                                            | none (`getMongoDbUri` throws)                                                |
-| `AUTH_SECRET`                   | Required for sign-in     | Auth.js JWT secret; also signs recall tokens                          | recall token falls back to `NEXTAUTH_SECRET`, then a dev literal             |
-| `GOOGLE_CLIENT_ID`              | Required for Google auth | OAuth client id                                                       | `''` in provider; sign-in UI hidden                                          |
-| `GOOGLE_CLIENT_SECRET`          | Required for Google auth | OAuth client secret                                                   | `''` in provider; sign-in UI hidden                                          |
-| `ADMIN_EMAILS`                  | Optional                 | Comma-separated admin allowlist                                       | empty set (no admins)                                                        |
-| `YOUTUBE_API_KEY`               | Optional                 | YouTube Data API metadata import                                      | URL-only drafts                                                              |
-| `OPENAI_API_KEY`                | Optional                 | All OpenAI calls (debrief, translation, IELTS grading/generation/TTS) | features report "not configured" (IELTS grading, check and audio return 503) |
-| `OPENAI_DEBRIEF_MODEL`          | Optional                 | Dictation debrief model                                               | `gpt-5.4-nano`                                                               |
-| `OPENAI_TRANSLATION_MODEL`      | Optional                 | Dictation segment translation model                                   | the debrief model                                                            |
-| `OPENAI_IELTS_GENERATION_MODEL` | Optional                 | IELTS section generation and assist                                   | `gpt-5.4`                                                                    |
-| `OPENAI_IELTS_GRADING_MODEL`    | Optional                 | IELTS writing grading and practice check                              | the generation model                                                         |
-| `OPENAI_TTS_MODEL`              | Optional                 | IELTS listening text-to-speech                                        | `gpt-4o-mini-tts`                                                            |
-| `IELTS_WRITING_DAILY_LIMIT`     | Optional                 | Successful writing gradings per owner per UTC day                     | 10 (non-positive or non-integer values ignored)                              |
-| `IELTS_GOAL`                    | Optional                 | Goal string for the dictation AI debrief                              | `IELTS Listening Band 7+`                                                    |
-| `CLOUDINARY_URL`                | Required for uploads     | `cloudinary://` credentials (thumbnails, IELTS audio/images)          | none (`getCloudinaryUrl` throws)                                             |
-| `MYMEMORY_EMAIL`                | Optional                 | Raises the MyMemory free translation quota                            | anonymous per-IP quota                                                       |
-| `REVALIDATE_SECRET`             | Optional                 | Secret for `POST /api/admin/revalidate` from scripts                  | secret path disabled (admins only)                                           |
-| `SITE_URL`                      | Optional                 | Canonical origin for SEO and the script revalidation target           | `AUTH_URL`, then `http://localhost:3000`                                     |
+| Key                           | Required?                | Purpose                                                                         | Default when unset                                                           |
+| ----------------------------- | ------------------------ | ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `MONGODB_URI`                 | Required for DB features | Mongoose connection string                                                      | none (`getMongoDbUri` throws)                                                |
+| `AUTH_SECRET`                 | Required for sign-in     | Auth.js JWT secret; also signs recall tokens                                    | recall token falls back to `NEXTAUTH_SECRET`, then a dev literal             |
+| `GOOGLE_CLIENT_ID`            | Required for Google auth | OAuth client id                                                                 | `''` in provider; sign-in UI hidden                                          |
+| `GOOGLE_CLIENT_SECRET`        | Required for Google auth | OAuth client secret                                                             | `''` in provider; sign-in UI hidden                                          |
+| `ADMIN_EMAILS`                | Optional                 | Comma-separated admin allowlist                                                 | empty set (no admins)                                                        |
+| `YOUTUBE_API_KEY`             | Optional                 | YouTube Data API metadata import                                                | URL-only drafts                                                              |
+| `DASHSCOPE_API_KEY`           | Optional                 | Qwen key for every AI call (debrief, translation, IELTS grading/generation/TTS) | features report "not configured" (IELTS grading, check and audio return 503) |
+| `DASHSCOPE_HOST`              | Optional                 | DashScope origin (the workspace API host can replace it)                        | `https://dashscope-intl.aliyuncs.com`                                        |
+| `QWEN_DEBRIEF_MODEL`          | Optional                 | Dictation debrief model                                                         | `qwen3.8-flash`                                                              |
+| `QWEN_TRANSLATION_MODEL`      | Optional                 | Dictation segment translation model                                             | the debrief model                                                            |
+| `QWEN_IELTS_GENERATION_MODEL` | Optional                 | IELTS section generation and assist                                             | `qwen3.8-max`                                                                |
+| `QWEN_IELTS_GRADING_MODEL`    | Optional                 | IELTS writing grading and practice check                                        | the generation model                                                         |
+| `QWEN_TTS_MODEL`              | Optional                 | IELTS listening text-to-speech                                                  | `qwen-audio-3.1-tts-flash`                                                   |
+| `IELTS_WRITING_DAILY_LIMIT`   | Optional                 | Successful writing gradings per owner per UTC day                               | 10 (non-positive or non-integer values ignored)                              |
+| `IELTS_GOAL`                  | Optional                 | Goal string for the dictation AI debrief                                        | `IELTS Listening Band 7+`                                                    |
+| `CLOUDINARY_URL`              | Required for uploads     | `cloudinary://` credentials (thumbnails, IELTS audio/images)                    | none (`getCloudinaryUrl` throws)                                             |
+| `MYMEMORY_EMAIL`              | Optional                 | Raises the MyMemory free translation quota                                      | anonymous per-IP quota                                                       |
+| `REVALIDATE_SECRET`           | Optional                 | Secret for `POST /api/admin/revalidate` from scripts                            | secret path disabled (admins only)                                           |
+| `SITE_URL`                    | Optional                 | Canonical origin for SEO and the script revalidation target                     | `AUTH_URL`, then `http://localhost:3000`                                     |
 
 Keys read outside `ENV_KEYS`: `NEXTAUTH_SECRET` (recall token fallback),
 `AUTH_URL` (`getSiteUrl` fallback), `PLAYWRIGHT_BASE_URL` and `CI`
@@ -667,7 +691,7 @@ There is no `package.json` script for Playwright.
 
 ### 7.4 Test inventory and style
 
-- `find src -name '*.test.ts*' | wc -l` => 195 co-located unit test files.
+- `find src -name '*.test.ts*' | wc -l` => 199 co-located unit test files.
 - E2E files (each `test.skip`s itself unless its env is set):
 
 | File                                           | Needs                                | Flow                                                                                                                             |
@@ -677,11 +701,11 @@ There is no `package.json` script for Playwright.
 | `src/modules/vocabulary/vocabularyCore.e2e.ts` | `PLAYWRIGHT_BASE_URL`, `MONGODB_URI` | Search a term, add it to learning, answer a recall task, see stats update                                                        |
 
 - Unit tests in this doc's scope include `src/lib/auth/{roles,guestMerge,ownerKey,clientOwnerKey,userProvisioning}.test.ts`,
-  `src/lib/ai/{openAiClientCore,openAiStrictSchema,openAiTranslate}.test.ts`,
+  `src/lib/ai/{qwenClientCore,strictJsonSchema,qwenTranslate,qwenSpeech,wavToPcm}.test.ts`,
   `src/lib/db/{catalogCache,connectDatabase,jsonRecords,revalidateCatalog,revalidateRequest}.test.ts`,
   `src/lib/sync/{outbox,clientOutbox}.test.ts`, and
   `src/lib/youtube/{extractYouTubeId,getYouTubeVideoMetadata}.test.ts`. There
-  are no unit tests for `src/lib/ai/openAiSpeech.ts` or `src/lib/cloudinary/*`.
+  are no unit tests for `src/lib/cloudinary/*`.
 - Naming (`.agents/rules/testing-quality.md`): unit tests sit next to source as
   `*.test.ts` / `*.test.tsx`; Playwright as `*.e2e.ts`.
 - Pure decision functions are extracted from route handlers so they test

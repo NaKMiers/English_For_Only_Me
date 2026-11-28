@@ -462,8 +462,8 @@ export const ielts = {
     submitBeforeGrading: 'Submit the attempt before grading.',
     taskNotInAttempt: 'That task is not in this attempt.',
     aiNotConfiguredCompare:
-      'OpenAI is not configured. Compare with the model answer yourself.',
-    aiNotConfigured: 'OpenAI is not configured.',
+      'AI is not configured. Compare with the model answer yourself.',
+    aiNotConfigured: 'AI is not configured.',
     gradingLimit: 'No gradings left today (limit {limit}).',
     alreadyGrading: 'This task is already being graded. Wait a moment.',
     taskContentMissing: 'The task content is missing.',

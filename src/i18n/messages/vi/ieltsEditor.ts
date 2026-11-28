@@ -440,7 +440,7 @@ export const ieltsEditor: Messages['ieltsEditor'] = {
     addSeries: 'Thêm chuỗi số liệu',
   },
   generation: {
-    noApiKey: 'Chưa cấu hình OPENAI_API_KEY.',
+    noApiKey: 'Chưa cấu hình DASHSCOPE_API_KEY.',
     testNotFound: 'Không tìm thấy đề.',
     sectionNotFound: 'Không tìm thấy phần thi.',
     staleRevision: 'Phần thi vừa được cập nhật ở nơi khác. Hãy tải lại.',

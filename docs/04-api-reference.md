@@ -22,7 +22,7 @@ not assumed.
 ### Runtime and module plumbing
 
 Every route sets `export const runtime = 'nodejs'` (Mongoose, cookies, crypto
-and provider SDKs need Node). Routes that call OpenAI set
+and provider SDKs need Node). Routes that call Qwen set
 `export const maxDuration = 300`
 (`src/app/api/ielts/attempts/[attemptId]/check/route.ts`,
 `.../grade/route.ts`, `src/app/api/admin/ielts/assist/route.ts`,
@@ -88,18 +88,18 @@ invalid.'`, `'Segment id is invalid.'`, first zod issue text, segment guard
 
 Common statuses across modules:
 
-| Status | Meaning                                                                                                                               |
-| ------ | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `400`  | invalid JSON (`SyntaxError`), zod failure, invalid id param (dictation), out-of-range query                                           |
-| `401`  | `UnauthenticatedError` from `requireUser`/`requireAdmin` -> `common.errors.unauthorized`; IELTS AI calls by a guest                   |
-| `403`  | `ForbiddenError` from `requireAdmin` -> `common.errors.forbidden`; IELTS practice-only features on a mock attempt                     |
-| `404`  | resource missing or not owned by the actor; IELTS invalid ObjectId params also map to `404`                                           |
-| `409`  | duplicate key (`code 11000`), stale revision/guard, `OutboxOwnerMismatchError` (queued for another learner), invalid state transition |
-| `410`  | retired endpoint                                                                                                                      |
-| `422`  | IELTS publish blocked by the consistency report                                                                                       |
-| `429`  | IELTS writing grading daily limit                                                                                                     |
-| `500`  | unexpected error (logged), dictation/vocab missing Mongo                                                                              |
-| `503`  | OpenAI not configured or failed (dictation translate, IELTS), grammar/IELTS missing Mongo, grammar idempotency claim still busy       |
+| Status | Meaning                                                                                                                                             |
+| ------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `400`  | invalid JSON (`SyntaxError`), zod failure, invalid id param (dictation), out-of-range query                                                         |
+| `401`  | `UnauthenticatedError` from `requireUser`/`requireAdmin` -> `common.errors.unauthorized`; IELTS AI calls by a guest                                 |
+| `403`  | `ForbiddenError` from `requireAdmin` -> `common.errors.forbidden`; IELTS practice-only features on a mock attempt                                   |
+| `404`  | resource missing or not owned by the actor; IELTS invalid ObjectId params also map to `404`                                                         |
+| `409`  | duplicate key (`code 11000`), stale revision/guard, `OutboxOwnerMismatchError` (queued for another learner), invalid state transition               |
+| `410`  | retired endpoint                                                                                                                                    |
+| `422`  | IELTS publish blocked by the consistency report                                                                                                     |
+| `429`  | IELTS writing grading daily limit                                                                                                                   |
+| `500`  | unexpected error (logged), dictation/vocab missing Mongo                                                                                            |
+| `503`  | Qwen (`DASHSCOPE_API_KEY`) not configured or failed (dictation translate, IELTS), grammar/IELTS missing Mongo, grammar idempotency claim still busy |
 
 Dictation routes map any thrown error with numeric `status` 401/403/409 through
 `getAccessErrorMessage` (`401 -> common.errors.unauthorized`,
@@ -389,14 +389,14 @@ Errors: `401`/`403`; `500` (`segmentEditFailed`).
 
 File: `src/app/api/dictation/segments/[segmentId]/translate/route.ts`.
 
-| Item   | Contract                                                                                                                                                                                     |
-| ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Auth   | admin, after body parsing                                                                                                                                                                    |
-| Body   | local `translateRequestSchema` (strict): `language` (2-20). Invalid -> `400` (`targetLanguageRequired`)                                                                                      |
-| Logic  | loads the segment and video `defaultLanguage`; same as primary -> `400` (`primaryLanguageNotTranslatable`); calls `translateSegmentText` (`src/lib/ai/openAiTranslate.ts`). Nothing is saved |
-| `200`  | `{ translation: string }`                                                                                                                                                                    |
-| Errors | `400` bad id (`invalidSegmentId`) / JSON / body; `401`/`403`; `404` (`segmentNotFound`); `503` with the provider message when translation fails; `500` (`segmentTranslateFailed`)            |
-| Client | `translateDictationSegmentApi` (admin reviews, then saves via `setTranslation`)                                                                                                              |
+| Item   | Contract                                                                                                                                                                                   |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Auth   | admin, after body parsing                                                                                                                                                                  |
+| Body   | local `translateRequestSchema` (strict): `language` (2-20). Invalid -> `400` (`targetLanguageRequired`)                                                                                    |
+| Logic  | loads the segment and video `defaultLanguage`; same as primary -> `400` (`primaryLanguageNotTranslatable`); calls `translateSegmentText` (`src/lib/ai/qwenTranslate.ts`). Nothing is saved |
+| `200`  | `{ translation: string }`                                                                                                                                                                  |
+| Errors | `400` bad id (`invalidSegmentId`) / JSON / body; `401`/`403`; `404` (`segmentNotFound`); `503` with the provider message when translation fails; `500` (`segmentTranslateFailed`)          |
+| Client | `translateDictationSegmentApi` (admin reviews, then saves via `setTranslation`)                                                                                                            |
 
 ### Sessions
 
@@ -803,7 +803,7 @@ running AI job gets `409` instead of overwriting.
 | `GET .../[testId]/vocab`                                | none                                                                                                                                                                                                                                                     | `200 { entries }` (`listIeltsTestVocabForAdmin(slug)`)                                                                                                                                       | `404` (`testNotFound`)                                                                                                                                                                                                     |
 | `PUT .../[testId]/vocab`                                | `saveTestVocabSchema` (`src/modules/ielts/vocab/testVocabRules.ts`, strict): `entryIds` (24-hex, max `IELTS_TEST_VOCAB_MAX` = 150), full ordered list                                                                                                    | `200 { entries }` (replaces the list; `updatedBy` = admin id)                                                                                                                                | `400`; `404`                                                                                                                                                                                                               |
 | `PUT .../[testId]/sections/[key]`                       | `saveSectionSchema`: `section` (`ieltsSectionInputSchema`), `revision` (int >= 0)                                                                                                                                                                        | `200 { test }`; marks the section `manual`                                                                                                                                                   | `400` `sectionMaterial`, `writingNoGroups`; `404`; `409` `sectionChanged`                                                                                                                                                  |
-| `POST .../[testId]/sections/[key]/generate`             | local strict schema: `step` (`draft \| repair \| script \| questions`), `revision`; invalid -> `400` (`invalidGenerate`)                                                                                                                                 | `200 { test, message }` (`generateSectionStep`, one OpenAI call)                                                                                                                             | `503` no API key; `404` test/section; `409` stale revision or already generating; `400` step not applicable, nothing to repair, script first (all `ieltsEditor.generation.*`)                                              |
+| `POST .../[testId]/sections/[key]/generate`             | local strict schema: `step` (`draft \| repair \| script \| questions`), `revision`; invalid -> `400` (`invalidGenerate`)                                                                                                                                 | `200 { test, message }` (`generateSectionStep`, one Qwen call)                                                                                                                               | `503` no API key; `404` test/section; `409` stale revision or already generating; `400` step not applicable, nothing to repair, script first (all `ieltsEditor.generation.*`)                                              |
 | `POST .../[testId]/sections/[key]/audio`                | local strict schema `{ revision }`; invalid -> `400` (`revisionRequired`)                                                                                                                                                                                | `200 { test }` (TTS, uploads, stores `listening.audio`, bumps revision)                                                                                                                      | `400` `onlyListeningAudio`, `noScript`; `503` `aiNotConfigured`; `404`; `409` `sectionChanged`, `sectionChangedDuringAudio`; `500` `audioFailed`                                                                           |
 | `POST /api/admin/ielts/assist`                          | local strict schema: `action` (`draft-questions \| paraphrase-distractors \| suggest-evidence \| check-answers`), `testId` (1-40, not used), `key` (`IELTS_SECTION_KEYS`), `section` (`ieltsSectionInputSchema`), `instruction` (max 1000, default `''`) | `200 { proposal }`; nothing is saved                                                                                                                                                         | `400` first issue or `invalidAssist`, writing sections (`assistSkills`), empty material (`materialFirst`); `503` `noApiKey`; `500` provider failure, bad JSON or bad shape. No Mongo pre-check                             |
 | `POST /api/admin/ielts/uploads/sign`                    | strict `{ kind: 'audio' \| 'image' }`; invalid -> `400` (`uploadKind`)                                                                                                                                                                                   | `200 { apiKey, cloudName, resourceType, uploadUrl, params }` (`createSignedUploadParams` in `src/lib/cloudinary/uploadAudio.ts`; folder `ielts/audio` with eager `f_mp3`, or `ielts/images`) | `401`/`403`; `500`. No database access                                                                                                                                                                                     |

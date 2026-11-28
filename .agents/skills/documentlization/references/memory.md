@@ -66,3 +66,13 @@ here; this is the single canonical copy (no Claude-side duplicate).
   from `scripts/syncIndexes.ts`; vocabulary not in `foldGuestIntoUser`).
 - Vitest at the repo root also collects `.claude/worktrees/**` tests; docs and
   checks should use `bun run test -- --exclude '.claude/**'` or run inside src.
+- 2026-11-28: OpenAI was removed; every AI feature runs on Qwen (Alibaba
+  Cloud Model Studio). Env keys are `DASHSCOPE_API_KEY`, `DASHSCOPE_HOST`,
+  `QWEN_*_MODEL`; `src/lib/ai` files are `qwenClientCore`, `qwenDebriefClient`,
+  `qwenTranslate`, `qwenSpeech`, `wavToPcm`, `strictJsonSchema`. AI wording
+  touches 01, 02, 04, 05, 07, 09 and README; grep `docs/` for the old provider
+  name after any AI change. "OpenAI-compatible" is still correct for Qwen's
+  `compatible-mode` Responses API.
+- `.env.example` is denied to Claude's Read/Edit tools (and to `git add`).
+  Learn its content from the owner's terminal output instead of working
+  around the permission rule.

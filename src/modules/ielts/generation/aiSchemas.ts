@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import { toOpenAiStrictSchema } from '@/lib/ai/openAiStrictSchema'
+import { toStrictJsonSchema } from '@/lib/ai/strictJsonSchema'
 
 import {
   ieltsChartVisualSchema,
@@ -11,7 +11,7 @@ import {
 
 /*
  * Strict AI output schemas, one per job kind. Every field is required
- * (nullable instead of optional) so they convert to OpenAI strict mode; the
+ * (nullable instead of optional) so they convert to strict json_schema mode; the
  * same Zod schema parses the response, so the dropped limits still apply.
  */
 
@@ -65,7 +65,7 @@ export const IELTS_JOB_MAX_TOKENS: Record<IeltsJobKind, number> = {
 let strictCache: Partial<Record<IeltsJobKind, Record<string, unknown>>> = {}
 
 export function strictSchemaFor(kind: IeltsJobKind) {
-  strictCache[kind] ??= toOpenAiStrictSchema(IELTS_JOB_SCHEMAS[kind])
+  strictCache[kind] ??= toStrictJsonSchema(IELTS_JOB_SCHEMAS[kind])
 
   return strictCache[kind]
 }

@@ -1,7 +1,8 @@
 import { z } from 'zod'
 
 /*
- * OpenAI structured outputs in strict mode accept a subset of JSON Schema.
+ * Strict structured outputs (json_schema, `strict: true`) accept a subset of
+ * JSON Schema.
  * This turns a Zod schema into that subset. The Zod schema stays the
  * authority: its limits (lengths, ranges, sizes) are dropped from the JSON
  * Schema here but still enforced when the response is parsed with it.
@@ -62,14 +63,14 @@ function visit(node: unknown, path: string): unknown {
       typeof source.additionalProperties === 'object'
     )
       throw new Error(
-        `toOpenAiStrictSchema: records are not allowed in strict mode (${path}).`
+        `toStrictJsonSchema: records are not allowed in strict mode (${path}).`
       )
 
     const optional = keys.filter(key => !required.includes(key))
 
     if (optional.length)
       throw new Error(
-        `toOpenAiStrictSchema: optional fields are not allowed, use .nullable() (${path}: ${optional.join(', ')}).`
+        `toStrictJsonSchema: optional fields are not allowed, use .nullable() (${path}: ${optional.join(', ')}).`
       )
 
     next.properties = properties
@@ -80,11 +81,9 @@ function visit(node: unknown, path: string): unknown {
   return next
 }
 
-export function toOpenAiStrictSchema(
-  schema: z.ZodType
-): Record<string, unknown> {
+export function toStrictJsonSchema(schema: z.ZodType): Record<string, unknown> {
   return visit(z.toJSONSchema(schema), '$') as Record<string, unknown>
 }
 
 /** Every keyword strict mode rejects, for tests. */
-export const OPENAI_STRICT_DROPPED_KEYWORDS = DROPPED_KEYWORDS
+export const STRICT_DROPPED_KEYWORDS = DROPPED_KEYWORDS

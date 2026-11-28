@@ -2,8 +2,8 @@ import 'server-only'
 
 import { Types } from 'mongoose'
 
-import { getIeltsGoal, getOpenAiDebriefModel } from '@/constants/environments'
-import { requestOpenAiDebriefStructuredOutput } from '@/lib/ai/openAiClient'
+import { getIeltsGoal, getQwenDebriefModel } from '@/constants/environments'
+import { requestQwenDebriefStructuredOutput } from '@/lib/ai/qwenDebriefClient'
 import { DictationDebriefModel } from '@/models/dictation/DictationDebriefModel'
 import { DictationSessionModel } from '@/models/dictation/DictationSessionModel'
 import { DictationTranscriptModel } from '@/models/dictation/DictationTranscriptModel'
@@ -173,7 +173,7 @@ async function createFailedDebrief({
     inputSnapshotHash,
     keyVocabulary: [],
     listeningTraps: [],
-    model: getOpenAiDebriefModel(),
+    model: getQwenDebriefModel(),
     nextActions: ['Retry the AI debrief after checking provider settings.'],
     userId,
     promptVersion: DICTATION_DEBRIEF_PROMPT_VERSION,
@@ -223,7 +223,7 @@ export async function generateDictationDebriefForUser({
       debrief: toDictationDebriefRecord(cachedDebrief),
     }
 
-  const providerResult = await requestOpenAiDebriefStructuredOutput({
+  const providerResult = await requestQwenDebriefStructuredOutput({
     messages: buildDictationDebriefMessages(snapshotResult.snapshot),
     schema: dictationDebriefJsonSchema,
     schemaName: DICTATION_DEBRIEF_SCHEMA_NAME,
@@ -252,7 +252,7 @@ export async function generateDictationDebriefForUser({
       ...parsedOutput,
       failureReason: null,
       inputSnapshotHash,
-      model: getOpenAiDebriefModel(),
+      model: getQwenDebriefModel(),
       userId,
       promptVersion: DICTATION_DEBRIEF_PROMPT_VERSION,
       rawOutput: providerResult.rawOutput,
