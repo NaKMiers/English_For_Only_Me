@@ -9,6 +9,7 @@ import {
   useReducer,
   useRef,
   useState,
+  useTransition,
 } from 'react'
 
 import { ActionButton } from '@/components/ui/ActionButton'
@@ -77,6 +78,7 @@ export function LessonPlayer({
   const reducer = useMemo(() => createPlayerReducer(plays), [plays])
   const [state, dispatch] = useReducer(reducer, plays, initialPlayerState)
   const [confirmLeave, setConfirmLeave] = useState(false)
+  const [restarting, startRestart] = useTransition()
   const [comboFlash, setComboFlash] = useState<number | null>(null)
   const [startedAt, setStartedAt] = useState<number | null>(null)
   const [finishedAt, setFinishedAt] = useState<number | null>(null)
@@ -229,14 +231,15 @@ export function LessonPlayer({
           journey={journey}
           mode={mode}
           onComplete={() => playSting('complete')}
-          onRestart={() => {
-            // Same cards again, no reload: the reducer starts over.
-            setStartedAt(null)
-            setFinishedAt(null)
-            setComboFlash(null)
-            dispatch({ type: 'reset' })
-          }}
+          onRestart={() =>
+            // A fresh server render, no full reload: a new checkpoint or
+            // review draw and option order, and journey data that knows
+            // this session was saved. The server wrapper keys the player on
+            // its seed, so the new render remounts it from the start.
+            startRestart(() => router.refresh())
+          }
           plays={plays}
+          restarting={restarting}
           state={state}
           targetId={targetId}
           title={title}
@@ -274,17 +277,20 @@ export function LessonPlayer({
               {plural(messages.common.journey.retryPip, progress.retriesLeft)}
             </span>
           ) : null}
-          <span
-            aria-label={format(messages.common.journey.stepOfLabel, {
-              done: progress.step,
-              total: progress.total,
-            })}
-            className="text-ink-soft shrink-0 text-xs tabular-nums"
-          >
-            {format(messages.common.journey.stepOf, {
-              done: progress.step,
-              total: progress.total,
-            })}
+          <span className="text-ink-soft shrink-0 text-xs tabular-nums">
+            {/* aria-label is not read on a plain span: sr-only text is. */}
+            <span aria-hidden="true">
+              {format(messages.common.journey.stepOf, {
+                done: progress.step,
+                total: progress.total,
+              })}
+            </span>
+            <span className="sr-only">
+              {format(messages.common.journey.stepOfLabel, {
+                done: progress.step,
+                total: progress.total,
+              })}
+            </span>
           </span>
         </div>
         <span
@@ -351,6 +357,11 @@ export function LessonPlayer({
                 )}
                 ref={feedbackRef}
               >
+                {/* The verdict pill below is an icon; the live region says
+                    the word. */}
+                <p className="sr-only">
+                  {state.grade.correct ? t.correct : t.notQuite}
+                </p>
                 {state.grade.correct ? null : (
                   <p className="flex items-start gap-1 font-medium">
                     <span className="min-w-0">
@@ -378,6 +389,7 @@ export function LessonPlayer({
           <div className="min-w-0 flex-1">
             {state.grade ? (
               <p
+                aria-hidden="true"
                 className={cn(
                   'border-line text-surface inline-flex size-9 items-center justify-center rounded-full border',
                   'motion-safe:animate-in motion-safe:zoom-in-90',
@@ -395,10 +407,6 @@ export function LessonPlayer({
                     className="size-4 stroke-3"
                   />
                 )}
-                {/* The icon says it; the word stays for screen readers. */}
-                <span className="sr-only">
-                  {state.grade.correct ? t.correct : t.notQuite}
-                </span>
               </p>
             ) : null}
           </div>

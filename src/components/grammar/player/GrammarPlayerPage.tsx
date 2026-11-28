@@ -32,7 +32,8 @@ export function GrammarPlayerPage({
   targetId,
   title,
 }: Props) {
-  const plays = preparePlayCards(cards, createRng(randomSeed()))
+  const seed = randomSeed()
+  const plays = preparePlayCards(cards, createRng(seed))
 
   return (
     // Exactly one viewport tall, so the action bar is always on screen; below
@@ -46,6 +47,9 @@ export function GrammarPlayerPage({
         exitHref="/grammar"
         intro={intro}
         journey={journey}
+        // A new seed per render: Redo / Retry refresh the route and the
+        // new key starts the player over on the new draw.
+        key={seed}
         mode={mode}
         plays={plays}
         targetId={targetId}

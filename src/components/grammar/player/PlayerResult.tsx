@@ -63,8 +63,10 @@ interface Props {
   /** The path around this session (server data); null on old callers. */
   journey?: PlayerJourney | null
   onComplete: () => void
-  /** Play the same cards again (Redo / Retry), without a reload. */
+  /** Play again (Redo / Retry): a fresh server render, no full reload. */
   onRestart: () => void
+  /** True while the fresh render for Redo / Retry is on its way. */
+  restarting?: boolean
 }
 
 function createKey() {
@@ -135,6 +137,7 @@ export function PlayerResult({
   onComplete,
   onRestart,
   plays,
+  restarting = false,
   state,
   targetId,
   title,
@@ -388,6 +391,7 @@ export function PlayerResult({
           <>
             {canRetry ? (
               <ActionButton
+                disabled={restarting}
                 onClick={onRestart}
                 tone="paper"
               >
