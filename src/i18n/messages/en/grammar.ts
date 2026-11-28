@@ -107,9 +107,6 @@ export const grammar = {
     answerLabel: 'Answer:',
     correct: 'Correct!',
     notQuite: 'Not quite',
-    pressToCheck: 'Press {key} to check',
-    pressToContinue: 'Press {key} to continue',
-    enter: 'Enter',
     check: 'Check',
     leaveTitle: 'Leave this lesson?',
     leaveDescription:

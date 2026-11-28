@@ -41,7 +41,7 @@ const tileToneClassName: Record<TileTone, string> = {
 }
 
 const tileClassName =
-  'border-line rounded-control soft-press min-h-11 border px-3 py-2 text-left font-sans text-base leading-snug font-bold disabled:cursor-default'
+  'border-line rounded-control soft-press hover-pop min-h-11 border px-3 py-2 text-left font-sans text-base leading-snug font-medium disabled:cursor-default'
 
 /**
  * A word tile or answer option. Raw button on purpose: it is a segmented
@@ -91,7 +91,7 @@ function SentenceWithBlank({
   const [before, after] = sentence.split('___')
 
   return (
-    <p className="font-sans text-xl leading-relaxed font-semibold sm:text-2xl">
+    <p className="font-sans text-xl leading-relaxed font-medium sm:text-2xl">
       {before}
       <span
         className={cn(
@@ -125,12 +125,12 @@ export function ExplainCardView({ card }: ExplainProps) {
   return (
     <div className="grid gap-4">
       <Prompt>{t.remember}</Prompt>
-      <h2 className="font-sans text-2xl leading-tight font-semibold sm:text-3xl">
+      <h2 className="font-sans text-2xl leading-tight font-medium sm:text-3xl">
         {card.title}
       </h2>
       <p className="text-base leading-relaxed sm:text-lg">{card.body}</p>
       {card.formula ? (
-        <p className="border-line bg-tint rounded-control w-fit max-w-full border px-3 py-2 font-mono text-sm font-bold sm:text-base">
+        <p className="border-line bg-tint rounded-control w-fit max-w-full border px-3 py-2 font-mono text-sm font-medium sm:text-base">
           {card.formula}
         </p>
       ) : null}
@@ -141,7 +141,7 @@ export function ExplainCardView({ card }: ExplainProps) {
               className="border-line rounded-control bg-surface grid gap-0.5 border px-3 py-2"
               key={example.en}
             >
-              <span className="flex items-start gap-1 font-bold">
+              <span className="flex items-start gap-1 font-medium">
                 <span className="min-w-0 flex-1">{example.en}</span>
                 <SpeakButton text={example.en} />
               </span>
@@ -152,7 +152,7 @@ export function ExplainCardView({ card }: ExplainProps) {
       ) : null}
       {card.pitfall ? (
         <div className="border-danger rounded-control grid gap-1.5 border border-dashed px-3 py-2">
-          <span className="text-danger text-xs font-semibold">
+          <span className="text-danger text-xs font-medium">
             {t.commonMistake}
           </span>
           <span className="flex items-center gap-2">
@@ -165,7 +165,7 @@ export function ExplainCardView({ card }: ExplainProps) {
               {card.pitfall.wrong}
             </span>
           </span>
-          <span className="flex items-center gap-2 font-bold">
+          <span className="flex items-center gap-2 font-medium">
             <Check
               aria-hidden
               className="text-lesson-correct size-4 shrink-0"
@@ -226,7 +226,7 @@ function ChoiceView({ card, checked, draft, onDraft, play }: PracticeProps) {
         />
       ) : null}
       {card.sentence && !card.sentence.includes('___') ? (
-        <p className="font-sans text-xl leading-relaxed font-semibold sm:text-2xl">
+        <p className="font-sans text-xl leading-relaxed font-medium sm:text-2xl">
           {card.sentence}
         </p>
       ) : null}
@@ -316,7 +316,7 @@ function FillView({
           autoComplete="off"
           autoCorrect="off"
           autoFocus
-          className="border-line bg-surface rounded-control h-12 border px-3 text-lg font-bold"
+          className="border-line bg-surface rounded-control h-12 border px-3 text-lg font-medium"
           disabled={checked !== null}
           enterKeyHint="done"
           maxLength={120}
@@ -444,7 +444,7 @@ function OrderBoard({
         {endMark ? (
           <span
             aria-label={endMark === '?' ? t.question : t.statement}
-            className="self-end font-sans text-2xl leading-none font-semibold"
+            className="self-end font-sans text-2xl leading-none font-medium"
           >
             {endMark}
           </span>

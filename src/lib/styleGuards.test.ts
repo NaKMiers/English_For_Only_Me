@@ -144,8 +144,6 @@ const RAW_PALETTE: Guard = {
 const HEAVY_WEIGHT: Guard = {
   allow: [],
   baseline: [
-    'src/components/grammar/player/LessonPlayer.tsx',
-    'src/components/grammar/player/PlayerCard.tsx',
     'src/components/grammar/player/PlayerResult.tsx',
     'src/components/ielts/review/LineDictation.tsx',
     'src/components/ielts/runner/PassagePane.tsx',

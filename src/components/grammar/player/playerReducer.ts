@@ -168,3 +168,37 @@ export function summarizePlayer(state: PlayerState) {
     total,
   }
 }
+
+export interface LessonProgress {
+  /** 0 to 1: first-pass cards done over the lesson's own cards. */
+  ratio: number
+  /** Missed cards still waiting for their retry. */
+  retriesLeft: number
+  /** 1-based number of the card on screen, capped at the lesson's cards. */
+  step: number
+  total: number
+}
+
+/**
+ * How far through the lesson the learner is, measured on the lesson's own
+ * cards only. A miss appends a retry to the queue, which used to shrink the
+ * bar; here a retry shows as a pip beside the bar and the bar and the step
+ * count never go backwards.
+ */
+export function lessonProgress(
+  state: PlayerState,
+  total: number
+): LessonProgress {
+  if (total <= 0) return { ratio: 1, retriesLeft: 0, step: 0, total: 0 }
+
+  const done = Math.min(state.position, total)
+
+  return {
+    ratio: state.finished ? 1 : done / total,
+    retriesLeft: state.finished
+      ? 0
+      : Math.max(0, state.queue.length - Math.max(state.position, total)),
+    step: Math.min(state.position + 1, total),
+    total,
+  }
+}

@@ -108,9 +108,6 @@ export const grammar: Messages['grammar'] = {
     answerLabel: 'Đáp án:',
     correct: 'Chính xác!',
     notQuite: 'Chưa đúng',
-    pressToCheck: 'Nhấn {key} để kiểm tra',
-    pressToContinue: 'Nhấn {key} để tiếp tục',
-    enter: 'Enter',
     check: 'Kiểm tra',
     leaveTitle: 'Rời bài học này?',
     leaveDescription:

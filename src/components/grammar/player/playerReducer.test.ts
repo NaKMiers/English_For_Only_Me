@@ -8,6 +8,7 @@ import {
   createPlayerReducer,
   currentPlay,
   initialPlayerState,
+  lessonProgress,
   summarizePlayer,
   type PlayerAction,
   type PlayerState,
@@ -137,5 +138,46 @@ describe('playerReducer', () => {
     ])
 
     expect(run([{ type: 'continue' }], done)).toBe(done)
+  })
+})
+
+describe('lessonProgress', () => {
+  it('never goes backwards across a miss, its retry and a pass', () => {
+    const steps: PlayerAction[] = [
+      { type: 'continue' },
+      ...answer(1), // miss: q1 is requeued
+      ...answer(0),
+      ...answer(0),
+      ...answer(0), // the retry of q1
+    ]
+    let state = initialPlayerState(plays)
+    let previous = lessonProgress(state, plays.length)
+    let sawRetryPip = false
+
+    for (const action of steps) {
+      state = reduce(state, action)
+      const now = lessonProgress(state, plays.length)
+
+      expect(now.ratio).toBeGreaterThanOrEqual(previous.ratio)
+      expect(now.step).toBeGreaterThanOrEqual(previous.step)
+      if (now.retriesLeft > 0) sawRetryPip = true
+      previous = now
+    }
+
+    expect(sawRetryPip).toBe(true)
+    expect(state.finished).toBe(true)
+    expect(lessonProgress(state, plays.length)).toMatchObject({
+      ratio: 1,
+      retriesLeft: 0,
+      step: 4,
+    })
+  })
+
+  it('a miss adds a retry pip instead of shrinking the bar', () => {
+    const before = run([{ type: 'continue' }, answer(1)[0], answer(1)[1]])
+    const progress = lessonProgress(before, plays.length)
+
+    expect(progress.retriesLeft).toBe(1)
+    expect(progress.ratio).toBe(1 / 4)
   })
 })

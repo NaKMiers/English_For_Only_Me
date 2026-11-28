@@ -13,6 +13,7 @@ import {
 
 import { ActionButton } from '@/components/ui/ActionButton'
 import { IconButton } from '@/components/ui/IconButton'
+import { Progress } from '@/components/ui/progress'
 import {
   Dialog,
   DialogContent,
@@ -22,8 +23,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { useMessages } from '@/i18n/client'
-import { format } from '@/i18n/format'
-import { formatNodes } from '@/i18n/formatNodes'
+import { format, plural } from '@/i18n/format'
 import { useLessonSfx } from '@/lib/audio/useLessonSfx'
 import { cn } from '@/lib/utils'
 import type { GrammarSessionMode } from '@/modules/grammar/constants'
@@ -39,6 +39,7 @@ import {
   createPlayerReducer,
   currentPlay,
   initialPlayerState,
+  lessonProgress,
 } from './playerReducer'
 import { PlayerResult } from './PlayerResult'
 
@@ -85,7 +86,7 @@ export function LessonPlayer({
   const play = currentPlay(plays, state)
   const card = play?.card
   const answeredAny = Object.keys(state.firstAnswers).length > 0
-  const progress = state.finished ? 1 : state.position / state.queue.length
+  const progress = lessonProgress(state, plays.length)
 
   const check = useCallback(() => {
     if (!play || !isPracticeCard(play.card) || state.grade || !state.draft)
@@ -245,25 +246,39 @@ export function LessonPlayer({
         >
           <X aria-hidden />
         </IconButton>
-        <div
-          aria-label={format(t.progress, {
-            percent: Math.round(progress * 100),
-          })}
-          aria-valuemax={100}
-          aria-valuemin={0}
-          aria-valuenow={Math.round(progress * 100)}
-          className="border-line bg-surface rounded-tag h-4 min-w-0 flex-1 overflow-hidden border"
-          role="progressbar"
-        >
-          <div
-            className="bg-brand h-full transition-[width] duration-300 ease-out motion-reduce:transition-none"
-            style={{ width: `${progress * 100}%` }}
+        <div className="flex min-w-0 flex-1 items-center gap-2">
+          <Progress
+            aria-label={format(t.progress, {
+              percent: Math.round(progress.ratio * 100),
+            })}
+            className="min-w-0 flex-1"
+            tone="grammar"
+            trackClassName="h-3"
+            value={Math.round(progress.ratio * 100)}
           />
+          {progress.retriesLeft > 0 ? (
+            // A missed card comes back once: a pip, not a shrinking bar.
+            <span className="bg-pastel-peach text-accent-orange shrink-0 rounded-full px-2 py-0.5 text-xs font-medium tabular-nums">
+              {plural(messages.common.journey.retryPip, progress.retriesLeft)}
+            </span>
+          ) : null}
+          <span
+            aria-label={format(messages.common.journey.stepOfLabel, {
+              done: progress.step,
+              total: progress.total,
+            })}
+            className="text-ink-soft shrink-0 text-xs tabular-nums"
+          >
+            {format(messages.common.journey.stepOf, {
+              done: progress.step,
+              total: progress.total,
+            })}
+          </span>
         </div>
         <span
           aria-live="polite"
           className={cn(
-            'border-line rounded-tag inline-flex min-w-14 items-center justify-center gap-1 border px-2 py-1 text-sm font-semibold',
+            'border-line inline-flex min-w-14 items-center justify-center gap-1 rounded-full border px-2.5 py-1 text-sm font-medium',
             state.combo >= 3 ? 'bg-brand text-surface' : 'bg-surface',
             comboFlash !== null &&
               'motion-safe:animate-in motion-safe:zoom-in-150'
@@ -294,12 +309,12 @@ export function LessonPlayer({
           data-slot="player-stage"
         >
           {intro && state.position === 0 ? (
-            <p className="border-line bg-tint rounded-control border px-3 py-2 text-sm font-bold">
+            <p className="border-line bg-tint rounded-control border px-3 py-2 text-sm font-medium">
               {intro}
             </p>
           ) : null}
           {comboFlash !== null ? (
-            <p className="text-brand motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-2 text-center font-sans text-lg font-semibold">
+            <p className="text-brand motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-2 text-center font-sans text-lg font-medium">
               {format(t.combo, { count: comboFlash })}
             </p>
           ) : null}
@@ -319,16 +334,13 @@ export function LessonPlayer({
             {state.grade && card && isPracticeCard(card) ? (
               <div
                 className={cn(
-                  'bg-surface rounded-control grid scroll-mb-4 gap-1.5 border border-l-[10px] p-3 sm:p-4',
-                  'motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-2',
-                  state.grade.correct
-                    ? 'border-lesson-correct'
-                    : 'border-danger'
+                  'bg-surface rounded-control border-line grid scroll-mb-4 gap-1.5 border p-3 sm:p-4',
+                  'motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-2'
                 )}
                 ref={feedbackRef}
               >
                 {state.grade.correct ? null : (
-                  <p className="flex items-start gap-1 font-bold">
+                  <p className="flex items-start gap-1 font-medium">
                     <span className="min-w-0">
                       <span className="text-danger">{t.answerLabel} </span>
                       {state.grade.expected}
@@ -355,7 +367,7 @@ export function LessonPlayer({
             {state.grade ? (
               <p
                 className={cn(
-                  'border-line text-surface rounded-tag inline-flex items-center gap-1.5 border px-2.5 py-1 font-sans text-sm font-semibold sm:text-base',
+                  'border-line text-surface inline-flex size-9 items-center justify-center rounded-full border',
                   'motion-safe:animate-in motion-safe:zoom-in-90',
                   state.grade.correct ? 'bg-lesson-correct' : 'bg-danger'
                 )}
@@ -371,19 +383,12 @@ export function LessonPlayer({
                     className="size-4 stroke-3"
                   />
                 )}
-                {state.grade.correct ? t.correct : t.notQuite}
+                {/* The icon says it; the word stays for screen readers. */}
+                <span className="sr-only">
+                  {state.grade.correct ? t.correct : t.notQuite}
+                </span>
               </p>
-            ) : (
-              <p className="hidden text-sm opacity-70 sm:block">
-                {formatNodes(isPractice ? t.pressToCheck : t.pressToContinue, {
-                  key: (
-                    <kbd className="border-line rounded-tag border px-1.5 font-sans text-xs font-semibold">
-                      {t.enter}
-                    </kbd>
-                  ),
-                })}
-              </p>
-            )}
+            ) : null}
           </div>
           <ActionButton
             className="min-w-32 shrink-0 sm:min-w-40"
@@ -404,7 +409,7 @@ export function LessonPlayer({
       >
         <DialogContent className="border-line bg-surface border">
           <DialogHeader>
-            <DialogTitle className="font-sans text-lg font-semibold">
+            <DialogTitle className="font-sans text-lg font-medium">
               {t.leaveTitle}
             </DialogTitle>
             <DialogDescription>{t.leaveDescription}</DialogDescription>
