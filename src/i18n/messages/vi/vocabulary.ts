@@ -221,6 +221,7 @@ export const vocabulary: Messages['vocabulary'] = {
       other: '{count} từ trong mục này.',
     },
     viewsNav: 'Các mục từ vựng',
+    pagerNav: 'Các trang danh sách từ',
     learnIt: 'Học từ này',
     search: 'Tìm từ của bạn',
     searchLabel: 'Tìm từ trong mục này',

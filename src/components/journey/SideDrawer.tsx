@@ -92,6 +92,8 @@ export function DrawerHandle({
       // trigger relying on aria-expanded / aria-controls.
       className={cn(
         'soft-press hover-pop border-line absolute inset-y-0 -right-4 z-10 my-auto grid h-16 w-8 place-items-center rounded-full border',
+        // The pill is 32px wide; the hit area is 44px.
+        "before:absolute before:-inset-x-1.5 before:inset-y-0 before:content-['']",
         open
           ? 'bg-cta text-cta-fg'
           : cn('bg-surface shadow-sm', accentClassName)

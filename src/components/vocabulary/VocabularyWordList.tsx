@@ -502,7 +502,7 @@ export function VocabularyWordList({
 
       {pageCount > 1 ? (
         <nav
-          aria-label={t.wordList.viewsNav}
+          aria-label={t.wordList.pagerNav}
           className="flex items-center justify-between gap-2"
         >
           <ActionButton

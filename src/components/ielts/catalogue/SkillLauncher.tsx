@@ -92,10 +92,7 @@ export function SkillLauncher({
       className="border-line bg-surface rounded-panel keep-frame overflow-hidden border"
       defaultOpen={defaultOpen}
     >
-      <CollapsibleTrigger
-        aria-label={title}
-        className="soft-press hover-pop group flex min-h-14 w-full items-center gap-3 px-4 py-2 text-left"
-      >
+      <CollapsibleTrigger className="soft-press hover-pop group flex min-h-14 w-full items-center gap-3 px-4 py-2 text-left">
         <span
           aria-hidden="true"
           className="bg-pastel-peach text-accent-orange grid size-10 shrink-0 place-items-center rounded-full"

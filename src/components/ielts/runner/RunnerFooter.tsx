@@ -156,7 +156,7 @@ export function PartSwitcher({
             aria-label={item.label}
             aria-pressed={active}
             className={cn(
-              'border-line relative grid h-8 min-w-8 place-items-center border-l px-1.5 font-sans text-sm font-semibold tabular-nums transition-colors first:border-l-0',
+              'border-line relative grid h-11 min-w-11 place-items-center border-l px-1.5 font-sans text-sm font-semibold tabular-nums transition-colors first:border-l-0 md:h-8 md:min-w-8',
               item.text && 'px-3',
               active
                 ? 'bg-cta text-cta-fg'

@@ -68,7 +68,7 @@ describe('SkillLauncher', () => {
     renderLauncher(null, null)
 
     expect(screen.queryByRole('link', { name: 'Go' })).toBeNull()
-    fireEvent.click(screen.getByRole('button', { name: 'Reading' }))
+    fireEvent.click(screen.getByRole('button', { name: /^Reading/ }))
     expect(screen.getByRole('link', { name: 'Go' })).toBeInTheDocument()
   })
 

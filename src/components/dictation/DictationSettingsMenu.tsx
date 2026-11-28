@@ -54,7 +54,7 @@ const GROUP_LABEL_CLASS_NAME =
   'text-ink-soft px-3 pt-1 font-sans text-[0.65rem] font-normal'
 
 const RADIO_ITEM_CLASS_NAME =
-  'focus:bg-tint data-checked:bg-tint min-h-9 rounded-tag py-1 pr-8 pl-3 font-sans text-xs font-medium'
+  'focus:bg-tint data-checked:bg-tint min-h-11 rounded-tag py-1 pr-8 pl-3 font-sans text-xs font-medium'
 
 /**
  * Playback speed, answer text size, video size, the answer preferences and

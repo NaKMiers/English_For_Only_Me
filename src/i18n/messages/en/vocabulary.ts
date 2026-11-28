@@ -219,6 +219,7 @@ export const vocabulary = {
       other: '{count} words in this view.',
     },
     viewsNav: 'Vocabulary word views',
+    pagerNav: 'Word list pages',
     learnIt: 'Learn it',
     search: 'Search your words',
     searchLabel: 'Search the words in this view',

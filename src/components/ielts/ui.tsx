@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils'
 
 /*
  * IELTS building blocks. They are thin wrappers over the app's manga
- * primitives (ActionButton, IconButton, ContentPanel, MetricTile, PageTag), so
+ * primitives (ActionButton, IconButton, ContentPanel, PageTag), so
  * the module wears the same sticker look and follows the light-up theme. The
  * wrappers only add what the module needs on top: a `danger` button tone and
  * the page frame.

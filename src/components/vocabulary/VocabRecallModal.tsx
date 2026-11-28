@@ -44,9 +44,9 @@ import type {
 
 interface Props {
   isLoading: boolean
-  /** Why the next page of cards failed to load, if it did. */
   /** Shown when the queue is empty and the session is over. */
   endScreen?: ReactNode
+  /** Why the next page of cards failed to load, if it did. */
   loadError?: string | null
   /** Move past an answered card. */
   onAdvance: (task: VocabRecallTaskRecord) => void

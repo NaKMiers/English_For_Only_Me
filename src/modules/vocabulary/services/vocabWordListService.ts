@@ -167,6 +167,11 @@ export function getVocabWordListSkip({
   return (Math.max(page, 1) - 1) * perPage
 }
 
+/** A search term as a literal regex prefix: no user regex syntax. */
+function escapeRegex(input: string) {
+  return input.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
 /**
  * One round trip for a page of the word list and its total. The entry join and
  * the Vietnamese-meaning filter run BEFORE skip/limit, so an item whose entry
@@ -174,10 +179,6 @@ export function getVocabWordListSkip({
  * first and dropping rows afterwards gave short pages, a total that counted
  * hidden words and an empty last page).
  */
-function escapeRegex(input: string) {
-  return input.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-}
-
 export function buildVocabWordListPipeline({
   entryCollection,
   filter,
