@@ -37,7 +37,10 @@ export const dictation: Messages['dictation'] = {
   },
   journey: {
     title: 'Hành trình luyện nghe',
-    sentences: 'câu',
+    sentences: {
+      one: 'câu',
+      other: 'câu',
+    },
     nowPlaying: 'Đang phát: Track {number}',
     toNext: {
       one: 'Còn {count} câu tới Track {number}',
@@ -82,7 +85,10 @@ export const dictation: Messages['dictation'] = {
   },
   topicJourney: {
     title: 'Đĩa nhạc này',
-    unit: 'video đã xong',
+    unit: {
+      one: 'video đã xong',
+      other: 'video đã xong',
+    },
     ofTotal: 'trên {total}',
     progress: 'Đã xong {done}/{total} video',
     toGold: {
@@ -266,7 +272,10 @@ export const dictation: Messages['dictation'] = {
       one: 'Còn {count} câu là xong',
       other: 'Còn {count} câu là xong',
     },
-    finishUnit: 'câu đã chép',
+    finishUnit: {
+      one: 'câu đã chép',
+      other: 'câu đã chép',
+    },
     finishWins: 'Chép đúng {correct}/{total} câu',
     nextInTopic: 'Video tiếp theo trong {topic}',
     topicDone: 'Đã xong chủ đề này: chọn đĩa tiếp theo',

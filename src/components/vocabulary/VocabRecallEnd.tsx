@@ -67,7 +67,7 @@ export function VocabRecallEnd({
       }
       headline={{
         icon: <BookOpenCheck />,
-        unit: t.unit,
+        unit: plural(t.unit, tally.reviewed),
         value: tally.reviewed,
       }}
       journeyStep={

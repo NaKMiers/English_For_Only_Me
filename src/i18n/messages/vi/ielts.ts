@@ -84,7 +84,10 @@ export const ielts: Messages['ielts'] = {
   },
   journey: {
     stepsLabel: '{done}/{total} bước: mỗi kỹ năng có band là một bước',
-    stepsUnit: 'bước đã đi',
+    stepsUnit: {
+      one: 'bước đã đi',
+      other: 'bước đã đi',
+    },
     ofSteps: 'trên {total}',
     progress: {
       show: 'Hiện bài làm gần đây và điểm yếu',
@@ -200,7 +203,10 @@ export const ielts: Messages['ielts'] = {
   },
   testJourney: {
     title: 'Đề này',
-    unit: 'kỹ năng có band',
+    unit: {
+      one: 'kỹ năng có band',
+      other: 'kỹ năng có band',
+    },
     ofTotal: 'trên {total}',
     clears: '{skill} là xong đề này',
     cleared: 'Đã xong đề: kỹ năng nào cũng có band. Làm lại để vượt band cũ.',

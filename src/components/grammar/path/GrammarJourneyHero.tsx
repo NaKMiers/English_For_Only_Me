@@ -104,7 +104,7 @@ export function GrammarJourneyHero({
       headline={
         <JourneyHeadline
           total={format(t.ofTotal, { total: path.totals.totalLessons })}
-          unit={t.lessonsPassed}
+          unit={plural(t.lessonsPassed, path.totals.passedLessons)}
           value={path.totals.passedLessons}
         />
       }

@@ -131,7 +131,7 @@ export function JourneyHero({
         >
           <JourneyHeadline
             total={format(t.ofSteps, { total: totals.totalSteps })}
-            unit={t.stepsUnit}
+            unit={plural(t.stepsUnit, totals.steps)}
             value={totals.steps}
           />
         </span>

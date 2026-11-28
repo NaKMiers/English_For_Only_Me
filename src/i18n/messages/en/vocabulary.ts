@@ -39,7 +39,10 @@ export const vocabulary = {
   },
   garden: {
     title: 'Your word garden',
-    words: 'words known',
+    words: {
+      one: 'word known',
+      other: 'words known',
+    },
     stages: {
       seed: 'Seed',
       sprout: 'Sprout',
@@ -163,7 +166,10 @@ export const vocabulary = {
   },
   recallEnd: {
     title: 'Session done',
-    unit: 'words reviewed',
+    unit: {
+      one: 'word reviewed',
+      other: 'words reviewed',
+    },
     wins: '{correct} right, {movedUp} moved a step, {mastered} mastered',
     stageUp: 'Your garden grew into a {stage}.',
     notSavedTitle: 'Not saved',

@@ -35,7 +35,10 @@ export const dictation = {
   },
   journey: {
     title: 'Your listening journey',
-    sentences: 'sentences',
+    sentences: {
+      one: 'sentence',
+      other: 'sentences',
+    },
     nowPlaying: 'Now playing: Track {number}',
     toNext: {
       one: '{count} sentence to Track {number}',
@@ -80,7 +83,10 @@ export const dictation = {
   },
   topicJourney: {
     title: 'This record',
-    unit: 'videos done',
+    unit: {
+      one: 'video done',
+      other: 'videos done',
+    },
     ofTotal: 'of {total}',
     progress: '{done} of {total} videos done',
     toGold: {
@@ -265,7 +271,10 @@ export const dictation = {
       one: '{count} sentence to finish',
       other: '{count} sentences to finish',
     },
-    finishUnit: 'sentences written',
+    finishUnit: {
+      one: 'sentence written',
+      other: 'sentences written',
+    },
     finishWins: '{correct} of {total} written right',
     nextInTopic: 'Next video in {topic}',
     topicDone: 'This topic is done: pick the next record',

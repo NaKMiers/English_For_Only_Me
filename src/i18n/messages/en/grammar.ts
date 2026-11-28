@@ -75,7 +75,10 @@ export const grammar = {
     reviewDue: 'Review due',
     weakSpotsLabel: 'Weak spots',
     journeyTitle: 'Your grammar climb',
-    lessonsPassed: 'lessons passed',
+    lessonsPassed: {
+      one: 'lesson passed',
+      other: 'lessons passed',
+    },
     ofTotal: 'of {total}',
     levelState: {
       done: '{level}: climbed, {total} lessons',

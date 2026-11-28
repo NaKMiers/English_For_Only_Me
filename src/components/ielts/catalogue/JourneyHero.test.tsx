@@ -43,6 +43,9 @@ describe('JourneyHero', () => {
     expect(html).toContain('aria-label="1 of 4 steps')
     expect(html).toContain('href="/ielts/t3/reading"')
     expect(html).toContain('Base camp')
+    // One step reads in the singular.
+    expect(html).toContain('>step taken<')
+    expect(html).not.toContain('>steps taken<')
   })
 
   test('meets the landing budget: one next stop, one cta, 4 chips', () => {

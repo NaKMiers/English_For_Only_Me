@@ -77,7 +77,10 @@ export const grammar: Messages['grammar'] = {
     reviewDue: 'Cần ôn tập',
     weakSpotsLabel: 'Điểm yếu',
     journeyTitle: 'Leo bậc ngữ pháp',
-    lessonsPassed: 'bài đã qua',
+    lessonsPassed: {
+      one: 'bài đã qua',
+      other: 'bài đã qua',
+    },
     ofTotal: 'trên {total}',
     levelState: {
       done: '{level}: đã leo xong, {total} bài',

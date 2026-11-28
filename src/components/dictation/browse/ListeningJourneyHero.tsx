@@ -118,7 +118,7 @@ export function ListeningJourneyHero({
       }
       headline={
         <JourneyHeadline
-          unit={t.sentences}
+          unit={plural(t.sentences, sentences)}
           value={sentences.toLocaleString()}
         />
       }

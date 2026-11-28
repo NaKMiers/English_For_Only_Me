@@ -82,7 +82,10 @@ export const ielts = {
   },
   journey: {
     stepsLabel: '{done} of {total} steps: every skill with a band is one step',
-    stepsUnit: 'steps taken',
+    stepsUnit: {
+      one: 'step taken',
+      other: 'steps taken',
+    },
     ofSteps: 'of {total}',
     progress: {
       show: 'Show recent attempts and weak spots',
@@ -198,7 +201,10 @@ export const ielts = {
   },
   testJourney: {
     title: 'This test',
-    unit: 'skills banded',
+    unit: {
+      one: 'skill banded',
+      other: 'skills banded',
+    },
     ofTotal: 'of {total}',
     clears: '{skill} clears this test',
     cleared: 'Test cleared: every skill has a band. Retake one to beat it.',

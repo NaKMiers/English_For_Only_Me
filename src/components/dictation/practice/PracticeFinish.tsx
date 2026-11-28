@@ -6,7 +6,7 @@ import type { ReactNode } from 'react'
 import { NextStopCard } from '@/components/journey/NextStopCard'
 import { SessionEnd } from '@/components/journey/SessionEnd'
 import { useMessages } from '@/i18n/client'
-import { format } from '@/i18n/format'
+import { format, plural } from '@/i18n/format'
 import type { PracticeNextVideo } from '@/modules/dictation/practice/findNextVideo'
 
 export type { PracticeNextVideo }
@@ -50,7 +50,7 @@ export function PracticeFinish({
       focusTitle={focusTitle}
       headline={{
         icon: <Headphones />,
-        unit: text.finishUnit,
+        unit: plural(text.finishUnit, total),
         value: total,
       }}
       module="dictation"

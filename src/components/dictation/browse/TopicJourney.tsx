@@ -94,7 +94,7 @@ export function TopicJourney({
           />
           <JourneyHeadline
             total={format(labels.ofTotal, { total })}
-            unit={labels.unit}
+            unit={plural(labels.unit, done)}
             value={done}
           />
         </div>

@@ -13,7 +13,7 @@ import {
 } from '@/components/journey/JourneyCard'
 import { NextStopCard } from '@/components/journey/NextStopCard'
 import { StatChip, StatStrip } from '@/components/journey/StatChip'
-import { format } from '@/i18n/format'
+import { format, plural } from '@/i18n/format'
 import type { Messages } from '@/i18n/messages'
 import type { IeltsAttemptSummary } from '@/modules/ielts/attempts/attemptQueries'
 import type { IeltsTestBands } from '@/modules/ielts/attempts/testBands'
@@ -73,7 +73,7 @@ export function TestJourney({
       headline={
         <JourneyHeadline
           total={format(t.ofTotal, { total: entry.skills.length })}
-          unit={t.unit}
+          unit={plural(t.unit, banded)}
           value={banded}
         />
       }

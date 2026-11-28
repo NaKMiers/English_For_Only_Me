@@ -105,7 +105,7 @@ export function WordGardenHero({ next, stats, withDrawer = false }: Props) {
       headline={
         <div className="flex flex-wrap items-end justify-between gap-3">
           <JourneyHeadline
-            unit={t.words}
+            unit={plural(t.words, known)}
             value={known.toLocaleString(INTL_LOCALES[locale])}
           />
           <span className="bg-surface/85 rounded-control flex items-center gap-3 py-2 pr-4 pl-2 shadow-sm">

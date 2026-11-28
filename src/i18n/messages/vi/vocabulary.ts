@@ -41,7 +41,10 @@ export const vocabulary: Messages['vocabulary'] = {
   },
   garden: {
     title: 'Khu vườn từ vựng',
-    words: 'từ đã thuộc',
+    words: {
+      one: 'từ đã thuộc',
+      other: 'từ đã thuộc',
+    },
     stages: {
       seed: 'Hạt giống',
       sprout: 'Mầm non',
@@ -165,7 +168,10 @@ export const vocabulary: Messages['vocabulary'] = {
   },
   recallEnd: {
     title: 'Xong phiên ôn',
-    unit: 'từ đã ôn',
+    unit: {
+      one: 'từ đã ôn',
+      other: 'từ đã ôn',
+    },
     wins: 'Đúng {correct}, {movedUp} từ lên một bước, {mastered} từ đã thuộc',
     stageUp: 'Khu vườn đã lớn thành {stage}.',
     notSavedTitle: 'Chưa lưu được',
