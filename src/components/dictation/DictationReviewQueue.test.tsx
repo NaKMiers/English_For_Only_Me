@@ -31,6 +31,17 @@ describe('DictationReviewQueue', () => {
     expect(container.textContent).not.toContain('3')
   })
 
+  test('the head counts every due item, not only the capped list', () => {
+    render(
+      <DictationReviewQueue
+        dueCount={45}
+        reviewItems={[item('1'), item('2')]}
+      />
+    )
+
+    expect(screen.getByText('45 sentences to review')).toBeInTheDocument()
+  })
+
   test('rows past 5 fold behind a disclosure', () => {
     const { container } = render(
       <DictationReviewQueue

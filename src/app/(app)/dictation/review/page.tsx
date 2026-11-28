@@ -8,7 +8,10 @@ import { DictationReviewQueue } from '@/components/dictation/DictationReviewQueu
 import { hasMongoDbUri } from '@/constants/environments'
 import { getMessages } from '@/i18n/server'
 import { connectDatabase } from '@/lib/db/connectDatabase'
-import { listDueReviewItemsForUser } from '@/modules/dictation/review/reviewItemService'
+import {
+  countDueReviewItemsForUser,
+  listDueReviewItemsForUser,
+} from '@/modules/dictation/review/reviewItemService'
 import { getPracticeActorId } from '@/modules/dictation/services/getCurrentUser'
 import type { DictationReviewItemApiRecord } from '@/modules/dictation/types'
 
@@ -27,6 +30,7 @@ export default async function Page() {
   const t = await getMessages()
   const text = t.dictation.review
   const reviewItems: DictationReviewItemApiRecord[] = []
+  let dueCount = 0
 
   if (hasMongoDbUri()) {
     const [actorId] = await Promise.all([
@@ -34,13 +38,18 @@ export default async function Page() {
       connectDatabase(),
     ])
 
-    if (actorId)
-      reviewItems.push(
-        ...(await listDueReviewItemsForUser({
+    if (actorId) {
+      const [items, count] = await Promise.all([
+        listDueReviewItemsForUser({
           limit: 30,
           userId: actorId,
-        }))
-      )
+        }),
+        countDueReviewItemsForUser(actorId),
+      ])
+
+      reviewItems.push(...items)
+      dueCount = count
+    }
   }
 
   return (
@@ -78,6 +87,7 @@ export default async function Page() {
 
         <DictationReviewQueue
           emptyMessage={hasMongoDbUri() ? text.empty : text.noDatabase}
+          dueCount={dueCount}
           reviewItems={reviewItems}
         />
       </section>

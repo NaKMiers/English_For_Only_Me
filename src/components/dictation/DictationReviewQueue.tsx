@@ -13,6 +13,11 @@ import type { DictationReviewItemApiRecord } from '@/modules/dictation/types'
 export const REVIEW_VISIBLE_ROWS = 5
 
 interface Props {
+  /**
+   * Every due item, for the page head: `reviewItems` is capped, so its
+   * length would undercount (and disagree with the landing's count).
+   */
+  dueCount?: number
   emptyMessage?: string
   reviewItems: DictationReviewItemApiRecord[]
   title?: string
@@ -25,6 +30,7 @@ interface Props {
 }
 
 export function DictationReviewQueue({
+  dueCount,
   emptyMessage,
   reviewItems,
   title,
@@ -80,7 +86,7 @@ export function DictationReviewQueue({
       {variant === 'page' ? (
         <div className="border-line from-pastel-sky to-surface rounded-panel flex flex-wrap items-center justify-between gap-4 border bg-linear-160 p-5">
           <p className="font-sans text-2xl font-medium tracking-tight">
-            {plural(text.dueHead, due.length)}
+            {plural(text.dueHead, Math.max(dueCount ?? 0, due.length))}
           </p>
           {first ? (
             <ActionButton

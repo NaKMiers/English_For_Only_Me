@@ -238,6 +238,16 @@ export async function listDueReviewItemsForUser({
   return items.map(toDictationReviewItemRecord)
 }
 
+/** Every active review item of the user, uncapped (the list is capped). */
+export async function countDueReviewItemsForUser(userId: string | null) {
+  if (!userId) return 0
+
+  return DictationReviewItemModel.countDocuments({
+    userId,
+    status: { $in: ACTIVE_REVIEW_STATUSES },
+  })
+}
+
 export async function markReviewItemForUser({
   action,
   userId,
