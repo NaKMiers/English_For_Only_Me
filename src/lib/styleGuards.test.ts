@@ -90,7 +90,6 @@ const CORNERS: Guard = {
     'src/components/ielts/catalogue/ProgressTabs.tsx',
     'src/components/ielts/catalogue/TestPath.tsx',
     'src/components/ui/tooltip.tsx',
-    'src/components/vocabulary/VocabRecallModal.tsx',
   ],
   pattern: /\brounded(-[trblxyse]{1,2})?-(\[\d+(\.\d+)?px\]|2xl|3xl)/,
   roots: COMPONENTS_AND_APP,
@@ -134,7 +133,6 @@ const RAW_PALETTE: Guard = {
     'src/components/ui/sheet.tsx',
     'src/components/ui/tabs.tsx',
     'src/components/ui/textarea.tsx',
-    'src/components/vocabulary/VocabRecallModal.tsx',
   ],
   pattern:
     /\b(bg|text|border|ring)-(yellow|amber|red|green|blue)-\d|\btext-white\b|\btext-muted-foreground\b/,

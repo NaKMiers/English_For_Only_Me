@@ -11,7 +11,6 @@ import {
 } from '@/components/common/PageSkeletons'
 import { useMessages } from '@/i18n/client'
 import { format } from '@/i18n/format'
-import type { Messages } from '@/i18n/messages/en'
 import {
   VOCAB_EXPLORE_INITIAL_LIMIT,
   VOCAB_EXPLORE_MAX_LIMIT,
@@ -35,6 +34,7 @@ import {
   searchVocabApi,
 } from '@/requests/vocabularyApi'
 
+import { VocabRecallEnd } from './VocabRecallEnd'
 import { VocabRecallSessionSummary } from './VocabRecallSessionSummary'
 import {
   VocabularyExplorePanel,
@@ -126,21 +126,6 @@ function speakTerm(term: string) {
   const utterance = new SpeechSynthesisUtterance(term)
   utterance.lang = 'en-US'
   window.speechSynthesis.speak(utterance)
-}
-
-function getRecallStatusMessage(
-  result: VocabRecallCardResult,
-  t: Messages['vocabulary']['dashboard']
-) {
-  if (result.item.status === 'mastered')
-    return format(t.mastered, { term: result.term })
-  if (result.isCorrect)
-    return format(t.movedStage, {
-      stage: result.item.recallStage,
-      term: result.term,
-    })
-
-  return format(t.resetStage, { term: result.term })
 }
 
 /** Append newly fetched Explore cards, keeping the ones already dealt. */
@@ -543,15 +528,6 @@ export function VocabularyDashboard({
     recallTasks.length,
   ])
 
-  // End the session once the queue is empty and there is no page left.
-  useEffect(() => {
-    if (!recallModalOpen || recallTasks.length > 0 || recallCursor) return
-
-    const timeoutId = window.setTimeout(() => closeRecallSession(), 0)
-
-    return () => window.clearTimeout(timeoutId)
-  }, [closeRecallSession, recallCursor, recallModalOpen, recallTasks.length])
-
   useEffect(() => {
     if (!mongoConfigured || exploreEntries.length === 0) return
     if (exploreRefreshRef.current) return
@@ -712,11 +688,8 @@ export function VocabularyDashboard({
   }
 
   function advanceRecall(task: VocabRecallTaskRecord) {
-    const result = recallResultsRef.current.get(task.taskId)
-
-    if (result)
-      setStatusMessage(getRecallStatusMessage(result, vocab.dashboard))
-
+    // The card itself showed the word's step moving; the page behind the
+    // modal gets no per-card messages.
     setRecallTasks(current =>
       current.filter(recallTask => recallTask.taskId !== task.taskId)
     )
@@ -819,6 +792,23 @@ export function VocabularyDashboard({
             if (!open) closeRecallSession()
           }}
           onRetryLoad={retryRecallNextPage}
+          endScreen={
+            recallTasks.length === 0 && !recallCursor ? (
+              <VocabRecallEnd
+                knownBefore={stats.totalKnownCount}
+                onDone={closeRecallSession}
+                onPlant={() => {
+                  closeRecallSession()
+                  window.requestAnimationFrame(() =>
+                    document
+                      .getElementById(VOCAB_EXPLORE_ID)
+                      ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                  )
+                }}
+                results={recallResults}
+              />
+            ) : null
+          }
           open={recallModalOpen}
           results={recallResultsById}
           task={activeRecall}

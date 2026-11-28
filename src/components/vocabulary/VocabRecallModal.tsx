@@ -7,10 +7,11 @@ import {
   Headphones,
   RotateCcw,
   Search,
+  Trophy,
   Volume2,
   X,
 } from 'lucide-react'
-import { useEffect, useEffectEvent, useState } from 'react'
+import { useEffect, useEffectEvent, useState, type ReactNode } from 'react'
 
 import {
   Dialog,
@@ -19,7 +20,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { StepDots } from '@/components/journey/StepDots'
 import { ActionButton } from '@/components/ui/ActionButton'
+import { Progress } from '@/components/ui/progress'
 import { useMessages } from '@/i18n/client'
 import { format } from '@/i18n/format'
 import { cn } from '@/lib/utils'
@@ -42,6 +45,8 @@ import type {
 interface Props {
   isLoading: boolean
   /** Why the next page of cards failed to load, if it did. */
+  /** Shown when the queue is empty and the session is over. */
+  endScreen?: ReactNode
   loadError?: string | null
   /** Move past an answered card. */
   onAdvance: (task: VocabRecallTaskRecord) => void
@@ -172,6 +177,7 @@ function formatExample(task: VocabRecallTaskRecord) {
 
 export function VocabRecallModal({
   isLoading,
+  endScreen = null,
   loadError = null,
   onAdvance,
   onAnswer,
@@ -303,30 +309,29 @@ export function VocabRecallModal({
       open={open}
       onOpenChange={handleOpenChange}
     >
-      <DialogContent className="border-line bg-surface text-ink h-auto max-h-[90vh] w-[min(960px,94vw)] max-w-none overflow-y-auto rounded-[28px] border p-0 sm:max-w-none">
+      <DialogContent className="border-line bg-surface text-ink rounded-panel h-auto max-h-[90vh] w-[min(960px,94vw)] max-w-none overflow-y-auto border p-0 sm:max-w-none">
         {task ? (
           <div className="grid min-h-full grid-rows-[auto_1fr_auto]">
             <DialogHeader className="grid gap-3 px-5 pt-5 pr-14 pb-3 sm:px-7 sm:pt-6 sm:pr-16">
               <div className="flex items-center gap-3">
-                <div
+                <Progress
                   aria-label={format(t.progress, {
                     number: taskNumber,
                     total: taskTotal,
                   })}
-                  className="bg-tint h-2 flex-1 overflow-hidden rounded-full"
-                  role="img"
-                >
-                  <div
-                    className="bg-brand h-full rounded-full transition-[width] duration-500 ease-out motion-reduce:transition-none"
-                    style={{ width: `${progress * 100}%` }}
-                  />
-                </div>
-                <span className="text-ink-soft shrink-0 text-xs font-medium tabular-nums">
-                  {format(t.review, { number: taskNumber, total: taskTotal })}
-                </span>
-                <span className="bg-pastel-mint text-accent-green shrink-0 rounded-full px-2.5 py-1 text-xs font-medium">
-                  {format(t.stage, { stage: task.item.recallStage })}
-                </span>
+                  className="flex-1"
+                  tone="vocabulary"
+                  trackClassName="h-2"
+                  value={Math.round(progress * 100)}
+                />
+                <StepDots
+                  doneClassName="bg-accent-green"
+                  done={task.item.recallStage}
+                  label={format(vocab.recallEnd.stepLabel, {
+                    stage: task.item.recallStage,
+                  })}
+                  total={7}
+                />
               </div>
               <DialogTitle className="sr-only">{t.srTitle}</DialogTitle>
               <DialogDescription className="text-ink-soft text-sm sm:text-base">
@@ -336,7 +341,7 @@ export function VocabRecallModal({
 
             <div className="grid content-start gap-4 px-5 pb-5 sm:px-7">
               {isListeningTask && !cardFeedback ? (
-                <div className="bg-pastel-mint/70 grid place-items-center gap-3 rounded-3xl py-8">
+                <div className="bg-pastel-mint/70 rounded-panel grid place-items-center gap-3 py-8">
                   <button
                     aria-label={format(t.play, { term: task.entry.term })}
                     className="soft-press bg-surface text-accent-green hover:shadow-float grid size-24 place-items-center rounded-full shadow-sm sm:size-28"
@@ -348,7 +353,7 @@ export function VocabRecallModal({
                   <p className="text-ink-soft text-sm">{t.tapPlay}</p>
                 </div>
               ) : (
-                <div className="bg-pastel-mint/70 rounded-3xl px-5 py-6 sm:px-8 sm:py-7">
+                <div className="bg-pastel-mint/70 rounded-panel px-5 py-6 sm:px-8 sm:py-7">
                   {task.type === 'wordChooseDefinition' || isListeningTask ? (
                     <VocabTermHeader
                       buttonClassName="border-transparent bg-surface text-accent-green hover:bg-surface/80"
@@ -420,7 +425,7 @@ export function VocabRecallModal({
                       <li key={option.id}>
                         <button
                           className={cn(
-                            'soft-press group flex min-h-16 w-full items-center gap-3 rounded-2xl border p-3 text-left text-sm leading-6 font-medium transition-[background-color,border-color,opacity] duration-200 sm:min-h-20 sm:text-base',
+                            'soft-press group rounded-control flex min-h-16 w-full items-center gap-3 border p-3 text-left text-sm leading-6 font-medium transition-[background-color,border-color,opacity] duration-200 sm:min-h-20 sm:text-base',
                             state === 'idle' &&
                               'border-line bg-surface hover:border-brand/40 hover:bg-brand-soft/40',
                             state === 'correct' &&
@@ -438,8 +443,8 @@ export function VocabRecallModal({
                               state === 'idle' &&
                                 'bg-tint text-ink-soft group-hover:bg-brand group-hover:text-cta-fg',
                               state === 'correct' &&
-                                'bg-lesson-correct text-white',
-                              state === 'wrong' && 'bg-danger text-white',
+                                'bg-lesson-correct text-surface',
+                              state === 'wrong' && 'bg-danger text-surface',
                               state === 'muted' && 'bg-tint text-ink-soft'
                             )}
                           >
@@ -471,7 +476,7 @@ export function VocabRecallModal({
                 <section
                   aria-live="polite"
                   className={cn(
-                    'motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-2 grid gap-3 rounded-3xl border p-4 sm:p-5',
+                    'motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-2 rounded-panel grid gap-3 border p-4 sm:p-5',
                     cardFeedback.isCorrect
                       ? 'border-lesson-correct/40 bg-lesson-correct/5'
                       : 'border-danger/40 bg-danger-soft/60'
@@ -479,7 +484,7 @@ export function VocabRecallModal({
                 >
                   <p
                     className={cn(
-                      'flex items-center gap-2 font-sans text-lg font-semibold',
+                      'flex items-center gap-2 font-sans text-lg font-medium',
                       cardFeedback.isCorrect
                         ? 'text-lesson-correct'
                         : 'text-danger'
@@ -496,11 +501,48 @@ export function VocabRecallModal({
                         className="size-6"
                       />
                     )}
-                    {cardFeedback.isCorrect ? t.correct : t.notQuite}
+                    {/* The icon says it; the word stays for screen readers. */}
+                    <span className="sr-only">
+                      {cardFeedback.isCorrect ? t.correct : t.notQuite}
+                    </span>
                     <span className="sr-only">
                       {cardFeedback.isCorrect ? t.countedCorrect : t.wrong}
                     </span>
                   </p>
+                  {taskResult && taskResult.saveState !== 'notSaved' ? (
+                    // The word's step moving, the small win of the card.
+                    <p className="flex flex-wrap items-center gap-2 text-sm">
+                      {taskResult.item.status === 'mastered' ? (
+                        <Trophy
+                          aria-hidden
+                          className="text-accent-green size-4"
+                        />
+                      ) : (
+                        <StepDots
+                          doneClassName="bg-accent-green"
+                          done={taskResult.item.recallStage}
+                          label={format(vocab.recallEnd.stepLabel, {
+                            stage: taskResult.item.recallStage,
+                          })}
+                          total={7}
+                        />
+                      )}
+                      <span className="text-ink-soft">
+                        {taskResult.item.status === 'mastered'
+                          ? format(vocab.dashboard.mastered, {
+                              term: taskResult.term,
+                            })
+                          : taskResult.isCorrect
+                            ? format(vocab.dashboard.movedStage, {
+                                stage: taskResult.item.recallStage,
+                                term: taskResult.term,
+                              })
+                            : format(vocab.dashboard.resetStage, {
+                                term: taskResult.term,
+                              })}
+                      </span>
+                    </p>
+                  ) : null}
                   {!cardFeedback.isCorrect ? (
                     <p className="text-sm">
                       {format(t.correctAnswer, {
@@ -508,7 +550,7 @@ export function VocabRecallModal({
                       })}
                     </p>
                   ) : null}
-                  <div className="bg-surface grid gap-3 rounded-2xl p-4">
+                  <div className="bg-surface rounded-control grid gap-3 p-4">
                     <div className="grid gap-1">
                       <span className="text-ink-soft text-xs font-medium">
                         {t.meaning} · {task.entry.term}
@@ -587,9 +629,14 @@ export function VocabRecallModal({
               )}
             </div>
           </div>
+        ) : endScreen && !loadError ? (
+          <div className="grid gap-4 p-5 sm:p-7">
+            <DialogTitle className="sr-only">{t.srTitle}</DialogTitle>
+            {endScreen}
+          </div>
         ) : loadError ? (
           <div className="grid place-items-center gap-3 p-8 text-center">
-            <DialogTitle className="font-sans text-xl font-semibold">
+            <DialogTitle className="font-sans text-xl font-medium">
               {t.loadFailed}
             </DialogTitle>
             <DialogDescription className="text-ink-soft text-sm">
@@ -608,7 +655,7 @@ export function VocabRecallModal({
         ) : (
           // Between pages of the due queue: the next cards are on their way.
           <div className="grid place-items-center gap-2 p-8 text-center">
-            <DialogTitle className="font-sans text-xl font-semibold">
+            <DialogTitle className="font-sans text-xl font-medium">
               {t.loadingMore}
             </DialogTitle>
             <DialogDescription className="text-ink-soft text-sm">

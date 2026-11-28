@@ -213,3 +213,36 @@ export function isVocabRecallTaskExpired(
 
   return payload ? payload.expiresAt - marginMs <= now : false
 }
+
+export interface VocabRecallTally {
+  correct: number
+  /** Words that reached mastered this session (they join the garden). */
+  mastered: number
+  /** Right answers that moved a word one step (not to mastered). */
+  movedUp: number
+  notSaved: number
+  reviewed: number
+}
+
+/**
+ * What one recall session did, from its card results. A session only deals
+ * learning words, so a result whose item is mastered was mastered now.
+ */
+export function tallyRecallSession(
+  results: VocabRecallCardResult[]
+): VocabRecallTally {
+  const saved = results.filter(result => result.saveState !== 'notSaved')
+  const mastered = saved.filter(
+    result => result.item.status === 'mastered'
+  ).length
+
+  return {
+    correct: results.filter(result => result.isCorrect).length,
+    mastered,
+    movedUp: saved.filter(
+      result => result.isCorrect && result.item.status !== 'mastered'
+    ).length,
+    notSaved: results.length - saved.length,
+    reviewed: results.length,
+  }
+}

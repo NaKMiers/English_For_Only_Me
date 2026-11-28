@@ -167,20 +167,28 @@ export const vocabulary: Messages['vocabulary'] = {
     start: 'Bắt đầu ôn',
     next: 'Tiếp theo: {term}',
   },
+  recallEnd: {
+    title: 'Xong phiên ôn',
+    unit: 'từ đã ôn',
+    wins: 'Đúng {correct}, {movedUp} từ lên một bước, {mastered} từ đã thuộc',
+    stageUp: 'Khu vườn đã lớn thành {stage}.',
+    notSavedTitle: 'Chưa lưu được',
+    moreNotSaved: {
+      one: 'Thêm {count} từ',
+      other: 'Thêm {count} từ',
+    },
+    done: 'Xong',
+    plant: 'Gieo thêm từ mới',
+    stepLabel: 'Bước {stage} trên 7',
+  },
   summary: {
-    eyebrow: 'Ôn tập',
     title: 'Tóm tắt buổi ôn',
-    reviewed: 'Đã ôn {count}',
-    correct: 'Đúng {count}',
-    saving: 'Đang lưu {count}...',
     notSaved: 'Chưa lưu {count}',
     rowNotSaved: ' - chưa lưu. ',
     staleCard:
       'Thẻ này đã hết hạn trước khi kịp lưu. Thẻ vẫn đến hạn cho lần ôn tới.',
   },
   modal: {
-    review: 'Ôn {number}/{total}',
-    stage: 'Mức {stage}/7',
     srTitle: 'Ôn flashcard từ vựng',
     wrong: 'Chưa đúng. Xem đáp án đúng rồi tiếp tục.',
     countedCorrect:

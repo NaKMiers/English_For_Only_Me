@@ -457,9 +457,17 @@ describe('VocabularyDashboard', () => {
       item: { ...makeItem('item-2', 'entry-2'), recallStage: 3 },
     })
 
-    expect(await screen.findByText('Session summary')).toBeInTheDocument()
-    expect(screen.getByText('1 not saved')).toBeInTheDocument()
+    // The session ends inside the modal: wins first, the unsaved card in
+    // the fix-up list, then one Done.
+    expect(await screen.findByText('Session done')).toBeInTheDocument()
+    expect(screen.getByText('Not saved')).toBeInTheDocument()
     expect(screen.getByText(/expired before it was saved/)).toBeInTheDocument()
+    expect(mocks.getVocabStatsApi).not.toHaveBeenCalled()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Done' }))
+
+    // Back on the page, only the unsaved card stays as a notice.
+    expect(await screen.findByText(/1 not saved/)).toBeInTheDocument()
     await waitFor(() => expect(mocks.getVocabStatsApi).toHaveBeenCalledTimes(1))
   })
 
@@ -487,7 +495,9 @@ describe('VocabularyDashboard', () => {
         expect.objectContaining({ cursor: 'cursor-1', limit: 20 })
       )
     )
-    expect(screen.getByText('Review 2/7')).toBeInTheDocument()
+    expect(
+      screen.getByRole('progressbar', { name: 'Card 2 of 7' })
+    ).toBeInTheDocument()
   })
 
   test('a mid-session refresh of stale cards never re-deals an answered item', async () => {
@@ -747,6 +757,7 @@ describe('VocabularyDashboard', () => {
     // The answer stays queued: the server never replies.
     fireEvent.click(await screen.findByRole('button', { name: /word1/ }))
     fireEvent.click(await screen.findByRole('button', { name: 'Continue' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Done' }))
 
     await waitFor(() => expect(mocks.getVocabStatsApi).toHaveBeenCalledTimes(1))
     expect(mocks.getDueVocabRecallApi).toHaveBeenCalledTimes(1)
