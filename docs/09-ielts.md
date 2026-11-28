@@ -576,24 +576,24 @@ are stable and appear in generation logs, repair prompts and the publish
 panel. Messages are English for prompts and logs; the editor shows
 `ieltsEditor.issues[code]` in the admin's language.
 
-| Rule                                      | Severity        | Checks                                                                                            |
-| ----------------------------------------- | --------------- | ------------------------------------------------------------------------------------------------- |
-| `group_range_matches`                     | error           | Questions numbered `from`..`to` in order.                                                         |
-| `slot_has_question` / `question_has_slot` | error           | Each `{{qN}}` has a question; each slot question has exactly one slot.                            |
-| `answers_present`                         | error           | Every question has an answer; choose-N groups have N `correctKeys`.                               |
-| `answer_within_limit`                     | error           | Accepted text answers respect the word limit.                                                     |
-| `letter_answers_valid`                    | error           | Letter answers are options (or TRUE/FALSE/NOT GIVEN, YES/NO/NOT GIVEN).                           |
-| `evidence_found`                          | error           | Evidence present (except NOT GIVEN) and quote found in the referenced block.                      |
-| `explanation_present`                     | error           | Every question has an explanation.                                                                |
-| `html_in_body`                            | error           | No HTML tag in instruction, title, body, prompts, paragraphs, script lines, writing text.         |
-| `passage_length`                          | error / warning | Reading words outside 600-1100 is an error; outside 700-1000 a warning.                           |
-| `listening_lines`                         | error           | At least 12 lines; every voice is in `LISTENING_VOICES`.                                          |
-| `audio_duration` / `audio_offsets`        | error           | Duration > 0; offsets (when present) match line count, increase, stay below duration.             |
-| `writing_task`                            | error           | Prompt present; Task 1 has a visual; `minWords` is 150 / 250.                                     |
-| `numbering_contiguous`                    | error           | (test level) Listening and Reading each number 1..40 exactly once.                                |
-| `sections_complete`                       | error           | (test level) the test has sections.                                                               |
-| `visual_missing`                          | warning         | Instruction mentions a diagram, map, plan or chart but `imageUrl` is empty (flow-chart excluded). |
-| `question_stem_missing`                   | warning         | A question with options but no prompt text.                                                       |
+| Rule                                      | Severity        | Checks                                                                                                                                                       |
+| ----------------------------------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `group_range_matches`                     | error           | Questions numbered `from`..`to` in order.                                                                                                                    |
+| `slot_has_question` / `question_has_slot` | error           | Each `{{qN}}` has a question; each slot question has exactly one slot.                                                                                       |
+| `answers_present`                         | error           | Every question has an answer; choose-N groups have N `correctKeys`.                                                                                          |
+| `answer_within_limit`                     | error           | Accepted text answers respect the word limit.                                                                                                                |
+| `letter_answers_valid`                    | error           | Letter answers are options (or TRUE/FALSE/NOT GIVEN, YES/NO/NOT GIVEN).                                                                                      |
+| `evidence_found`                          | error           | Evidence present (except NOT GIVEN) and quote found in the referenced block.                                                                                 |
+| `explanation_present`                     | error           | Every question has an explanation.                                                                                                                           |
+| `html_in_body`                            | error           | No HTML tag in instruction, title, body, prompts, paragraphs, script lines, writing text.                                                                    |
+| `passage_length`                          | error / warning | Reading words outside 600-1100 is an error; outside 700-1000 a warning.                                                                                      |
+| `listening_lines`                         | error           | At least 12 lines; every voice is in `LISTENING_VOICES`.                                                                                                     |
+| `audio_duration` / `audio_offsets`        | error           | Duration > 0; offsets (when present) match line count, increase, stay below duration.                                                                        |
+| `writing_task`                            | error           | Prompt present with a task statement of 12+ words beyond the time and word-count lines (`taskStatementWords`); Task 1 has a visual; `minWords` is 150 / 250. |
+| `numbering_contiguous`                    | error           | (test level) Listening and Reading each number 1..40 exactly once.                                                                                           |
+| `sections_complete`                       | error           | (test level) the test has sections.                                                                                                                          |
+| `visual_missing`                          | warning         | Instruction mentions a diagram, map, plan or chart but `imageUrl` is empty (flow-chart excluded).                                                            |
+| `question_stem_missing`                   | warning         | A question with options but no prompt text.                                                                                                                  |
 
 `isSectionReady` = `genStatus` is `ready` or `manual`, listening has audio, and
 no errors.

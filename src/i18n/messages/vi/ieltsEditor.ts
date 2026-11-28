@@ -229,6 +229,8 @@ export const ieltsEditor: Messages['ieltsEditor'] = {
     noDuration: 'Audio không có thời lượng.',
     offsetsMismatch: 'Mốc thời gian từng dòng của audio không khớp với script.',
     writingEmpty: 'Đề bài Writing đang trống.',
+    writingNoStatement:
+      'Đề bài Writing chưa có nội dung đề, chỉ có dòng thời gian và số từ.',
     task1Visual: 'Task 1 cần có hình minh họa.',
     minWords: 'Task {task} cần tối thiểu {minimum} từ.',
     visualMissing:

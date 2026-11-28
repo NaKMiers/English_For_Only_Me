@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { IELTS_SAMPLE_TEST } from '../fixtures/sampleTest'
 import type { IeltsSection } from '../schema'
 import { emptySection } from '../tests/emptySections'
-import { readingSectionMessages } from './prompts'
+import { readingSectionMessages, writingTaskMessages } from './prompts'
 import { type IeltsRequester, runSectionJob } from './runSectionJob'
 
 const sample = IELTS_SAMPLE_TEST.sections.find(
@@ -117,5 +117,40 @@ describe('runSectionJob', () => {
         section: target,
       })
     ).toMatchObject({ outcome: 'failed', error: 'timed out' })
+  })
+
+  it('sends a Writing prompt without its task statement back for repair', async () => {
+    const writing = IELTS_SAMPLE_TEST.sections.find(
+      section => section.key === 'writing-1'
+    )?.writing
+    const output = (prompt: string) =>
+      JSON.stringify({
+        title: 'Museum visitors',
+        prompt,
+        visual: writing?.visual ?? null,
+        sampleAnswer: writing?.sampleAnswer ?? '',
+      })
+    const run = (prompt: string) =>
+      runSectionJob({
+        kind: 'writing-task',
+        messages: writingTaskMessages({
+          key: 'writing-1',
+          track: 'academic',
+          targetBand: 7,
+          topic: null,
+          otherTitles: [],
+        }),
+        request: requester(output(prompt)),
+        section: emptySection('writing-1', 'pending'),
+      })
+
+    const frameOnly = await run(
+      'You should spend about 20 minutes on this task.'
+    )
+
+    expect(frameOnly.outcome).toBe('needsRepair')
+    expect(frameOnly.failedRules).toContain('writing_task')
+    expect(frameOnly.issues.join('\n')).toContain('no task statement')
+    expect((await run(writing?.prompt ?? '')).outcome).toBe('ok')
   })
 })

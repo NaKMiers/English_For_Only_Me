@@ -228,6 +228,8 @@ export const ieltsEditor = {
     noDuration: 'Audio has no duration.',
     offsetsMismatch: 'Audio line offsets do not match the script.',
     writingEmpty: 'The writing prompt is empty.',
+    writingNoStatement:
+      'The writing prompt has no task statement, only the time and word-count lines.',
     task1Visual: 'Task 1 needs a visual.',
     minWords: 'Task {task} needs {minimum} words minimum.',
     visualMissing:

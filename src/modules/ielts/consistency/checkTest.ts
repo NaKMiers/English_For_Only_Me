@@ -72,6 +72,8 @@ const ISSUE_MESSAGES = {
   noDuration: 'Audio has no duration.',
   offsetsMismatch: 'Audio line offsets do not match the script.',
   writingEmpty: 'The writing prompt is empty.',
+  writingNoStatement:
+    'The writing prompt has no task statement, only the time and word-count lines.',
   task1Visual: 'Task 1 needs a visual.',
   minWords: 'Task {task} needs {minimum} words minimum.',
   visualMissing:
@@ -370,6 +372,9 @@ function checkMaterial(section: IeltsSection, report: Report, warn: Report) {
       return
     }
 
+    if (taskStatementWords(writing.prompt) < MIN_TASK_STATEMENT_WORDS)
+      report('writing_task', 'writing.prompt', 'writingNoStatement')
+
     if (containsHtml(writing.prompt) || containsHtml(writing.sampleAnswer))
       report('html_in_body', 'writing', 'html')
 
@@ -384,6 +389,27 @@ function checkMaterial(section: IeltsSection, report: Report, warn: Report) {
         minimum,
       })
   }
+}
+
+// The fixed lines around a Writing task statement (exam-box `>` marks aside).
+const WRITING_FRAME_LINE =
+  /^(?:You should spend about \d+ minutes on this task|Write at least \d+ words)\.?$/i
+
+/**
+ * Words of a real task statement: every one of the 168 imported prompts has
+ * 24 or more, while a generated prompt that kept only the frame lines has 0.
+ */
+const MIN_TASK_STATEMENT_WORDS = 12
+
+/** Words left in a Writing prompt once the time and word-count lines go. */
+export function taskStatementWords(prompt: string) {
+  return prompt
+    .split('\n')
+    .map(line => line.replace(/^>\s?/, '').trim())
+    .filter(line => line && !WRITING_FRAME_LINE.test(line))
+    .join(' ')
+    .split(/\s+/)
+    .filter(Boolean).length
 }
 
 // "Label the diagram below", "Look at the map", "pictures A-D", "bar chart".

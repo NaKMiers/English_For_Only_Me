@@ -11,7 +11,12 @@ import type {
 } from '../schema'
 import { ieltsTestSchema } from '../schema'
 import { emptySections } from '../tests/emptySections'
-import { checkSection, checkTest, isSectionReady } from './checkTest'
+import {
+  checkSection,
+  checkTest,
+  isSectionReady,
+  taskStatementWords,
+} from './checkTest'
 
 function clone(): IeltsTestContent {
   return structuredClone(IELTS_SAMPLE_TEST)
@@ -146,6 +151,45 @@ describe('checkTest', () => {
     section(test, 'writing-1').writing!.visual = null
 
     expect(rules(test)).toContain('writing_task')
+  })
+
+  // Seen live: qwen3.8-max returned only "You should spend about 20 minutes
+  // on this task." for a Task 1 prompt, and the old checks let it through.
+  it('requires a task statement, not just the time and word-count lines', () => {
+    const test = clone()
+
+    section(test, 'writing-1').writing!.prompt =
+      'You should spend about 20 minutes on this task.\n\nWrite at least 150 words.'
+
+    expect(
+      checkTest(test).errors.map(issue => [issue.rule, issue.code])
+    ).toContainEqual(['writing_task', 'writingNoStatement'])
+  })
+})
+
+describe('taskStatementWords', () => {
+  it('counts only the statement, in the exam box or as plain text', () => {
+    expect(
+      taskStatementWords(
+        [
+          'You should spend about 20 minutes on this task.',
+          '',
+          '> The chart below shows the number of visitors to three museums.',
+          '>',
+          '> Summarise the information.',
+          '',
+          'Write at least 150 words.',
+        ].join('\n')
+      )
+    ).toBe(14)
+    expect(
+      taskStatementWords(
+        'Some people think cities should ban cars. Do you agree or disagree?'
+      )
+    ).toBe(12)
+    expect(
+      taskStatementWords('You should spend about 20 minutes on this task.')
+    ).toBe(0)
   })
 })
 
